@@ -98,7 +98,7 @@ export function CategorySheet({
                 onPick(firstResult.id);
               }
             }}
-            placeholder={searchPlaceholder}
+            placeholder={tr(searchPlaceholder)}
             aria-label={tr("Cerca categoria")}
             className="pl-9"
           />

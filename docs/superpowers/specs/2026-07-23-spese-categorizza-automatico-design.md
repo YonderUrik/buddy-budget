@@ -1,87 +1,87 @@
 # Categorizza automaticamente — Spese
 
-## Problema
+## Problem
 
-Le transazioni "Da categorizzare" spesso ripetono descrizioni già categorizzate manualmente in passato (stesso merchant/causale). Oggi bisogna categorizzarle una per una a mano, anche quando la scelta corretta è ovvia perché già fatta prima. Se in passato la spesa era stata anche "divisa" (rimborso/quota di altri), quella divisione andrebbe riproposta con la stessa percentuale.
+"Da categorizzare" ("To categorise") transactions often repeat descriptions that were already categorised by hand in the past (same merchant/payment reason). Today they must be categorised one by one by hand, even when the correct choice is obvious because it was already made before. If in the past the expense was also "split" (refund/other people's share), that split should be proposed again with the same percentage.
 
-## Obiettivo
+## Goal
 
-Un'azione globale in Spese ("Categorizza automaticamente") che:
-1. Trova le transazioni "Da categorizzare" la cui descrizione coincide (esatta, case-insensitive) con descrizioni già categorizzate in passato.
-2. Suggerisce la categoria più usata storicamente per quella descrizione (e, se presente, la percentuale di split coerente).
-3. Chiede sempre conferma utente, transazione per transazione, con possibilità di modificare categoria e split prima di confermare.
+A global action in Spese (Expenses), "Categorizza automaticamente" ("Categorise automatically"), that:
+1. Finds the "Da categorizzare" transactions whose description matches (exact, case-insensitive) descriptions already categorised in the past.
+2. Suggests the category most used historically for that description (and, if present, the consistent split percentage).
+3. Always asks the user for confirmation, transaction by transaction, with the option to change category and split before confirming.
 
-Fuori scope: matching fuzzy/per-token (solo uguaglianza esatta di `description`, stessa logica già usata in `lib/gocardless/categorize.ts`); applicazione bulk senza conferma.
+Out of scope: fuzzy/per-token matching (only exact equality of `description`, the same logic already used in `lib/gocardless/categorize.ts`); bulk application without confirmation.
 
-## Motore di calcolo puro
+## Pure calculation engine
 
-Nuovo modulo `lib/calc/categorize-suggestions.ts`.
+New module `lib/calc/categorize-suggestions.ts`.
 
 ```ts
 export interface CategorizeSuggestion {
   transaction: Transaction;
   suggestedCategoryId: string;
-  matchCount: number; // quante transazioni storiche hanno contribuito al match
-  suggestedSplitPercentage: number | null; // 0..1, null = nessuno split coerente da proporre
+  matchCount: number; // how many historical transactions contributed to the match
+  suggestedSplitPercentage: number | null; // 0..1, null = no consistent split to propose
 }
 
 export function computeCategorizeSuggestions(
   uncategorized: Transaction[],
-  historical: Transaction[] // categoria non-fallback, stesso utente
+  historical: Transaction[] // non-fallback category, same user
 ): CategorizeSuggestion[]
 ```
 
-Algoritmo:
-- Raggruppa `historical` per `description.toLowerCase().trim()`.
-- Per ogni transazione in `uncategorized`, cerca il gruppo con la stessa chiave.
-  - Nessun gruppo → esclusa dal risultato (nessun suggerimento).
-  - Gruppo trovato → categoria vincente = quella con più occorrenze nel gruppo; a parità di conteggio, vince quella della transazione più recente (`date` desc) tra le candidate a pari merito.
-- Percentuale split: tra le sole transazioni del gruppo che hanno la categoria vincente, calcola `excludedAmount / amount` per ciascuna (valore assoluto). Se tutte coincidono (confronto arrotondato a 4 decimali per tolleranza floating point), quella è `suggestedSplitPercentage`. Altrimenti `null`. Un singolo match con categoria vincente conta come "coerente" (percentuale propria).
-- `matchCount` = numero di transazioni nel gruppo con la categoria vincente.
+Algorithm:
+- Group `historical` by `description.toLowerCase().trim()`.
+- For each transaction in `uncategorized`, look for the group with the same key.
+  - No group → excluded from the result (no suggestion).
+  - Group found → winning category = the one with the most occurrences in the group; in case of a tie, the one of the most recent transaction (`date` desc) among the tied candidates wins.
+- Split percentage: among only the group's transactions that have the winning category, compute `excludedAmount / amount` for each (absolute value). If they all coincide (comparison rounded to 4 decimals for floating-point tolerance), that is `suggestedSplitPercentage`. Otherwise `null`. A single match with the winning category counts as "consistent" (its own percentage).
+- `matchCount` = number of transactions in the group with the winning category.
 
-Testato con vitest: gruppo singolo, categoria a maggioranza, pareggio risolto per data più recente, split coerente, split incoerente (→ null), nessun match.
+Tested with vitest: single group, majority category, tie resolved by most recent date, consistent split, inconsistent split (→ null), no match.
 
 ## API
 
 `GET /api/transactions/categorize-suggestions`
-- Auth standard (401 se non autenticato).
-- Query: tutte le transazioni dell'utente con categoria `isFallback = true` (candidate) e tutte quelle con categoria non-fallback (storico) — **nessun filtro periodo**, l'intero storico dell'utente.
-- Richiama `computeCategorizeSuggestions`, ritorna l'array di suggerimenti (JSON, includendo la transazione completa per il rendering nel wizard).
+- Standard auth (401 if not authenticated).
+- Query: all of the user's transactions with an `isFallback = true` category (candidates) and all those with a non-fallback category (history) — **no period filter**, the user's whole history.
+- Calls `computeCategorizeSuggestions`, returns the array of suggestions (JSON, including the full transaction for rendering in the wizard).
 
-Nessun nuovo endpoint di scrittura. L'applicazione di un suggerimento riusa `PATCH /api/transactions/[id]` esistente (già supporta `categoryId` e `excludedAmount` anche su transazioni "auto", con validazione ownership e invariante split).
+No new write endpoint. Applying a suggestion reuses the existing `PATCH /api/transactions/[id]` (it already supports `categoryId` and `excludedAmount` on "auto" transactions too, with ownership validation and the split invariant).
 
-## Data layer client
+## Client data layer
 
-`lib/queries/transactions.ts`: nuovo hook `useCategorizeSuggestionsQuery()`, `useQuery` con `enabled: false` — non parte al mount, solo su `refetch()` esplicito quando il wizard viene aperto.
+`lib/queries/transactions.ts`: new hook `useCategorizeSuggestionsQuery()`, a `useQuery` with `enabled: false` — it does not start on mount, only on an explicit `refetch()` when the wizard is opened.
 
 ## UI
 
-**Bottone** "Categorizza automaticamente" in `ExpensesFilterBar` (o riga sopra la lista transazioni). Sempre visibile e cliccabile.
+**Button** "Categorizza automaticamente" in `ExpensesFilterBar` (or a row above the transaction list). Always visible and clickable.
 
-Al click:
-- `refetch()` dei suggerimenti (stato di caricamento sul bottone).
-- 0 risultati → messaggio inline "Nessuna transazione simile trovata da suggerire", nessun dialog.
-- ≥1 risultato → apre `AutoCategorizeWizard`.
+On click:
+- `refetch()` of the suggestions (loading state on the button).
+- 0 results → inline message "Nessuna transazione simile trovata da suggerire" ("No similar transaction found to suggest"), no dialog.
+- ≥1 result → opens `AutoCategorizeWizard`.
 
-**Nuovo componente** `components/domain/expenses/auto-categorize-wizard.tsx`, dialog (`components/ui/dialog.tsx`) con stato locale `currentIndex` sull'array di suggerimenti ricevuto in prop:
+**New component** `components/domain/expenses/auto-categorize-wizard.tsx`, a dialog (`components/ui/dialog.tsx`) with local `currentIndex` state over the array of suggestions received as a prop:
 
-- Header: "Rivedi categorizzazione (X di N)".
-- Corpo, per il suggerimento corrente:
-  - Descrizione, data, importo della transazione da categorizzare.
-  - Nota "Basato su {matchCount} transazioni passate categorizzate così".
-  - `Select` categoria pre-compilato con `suggestedCategoryId` (stesso pattern con `CategoryAvatar` di `TransactionRow`/`ExpensesFilterBar`), modificabile liberamente prima di confermare.
-  - Editor split locale (stato React, non componente `SplitSlider` esistente — quello committa subito ad ogni interazione su una transazione già a schermo; qui serve stato bufferizzato finché non si preme Conferma): riusa le funzioni pure `clampExcluded`/`computeSplitExcluded` da `split-slider.utils.ts`. Pre-compilato con `suggestedSplitPercentage` (0 se null).
-- Footer: bottone **Salta** (avanza `currentIndex` senza side-effect) e bottone **Conferma** (chiama `useUpdateTransactionMutation` con `{ categoryId, excludedAmount }` dallo stato locale corrente, poi avanza `currentIndex` al successo).
-- `currentIndex === suggestions.length` → schermata di riepilogo ("Applicate X di Y transazioni") con bottone Chiudi.
-- Chiusura anticipata (✕ o overlay click): le conferme già eseguite restano applicate (ogni conferma è già stata una PATCH andata a buon fine, non c'è transazione atomica di gruppo da annullare).
+- Header: "Rivedi categorizzazione (X di N)" ("Review categorisation (X of N)").
+- Body, for the current suggestion:
+  - Description, date, amount of the transaction to categorise.
+  - Note "Basato su {matchCount} transazioni passate categorizzate così" ("Based on {matchCount} past transactions categorised this way").
+  - Category `Select` pre-filled with `suggestedCategoryId` (the same pattern with `CategoryAvatar` as `TransactionRow`/`ExpensesFilterBar`), freely changeable before confirming.
+  - Local split editor (React state, not the existing `SplitSlider` component — that one commits immediately on every interaction on a transaction already on screen; here buffered state is needed until Conferma is pressed): reuses the pure functions `clampExcluded`/`computeSplitExcluded` from `split-slider.utils.ts`. Pre-filled with `suggestedSplitPercentage` (0 if null).
+- Footer: **Salta** (Skip) button (advances `currentIndex` with no side effect) and **Conferma** (Confirm) button (calls `useUpdateTransactionMutation` with `{ categoryId, excludedAmount }` from the current local state, then advances `currentIndex` on success).
+- `currentIndex === suggestions.length` → summary screen ("Applicate X di Y transazioni" — "Applied X of Y transactions") with a Chiudi (Close) button.
+- Early closing (✕ or overlay click): confirmations already performed stay applied (each confirmation was already a successful PATCH, there is no atomic group transaction to roll back).
 
 ## Error handling
 
-- Fallimento del PATCH in uno step: mostra errore inline (stesso pattern `updateMutation.isError` già in uso), non avanza automaticamente — l'utente può ritentare Conferma o Saltare comunque.
-- Fallimento della query di scansione: messaggio d'errore sul bottone, nessun dialog aperto.
+- PATCH failure in a step: show an inline error (the same `updateMutation.isError` pattern already in use), do not advance automatically — the user can retry Conferma or Skip anyway.
+- Scan query failure: error message on the button, no dialog opened.
 
 ## Testing
 
-- Unit test vitest su `computeCategorizeSuggestions` (casi elencati sopra).
-- Route test per `GET /api/transactions/categorize-suggestions` (pattern esistente in `app/api/transactions/route.test.ts`): auth richiesta, esclude transazioni senza match, sceglie categoria a maggioranza, ownership (non deve considerare transazioni di altri utenti).
-- Nessun nuovo test e2e browser (stesso vincolo sandbox già noto per le altre feature Spese/Categorie: verifica manuale utente richiesta a fine implementazione).
+- vitest unit tests on `computeCategorizeSuggestions` (cases listed above).
+- Route test for `GET /api/transactions/categorize-suggestions` (existing pattern in `app/api/transactions/route.test.ts`): auth required, excludes transactions without a match, chooses the majority category, ownership (must not consider other users' transactions).
+- No new browser e2e tests (the same sandbox constraint already known for the other Spese/Categorie features: manual verification by the user required at the end of implementation).

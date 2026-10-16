@@ -1,52 +1,52 @@
-# Fase 5 — Observability: VictoriaMetrics + Loki + Alloy + Grafana — Runbook
+# Phase 5 — Observability: VictoriaMetrics + Loki + Alloy + Grafana — Runbook
 
-**Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` (riga "Fase 5", aggiornata il 2026-09-27: Slack invece di Telegram)
+**Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` ("Fase 5" row, updated on 2026-09-27: Slack instead of Telegram)
 
-**Obiettivo:** metriche e log del cluster in Grafana (VictoriaMetrics come TSDB, Loki per i log, Alloy come agente di raccolta), alert Slack funzionante e un check di uptime esterno. **Criterio di chiusura esplicito della spec**: un alert di prova (pod in crash) arriva su Slack; il check esterno segnala uno spegnimento simulato.
+**Goal:** cluster metrics and logs in Grafana (VictoriaMetrics as TSDB, Loki for logs, Alloy as the collection agent), working Slack alerting and an external uptime check. **Explicit closing criterion from the spec**: a test alert (crashing pod) reaches Slack; the external check reports a simulated shutdown.
 
-## Decisioni tecniche (verificate su doc/repo reali, non a memoria)
+## Technical decisions (verified against real docs/repos, not from memory)
 
-- **VictoriaMetrics single** (`victoria-metrics-single`, repo Helm `https://victoriametrics.github.io/helm-charts/`) invece di Prometheus: stesso protocollo di scrape/remote-write, frazione della RAM — coerente con la scelta già in spec di scartare `kube-prometheus-stack`.
-- **kube-state-metrics** + **prometheus-node-exporter** (repo Helm `https://prometheus-community.github.io/helm-charts`) restano necessari anche con VictoriaMetrics: sono gli esportatori delle metriche del cluster (stato pod/nodi), VictoriaMetrics è solo lo storage — nessuno dei due è incluso nel chart `victoria-metrics-single`.
-- **Grafana Alloy** (successore di Grafana Agent, repo Helm `https://grafana.github.io/helm-charts`) come unico agente di raccolta per metriche (scrape + `prometheus.remote_write` verso VictoriaMetrics) e log (`loki.source.kubernetes` + `loki.write` verso Loki) — un solo DaemonSet invece di due agenti separati, per restare nel budget RAM della spec (~700MB-1GB per l'intero namespace observability).
-- **Loki in modalità Monolithic/filesystem** (stesso chart, il nome storico `SingleBinary` è deprecato ma ancora accettato), storage su PVC — niente object storage S3 per i log: a differenza di Postgres non serve PITR, e tenerlo semplice riduce RAM/complessità. Nessun backup (stesso criterio già usato per Redis in Fase 4: dati operativi, non di sistema).
-- **cAdvisor/metriche container per-pod**: deferito. Il criterio di chiusura della fase richiede solo un alert su pod in crash (da `kube-state-metrics`, che già lo espone) e un check di uptime — non richiede dashboard di CPU/RAM per container. Aggiungerlo dopo, se serve, è un solo blocco di configurazione Alloy in più, non un cambio di architettura.
-- **Grafana**: alerting provisionato via file (`values.yaml` → sezione `alerting`, pattern documentato da Grafana per Helm — contact point Slack + policy di notifica + regola di test), non a mano dalla UI, per restare coerente col principio "tutto dichiarativo e ricostruibile" della spec.
-- **Slack**: incoming webhook creato dall'utente (stesso schema già usato per R2/tunnel — la credenziale vera passa in chat solo per crearla, poi cifrata con SOPS e mai più in chiaro). Nessun bot/comando da Slack verso il cluster (deciso il 2026-09-27, vedi "Rimandato consapevolmente" della spec: solo notifiche, non ChatOps).
-- **Esposizione Grafana**: Tailscale Ingress, stesso pattern di ArgoCD in Fase 3 (`spec.tls[0].hosts[0]` per il nome del device, **non** l'annotazione `tailscale.com/hostname` né `spec.rules[].host` — errore già fatto e corretto in quella fase).
-- **Uptime check esterno**: serve un endpoint pubblico reale da monitorare, ma l'app non è ancora sulla VPS (arriva in Fase 6) — si ricrea un endpoint minimo (`whoami`, stesso pattern del namespace `demo` di Fase 3, già rimosso a fine fase) dietro un sottodominio dedicato, solo per provare la pipeline di alerting esterno. Verrà sostituito dal vero `/api/health` dell'app in Fase 6.
-- **Gestito da ArgoCD** (App-of-Apps, come tutti i componenti dalla Fase 3 in poi): un file in `argocd/apps/` per componente, manifest in `argocd/manifests/<nome>/`.
+- **VictoriaMetrics single** (`victoria-metrics-single`, Helm repo `https://victoriametrics.github.io/helm-charts/`) instead of Prometheus: same scrape/remote-write protocol, a fraction of the RAM — consistent with the spec's existing choice to discard `kube-prometheus-stack`.
+- **kube-state-metrics** + **prometheus-node-exporter** (Helm repo `https://prometheus-community.github.io/helm-charts`) are still needed with VictoriaMetrics: they are the exporters of cluster metrics (pod/node state), VictoriaMetrics is only the storage — neither is included in the `victoria-metrics-single` chart.
+- **Grafana Alloy** (successor of Grafana Agent, Helm repo `https://grafana.github.io/helm-charts`) as the single collection agent for metrics (scrape + `prometheus.remote_write` to VictoriaMetrics) and logs (`loki.source.kubernetes` + `loki.write` to Loki) — one DaemonSet instead of two separate agents, to stay within the spec's RAM budget (~700MB-1GB for the whole observability namespace).
+- **Loki in Monolithic/filesystem mode** (same chart, the historical name `SingleBinary` is deprecated but still accepted), storage on PVC — no S3 object storage for logs: unlike Postgres, no PITR is needed, and keeping it simple reduces RAM/complexity. No backup (same criterion already used for Redis in Phase 4: operational data, not system data).
+- **cAdvisor/per-pod container metrics**: deferred. The phase's closing criterion only requires an alert on a crashing pod (from `kube-state-metrics`, which already exposes it) and an uptime check — it does not require per-container CPU/RAM dashboards. Adding it later, if needed, is just one more Alloy configuration block, not an architecture change.
+- **Grafana**: alerting provisioned via file (`values.yaml` → `alerting` section, pattern documented by Grafana for Helm — Slack contact point + notification policy + test rule), not by hand from the UI, to stay consistent with the spec's "everything declarative and rebuildable" principle.
+- **Slack**: incoming webhook created by the user (same scheme already used for R2/tunnel — the real credential passes through the chat only to create it, then it is encrypted with SOPS and never again in plain text). No bot/commands from Slack to the cluster (decided on 2026-09-27, see "Rimandato consapevolmente" (consciously deferred) in the spec: notifications only, not ChatOps).
+- **Grafana exposure**: Tailscale Ingress, same pattern as ArgoCD in Phase 3 (`spec.tls[0].hosts[0]` for the device name, **not** the `tailscale.com/hostname` annotation nor `spec.rules[].host` — a mistake already made and fixed in that phase).
+- **External uptime check**: a real public endpoint to monitor is needed, but the app is not yet on the VPS (it arrives in Phase 6) — a minimal endpoint is recreated (`whoami`, same pattern as the `demo` namespace from Phase 3, already removed at the end of that phase) behind a dedicated subdomain, only to test the external alerting pipeline. It will be replaced by the app's real `/api/health` in Phase 6.
+- **Managed by ArgoCD** (App-of-Apps, like all components from Phase 3 onward): one file in `argocd/apps/` per component, manifests in `argocd/manifests/<nome>/`.
 
-## Ordine dei passi
+## Order of steps
 
 1. `kube-state-metrics` + `prometheus-node-exporter` (Helm, via ArgoCD).
 2. VictoriaMetrics single (Helm, via ArgoCD).
 3. Loki monolithic/filesystem (Helm, via ArgoCD).
-4. Grafana Alloy (Helm, via ArgoCD) — River config: scrape kube-state-metrics/node-exporter → remote_write VictoriaMetrics; log pod → Loki.
-5. Credenziali Grafana admin + Slack webhook → `Secret` cifrati con SOPS.
-6. Grafana (Helm, via ArgoCD) — datasource VictoriaMetrics + Loki, alerting Slack provisionato via file, esposto via Tailscale Ingress.
-7. **Verifica**: metriche e log reali visibili in Grafana (query dirette, non solo dashboard).
-8. **[criterio di chiusura, parte 1] Alert di prova**: pod in CrashLoopBackOff deliberato → alert arriva su Slack.
-9. **[criterio di chiusura, parte 2] Uptime check esterno**: endpoint pubblico di test + account UptimeRobot/Healthchecks.io dell'utente → spegnimento simulato rilevato.
-10. NetworkPolicy default-deny + `ResourceQuota`/`LimitRange` per il namespace `observability`.
+4. Grafana Alloy (Helm, via ArgoCD) — River config: scrape kube-state-metrics/node-exporter → remote_write VictoriaMetrics; pod logs → Loki.
+5. Grafana admin credentials + Slack webhook → `Secret`s encrypted with SOPS.
+6. Grafana (Helm, via ArgoCD) — VictoriaMetrics + Loki datasources, Slack alerting provisioned via file, exposed via Tailscale Ingress.
+7. **Verification**: real metrics and logs visible in Grafana (direct queries, not just dashboards).
+8. **[closing criterion, part 1] Test alert**: deliberate pod in CrashLoopBackOff → alert reaches Slack.
+9. **[closing criterion, part 2] External uptime check**: public test endpoint + the user's UptimeRobot/Healthchecks.io account → simulated shutdown detected.
+10. Default-deny NetworkPolicy + `ResourceQuota`/`LimitRange` for the `observability` namespace.
 
 ---
 
-### Passo 1 — kube-state-metrics + node-exporter
+### Step 1 — kube-state-metrics + node-exporter
 
-Due `Application` ArgoCD separate verso i chart ufficiali `prometheus-community/kube-state-metrics` e `prometheus-community/prometheus-node-exporter`, namespace `observability`. `prometheus-node-exporter` è un DaemonSet: su un nodo singolo, un solo pod.
+Two separate ArgoCD `Application`s pointing to the official charts `prometheus-community/kube-state-metrics` and `prometheus-community/prometheus-node-exporter`, namespace `observability`. `prometheus-node-exporter` is a DaemonSet: on a single node, a single pod.
 
-**Verifica:** `kubectl get pods -n observability` entrambi `Running`; `kubectl get svc -n observability` mostra `kube-state-metrics:8080` e `prometheus-node-exporter:9100`.
+**Verification:** `kubectl get pods -n observability` both `Running`; `kubectl get svc -n observability` shows `kube-state-metrics:8080` and `prometheus-node-exporter:9100`.
 
 ---
 
-### Passo 2 — VictoriaMetrics single
+### Step 2 — VictoriaMetrics single
 
-`Application` ArgoCD verso il chart `victoria-metrics-single` (repo `https://victoriametrics.github.io/helm-charts/`), namespace `observability`.
+ArgoCD `Application` pointing to the `victoria-metrics-single` chart (repo `https://victoriametrics.github.io/helm-charts/`), namespace `observability`.
 
 ```yaml
 server:
-  retentionPeriod: "3"   # 3 mesi, coerente col disco NVMe da 100GB condiviso con Postgres
+  retentionPeriod: "3"   # 3 months, consistent with the 100GB NVMe disk shared with Postgres
   persistentVolume:
     enabled: true
     size: 10Gi
@@ -55,13 +55,13 @@ server:
     limits: { cpu: 300m, memory: 400Mi }
 ```
 
-**Verifica:** `kubectl get pods -n observability` → pod `vmsingle` (o simile, dipende dal nome release) `Running`; `curl http://<pod-ip>:8428/health` (via `kubectl exec` o port-forward) → `OK`.
+**Verification:** `kubectl get pods -n observability` → `vmsingle` pod (or similar, depends on the release name) `Running`; `curl http://<pod-ip>:8428/health` (via `kubectl exec` or port-forward) → `OK`.
 
 ---
 
-### Passo 3 — Loki (monolithic, filesystem)
+### Step 3 — Loki (monolithic, filesystem)
 
-`Application` ArgoCD verso il chart `grafana/loki`, namespace `observability`, modalità monolitica con storage su filesystem (PVC), nessun MinIO/S3 (il subchart MinIO è deprecato e non serve qui).
+ArgoCD `Application` pointing to the `grafana/loki` chart, namespace `observability`, monolithic mode with filesystem storage (PVC), no MinIO/S3 (the MinIO subchart is deprecated and not needed here).
 
 ```yaml
 loki:
@@ -86,13 +86,13 @@ singleBinary:
     limits: { cpu: 300m, memory: 400Mi }
 ```
 
-**Verifica:** `kubectl get pods -n observability` → pod `loki-0` (o simile) `Running`; `kubectl get svc -n observability` mostra il servizio `loki` (endpoint push `/loki/api/v1/push`) e `loki-gateway` se il chart lo crea.
+**Verification:** `kubectl get pods -n observability` → `loki-0` pod (or similar) `Running`; `kubectl get svc -n observability` shows the `loki` service (push endpoint `/loki/api/v1/push`) and `loki-gateway` if the chart creates it.
 
 ---
 
-### Passo 4 — Grafana Alloy
+### Step 4 — Grafana Alloy
 
-`Application` ArgoCD verso il chart `grafana/alloy`, namespace `observability`, `controller.type: daemonset` (default). Config River in `alloy.configMap.content`:
+ArgoCD `Application` pointing to the `grafana/alloy` chart, namespace `observability`, `controller.type: daemonset` (default). River config in `alloy.configMap.content`:
 
 ```river
 discovery.kubernetes "pods" {
@@ -144,17 +144,17 @@ prometheus.remote_write "vm" {
 }
 ```
 
-I nomi esatti dei Service (`loki`, `vmsingle-victoria-metrics-single-server`) dipendono dal nome della release Helm data ai chart dei Passi 2-3: verificarli con `kubectl get svc -n observability` prima di scrivere questo ConfigMap, non assumerli.
+The exact Service names (`loki`, `vmsingle-victoria-metrics-single-server`) depend on the Helm release name given to the charts in Steps 2-3: verify them with `kubectl get svc -n observability` before writing this ConfigMap, do not assume them.
 
-**Verifica:** `kubectl get pods -n observability -l app.kubernetes.io/name=alloy` `Running` su ogni nodo; nessun errore di connessione nei log Alloy verso Loki/VictoriaMetrics (`kubectl logs`).
+**Verification:** `kubectl get pods -n observability -l app.kubernetes.io/name=alloy` `Running` on every node; no connection errors in the Alloy logs towards Loki/VictoriaMetrics (`kubectl logs`).
 
 ---
 
-### Passo 5 — Credenziali (Grafana admin + Slack webhook)
+### Step 5 — Credentials (Grafana admin + Slack webhook)
 
-Password Grafana: generata dall'utente, mai in chiaro nel repo — `Secret` con chiavi `admin-user`/`admin-password`, cifrato con SOPS, referenziato da `admin.existingSecret` nei values di Grafana (Passo 6). Stesso schema già usato per R2/credenziali tunnel nelle fasi precedenti.
+Grafana password: generated by the user, never in plain text in the repo — `Secret` with keys `admin-user`/`admin-password`, encrypted with SOPS, referenced by `admin.existingSecret` in the Grafana values (Step 6). Same scheme already used for R2/tunnel credentials in the previous phases.
 
-Slack: l'utente crea una Slack App con un **Incoming Webhook** (o usa un webhook esistente) sul workspace/canale scelto per gli alert. L'URL del webhook è un segreto vero (chi lo ha può postare come il bot) — lo recupero in chat solo per crearne il `Secret`, poi cifro con SOPS.
+Slack: the user creates a Slack App with an **Incoming Webhook** (or uses an existing webhook) on the workspace/channel chosen for alerts. The webhook URL is a real secret (whoever has it can post as the bot) — I get it in the chat only to create its `Secret`, then encrypt it with SOPS.
 
 ```yaml
 apiVersion: v1
@@ -167,13 +167,13 @@ stringData:
   url: "https://hooks.slack.com/services/..."
 ```
 
-**Verifica:** `sops -d` sul file cifrato ricostruisce l'URL corretto; nessun segreto in chiaro rimasto su disco fuori dal repo cifrato.
+**Verification:** `sops -d` on the encrypted file rebuilds the correct URL; no plain-text secret left on disk outside the encrypted repo.
 
 ---
 
-### Passo 6 — Grafana
+### Step 6 — Grafana
 
-`Application` ArgoCD verso il chart `grafana/grafana`, namespace `observability`.
+ArgoCD `Application` pointing to the `grafana/grafana` chart, namespace `observability`.
 
 ```yaml
 admin:
@@ -203,7 +203,7 @@ alerting:
           - uid: slack1
             type: slack
             settings:
-              url: "${SLACK_WEBHOOK_URL}"   # da extraSecretEnv, letto dal Secret del Passo 5
+              url: "${SLACK_WEBHOOK_URL}"   # from extraSecretEnv, read from the Secret of Step 5
   policies.yaml:
     apiVersion: 1
     policies:
@@ -222,7 +222,7 @@ alerting:
             condition: C
             data:
               - refId: A
-                datasourceUid: <uid VictoriaMetrics, da recuperare dopo il deploy>
+                datasourceUid: <VictoriaMetrics uid, to be retrieved after the deploy>
                 model:
                   expr: 'kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"}'
               - refId: C
@@ -236,7 +236,7 @@ alerting:
             execErrState: Alerting
             for: 1m
 
-envFromSecret: grafana-slack-webhook   # espone SLACK_WEBHOOK_URL come GF_... o var mappata; verificare sintassi esatta del chart al momento del deploy
+envFromSecret: grafana-slack-webhook   # exposes SLACK_WEBHOOK_URL as GF_... or a mapped var; verify the chart's exact syntax at deploy time
 
 ingress:
   enabled: true
@@ -244,59 +244,59 @@ ingress:
   hosts: []
   tls:
     - hosts:
-        - grafana   # nome del device Tailscale, stesso pattern di ArgoCD in Fase 3
+        - grafana   # Tailscale device name, same pattern as ArgoCD in Phase 3
 ```
 
-Il campo `datasourceUid` della regola va risolto con l'UID reale del datasource VictoriaMetrics dopo il primo deploy (`kubectl exec` in Grafana o UI, one-off da annotare nel manifest prima del commit finale) — non è indovinabile prima che Grafana esista.
+The rule's `datasourceUid` field must be resolved with the real UID of the VictoriaMetrics datasource after the first deploy (`kubectl exec` into Grafana or the UI, a one-off to note in the manifest before the final commit) — it cannot be guessed before Grafana exists.
 
-**Verifica:** `kubectl get pods -n observability -l app.kubernetes.io/name=grafana` `Running`; login su `https://grafana.<tailnet>.ts.net` (via Tailscale) con le credenziali del Passo 5; datasource VictoriaMetrics e Loki mostrano "connesso" in **Connections → Data sources**.
-
----
-
-### Passo 7 — Verifica metriche e log reali
-
-- In Grafana → **Explore**, datasource VictoriaMetrics: query `up` deve mostrare i target Alloy scrape (kube-state-metrics, node-exporter).
-- In Grafana → **Explore**, datasource Loki: query `{namespace="observability"}` deve mostrare log reali (es. i log di Alloy stesso).
-
-Se una delle due è vuota, il problema è nella pipeline Alloy (Passo 4) — non procedere al Passo 8 senza dati reali, altrimenti l'alert di prova non potrebbe funzionare comunque.
+**Verification:** `kubectl get pods -n observability -l app.kubernetes.io/name=grafana` `Running`; login at `https://grafana.<tailnet>.ts.net` (via Tailscale) with the credentials from Step 5; the VictoriaMetrics and Loki datasources show "connected" in **Connections → Data sources**.
 
 ---
 
-### Passo 8 — Alert di prova (criterio di chiusura, parte 1)
+### Step 7 — Verify real metrics and logs
+
+- In Grafana → **Explore**, VictoriaMetrics datasource: the `up` query must show the Alloy scrape targets (kube-state-metrics, node-exporter).
+- In Grafana → **Explore**, Loki datasource: the `{namespace="observability"}` query must show real logs (e.g. Alloy's own logs).
+
+If either is empty, the problem is in the Alloy pipeline (Step 4) — do not proceed to Step 8 without real data, otherwise the test alert could not work anyway.
+
+---
+
+### Step 8 — Test alert (closing criterion, part 1)
 
 ```
 kubectl run crash-test --image=busybox -n observability -- sh -c "exit 1"
 ```
 
-Questo pod entra in `CrashLoopBackOff` per design (comando che esce subito, riavviato all'infinito da Kubernetes).
+This pod goes into `CrashLoopBackOff` by design (a command that exits immediately, restarted forever by Kubernetes).
 
-**Verifica:** entro ~1-2 minuti (intervallo di valutazione della regola, Passo 6) un messaggio arriva sul canale Slack configurato. Poi:
+**Verification:** within ~1-2 minutes (the rule's evaluation interval, Step 6) a message reaches the configured Slack channel. Then:
 ```
 kubectl delete pod crash-test -n observability
 ```
 
-Se l'alert non arriva: controllare **Alerting → Alert rules** in Grafana per lo stato della regola (`Pending`/`Firing`/`Error`) prima di ipotizzare un problema di rete verso Slack.
+If the alert does not arrive: check **Alerting → Alert rules** in Grafana for the rule's state (`Pending`/`Firing`/`Error`) before assuming a network problem towards Slack.
 
 ---
 
-### Passo 9 — Uptime check esterno (criterio di chiusura, parte 2)
+### Step 9 — External uptime check (closing criterion, part 2)
 
-Endpoint pubblico minimo di test (stesso pattern `whoami` del namespace `demo` di Fase 3), namespace dedicato `uptime-test`, esposto su un sottodominio (es. `status.buddybudget.io`) tramite lo stesso `cloudflared`+Traefik già configurato — nessuna modifica al tunnel, solo un nuovo `IngressRoute` e una voce DNS Cloudflare.
+Minimal public test endpoint (same `whoami` pattern as the `demo` namespace from Phase 3), dedicated namespace `uptime-test`, exposed on a subdomain (e.g. `status.buddybudget.io`) through the same `cloudflared`+Traefik already configured — no change to the tunnel, just a new `IngressRoute` and a Cloudflare DNS entry.
 
-L'utente crea un monitor su **UptimeRobot** o **Healthchecks.io** (account esterno, decisione già presa in spec) puntato su `https://status.buddybudget.io`.
+The user creates a monitor on **UptimeRobot** or **Healthchecks.io** (external account, decision already taken in the spec) pointing at `https://status.buddybudget.io`.
 
-**Verifica:** il monitor esterno segnala "up". Poi, spegnimento simulato:
+**Verification:** the external monitor reports "up". Then, simulated shutdown:
 ```
 kubectl scale deployment whoami -n uptime-test --replicas=0
 ```
-Il monitor esterno deve segnalare "down" entro il suo intervallo di check. Ripristinare con `--replicas=1` a verifica completata; il namespace `uptime-test` resta (a differenza del `demo` di Fase 3) perché serve ancora come target del monitor esterno finché l'app reale non lo sostituisce in Fase 6 — a quel punto si aggiorna il monitor per puntare a `/api/health` e si rimuove questo namespace.
+The external monitor must report "down" within its check interval. Restore with `--replicas=1` once the verification is done; the `uptime-test` namespace stays (unlike the `demo` one from Phase 3) because it is still needed as the external monitor's target until the real app replaces it in Phase 6 — at that point the monitor is updated to point to `/api/health` and this namespace is removed.
 
 ---
 
-### Passo 10 — NetworkPolicy + quote
+### Step 10 — NetworkPolicy + quotas
 
-Stesso schema delle fasi precedenti: `default-deny-ingress` sul namespace `observability`, con eccezione esplicita per il traffico Alloy → Loki/VictoriaMetrics (stesso namespace, quindi copre già la maggior parte) e per l'ingress Tailscale verso Grafana. `ResourceQuota`/`LimitRange` con margine sopra l'uso osservato a fine fase (obiettivo di budget della spec: ~700MB-1GB per l'intero namespace).
+Same scheme as the previous phases: `default-deny-ingress` on the `observability` namespace, with an explicit exception for Alloy → Loki/VictoriaMetrics traffic (same namespace, so it already covers most of it) and for the Tailscale ingress to Grafana. `ResourceQuota`/`LimitRange` with headroom above the usage observed at the end of the phase (the spec's budget target: ~700MB-1GB for the whole namespace).
 
-## Fine fase
+## End of phase
 
-Aggiornare CLAUDE.md con l'esito (incluso l'esito reale dell'alert di prova e del check di uptime, non solo "fatto"). Prossimo passo: piano della **Fase 6** (app in parallelo — deploy su sottodominio di prova con copia dati Neon, CronJob, Umami, aggiornamento tag automatico).
+Update CLAUDE.md with the outcome (including the real outcome of the test alert and the uptime check, not just "done"). Next step: the **Phase 6** plan (app in parallel — deploy on a test subdomain with a copy of the Neon data, CronJob, Umami, automatic tag update).

@@ -1,118 +1,118 @@
-# Fase 1 — Account e fondamenta — Runbook
+# Phase 1 — Accounts and foundations — Runbook
 
-**Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` (riga "Fase 1" della tabella Fasi)
+**Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` ("Fase 1" row of the Phases table)
 
-**Obiettivo:** avere tutti gli account e le credenziali necessari alle fasi successive, prima di toccare qualunque server. Nessun codice in questa fase: solo account, chiavi, un acquisto.
+**Goal:** have all the accounts and credentials the following phases need, before touching any server. No code in this phase: only accounts, keys, one purchase.
 
-**Formato:** runbook guidato, come la Fase 0. Ogni passo marcato **👤 UTENTE** lo esegui tu (pannelli, acquisti, generazione chiavi); io spiego il perché, verifico l'output e do il via al passo successivo. Le credenziali vere non passano mai in chiaro nella chat: dove serve, uso lo stesso schema "incollale in un terminale tuo" già usato in Fase 0.
+**Format:** guided runbook, like Phase 0. Each step marked **👤 UTENTE** (user) is carried out by you (dashboards, purchases, key generation); I explain why, check the output and give the go-ahead for the next step. Real credentials never pass in clear text through the chat: where needed, I use the same "paste them into a terminal of yours" pattern already used in Phase 0.
 
-**Criterio di completamento** (dalla spec): tutti gli account esistono, credenziali salvate in un password manager.
+**Completion criterion** (from the spec): all accounts exist, credentials saved in a password manager.
 
-## Ordine dei passi e perché
+## Order of the steps and why
 
-1. **Dominio + Cloudflare** prima di tutto: serve come base per Tunnel, DNS, e più avanti i certificati.
-2. **Tailscale**: indipendente, va fatto comunque prima di avere una VPS da proteggere.
-3. **Cloudflare R2**: indipendente, serve ai backup di CNPG in Fase 4 ma le chiavi si generano ora.
-4. **Chiave age**: indipendente, serve a SOPS in Fase 3.
-5. **Acquisto VPS**: ultimo passo a pagamento, dopo aver deciso dominio/regione.
-6. **Repo `buddy-budget-infra`**: contenitore vuoto per ora, riempito dalla Fase 2 in poi.
+1. **Domain + Cloudflare** before anything else: it is the base for the Tunnel, DNS, and later on the certificates.
+2. **Tailscale**: independent, but should be done anyway before having a VPS to protect.
+3. **Cloudflare R2**: independent, needed for CNPG backups in Phase 4, but the keys are generated now.
+4. **age key**: independent, needed for SOPS in Phase 3.
+5. **VPS purchase**: last paid step, after deciding on domain/region.
+6. **`buddy-budget-infra` repo**: empty container for now, filled from Phase 2 onwards.
 
 ---
 
-### Passo 1 — Dominio su Cloudflare
+### Step 1 — Domain on Cloudflare
 
 **👤 UTENTE:**
-1. Se non hai già un dominio per BuddyBudget, registralo (su Cloudflare Registrar o altrove — se altrove, lo aggiungi comunque a Cloudflare al punto 2). Un dominio `.dev`/`.app`/`.com` qualsiasi va bene; non deve essere quello finale per sempre.
-2. Vai su [dash.cloudflare.com](https://dash.cloudflare.com) → **Aggiungi un sito** → inserisci il dominio → piano **Free**.
-3. Cloudflare mostra due **nameserver** (es. `ada.ns.cloudflare.com`, `bob.ns.cloudflare.com`). Vai dal registrar del dominio (dove l'hai comprato) e sostituisci i nameserver con quelli di Cloudflare.
-4. Torna su Cloudflare e attendi che lo stato del sito passi da "In attesa" ad **Attivo** (può richiedere da minuti a qualche ora).
+1. If you don't already have a domain for BuddyBudget, register one (on Cloudflare Registrar or elsewhere — if elsewhere, you still add it to Cloudflare in point 2). Any `.dev`/`.app`/`.com` domain is fine; it doesn't have to be the final one forever.
+2. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Add a site** → enter the domain → **Free** plan.
+3. Cloudflare shows two **nameservers** (e.g. `ada.ns.cloudflare.com`, `bob.ns.cloudflare.com`). Go to the domain's registrar (where you bought it) and replace the nameservers with Cloudflare's.
+4. Go back to Cloudflare and wait for the site status to change from "Pending" to **Active** (it can take from minutes to a few hours).
 
-**Dimmi quando è "Attivo"** e il nome del dominio (il nome è pubblico, nessun problema a scriverlo qui).
+**Tell me when it is "Active"** and the domain name (the name is public, no problem writing it here).
 
 ---
 
-### Passo 2 — Tailscale
+### Step 2 — Tailscale
 
 **👤 UTENTE:**
-1. Crea un account su [tailscale.com](https://tailscale.com) (login con Google/GitHub va bene, piano **Personal**, gratis).
-2. Installa il client Tailscale sul tuo PC (Windows) e fai login: [tailscale.com/download](https://tailscale.com/download/windows).
-3. Verifica che sia connesso: icona Tailscale nella system tray, stato "Connected".
-4. Nella dashboard Tailscale ([login.tailscale.com/admin/machines](https://login.tailscale.com/admin/machines)) dovresti vedere il tuo PC in elenco.
+1. Create an account on [tailscale.com](https://tailscale.com) (login with Google/GitHub is fine, **Personal** plan, free).
+2. Install the Tailscale client on your PC (Windows) and log in: [tailscale.com/download](https://tailscale.com/download/windows).
+3. Check that it is connected: Tailscale icon in the system tray, status "Connected".
+4. In the Tailscale dashboard ([login.tailscale.com/admin/machines](https://login.tailscale.com/admin/machines)) you should see your PC in the list.
 
-Non serve ancora creare nodi per la VPS: lo farà il playbook Ansible in Fase 2, che installerà Tailscale anche lì.
+There's no need to create nodes for the VPS yet: the Ansible playbook in Phase 2 will do it, installing Tailscale there too.
 
-**Dimmi quando il tuo PC compare nell'elenco delle macchine.**
+**Tell me when your PC shows up in the machine list.**
 
 ---
 
-### Passo 3 — Cloudflare R2 (storage per i backup)
+### Step 3 — Cloudflare R2 (storage for backups)
 
 **👤 UTENTE:**
-1. Dashboard Cloudflare → **R2 Object Storage** (menu laterale) → attivalo se richiesto (serve una carta, ma il piano gratuito da 10GB non addebita nulla finché non superi la soglia).
-2. **Crea bucket** → nome `buddybudget-backups` → location automatica.
-3. **Gestisci token API R2** (nella stessa pagina R2, non nei token account generali) → **Crea token API**:
-   - Permessi: **Modifica oggetti** (lettura e scrittura), limitato al bucket `buddybudget-backups`.
-   - Genera. Cloudflare mostra **una sola volta**: Access Key ID, Secret Access Key, e l'endpoint S3 (tipo `https://<account-id>.r2.cloudflarestorage.com`).
-4. Salva le tre informazioni in un password manager, con etichetta "R2 buddybudget-backups". **Non incollarle qui.**
+1. Cloudflare dashboard → **R2 Object Storage** (side menu) → enable it if asked (a card is required, but the 10GB free plan charges nothing until you exceed the threshold).
+2. **Create bucket** → name `buddybudget-backups` → automatic location.
+3. **Manage R2 API tokens** (on the same R2 page, not in the general account tokens) → **Create API token**:
+   - Permissions: **Object Read & Write**, limited to the `buddybudget-backups` bucket.
+   - Generate. Cloudflare shows **only once**: Access Key ID, Secret Access Key, and the S3 endpoint (like `https://<account-id>.r2.cloudflarestorage.com`).
+4. Save the three pieces of information in a password manager, labelled "R2 buddybudget-backups". **Don't paste them here.**
 
-**Dimmi solo "fatto"** quando il bucket esiste e le chiavi sono salvate. Verificheremo che funzionino davvero quando configureremo CNPG in Fase 4 (test di scrittura reale), non ora.
+**Just tell me "done"** when the bucket exists and the keys are saved. We'll check that they really work when we configure CNPG in Phase 4 (real write test), not now.
 
 ---
 
-### Passo 4 — Chiave age (root dei segreti cifrati)
+### Step 4 — age key (root of the encrypted secrets)
 
-Questa è l'unica chiave che, se persa, rende irrecuperabili tutti i segreti cifrati nel repo infra (a meno di rigenerarli uno per uno). Va generata **da te**, in locale, e **non deve mai finire in chat, in un repo o in un file sincronizzato senza cifratura**.
+This is the only key that, if lost, makes all the encrypted secrets in the infra repo unrecoverable (short of regenerating them one by one). It must be generated **by you**, locally, and **must never end up in the chat, in a repo or in a file synced without encryption**.
 
 **👤 UTENTE**, in Git Bash:
 ```bash
-# Installa age (una volta sola)
+# Install age (once only)
 winget install FiloSottile.age
 ```
-Poi, in una cartella **fuori** dal repo (es. `~/secrets/`):
+Then, in a folder **outside** the repo (e.g. `~/secrets/`):
 ```bash
 mkdir -p ~/secrets && cd ~/secrets
 age-keygen -o buddybudget-age-key.txt
 cat buddybudget-age-key.txt
 ```
-Il file contiene due righe: un commento con la **chiave pubblica** (`# public key: age1...`) e la **chiave privata** (`AGE-SECRET-KEY-1...`).
+The file contains two lines: a comment with the **public key** (`# public key: age1...`) and the **private key** (`AGE-SECRET-KEY-1...`).
 
-1. Copia la riga della chiave pubblica (quella `age1...`) e incollamela qui: non è un segreto, serve a me per configurare SOPS in Fase 3.
-2. La chiave privata **resta solo su questo file**: salvala nel password manager (voce "age key BuddyBudget infra", incolla tutto il contenuto del file) e fanne una copia offline (es. su una chiavetta USB, o stampata e conservata al sicuro). Se vuoi, posso indicarti come cifrare un backup di quel file — dimmelo.
-3. Da qui in poi il file `~/secrets/buddybudget-age-key.txt` non serve più nel repo: lo useremo solo per decifrare in locale se necessario.
+1. Copy the public key line (the `age1...` one) and paste it here: it is not a secret, I need it to configure SOPS in Phase 3.
+2. The private key **stays only in this file**: save it in the password manager (entry "age key BuddyBudget infra", paste the whole content of the file) and make an offline copy (e.g. on a USB stick, or printed and kept somewhere safe). If you want, I can show you how to encrypt a backup of that file — just tell me.
+3. From here on the `~/secrets/buddybudget-age-key.txt` file is not needed in the repo: we'll only use it to decrypt locally if necessary.
 
-**Dimmi la chiave pubblica** e conferma che hai salvato la privata in almeno due posti.
+**Tell me the public key** and confirm that you saved the private one in at least two places.
 
 ---
 
-### Passo 5 — Repo `buddy-budget-infra`
+### Step 5 — `buddy-budget-infra` repo
 
 **👤 UTENTE:**
-1. Su GitHub, crea un nuovo repository **privato** chiamato `buddy-budget-infra` (stesso account/organizzazione di `buddy-budget`).
-2. Non serve inizializzarlo con nulla (niente README, niente `.gitignore`): resta vuoto per ora, lo popoliamo dalla Fase 2 in poi.
+1. On GitHub, create a new **private** repository called `buddy-budget-infra` (same account/organization as `buddy-budget`).
+2. No need to initialize it with anything (no README, no `.gitignore`): it stays empty for now, we fill it from Phase 2 onwards.
 
-**Dimmi quando esiste** (o incollami l'URL, es. `https://github.com/YonderUrik/buddy-budget-infra`) e verifico che sia raggiungibile e privato.
+**Tell me when it exists** (or paste me the URL, e.g. `https://github.com/YonderUrik/buddy-budget-infra`) and I'll check that it is reachable and private.
 
 ---
 
-### Passo 6 — Acquisto VPS Hostinger
+### Step 6 — Hostinger VPS purchase
 
-Fallo per ultimo, quando i passi 1-5 sono confermati: eviti di pagare l'hosting mentre sistemi ancora account gratuiti.
+Do it last, once steps 1-5 are confirmed: you avoid paying for hosting while you are still setting up free accounts.
 
 **👤 UTENTE:**
-1. Vai su [hostinger.it](https://www.hostinger.it) → VPS → scegli il piano con **2 vCPU / 8GB RAM / 100GB NVMe**.
-2. **Prima di pagare**, verifica e scrivimi:
-   - il **prezzo di rinnovo** (non quello scontato al primo checkout) — di solito visibile in piccolo o nel riepilogo carrello;
-   - il **datacenter disponibile** — scegli uno in UE (es. Paesi Bassi, Germania, Lituania — Hostinger di solito elenca le location nel setup);
-   - se propone di scegliere l'immagine subito: scegli **Ubuntu 24.04 LTS** (senza pannelli tipo CyberPanel/Plesk: ci mette k3s Ansible, non serve un pannello).
-3. Completa l'acquisto.
-4. Dal pannello Hostinger (hPanel → VPS → il tuo server) recupera: **indirizzo IP pubblico** e, se disponibile, la possibilità di impostare una password di root o una chiave SSH in fase di creazione — **scegli chiave SSH se te lo chiede**, non password (più sicuro, e coerente con quanto faremo con Ansible in Fase 2).
+1. Go to [hostinger.it](https://www.hostinger.it) → VPS → choose the plan with **2 vCPU / 8GB RAM / 100GB NVMe**.
+2. **Before paying**, check and write to me:
+   - the **renewal price** (not the discounted one at first checkout) — usually shown in small print or in the cart summary;
+   - the **available datacenter** — choose one in the EU (e.g. Netherlands, Germany, Lithuania — Hostinger usually lists the locations during setup);
+   - if it offers to choose the image right away: choose **Ubuntu 24.04 LTS** (without panels like CyberPanel/Plesk: Ansible puts k3s on it, no panel needed).
+3. Complete the purchase.
+4. From the Hostinger panel (hPanel → VPS → your server) retrieve: **public IP address** and, if available, the option to set a root password or an SSH key at creation time — **choose an SSH key if asked**, not a password (more secure, and consistent with what we'll do with Ansible in Phase 2).
 
-Se non hai ancora una coppia di chiavi SSH sul tuo PC, fammelo sapere prima di arrivare a questo punto: te la genero con un comando, così la carichi su Hostinger al momento del setup.
+If you don't have an SSH key pair on your PC yet, let me know before getting to this point: I'll generate one with a command, so you can upload it to Hostinger during setup.
 
-**Dimmi**: prezzo di rinnovo, datacenter scelto, e (quando pronto) l'IP pubblico della VPS.
+**Tell me**: renewal price, chosen datacenter, and (when ready) the public IP of the VPS.
 
 ---
 
-## Fine fase
+## End of phase
 
-Quando tutti e 6 i passi sono confermati, aggiorno CLAUDE.md (stato del progetto + log delle decisioni) con dominio, presenza degli account e IP della VPS, e prepariamo il piano della **Fase 2** (Ansible: hardening dell'host + k3s).
+When all 6 steps are confirmed, I update CLAUDE.md (project status + decision log) with the domain, the existence of the accounts and the VPS IP, and we prepare the plan for **Phase 2** (Ansible: host hardening + k3s).

@@ -1,339 +1,341 @@
 # BuddyBudget
 
-App di gestione finanziaria personale. Multi-lingua e multi-valuta: lingua e valuta sono scelte dall'utente in fase di onboarding (default italiano/EUR, non hardcoded). Paese del prodotto e lingua sono indipendenti: Italia (italiano/inglese), Germania (tedesco/inglese). Germania: inflazione nazionale integrata; funzioni essenziali, proventi e tasse 2026 parziali in EUR. Pensione, AVD, pensionamento e simulatori avanzati sono conservati ma nascosti fino alla revisione del prodotto (switch centralizzati in `lib/localization/planning-availability.ts`). Le API italiane pensione/TFR e analitiche restano bloccate in DE. Ambito, limiti e verifica: `docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md`.
+Personal finance management app. Multi-language and multi-currency: language and currency are chosen by the user during onboarding (default Italian/EUR, not hardcoded). Product country and language are independent: Italy (Italian/English), Germany (German/English). Germany: national inflation integrated; essential features, income and 2026 taxes partially available in EUR. Pension, AVD (German private pension product), retirement and advanced simulators are kept but hidden until the product review (central switches in `lib/localization/planning-availability.ts`). The Italian pension/TFR (Italian severance pay) and analytics APIs stay blocked in DE. Scope, limits and verification: `docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md`.
 
-## Regole per Claude
+## Rules for Claude
 
-- **Operazioni git libere** (decisione del 2026-07-21, revoca la regola precedente): Claude può eseguire qualunque comando git in questa repo, incluse operazioni prima riservate all'utente (`merge`, `push`, `branch -d`, rimozione worktree, ecc.), senza dover chiedere conferma ogni volta. Restano valide le linee guida generali di cautela per azioni distruttive/difficili da annullare (es. confermare prima di `push --force`, `reset --hard`, eliminare branch con lavoro non mergiato).
-- **Schema DB solo via migration versionate** (decisione del 2026-09-26, Fase 0 migrazione VPS): `db:push` non esiste più. Ogni modifica allo schema (`lib/db/schema/`) richiede `pnpm db:generate` + migration committata + `pnpm db:migrate` sul DB di sviluppo, poi (finché si è su Neon) sul DB di produzione **prima** del merge che la usa.
-- **Fai domande di approfondimento solo quando la richiesta è ambigua o ha un impatto rilevante** (scelte architetturali, comportamento non specificato, più interpretazioni plausibili). Per richieste chiare o di portata limitata, procedi direttamente senza chiedere conferma: l'obiettivo è non rallentare il lavoro con domande superflue.
-- **Ogni feature, bug, debito tecnico, task o verifica manuale va segnato su Slack** (decisione del 2026-09-27): nella Slack List "BuddyBudget — Backlog" (https://buddybudget.slack.com/lists/T0C5LCECH6U/F0C4THFDKD0, canale privato `#bb-backlog`, id `C0C4THFBUBU`). Vale sia per gli elementi nuovi (idea, bug trovato, debito emerso in una review, scope rimandato) sia per i cambi di stato (Da fare → In corso → Fatto, Sospeso, Scartato) — a fine lavoro va aggiornata la riga corrispondente. Finché il connettore Slack non permette di aggiungere righe alla lista (oggi `add_list_record` fallisce con `bot_not_found`), Claude pubblica l'elemento o l'aggiornamento come messaggio in `#bb-backlog` (titolo, tipo, stato, priorità, area, perché, link) e lo segnala all'utente, che lo riporta nella lista. Non sostituisce il log delle decisioni qui sotto: la lista dice *cosa* c'è da fare e a che punto è, il log *perché* si è deciso.
-- **Ogni feature nuova o cambiata aggiorna la landing** (decisione del 2026-10-01): `lib/features/catalog.ts` è l'unico elenco delle funzioni (landing su buddybudget.io, test della sidebar). Quando una funzione viene rilasciata, cambia o viene pianificata si aggiorna quel file e si lancia `pnpm sync:features` in `landing/` (la CI fallisce se la copia generata diverge); se cambia il racconto (passi del tour in `landing/content/site.ts`, righe del confronto) si aggiorna anche quello. Una feature non è "completata" finché la landing non la riflette, e la PR lo dichiara (anche solo "nessun impatto sulla landing").
-- **Le schermate della landing sono screenshot dell'app vera** (decisione del 2026-10-01): `landing/public/screens/` si genera con `pnpm demo:seed` + `pnpm capture:screens` (guida `docs/landing-screens.md`). Chi cambia in modo visibile una schermata elencata in `landing/content/screens.ts` rigenera gli screenshot nella stessa PR; il test `screens.test.ts` controlla solo che route e file esistano.
-- **Titoli delle PR in Conventional Commits** (decisione del 2026-10-03): `feat: …` (nuova funzione, alza il minor), `fix: …`/`perf: …` (patch), `refactor:`/`docs:`/`chore:`/`ci:`/`test:`/`build:` (nessuna release); `!` dopo il tipo per i cambi incompatibili. Il titolo diventa il commit di squash e release-please ne ricava versione e CHANGELOG (`docs/rilasci.md`). Una check (`Titolo PR`) lo verifica.
-- **Mantieni questo file aggiornato.** Ogni volta che viene presa una decisione di progetto, cambiata una scelta tecnica, o completata una fase di lavoro rilevante, aggiungi una voce breve (3-8 righe) come **nuovo file** in [`docs/decisioni/`](docs/decisioni/) (`AAAA-MM-GG-titolo.md`, uno per PR: niente più voce in cima a un file condiviso, evita i conflitti tra PR parallele) e aggiorna "Stato del progetto" qui sotto se cambia lo stato generale. I dettagli di un lavoro vanno nella sua spec/piano in `docs/superpowers/`, non qui. L'obiettivo è che una nuova chat possa leggere questo file e avere subito il contesto, senza dover richiedere all'utente di ripetere spiegazioni già date.
-- **Tieni sempre traccia esplicita di tre cose, in "Stato del progetto" e/o nei documenti di spec/piano collegati**: (1) cosa si sta facendo adesso, (2) cosa si è deciso consapevolmente di saltare/rimandare e perché, (3) cosa è previsto in futuro e quando tornarci. Non lasciare che uno scope tagliato o un piano messo in pausa si perda nella conversazione: se un piano viene sospeso (es. per cambiare priorità), aggiorna il suo stato nel file stesso invece di lasciarlo silenziosamente incompleto.
+- **English is the repository language** (decision of 2026-10-15, `docs/decisioni/2026-10-15-english-as-repo-language.md`): code comments and JSDoc, commit messages, PR titles and descriptions, issues, decision entries, specs, plans, runbooks and every other piece of documentation are written in English, in this repo and in `buddy-budget-infra`. Only user-facing text stays in Italian (app and landing UI, translation catalogs, legal pages, emails and notifications to users). When you touch a file that still has Italian comments, translate the ones you change. Italian tax terms (zainetto fiscale, regime amministrato, TFR...) keep their original name with a short English explanation. Replies to Daniele in the project chat stay in Italian.
+- **Free git operations** (decision of 2026-07-21, revokes the previous rule): Claude may run any git command in this repo, including operations previously reserved to the user (`merge`, `push`, `branch -d`, worktree removal, etc.), without asking for confirmation each time. The general caution guidelines for destructive/hard-to-undo actions still apply (e.g. confirm before `push --force`, `reset --hard`, deleting branches with unmerged work).
+- **DB schema only through versioned migrations** (decision of 2026-09-26, Phase 0 of the VPS migration): `db:push` no longer exists. Every schema change (`lib/db/schema/`) requires `pnpm db:generate` + a committed migration + `pnpm db:migrate` on the development DB, then (as long as we are on Neon) on the production DB **before** the merge that uses it.
+- **Ask follow-up questions only when the request is ambiguous or has a significant impact** (architectural choices, unspecified behavior, several plausible interpretations). For clear or limited-scope requests, proceed directly without asking for confirmation: the goal is not to slow work down with unnecessary questions.
+- **Every feature, bug, technical debt, task or manual check must be tracked on Slack** (decision of 2026-09-27): in the Slack List "BuddyBudget — Backlog" (https://buddybudget.slack.com/lists/T0C5LCECH6U/F0C4THFDKD0, private channel `#bb-backlog`, id `C0C4THFBUBU`). This applies both to new items (idea, bug found, debt surfaced in a review, deferred scope) and to status changes (Da fare → In corso → Fatto, Sospeso, Scartato — To do → In progress → Done, On hold, Discarded) — at the end of the work the corresponding row must be updated. Until the Slack connector allows adding rows to the list (today `add_list_record` fails with `bot_not_found`), Claude posts the item or update as a message in `#bb-backlog` (title, type, status, priority, area, why, link) and tells the user, who copies it into the list. It does not replace the decision log below: the list says *what* there is to do and where it stands, the log says *why* it was decided.
+- **Every new or changed feature updates the landing** (decision of 2026-10-01): `lib/features/catalog.ts` is the single list of features (landing on buddybudget.io, sidebar test). When a feature is released, changes or is planned, update that file and run `pnpm sync:features` in `landing/` (CI fails if the generated copy diverges); if the story changes (tour steps in `landing/content/site.ts`, comparison rows) update that too. A feature is not "complete" until the landing reflects it, and the PR says so (even just "no impact on the landing").
+- **Landing screens are screenshots of the real app** (decision of 2026-10-01): `landing/public/screens/` is generated with `pnpm demo:seed` + `pnpm capture:screens` (guide `docs/landing-screens.md`). Whoever visibly changes a screen listed in `landing/content/screens.ts` regenerates the screenshots in the same PR; the `screens.test.ts` test only checks that routes and files exist.
+- **PR titles in Conventional Commits** (decision of 2026-10-03): `feat: …` (new feature, bumps the minor), `fix: …`/`perf: …` (patch), `refactor:`/`docs:`/`chore:`/`ci:`/`test:`/`build:` (no release); `!` after the type for breaking changes. The title becomes the squash commit and release-please derives version and CHANGELOG from it (`docs/rilasci.md`). A check (`Titolo PR`) verifies it.
+- **Keep this file up to date.** Whenever a project decision is made, a technical choice is changed, or a significant phase of work is completed, add a short entry (3-8 lines) as a **new file** in [`docs/decisioni/`](docs/decisioni/) (`AAAA-MM-GG-titolo.md`, i.e. `YYYY-MM-DD-title.md`, one per PR: no more entries at the top of a shared file, which avoids conflicts between parallel PRs) and update "Project status" below if the overall status changes. The details of a piece of work go in its spec/plan in `docs/superpowers/`, not here. The goal is that a new chat can read this file and immediately have the context, without having to ask the user to repeat explanations already given.
+- **Always keep explicit track of three things, in "Project status" and/or in the linked spec/plan documents**: (1) what is being done now, (2) what was consciously decided to skip/defer and why, (3) what is planned for the future and when to come back to it. Do not let a cut scope or a paused plan get lost in the conversation: if a plan is suspended (e.g. to change priorities), update its status in the file itself instead of leaving it silently incomplete.
 
-## Principi di architettura
+## Architecture principles
 
-### Riusabilità
+### Reusability
 
-Ogni modulo, componente o funzione scritto per questa applicazione deve essere progettato per poter essere riutilizzato:
-- **Props esplicite invece di dipendenze hardcoded**: un componente non deve fare assunzioni sul contesto in cui viene usato. Dati che possono variare (voci di navigazione, etichette, href, callback) vengono passati come prop con valori di default sensati.
-- **Nessuna dipendenza ciclica tra layer** (vedi sezione "Organizzazione a layer" sotto).
-- **Barrel file** per ogni cartella feature (`index.ts`): chi importa da fuori usa sempre il barrel, mai i file interni direttamente. Questo permette refactoring interni senza rompere i consumatori.
-- **Tipi esportati**: ogni interfaccia/tipo usato nelle props di un componente pubblico va esportata, per permettere ai chiamanti di tipizzare i dati senza duplicare le definizioni.
+Every module, component or function written for this application must be designed to be reusable:
+- **Explicit props instead of hardcoded dependencies**: a component must not make assumptions about the context in which it is used. Data that can vary (navigation items, labels, hrefs, callbacks) is passed as a prop with sensible default values.
+- **No circular dependencies between layers** (see the "Layered organisation" section below).
+- **Barrel file** for every feature folder (`index.ts`): whoever imports from outside always uses the barrel, never the internal files directly. This allows internal refactoring without breaking consumers.
+- **Exported types**: every interface/type used in the props of a public component must be exported, so callers can type their data without duplicating definitions.
 
-### Manutenibilità
+### Maintainability
 
-- **JSDoc minimo obbligatorio** su ogni componente e funzione pubblica: una riga di `/**` che descriva cosa fa, i casi d'uso non ovvi e le prop significative. Non commentare ciò che il codice già dice da solo.
-- **Separazione stato / UI**: la logica di stato (Context, hook, calcoli) vive in file separati rispetto ai componenti JSX. I componenti UI ricevono dati già pronti via props.
-- **Nessun valore hardcoded nei componenti** che non sia un default di prop: colori → token tema, testi visibili → prop o costanti named, soglie numeriche → costanti con nome (`const SIDEBAR_MOBILE_BREAKPOINT = 768`).
-- **Un componente, una responsabilità**: se un file supera ~150 righe di JSX o fa più di una cosa distinta, va diviso.
-- **Nessuna logica di business nei file di route** (`app/*/page.tsx`): le pagine orchestrano componenti, non implementano calcoli.
+- **Minimum mandatory JSDoc** on every public component and function: one `/**` line describing what it does, the non-obvious use cases and the significant props. Do not comment what the code already says by itself.
+- **State / UI separation**: state logic (Context, hooks, calculations) lives in files separate from JSX components. UI components receive ready-made data via props.
+- **No hardcoded values in components** other than prop defaults: colors → theme tokens, visible text → props or named constants, numeric thresholds → named constants (`const SIDEBAR_MOBILE_BREAKPOINT = 768`).
+- **One component, one responsibility**: if a file exceeds ~150 lines of JSX or does more than one distinct thing, it must be split.
+- **No business logic in route files** (`app/*/page.tsx`): pages orchestrate components, they do not implement calculations.
 
-### Organizzazione a layer
+### Layered organisation
 
-I componenti sono organizzati in 3 layer con dipendenze unidirezionali (i layer alti dipendono da quelli bassi, mai il contrario):
+Components are organised in 3 layers with one-way dependencies (higher layers depend on lower ones, never the other way round):
 
 ```
 ┌─────────────────────────────────────────────┐
-│  app/ (route e pagine Next.js)              │  layer 3 — orchestrazione
-│    └─ usa: layout + domain + ui             │
+│  app/ (Next.js routes and pages)            │  layer 3 — orchestration
+│    └─ uses: layout + domain + ui            │
 ├─────────────────────────────────────────────┤
-│  components/domain/ (dominio finanziario)   │  layer 2 — business UI
-│    └─ usa: ui                               │
-│  components/layout/ (struttura pagina)      │  layer 2 — struttura
-│    └─ usa: ui, context propri               │
+│  components/domain/ (financial domain)      │  layer 2 — business UI
+│    └─ uses: ui                              │
+│  components/layout/ (page structure)        │  layer 2 — structure
+│    └─ uses: ui, own context                 │
 ├─────────────────────────────────────────────┤
-│  components/ui/ (primitive shadcn)          │  layer 1 — primitive
-│    └─ nessuna dipendenza interna al progetto│
+│  components/ui/ (shadcn primitives)         │  layer 1 — primitives
+│    └─ no internal project dependencies      │
 └─────────────────────────────────────────────┘
 ```
 
-- `components/ui/` — primitive shadcn/ui. Non modificare a mano salvo adattamenti ai token.
-- `components/layout/` — struttura della pagina (shell, sidebar, topbar). Non deve conoscere il dominio finanziario.
-- `components/domain/` — componenti con logica di dominio (StatCard, grafici, form finanziarie). Composte da primitive `ui/`.
-- `app/` — route App Router. Le pagine importano da tutti e tre i layer e li orchestrano.
+- `components/ui/` — shadcn/ui primitives. Do not edit by hand except for adapting them to the tokens.
+- `components/layout/` — page structure (shell, sidebar, topbar). Must not know about the financial domain.
+- `components/domain/` — components with domain logic (StatCard, charts, financial forms). Composed from `ui/` primitives.
+- `app/` — App Router routes. Pages import from all three layers and orchestrate them.
 
-### Operazioni lunghe: job in background con avanzamento visibile (standard)
+### Long-running operations: background jobs with visible progress (standard)
 
-Standard deciso il 2026-09-22 (primo caso: import/sync GoCardless). Qualunque operazione che può durare più di qualche secondo (import, sync, ricalcoli massivi, backfill avviati dall'utente) **non** si esegue dentro la richiesta HTTP bloccando l'utente con uno spinner. Si usa questo schema:
+Standard decided on 2026-09-22 (first case: GoCardless import/sync). Any operation that can take more than a few seconds (imports, syncs, mass recalculations, user-triggered backfills) is **not** run inside the HTTP request, blocking the user with a spinner. Use this scheme:
 
-1. **La route crea un job e risponde subito** con `{ jobId }` (validazioni/ownership/eleggibilità restano sincrone, prima del job: un errore prevedibile deve arrivare come risposta HTTP, non come job fallito).
-2. **Il lavoro gira in `after()` di Next.js** (`next/server`), con `export const maxDuration` esplicito sulla route. Funziona sia su Vercel serverless (tiene viva la funzione fino a `maxDuration`) sia su un server Node persistente — nessuna dipendenza da infrastruttura solo-Vercel (Workflow/Queues) finché il deploy futuro su VPS resta un'ipotesi.
-3. **Stato del job su Redis** (effimero, TTL 24h, chiave per utente), non in una tabella Postgres: niente migrazioni, pulizia automatica. Lo stato contiene fase e **contatori reali** (es. `processed`/`total`), mai un avanzamento stimato a tempo.
-4. **Heartbeat**: ogni aggiornamento scrive `updatedAt`; un job `running` con heartbeat più vecchio di una soglia è trattato come interrotto (la funzione può morire per timeout). Per questo il lavoro dev'essere **idempotente e riprendibile**.
-5. **Il lavoro procede a blocchi** (es. insert batch da 50 righe), sia per performance (niente una query per elemento) sia per avere avanzamento granulare ("Inserite 120 su 500").
-6. **Il client interroga lo stato via polling** (TanStack Query, `refetchInterval` attivo solo mentre esistono job in corso) da un **indicatore globale montato nel layout**, così l'avanzamento resta visibile cambiando pagina; a job concluso mostra un riepilogo.
-7. La funzione di dominio che fa il lavoro accetta una callback `onProgress` opzionale, così resta riusabile senza job (cron, script, test).
+1. **The route creates a job and responds immediately** with `{ jobId }` (validation/ownership/eligibility stay synchronous, before the job: a predictable error must arrive as an HTTP response, not as a failed job).
+2. **The work runs in Next.js `after()`** (`next/server`), with an explicit `export const maxDuration` on the route. It works both on Vercel serverless (keeps the function alive up to `maxDuration`) and on a persistent Node server — no dependency on Vercel-only infrastructure (Workflow/Queues) as long as the future VPS deployment remains a hypothesis.
+3. **Job state on Redis** (ephemeral, 24h TTL, per-user key), not in a Postgres table: no migrations, automatic cleanup. The state contains the phase and **real counters** (e.g. `processed`/`total`), never a time-based estimated progress.
+4. **Heartbeat**: every update writes `updatedAt`; a `running` job with a heartbeat older than a threshold is treated as interrupted (the function can die on timeout). For this reason the work must be **idempotent and resumable**.
+5. **The work proceeds in blocks** (e.g. batch inserts of 50 rows), both for performance (no query per item) and to have granular progress ("Inserite 120 su 500" — "Inserted 120 of 500").
+6. **The client polls the state** (TanStack Query, `refetchInterval` active only while running jobs exist) from a **global indicator mounted in the layout**, so progress stays visible when changing page; when the job ends it shows a summary.
+7. The domain function that does the work accepts an optional `onProgress` callback, so it stays reusable without a job (cron, scripts, tests).
 
-Deroghe solo per motivi espliciti, da annotare nel log delle decisioni.
+Exceptions only for explicit reasons, to be noted in the decision log.
 
-### Osservabilità: log, metriche, eventi (standard)
+### Observability: logs, metrics, events (standard)
 
-Standard deciso il 2026-09-27 (Fase A osservabilità, spec `docs/superpowers/specs/2026-09-27-osservabilita-app-fase-a-design.md`). Tutto il codice server segnala cosa succede tramite `lib/observability`, mai con `console.*` (bloccato da ESLint `no-console`; eccezione: gli script CLI in `lib/db/`).
+Standard decided on 2026-09-27 (Observability Phase A, spec `docs/superpowers/specs/2026-09-27-osservabilita-app-fase-a-design.md`). All server code reports what happens through `lib/observability`, never with `console.*` (blocked by the ESLint `no-console` rule; exception: CLI scripts in `lib/db/`).
 
-1. **Log**: si usa `logger` (fuori dalle richieste) o `requestLogger()` (dentro una route, eredita `requestId`/`route`/`user`). Una riga JSON per evento, con `event` nel formato `dominio.oggetto.esito` (es. `gocardless.sync.failed`). Si passano solo i campi del tipo chiuso `LogFields`: se serve un campo nuovo va aggiunto lì, ragionando sul fatto che non porti dati personali.
-2. **Mai nei log né nelle etichette delle metriche**: email, nomi, IBAN, importi, descrizioni/note delle transazioni, nomi dei merchant, token/segreti, cookie, body delle richieste, `userId` in chiaro. L'utente compare solo come `user` = `hashUserId(id)`, e mai come label. I messaggi d'errore passano da `redactText` (email, IBAN, UUID, bearer, `params:` di Drizzle), ma è una rete di sicurezza e non il meccanismo principale.
-3. **Ogni nuova route API** si esporta come `export const GET = withRoute("<risorsa>.<azione>", handleGet)`, con un nome **statico** (mai il path con gli id: finisce nelle etichette delle metriche). Nelle route autenticate si chiama `bindRequestUser(session.user.id)` subito dopo il controllo della sessione. Probe e scrape usano `{ quietOnSuccess: true }`.
-4. **Metriche**: prefisso `buddybudget_`, unità nel nome (`_seconds`, `_total`), etichette solo da enum chiusi (funzioni `record*` di `lib/observability/metrics.ts`, non oggetti prom-client grezzi). Tutto ciò che deve valere tra più pod o sopravvivere a un riavvio (ultimo successo di un cron, job in corso) sta su Redis (`OpsStore`) e viene letto allo scrape.
-5. **Cron**: ogni cron chiama `recordCronRun(nome, esito, durata, { store })`, che scrive anche l'heartbeat usato dagli alert "cron non eseguito".
-6. **Eventi di prodotto**: `track()` di `lib/analytics` (Umami) dopo l'esito positivo di un'azione, con props solo categoriche o conteggi. I nomi evento sono un tipo chiuso (`ProductEvents`).
-7. `GET /api/metrics` risponde solo con `Authorization: Bearer <METRICS_TOKEN>`; senza `METRICS_TOKEN` risponde 404 (così su Vercel resta spento).
+1. **Logs**: use `logger` (outside requests) or `requestLogger()` (inside a route, inherits `requestId`/`route`/`user`). One JSON line per event, with `event` in the `domain.object.outcome` format (e.g. `gocardless.sync.failed`). Only fields of the closed `LogFields` type are passed: if a new field is needed it must be added there, reasoning about whether it carries personal data.
+2. **Never in logs or in metric labels**: emails, names, IBANs, amounts, transaction descriptions/notes, merchant names, tokens/secrets, cookies, request bodies, plaintext `userId`. The user appears only as `user` = `hashUserId(id)`, and never as a label. Error messages go through `redactText` (emails, IBANs, UUIDs, bearer, Drizzle `params:`), but that is a safety net and not the main mechanism.
+3. **Every new API route** is exported as `export const GET = withRoute("<resource>.<action>", handleGet)`, with a **static** name (never the path with ids: it ends up in metric labels). In authenticated routes call `bindRequestUser(session.user.id)` right after the session check. Probes and scrapes use `{ quietOnSuccess: true }`.
+4. **Metrics**: `buddybudget_` prefix, unit in the name (`_seconds`, `_total`), labels only from closed enums (`record*` functions in `lib/observability/metrics.ts`, not raw prom-client objects). Everything that must hold across several pods or survive a restart (last success of a cron, running jobs) lives on Redis (`OpsStore`) and is read at scrape time.
+5. **Cron**: every cron calls `recordCronRun(name, outcome, duration, { store })`, which also writes the heartbeat used by the "cron did not run" alerts.
+6. **Product events**: `track()` from `lib/analytics` (Umami) after the successful outcome of an action, with only categorical props or counts. Event names are a closed type (`ProductEvents`).
+7. `GET /api/metrics` responds only with `Authorization: Bearer <METRICS_TOKEN>`; without `METRICS_TOKEN` it responds 404 (so it stays off on Vercel).
 
-#### Ogni feature è osservabile (definition of done)
+#### Every feature is observable (definition of done)
 
-Regola decisa il 2026-10-01: una feature non è "completata" finché in produzione non si può **vedere cosa succede** e **capire come sta andando**. Prima di chiuderla (e di aprire la PR) si risponde a queste domande, e la PR le riporta in una riga ciascuna:
+Rule decided on 2026-10-01: a feature is not "complete" until in production you can **see what happens** and **understand how it is going**. Before closing it (and opening the PR) answer these questions, and the PR reports them in one line each:
 
-1. **Log**: ogni esito che conta (successo di un'azione importante, ogni errore gestito, ogni fallback) ha un evento `dominio.oggetto.esito` via `requestLogger()`/`logger`, filtrabile in Loki con una query. Le route nuove sono `withRoute`.
-2. **Umami**: ogni azione dell'utente che la feature introduce o cambia ha un evento in `ProductEvents` e un `track()` dopo l'esito positivo (anche modifica ed eliminazione, non solo creazione), con props solo categoriche o conteggi. Serve a capire se la feature viene usata, non solo se funziona.
-3. **Metriche e alert**: se la feature ha un lavoro in background, un cron o una dipendenza esterna (API, fonte dati, email), ha una metrica con `record*` e `recordCronRun`, e se può fallire senza che l'utente se ne accorga ha un alert nel repo infra (regola in `argocd/apps/grafana.yaml` + runbook in `docs/runbooks/`).
-4. **Dashboard e guida**: se aggiunge metriche, un pannello nella dashboard giusta (repo infra) e una riga in `docs/osservabilita.md`.
-5. **Dopo il deploy**: nella PR, "Come verificare in produzione": quale query Loki, quale metrica e quale evento Umami guardare, e che valori aspettarsi.
+1. **Logs**: every outcome that matters (success of an important action, every handled error, every fallback) has a `domain.object.outcome` event via `requestLogger()`/`logger`, filterable in Loki with a query. New routes use `withRoute`.
+2. **Umami**: every user action the feature introduces or changes has an event in `ProductEvents` and a `track()` after the successful outcome (also edit and delete, not only create), with only categorical props or counts. It serves to understand whether the feature is used, not only whether it works.
+3. **Metrics and alerts**: if the feature has background work, a cron or an external dependency (API, data source, email), it has a metric with `record*` and `recordCronRun`, and if it can fail without the user noticing it has an alert in the infra repo (rule in `argocd/apps/grafana.yaml` + runbook in `docs/runbooks/`).
+4. **Dashboard and guide**: if it adds metrics, a panel in the right dashboard (infra repo) and a line in `docs/osservabilita.md`.
+5. **After deploy**: in the PR, "How to verify in production": which Loki query, which metric and which Umami event to look at, and what values to expect.
 
-Un cambiamento puramente grafico o di calcolo senza nuovi esiti osservabili può dichiarare "nessun nuovo segnale" nella PR, ma va dichiarato, non omesso.
+A purely visual or calculation change with no new observable outcomes may declare "no new signal" in the PR, but it must be declared, not omitted.
 
-### Prestazioni e animazioni (standard)
+### Performance and animations (standard)
 
-Standard deciso il 2026-10-11 dopo la review delle prestazioni (`docs/decisioni/2026-10-11-prestazioni-caricamento.md`). Ogni modifica all'interfaccia tiene d'occhio peso, caricamento e movimento; la PR dichiara in una riga cosa è cambiato, oppure «nessun impatto sulle prestazioni».
+Standard decided on 2026-10-11 after the performance review (`docs/decisioni/2026-10-11-prestazioni-caricamento.md`). Every interface change keeps an eye on weight, loading and motion; the PR states in one line what changed, or "no impact on performance".
 
-1. **Peso del JS**: i barrel `index.ts` che esportano grafici (Recharts) o altro codice pesante non si importano da sidebar, layout o da altre aree per usare un piccolo helper: si usa un barrel leggero (esempio: `components/domain/investments/light.ts`) o si sposta l'helper in un file a sé. Un componente pesante o poco visto (dialog, tab secondaria) si carica con `next/dynamic`.
-2. **Caricamento senza salti**: ogni schermata ha uno stato di caricamento (`loading.tsx` o segnaposto) con l'altezza vicina a quella del contenuto, e i blocchi che compaiono dopo i dati riservano lo spazio: l'obiettivo è CLS sotto 0,1. Nessun blocco che appare di colpo spostando il resto.
-3. **Dati**: si chiede solo ciò che serve (finestre di date e `compact` come per lo storico del patrimonio), la stessa informazione non si richiede due volte con intervalli diversi, e le query di dati che cambiano di rado hanno uno `staleTime`. Prima di aggiungerne uno a una query, controllare che le mutazioni la invalidino.
-4. **Rendering**: nessun calcolo pesante nel render (`useMemo`, `useDeferredValue` per i cursori, un Worker se serve); i grafici non hanno animazione d'ingresso (`isAnimationActive={false}`), si anima solo ciò che comunica un cambiamento.
-5. **Animazioni**: durata breve (sotto 300 ms per le transizioni, sotto 600 ms per i numeri), mai alla prima comparsa dei dati o su liste lunghe; si usano `components/motion/` e `lib/motion/springs`, si rispetta `prefers-reduced-motion` (`MotionConfig reducedMotion="user"`), nessun effetto di luce. Numeri animati solo per le cifre-chiave che cambiano per una scelta dell'utente o per un dato nuovo.
-6. **Come si verifica**: build di produzione con i dati demo (`pnpm demo:seed`), Chromium con rete lenta e CPU rallentata; si guardano JS caricato, tempo alla prima chiamata dati e CLS prima e dopo, e i numeri vanno nella PR.
+1. **JS weight**: `index.ts` barrels that export charts (Recharts) or other heavy code are not imported from the sidebar, layout or other areas to use a small helper: use a light barrel (example: `components/domain/investments/light.ts`) or move the helper to its own file. A heavy or rarely seen component (dialog, secondary tab) is loaded with `next/dynamic`.
+2. **Loading without jumps**: every screen has a loading state (`loading.tsx` or placeholder) with a height close to that of the content, and blocks that appear after the data reserve their space: the goal is CLS below 0.1. No block that appears suddenly, pushing the rest.
+3. **Data**: request only what is needed (date windows and `compact` as for the net worth history), the same information is not requested twice with different ranges, and queries for rarely changing data have a `staleTime`. Before adding one to a query, check that mutations invalidate it.
+4. **Rendering**: no heavy calculation in render (`useMemo`, `useDeferredValue` for sliders, a Worker if needed); charts have no entry animation (`isAnimationActive={false}`), animate only what communicates a change.
+5. **Animations**: short duration (under 300 ms for transitions, under 600 ms for numbers), never on first appearance of data or on long lists; use `components/motion/` and `lib/motion/springs`, respect `prefers-reduced-motion` (`MotionConfig reducedMotion="user"`), no light effects. Animated numbers only for key figures that change because of a user choice or new data.
+6. **How to verify**: production build with demo data (`pnpm demo:seed`), Chromium with slow network and throttled CPU; look at JS loaded, time to first data call and CLS before and after, and the numbers go in the PR.
 
 ## Stack
 
 - Next.js (App Router) + TypeScript
-- pnpm come package manager
-- Tailwind CSS v4 + shadcn/ui (stile `base-nova`, componenti su `@base-ui/react`, icone `lucide-react`)
-- `next-themes` per il tema chiaro/scuro
+- pnpm as package manager
+- Tailwind CSS v4 + shadcn/ui (`base-nova` style, components on `@base-ui/react`, `lucide-react` icons)
+- `next-themes` for the light/dark theme
 
-Livello applicativo (deciso in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`, implementato):
+Application layer (decided in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`, implemented):
 
-- **Database**: Postgres self-hosted (container in cluster) + **Drizzle ORM**
-- **Autenticazione**: better-auth (magic link + Google OAuth), email transazionali via Resend
-- **API**: Next.js Route Handlers, consumate lato client con **TanStack Query**
-- **State management**: React Context per stato UI locale, TanStack Query per stato server; Zustand solo se emerge un bisogno concreto
-- **Cache**: Redis (rate limiting auth + cache calcoli derivati costosi)
-- **Charts**: Recharts via componente `Chart` di shadcn/ui
-- **Osservabilità**: VictoriaMetrics + Loki + Alloy + Grafana, Umami per gli eventi di prodotto (vedi standard sopra e `docs/osservabilita.md` nel repo infra)
-- **Deployment**: cluster k3s single-VPS (Hostinger, Düsseldorf), provisioning Ansible, ArgoCD + SOPS/KSOPS, ingresso via Cloudflare Tunnel + Traefik, admin solo via Tailscale. **Dal 2026-09-27 la produzione è su k3s** (dal 2026-10-01 in corso il passaggio a `buddybudget.io` = landing statica in `landing/` su Cloudflare Pages, `app.buddybudget.io` = app: vedi `docs/decision-log.md`); Vercel e Neon sono spenti (rotazione segreti e chiusura definitiva: Task 8 della Fase 7, vedi Stato). Il codice resta portabile anche su serverless (niente processi in memoria di lunga durata, cron come endpoint `/api/cron/*`). Repo infra: `YonderUrik/buddy-budget-infra`.
-- **CI/CD**: GitHub Actions (lint, tsc, test) → immagine su GHCR → release-please tiene aperta una PR di release calcolata dai titoli delle PR; al suo merge crea tag e GitHub Release e la CI aggiorna il tag `X.Y.Z` nel repo infra → ArgoCD fa il rollout. Le migration le applica un Job `PreSync` di ArgoCD prima del rollout.
+- **Database**: self-hosted Postgres (in-cluster container) + **Drizzle ORM**
+- **Authentication**: better-auth (magic link + Google OAuth), transactional emails via Resend
+- **API**: Next.js Route Handlers, consumed client-side with **TanStack Query**
+- **State management**: React Context for local UI state, TanStack Query for server state; Zustand only if a concrete need emerges
+- **Cache**: Redis (auth rate limiting + cache of expensive derived calculations)
+- **Charts**: Recharts via the shadcn/ui `Chart` component
+- **Observability**: VictoriaMetrics + Loki + Alloy + Grafana, Umami for product events (see the standard above and `docs/osservabilita.md` in the infra repo)
+- **Deployment**: single-VPS k3s cluster (Hostinger, Düsseldorf), Ansible provisioning, ArgoCD + SOPS/KSOPS, ingress via Cloudflare Tunnel + Traefik, admin only via Tailscale. **Since 2026-09-27 production is on k3s** (since 2026-10-01 the move to `buddybudget.io` = static landing in `landing/` on Cloudflare Pages, `app.buddybudget.io` = app is in progress: see `docs/decision-log.md`); Vercel and Neon are switched off (secret rotation and final shutdown: Task 8 of Phase 7, see Status). The code stays portable to serverless too (no long-lived in-memory processes, cron as `/api/cron/*` endpoints). Infra repo: `YonderUrik/buddy-budget-infra`.
+- **CI/CD**: GitHub Actions (lint, tsc, test) → image on GHCR → release-please keeps open a release PR computed from PR titles; when it is merged it creates the tag and GitHub Release and CI updates the `X.Y.Z` tag in the infra repo → ArgoCD does the rollout. Migrations are applied by an ArgoCD `PreSync` Job before the rollout.
 
-## Comandi
+## Commands
 
 ```
-pnpm dev      # server di sviluppo
-pnpm build    # build di produzione
+pnpm dev      # development server
+pnpm build    # production build
 pnpm lint     # ESLint
-pnpm test              # vitest (usa DATABASE_URL: DB di sviluppo, o un DB vuoto migrato)
-pnpm db:generate        # genera una migration dallo schema TypeScript (dopo ogni modifica a lib/db/schema)
-pnpm db:migrate         # applica le migration pendenti (DATABASE_URL da env o .env.local)
-pnpm db:mark-baseline   # una tantum: registra la baseline su un DB esistente già allineato
-docker build -t buddy-budget:local .   # immagine dell'app (target migrator: --target migrator)
+pnpm test              # vitest (uses DATABASE_URL: development DB, or an empty migrated DB)
+pnpm db:generate        # generates a migration from the TypeScript schema (after every change to lib/db/schema)
+pnpm db:migrate         # applies pending migrations (DATABASE_URL from env or .env.local)
+pnpm db:mark-baseline   # one-off: records the baseline on an existing, already aligned DB
+docker build -t buddy-budget:local .   # app image (migrator target: --target migrator)
 ```
 
-## Struttura
+## Structure
 
 ```
-app/                         route App Router
-  (auth)/                    login, onboarding (senza AppShell)
-  (app)/                     schermate con AppShell: panoramica, liquidita (movimenti/analisi/conti/categorie/regole),
-                             categorizza, investimenti (6 schede + titoli), debiti, impostazioni, style-guide
-  api/                       route handler (tutti con withRoute), cron in api/cron/*
-  globals.css                design token (CSS variables) e theme Tailwind
+app/                         App Router routes
+  (auth)/                    login, onboarding (without AppShell)
+  (app)/                     screens with AppShell: panoramica, liquidita (movimenti/analisi/conti/categorie/regole),
+                             categorizza, investimenti (6 tabs + securities), debiti, impostazioni, style-guide
+  api/                       route handlers (all with withRoute), cron in api/cron/*
+  globals.css                design tokens (CSS variables) and Tailwind theme
 components/
-  ui/                        primitive shadcn (layer 1)
-  layout/                    shell, sidebar, topbar (layer 2 — struttura; barrel index.ts)
-  domain/<feature>/          componenti di dominio per feature (layer 2), ognuno con barrel
+  ui/                        shadcn primitives (layer 1)
+  layout/                    shell, sidebar, topbar (layer 2 — structure; barrel index.ts)
+  domain/<feature>/          domain components per feature (layer 2), each with a barrel
 lib/
-  db/schema/ + migrations/   schema Drizzle e migration versionate
-  calc/                      motori di calcolo puri e testati (spese, cashflow, rendimenti, tasse, ammortamento, debiti...)
-  observability/ analytics/  log, metriche, eventi di prodotto
-  <feature>/                 logica di dominio per area (gocardless, categorization, investments, market-data, net-worth, debts, account...)
-landing/                     sito vetrina statico (buddybudget.io), progetto Next.js a sé con proprio package.json, CI e immagine nginx nel cluster k3s (non Cloudflare Pages); contenuti in landing/content/
+  db/schema/ + migrations/   Drizzle schema and versioned migrations
+  calc/                      pure, tested calculation engines (spending, cashflow, returns, taxes, amortisation, debts...)
+  observability/ analytics/  logs, metrics, product events
+  <feature>/                 domain logic per area (gocardless, categorization, investments, market-data, net-worth, debts, account...)
+landing/                     static marketing site (buddybudget.io), a separate Next.js project with its own package.json, CI and nginx image in the k3s cluster (not Cloudflare Pages); content in landing/content/
 docs/
-  product-vision.md          visione di prodotto (sintesi)
-  functional-spec.md         specifica funzionale per schermata, dedotta dal mockup
-  decisioni/                 una decisione per file (dal 2026-10-04); decision-log.md è l'archivio precedente
-  design-reference/          mockup originale
-  superpowers/specs|plans/   spec e piani di ogni feature
+  product-vision.md          product vision (summary)
+  functional-spec.md         per-screen functional specification, derived from the mockup
+  decisioni/                 one decision per file (since 2026-10-04); decision-log.md is the earlier archive
+  design-reference/          original mockup
+  superpowers/specs|plans/   specs and plans for each feature
 ```
 
-## Design token
+## Design tokens
 
-Tutti i colori, font e raggi sono definiti come CSS variables in `app/globals.css` (`:root` per il tema chiaro, `.dark` per lo scuro), estratti dal mockup in `docs/design-reference/mock-up.html`. Le variabili sono esposte a Tailwind tramite il blocco `@theme inline`, quindi sono disponibili come classi utility (`bg-background`, `text-foreground`, `bg-primary`, `text-pos`, `bg-neg-soft`, `rounded-xl`, ecc.).
+All colors, fonts and radii are defined as CSS variables in `app/globals.css` (`:root` for the light theme, `.dark` for the dark one), extracted from the mockup in `docs/design-reference/mock-up.html`. The variables are exposed to Tailwind through the `@theme inline` block, so they are available as utility classes (`bg-background`, `text-foreground`, `bg-primary`, `text-pos`, `bg-neg-soft`, `rounded-xl`, etc.).
 
-**Regola**: non usare mai colori esadecimali o valori di raggio hardcoded nei componenti. Usa sempre i token del tema (classi Tailwind o `var(--nome-token)`). Se serve un nuovo token, aggiungilo in `globals.css` (sia per `:root` che per `.dark`) invece di introdurre un valore una tantum.
+**Rule**: never use hardcoded hex colors or radius values in components. Always use the theme tokens (Tailwind classes or `var(--token-name)`). If a new token is needed, add it in `globals.css` (for both `:root` and `.dark`) instead of introducing a one-off value.
 
-Token specifici per l'ambito finanziario (oltre a quelli standard shadcn):
-- `--pos` / `--pos-soft`: importi positivi, entrate
-- `--neg` / `--neg-soft`: importi negativi, spese
-- `--text-2` / `--text-3`: livelli di testo secondario/terziario
+Finance-specific tokens (in addition to the standard shadcn ones):
+- `--pos` / `--pos-soft`: positive amounts, income
+- `--neg` / `--neg-soft`: negative amounts, expenses
+- `--text-2` / `--text-3`: secondary/tertiary text levels
 
-Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans` (Hanken Grotesk) per il resto del testo.
+Fonts: `font-heading` (Space Grotesk) for titles and highlighted figures, `font-sans` (Hanken Grotesk) for the rest of the text.
 
-## Convenzioni componenti
+## Component conventions
 
-- I componenti shadcn si aggiungono con `pnpm dlx shadcn@latest add <nome>` e vivono in `components/ui/`; non modificarli a mano se non per adattarli ai token del tema.
-- **Su mobile popover, dialog e conferme sono fogli dal basso** (default di `PopoverContent`/`DialogContent`/`AlertDialogContent`, trascina giù per chiudere): non servono classi `max-sm:` nei chiamanti. Form lunghi: `FormDialogContent` (tutto schermo). Pannelli inline sotto una riga: `InlineOrSheet`, che sul telefono li apre in un foglio.
-- **Sezioni con più viste** (Liquidità, Investimenti, Pensione): testata con `SectionHeading` (su telefono il titolo apre il foglio delle viste) e `SectionTabs` (segmentato da `lg`).
-- **Ritorno alla pagina madre**: sempre `BackLink` di `components/domain/shared` («‹ Nome della pagina madre», sopra il titolo, 44 px di tocco), mai frecce o link «Torna a…» fatti a mano.
-- I componenti compositi specifici del dominio (es. `StatCard`) vivono in `components/` e vanno costruiti componendo le primitive di `components/ui/`.
-- Tutte le stringhe visibili all'utente sono in italiano per ora (l'app è multi-lingua per design, ma l'infrastruttura di i18n non è ancora implementata — vedi "Stack" e log delle decisioni). Quando si introdurrà l'i18n, queste stringhe andranno estratte in chiavi di traduzione invece di restare hardcoded nei componenti.
+- shadcn components are added with `pnpm dlx shadcn@latest add <name>` and live in `components/ui/`; do not edit them by hand except to adapt them to the theme tokens.
+- **On mobile, popovers, dialogs and confirmations are bottom sheets** (default of `PopoverContent`/`DialogContent`/`AlertDialogContent`, drag down to close): callers do not need `max-sm:` classes. Long forms: `FormDialogContent` (full screen). Inline panels under a row: `InlineOrSheet`, which opens them in a sheet on the phone.
+- **Sections with several views** (Liquidità, Investimenti, Pensione — Cash, Investments, Pension): header with `SectionHeading` (on the phone the title opens the sheet of views) and `SectionTabs` (segmented from `lg`).
+- **Back to the parent page**: always `BackLink` from `components/domain/shared` («‹ Name of the parent page», above the title, 44 px touch target), never hand-made arrows or «Torna a…» ("Back to…") links.
+- Domain-specific composite components (e.g. `StatCard`) live in `components/` and must be built by composing the primitives in `components/ui/`.
+- All user-visible strings are in Italian for now (the app is multi-language by design, but the i18n infrastructure is not implemented yet — see "Stack" and the decision log). When i18n is introduced, these strings will have to be extracted into translation keys instead of staying hardcoded in the components.
 
-### Schermate "in arrivo" e catalogo funzionalità: punti da aggiornare quando se ne implementa una
+### "Coming soon" screens and feature catalog: what to update when one is implemented
 
-Elenco, area, descrizioni e stato (`live` / `new` / `soon`) di tutte le funzionalità stanno in **un solo posto**: `lib/features/catalog.ts`. Lo legge la landing, che ne tiene una copia generata (`landing/content/catalog.generated.ts`, aggiornata con `pnpm sync:features` in `landing/`; la CI controlla l'allineamento). Il test `lib/features/catalog.test.ts` fallisce se la sidebar e il catalogo divergono.
+The list, area, descriptions and status (`live` / `new` / `soon`) of all features live in **a single place**: `lib/features/catalog.ts`. The landing reads it and keeps a generated copy (`landing/content/catalog.generated.ts`, updated with `pnpm sync:features` in `landing/`; CI checks they are aligned). The `lib/features/catalog.test.ts` test fails if the sidebar and the catalog diverge.
 
-Quando si implementa una schermata pianificata (oggi: Pianifica, Analitiche):
+When implementing a planned screen (today: Pianifica, Analitiche — Plan, Analytics):
 
-1. `components/layout/sidebar.tsx` → `NAV_ITEMS`: **togliere `comingSoon: true`** e verificare che `href` corrisponda alla route reale.
-2. `lib/features/catalog.ts`: passare la voce da `soon` a `new` o `live` (e aggiornare la descrizione se serve); poi `pnpm sync:features` in `landing/`.
-3. Una **feature nuova** (non pianificata) si aggiunge al catalogo come `new` (poi `live`) e si lancia il sync: la landing la mostra da sola, ma va controllato che il testo regga nella pagina.
+1. `components/layout/sidebar.tsx` → `NAV_ITEMS`: **remove `comingSoon: true`** and check that `href` matches the real route.
+2. `lib/features/catalog.ts`: move the entry from `soon` to `new` or `live` (and update the description if needed); then `pnpm sync:features` in `landing/`.
+3. A **new feature** (not planned) is added to the catalog as `new` (then `live`) and the sync is run: the landing shows it by itself, but check that the text holds up on the page.
 
-Una schermata o feature nuova non è "completata" finché il catalogo non è aggiornato, insieme a "Stato del progetto" qui sotto.
+A new screen or feature is not "complete" until the catalog is updated, together with "Project status" below.
 
-## Stato del progetto
+## Project status
 
-**Obiettivi di risparmio (2026-10-15)**: vista «Obiettivi» in Analitiche (`/analitiche/obiettivi`, nessuna voce in sidebar) con obiettivi finanziati da parti di conti e investimenti (al netto dell'imposta stimata), risparmio del mese diviso per priorità, data di arrivo e spostamento del traguardo FIRE; form in 5 passi, dettaglio con «Aggiorna i soldi da parte», promemoria email opt-in e riga nel riepilogo, Novità e sezione in Panoramica, catalogo e landing. Migration 0038 (numero da ricontrollare al merge). Voce in `docs/decisioni/2026-10-15-obiettivi-di-risparmio.md`. PR in bozza sul branch `claude/project-thread-slsnx2` (e nel repo infra per il pannello). Rimandati: pensione e debiti come fonti o obiettivi, effetti «dopo», grafico della strada, trascinamento per riordinare, storico automatico.
-**Import CSV: righe da controllare (2026-10-15)**: la schermata di un'analisi con righe non riconosciute dice quante su quante, raggruppa gli errori per motivo con riga e testo originale, e permette di importare le righe riconosciute saltando le altre, rianalizzare con l'AI senza ricaricare o caricare un file corretto; lista, isola ed email allineate. Voce in `docs/decisioni/2026-10-15-import-csv-righe-da-controllare.md`. PR in bozza sul branch `claude/import-csv-errori-chiari-xe6ph8`. Rimandati: correzione delle righe nell'anteprima, motivi con la colonna incriminata, riepilogo scaricabile delle righe saltate.
-**Landing «Sei domande» (2026-10-14)**: home rifatta da zero come racconto a scorrimento (sei domande a sinistra, finestra dell'app ferma a destra con pannelli vivi e screenshot veri, telefono fissato su mobile), loghi in apertura, sicurezza con PSD2 spiegata, codice aperto in home, nav statica, hub `/strumenti` con il nuovo calcolatore dell'obiettivo di risparmio, sei domande frequenti; login dell'app nello stesso stile (`AuthFrame`, anteprima della Panoramica). Voce in `docs/decisioni/2026-10-14-landing-sei-domande.md`. PR #371 unita (online con la prossima release); «Funziona con» rifatto in schede con loghi e icone uniformi (`docs/decisioni/2026-10-15-landing-funziona-con-schede.md`, PR #378 unita). Poi (2026-10-15 sera): cornice da iPhone in CSS (`PhoneFrame`/`PhoneShot`, catture da telefono a 390×751 per tutte le schermate, `PHONE_ONLY=1`), finestra della storia senza zoom (schermate mai tagliate), sezione «Com'è fatta, schermata per schermata» con la galleria intera, testi di home/FAQ/regole/calcolatori in parole semplici (`docs/decisioni/2026-10-15-landing-telefono-vero-e-testi-semplici.md`, PR in bozza sul branch `claude/landing-redesign-from-zero-9qfbrj`). Rimandati: immagine Open Graph, Safari/iPhone, pagine per domanda, anteprima del login sul telefono.
-**Analitiche dai dati veri (2026-10-12)**: periodo dei dati scelto sopra i cursori (ultimi 12 mesi di default, 24 o mesi a scelta) per risparmio, spesa e rendimento, salvato nelle ipotesi; etichette «Dai tuoi dati» / «Inserito a mano» con ritorno al dato; media annua dal primo mese con movimenti. Voce in `docs/decisioni/2026-10-12-analitiche-periodo-dei-dati.md`. PR in bozza sul branch `claude/project-thread-5uvzok`. Rimandati: periodo diverso per ciascuna cifra, money-weighted.
-**Categorie sicure da sole (2026-10-12)**: regole sempre applicate (anche negli import CSV) e, con «Lascia che l'app scelga quando è quasi certa» (accesa di default, spenta per chi aveva già il consenso AI), proposte almeno al 90% applicate senza chiedere; Categorizza con «Da decidere» e «Messe dall'app» (correzione con un tocco), origine su ogni proposta e in Movimenti (la sicurezza in percentuale solo nel tooltip), loghi degli esercenti via Logo.dev dal server (dizionario, sito scritto nel movimento, ricerca per nome solo per nomi visti in almeno 3 utenti con `LOGODEV_SECRET_KEY`), date dei movimenti sulle carte, ricerca del foglio categorie che si azzera; flusso sistemato (regole che valgono subito, conteggi della sync dopo il giro automatico, un solo «Da decidere», riga nel riepilogo email) e «Ricategorizza» (nel menu «⋯», con anteprima e annulla per 7 giorni); testi semplificati per chi non è esperto; migration 0034 e 0035. Voce in `docs/decisioni/2026-10-12-categorizzazione-soglia-90.md`. PR #351 in bozza (e infra #46 per i pannelli). Rimandati: soglia regolabile, elenco degli esercenti frequenti per il dizionario, Ricategorizza come job per account enormi.
-**Cifratura dei campi (2026-10-12)**: descrizioni e note dei movimenti, note di debiti e investimenti e token cifrati nel database con `DATA_ENCRYPTION_KEY` (facoltativa, righe in chiaro sempre leggibili, `pnpm db:encrypt-fields` per le vecchie); voce in `docs/decisioni/2026-10-12-cifratura-campi.md`. Stessa PR della pagina Sicurezza (e PR nel repo infra). Da fare a mano: creare la chiave e lanciare il job (runbook `cifratura-dati.md`). Rimandati: disco della VPS, rotazione della chiave.
-**Pagina Sicurezza (2026-10-12)**: `/sicurezza` sulla landing con il percorso dei dati (diagramma interattivo), cosa si salva e cosa no, limiti dichiarati e fonti ufficiali; link da menu, home, login e «Collega banca»; consenso all'assistente AI nell'onboarding ora spento di default. Voce in `docs/decisioni/2026-10-12-pagina-sicurezza.md`. PR in bozza sul branch `claude/project-thread-i4km61`. Rimandati: SSH solo con chiave, accesso del ruolo `bb_dev` ai dati di produzione, `security.txt`.
-**Limite collegamenti bancari (2026-10-11)**: una banca per persona, 40 banche nuove in tutto (piano gratuito GoCardless da 50, i rinnovi usano la riserva), 3 consensi per persona in 31 giorni, posti contati sotto lock e anche dai consensi già eliminati (migration 0032); scollegare l'ultimo conto revoca subito il consenso su GoCardless; «In arrivo» nel dialog «Nuovo conto» con conto manuale e import. Voce in `docs/decisioni/2026-10-11-limite-collegamenti-bancari.md`. PR sul branch `claude/project-thread-m5z001` (e nel repo infra). Rimandati: lista d'attesa, posti residui visibili.
-**Categorie di default e onboarding (2026-10-11)**: default da 33 a 23 più 5 facoltative, con una descrizione per categoria (migration 0031, passata anche all'assistente), e passo «Categorie» nell'onboarding con foglio «Personalizza»; voce in `docs/decisioni/2026-10-11-categorie-di-default-e-onboarding.md`. PR in bozza sul branch `claude/project-thread-7e3984`. Rimandati: icona e colore nel passo, proposte in base alla banca.
-**Notifiche nell'onboarding e riepilogo con gli investimenti (2026-10-11)**: passo «Quali email vuoi ricevere?» nell'onboarding (stesse preferenze di Impostazioni, tutto spento di default) e riepilogo email con Liquidità e Investimenti in poche righe (guadagno del periodo, dividendi, versamenti; nessun consiglio); voce in `docs/decisioni/2026-10-11-notifiche-onboarding-e-recap.md`. PR in bozza sul branch `claude/project-thread-fyuw69` (e nel repo infra per il pannello). Rimandati: patrimonio e debiti nel riepilogo, sezioni a scelta.
-**Segnalazione rapida (2026-10-11)**: pulsante «Scrivici» in sidebar e in alto su telefono, «Segnala questo problema» sotto gli errori di import, sync e aggiunte (allega l'errore), pagina Aiuto con il form in cima; indirizzo di supporto ora `support@buddybudget.io`. Voce in `docs/decisioni/2026-10-11-segnalazione-rapida.md`. PR #323. Rimandati: screenshot allegato, risposte nell'app.
-**Scheda titolo e indicatori fondamentali (2026-10-11)**: pagina del titolo ripensata (pagina unica): numeri in breve, grafico con i tuoi acquisti, rischio, e per le azioni multipli, valori per azione, conti, margini, ROE e debiti calcolati dai bilanci Yahoo con la forbice storica e il calcolo sotto ogni numero; per gli ETF composizione, settori, paniere e costo del TER. Voce in `docs/decisioni/2026-10-11-scheda-titolo-e-indicatori.md`. PR in bozza sul branch `claude/project-thread-rcuszy` (e nel repo infra per il pannello). Rimandati: SEC per le USA, fonti a pagamento, trimestrali, aree degli ETF.
-**Fogli dal basso su mobile (2026-10-11)**: sul telefono popover, dialog e conferme si aprono come foglio dal basso (trascina giù per chiudere), Dividi e Modifica dei movimenti compresi; desktop invariato, form lunghi a tutto schermo; voce in `docs/decisioni/2026-10-11-fogli-dal-basso-su-mobile.md`. PR sul branch `claude/project-thread-m82qpp`. Rimandati: menu a tendina e select.
-**Account inattivi (2026-10-11)**: cron giornaliero `inactive-accounts` che avvisa via email a 83 giorni senza accessi ed elimina a 90 chi non è rientrato; parte in dry-run (`INACTIVITY_CLEANUP_MODE=execute` a mano dopo il dry-run), migration 0029, Privacy/Termini aggiornati con `LEGAL_VERSION` 2026-10-12 (nuova accettazione e revisione di un professionista da fare); voce in `docs/decisioni/2026-10-11-account-inattivi.md`. PR in bozza sul branch `claude/project-thread-ek292d` (e nel repo infra). Rimandati: cron nel compose, email non verificate vecchie, dati orfani, eccezione per gli abbonamenti.
-**Self-hosting (2026-10-10)**: `docker-compose.yml` (app, Postgres, Redis, migrate, cron) e guida `docs/self-hosting.md`; Google, Resend e GoCardless ora facoltativi; immagini multi-arch su ghcr.io dietro la variabile di repo `SELFHOST_IMAGES`; voce in `docs/decisioni/2026-10-10-self-hosting-docker.md`. PR sul branch `claude/project-thread-a8nxln`. Rimandati: firma cosign, mirror Docker Hub, worker CSV AI nel compose.
-**Primi passi (2026-10-10)**: checklist «Primi passi» in Panoramica che si compila dai dati veri, «Esplora con dati d'esempio» azzerabile (conti `is_demo`, mai mischiati: i dati veri sono bloccati finché la demo è attiva) e stati vuoti con azione in Movimenti, Conti, Investimenti e Debiti; voce in `docs/decisioni/2026-10-10-primi-passi-e-dati-d-esempio.md`, migration 0026. PR in bozza sul branch `claude/project-thread-ec9i5w`. Rimandati: riaprire la checklist dalla UI, demo con investimenti, guardia su import personalizzati.
+**English as the repository language (2026-10-15)**: all documentation (README, SECURITY, CONTRIBUTING, this file, `docs/` with decisions, specs, plans and the self-hosting guide), the PR/issue templates and the comments in CI, Docker and env examples translated to English; the rule for the future is in "Rules for Claude". File names unchanged. Entry in `docs/decisioni/2026-10-15-english-as-repo-language.md`. Draft PR on branch `claude/project-thread-axdwcm` (and in the infra repo). Deferred: comments already in the source code (translated when a file is touched), renaming Italian folders/files, the existing CHANGELOG.
+**Savings goals (2026-10-15)**: «Obiettivi» ("Goals") view in Analitiche (Analytics) (`/analitiche/obiettivi`, no sidebar entry) with goals funded by portions of accounts and investments (net of estimated tax), the month's savings split by priority, arrival date and shift of the FIRE target; 5-step form, detail with «Aggiorna i soldi da parte» ("Update the money set aside"), opt-in email reminder and a line in the summary, Novità (What's new) and a section in Panoramica (Overview), catalog and landing. Migration 0038 (number to recheck at merge). Entry in `docs/decisioni/2026-10-15-obiettivi-di-risparmio.md`. Draft PR on branch `claude/project-thread-slsnx2` (and in the infra repo for the panel). Deferred: pension and debts as sources or goals, "after" effects, chart of the path, drag to reorder, automatic history.
+**CSV import: rows to check (2026-10-15)**: the screen of an analysis with unrecognised rows says how many out of how many, groups errors by reason with row and original text, and allows importing the recognised rows while skipping the others, re-analysing with the AI without re-uploading, or uploading a corrected file; list, island and email aligned. Entry in `docs/decisioni/2026-10-15-import-csv-righe-da-controllare.md`. Draft PR on branch `claude/import-csv-errori-chiari-xe6ph8`. Deferred: fixing rows in the preview, reasons naming the offending column, downloadable summary of skipped rows.
+**Landing «Sei domande» ("Six questions") (2026-10-14)**: home rebuilt from scratch as a scrolling story (six questions on the left, a fixed app window on the right with live panels and real screenshots, phone pinned on mobile), logos at the top, security with PSD2 explained, open source code on the home page, static nav, `/strumenti` hub with the new savings goal calculator, six FAQs; app login in the same style (`AuthFrame`, preview of the Panoramica). Entry in `docs/decisioni/2026-10-14-landing-sei-domande.md`. PR #371 merged (online with the next release); «Funziona con» ("Works with") redone as cards with uniform logos and icons (`docs/decisioni/2026-10-15-landing-funziona-con-schede.md`, PR #378 merged). Then (evening of 2026-10-15): CSS iPhone frame (`PhoneFrame`/`PhoneShot`, phone captures at 390×751 for every screen, `PHONE_ONLY=1`), story window without zoom (screenshots never cropped), «Com'è fatta, schermata per schermata» ("How it looks, screen by screen") section with the whole gallery, home/FAQ/rules/calculator texts in plain words (`docs/decisioni/2026-10-15-landing-telefono-vero-e-testi-semplici.md`, draft PR #383 on branch `claude/landing-redesign-from-zero-9qfbrj`). Deferred: Open Graph image, Safari/iPhone, per-question pages, login preview on the phone.
+**Analytics from real data (2026-10-12)**: data period chosen above the sliders (last 12 months by default, 24 or a chosen number of months) for savings, spending and return, saved in the assumptions; «Dai tuoi dati» ("From your data") / «Inserito a mano» ("Entered by hand") labels with a way back to the data; yearly average from the first month with transactions. Entry in `docs/decisioni/2026-10-12-analitiche-periodo-dei-dati.md`. Draft PR on branch `claude/project-thread-5uvzok`. Deferred: different period for each figure, money-weighted.
+**Categories that are safe on their own (2026-10-12)**: rules always applied (also in CSV imports) and, with «Lascia che l'app scelga quando è quasi certa» ("Let the app choose when it is almost certain") (on by default, off for those who already had AI consent), suggestions at 90% or more applied without asking; Categorizza (Categorise) with «Da decidere» ("To decide") and «Messe dall'app» ("Set by the app") (one-tap correction), origin on every suggestion and in Movimenti (Transactions) (confidence as a percentage only in the tooltip), merchant logos via Logo.dev from the server (dictionary, website written in the transaction, name search only for names seen in at least 3 users with `LOGODEV_SECRET_KEY`), transaction dates on the cards, category sheet search that resets; flow fixed (rules that apply immediately, sync counts after the automatic pass, a single «Da decidere», a line in the email summary) and «Ricategorizza» ("Recategorise") (in the «⋯» menu, with preview and undo for 7 days); texts simplified for non-experts; migrations 0034 and 0035. Entry in `docs/decisioni/2026-10-12-categorizzazione-soglia-90.md`. Draft PR #351 (and infra #46 for the panels). Deferred: adjustable threshold, list of frequent merchants for the dictionary, Ricategorizza as a job for huge accounts.
+**Field encryption (2026-10-12)**: transaction descriptions and notes, debt and investment notes and tokens encrypted in the database with `DATA_ENCRYPTION_KEY` (optional, plaintext rows always readable, `pnpm db:encrypt-fields` for the old ones); entry in `docs/decisioni/2026-10-12-cifratura-campi.md`. Same PR as the Security page (and a PR in the infra repo). To do by hand: create the key and launch the job (runbook `cifratura-dati.md`). Deferred: VPS disk, key rotation.
+**Security page (2026-10-12)**: `/sicurezza` on the landing with the data path (interactive diagram), what is stored and what is not, declared limits and official sources; links from menu, home, login and «Collega banca» ("Connect bank"); consent to the AI assistant in onboarding now off by default. Entry in `docs/decisioni/2026-10-12-pagina-sicurezza.md`. Draft PR on branch `claude/project-thread-i4km61`. Deferred: SSH key-only, access of the `bb_dev` role to production data, `security.txt`.
+**Bank connection limit (2026-10-11)**: one bank per person, 40 new banks in total (GoCardless free plan of 50, renewals use the reserve), 3 consents per person in 31 days, slots counted under lock and also from already deleted consents (migration 0032); disconnecting the last account immediately revokes the consent on GoCardless; «In arrivo» ("Coming soon") in the «Nuovo conto» ("New account") dialog with manual account and import. Entry in `docs/decisioni/2026-10-11-limite-collegamenti-bancari.md`. PR on branch `claude/project-thread-m5z001` (and in the infra repo). Deferred: waiting list, visible remaining slots.
+**Default categories and onboarding (2026-10-11)**: defaults from 33 down to 23 plus 5 optional, with a description per category (migration 0031, also passed to the assistant), and a «Categorie» ("Categories") step in onboarding with a «Personalizza» ("Customise") sheet; entry in `docs/decisioni/2026-10-11-categorie-di-default-e-onboarding.md`. Draft PR on branch `claude/project-thread-7e3984`. Deferred: icon and color in the step, suggestions based on the bank.
+**Notifications in onboarding and summary with investments (2026-10-11)**: «Quali email vuoi ricevere?» ("Which emails do you want to receive?") step in onboarding (same preferences as Impostazioni (Settings), everything off by default) and summary email with Liquidità and Investimenti in a few lines (gain for the period, dividends, contributions; no advice); entry in `docs/decisioni/2026-10-11-notifiche-onboarding-e-recap.md`. Draft PR on branch `claude/project-thread-fyuw69` (and in the infra repo for the panel). Deferred: net worth and debts in the summary, sections to choose.
+**Quick report (2026-10-11)**: «Scrivici» ("Write to us") button in the sidebar and at the top on the phone, «Segnala questo problema» ("Report this problem") under import, sync and add errors (attaches the error), Aiuto (Help) page with the form at the top; support address now `support@buddybudget.io`. Entry in `docs/decisioni/2026-10-11-segnalazione-rapida.md`. PR #323. Deferred: attached screenshot, replies in the app.
+**Security detail page and fundamental indicators (2026-10-11)**: page of the security (stock, ETF…) redesigned (single page): numbers in brief, chart with your purchases, risk, and for stocks multiples, per-share values, accounts, margins, ROE and debts calculated from Yahoo financial statements with the historical range and the calculation under each number; for ETFs composition, sectors, basket and cost of the TER. Entry in `docs/decisioni/2026-10-11-scheda-titolo-e-indicatori.md`. Draft PR on branch `claude/project-thread-rcuszy` (and in the infra repo for the panel). Deferred: SEC for US companies, paid sources, quarterly reports, ETF regions.
+**Bottom sheets on mobile (2026-10-11)**: on the phone popovers, dialogs and confirmations open as a bottom sheet (drag down to close), including Dividi (Split) and Modifica (Edit) for transactions; desktop unchanged, long forms full screen; entry in `docs/decisioni/2026-10-11-fogli-dal-basso-su-mobile.md`. PR on branch `claude/project-thread-m82qpp`. Deferred: dropdown menus and selects.
+**Inactive accounts (2026-10-11)**: daily `inactive-accounts` cron that warns by email after 83 days without sign-in and deletes at 90 those who have not come back; starts in dry-run (`INACTIVITY_CLEANUP_MODE=execute` by hand after the dry-run), migration 0029, Privacy/Terms updated with `LEGAL_VERSION` 2026-10-12 (new acceptance and review by a professional to do); entry in `docs/decisioni/2026-10-11-account-inattivi.md`. Draft PR on branch `claude/project-thread-ek292d` (and in the infra repo). Deferred: cron in the compose, old unverified emails, orphan data, exception for subscriptions.
+**Self-hosting (2026-10-10)**: `docker-compose.yml` (app, Postgres, Redis, migrate, cron) and guide `docs/self-hosting.md`; Google, Resend and GoCardless now optional; multi-arch images on ghcr.io behind the `SELFHOST_IMAGES` repo variable; entry in `docs/decisioni/2026-10-10-self-hosting-docker.md`. PR on branch `claude/project-thread-a8nxln`. Deferred: cosign signing, Docker Hub mirror, AI CSV worker in the compose.
+**First steps (2026-10-10)**: «Primi passi» ("First steps") checklist in Panoramica that fills itself from real data, resettable «Esplora con dati d'esempio» ("Explore with sample data") (`is_demo` accounts, never mixed: real data is blocked while the demo is active) and empty states with an action in Movimenti, Conti (Accounts), Investimenti and Debiti (Debts); entry in `docs/decisioni/2026-10-10-primi-passi-e-dati-d-esempio.md`, migration 0026. Draft PR on branch `claude/project-thread-ec9i5w`. Deferred: reopening the checklist from the UI, demo with investments, guard on custom imports.
 
-**Email di riepilogo e avvisi (2026-10-10)**: riepilogo periodico (mensile di default o settimanale), avvisi sul budget (80% e 100%) e sulle rate in scadenza, tutti opt-in da Impostazioni → Notifiche, con disiscrizione a un clic (token firmato, `List-Unsubscribe` one-click) in ogni email non di servizio; cron `/api/cron/notifications` in dry-run finché non si imposta `NOTIFICATIONS_MODE=execute`; voce in `docs/decisioni/2026-10-10-email-riepilogo-e-avvisi.md`. PR in bozza sul branch `claude/project-thread-eto0ft` (migration 0025, da ricontrollare al merge). Rimandati: avvisi su investimenti e patrimonio, orario a scelta, prova su client reali.
+**Summary and alert emails (2026-10-10)**: periodic summary (monthly by default, or weekly), budget alerts (80% and 100%) and alerts on upcoming instalments, all opt-in from Impostazioni → Notifiche (Settings → Notifications), with one-click unsubscribe (signed token, one-click `List-Unsubscribe`) in every non-service email; cron `/api/cron/notifications` in dry-run until `NOTIFICATIONS_MODE=execute` is set; entry in `docs/decisioni/2026-10-10-email-riepilogo-e-avvisi.md`. Draft PR on branch `claude/project-thread-eto0ft` (migration 0025, to recheck at merge). Deferred: alerts on investments and net worth, time of choice, testing on real clients.
 
-**Abbonamenti (2026-10-10)**: scheda «Abbonamenti» in Liquidità (`/liquidita/abbonamenti`): addebiti ricorrenti rilevati dai movimenti (cadenza, importo, giorno), da confermare o scartare, con totale al mese e all'anno, prossimo addebito, aumenti di prezzo e abbonamenti non più addebitati; aggiunta manuale; scelte salvate (migration 0027). Voce in `docs/decisioni/2026-10-10-abbonamenti.md`. PR in bozza sul branch `claude/project-thread-5fqfo3`. Rimandati: legame con le rate dei Debiti, scadenze in sidebar, avvisi email/push, pannello Grafana.
+**Subscriptions (2026-10-10)**: «Abbonamenti» ("Subscriptions") tab in Liquidità (`/liquidita/abbonamenti`): recurring charges detected from transactions (frequency, amount, day), to confirm or discard, with total per month and per year, next charge, price increases and subscriptions no longer charged; manual addition; saved choices (migration 0027). Entry in `docs/decisioni/2026-10-10-abbonamenti.md`. Draft PR on branch `claude/project-thread-5fqfo3`. Deferred: link with Debiti instalments, due dates in the sidebar, email/push alerts, Grafana panel.
 
-**Effetti animati (2026-10-10)**: numeri che scorrono, testi che cambiano lettera per lettera (anche nei pulsanti), saluto che emerge, schede con indicatore che scivola, dialog che cresce dal pulsante, isola scura dei sync; nessun effetto di luce. Componenti in `components/motion/`; voce in `docs/decisioni/2026-10-10-effetti-animati.md`. PR in bozza sul branch `claude/project-thread-0syccd`. Rimandati: animazioni sulle card/grafici e sui toast.
+**Animated effects (2026-10-10)**: rolling numbers, text changing letter by letter (also in buttons), greeting that emerges, tabs with a sliding indicator, dialog that grows from the button, dark island for syncs; no light effects. Components in `components/motion/`; entry in `docs/decisioni/2026-10-10-effetti-animati.md`. Draft PR on branch `claude/project-thread-0syccd`. Deferred: animations on cards/charts and toasts.
 
-**Landing «Il foglio» (2026-10-11)**: home come foglio di calcolo che diventa l'app (direzione C scelta da Daniele), loghi dei broker, stile allineato all'app (PR #311, unita). Seconda passata: un solo «giro dell'app» a schede con schermate intere (mai ritagliate), bandiere dei paesi delle banche e icone, catalogo sfoltito a 34 voci e tolto dalla home (resta `/funzioni`), indice delle sezioni tolto, card «E tutti gli altri» tra i broker, pagine interne nello stesso stile; voce in `docs/decisioni/2026-10-11-landing-giro-dell-app.md`. PR in bozza sul branch `claude/project-thread-1pbv5w`. Rimandati: rifare gli screenshot con inquadrature pensate per la landing, immagine Open Graph.
-**Login «Il foglio» (2026-10-11)**: le pagine di accesso sono un foglio di calcolo (barra della formula, email come cella B6) con a destra un foglio dei conti d'esempio che si sistema da solo riga per riga (schede «Cosa c'è dentro», «Novità» e «In arrivo» tolte), titolo «Entra in BuddyBudget»; voci in `docs/decisioni/2026-10-11-login-il-foglio.md` e `docs/decisioni/2026-10-11-landing-e-accesso-ritocchi.md`. PR #322 unita, ritocchi nella PR #331. Rimandati: formula propria per onboarding e Termini, prova su Safari/iPhone.
+**Landing «Il foglio» ("The spreadsheet") (2026-10-11)**: home as a spreadsheet that turns into the app (direction C chosen by Daniele), broker logos, style aligned with the app (PR #311, merged). Second pass: a single tabbed «giro dell'app» ("app tour") with full screens (never cropped), flags of the banks' countries and icons, catalog trimmed to 34 entries and removed from the home page (it stays at `/funzioni`), section index removed, «E tutti gli altri» ("And all the others") card among the brokers, internal pages in the same style; entry in `docs/decisioni/2026-10-11-landing-giro-dell-app.md`. Draft PR on branch `claude/project-thread-1pbv5w`. Deferred: redo the screenshots with framings designed for the landing, Open Graph image.
+**Login «Il foglio» (2026-10-11)**: the sign-in pages are a spreadsheet (formula bar, email as cell B6) with, on the right, a sheet of sample accounts that tidies itself row by row («Cosa c'è dentro», «Novità» and «In arrivo» tabs — "What's inside", "What's new", "Coming soon" — removed), title «Entra in BuddyBudget» ("Sign in to BuddyBudget"); entries in `docs/decisioni/2026-10-11-login-il-foglio.md` and `docs/decisioni/2026-10-11-landing-e-accesso-ritocchi.md`. PR #322 merged, touch-ups in PR #331. Deferred: own formula for onboarding and Terms, test on Safari/iPhone.
 
-**Landing nuova (2026-10-09)**: home ristrutturata dopo l'analisi dei competitor (fatti in apertura, tre passi, regole italiane con fonti, quattro gruppi, per chi è, confronto) e `/llms.txt` + crawler AI ammessi; voce in `docs/decisioni/2026-10-09-landing-nuova-struttura.md`. PR in bozza sul branch `claude/project-thread-kflwwq`. Rimandati: pagine per domanda, `/sicurezza`, confronti, glossario, Lighthouse.
+**New landing (2026-10-09)**: home restructured after the competitor analysis (facts at the top, three steps, Italian rules with sources, four groups, who it is for, comparison) and `/llms.txt` + AI crawlers allowed; entry in `docs/decisioni/2026-10-09-landing-nuova-struttura.md`. Draft PR on branch `claude/project-thread-kflwwq`. Deferred: per-question pages, `/sicurezza`, comparisons, glossary, Lighthouse.
 
-**Sidebar (2026-10-09)**: moduli «Prossime scadenze» e «Obiettivo FIRE» accanto al riepilogo, barra in basso su mobile e sezione Impostazioni → «Barra laterale» per accendere/spegnere tutto (per dispositivo, localStorage); voce in `docs/decisioni/2026-10-09-sidebar-moduli-e-barra-mobile.md`. PR in bozza sul branch `claude/project-thread-mwh38f`. Rimandati: moduli riordinabili, preferenze sull'account.
+**Sidebar (2026-10-09)**: «Prossime scadenze» ("Upcoming due dates") and «Obiettivo FIRE» ("FIRE goal") modules next to the summary, bottom bar on mobile and an Impostazioni → «Barra laterale» ("Sidebar") section to turn everything on/off (per device, localStorage); entry in `docs/decisioni/2026-10-09-sidebar-moduli-e-barra-mobile.md`. Draft PR on branch `claude/project-thread-mwh38f`. Deferred: reorderable modules, preferences on the account.
 
-**Analitiche (2026-10-09)**: dalla proposta C scelta da Daniele, cursori «e se…» (risparmio, spesa, rendimento, prelievo) con anno del traguardo e quattro schede-risposta nello stile della Panoramica; voce in `docs/decisioni/2026-10-09-analitiche-cursori.md`. PR in bozza sul branch `claude/project-thread-qx2vob`. Rimandati: restyling dei dettagli «Per esperti», Rischio come risposta propria.
+**Analitiche (2026-10-09)**: from proposal C chosen by Daniele, «e se…» ("what if…") sliders (savings, spending, return, withdrawal) with the target year and four answer cards in the Panoramica style; entry in `docs/decisioni/2026-10-09-analitiche-cursori.md`. Draft PR on branch `claude/project-thread-qx2vob`. Deferred: restyling of the «Per esperti» ("For experts") details, Risk as its own answer.
 
-**Liquidità (2026-10-08)**: Conti e Movimenti unificati in `/liquidita` (Movimenti · Analisi · Conti · Categorie e regole) con lo stile della Panoramica come standard, Dividi con scorciatoie e categoria cambiabile dall'icona; voce in `docs/decisioni/2026-10-08-liquidita.md`. PR in bozza sul branch `claude/project-thread-6pd4uu`. Rimandati: redesign di Categorie e Regole (oggi riusano board e gestore esistenti) e dei moduli di modifica.
+**Liquidità (2026-10-08)**: Conti and Movimenti unified in `/liquidita` (Movimenti · Analisi · Conti · Categorie e regole — Transactions · Analysis · Accounts · Categories and rules) with the Panoramica style as the standard, Dividi with shortcuts and category changeable from the icon; entry in `docs/decisioni/2026-10-08-liquidita.md`. Draft PR on branch `claude/project-thread-6pd4uu`. Deferred: redesign of Categorie and Regole (today they reuse the existing board and manager) and of the edit forms.
 
-**Impatto costi e imposte (2026-10-06)**: due interruttori indipendenti accanto al grafico e card di dettaglio nel Portafoglio; imposte dal medesimo calcolo della scheda Tasse, con regime, aliquote e compensazioni; i toggle «Reinvesti costi» e «Reinvesti imposte», inizialmente spenti, aggiungono al valore reale i risparmi reinvestiti dal giorno di addebito al rendimento giornaliero osservato, aggiornando totale e grafico. Perimetro: oneri registrati sulle operazioni e imposte sulle vendite stimate dalla scheda Tasse; oneri autonomi del conto, TER e bollo esclusi. PR #169; branch `codex/portfolio-cost-impact`.
+**Cost and tax impact (2026-10-06)**: two independent toggles next to the chart and a detail card in the Portfolio; taxes from the same calculation as the Tasse (Taxes) tab, with regime, rates and offsets; the «Reinvesti costi» ("Reinvest costs") and «Reinvesti imposte» ("Reinvest taxes") toggles, initially off, add to the real value the savings reinvested from the charge date at the observed daily return, updating total and chart. Scope: charges recorded on transactions and taxes on sales estimated by the Tasse tab; standalone account charges, TER and bollo (stamp duty) excluded. PR #169; branch `codex/portfolio-cost-impact`.
 
-**Gestione importazioni (2026-10-06)**: scheda Rendiconti rimossa; Gestisci importazioni ora in Operazioni, accessibile anche senza transazioni. Vecchi link reindirizzati. Nessuna modifica ai dati importati.
+**Import management (2026-10-06)**: Rendiconti (Statements) tab removed; Gestisci importazioni (Manage imports) now in Operazioni (Transactions), accessible even without transactions. Old links redirected. No change to imported data.
 
-**Vista broker (2026-10-05)**: filtri temporanei per broker condivisi tra le schede Investimenti e confronto TWR sovrapposto in Performance. Nessuna cancellazione o modifica del patrimonio generale. Dettagli in `docs/decisioni/2026-10-05-filtri-broker-e-confronto.md`; inclusi nella PR di gestione import.
+**Broker view (2026-10-05)**: temporary per-broker filters shared across the Investimenti tabs and overlaid TWR comparison in Performance. No deletion or modification of overall net worth. Details in `docs/decisioni/2026-10-05-filtri-broker-e-confronto.md`; included in the import management PR.
 
-**Recupero import duplicati (2026-10-04)**: pulsante di reset completo dello storico investimenti con anteprima e conferma digitata, inclusi vecchi import senza origine. Branch `codex/reset-investment-imports`; nessun reset eseguito in produzione. Dettagli in `docs/ibkr-import.md`.
+**Recovery of duplicate imports (2026-10-04)**: button for a full reset of the investment history with preview and typed confirmation, including old imports without an origin. Branch `codex/reset-investment-imports`; no reset performed in production. Details in `docs/ibkr-import.md`.
 
-**Liquidità broker negli Investimenti (2026-10-05)**: interruttore «Includi liquidità» nella card Portafoglio per totale titoli + cash, dettaglio espandibile saldi e data rendiconto, filtri per broker anche sui conti senza titoli. Nessun doppio conteggio nel patrimonio; grafici e rendimenti restano dei titoli. PR #148 in revisione.
+**Broker cash in Investimenti (2026-10-05)**: «Includi liquidità» ("Include cash") toggle in the Portfolio card for securities + cash total, expandable detail of balances and statement date, per-broker filters also on accounts without securities. No double counting in net worth; charts and returns remain those of the securities. PR #148 under review.
 
-**Import IBKR e DEGIRO: correzione locale in corso di revisione (2026-10-04)** sul branch `codex/ibkr-local-validation`; PR autorizzata dall’utente, in apertura. Rendiconti persistiti con cassa riconciliata, snapshot broker e rettifiche non monetarie; dettagli e limiti in `docs/ibkr-import.md` e `docs/degiro-import.md`. DEGIRO Account.csv si importa nello stesso portafoglio con origine e cassa separate; sostituzione e cancellazione restano isolate per broker. Aggiornamenti YTD sostituiscono atomicamente periodi interamente coperti; gestione importazioni con cancellazione delle dipendenze confermate. Restano fuori scope la ricostruzione fiscale dei lotti e gli overlap parziali; servono rispettivamente il dettaglio lotti e un export che copra i periodi coinvolti.
+**IBKR and DEGIRO import: local fix under review (2026-10-04)** on branch `codex/ibkr-local-validation`; PR authorised by the user, being opened. Persisted statements with reconciled cash, broker snapshots and non-cash adjustments; details and limits in `docs/ibkr-import.md` and `docs/degiro-import.md`. DEGIRO Account.csv is imported into the same portfolio with separate origin and cash; replacement and deletion stay isolated per broker. YTD updates atomically replace fully covered periods; import management with deletion of confirmed dependencies. Out of scope: fiscal reconstruction of lots and partial overlaps; they require, respectively, the lot detail and an export covering the periods involved.
 
-Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decision-log.md`](docs/decision-log.md) e nella spec/piano corrispondente in `docs/superpowers/`.
+Updated on 2026-10-01. The historical detail of each piece of work is in [`docs/decision-log.md`](docs/decision-log.md) and in the corresponding spec/plan in `docs/superpowers/`.
 
-### Fatto (tutto su `main`, in produzione su k3s)
+### Done (all on `main`, in production on k3s)
 
-- **Base**: autenticazione (better-auth, magic link + Google), onboarding, Conti (manuali + Open Banking GoCardless con sync manuale e cron), Panoramica con patrimonio netto per classe di asset, login a foglio di calcolo, brand identity e PWA installabile, pulsante "nascondi importi", pagina Impostazioni (profilo, sessioni, export ZIP, reset, disattivazione con 30 giorni, eliminazione), etichetta versione in sidebar, sidebar con riepilogo finanziario.
-- **Movimenti** (`/liquidita`: Movimenti · Analisi · Conti · Categorie e regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
-- **Investimenti** (Fasi 1-4 e 6 + import CSV): fonti di prezzo gratuite con riserva automatica, operazioni, rendimenti e benchmark, rischio e diversificazione, fiscalità italiana, Proventi, Titoli con watchlist e avvisi di prezzo. Cron `market-prices` 3 volte al giorno.
-- **Debiti**: Fase 1 (motore e finanziamenti, PR #36), Fase 2 (estinzioni anticipate, PR #38). Fasi 3 e 4 implementate nella PR #43 (vedi "In corso").
-- **Infrastruttura**: migrazione Vercel+Neon → VPS k3s completata (Fasi 0-7, cutover il 2026-09-27). Osservabilità Fasi A e B completate (log JSON, metriche, 4 dashboard, 12 alert con runbook, Slack `#bb-allarmi`/`#bb-avvisi`/`#bb-deploy`).
+- **Base**: authentication (better-auth, magic link + Google), onboarding, Conti (manual + Open Banking GoCardless with manual sync and cron), Panoramica with net worth by asset class, spreadsheet-style login, brand identity and installable PWA, "hide amounts" button, Impostazioni page (profile, sessions, ZIP export, reset, deactivation with 30 days, deletion), version label in the sidebar, sidebar with financial summary.
+- **Movimenti** (`/liquidita`: Movimenti · Analisi · Conti · Categorie e regole): transactions, income/expenses, "Dividi", notes, budget per category, spending groups (Dovute/Volute/Te futuro/Saltuarie — Needs/Wants/Future you/Occasional), rule-based automatic categorisation and the `/categorizza` page, import and sync as background jobs with progress.
+- **Investimenti** (Phases 1-4 and 6 + CSV import): free price sources with automatic fallback, transactions, returns and benchmarks, risk and diversification, Italian taxation, Proventi (Income), Titoli (Securities) with watchlist and price alerts. `market-prices` cron 3 times a day.
+- **Debiti**: Phase 1 (engine and loans, PR #36), Phase 2 (early repayments, PR #38). Phases 3 and 4 implemented in PR #43 (see "In progress").
+- **Infrastructure**: Vercel+Neon → k3s VPS migration completed (Phases 0-7, cutover on 2026-09-27). Observability Phases A and B completed (JSON logs, metrics, 4 dashboards, 12 alerts with runbooks, Slack `#bb-allarmi`/`#bb-avvisi`/`#bb-deploy`).
 
-### In corso
+### In progress
 
-- **Analitiche** (`/analitiche`, dal 2026-10-04 una pagina con 4 domande e dettagli "Per esperti", visibile a tutti): implementata sul branch `claude/project-thread-idnurb`, PR in revisione. Migration 0016 (numero da ricontrollare al merge). Rimandato: dataset storici lunghi (backtest, bootstrap, stress di sequenza), fattori, ordine di vendita ottimale, esposizione valutaria, glidepath, TER automatico da Yahoo, pannelli Grafana. Vedi `docs/decision-log.md` 2026-10-03 e `docs/superpowers/specs/2026-10-03-analitiche-design.md`.
-- **Pensione** (`/pensione`, 5 schede): implementata sul branch `claude/project-thread-43tais`, senza PR. Fondi e fotografie (contributi netti + controvalore), rendimento, prelievo oggi, confronto TFR, proiezione, classe "Previdenza" nel patrimonio netto, export/reset, catalogo/landing/login aggiornati. Prima del merge: migration 0013_pensione in produzione (numero da ricontrollare al merge). Rimandato: aliquote per anno di adesione dei contributi (oggi una sola data di adesione), inflazione modificabile, più fondi nella proiezione, import da PDF/CSV del provider, contributi del datore e volontari distinti, modifica delle fotografie dalla UI (oggi si risalva la stessa data). Import delle fotografie da CSV/Excel: vedi `docs/decision-log.md` 2026-10-03 (PR in revisione; nessuna migration). Regole fiscali da validare. Spec `docs/superpowers/specs/2026-10-02-pensione-design.md`.
+- **Analitiche** (`/analitiche`, since 2026-10-04 a page with 4 questions and "Per esperti" details, visible to everyone): implemented on branch `claude/project-thread-idnurb`, PR under review. Migration 0016 (number to recheck at merge). Deferred: long historical datasets (backtest, bootstrap, sequence stress), factors, optimal selling order, currency exposure, glidepath, automatic TER from Yahoo, Grafana panels. See `docs/decision-log.md` 2026-10-03 and `docs/superpowers/specs/2026-10-03-analitiche-design.md`.
+- **Pensione** (`/pensione`, 5 tabs): implemented on branch `claude/project-thread-43tais`, without a PR. Funds and snapshots (net contributions + market value), return, withdrawal today, TFR comparison, projection, "Previdenza" (Pension) class in net worth, export/reset, catalog/landing/login updated. Before the merge: migration 0013_pensione in production (number to recheck at merge). Deferred: rates by year of joining for contributions (today a single joining date), editable inflation, more funds in the projection, import from the provider's PDF/CSV, separate employer and voluntary contributions, editing snapshots from the UI (today you re-save the same date). Import of snapshots from CSV/Excel: see `docs/decision-log.md` 2026-10-03 (PR under review; no migration). Tax rules to be validated. Spec `docs/superpowers/specs/2026-10-02-pensione-design.md`.
 
-- **Connessioni GoCardless**: avvisi di scadenza (banner + email, `/conti?rinnova=1`) e cron `gocardless-maintenance` che ripulisce la lista su GoCardless. PR in bozza; il cron parte in **dry-run** e va portato a `execute` a mano (`GOCARDLESS_CLEANUP_MODE` nel Secret) dopo qualche giorno di dry-run. Vedi `docs/decision-log.md` 2026-10-01.
-- **Debiti ridisegnata (2026-10-05)**: panoramica "Priorità e azioni" e Simulatore integrato nei finanziamenti (voce in `docs/decisioni/2026-10-05-debiti-priorita-e-azioni.md`); PR in bozza.
-- **Debiti**: Fasi 3-4 (credit Lombard) sostituite dalla ridisegnata sopra; il credit Lombard è stato rimosso dall'app il 2026-10-06 (vedi `docs/decisioni/2026-10-05-debiti-priorita-e-azioni.md`). Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`.
+- **GoCardless connections**: expiry warnings (banner + email, `/conti?rinnova=1`) and `gocardless-maintenance` cron that cleans up the list on GoCardless. Draft PR; the cron starts in **dry-run** and must be switched to `execute` by hand (`GOCARDLESS_CLEANUP_MODE` in the Secret) after a few days of dry-run. See `docs/decision-log.md` 2026-10-01.
+- **Debiti redesigned (2026-10-05)**: "Priorità e azioni" ("Priorities and actions") overview and Simulator integrated into loans (entry in `docs/decisioni/2026-10-05-debiti-priorita-e-azioni.md`); draft PR.
+- **Debiti**: Phases 3-4 (Lombard credit) replaced by the redesign above; Lombard credit was removed from the app on 2026-10-06 (see `docs/decisioni/2026-10-05-debiti-priorita-e-azioni.md`). Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`.
 
-### Previsto
+### Planned
 
-- **Landing** (`landing/`): sito statico servito da nginx nel cluster (namespace `app`, immagine `buddy-budget-landing`, manifest infra `argocd/manifests/landing`). Sito Umami "BuddyBudget Landing" creato (id nel Dockerfile). **Da fare, in quest ordine**: (1) spostare l app su `app.buddybudget.io` (`APP_URL`/`BETTER_AUTH_URL` nel Secret, redirect URI Google OAuth); (2) switch dell apice: togliere `apex-redirect-www` e puntare `Host(buddybudget.io)` al Service `landing`; (3) immagine Open Graph, validare testi di storia e confronto. Vedi `docs/decision-log.md` 2026-10-01.
+- **Landing** (`landing/`): static site served by nginx in the cluster (namespace `app`, image `buddy-budget-landing`, infra manifest `argocd/manifests/landing`). Umami site "BuddyBudget Landing" created (id in the Dockerfile). **To do, in this order**: (1) move the app to `app.buddybudget.io` (`APP_URL`/`BETTER_AUTH_URL` in the Secret, Google OAuth redirect URI); (2) apex switch: remove `apex-redirect-www` and point `Host(buddybudget.io)` to the `landing` Service; (3) Open Graph image, validate story and comparison texts. See `docs/decision-log.md` 2026-10-01.
 
-- **Osservabilità Fase C**: accesso in sola lettura per agenti via MCP (mai sulla VPS di produzione).
-- **Fase 7, Task 8 (migrazione VPS)**: non prima di 2 settimane dal cutover (cioè dopo il 2026-10-11) e con conferma esplicita dell'utente: rotazione di tutti i segreti (sono transitati su Vercel), chiusura definitiva di Vercel/Neon, rimozione delle chiavi Umami inutilizzate dall'env (`@vercel/analytics` è già stato tolto con la PR GDPR 3). Piano: `docs/superpowers/plans/2026-09-27-fase-7-cutover.md`.
-- **Sezione Budget separata**: oggi il budget per categoria vive nella legenda della torta in Movimenti. Serve un brainstorming dedicato (cambio di IA e data-model).
-- **Schermate non implementate**: Pianifica (vedi "Schermate in arrivo").
-- **i18n**: lingua e valuta sono scelte in onboarding, ma le stringhe sono ancora tutte in italiano; serve scegliere la libreria ed estrarre le stringhe.
-- **Backlog**: tracciato su Slack in `#bb-backlog` (vedi Regole). Lì ci sono anche idee e debiti minori.
+- **Observability Phase C**: read-only access for agents via MCP (never on the production VPS).
+- **Phase 7, Task 8 (VPS migration)**: not before 2 weeks after the cutover (i.e. after 2026-10-11) and with the user's explicit confirmation: rotation of all secrets (they went through Vercel), final shutdown of Vercel/Neon, removal of unused Umami keys from the env (`@vercel/analytics` was already removed with GDPR PR 3). Plan: `docs/superpowers/plans/2026-09-27-fase-7-cutover.md`.
+- **Separate Budget section**: today the budget per category lives in the pie chart legend in Movimenti. It needs a dedicated brainstorming (change of IA and data model).
+- **Screens not implemented**: Pianifica (see "Coming soon screens").
+- **i18n**: language and currency are chosen in onboarding, but the strings are still all in Italian; a library must be chosen and the strings extracted.
+- **Backlog**: tracked on Slack in `#bb-backlog` (see Rules). Ideas and minor debts are there too.
 
-### Rimandato consapevolmente
+### Consciously deferred
 
-- **Investimenti**: più portafogli per utente, ritenute estere e quadri della dichiarazione, notifica push PWA per gli avvisi, preset di import per un broker italiano (serve un export d'esempio), undo dell'import, screener (escluso), correzione dello storico attorno a uno split, aree degli ETF dai file degli emittenti, ribilanciamento con vendite, Sortino/VaR.
-- **Debiti**: aggiornamento automatico Euribor, valute estere, tasso misto/cap, debiti informali, push sulle scadenze, quota capitale/interessi nel Cash flow, modifica dei dati di un debito dalla UI, ordinamento dei debiti.
-- **Impostazioni**: cambio email, scollegare Google, notifiche email, import dell'export.
-- **Sidebar**: popover al passaggio del mouse sul chip compresso, sezione "Prossimi eventi", sezioni riordinabili, eventuale sidebar a gruppi (alternativa B).
-- **Infra**: alert sul backup Postgres fallito (servono le metriche CNPG), Claude Code sempre attivo (mai sulla VPS di produzione), Paperclip, staging, multi-nodo, ChatOps su Slack, sottodominio `buddybudget.io` per gli strumenti dietro Tailscale (serve cert-manager con DNS-01), `PasswordAuthentication` SSH ancora attiva (da chiudere con un secondo dispositivo).
-- **Cash flow/Movimenti**: mostrare il passato nel grafico del residuo dei debiti, annulla per la categorizzazione in blocco, scorciatoie da tastiera in `/categorizza`.
+- **Investimenti**: multiple portfolios per user, foreign withholding taxes and tax return sections, PWA push notification for alerts, import preset for an Italian broker (a sample export is needed), import undo, screener (excluded), history correction around a split, ETF regions from issuers' files, rebalancing with sales, Sortino/VaR.
+- **Debiti**: automatic Euribor update, foreign currencies, mixed rate/cap, informal debts, push on due dates, principal/interest share in Cash flow, editing a debt's data from the UI, ordering of debts.
+- **Impostazioni**: email change, unlinking Google, email notifications, import of the export.
+- **Sidebar**: popover on hover over the collapsed chip, "Prossimi eventi" ("Upcoming events") section, reorderable sections, possible grouped sidebar (alternative B).
+- **Infra**: alert on failed Postgres backup (needs CNPG metrics), always-on Claude Code (never on the production VPS), Paperclip, staging, multi-node, ChatOps on Slack, `buddybudget.io` subdomain for tools behind Tailscale (needs cert-manager with DNS-01), SSH `PasswordAuthentication` still active (to be closed with a second device).
+- **Cash flow/Movimenti**: showing the past in the debt balance chart, undo for bulk categorisation, keyboard shortcuts in `/categorizza`.
 
-### Da verificare a mano (a carico dell'utente)
+### To verify by hand (user's responsibility)
 
-- **Categorie**: `pnpm db:reset-categories --dry-run` poi reale (se non già fatto); controllare i 4 gruppi in `/movimenti/categorie`, drag & drop, dialog, mobile e tema scuro (il redesign non è stato provato in browser).
-- **Investimenti**: probe delle fonti (`pnpm tsx scripts/probe-price-sources.ts` da locale e VPS), Yahoo vero (ricerca, numeri chiave, storico dividendi, settori ETF), Eurostat (`inflation_index`), BCE €STR (`interest_rates`), `COINGECKO_API_KEY` da aggiungere come secret SOPS nel repo infra, un avviso di prezzo reale (email Resend), stime fiscali contro il rendiconto Fineco, tasso e scadenza dei BTP, un benchmark vero (es. VWCE).
-- **Debiti**: tasso e TAEG calcolati contro un contratto vero, pregresso dall'origine contro fotografia, penali e rate di un'estinzione reale, transazioni collegate dal picker con dati GoCardless veri.
-- **Impostazioni**: email di disattivazione/eliminazione e revoca GoCardless in produzione, "Collega Google". Il CronJob `account-deletion` del repo infra va mergiato solo con l'immagine che contiene la route in produzione (verificare se già fatto).
-- **Login «Il foglio»**: Safari/iPhone (schede in basso fisse, tastiera aperta sul campo email) e Firefox.
-- **Prezzi**: nei log (`market.prices.updated`) devono girare i 3 giri al giorno senza 429 nuovi; backup CNPG non più orario (`kubectl get backups -n data`) e spazio R2 in calo.
-- **Redirect** dai vecchi indirizzi (`/spese`, `/transazioni`, `/cash-flow`, `/categorie`) e dialog "Aggiungi" in Movimenti.
+- **Categories**: `pnpm db:reset-categories --dry-run` then for real (if not already done); check the 4 groups in `/movimenti/categorie`, drag & drop, dialogs, mobile and dark theme (the redesign has not been tried in a browser).
+- **Investimenti**: probe of the sources (`pnpm tsx scripts/probe-price-sources.ts` from local and from the VPS), real Yahoo (search, key figures, dividend history, ETF sectors), Eurostat (`inflation_index`), ECB €STR (`interest_rates`), `COINGECKO_API_KEY` to be added as a SOPS secret in the infra repo, a real price alert (Resend email), tax estimates against the Fineco statement, rate and maturity of BTPs, a real benchmark (e.g. VWCE).
+- **Debiti**: rate and APR (TAEG) calculated against a real contract, history from origination against a snapshot, penalties and instalments of a real early repayment, transactions linked from the picker with real GoCardless data.
+- **Impostazioni**: deactivation/deletion emails and GoCardless revocation in production, "Collega Google" ("Connect Google"). The `account-deletion` CronJob in the infra repo must be merged only with the image containing the route in production (check whether already done).
+- **Login «Il foglio»**: Safari/iPhone (tabs fixed at the bottom, keyboard open on the email field) and Firefox.
+- **Prices**: in the logs (`market.prices.updated`) the 3 runs a day must happen without new 429s; CNPG backup no longer hourly (`kubectl get backups -n data`) and R2 space decreasing.
+- **Redirects** from the old addresses (`/spese`, `/transazioni`, `/cash-flow`, `/categorie`) and the "Aggiungi" ("Add") dialog in Movimenti.
 
-### Debito tecnico noto
+### Known technical debt
 
-- Lo storico della liquidità nel patrimonio netto è ricostruito una volta sola: un conto manuale aggiunto dopo compare come salto nell'ultimo giorno.
-- Il matching per similarità nel wizard "Categorizza automaticamente" non scarta le parole generiche (es. "pagamento pos"); ogni suggerimento resta comunque confermato a mano.
-- Nel PATCH di una transazione che cambia direzione via `categoryId` senza inviare `excludedAmount`, il valore salvato per la vecchia direzione può far rifiutare l'aggiornamento (fail-safe, nessuna corruzione).
-- `resolveDbSsl` può lanciare su URL Postgres multi-host; lo stage `migrator` del Dockerfile non forza TLS; il cron GoCardless non ha un budget di tempo dentro `maxDuration`.
-- La maschera di "nascondi importi" copre solo ciò che passa da `formatCurrency` (restano in chiaro quantità, percentuali e alcuni formatter locali).
-- better-auth scrive i propri errori interni su console, fuori dal nostro `logger`: da rivalutare guardando i log in Loki.
+- The cash history in net worth is reconstructed only once: a manual account added later appears as a jump on the last day.
+- Similarity matching in the "Categorizza automaticamente" ("Categorise automatically") wizard does not discard generic words (e.g. "pagamento pos"); every suggestion is still confirmed by hand.
+- In the PATCH of a transaction that changes direction via `categoryId` without sending `excludedAmount`, the value saved for the old direction can cause the update to be rejected (fail-safe, no corruption).
+- `resolveDbSsl` can throw on multi-host Postgres URLs; the `migrator` stage of the Dockerfile does not force TLS; the GoCardless cron has no time budget within `maxDuration`.
+- The "hide amounts" mask covers only what goes through `formatCurrency` (quantities, percentages and some local formatters remain in plain view).
+- better-auth writes its own internal errors to the console, outside our `logger`: to be reassessed by looking at the logs in Loki.
 
-### Note operative (lezioni da non ripetere)
+### Operational notes (lessons not to repeat)
 
-- `git fetch origin main` prima di fidarsi di un confronto con `origin/main`; i worktree partono da lì e possono essere indietro.
-- `pnpm db:migrate` va eseguito nella directory del branch che ha introdotto la migration, mai dalla repo principale con un altro branch. Rinominare cartelle in `app/` con `pnpm dev` acceso manda Turbopack in loop: fermarlo e cancellare `.next`.
-- Più sessioni possono scrivere su `main` insieme: `git status` subito prima di ogni commit, `git stash list` prima di ogni `stash pop`.
-- Un subagent può lavorare fuori dal worktree indicato: verificare sempre il diff reale, non il suo report. Con `isolation: "worktree"` il path nel prompt viene ignorato.
-- Verificare con i dati veri e in browser, non solo con `tsc` e i test: molti bug (select che mostrano l'id, `pathLength` con tratteggi, overflow dell'XIRR) sono comparsi solo dal vivo. Una "fonte che risponde" dal sandbox cloud non dice nulla sulla produzione: il sandbox non raggiunge Yahoo, BCE, Eurostat né GoCardless reale.
-- Yahoo risponde 429 all'impronta TLS di Node: le fonti di mercato passano da `browserTlsFetch`. Nei test di rete usare sempre URL mai chiesti (le risposte in cache CDN danno falsi 200).
-- Lo `ScheduledBackup` di CNPG usa un cron a 6 campi (secondi per primi); i CronJob k8s a 5. Il chart Grafana passa i values di alerting a `tpl`: i `{{ }}` dei template Grafana vanno protetti.
-- Ogni nuovo servizio esposto via Tailscale Ingress in un namespace con default-deny richiede la sua NetworkPolicy per il namespace `tailscale`, nello stesso commit dell'Ingress. Dopo aver corretto un errore di manifest, ArgoCD può mostrare quello vecchio finché non si fa Hard Refresh.
+- `git fetch origin main` before trusting a comparison with `origin/main`; worktrees start from there and may be behind.
+- `pnpm db:migrate` must be run in the directory of the branch that introduced the migration, never from the main repo with another branch. Renaming folders in `app/` while `pnpm dev` is running sends Turbopack into a loop: stop it and delete `.next`.
+- Several sessions can write to `main` at the same time: `git status` right before every commit, `git stash list` before every `stash pop`.
+- A subagent may work outside the indicated worktree: always check the real diff, not its report. With `isolation: "worktree"` the path in the prompt is ignored.
+- Verify with real data and in the browser, not only with `tsc` and tests: many bugs (selects showing the id, `pathLength` with dashes, XIRR overflow) only showed up live. A "source that responds" from the cloud sandbox says nothing about production: the sandbox cannot reach Yahoo, ECB, Eurostat or the real GoCardless.
+- Yahoo responds 429 to Node's TLS fingerprint: market sources go through `browserTlsFetch`. In network tests always use URLs never requested before (CDN-cached responses give false 200s).
+- The CNPG `ScheduledBackup` uses a 6-field cron (seconds first); k8s CronJobs use 5. The Grafana chart passes the alerting values to `tpl`: the `{{ }}` of Grafana templates must be escaped.
+- Every new service exposed via Tailscale Ingress in a namespace with default-deny needs its own NetworkPolicy for the `tailscale` namespace, in the same commit as the Ingress. After fixing a manifest error, ArgoCD may show the old one until you do a Hard Refresh.
 
-## Log delle decisioni
+## Decision log
 
-Il log è in [`docs/decisioni/`](docs/decisioni/) (un file per decisione, dal 2026-10-04) e nell'archivio [`docs/decision-log.md`](docs/decision-log.md) (fino al 2026-10-03). Decisioni ancora vincolanti, in sintesi:
+The log is in [`docs/decisioni/`](docs/decisioni/) (one file per decision, since 2026-10-04) and in the archive [`docs/decision-log.md`](docs/decision-log.md) (up to 2026-10-03). Decisions still binding, in summary:
 
-- **2026-10-03** — Versioni automatiche 0.x.y con release-please: **i titoli delle PR sono in Conventional Commits** (`feat:`/`fix:`/`chore:`…, anche quelle di Claude), da lì la versione. Il deploy parte solo al merge della PR di release. Vedi `docs/rilasci.md`.
-- **2026-10-01** — Connessioni GoCardless: avvisi di scadenza (7 giorni prima, email + banner) e pulizia giornaliera della lista GoCardless con periodi di grazia (3/7/30 giorni), dry-run di default, mai su utenti con eliminazione programmata.
-- **2026-10-01** — Ogni feature deve essere osservabile (log, evento Umami, metriche/alert se serve, riga "Come verificare in produzione" nella PR): vedi "Osservabilità" sopra.
-- **2026-10-01** — Prezzi di mercato e snapshot del patrimonio a 3 giri al giorno (06:30/17:30/22:30 UTC e 06:50/17:50/23:50 UTC). Sono chiusure di fine giornata, non intraday.
-- **2026-09-30** — Sezioni unificate: Transazioni, Cash flow e Categorie sono `/movimenti`. Categorie con board a colonne per gruppo di spesa.
-- **2026-09-30** — Debiti: piano calcolato da condizioni iniziali + registro eventi (come le posizioni di Investimenti); rate segnate a mano, mai automatiche.
-- **2026-09-29** — Investimenti: posizioni sempre calcolate dalle operazioni (costo medio ponderato), mai salvate; i PAC (piani di accumulo) sono stati rimossi il 2026-10-04. Il patrimonio netto storico degli investimenti si ricalcola da solo quando cambiano i dati.
-- **2026-09-28** — Fonti di mercato: `browserTlsFetch` per tutte (impronta TLS di Node bloccata da Yahoo).
-- **2026-09-27** — Osservabilità: stato dei cron e dei job su Redis, mai in memoria del pod; canali Slack separati per gravità.
-- **2026-09-27** — Brand: sidebar navy fissa in entrambi i temi; verde/rosso di entrate/uscite non fanno parte del brand.
-- **2026-09-26** — Schema DB solo via migration versionate; infrastruttura su VPS con k3s, GitOps, SOPS, Postgres con CloudNativePG e backup su R2.
-- **2026-09-23** — Gruppi di spesa al posto di fissa/variabile (Dovute, Volute, Te futuro, Saltuarie); "Avanzo" è ciò che resta dopo i gruppi.
-- **2026-09-20** — Categorizzazione a regole merchant, mai auto-applicate se non da regola esplicita; la categoria di fallback si riconosce dal flag `isFallback`, non dal nome.
-- **2026-07-21** — Operazioni git libere per Claude (restano le cautele sulle azioni distruttive).
-- **2026-07-03** — Multi-lingua e multi-valuta per design; architettura a 3 layer; niente Server Actions, Route Handlers con TanStack Query.
+- **2026-10-03** — Automatic 0.x.y versions with release-please: **PR titles are in Conventional Commits** (`feat:`/`fix:`/`chore:`…, including Claude's), the version comes from there. The deploy starts only when the release PR is merged. See `docs/rilasci.md`.
+- **2026-10-01** — GoCardless connections: expiry warnings (7 days before, email + banner) and daily cleanup of the GoCardless list with grace periods (3/7/30 days), dry-run by default, never on users with scheduled deletion.
+- **2026-10-01** — Every feature must be observable (logs, Umami event, metrics/alerts if needed, "How to verify in production" line in the PR): see "Observability" above.
+- **2026-10-01** — Market prices and net worth snapshots at 3 runs a day (06:30/17:30/22:30 UTC and 06:50/17:50/23:50 UTC). They are end-of-day closes, not intraday.
+- **2026-09-30** — Unified sections: Transazioni, Cash flow and Categorie are `/movimenti`. Categories with a column board per spending group.
+- **2026-09-30** — Debiti: schedule calculated from initial conditions + event log (like Investimenti positions); instalments marked by hand, never automatic.
+- **2026-09-29** — Investimenti: positions always calculated from transactions (weighted average cost), never stored; PACs (piani di accumulo, recurring investment plans) were removed on 2026-10-04. The historical net worth of investments recalculates itself when data changes.
+- **2026-09-28** — Market sources: `browserTlsFetch` for all of them (Node TLS fingerprint blocked by Yahoo).
+- **2026-09-27** — Observability: cron and job state on Redis, never in pod memory; separate Slack channels by severity.
+- **2026-09-27** — Brand: fixed navy sidebar in both themes; the green/red of income/expenses are not part of the brand.
+- **2026-09-26** — DB schema only via versioned migrations; infrastructure on a VPS with k3s, GitOps, SOPS, Postgres with CloudNativePG and backups on R2.
+- **2026-09-23** — Spending groups instead of fixed/variable (Dovute, Volute, Te futuro, Saltuarie); "Avanzo" ("Surplus") is what remains after the groups.
+- **2026-09-20** — Rule-based merchant categorisation, never auto-applied except by an explicit rule; the fallback category is recognised by the `isFallback` flag, not by its name.
+- **2026-07-21** — Free git operations for Claude (caution on destructive actions still applies).
+- **2026-07-03** — Multi-language and multi-currency by design; 3-layer architecture; no Server Actions, Route Handlers with TanStack Query.
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

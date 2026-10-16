@@ -1,6 +1,6 @@
-# Categorizza su mobile: carta a tutto schermo (2026-10-11)
+# Categorizza on mobile: full-screen card (2026-10-11)
 
-- Su mobile `/categorizza` mostra solo la carta, alta quanto lo schermo libero; tab «Una alla volta / Elenco», banner e sottotitolo restano su desktop (da 768 px).
-- Il pulsante «Categorizza con l'AI» diventa un pulsante «AI» nell'intestazione; mentre lavora compare una barra con contatori veri (proposte comparse su esercenti da elaborare) e, alla fine, un avviso con il totale.
-- Durante il trascinamento la carta cambia bordo e l'etichetta diventa «Lascia: …» (con vibrazione) appena si supera la soglia: così si capisce quando rilasciare fa partire l'azione.
-- Nessuna soglia o logica di salvataggio cambia. Nessun nuovo segnale di osservabilità, nessun impatto sulla landing.
+- On mobile `/categorizza` shows only the card, as tall as the free screen; the «Una alla volta / Elenco» ("One at a time / List") tabs, banner and subtitle remain on desktop (from 768 px).
+- The «Categorizza con l'AI» ("Categorize with AI") button becomes an «AI» button in the header; while it works a bar appears with real counters (proposals appeared over merchants to process) and, at the end, a notice with the total.
+- While dragging, the card changes border and the label becomes «Lascia: …» ("Release: …", with vibration) as soon as the threshold is passed: this makes clear when releasing will trigger the action.
+- No threshold or saving logic changes. No new observability signal, no landing impact.

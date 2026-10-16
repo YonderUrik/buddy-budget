@@ -1,47 +1,47 @@
-# Self-hosting con Docker
+# Self-hosting with Docker
 
-BuddyBudget gira con un solo comando su qualunque macchina con Docker (Linux, macOS, Windows con WSL2; amd64 o arm64, anche un Raspberry Pi 4/5). Il compose avvia l'app, Postgres, Redis e un promemoria che lancia i lavori periodici.
+BuddyBudget runs with a single command on any machine with Docker (Linux, macOS, Windows with WSL2; amd64 or arm64, even a Raspberry Pi 4/5). The compose file starts the app, Postgres, Redis and a scheduler that runs the periodic jobs.
 
-> **Stato delle immagini**: finché i manutentori non attivano la pubblicazione su ghcr.io (sezione «Per chi pubblica le immagini» in fondo), `docker compose up` non trova `latest`: costruisci dal sorgente (sezione «Costruire dal sorgente», serve internet per scaricare i font).
+> **Image status**: until the maintainers enable publishing on ghcr.io (section «For those who publish the images» at the bottom), `docker compose up` will not find `latest`: build from source (section «Building from source»; internet access is needed to download the fonts).
 
-## Avvio in 5 minuti
+## Up and running in 5 minutes
 
-Servono Docker con il plugin Compose v2 e `openssl`.
+You need Docker with the Compose v2 plugin and `openssl`.
 
 ```bash
 git clone https://github.com/YonderUrik/buddy-budget.git
 cd buddy-budget
-./scripts/selfhost-init.sh      # crea .env con i segreti casuali
+./scripts/selfhost-init.sh      # creates .env with random secrets
 docker compose up -d
 ```
 
-Apri <http://localhost:3000>. Alla prima partenza le migration girano da sole (servizio `migrate`) e l'app diventa raggiungibile in circa un minuto: `docker compose ps` mostra `healthy`.
+Open <http://localhost:3000>. On first start the migrations run on their own (`migrate` service) and the app becomes reachable in about a minute: `docker compose ps` shows `healthy`.
 
-### Primo accesso senza email
+### First sign-in without email
 
-L'accesso è con un link via email (o Google). Se non hai configurato Resend, il link compare nei log: inserisci la tua email nella pagina di login, poi
+Sign-in is via an emailed link (or Google). If you have not configured Resend, the link appears in the logs: enter your email on the login page, then
 
 ```bash
 docker compose logs app | grep "Link di accesso"
 ```
 
-e apri l'URL stampato (vale pochi minuti). L'account si crea al primo accesso; segue l'onboarding con lingua e valuta.
+and open the printed URL (it is valid for a few minutes). The account is created on first sign-in; onboarding with language and currency follows.
 
-## Cosa funziona senza servizi esterni
+## What works without external services
 
-| Integrazione | Variabili | Se la lasci vuota |
+| Integration | Variables | If you leave it empty |
 |---|---|---|
-| Email (Resend) | `RESEND_API_KEY`, `RESEND_FROM` | Il link di accesso va nei log. Non partono avvisi di prezzo, email dell'account, avvisi di scadenza bancaria, segnalazioni dall'app. |
-| Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Il pulsante «Continua con Google» compare ma risponde con un errore: usa il link via email. |
-| Banche (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | Niente conti collegati; restano conti manuali, import CSV, investimenti, debiti, pensione. |
+| Email (Resend) | `RESEND_API_KEY`, `RESEND_FROM` | The sign-in link goes to the logs. No price alerts, account emails, bank expiry alerts or in-app reports are sent. |
+| Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | The «Continua con Google» ("Continue with Google") button appears but responds with an error: use the email link. |
+| Banks (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | No linked accounts; manual accounts, CSV import, investments, debts and pension remain. |
 
-Tutto il resto (movimenti, categorie e regole, budget, investimenti con i prezzi dalle fonti gratuite, debiti, analitiche) funziona senza chiavi. Il servizio `cron` aggiorna i prezzi e gli snapshot del patrimonio agli stessi orari della produzione (06:30/17:30/22:30 UTC).
+Everything else (transactions, categories and rules, budgets, investments with prices from the free sources, debts, analytics) works without keys. The `cron` service updates prices and net worth snapshots at the same times as production (06:30/17:30/22:30 UTC).
 
-Non incluso nel compose: il worker per l'import AI dei CSV personali (`buddy-budget-csv-worker`, richiede una chiave OpenRouter). Gli altri import CSV non ne hanno bisogno.
+Not included in the compose file: the worker for the AI import of personal CSVs (`buddy-budget-csv-worker`, requires an OpenRouter key). The other CSV imports do not need it.
 
-## HTTPS e dominio
+## HTTPS and domain
 
-Il compose pubblica l'app solo su `127.0.0.1` (cambia `APP_BIND` per esporla in rete locale). Per usarla da fuori mettila dietro un reverse proxy con HTTPS e imposta `APP_URL=https://budget.esempio.it` in `.env` (poi `docker compose up -d`): il valore serve a magic link, cookie e callback. Esempio con [Caddy](https://caddyserver.com) (certificato Let's Encrypt automatico), `Caddyfile`:
+The compose file publishes the app only on `127.0.0.1` (change `APP_BIND` to expose it on the local network). To use it from outside, put it behind a reverse proxy with HTTPS and set `APP_URL=https://budget.esempio.it` in `.env` (then `docker compose up -d`): the value is used for magic links, cookies and callbacks. Example with [Caddy](https://caddyserver.com) (automatic Let's Encrypt certificate), `Caddyfile`:
 
 ```
 budget.esempio.it {
@@ -49,56 +49,56 @@ budget.esempio.it {
 }
 ```
 
-Traefik, nginx o un tunnel (Cloudflare Tunnel, Tailscale) vanno bene allo stesso modo: basta inoltrare a `127.0.0.1:3000` con gli header `X-Forwarded-*`.
+Traefik, nginx or a tunnel (Cloudflare Tunnel, Tailscale) work just as well: just forward to `127.0.0.1:3000` with the `X-Forwarded-*` headers.
 
-## Aggiornare
+## Updating
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-Le migration girano prima dell'app. Per bloccarti su una versione imposta `BUDDYBUDGET_VERSION=0.44.2` in `.env` (le versioni sono nelle [release](https://github.com/YonderUrik/buddy-budget/releases)); con `latest` segui l'ultima release. Prima di un aggiornamento importante fai un backup.
+The migrations run before the app. To pin a version, set `BUDDYBUDGET_VERSION=0.44.2` in `.env` (versions are listed in the [releases](https://github.com/YonderUrik/buddy-budget/releases)); with `latest` you follow the latest release. Take a backup before a major update.
 
-## Backup e ripristino
+## Backup and restore
 
-Tutti i dati sono nel volume Postgres `postgres-data`.
+All data is in the Postgres volume `postgres-data`.
 
 ```bash
-# backup (file compresso, ripristinabile su qualunque Postgres 17)
+# backup (compressed file, restorable on any Postgres 17)
 docker compose exec -T postgres pg_dump -U buddybudget -Fc buddybudget > buddybudget-$(date +%F).dump
 
-# ripristino su un'istanza vuota (dopo `docker compose up -d postgres`)
+# restore onto an empty instance (after `docker compose up -d postgres`)
 docker compose exec -T postgres pg_restore -U buddybudget -d buddybudget --clean --if-exists < buddybudget-2026-10-10.dump
 ```
 
-Pianifica il backup con `cron` del sistema e copia i file fuori dalla macchina. Conserva anche `.env`: perdere `BETTER_AUTH_SECRET` disconnette tutti, non perde dati. Se hai impostato `DATA_ENCRYPTION_KEY` (descrizioni e note cifrate nel database, facoltativa), conservala a parte: senza quella chiave un backup non si rilegge. I dati salvati prima di impostarla si cifrano con `docker compose run --rm migrate pnpm db:encrypt-fields --execute`. Dall'app, Impostazioni → Esporta i dati scarica uno ZIP leggibile con i tuoi dati.
+Schedule the backup with the system `cron` and copy the files off the machine. Keep `.env` too: losing `BETTER_AUTH_SECRET` signs everyone out but loses no data. If you set `DATA_ENCRYPTION_KEY` (descriptions and notes encrypted in the database, optional), keep it separately: without that key a backup cannot be read. Data saved before setting it is encrypted with `docker compose run --rm migrate pnpm db:encrypt-fields --execute`. From the app, Impostazioni ("Settings") → Esporta i dati ("Export data") downloads a readable ZIP with your data.
 
-## Postgres esterno
+## External Postgres
 
-Rimuovi il servizio `postgres` e le sue dipendenze, e metti in `DATABASE_URL` (nei servizi `app` e `migrate`) l'URL del tuo database. Con TLS usa `?sslmode=require`: senza `sslmode` in produzione l'app pretende TLS.
+Remove the `postgres` service and its dependencies, and put your database URL in `DATABASE_URL` (in the `app` and `migrate` services). With TLS use `?sslmode=require`: without `sslmode`, in production the app requires TLS.
 
-## Costruire dal sorgente
+## Building from source
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
 
-## Problemi comuni
+## Common problems
 
-- **`required variable … is missing`**: manca `.env`; lancia `./scripts/selfhost-init.sh`.
-- **`app` resta `unhealthy`**: `docker compose logs app`. Se elenca variabili non valide, controlla `APP_URL` (con `http://` o `https://`).
-- **Il link di accesso porta a un indirizzo sbagliato**: `APP_URL` non coincide con l'URL del browser.
-- **Prezzi fermi**: `docker compose logs cron` e `docker compose exec cron ps`; i lavori girano agli orari UTC indicati sopra.
+- **`required variable … is missing`**: `.env` is missing; run `./scripts/selfhost-init.sh`.
+- **`app` stays `unhealthy`**: `docker compose logs app`. If it lists invalid variables, check `APP_URL` (with `http://` or `https://`).
+- **The sign-in link leads to the wrong address**: `APP_URL` does not match the browser URL.
+- **Prices not updating**: `docker compose logs cron` and `docker compose exec cron ps`; the jobs run at the UTC times listed above.
 
-## Per chi pubblica le immagini (manutentori)
+## For those who publish the images (maintainers)
 
-Le immagini stanno su **GitHub Container Registry** (`ghcr.io/yonderurik/buddy-budget` e `buddy-budget-migrate`), non su Docker Hub: gratuito e senza limiti di pull per i pacchetti pubblici, stesso login e stessi permessi del repo, già usato dal deploy di produzione. Il motivo della scelta è nella decisione `docs/decisioni/2026-10-10-self-hosting-docker.md`.
+The images are on **GitHub Container Registry** (`ghcr.io/yonderurik/buddy-budget` and `buddy-budget-migrate`), not Docker Hub: free and without pull limits for public packages, same login and permissions as the repo, already used by the production deploy. The reason for the choice is in the decision `docs/decisioni/2026-10-10-self-hosting-docker.md`.
 
-Il workflow di release pubblica già le immagini per amd64. Per pubblicare anche arm64 e il tag `latest` serve attivarlo, una volta:
+The release workflow already publishes the images for amd64. To also publish arm64 and the `latest` tag, it must be enabled once:
 
-1. Repo → Settings → Secrets and variables → Actions → **Variables** → crea `SELFHOST_IMAGES` = `true`. Dalla release successiva le immagini sono multi-architettura (amd64 + arm64, build arm64 con QEMU: la CI dura di più), con tag `latest` e SBOM.
-2. Dopo la prima pubblicazione: profilo/organizzazione → Packages → ogni pacchetto (`buddy-budget`, `buddy-budget-migrate`) → Package settings → *Change visibility* → **Public**. Senza questo i `docker compose pull` degli altri chiedono il login.
-3. Provare: `docker pull ghcr.io/yonderurik/buddy-budget:latest` da un account non loggato e `docker buildx imagetools inspect` per vedere le due architetture.
+1. Repo → Settings → Secrets and variables → Actions → **Variables** → create `SELFHOST_IMAGES` = `true`. From the next release the images are multi-architecture (amd64 + arm64, arm64 build with QEMU: CI takes longer), with the `latest` tag and SBOM.
+2. After the first publication: profile/organization → Packages → each package (`buddy-budget`, `buddy-budget-migrate`) → Package settings → *Change visibility* → **Public**. Without this, other people's `docker compose pull` asks for a login.
+3. Test: `docker pull ghcr.io/yonderurik/buddy-budget:latest` from a logged-out account and `docker buildx imagetools inspect` to see both architectures.
 
-Per tornare al comportamento di prima basta cancellare la variabile.
+To go back to the previous behavior, just delete the variable.

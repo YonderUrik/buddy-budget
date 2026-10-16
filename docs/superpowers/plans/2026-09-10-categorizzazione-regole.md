@@ -1,64 +1,64 @@
-# Categorizzazione automatica basata su regole — piano di implementazione
+# Rule-based automatic categorization — implementation plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Sostituire il match esatto all'import e il wizard uno-per-uno con un sistema di regole merchant apprese dalle conferme dell'utente, ispezionabili e modificabili, affiancate da proposte mai auto-applicate e da un livello assistente locale opzionale.
+**Goal:** Replace the exact match at import time and the one-by-one wizard with a system of merchant rules learned from the user's confirmations, inspectable and editable, alongside suggestions that are never auto-applied and an optional local assistant layer.
 
-**Architecture:** Una chiave merchant normalizzata (rumore bancario e suffissi societari rimossi) è l'unità su cui tutto ruota. Le regole (`merchant` esatta o `contains`) si applicano da sole all'import; tutto ciò che il sistema deduce (similarità, LLM) resta proposta finché l'utente non la applica, e applicare crea la regola. Il livello LLM è isolato dietro un'interfaccia e assente per default.
+**Architecture:** A normalized merchant key (bank noise and company suffixes removed) is the unit everything revolves around. Rules (exact `merchant` or `contains`) apply on their own at import time; everything the system infers (similarity, LLM) stays a suggestion until the user applies it, and applying creates the rule. The LLM layer is isolated behind an interface and absent by default.
 
-**Tech Stack:** Next.js App Router, TypeScript, Drizzle ORM + Postgres, Zod, TanStack Query, vitest, shadcn/ui su `@base-ui/react`, Ollama (opzionale, via HTTP).
+**Tech Stack:** Next.js App Router, TypeScript, Drizzle ORM + Postgres, Zod, TanStack Query, vitest, shadcn/ui on `@base-ui/react`, Ollama (optional, via HTTP).
 
 **Spec:** `docs/superpowers/specs/2026-09-10-categorizzazione-regole-design.md`
 
 ## Global Constraints
 
-- **Il sistema non applica mai ciò che deduce.** Solo le regole (create o confermate dall'utente) scrivono in autonomia. Similarità e LLM producono esclusivamente proposte.
-- **Nessun modello collegato è uno stato normale, non un guasto.** Senza `OLLAMA_BASE_URL` il livello assistente non esiste: nessun errore, nessun log di allarme, nessun avviso in UI. L'app non deve mai degradare sotto il comportamento puramente deterministico.
-- **Guard di direzione obbligatorio ovunque** si scelga una categoria: una categoria `entrata` vale solo per importi positivi, una categoria non-`entrata` solo per importi negativi. La categoria fallback (`isFallback`) accetta entrambi i segni. Stesso invariante già imposto da `PATCH /api/transactions/[id]`.
-- **Ownership IDOR-safe su ogni endpoint**: ogni `id` che arriva dal client va verificato contro `userId` della sessione prima dell'uso, con lo stesso pattern di `app/api/categories/[id]/route.ts`.
-- **Tutte le stringhe visibili all'utente in italiano.** Nessun colore esadecimale o raggio hardcoded: solo token del tema.
-- **JSDoc di una riga** su ogni funzione e componente pubblico, come da `CLAUDE.md`.
-- **Test con vitest**, file accanto al modulo (`nome.test.ts`), come `lib/calc/expenses.test.ts`.
-- Commit frequenti, uno per task, in italiano, prefisso `feat:` / `fix:` / `test:` / `docs:`.
+- **The system never applies what it infers.** Only rules (created or confirmed by the user) write on their own. Similarity and LLM produce suggestions only.
+- **No connected model is a normal state, not a failure.** Without `OLLAMA_BASE_URL` the assistant layer does not exist: no error, no alarm log, no warning in the UI. The app must never degrade below the purely deterministic behavior.
+- **Direction guard mandatory everywhere** a category is chosen: an `entrata` (income) category only applies to positive amounts, a non-`entrata` category only to negative amounts. The fallback category (`isFallback`) accepts both signs. Same invariant already enforced by `PATCH /api/transactions/[id]`.
+- **IDOR-safe ownership on every endpoint**: every `id` coming from the client must be checked against the session's `userId` before use, with the same pattern as `app/api/categories/[id]/route.ts`.
+- **All user-visible strings in Italian.** No hardcoded hex colors or radii: only theme tokens.
+- **One-line JSDoc** on every public function and component, as per `CLAUDE.md`.
+- **Tests with vitest**, files next to the module (`nome.test.ts`), like `lib/calc/expenses.test.ts`.
+- Frequent commits, one per task, in Italian, with a `feat:` / `fix:` / `test:` / `docs:` prefix.
 
-## Struttura dei file
+## File structure
 
-**Nuovi:**
+**New:**
 
-| File | Responsabilità |
+| File | Responsibility |
 |---|---|
-| `lib/categorization/merchant-key.ts` | Normalizzazione descrizione → chiave merchant; tokenizzazione per similarità |
-| `lib/db/schema/categorization-rules.ts` | Tabella `categorization_rules` + enum |
-| `lib/categorization/match-rule.ts` | Selezione della regola vincente (puro, senza DB) |
-| `lib/categorization/fallback.ts` | Categoria fallback risolta per flag `isFallback` |
-| `lib/categorization/resolve.ts` | Pipeline con accesso DB, usata dal sync |
-| `lib/categorization/suggest.ts` | Cascata delle proposte + raggruppamento per merchant |
-| `lib/categorization/llm/index.ts` | Interfaccia `CategorySuggester` + `getSuggester()` |
-| `lib/categorization/llm/ollama.ts` | Implementazione Ollama |
-| `lib/validation/categorization-rules.ts` | Schemi Zod di regole e apply batch |
-| `lib/queries/categorization.ts` | Hook TanStack per proposte, apply e regole |
-| `lib/db/backfill-categorization-rules.ts` | Script one-shot di popolamento iniziale |
-| `app/api/transactions/categorize-apply/route.ts` | Applicazione batch atomica |
-| `app/api/transactions/categorize-suggestions/ai/route.ts` | Proposte dell'assistente |
-| `app/api/categorization-rules/route.ts` + `[id]/route.ts` | CRUD regole |
-| `app/(app)/categorizza/page.tsx` | Pagina di revisione raggruppata |
-| `components/domain/categorization/*` | Componenti della pagina di revisione e della gestione regole |
+| `lib/categorization/merchant-key.ts` | Description → merchant key normalization; tokenization for similarity |
+| `lib/db/schema/categorization-rules.ts` | `categorization_rules` table + enums |
+| `lib/categorization/match-rule.ts` | Selection of the winning rule (pure, no DB) |
+| `lib/categorization/fallback.ts` | Fallback category resolved by the `isFallback` flag |
+| `lib/categorization/resolve.ts` | Pipeline with DB access, used by the sync |
+| `lib/categorization/suggest.ts` | Suggestion cascade + grouping by merchant |
+| `lib/categorization/llm/index.ts` | `CategorySuggester` interface + `getSuggester()` |
+| `lib/categorization/llm/ollama.ts` | Ollama implementation |
+| `lib/validation/categorization-rules.ts` | Zod schemas for rules and batch apply |
+| `lib/queries/categorization.ts` | TanStack hooks for suggestions, apply and rules |
+| `lib/db/backfill-categorization-rules.ts` | One-shot initial population script |
+| `app/api/transactions/categorize-apply/route.ts` | Atomic batch apply |
+| `app/api/transactions/categorize-suggestions/ai/route.ts` | Assistant suggestions |
+| `app/api/categorization-rules/route.ts` + `[id]/route.ts` | Rules CRUD |
+| `app/(app)/categorizza/page.tsx` | Grouped review page |
+| `components/domain/categorization/*` | Components of the review page and of rule management |
 
-**Modificati:** `lib/db/schema/index.ts`, `lib/gocardless/sync.ts`, `lib/gocardless/categorize.ts` (svuotato/rimosso), `app/api/transactions/categorize-suggestions/route.ts`, `app/(app)/categorie/page.tsx`, `components/domain/expenses/auto-categorize-button.tsx`.
+**Modified:** `lib/db/schema/index.ts`, `lib/gocardless/sync.ts`, `lib/gocardless/categorize.ts` (emptied/removed), `app/api/transactions/categorize-suggestions/route.ts`, `app/(app)/categorie/page.tsx`, `components/domain/expenses/auto-categorize-button.tsx`.
 
 ---
 
-### Task 1: Chiave merchant normalizzata
+### Task 1: Normalized merchant key
 
 **Files:**
 - Create: `lib/categorization/merchant-key.ts`
 - Test: `lib/categorization/merchant-key.test.ts`
 
 **Interfaces:**
-- Consumes: niente (primo task)
+- Consumes: nothing (first task)
 - Produces: `merchantKey(description: string): string`, `merchantKeyTokens(key: string): Set<string>`, `jaccardSimilarity(a: Set<string>, b: Set<string>): number`, `MERCHANT_NOISE_TOKENS`, `COMPANY_SUFFIX_TOKENS`
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
 ```ts
 // lib/categorization/merchant-key.test.ts
@@ -120,20 +120,20 @@ describe("jaccardSimilarity", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/categorization/merchant-key.test.ts`
 Expected: FAIL — "Failed to resolve import ./merchant-key"
 
-- [ ] **Step 3: Implementa il modulo**
+- [ ] **Step 3: Implement the module**
 
 ```ts
 // lib/categorization/merchant-key.ts
 
 /**
- * Token di rumore bancario: parole che compaiono nelle descrizioni di movimento senza
- * identificare il merchant. Rimuoverle è ciò che impedisce a "PAGAMENTO POS" di far
- * sembrare simili due esercenti del tutto scorrelati.
+ * Bank noise tokens: words that appear in transaction descriptions without
+ * identifying the merchant. Removing them is what stops "PAGAMENTO POS" from making
+ * two completely unrelated merchants look similar.
  */
 export const MERCHANT_NOISE_TOKENS: ReadonlySet<string> = new Set([
   "pagamento", "pagam", "pag", "pos", "carta", "cartasi", "acquisto", "addebito",
@@ -141,17 +141,17 @@ export const MERCHANT_NOISE_TOKENS: ReadonlySet<string> = new Set([
   "oper", "ricarica", "prelievo", "prelevamento", "bancomat", "contactless", "ecommerce",
   "internet", "online", "presso", "eur",
 ]);
-// Nota deliberata: articoli e preposizioni ("il", "del", "su") NON sono in questa lista.
-// Rimuoverli fonderebbe merchant distinti — "IL FORNAIO" e "FORNAIO" collasserebbero sulla
-// stessa chiave, e una regola imparata sull'uno si applicherebbe da sola all'altro.
+// Deliberate note: articles and prepositions ("il", "del", "su") are NOT in this list.
+// Removing them would merge distinct merchants — "IL FORNAIO" and "FORNAIO" would collapse onto the
+// same key, and a rule learned on one would apply on its own to the other.
 
-/** Suffissi di forma societaria: non distinguono un merchant da un altro. */
+/** Company-form suffixes: they do not distinguish one merchant from another. */
 export const COMPANY_SUFFIX_TOKENS: ReadonlySet<string> = new Set([
   "spa", "srl", "srls", "sas", "snc", "spa", "sp", "ltd", "limited", "inc", "llc",
   "bv", "nv", "gmbh", "ag", "sa", "plc", "co",
 ]);
 
-/** Descrizione ridotta a minuscolo, senza diacritici, con punteggiatura sostituita da spazi. */
+/** Description lowercased, without diacritics, with punctuation replaced by spaces. */
 function normalize(description: string): string {
   return description
     .normalize("NFD")
@@ -162,11 +162,11 @@ function normalize(description: string): string {
 }
 
 /**
- * Chiave stabile che identifica un merchant a partire dalla descrizione di una transazione:
- * rimuove diacritici, punteggiatura, token puramente numerici, rumore bancario e suffissi
- * societari. Se dopo la pulizia non resta nulla di significativo (descrizione di solo rumore
- * o solo numeri) ricade sulla descrizione normalizzata, per non collassare movimenti diversi
- * su una chiave vuota condivisa.
+ * Stable key identifying a merchant from a transaction description:
+ * removes diacritics, punctuation, purely numeric tokens, bank noise and company
+ * suffixes. If nothing meaningful is left after cleaning (a description made only of noise
+ * or only of numbers) it falls back to the normalized description, so as not to collapse different
+ * movements onto a shared empty key.
  */
 export function merchantKey(description: string): string {
   const normalized = normalize(description);
@@ -182,12 +182,12 @@ export function merchantKey(description: string): string {
   return meaningful.length > 0 ? meaningful.join(" ") : normalized;
 }
 
-/** Insieme dei token di una chiave merchant, per il confronto di similarità. */
+/** Set of tokens of a merchant key, for similarity comparison. */
 export function merchantKeyTokens(key: string): Set<string> {
   return new Set(key.split(" ").filter((token) => token.length > 0));
 }
 
-/** Indice di Jaccard tra due insiemi di token: |intersezione| / |unione|; 0 se uno dei due è vuoto. */
+/** Jaccard index between two token sets: |intersection| / |union|; 0 if either is empty. */
 export function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
   if (a.size === 0 || b.size === 0) return 0;
   let intersectionSize = 0;
@@ -199,10 +199,10 @@ export function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/categorization/merchant-key.test.ts`
-Expected: PASS, 12 test
+Expected: PASS, 12 tests
 
 - [ ] **Step 5: Commit**
 
@@ -213,17 +213,17 @@ git commit -m "feat: chiave merchant normalizzata per la categorizzazione"
 
 ---
 
-### Task 2: Tabella delle regole
+### Task 2: Rules table
 
 **Files:**
 - Create: `lib/db/schema/categorization-rules.ts`
 - Modify: `lib/db/schema/index.ts`
 
 **Interfaces:**
-- Consumes: niente
-- Produces: `categorizationRules`, `ruleMatchTypeEnum`, `ruleSourceEnum`, tipi `CategorizationRule` / `NewCategorizationRule`, costanti `RULE_MATCH_TYPES` / `RULE_SOURCES`
+- Consumes: nothing
+- Produces: `categorizationRules`, `ruleMatchTypeEnum`, `ruleSourceEnum`, types `CategorizationRule` / `NewCategorizationRule`, constants `RULE_MATCH_TYPES` / `RULE_SOURCES`
 
-- [ ] **Step 1: Crea lo schema**
+- [ ] **Step 1: Create the schema**
 
 ```ts
 // lib/db/schema/categorization-rules.ts
@@ -238,9 +238,9 @@ export const ruleMatchTypeEnum = pgEnum("rule_match_type", RULE_MATCH_TYPES);
 export const ruleSourceEnum = pgEnum("rule_source", RULE_SOURCES);
 
 /**
- * Regola di categorizzazione: associa un pattern (già normalizzato con `merchantKey`) a una
- * categoria. È l'unica memoria che scrive in autonomia all'import — nasce da una conferma
- * esplicita dell'utente (`appresa`) o dalla pagina di gestione (`manuale`), mai da una deduzione.
+ * Categorization rule: maps a pattern (already normalized with `merchantKey`) to a
+ * category. It is the only memory that writes on its own at import — it comes from an explicit
+ * user confirmation (`appresa`, learned) or from the management page (`manuale`, manual), never from an inference.
  */
 export const categorizationRules = pgTable(
   "categorization_rules",
@@ -250,12 +250,12 @@ export const categorizationRules = pgTable(
       .notNull()
       .references(() => authUser.id, { onDelete: "cascade" }),
     matchType: ruleMatchTypeEnum("match_type").notNull(),
-    // Pattern già normalizzato: confrontato con merchantKey(description), mai con il testo grezzo.
+    // Pattern already normalized: compared with merchantKey(description), never with the raw text.
     pattern: text("pattern").notNull(),
     categoryId: uuid("category_id")
       .notNull()
       .references(() => categories.id, { onDelete: "cascade" }),
-    // Quota "Dividi" da riproporre come frazione dell'importo (0-1); null = nessuno split.
+    // "Dividi" (split) share to propose again as a fraction of the amount (0-1); null = no split.
     splitPercentage: numeric("split_percentage", { precision: 5, scale: 4 }),
     source: ruleSourceEnum("source").notNull().default("appresa"),
     hitCount: integer("hit_count").notNull().default(0),
@@ -273,29 +273,29 @@ export type CategorizationRule = typeof categorizationRules.$inferSelect;
 export type NewCategorizationRule = typeof categorizationRules.$inferInsert;
 ```
 
-- [ ] **Step 2: Esporta dal barrel**
+- [ ] **Step 2: Export from the barrel**
 
-In `lib/db/schema/index.ts`, aggiungi in fondo:
+In `lib/db/schema/index.ts`, add at the bottom:
 
 ```ts
 export * from "./categorization-rules";
 ```
 
-- [ ] **Step 3: Applica lo schema al database**
+- [ ] **Step 3: Apply the schema to the database**
 
 Run: `pnpm db:push`
 
-Expected: la tabella `categorization_rules` e i due enum vengono creati.
+Expected: the `categorization_rules` table and the two enums are created.
 
-**Se `db:push` fallisce** per il vincolo unique pre-esistente già noto (log del 2026-07-27): **fermati e segnala al controller invece di aggirarlo con un `ALTER TABLE` diretto.** Qui in gioco c'è una tabella intera, non due colonne: un fix non versionato si perderebbe al prossimo reset del DB condiviso, esattamente come è successo a `raw_description`/`note`.
+**If `db:push` fails** because of the already known pre-existing unique constraint (log of 2026-07-27): **stop and report to the controller instead of working around it with a direct `ALTER TABLE`.** A whole table is at stake here, not two columns: an unversioned fix would be lost at the next reset of the shared DB, exactly as happened to `raw_description`/`note`.
 
-- [ ] **Step 4: Verifica che la tabella esista davvero**
+- [ ] **Step 4: Verify that the table really exists**
 
 Run:
 ```bash
 pnpm exec tsx --env-file=.env.local -e "import('./lib/db/client').then(async ({db}) => { const r = await db.execute(\"select column_name from information_schema.columns where table_name='categorization_rules'\"); console.log(r); process.exit(0); })"
 ```
-Expected: elenco delle 10 colonne. Non fidarti dell'output di `db:push`: verifica in prima persona.
+Expected: list of the 10 columns. Do not trust the `db:push` output: verify it yourself.
 
 - [ ] **Step 5: Commit**
 
@@ -306,7 +306,7 @@ git commit -m "feat: tabella categorization_rules"
 
 ---
 
-### Task 3: Selezione della regola vincente (puro)
+### Task 3: Selection of the winning rule (pure)
 
 **Files:**
 - Create: `lib/categorization/match-rule.ts`
@@ -316,7 +316,7 @@ git commit -m "feat: tabella categorization_rules"
 - Consumes: `merchantKey` (Task 1)
 - Produces: `RuleCandidate`, `selectMatchingRule(key: string, isIncome: boolean, rules: RuleCandidate[]): RuleCandidate | null`, `isDirectionCompatible(categoryType, isIncome, isFallback): boolean`
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
 ```ts
 // lib/categorization/match-rule.test.ts
@@ -411,12 +411,12 @@ describe("selectMatchingRule", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/categorization/match-rule.test.ts`
 Expected: FAIL — "Failed to resolve import ./match-rule"
 
-- [ ] **Step 3: Implementa il modulo**
+- [ ] **Step 3: Implement the module**
 
 ```ts
 // lib/categorization/match-rule.ts
@@ -433,9 +433,9 @@ export interface RuleCandidate {
 }
 
 /**
- * Una categoria è utilizzabile per una transazione solo se la sua direzione coincide: le categorie
- * `entrata` valgono per gli importi positivi, le altre per i negativi. La categoria fallback non ha
- * direzione propria e accoglie entrambi i segni — stesso invariante imposto da PATCH /api/transactions/[id].
+ * A category is usable for a transaction only if its direction matches: `entrata`
+ * categories apply to positive amounts, the others to negative ones. The fallback category has no
+ * direction of its own and accepts both signs — same invariant enforced by PATCH /api/transactions/[id].
  */
 export function isDirectionCompatible(
   categoryType: "fissa" | "variabile" | "entrata",
@@ -447,10 +447,10 @@ export function isDirectionCompatible(
 }
 
 /**
- * Regola vincente per una chiave merchant, valutando prima le regole `merchant` sulla corrispondenza
- * esatta e poi le `contains` come sottostringa (a più match vince il pattern più lungo, cioè il più
- * specifico; a pari lunghezza la regola più recente). Le regole incompatibili con la direzione della
- * transazione vengono saltate senza interrompere la valutazione. `null` se nessuna regola si applica.
+ * Winning rule for a merchant key, evaluating first the `merchant` rules on an exact
+ * match and then the `contains` ones as a substring (with several matches the longest pattern wins, i.e. the most
+ * specific; at equal length the most recent rule). Rules incompatible with the transaction's
+ * direction are skipped without stopping the evaluation. `null` if no rule applies.
  */
 export function selectMatchingRule(
   key: string,
@@ -478,10 +478,10 @@ export function selectMatchingRule(
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/categorization/match-rule.test.ts`
-Expected: PASS, 15 test
+Expected: PASS, 15 tests
 
 - [ ] **Step 5: Commit**
 
@@ -492,20 +492,20 @@ git commit -m "feat: selezione della regola di categorizzazione vincente"
 
 ---
 
-### Task 4: Pipeline di risoluzione e aggancio al sync
+### Task 4: Resolution pipeline and hooking into the sync
 
 **Files:**
 - Create: `lib/categorization/fallback.ts`, `lib/categorization/resolve.ts`
-- Modify: `lib/gocardless/sync.ts:70` e `:83`, `lib/gocardless/categorize.ts` (rimosso), `lib/gocardless/categorize.test.ts` (rimosso)
+- Modify: `lib/gocardless/sync.ts:70` and `:83`, `lib/gocardless/categorize.ts` (removed), `lib/gocardless/categorize.test.ts` (removed)
 - Test: `lib/categorization/resolve.test.ts`
 
 **Interfaces:**
 - Consumes: `merchantKey` (Task 1), `categorizationRules` (Task 2), `selectMatchingRule` / `RuleCandidate` (Task 3)
-- Produces: `getFallbackCategoryId(userId: string): Promise<string>`, `resolveCategorization(userId: string, input: { description: string; amount: number }): Promise<ResolvedCategorization | null>` con `ResolvedCategorization = { categoryId: string; excludedAmount: number; ruleId: string }`
+- Produces: `getFallbackCategoryId(userId: string): Promise<string>`, `resolveCategorization(userId: string, input: { description: string; amount: number }): Promise<ResolvedCategorization | null>` with `ResolvedCategorization = { categoryId: string; excludedAmount: number; ruleId: string }`
 
-- [ ] **Step 1: Crea il modulo fallback**
+- [ ] **Step 1: Create the fallback module**
 
-Chiude il debito tecnico aperto il 2026-07-21: la fallback si risolve per flag `isFallback`, non più per nome letterale.
+This closes the technical debt opened on 2026-07-21: the fallback is resolved by the `isFallback` flag, no longer by literal name.
 
 ```ts
 // lib/categorization/fallback.ts
@@ -516,8 +516,8 @@ import { categories } from "@/lib/db/schema/categories";
 export const FALLBACK_CATEGORY_NAME = "Da categorizzare";
 
 /**
- * Id della categoria di fallback dell'utente, risolta per flag `isFallback` (non per nome: il nome
- * è solo il default alla creazione). Creata al volo se non esiste ancora.
+ * Id of the user's fallback category, resolved by the `isFallback` flag (not by name: the name
+ * is only the default at creation). Created on the fly if it does not exist yet.
  */
 export async function getFallbackCategoryId(userId: string): Promise<string> {
   const [existing] = await db
@@ -541,24 +541,24 @@ export async function getFallbackCategoryId(userId: string): Promise<string> {
 }
 ```
 
-- [ ] **Step 2: Scrivi i test di integrazione che falliscono**
+- [ ] **Step 2: Write the failing integration tests**
 
-I test toccano il DB reale, come già fa `lib/gocardless/categorize.test.ts`. Leggi quel file prima di scrivere, per riusare lo stesso schema di setup/teardown (creazione utente, categorie e conto di prova, cleanup in `afterEach`).
+The tests touch the real DB, as `lib/gocardless/categorize.test.ts` already does. Read that file before writing, to reuse the same setup/teardown scheme (creation of the test user, categories and account, cleanup in `afterEach`).
 
 ```ts
-// lib/categorization/resolve.test.ts — struttura richiesta, completa il setup sul modello di
-// lib/gocardless/categorize.test.ts (creazione authUser + categorie + cleanup)
+// lib/categorization/resolve.test.ts — required structure, complete the setup following
+// lib/gocardless/categorize.test.ts (creation of authUser + categories + cleanup)
 import { describe, expect, it } from "vitest";
 import { resolveCategorization } from "./resolve";
 
 describe("resolveCategorization", () => {
   it("ritorna null quando l'utente non ha regole", async () => {
-    // ... setup utente senza regole
+    // ... setup of a user without rules
     expect(await resolveCategorization(userId, { description: "ESSELUNGA VIA ROMA", amount: -30 })).toBeNull();
   });
 
   it("applica una regola merchant sulla chiave normalizzata, non sul testo grezzo", async () => {
-    // regola: matchType "merchant", pattern "esselunga via roma", categoria spesa
+    // rule: matchType "merchant", pattern "esselunga via roma", spending category
     const result = await resolveCategorization(userId, {
       description: "PAGAMENTO POS ESSELUNGA SPA VIA ROMA COD.4471",
       amount: -30,
@@ -568,18 +568,18 @@ describe("resolveCategorization", () => {
 
   it("incrementa hitCount e aggiorna lastAppliedAt quando una regola vince", async () => {
     await resolveCategorization(userId, { description: "ESSELUNGA VIA ROMA", amount: -30 });
-    // rileggi la regola dal DB
+    // read the rule back from the DB
     expect(rule.hitCount).toBe(1);
     expect(rule.lastAppliedAt).not.toBeNull();
   });
 
   it("non applica una regola di categoria entrata a una spesa", async () => {
-    // regola su categoria "entrata" con pattern "stipendio acme"
+    // rule on an "entrata" category with pattern "stipendio acme"
     expect(await resolveCategorization(userId, { description: "STIPENDIO ACME", amount: -50 })).toBeNull();
   });
 
   it("deriva excludedAmount dallo splitPercentage della regola col segno dell'importo", async () => {
-    // regola con splitPercentage 0.5 su una spesa di 30
+    // rule with splitPercentage 0.5 on a 30 expense
     const result = await resolveCategorization(userId, { description: "AFFITTO CASA", amount: -30 });
     expect(result?.excludedAmount).toBe(-15);
   });
@@ -590,20 +590,20 @@ describe("resolveCategorization", () => {
   });
 
   it("non vede le regole di un altro utente", async () => {
-    // regola creata su otherUserId con lo stesso pattern
+    // rule created on otherUserId with the same pattern
     expect(await resolveCategorization(userId, { description: "ESSELUNGA VIA ROMA", amount: -30 })).toBeNull();
   });
 });
 ```
 
-- [ ] **Step 3: Esegui i test e verifica che falliscano**
+- [ ] **Step 3: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/categorization/resolve.test.ts`
 Expected: FAIL — "Failed to resolve import ./resolve"
 
-Se il DB non è raggiungibile (ECONNREFUSED), **fermati e segnalalo al controller**: non riscrivere i test per evitare il database.
+If the DB is not reachable (ECONNREFUSED), **stop and report it to the controller**: do not rewrite the tests to avoid the database.
 
-- [ ] **Step 4: Implementa la pipeline**
+- [ ] **Step 4: Implement the pipeline**
 
 ```ts
 // lib/categorization/resolve.ts
@@ -620,7 +620,7 @@ export interface ResolvedCategorization {
   ruleId: string;
 }
 
-/** Regole dell'utente con i dati di categoria necessari al guard di direzione. */
+/** The user's rules with the category data needed by the direction guard. */
 async function loadRuleCandidates(userId: string): Promise<RuleCandidate[]> {
   const rows = await db
     .select({
@@ -644,17 +644,17 @@ async function loadRuleCandidates(userId: string): Promise<RuleCandidate[]> {
 }
 
 export interface RuleResolver {
-  /** Risolve una transazione in memoria, senza toccare il DB. */
+  /** Resolves a transaction in memory, without touching the DB. */
   resolve(input: { description: string; amount: number }): ResolvedCategorization | null;
-  /** Ids delle regole che hanno agito, nell'ordine in cui hanno vinto (con ripetizioni). */
+  /** Ids of the rules that acted, in the order in which they won (with repetitions). */
   appliedRuleIds(): string[];
 }
 
 /**
- * Risolutore che carica le regole dell'utente **una sola volta** e poi lavora in memoria: pensato per
- * il loop di import, dove una query per transazione degraderebbe il sync in modo lineare col numero di
- * movimenti. Gli incrementi di `hitCount` non vengono scritti qui: si accumulano e si applicano in un
- * solo update finale con `flushRuleHits`.
+ * Resolver that loads the user's rules **only once** and then works in memory: meant for
+ * the import loop, where one query per transaction would degrade the sync linearly with the number of
+ * movements. `hitCount` increments are not written here: they accumulate and are applied in a
+ * single final update with `flushRuleHits`.
  */
 export async function buildRuleResolver(userId: string): Promise<RuleResolver> {
   const rules = await loadRuleCandidates(userId);
@@ -682,7 +682,7 @@ export async function buildRuleResolver(userId: string): Promise<RuleResolver> {
   };
 }
 
-/** Scrive in un solo update per regola gli utilizzi accumulati durante un import. */
+/** Writes the usages accumulated during an import in a single update per rule. */
 export async function flushRuleHits(ruleIds: string[]): Promise<void> {
   if (ruleIds.length === 0) return;
   const countById = new Map<string, number>();
@@ -698,8 +698,8 @@ export async function flushRuleHits(ruleIds: string[]): Promise<void> {
 }
 
 /**
- * Variante a chiamata singola, per i contesti fuori dal loop di import (una transazione sola, test).
- * Dentro un ciclo usa sempre `buildRuleResolver`: questa funzione interroga il DB a ogni invocazione.
+ * Single-call variant, for contexts outside the import loop (a single transaction, tests).
+ * Inside a loop always use `buildRuleResolver`: this function queries the DB on every call.
  */
 export async function resolveCategorization(
   userId: string,
@@ -712,27 +712,27 @@ export async function resolveCategorization(
 }
 ```
 
-- [ ] **Step 5: Esegui i test e verifica che passino**
+- [ ] **Step 5: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/categorization/resolve.test.ts`
 Expected: PASS
 
-- [ ] **Step 6: Aggancia il sync**
+- [ ] **Step 6: Hook up the sync**
 
-In `lib/gocardless/sync.ts`, sostituisci l'import a riga 8:
+In `lib/gocardless/sync.ts`, replace the import on line 8:
 
 ```ts
 import { getFallbackCategoryId } from "@/lib/categorization/fallback";
 import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
 ```
 
-Subito dopo `const fallbackCategoryId = await getFallbackCategoryId(link.userId);` (riga ~70, **prima** del loop) costruisci il risolutore una volta sola:
+Right after `const fallbackCategoryId = await getFallbackCategoryId(link.userId);` (line ~70, **before** the loop) build the resolver only once:
 
 ```ts
     const ruleResolver = await buildRuleResolver(link.userId);
 ```
 
-Nel loop, al posto di `const categoryId = await resolveCategoryId(link.userId, description);`:
+In the loop, instead of `const categoryId = await resolveCategoryId(link.userId, description);`:
 
 ```ts
       const amount = Number(bankTransaction.transactionAmount.amount);
@@ -740,35 +740,35 @@ Nel loop, al posto di `const categoryId = await resolveCategoryId(link.userId, d
       const categoryId = resolved?.categoryId ?? fallbackCategoryId;
 ```
 
-e nell'oggetto passato a `.values({...})` aggiungi, subito dopo `amount`:
+and in the object passed to `.values({...})` add, right after `amount`:
 
 ```ts
           excludedAmount: (resolved?.excludedAmount ?? 0).toFixed(2),
 ```
 
-Dopo la fine del loop, scrivi in blocco gli utilizzi accumulati:
+After the end of the loop, write the accumulated usages in bulk:
 
 ```ts
     await flushRuleHits(ruleResolver.appliedRuleIds());
 ```
 
-**Nessuna query dentro il loop**: `fallbackCategoryId` e `ruleResolver` sono entrambi calcolati prima. Un sync che interroga il DB una volta per transazione degrada linearmente col numero di movimenti — è il problema che il piano parallelo `2026-09-10-gocardless-sync-performance.md` sta risolvendo, e questo task non deve reintrodurlo.
+**No queries inside the loop**: `fallbackCategoryId` and `ruleResolver` are both computed beforehand. A sync that queries the DB once per transaction degrades linearly with the number of movements — that is the problem the parallel plan `2026-09-10-gocardless-sync-performance.md` is solving, and this task must not reintroduce it.
 
-- [ ] **Step 7: Elimina il vecchio modulo**
+- [ ] **Step 7: Delete the old module**
 
 ```bash
 git rm lib/gocardless/categorize.ts lib/gocardless/categorize.test.ts
 ```
 
-Poi verifica che nessun altro file lo importi:
+Then check that no other file imports it:
 
 Run: `grep -rn "gocardless/categorize\|resolveCategoryId" --include=*.ts --include=*.tsx . | grep -v node_modules`
-Expected: nessun risultato.
+Expected: no results.
 
-- [ ] **Step 8: Verifica la suite e i tipi**
+- [ ] **Step 8: Check the suite and the types**
 
 Run: `pnpm tsc --noEmit && pnpm exec vitest run lib/categorization lib/gocardless`
-Expected: tsc pulito; i test di `lib/gocardless/scheduler.test.ts` possono avere 3 fallimenti pre-esistenti e non correlati, già noti dal log — tutto il resto deve passare.
+Expected: tsc clean; the `lib/gocardless/scheduler.test.ts` tests may have 3 pre-existing, unrelated failures, already known from the log — everything else must pass.
 
 - [ ] **Step 9: Commit**
 
@@ -779,7 +779,7 @@ git commit -m "feat: pipeline di categorizzazione a regole nel sync GoCardless"
 
 ---
 
-### Task 5: Popolamento iniziale delle regole
+### Task 5: Initial population of the rules
 
 **Files:**
 - Create: `lib/db/backfill-categorization-rules.ts`
@@ -787,9 +787,9 @@ git commit -m "feat: pipeline di categorizzazione a regole nel sync GoCardless"
 
 **Interfaces:**
 - Consumes: `merchantKey` (Task 1), `categorizationRules` (Task 2)
-- Produces: `buildRulesFromHistory(transactions, categoriesById): NewRuleSeed[]` (puro, testabile senza DB) con `NewRuleSeed = { pattern: string; categoryId: string; splitPercentage: number | null }`, e `backfillCategorizationRules(userId): Promise<number>`
+- Produces: `buildRulesFromHistory(transactions, categoriesById): NewRuleSeed[]` (pure, testable without a DB) with `NewRuleSeed = { pattern: string; categoryId: string; splitPercentage: number | null }`, and `backfillCategorizationRules(userId): Promise<number>`
 
-- [ ] **Step 1: Scrivi i test della funzione pura**
+- [ ] **Step 1: Write the tests of the pure function**
 
 ```ts
 // lib/db/backfill-categorization-rules.test.ts
@@ -842,12 +842,12 @@ describe("buildRulesFromHistory", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/db/backfill-categorization-rules.test.ts`
-Expected: FAIL — modulo inesistente
+Expected: FAIL — module does not exist
 
-- [ ] **Step 3: Implementa lo script**
+- [ ] **Step 3: Implement the script**
 
 ```ts
 // lib/db/backfill-categorization-rules.ts
@@ -872,7 +872,7 @@ export interface NewRuleSeed {
   splitPercentage: number | null;
 }
 
-/** Quota esclusa come frazione dell'importo, arrotondata per confrontare transazioni di importo diverso. */
+/** Excluded share as a fraction of the amount, rounded to compare transactions with different amounts. */
 function splitPercentageOf(transaction: HistoryTransaction): number {
   const amount = Math.abs(Number(transaction.amount));
   if (amount === 0) return 0;
@@ -880,9 +880,9 @@ function splitPercentageOf(transaction: HistoryTransaction): number {
 }
 
 /**
- * Regole `appresa` deducibili dallo storico già categorizzato: una per chiave merchant, con la
- * categoria più frequente (pareggio risolto sulla transazione più recente) e lo split riproposto solo
- * se coerente su tutte le transazioni della categoria vincente.
+ * `appresa` rules that can be inferred from the already categorized history: one per merchant key, with the
+ * most frequent category (ties broken on the most recent transaction) and the split proposed again only
+ * if consistent across all transactions of the winning category.
  */
 export function buildRulesFromHistory(history: HistoryTransaction[]): NewRuleSeed[] {
   const byKey = new Map<string, HistoryTransaction[]>();
@@ -931,9 +931,9 @@ export function buildRulesFromHistory(history: HistoryTransaction[]): NewRuleSee
 }
 
 /**
- * Popola le regole `appresa` di un utente a partire dal suo storico già categorizzato (categorie di
- * fallback escluse). Idempotente: le regole già presenti sullo stesso pattern non vengono duplicate.
- * Ritorna il numero di regole create.
+ * Populates a user's `appresa` rules from their already categorized history (fallback
+ * categories excluded). Idempotent: rules already present on the same pattern are not duplicated.
+ * Returns the number of rules created.
  */
 export async function backfillCategorizationRules(userId: string): Promise<number> {
   const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
@@ -965,7 +965,7 @@ export async function backfillCategorizationRules(userId: string): Promise<numbe
   return inserted.length;
 }
 
-/** Esecuzione da riga di comando: popola le regole di tutti gli utenti e stampa il conteggio. */
+/** Command-line run: populates the rules of all users and prints the count. */
 async function main() {
   const users = await db.selectDistinct({ userId: transactions.userId }).from(transactions);
   let total = 0;
@@ -983,18 +983,18 @@ if (process.argv[1]?.includes("backfill-categorization-rules")) {
 }
 ```
 
-Nota: `and` è importato per coerenza con gli altri script del progetto ma non serve qui — rimuovilo se ESLint segnala l'import inutilizzato.
+Note: `and` is imported for consistency with the project's other scripts but is not needed here — remove it if ESLint flags the unused import.
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/db/backfill-categorization-rules.test.ts`
-Expected: PASS, 5 test
+Expected: PASS, 5 tests
 
-- [ ] **Step 5: Esegui davvero il backfill e riporta il conteggio**
+- [ ] **Step 5: Actually run the backfill and report the count**
 
 Run: `pnpm exec tsx --env-file=.env.local lib/db/backfill-categorization-rules.ts`
 
-**Riporta il numero di regole create nel report del task.** Un backfill scritto e mai lanciato è l'errore del 2026-07-22 con `backfill-category-appearance.ts`: il codice risultava completo e i dati sono rimasti incoerenti per settimane. Se il DB non è raggiungibile, dichiaralo esplicitamente come passo non eseguito invece di darlo per fatto.
+**Report the number of rules created in the task report.** A backfill written and never run is the 2026-07-22 mistake with `backfill-category-appearance.ts`: the code looked complete and the data stayed inconsistent for weeks. If the DB is not reachable, state it explicitly as a step not run instead of passing it off as done.
 
 - [ ] **Step 6: Commit**
 
@@ -1005,12 +1005,12 @@ git commit -m "feat: backfill delle regole di categorizzazione dallo storico"
 
 ---
 
-### Task 6: Motore delle proposte
+### Task 6: Suggestion engine
 
 **Files:**
 - Create: `lib/categorization/suggest.ts`
 - Test: `lib/categorization/suggest.test.ts`
-- Delete: `lib/calc/categorize-suggestions.ts`, `lib/calc/categorize-suggestions.test.ts` (dopo il Task 7, che ne è l'ultimo consumatore — qui si crea solo il sostituto)
+- Delete: `lib/calc/categorize-suggestions.ts`, `lib/calc/categorize-suggestions.test.ts` (after Task 7, which is its last consumer — here only the replacement is created)
 
 **Interfaces:**
 - Consumes: `merchantKey`, `merchantKeyTokens`, `jaccardSimilarity` (Task 1), `isDirectionCompatible` (Task 3)
@@ -1021,7 +1021,7 @@ git commit -m "feat: backfill delle regole di categorizzazione dallo storico"
   - `computeSuggestions(input: SuggestInput): CategorizeSuggestion[]`
   - `groupByMerchant(uncategorized: SuggestTransaction[], suggestions: CategorizeSuggestion[]): SuggestionGroup[]`
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
 ```ts
 // lib/categorization/suggest.test.ts
@@ -1175,12 +1175,12 @@ describe("groupByMerchant", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/categorization/suggest.test.ts`
-Expected: FAIL — modulo inesistente
+Expected: FAIL — module does not exist
 
-- [ ] **Step 3: Implementa il motore**
+- [ ] **Step 3: Implement the engine**
 
 ```ts
 // lib/categorization/suggest.ts
@@ -1239,21 +1239,21 @@ export interface SuggestionGroup {
   hasDivergentSuggestions: boolean;
 }
 
-/** Quota esclusa come frazione dell'importo, arrotondata per confronti fra importi diversi. */
+/** Excluded share as a fraction of the amount, rounded for comparisons between different amounts. */
 function splitPercentageOf(transaction: SuggestTransaction): number {
   const amount = Math.abs(transaction.amount);
   if (amount === 0) return 0;
   return Math.round((Math.abs(transaction.excludedAmount) / amount) * 10000) / 10000;
 }
 
-/** Una categoria è proponibile solo se esiste, non è la fallback e ha la direzione giusta. */
+/** A category can be suggested only if it exists, is not the fallback and has the right direction. */
 function canSuggest(categoryId: string, isIncome: boolean, categories: SuggestCategory[]): boolean {
   const category = categories.find((c) => c.id === categoryId);
   if (!category || category.isFallback) return false;
   return isDirectionCompatible(category.type, isIncome, false);
 }
 
-/** Proposta ricavata dalla regola più simile alla chiave della transazione, se sopra soglia. */
+/** Suggestion derived from the rule most similar to the transaction's key, if above threshold. */
 function suggestFromRules(
   transaction: SuggestTransaction,
   key: string,
@@ -1282,7 +1282,7 @@ function suggestFromRules(
   };
 }
 
-/** Proposta ricavata dalle transazioni passate con chiave merchant simile. */
+/** Suggestion derived from past transactions with a similar merchant key. */
 function suggestFromHistory(
   transaction: SuggestTransaction,
   key: string,
@@ -1338,10 +1338,10 @@ function suggestFromHistory(
 }
 
 /**
- * Proposte per le transazioni ancora da categorizzare, in cascata: prima la somiglianza con una regola
- * esistente, poi quella con lo storico già categorizzato. Ogni transazione riceve al massimo una
- * proposta, dalla prima sorgente che ne produce una. Non scrive nulla: il livello assistente si innesta
- * a valle, sulle transazioni rimaste senza proposta.
+ * Suggestions for the transactions still to categorize, in cascade: first similarity with an existing
+ * rule, then with the already categorized history. Each transaction receives at most one
+ * suggestion, from the first source that produces one. It writes nothing: the assistant layer plugs in
+ * downstream, on the transactions left without a suggestion.
  */
 export function computeSuggestions(input: SuggestInput): CategorizeSuggestion[] {
   const suggestions: CategorizeSuggestion[] = [];
@@ -1357,10 +1357,10 @@ export function computeSuggestions(input: SuggestInput): CategorizeSuggestion[] 
 const SOURCE_PRIORITY: Record<SuggestionSource, number> = { regola: 3, storico: 2, assistente: 1 };
 
 /**
- * Transazioni da categorizzare raccolte per chiave merchant, così che una scelta sola ne categorizzi
- * molte. Il gruppo eredita la proposta di sorgente più alta fra quelle delle sue transazioni (a pari
- * sorgente, la confidenza maggiore) e segnala se al suo interno convivono proposte di categorie diverse.
- * Ordinati per numerosità decrescente: i gruppi che fanno risparmiare più lavoro stanno in cima.
+ * Transactions to categorize gathered by merchant key, so that a single choice categorizes
+ * many. The group inherits the highest-source suggestion among those of its transactions (at equal
+ * source, the highest confidence) and flags whether suggestions for different categories coexist inside it.
+ * Sorted by descending size: the groups that save the most work are at the top.
  */
 export function groupByMerchant(
   uncategorized: SuggestTransaction[],
@@ -1407,10 +1407,10 @@ export function groupByMerchant(
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/categorization/suggest.test.ts`
-Expected: PASS, 12 test
+Expected: PASS, 12 tests
 
 - [ ] **Step 5: Commit**
 
@@ -1421,25 +1421,25 @@ git commit -m "feat: motore delle proposte di categorizzazione con raggruppament
 
 ---
 
-### Task 7: Endpoint delle proposte
+### Task 7: Suggestions endpoint
 
 **Files:**
 - Modify: `app/api/transactions/categorize-suggestions/route.ts`, `app/api/transactions/categorize-suggestions/route.test.ts`
 - Delete: `lib/calc/categorize-suggestions.ts`, `lib/calc/categorize-suggestions.test.ts`
 
 **Interfaces:**
-- Consumes: `computeSuggestions`, `groupByMerchant`, tipi da `suggest.ts` (Task 6); `categorizationRules` (Task 2)
-- Produces: risposta `{ groups: SuggestionGroup[] }` da `GET /api/transactions/categorize-suggestions`
+- Consumes: `computeSuggestions`, `groupByMerchant`, types from `suggest.ts` (Task 6); `categorizationRules` (Task 2)
+- Produces: response `{ groups: SuggestionGroup[] }` from `GET /api/transactions/categorize-suggestions`
 
-- [ ] **Step 1: Aggiorna i test dell'endpoint**
+- [ ] **Step 1: Update the endpoint tests**
 
-Leggi `app/api/transactions/categorize-suggestions/route.test.ts` e adatta il setup esistente. I casi richiesti:
+Read `app/api/transactions/categorize-suggestions/route.test.ts` and adapt the existing setup. Required cases:
 
 ```ts
-it("risponde 401 senza sessione", async () => { /* come nel test esistente */ });
+it("risponde 401 senza sessione", async () => { /* as in the existing test */ });
 
 it("raggruppa le transazioni da categorizzare per chiave merchant", async () => {
-  // due transazioni fallback con descrizioni diverse ma stessa chiave
+  // two fallback transactions with different descriptions but the same key
   const response = await GET(request);
   const { groups } = await response.json();
   expect(groups).toHaveLength(1);
@@ -1447,24 +1447,24 @@ it("raggruppa le transazioni da categorizzare per chiave merchant", async () => 
 });
 
 it("include la proposta ricavata da una regola esistente", async () => {
-  // regola merchant "esselunga via roma" -> categoria spesa
+  // merchant rule "esselunga via roma" -> spending category
   const { groups } = await (await GET(request)).json();
   expect(groups[0].suggestion.source).toBe("regola");
 });
 
 it("non include le transazioni di altri utenti", async () => {
-  // transazione fallback creata su otherUserId
+  // fallback transaction created on otherUserId
   const { groups } = await (await GET(request)).json();
   expect(groups).toEqual([]);
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run app/api/transactions/categorize-suggestions/route.test.ts`
-Expected: FAIL — la risposta è ancora un array piatto di suggerimenti, non `{ groups }`
+Expected: FAIL — the response is still a flat array of suggestions, not `{ groups }`
 
-- [ ] **Step 3: Riscrivi l'endpoint**
+- [ ] **Step 3: Rewrite the endpoint**
 
 ```ts
 // app/api/transactions/categorize-suggestions/route.ts
@@ -1477,7 +1477,7 @@ import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
 import { computeSuggestions, groupByMerchant, type SuggestTransaction } from "@/lib/categorization/suggest";
 
-/** Transazione del DB nella forma attesa dal motore delle proposte (numeri già convertiti). */
+/** DB transaction in the shape expected by the suggestion engine (numbers already converted). */
 function toSuggestTransaction(row: typeof transactions.$inferSelect): SuggestTransaction {
   return {
     id: row.id,
@@ -1490,10 +1490,10 @@ function toSuggestTransaction(row: typeof transactions.$inferSelect): SuggestTra
 }
 
 /**
- * GET /api/transactions/categorize-suggestions — transazioni ancora sulla categoria di fallback,
- * raggruppate per chiave merchant, ciascuna con l'eventuale proposta ricavata dalle regole esistenti o
- * dallo storico già categorizzato. Non interroga mai l'assistente (endpoint `ai` dedicato), quindi la
- * risposta non dipende dalla disponibilità di un modello.
+ * GET /api/transactions/categorize-suggestions — transactions still on the fallback category,
+ * grouped by merchant key, each with the possible suggestion derived from existing rules or
+ * from the already categorized history. It never queries the assistant (dedicated `ai` endpoint), so the
+ * response does not depend on a model being available.
  */
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -1542,25 +1542,25 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run app/api/transactions/categorize-suggestions/route.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Elimina il vecchio motore e il wizard che lo consuma**
+- [ ] **Step 5: Delete the old engine and the wizard that consumes it**
 
 ```bash
 git rm lib/calc/categorize-suggestions.ts lib/calc/categorize-suggestions.test.ts components/domain/expenses/auto-categorize-wizard.tsx
 ```
 
-Il wizard va rimosso **qui e non più tardi**: consuma il vecchio tipo `CategorizeSuggestion`, che aveva la forma `{ transaction: Transaction, ... }` mentre il nuovo espone `transactionId`. Non è un import da riappuntare, è un tipo incompatibile — tenerlo in vita romperebbe `tsc` fino al Task 13.
+The wizard must be removed **here and no later**: it consumes the old `CategorizeSuggestion` type, which had the shape `{ transaction: Transaction, ... }` while the new one exposes `transactionId`. It is not an import to repoint, it is an incompatible type — keeping it alive would break `tsc` until Task 13.
 
-Di conseguenza, in `components/domain/expenses/auto-categorize-button.tsx` sostituisci l'apertura del wizard con un `Link` a `/categorizza` (testo invariato: «Categorizza automaticamente»), e togli le righe di export del wizard da `components/domain/expenses/index.ts`.
+Consequently, in `components/domain/expenses/auto-categorize-button.tsx` replace the opening of the wizard with a `Link` to `/categorizza` (text unchanged: «Categorizza automaticamente» ("Categorize automatically")), and remove the wizard export lines from `components/domain/expenses/index.ts`.
 
-**La rotta `/categorizza` non esiste ancora**: nasce al Task 9. Fra questo task e quello il bottone porta a un 404 — accettabile dentro il branch di lavoro, ma è la ragione per cui il Task 9 non va saltato né rinviato oltre.
+**The `/categorizza` route does not exist yet**: it is born in Task 9. Between this task and that one the button leads to a 404 — acceptable inside the working branch, but it is the reason Task 9 must not be skipped or postponed.
 
 Run: `pnpm tsc --noEmit && grep -rn "AutoCategorizeWizard\|calc/categorize-suggestions" --include=*.ts --include=*.tsx . | grep -v node_modules`
-Expected: tsc pulito, nessun riferimento residuo.
+Expected: tsc clean, no remaining references.
 
 - [ ] **Step 6: Commit**
 
@@ -1571,16 +1571,16 @@ git commit -m "feat: endpoint proposte raggruppate per merchant, rimosso il vecc
 
 ---
 
-### Task 8: Applicazione batch atomica
+### Task 8: Atomic batch apply
 
 **Files:**
 - Create: `lib/validation/categorization-rules.ts`, `lib/validation/categorization-rules.test.ts`, `app/api/transactions/categorize-apply/route.ts`, `app/api/transactions/categorize-apply/route.test.ts`
 
 **Interfaces:**
 - Consumes: `categorizationRules` (Task 2), `merchantKey` (Task 1), `isDirectionCompatible` (Task 3)
-- Produces: `applyCategorizationSchema` / `ApplyCategorizationInput` con forma `{ groups: { transactionIds: string[]; categoryId: string; excludedPercentage: number; createRule: boolean; merchantKey: string }[] }`; risposta `{ applied: number; rulesCreated: number }`
+- Produces: `applyCategorizationSchema` / `ApplyCategorizationInput` with shape `{ groups: { transactionIds: string[]; categoryId: string; excludedPercentage: number; createRule: boolean; merchantKey: string }[] }`; response `{ applied: number; rulesCreated: number }`
 
-- [ ] **Step 1: Scrivi lo schema Zod e i suoi test**
+- [ ] **Step 1: Write the Zod schema and its tests**
 
 ```ts
 // lib/validation/categorization-rules.ts
@@ -1593,7 +1593,7 @@ export const applyCategorizationSchema = z.object({
       z.object({
         transactionIds: z.array(z.uuid()).min(1),
         categoryId: z.uuid(),
-        // Quota esclusa come frazione dell'importo (0-1), applicata a ogni transazione del gruppo.
+        // Excluded share as a fraction of the amount (0-1), applied to every transaction in the group.
         excludedPercentage: z.number().min(0).max(1).default(0),
         createRule: z.boolean().default(true),
         merchantKey: z.string().trim().min(1),
@@ -1674,61 +1674,61 @@ describe("updateRuleSchema", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test dello schema**
+- [ ] **Step 2: Run the schema tests**
 
 Run: `pnpm exec vitest run lib/validation/categorization-rules.test.ts`
-Expected: PASS, 7 test
+Expected: PASS, 7 tests
 
-- [ ] **Step 3: Scrivi i test dell'endpoint che falliscono**
+- [ ] **Step 3: Write the failing endpoint tests**
 
-Modella il setup su `app/api/transactions/[id]/route.test.ts`. Casi richiesti:
+Model the setup on `app/api/transactions/[id]/route.test.ts`. Required cases:
 
 ```ts
 it("risponde 401 senza sessione", async () => { /* ... */ });
 
 it("categorizza tutte le transazioni del gruppo in una sola chiamata", async () => {
-  // 3 transazioni fallback, un gruppo, categoria spesa
+  // 3 fallback transactions, one group, spending category
   const response = await POST(request);
   expect(await response.json()).toMatchObject({ applied: 3 });
-  // rileggi le 3 transazioni: tutte sulla categoria spesa
+  // read the 3 transactions back: all on the spending category
 });
 
 it("crea la regola merchant quando createRule è true", async () => {
   const { rulesCreated } = await (await POST(request)).json();
   expect(rulesCreated).toBe(1);
-  // la regola ha matchType "merchant", pattern uguale al merchantKey inviato, source "appresa"
+  // the rule has matchType "merchant", pattern equal to the merchantKey sent, source "appresa"
 });
 
 it("non crea la regola quando createRule è false", async () => { /* rulesCreated === 0 */ });
 
 it("aggiorna la regola esistente invece di duplicarla", async () => {
-  // applica due volte lo stesso merchantKey con categorie diverse
-  // -> una sola regola, con la categoria della seconda applicazione
+  // apply the same merchantKey twice with different categories
+  // -> a single rule, with the category of the second application
 });
 
 it("applica la quota esclusa proporzionalmente a ogni transazione del gruppo", async () => {
-  // due transazioni da -100 e -50, excludedPercentage 0.5
-  // -> excludedAmount -50 e -25
+  // two transactions of -100 and -50, excludedPercentage 0.5
+  // -> excludedAmount -50 and -25
 });
 
 it("rifiuta con 400 una categoria incompatibile con la direzione di una transazione del gruppo", async () => {
-  // gruppo con una spesa, categoria di tipo entrata
+  // group with one expense, income-type category
   expect((await POST(request)).status).toBe(400);
 });
 
 it("non applica niente se una sola transazione del gruppo non è dell'utente", async () => {
-  // gruppo con 2 transazioni proprie + 1 di un altro utente
+  // group with 2 own transactions + 1 from another user
   expect((await POST(request)).status).toBe(404);
-  // le 2 transazioni proprie NON devono risultare modificate: la scrittura è atomica
+  // the 2 own transactions must NOT end up modified: the write is atomic
 });
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che falliscano**
+- [ ] **Step 4: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run app/api/transactions/categorize-apply/route.test.ts`
-Expected: FAIL — route inesistente
+Expected: FAIL — route does not exist
 
-- [ ] **Step 5: Implementa l'endpoint**
+- [ ] **Step 5: Implement the endpoint**
 
 ```ts
 // app/api/transactions/categorize-apply/route.ts
@@ -1743,10 +1743,10 @@ import { isDirectionCompatible } from "@/lib/categorization/match-rule";
 import { applyCategorizationSchema } from "@/lib/validation/categorization-rules";
 
 /**
- * POST /api/transactions/categorize-apply — applica in blocco le scelte fatte nella pagina di
- * revisione: aggiorna categoria e quota esclusa di ogni transazione dei gruppi ricevuti e, dove
- * richiesto, crea o aggiorna la regola `appresa` corrispondente. Tutto in un'unica transazione DB:
- * o passa l'intero batch, o non passa nulla.
+ * POST /api/transactions/categorize-apply — applies in bulk the choices made on the review
+ * page: updates the category and excluded share of every transaction in the received groups and, where
+ * requested, creates or updates the corresponding `appresa` rule. All in a single DB transaction:
+ * either the whole batch goes through, or nothing does.
  */
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -1782,8 +1782,8 @@ export async function POST(request: NextRequest) {
   const transactionById = new Map(ownedTransactions.map((transaction) => [transaction.id, transaction]));
   const categoryById = new Map(ownedCategories.map((category) => [category.id, category]));
 
-  // Guard di direzione su ogni transazione prima di scrivere: un solo caso incompatibile invalida
-  // l'intero batch, invece di lasciare metà lavoro applicato.
+  // Direction guard on every transaction before writing: a single incompatible case invalidates
+  // the whole batch, instead of leaving half the work applied.
   for (const group of parsed.data.groups) {
     const category = categoryById.get(group.categoryId)!;
     for (const transactionId of group.transactionIds) {
@@ -1839,10 +1839,10 @@ export async function POST(request: NextRequest) {
         })
         .returning({ id: categorizationRules.id, createdAt: categorizationRules.createdAt, updatedAt: categorizationRules.updatedAt });
 
-      // Distinzione fra creazione e aggiornamento: su un insert entrambe le colonne prendono il
-      // `now()` della transazione Postgres e coincidono; su un conflitto `updatedAt` riceve il
-      // `new Date()` di JS, sempre diverso da `createdAt`. Se questo confronto si rivelasse fragile
-      // in test, sostituiscilo con una SELECT preventiva dei pattern già esistenti.
+      // Distinguishing creation from update: on an insert both columns take the Postgres
+      // transaction's `now()` and coincide; on a conflict `updatedAt` gets the JS
+      // `new Date()`, always different from `createdAt`. If this comparison turns out to be fragile
+      // in tests, replace it with an upfront SELECT of the already existing patterns.
       if (rule && rule.createdAt.getTime() === rule.updatedAt.getTime()) rulesCreated += 1;
     }
   });
@@ -1851,7 +1851,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 6: Esegui i test e verifica che passino**
+- [ ] **Step 6: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run app/api/transactions/categorize-apply/route.test.ts lib/validation/categorization-rules.test.ts`
 Expected: PASS
@@ -1865,17 +1865,17 @@ git commit -m "feat: applicazione batch atomica della categorizzazione"
 
 ---
 
-### Task 9: Hook client e pagina di revisione
+### Task 9: Client hooks and review page
 
 **Files:**
 - Create: `lib/queries/categorization.ts`, `app/(app)/categorizza/page.tsx`, `components/domain/categorization/categorize-group-row.tsx`, `components/domain/categorization/index.ts`
 - Modify: `components/domain/expenses/auto-categorize-button.tsx`
 
 **Interfaces:**
-- Consumes: `SuggestionGroup` (Task 6), endpoint dei Task 7 e 8
-- Produces: `useCategorizeSuggestionsQuery()`, `useApplyCategorizationMutation()`, componente `CategorizeGroupRow`
+- Consumes: `SuggestionGroup` (Task 6), endpoints of Tasks 7 and 8
+- Produces: `useCategorizeSuggestionsQuery()`, `useApplyCategorizationMutation()`, `CategorizeGroupRow` component
 
-- [ ] **Step 1: Crea gli hook**
+- [ ] **Step 1: Create the hooks**
 
 ```ts
 // lib/queries/categorization.ts
@@ -1896,12 +1896,12 @@ async function fetchSuggestions(): Promise<SuggestionGroup[]> {
   return body.groups;
 }
 
-/** Gruppi di transazioni da categorizzare con le relative proposte da regole e storico. */
+/** Groups of transactions to categorize with their suggestions from rules and history. */
 export function useCategorizeSuggestionsQuery() {
   return useQuery({ queryKey: SUGGESTIONS_QUERY_KEY, queryFn: fetchSuggestions });
 }
 
-/** Applica in blocco le scelte di categorizzazione e invalida proposte e transazioni al successo. */
+/** Applies the categorization choices in bulk and invalidates suggestions and transactions on success. */
 export function useApplyCategorizationMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1925,11 +1925,11 @@ export function useApplyCategorizationMutation() {
 }
 ```
 
-Verifica la chiave esatta usata da `lib/queries/transactions.ts` e usa quella al posto di `["transactions"]` se differisce.
+Check the exact key used by `lib/queries/transactions.ts` and use it instead of `["transactions"]` if it differs.
 
-- [ ] **Step 2: Crea la riga di gruppo**
+- [ ] **Step 2: Create the group row**
 
-`components/domain/categorization/categorize-group-row.tsx`: componente controllato, nessuno stato proprio se non l'espansione. Props:
+`components/domain/categorization/categorize-group-row.tsx`: controlled component, no state of its own except expansion. Props:
 
 ```ts
 export interface CategorizeGroupRowProps {
@@ -1945,37 +1945,37 @@ export interface CategorizeGroupRowProps {
 }
 ```
 
-Requisiti di resa:
+Rendering requirements:
 
-- Checkbox di selezione, etichetta del gruppo (`group.label`) e conteggio (`«7 transazioni»`, singolare corretto a 1), importo totale con `formatCurrency`.
-- `Select` categoria filtrato per direzione, con `CategoryAvatar` e la render-prop dentro `SelectValue` — **obbligatoria** con `@base-ui/react`, altrimenti compare l'id grezzo (bug già capitato nel progetto). Copia il pattern da `auto-categorize-wizard.tsx:90-125`.
-- La direzione del gruppo si deduce dal segno di `group.totalAmount`.
-- Badge dell'origine della proposta: `Regola simile` / `Storico` / `Assistente`, con la percentuale di confidenza e `group.suggestion.reason` come testo secondario. Nessun badge se `suggestion` è `null`.
-- Se `group.hasDivergentSuggestions`, una riga di avviso: «Le transazioni di questo gruppo avevano proposte diverse — controlla prima di applicare».
-- Controllo split collassato dietro un toggle, riusando `SplitSlider` se le props lo permettono, altrimenti uno `Slider` 0-100%.
-- Espansione che elenca le singole descrizioni del gruppo.
+- Selection checkbox, group label (`group.label`) and count (`«7 transazioni»`, correct singular at 1), total amount with `formatCurrency`.
+- Category `Select` filtered by direction, with `CategoryAvatar` and the render-prop inside `SelectValue` — **mandatory** with `@base-ui/react`, otherwise the raw id shows up (a bug that already happened in the project). Copy the pattern from `auto-categorize-wizard.tsx:90-125`.
+- The group's direction is inferred from the sign of `group.totalAmount`.
+- Badge of the suggestion's origin: `Regola simile` / `Storico` / `Assistente` (Similar rule / History / Assistant), with the confidence percentage and `group.suggestion.reason` as secondary text. No badge if `suggestion` is `null`.
+- If `group.hasDivergentSuggestions`, a warning line: «Le transazioni di questo gruppo avevano proposte diverse — controlla prima di applicare» ("The transactions in this group had different suggestions — check before applying").
+- Split control collapsed behind a toggle, reusing `SplitSlider` if the props allow it, otherwise a 0-100% `Slider`.
+- Expansion listing the group's individual descriptions.
 
-Tieni il file sotto ~150 righe di JSX; se cresce, estrai il badge in un sotto-componente.
+Keep the file under ~150 lines of JSX; if it grows, extract the badge into a sub-component.
 
-- [ ] **Step 3: Crea la pagina**
+- [ ] **Step 3: Create the page**
 
-`app/(app)/categorizza/page.tsx`: client component che orchestra, senza logica di business (regola di `CLAUDE.md`: niente calcoli nelle route).
+`app/(app)/categorizza/page.tsx`: client component that orchestrates, with no business logic (rule from `CLAUDE.md`: no computations in routes).
 
-- Stato locale: `Map<merchantKey, { selected, categoryId, excludedPercentage }>`, inizializzata dalle proposte quando arrivano i dati.
-- Testata: titolo «Categorizza», sottotitolo col numero di transazioni in attesa, link di ritorno a Transazioni.
-- Barra azioni: «Seleziona tutto» / «Deseleziona tutto», bottone **«Applica selezionate (N)»** disabilitato a N = 0 o durante la mutation.
-- Stato di caricamento con skeleton, stato vuoto («Nessuna transazione da categorizzare»), errore della mutation visibile in pagina.
-- Al successo: toast `sonner` con «N transazioni categorizzate, M regole create».
-- Nessun gruppo viene selezionato d'ufficio: la selezione è una scelta esplicita dell'utente.
+- Local state: `Map<merchantKey, { selected, categoryId, excludedPercentage }>`, initialized from the suggestions when the data arrives.
+- Header: title «Categorizza», subtitle with the number of pending transactions, back link to Transazioni.
+- Action bar: «Seleziona tutto» / «Deseleziona tutto» ("Select all" / "Deselect all"), button **«Applica selezionate (N)»** ("Apply selected (N)") disabled at N = 0 or during the mutation.
+- Loading state with skeleton, empty state («Nessuna transazione da categorizzare», "No transactions to categorize"), mutation error visible on the page.
+- On success: `sonner` toast with «N transazioni categorizzate, M regole create» ("N transactions categorized, M rules created").
+- No group is selected by default: selection is an explicit user choice.
 
-- [ ] **Step 4: Verifica che il bottone porti davvero alla pagina**
+- [ ] **Step 4: Verify that the button really leads to the page**
 
-Il `Link` a `/categorizza` è già stato messo al Task 7: qui la rotta esiste finalmente, quindi controlla che il percorso combaci con la cartella creata (`app/(app)/categorizza/page.tsx` → `/categorizza`, il route group `(app)` non compare nell'URL).
+The `Link` to `/categorizza` was already added in Task 7: here the route finally exists, so check that the path matches the created folder (`app/(app)/categorizza/page.tsx` → `/categorizza`, the `(app)` route group does not appear in the URL).
 
-- [ ] **Step 5: Verifica tipi, lint e build**
+- [ ] **Step 5: Check types, lint and build**
 
 Run: `pnpm tsc --noEmit && pnpm lint && pnpm build`
-Expected: tsc pulito; lint con i soli 2 errori `react-hooks/set-state-in-effect` pre-esistenti e già noti (`theme-toggle.tsx`, `CategoryLegendRow`), nessuno nuovo; build completata.
+Expected: tsc clean; lint with only the 2 pre-existing, already known `react-hooks/set-state-in-effect` errors (`theme-toggle.tsx`, `CategoryLegendRow`), no new ones; build completed.
 
 - [ ] **Step 6: Commit**
 
@@ -1986,7 +1986,7 @@ git commit -m "feat: pagina di revisione della categorizzazione raggruppata per 
 
 ---
 
-### Task 10: CRUD delle regole
+### Task 10: Rules CRUD
 
 **Files:**
 - Create: `app/api/categorization-rules/route.ts`, `app/api/categorization-rules/route.test.ts`, `app/api/categorization-rules/[id]/route.ts`, `app/api/categorization-rules/[id]/route.test.ts`
@@ -1996,49 +1996,49 @@ git commit -m "feat: pagina di revisione della categorizzazione raggruppata per 
 - Consumes: `createRuleSchema` / `updateRuleSchema` (Task 8), `merchantKey` (Task 1)
 - Produces: `useCategorizationRulesQuery()`, `useCreateRuleMutation()`, `useUpdateRuleMutation()`, `useDeleteRuleMutation()`
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
-Casi richiesti, con il pattern di ownership di `app/api/categories/[id]/route.test.ts`:
+Required cases, with the ownership pattern of `app/api/categories/[id]/route.test.ts`:
 
 ```ts
-// route.test.ts (collezione)
+// route.test.ts (collection)
 it("risponde 401 senza sessione", async () => { /* ... */ });
 it("elenca solo le regole dell'utente autenticato", async () => { /* ... */ });
 it("crea una regola normalizzando il pattern con merchantKey", async () => {
-  // POST con pattern "ESSELUNGA SPA" -> la regola salvata ha pattern "esselunga"
+  // POST with pattern "ESSELUNGA SPA" -> the saved rule has pattern "esselunga"
 });
 it("rifiuta con 404 una categoria di un altro utente", async () => { /* ... */ });
 it("rifiuta con 409 una regola duplicata su stesso tipo e pattern", async () => { /* ... */ });
 
 // [id]/route.test.ts
 it("aggiorna il tipo di match di una regola propria", async () => {
-  // PATCH matchType "contains" -> la regola risulta contains
+  // PATCH matchType "contains" -> the rule is now contains
 });
-it("risponde 404 sulla regola di un altro utente", async () => { /* PATCH e DELETE */ });
+it("risponde 404 sulla regola di un altro utente", async () => { /* PATCH and DELETE */ });
 it("elimina una regola propria", async () => { /* ... */ });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run app/api/categorization-rules`
-Expected: FAIL — route inesistenti
+Expected: FAIL — routes do not exist
 
-- [ ] **Step 3: Implementa gli endpoint**
+- [ ] **Step 3: Implement the endpoints**
 
-`GET` restituisce le regole dell'utente ordinate per `hitCount` decrescente, arricchite con il nome della categoria (join su `categories`) perché la UI le deve mostrare.
+`GET` returns the user's rules sorted by descending `hitCount`, enriched with the category name (join on `categories`) because the UI has to show it.
 
-`POST`: valida con `createRuleSchema`, verifica l'ownership della `categoryId` (404 se non propria), **normalizza il pattern con `merchantKey()` prima di salvare** — un pattern non normalizzato non matcherebbe mai, dato che il confronto avviene sempre su chiavi normalizzate — e imposta `source: "manuale"`. Violazione del vincolo unique → 409 con messaggio «Esiste già una regola con questo pattern».
+`POST`: validates with `createRuleSchema`, checks the ownership of the `categoryId` (404 if not owned), **normalizes the pattern with `merchantKey()` before saving** — a non-normalized pattern would never match, since the comparison always happens on normalized keys — and sets `source: "manuale"`. Unique constraint violation → 409 with the message «Esiste già una regola con questo pattern» ("A rule with this pattern already exists").
 
-`PATCH`/`DELETE` in `[id]/route.ts`: recupera la regola solo se `userId` coincide (404 altrimenti), stessa normalizzazione del pattern su update, stessa verifica di ownership sulla nuova `categoryId`.
+`PATCH`/`DELETE` in `[id]/route.ts`: fetch the rule only if `userId` matches (404 otherwise), same pattern normalization on update, same ownership check on the new `categoryId`.
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run app/api/categorization-rules`
 Expected: PASS
 
-- [ ] **Step 5: Aggiungi gli hook**
+- [ ] **Step 5: Add the hooks**
 
-In `lib/queries/categorization.ts`, aggiungi `useCategorizationRulesQuery`, `useCreateRuleMutation`, `useUpdateRuleMutation`, `useDeleteRuleMutation` sulla chiave `["categorization-rules"]`, con lo stesso stile di `lib/queries/categories.ts` (invalidazione al successo, messaggio d'errore dal body della risposta). Il tipo di ritorno della query è `CategorizationRule & { categoryName: string }`.
+In `lib/queries/categorization.ts`, add `useCategorizationRulesQuery`, `useCreateRuleMutation`, `useUpdateRuleMutation`, `useDeleteRuleMutation` on the `["categorization-rules"]` key, in the same style as `lib/queries/categories.ts` (invalidation on success, error message from the response body). The query's return type is `CategorizationRule & { categoryName: string }`.
 
 - [ ] **Step 6: Commit**
 
@@ -2049,37 +2049,37 @@ git commit -m "feat: CRUD delle regole di categorizzazione"
 
 ---
 
-### Task 11: Gestione regole in `/categorie`
+### Task 11: Rule management in `/categorie`
 
 **Files:**
 - Create: `components/domain/categorization/rules-manager.tsx`
 - Modify: `app/(app)/categorie/page.tsx`, `components/domain/categorization/index.ts`
 
 **Interfaces:**
-- Consumes: hook del Task 10, `RULE_MATCH_TYPES` (Task 2)
-- Produces: componente `RulesManager` con props `{ categories: Category[] }`
+- Consumes: hooks of Task 10, `RULE_MATCH_TYPES` (Task 2)
+- Produces: `RulesManager` component with props `{ categories: Category[] }`
 
-- [ ] **Step 1: Costruisci il componente**
+- [ ] **Step 1: Build the component**
 
-`RulesManager` è una `Card` autonoma, montata sotto la gestione categorie esistente. Requisiti:
+`RulesManager` is a standalone `Card`, mounted below the existing category management. Requirements:
 
-- Tabella o lista di righe: pattern, badge del tipo di match (`Esatta` per `merchant`, `Contiene` per `contains`), categoria con `CategoryAvatar`, badge origine (`Appresa` / `Manuale`), «usata N volte».
-- Modifica in riga: pattern editabile, `Select` categoria, `Select` tipo di match. Salvataggio su blur o su Enter, come già fa `CategoryLegendRow` per il budget.
-- Testo esplicativo **breve** sopra la lista: «Le regole si applicano da sole alle nuove transazioni. "Contiene" copre tutte le varianti: cambia `esselunga via roma` in `esselunga` per prendere ogni filiale.»
-- Eliminazione con `AlertDialog` di conferma, come già fa «Distribuisci colori».
-- Stato vuoto: «Nessuna regola ancora. Le regole nascono quando categorizzi le transazioni dalla pagina Categorizza.»
-- Aggiunta manuale di una regola in fondo alla lista (pattern + categoria + tipo).
+- Table or list of rows: pattern, match type badge (`Esatta` for `merchant`, `Contiene` for `contains` — "Exact" / "Contains"), category with `CategoryAvatar`, origin badge (`Appresa` / `Manuale`, "Learned" / "Manual"), «usata N volte» ("used N times").
+- Inline editing: editable pattern, category `Select`, match type `Select`. Save on blur or on Enter, as `CategoryLegendRow` already does for the budget.
+- **Short** explanatory text above the list: «Le regole si applicano da sole alle nuove transazioni. "Contiene" copre tutte le varianti: cambia `esselunga via roma` in `esselunga` per prendere ogni filiale.» ("Rules apply on their own to new transactions. "Contains" covers all variants: change `esselunga via roma` to `esselunga` to catch every branch.")
+- Deletion with a confirmation `AlertDialog`, as «Distribuisci colori» ("Distribute colors") already does.
+- Empty state: «Nessuna regola ancora. Le regole nascono quando categorizzi le transazioni dalla pagina Categorizza.» ("No rules yet. Rules are created when you categorize transactions from the Categorizza page.")
+- Manual addition of a rule at the bottom of the list (pattern + category + type).
 
-Tutte le stringhe in italiano, colori solo da token del tema, file sotto ~150 righe di JSX (estrai la riga in un sotto-componente se serve).
+All strings in Italian, colors only from theme tokens, file under ~150 lines of JSX (extract the row into a sub-component if needed).
 
-- [ ] **Step 2: Montalo nella pagina**
+- [ ] **Step 2: Mount it in the page**
 
-In `app/(app)/categorie/page.tsx`, aggiungi `<RulesManager categories={categories} />` sotto la sezione esistente. Nessuna nuova voce di sidebar.
+In `app/(app)/categorie/page.tsx`, add `<RulesManager categories={categories} />` below the existing section. No new sidebar entry.
 
-- [ ] **Step 3: Verifica tipi, lint e build**
+- [ ] **Step 3: Check types, lint and build**
 
 Run: `pnpm tsc --noEmit && pnpm lint && pnpm build`
-Expected: tsc pulito, nessun errore di lint nuovo, build completata.
+Expected: tsc clean, no new lint errors, build completed.
 
 - [ ] **Step 4: Commit**
 
@@ -2090,14 +2090,14 @@ git commit -m "feat: gestione delle regole di categorizzazione in Categorie"
 
 ---
 
-### Task 12: Livello assistente (Ollama)
+### Task 12: Assistant layer (Ollama)
 
 **Files:**
 - Create: `lib/categorization/llm/index.ts`, `lib/categorization/llm/ollama.ts`, `lib/categorization/llm/ollama.test.ts`, `app/api/transactions/categorize-suggestions/ai/route.ts`, `app/api/transactions/categorize-suggestions/ai/route.test.ts`
 - Modify: `.env.example`
 
 **Interfaces:**
-- Consumes: `Category` dallo schema, `SuggestTransaction` (Task 6)
+- Consumes: `Category` from the schema, `SuggestTransaction` (Task 6)
 - Produces:
   - `interface SuggestInput { index: number; description: string; amount: number }`
   - `interface LlmSuggestion { index: number; categoryName: string; confidence: number }`
@@ -2105,9 +2105,9 @@ git commit -m "feat: gestione delle regole di categorizzazione in Categorie"
   - `getSuggester(): CategorySuggester | null`
   - `createOllamaSuggester(baseUrl: string, model: string): CategorySuggester`
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
-Il vincolo globale «nessun modello collegato è uno stato normale» va **provato**, non solo dichiarato.
+The global constraint «nessun modello collegato è uno stato normale» ("no connected model is a normal state") must be **proven**, not just stated.
 
 ```ts
 // lib/categorization/llm/ollama.test.ts
@@ -2179,14 +2179,14 @@ describe("createOllamaSuggester", () => {
 });
 ```
 
-Aggiungi anche un test di timeout: `fetch` mockata con una promise che non si risolve mai e timer finti, per verificare che dopo 10s la chiamata ritorni `[]`.
+Also add a timeout test: `fetch` mocked with a promise that never resolves and fake timers, to check that after 10s the call returns `[]`.
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/categorization/llm/ollama.test.ts`
-Expected: FAIL — moduli inesistenti
+Expected: FAIL — modules do not exist
 
-- [ ] **Step 3: Implementa l'interfaccia e l'implementazione**
+- [ ] **Step 3: Implement the interface and the implementation**
 
 ```ts
 // lib/categorization/llm/index.ts
@@ -2210,9 +2210,9 @@ export interface CategorySuggester {
 }
 
 /**
- * Suggeritore configurato, oppure `null` se nessun modello è collegato. Un modello assente è uno
- * stato normale del prodotto, non un guasto: chi chiama salta semplicemente il livello, senza
- * errori né avvisi all'utente.
+ * Configured suggester, or `null` if no model is connected. A missing model is a normal
+ * state of the product, not a failure: the caller simply skips the layer, with no
+ * errors or warnings to the user.
  */
 export function getSuggester(): CategorySuggester | null {
   const baseUrl = process.env.OLLAMA_BASE_URL?.trim();
@@ -2237,7 +2237,7 @@ const llmResponseSchema = z.array(
   })
 );
 
-/** Prompt in un solo blocco: categorie disponibili e transazioni da classificare, senza dati di conto. */
+/** Prompt in a single block: available categories and transactions to classify, without account data. */
 function buildPrompt(input: SuggestInput[], categories: Category[]): string {
   const categoryList = categories
     .filter((category) => !category.isFallback)
@@ -2263,10 +2263,10 @@ function buildPrompt(input: SuggestInput[], categories: Category[]): string {
 }
 
 /**
- * Suggeritore basato su un'istanza Ollama raggiungibile via HTTP. Qualunque problema — connessione
- * rifiutata, timeout, risposta non conforme, categoria inesistente — si traduce in zero proposte,
- * mai in un errore propagato al chiamante: il livello deterministico non deve mai peggiorare
- * per colpa di questo.
+ * Suggester based on an Ollama instance reachable via HTTP. Any problem — connection
+ * refused, timeout, non-conforming response, non-existent category — turns into zero suggestions,
+ * never into an error propagated to the caller: the deterministic layer must never get worse
+ * because of this.
  */
 export function createOllamaSuggester(baseUrl: string, model: string): CategorySuggester {
   return {
@@ -2313,13 +2313,13 @@ export function createOllamaSuggester(baseUrl: string, model: string): CategoryS
 }
 ```
 
-`JSON.parse` può lanciare su risposta non-JSON: è dentro il `try`, quindi ricade sul `return []` del `catch`. Non aggiungere un secondo try annidato.
+`JSON.parse` can throw on a non-JSON response: it is inside the `try`, so it falls back to the `return []` of the `catch`. Do not add a second nested try.
 
-- [ ] **Step 4: Implementa l'endpoint**
+- [ ] **Step 4: Implement the endpoint**
 
-`app/api/transactions/categorize-suggestions/ai/route.ts`: `POST`, sessione obbligatoria, riceve `{ transactionIds: string[] }`, verifica l'ownership di tutte le transazioni (404 altrimenti), chiama `getSuggester()`. **Se è `null`, risponde `Response.json({ groups: [] })` con status 200** — non è un errore. Altrimenti costruisce l'input dalle descrizioni normalizzate con `merchantKey`, chiama `suggest`, converte i `categoryName` in `categoryId` scartando i non corrispondenti, applica il guard di direzione e restituisce proposte con `source: "assistente"` e `confidence` dal modello, già raggruppate con `groupByMerchant`.
+`app/api/transactions/categorize-suggestions/ai/route.ts`: `POST`, session required, receives `{ transactionIds: string[] }`, checks the ownership of all transactions (404 otherwise), calls `getSuggester()`. **If it is `null`, it responds `Response.json({ groups: [] })` with status 200** — it is not an error. Otherwise it builds the input from the descriptions normalized with `merchantKey`, calls `suggest`, converts the `categoryName`s into `categoryId`s discarding those that do not match, applies the direction guard and returns suggestions with `source: "assistente"` and `confidence` from the model, already grouped with `groupByMerchant`.
 
-Test richiesti:
+Required tests:
 
 ```ts
 it("risponde 401 senza sessione", async () => { /* ... */ });
@@ -2333,18 +2333,18 @@ it("risponde 404 se una transazione non è dell'utente", async () => { /* ... */
 it("scarta una proposta incompatibile con la direzione della transazione", async () => { /* ... */ });
 ```
 
-- [ ] **Step 5: Documenta la configurazione**
+- [ ] **Step 5: Document the configuration**
 
-In `.env.example` aggiungi, con il commento:
+In `.env.example` add, with the comment:
 
 ```bash
-# Categorizzazione assistita (opzionale): senza queste variabili il livello è semplicemente spento
-# e la categorizzazione resta puramente deterministica (regole + somiglianza).
+# Assisted categorization (optional): without these variables the layer is simply off
+# and categorization stays purely deterministic (rules + similarity).
 OLLAMA_BASE_URL=
 OLLAMA_MODEL=llama3.2
 ```
 
-- [ ] **Step 6: Esegui i test e verifica che passino**
+- [ ] **Step 6: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/categorization/llm app/api/transactions/categorize-suggestions`
 Expected: PASS
@@ -2358,21 +2358,21 @@ git commit -m "feat: livello assistente Ollama opzionale per la categorizzazione
 
 ---
 
-### Task 13: Innesto dell'assistente nella pagina di revisione
+### Task 13: Plugging the assistant into the review page
 
 **Files:**
 - Modify: `app/(app)/categorizza/page.tsx`, `lib/queries/categorization.ts`
 
 **Interfaces:**
-- Consumes: endpoint `ai` (Task 12), pagina del Task 9
+- Consumes: `ai` endpoint (Task 12), page from Task 9
 - Produces: `useAiSuggestionsMutation()`
 
-- [ ] **Step 1: Aggiungi l'hook**
+- [ ] **Step 1: Add the hook**
 
 In `lib/queries/categorization.ts`:
 
 ```ts
-/** Proposte aggiuntive dall'assistente per i gruppi rimasti senza proposta. Silenziosa se il livello è spento. */
+/** Additional suggestions from the assistant for the groups left without a suggestion. Silent if the layer is off. */
 export function useAiSuggestionsMutation() {
   return useMutation({
     mutationFn: async (transactionIds: string[]) => {
@@ -2388,18 +2388,18 @@ export function useAiSuggestionsMutation() {
 }
 ```
 
-Nota la differenza rispetto agli altri hook: qui un fallimento **non** lancia. Una risposta di errore vale come «nessuna proposta aggiuntiva», perché l'assenza dell'assistente non deve mai produrre un errore visibile.
+Note the difference from the other hooks: here a failure does **not** throw. An error response counts as «no additional suggestions», because the absence of the assistant must never produce a visible error.
 
-- [ ] **Step 2: Innestalo nella pagina**
+- [ ] **Step 2: Plug it into the page**
 
-Nella pagina `/categorizza`, dopo che i dati della query sono arrivati, invoca la mutation **una sola volta** con gli id delle transazioni dei gruppi la cui `suggestion` è `null`. Se non ce ne sono, non chiamare l'endpoint. Le proposte che tornano si innestano nei rispettivi gruppi, senza toccare quelli che hanno già una proposta e senza sovrascrivere una scelta già fatta dall'utente.
+In the `/categorizza` page, once the query data has arrived, invoke the mutation **only once** with the ids of the transactions of the groups whose `suggestion` is `null`. If there are none, do not call the endpoint. The suggestions that come back are plugged into their respective groups, without touching those that already have a suggestion and without overwriting a choice already made by the user.
 
-Nessuno spinner bloccante: al più un'indicazione discreta accanto ai gruppi in attesa, che sparisce comunque quando la mutation finisce, in qualunque modo finisca.
+No blocking spinner: at most a discreet indication next to the pending groups, which disappears anyway when the mutation ends, however it ends.
 
-- [ ] **Step 3: Verifica completa**
+- [ ] **Step 3: Full verification**
 
 Run: `pnpm tsc --noEmit && pnpm lint && pnpm exec vitest run && pnpm build`
-Expected: tsc pulito; lint con i soli 2 errori pre-esistenti noti; test tutti verdi salvo i 3 fallimenti pre-esistenti e non correlati di `lib/gocardless/scheduler.test.ts`; build completata.
+Expected: tsc clean; lint with only the 2 known pre-existing errors; all tests green except the 3 pre-existing, unrelated failures in `lib/gocardless/scheduler.test.ts`; build completed.
 
 - [ ] **Step 4: Commit**
 
@@ -2410,15 +2410,15 @@ git commit -m "feat: proposte dell'assistente nella pagina di categorizzazione, 
 
 ---
 
-## Verifica manuale (utente)
+## Manual verification (user)
 
-Non eseguibile da un agente: nessun browser reale né Postgres garantito nel sandbox delle sessioni agentiche, vincolo costante di questo progetto.
+Not executable by an agent: no real browser nor guaranteed Postgres in the sandbox of agentic sessions, a constant constraint of this project.
 
-- [ ] Un merchant già categorizzato una volta viene assegnato da solo al sync successivo, senza passare da "Da categorizzare".
-- [ ] La pagina `/categorizza` raggruppa correttamente le varianti dello stesso merchant, e applicare un gruppo categorizza tutte le sue transazioni.
-- [ ] Il badge di origine e il motivo della proposta corrispondono a ciò che ci si aspetta (regola / storico / assistente).
-- [ ] Applicare crea la regola, che compare in `/categorie` con il conteggio di utilizzi che cresce dopo i sync successivi.
-- [ ] Cambiare una regola da «Esatta» a «Contiene» accorciando il pattern cattura effettivamente le altre filiali.
-- [ ] Un'entrata non riceve mai proposte di categorie di spesa, e viceversa.
-- [ ] **Senza `OLLAMA_BASE_URL` configurata**: la pagina funziona identica, nessun errore, nessun avviso, i gruppi senza proposta restano semplicemente senza proposta.
-- [ ] Con Ollama configurato e poi spento a metà: stesso comportamento, nessun blocco della pagina.
+- [ ] A merchant already categorized once is assigned on its own at the next sync, without going through "Da categorizzare".
+- [ ] The `/categorizza` page correctly groups the variants of the same merchant, and applying a group categorizes all its transactions.
+- [ ] The origin badge and the reason for the suggestion match what is expected (rule / history / assistant).
+- [ ] Applying creates the rule, which shows up in `/categorie` with a usage count that grows after subsequent syncs.
+- [ ] Changing a rule from «Esatta» to «Contiene» while shortening the pattern actually catches the other branches.
+- [ ] An income transaction never receives spending-category suggestions, and vice versa.
+- [ ] **Without `OLLAMA_BASE_URL` configured**: the page works the same, no errors, no warnings, groups without a suggestion simply stay without one.
+- [ ] With Ollama configured and then turned off halfway: same behavior, no blocking of the page.

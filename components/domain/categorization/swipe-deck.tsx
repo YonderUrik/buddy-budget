@@ -19,7 +19,7 @@ import type { DeckDecision } from "@/lib/categorization/swipe-deck";
 import { track } from "@/lib/analytics";
 import { SPRING_SOFT } from "@/lib/motion/springs";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
-import { LogoCredit } from "./logo-credit";
+import { LogoCredit } from "@/components/domain/shared";
 import { SwipeCard } from "./swipe-card";
 import { SwipeTour } from "./swipe-tour";
 import { useSwipeDeck } from "./use-swipe-deck";

@@ -1,0 +1,4 @@
+Institution: Synthetic Bank
+Date,Amount,Currency,Description
+2026-10-01,1000.00,EUR,Synthetic deposit
+2026-10-02,-12.50,EUR,Synthetic purchase

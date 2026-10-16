@@ -22,6 +22,8 @@ export { GoalsPanoramicaSection, closestGoals, GOALS_INVITE_DISMISSED_KEY } from
 export type { GoalsPanoramicaSectionProps } from "./goals-panoramica-section";
 export { GoalRow } from "./goal-row";
 export type { GoalRowProps } from "./goal-row";
+export { useGoalActions } from "./goal-actions";
+export type { GoalAction } from "./goal-actions";
 export { useGoalFormatters } from "./use-goal-formatters";
 export { DeleteGoalDialog } from "./delete-goal-dialog";
 export type { DeleteGoalDialogProps } from "./delete-goal-dialog";

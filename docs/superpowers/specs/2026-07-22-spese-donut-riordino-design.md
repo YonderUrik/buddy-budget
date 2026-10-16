@@ -1,85 +1,85 @@
-# Spese: torta multilivello e riordino sezioni — design
+# Spese: multi-level pie chart and section reordering — design
 
-Data: 2026-07-22
+Date: 2026-07-22
 
-## Contesto
+## Context
 
-La schermata Spese (`app/(app)/spese/page.tsx`) oggi mostra, in ordine: KPI cards, blocco "Per categoria" (lista budget editabile, `CategoryBreakdown`), due grafici affiancati (`ExpenseCharts`: donut "Fisse vs variabili" + barre "Andamento ultimi 6 mesi"), lista transazioni, form "+ Aggiungi".
+The Spese (Expenses) screen (`app/(app)/spese/page.tsx`) today shows, in order: KPI cards, the "Per categoria" (by category) block (editable budget list, `CategoryBreakdown`), two side-by-side charts (`ExpenseCharts`: "Fisse vs variabili" — fixed vs variable — donut + "Andamento ultimi 6 mesi" — last 6 months trend — bars), transaction list, "+ Aggiungi" (add) form.
 
-Feedback dell'utente dopo il test manuale:
-1. La lista transazioni come ultimo elemento non funziona bene visivamente.
-2. Il donut "Fisse vs variabili" e il blocco budget per categoria sono scollegati: si vede il tipo di spesa ma non subito quanto si è speso per categoria rispetto al budget, senza scorrere la pagina.
+User feedback after manual testing:
+1. The transaction list as the last element does not work well visually.
+2. The "Fisse vs variabili" donut and the per-category budget block are disconnected: you see the type of spending but not immediately how much was spent per category against the budget, without scrolling the page.
 
-Obiettivo: un impatto visivo più immediato su "dove sono andati i soldi", con budget/percentuali sempre visibili nello stesso blocco del grafico, e una lista transazioni non relegata in fondo.
+Goal: a more immediate visual impact on "where the money went", with budgets/percentages always visible in the same block as the chart, and a transaction list not relegated to the bottom.
 
-## Architettura componenti
+## Component architecture
 
-- **Eliminati**: `components/domain/expenses/category-breakdown.tsx` (l'intero file), e la porzione "Fisse vs variabili" di `components/domain/expenses/expense-charts.tsx`.
-- **Nuovo**: `components/domain/expenses/category-breakdown-donut.tsx` — unifica torta multilivello (tipo → categoria) e legenda con budget editabile inline + percentuali. Sostituisce sia `CategoryBreakdown` che il donut di `ExpenseCharts`.
-- **Rinominato**: `expense-charts.tsx` → `expense-trend-chart.tsx`, contiene solo il bar chart "Andamento ultimi 6 mesi" (il nome plurale "charts" non ha più senso con un solo grafico dentro).
-- Aggiornare `components/domain/expenses/index.ts` (barrel) con i nuovi export, rimuovere quelli obsoleti.
-- **Nessuna nuova funzione di calcolo**: `computeCategoryBreakdown` (già espone `categoryId`, `name`, `type`, `amount`, `color`, `icon`) e `computeFixedVsVariable` (somme per tipo) in `lib/calc/expenses.ts` bastano. Il totale speso nel periodo per il calcolo "% sul totale" si ottiene sommando `amount` su tutte le `CategoryAmount` restituite (stesso valore aggregato del KPI "speso").
+- **Removed**: `components/domain/expenses/category-breakdown.tsx` (the whole file), and the "Fisse vs variabili" part of `components/domain/expenses/expense-charts.tsx`.
+- **New**: `components/domain/expenses/category-breakdown-donut.tsx` — unifies the multi-level pie (type → category) and the legend with inline-editable budget + percentages. Replaces both `CategoryBreakdown` and the `ExpenseCharts` donut.
+- **Renamed**: `expense-charts.tsx` → `expense-trend-chart.tsx`, contains only the "Andamento ultimi 6 mesi" bar chart (the plural name "charts" no longer makes sense with a single chart inside).
+- Update `components/domain/expenses/index.ts` (barrel) with the new exports, remove the obsolete ones.
+- **No new calculation function**: `computeCategoryBreakdown` (already exposes `categoryId`, `name`, `type`, `amount`, `color`, `icon`) and `computeFixedVsVariable` (sums by type) in `lib/calc/expenses.ts` are enough. The total spent in the period for the "% of total" calculation is obtained by summing `amount` over all the returned `CategoryAmount`s (the same aggregate value as the "spent" KPI).
 
-## Grafico a torta multilivello
+## Multi-level pie chart
 
-Due `<Pie>` recharts annidate nello stesso `<PieChart>` (pattern nested-donut standard, coerente con `ChartContainer`/`ChartTooltip` di shadcn già in uso):
+Two recharts `<Pie>`s nested in the same `<PieChart>` (standard nested-donut pattern, consistent with the shadcn `ChartContainer`/`ChartTooltip` already in use):
 
-- **Layer interno**: 2 spicchi, fissa/variabile, da `FixedVsVariable`. Colori fissi neutri (`--chart-1` fissa, `--chart-2` variabile — stessi token già usati oggi nel donut esistente).
-- **Layer esterno**: uno spicchio per ogni categoria con `amount > 0` nel periodo selezionato. Colore = colore proprio della categoria (`entry.color`, stesso usato da `CategoryAvatar` altrove nell'app). `innerRadius` del layer esterno = `outerRadius` del layer interno (donut concentrico, nessuno spazio tra i due anelli).
-- Categorie con `amount === 0` **non generano spicchio** nel layer esterno (spicchio invisibile inutile) ma **compaiono comunque in legenda** (vedi sotto).
-- **Ordinamento**: l'array dati del layer esterno va ordinato per `type` (tutte le "fissa" contigue, poi tutte le "variabile") e, dentro ogni gruppo, per `amount` decrescente. Necessario perché recharts non riordina i dati di un `Pie` — l'allineamento angolare tra layer esterno e layer interno dipende dall'ordine dell'array. Stesso ordinamento va applicato alle righe della legenda, per leggibilità (torta e legenda si corrispondono visivamente).
-- Tooltip: riusa il pattern `tooltipValueFormatter` già presente in `expense-charts.tsx` (nome + importo formattato in valuta), esteso per mostrare anche il tipo quando si passa sul layer interno.
+- **Inner layer**: 2 slices, fixed/variable, from `FixedVsVariable`. Fixed neutral colours (`--chart-1` fixed, `--chart-2` variable — the same tokens already used today in the existing donut).
+- **Outer layer**: one slice for each category with `amount > 0` in the selected period. Colour = the category's own colour (`entry.color`, the same one used by `CategoryAvatar` elsewhere in the app). The outer layer's `innerRadius` = the inner layer's `outerRadius` (concentric donut, no gap between the two rings).
+- Categories with `amount === 0` **do not generate a slice** in the outer layer (a useless invisible slice) but **still appear in the legend** (see below).
+- **Ordering**: the outer layer's data array must be sorted by `type` (all "fissa" contiguous, then all "variabile") and, within each group, by `amount` descending. Necessary because recharts does not reorder a `Pie`'s data — the angular alignment between the outer and inner layers depends on the array order. The same ordering must be applied to the legend rows, for readability (pie and legend match visually).
+- Tooltip: reuses the `tooltipValueFormatter` pattern already present in `expense-charts.tsx` (name + amount formatted in the currency), extended to also show the type when hovering over the inner layer.
 
-Alternativa scartata: disegnare gli anelli a mano con SVG per maggior controllo — scartata perché non aggiunge nulla rispetto al pattern nested-Pie di recharts e romperebbe la coerenza con `ChartContainer`/`ChartTooltip` già usati in tutta la sezione Spese.
+Rejected alternative: drawing the rings by hand with SVG for more control — rejected because it adds nothing over recharts' nested-Pie pattern and would break consistency with the `ChartContainer`/`ChartTooltip` already used throughout the Spese section.
 
-## Legenda e layout della card
+## Legend and card layout
 
-Card unica (sostituisce sia la vecchia card `CategoryBreakdown` sia la card del donut in `ExpenseCharts`):
+A single card (replaces both the old `CategoryBreakdown` card and the donut card in `ExpenseCharts`):
 
-- **Desktop**: grafico a sinistra (colonna a larghezza fissa, `aspect-square max-h-56` come oggi), legenda a destra che occupa lo spazio restante.
-- **Mobile**: grafico sopra, legenda sotto, impilati.
-- **Ogni riga legenda** (una per categoria, stesso ordinamento del layer esterno della torta):
-  - `CategoryAvatar` (colore/icona categoria) + nome — riuso diretto del markup esistente in `CategoryBreakdownRow`.
-  - Importo speso nel periodo (testo, come oggi).
-  - Input budget mensile editabile inline: **riuso as-is** della logica esistente in `CategoryBreakdownRow` (commit on-blur, stato saving/error via `useUpsertBudgetMutation`, validazione: vuoto/non numerico/negativo rifiutato, ripristino valore precedente).
-  - **Badge % saturazione budget** = `amount / budgetAmount × 100`, arrotondata. Se `budgetAmount === 0` → testo `—` (nessuna divisione per zero). Stile badge: `text-neg`/`bg-neg-soft` se ≥ 100% (sopra budget, coerente con i token neg/pos già usati per importi negativi altrove nell'app), altrimenti stile neutro (`text-muted-foreground`).
-  - **Badge % sul totale speso** = `amount / totaleSpesoPeriodo × 100`, arrotondata. Se il totale speso nel periodo è 0 → `—`.
-- Categorie con `amount === 0` mostrano comunque la riga (utile per vedere il budget assegnato anche se non ancora speso in questo periodo), con "€0 speso" e percentuali a `—` dove non calcolabili (0/budget = 0% è comunque calcolabile e mostrato normalmente, cambia solo il caso 0/0 sul totale se non ci fosse proprio nessuna spesa nel periodo).
+- **Desktop**: chart on the left (fixed-width column, `aspect-square max-h-56` as today), legend on the right taking the remaining space.
+- **Mobile**: chart above, legend below, stacked.
+- **Each legend row** (one per category, same ordering as the pie's outer layer):
+  - `CategoryAvatar` (category colour/icon) + name — direct reuse of the existing markup in `CategoryBreakdownRow`.
+  - Amount spent in the period (text, as today).
+  - Inline-editable monthly budget input: **as-is reuse** of the existing logic in `CategoryBreakdownRow` (commit on blur, saving/error state via `useUpsertBudgetMutation`, validation: empty/non-numeric/negative rejected, previous value restored).
+  - **Budget saturation % badge** = `amount / budgetAmount × 100`, rounded. If `budgetAmount === 0` → text `—` (no division by zero). Badge style: `text-neg`/`bg-neg-soft` if ≥ 100% (over budget, consistent with the neg/pos tokens already used for negative amounts elsewhere in the app), otherwise neutral style (`text-muted-foreground`).
+  - **% of total spent badge** = `amount / totalSpentInPeriod × 100`, rounded. If the total spent in the period is 0 → `—`.
+- Categories with `amount === 0` still show their row (useful to see the assigned budget even if nothing has been spent in this period yet), with "€0 speso" ("€0 spent") and percentages at `—` where they cannot be computed (0/budget = 0% can still be computed and is shown normally; only the 0/0 case on the total changes, if there is no spending at all in the period).
 
-## Riordino pagina
+## Page reordering
 
-Nuovo ordine in `app/(app)/spese/page.tsx`:
+New order in `app/(app)/spese/page.tsx`:
 
-1. Header (titolo, intervallo periodo, link "Gestisci categorie", chip "Da categorizzare", selettore periodo) — invariato.
-2. `ExpensesKpiCards` — invariato.
-3. **Nuovo**: `CategoryBreakdownDonut` (torta multilivello + legenda budget/percentuali) — sostituisce sia la vecchia `CategoryBreakdown` sia la card donut di `ExpenseCharts`.
-4. **Spostata**: Card lista transazioni (con riepilogo uscite/escluse/spese effettive in testa) + `AddTransactionForm` in coda — stessa struttura interna di oggi, solo posizione nella pagina cambiata (da ultima a qui).
-5. **Rinominata**: Card `ExpenseTrendChart` (ex `ExpenseCharts`, solo bar chart "Andamento ultimi 6 mesi") — resta da sola, non più affiancata al donut.
+1. Header (title, period range, "Gestisci categorie" link, "Da categorizzare" chip, period selector) — unchanged.
+2. `ExpensesKpiCards` — unchanged.
+3. **New**: `CategoryBreakdownDonut` (multi-level pie + budget/percentage legend) — replaces both the old `CategoryBreakdown` and the `ExpenseCharts` donut card.
+4. **Moved**: the transaction list card (with the outflows/excluded/actual spending summary at the top) + `AddTransactionForm` at the end — same internal structure as today, only its position in the page changed (from last to here).
+5. **Renamed**: the `ExpenseTrendChart` card (formerly `ExpenseCharts`, only the "Andamento ultimi 6 mesi" bar chart) — stays on its own, no longer side by side with the donut.
 
 ## Testing
 
-- Nessun nuovo modulo di calcolo puro da testare (nessuna modifica a `lib/calc/expenses.ts`).
-- Aggiungere test per l'ordinamento/aggregazione dati del nuovo componente se la logica di ordinamento/percentuali viene estratta in una funzione pura separata dal componente React (da valutare in fase di piano — se resta inline nel componente, coprire con verifica manuale/build invece che unit test, secondo la stessa convenzione già usata per `CategoryBreakdown` esistente, che non ha test dedicati).
-- Verifica manuale in browser richiesta per: allineamento angolare torta interno/esterno, leggibilità legenda su mobile, editing budget invariato, badge percentuali con casi limite (budget 0, spesa 0, saturazione >100%).
+- No new pure calculation module to test (no change to `lib/calc/expenses.ts`).
+- Add tests for the ordering/aggregation of the new component's data if the ordering/percentage logic is extracted into a pure function separate from the React component (to be evaluated during planning — if it stays inline in the component, cover it with manual verification/build instead of unit tests, following the same convention already used for the existing `CategoryBreakdown`, which has no dedicated tests).
+- Manual verification in the browser required for: angular alignment of inner/outer pie, legend readability on mobile, budget editing unchanged, percentage badges with edge cases (budget 0, spending 0, saturation >100%).
 
-## Fuori scope
+## Out of scope
 
-- Nessuna modifica a `lib/calc/expenses.ts` o alle route API.
-- Nessuna modifica al meccanismo "Dividi" (`SplitSlider`) o a `TransactionRow`.
-- Nessuna modifica alla sezione Budget separata (rimandata, vedi `CLAUDE.md` — "In corso ora").
+- No change to `lib/calc/expenses.ts` or to the API routes.
+- No change to the "Dividi" mechanism (`SplitSlider`) or to `TransactionRow`.
+- No change to the separate Budget section (deferred, see `CLAUDE.md` — "In corso ora").
 
-## Addendum 2026-07-22 — legenda scrollabile e icone nelle fette
+## Addendum 2026-07-22 — scrollable legend and icons in the slices
 
-Feedback dell'utente dopo la prima implementazione (5/5 task, review finale approvata, non ancora mergiata): con molte categorie la legenda occupa molto più spazio verticale del grafico, sbilanciando la card; inoltre l'icona categoria (già visibile in legenda tramite `CategoryAvatar`) sarebbe utile leggerla direttamente nelle fette dell'anello esterno per un riconoscimento più immediato.
+User feedback after the first implementation (5/5 tasks, final review approved, not merged yet): with many categories the legend takes up much more vertical space than the chart, unbalancing the card; moreover, the category icon (already visible in the legend via `CategoryAvatar`) would be useful to read directly in the outer ring's slices for more immediate recognition.
 
-Due modifiche, entrambe circoscritte a `category-breakdown-donut.tsx`:
+Two changes, both confined to `category-breakdown-donut.tsx`:
 
-1. **Legenda con altezza massima e scroll interno**: il contenitore della legenda (`div.divide-y` in `CategoryBreakdownDonut`) riceve `max-h-56 overflow-y-auto` (224px, stessa altezza del grafico `aspect-square max-h-56`), così il grafico resta sempre alla stessa proporzione visiva rispetto alla legenda indipendentemente dal numero di categorie. Scrollbar nativa del browser, nessun nuovo stile custom (non serve replicare il trattamento scrollbar dedicato di `.sidebar-nav` per questo caso).
-2. **Icona categoria nelle fette dell'anello esterno**: tramite il prop `label` di recharts sul `<Pie>` esterno (funzione custom, non il default), che riceve `cx`, `cy`, `midAngle`, `innerRadius`, `outerRadius`, `percent`, `payload` per ciascuna fetta. La funzione:
-   - Calcola la posizione al centro radiale della fetta: `radius = innerRadius + (outerRadius - innerRadius) / 2`, poi `x`/`y` da `cx`/`cy` + `radius * cos/sin(-midAngle in radianti)`.
-   - Nasconde l'icona (ritorna `null`) se `percent < 0.05` (soglia 5% sul totale — `percent` di recharts per il layer esterno è già `amount / sommaLayerEsterno`, e la somma del layer esterno coincide col totale speso nel periodo essendo filtrato a `amount > 0`, quindi stessa base di calcolo della "% sul totale" già mostrata in legenda).
-   - Renderizza l'icona Lucide della categoria (stessa mappa `ICON_MAP` già esportata da `components/domain/categories/category-avatar.tsx`, riusata qui — non duplicata) dentro un `<g transform="translate(...)">`, colore fisso `className="text-white"` (contrasto garantito su qualunque colore fetta, dato che i fill di `SWATCH_CHART_COLOR` sono tutti toni medi 400-500; nessuna variazione light/dark necessaria perché il fill della fetta stessa non varia per tema).
-   - `labelLine={false}` sul `<Pie>` esterno per disattivare la linea di connessione automatica di recharts (non serve, l'icona è già dentro la fetta).
-   - Il layer interno (`fissa`/`variabile`) **non** riceve questo trattamento — resta senza icone, invariato.
+1. **Legend with maximum height and internal scroll**: the legend container (`div.divide-y` in `CategoryBreakdownDonut`) gets `max-h-56 overflow-y-auto` (224px, the same height as the `aspect-square max-h-56` chart), so the chart always keeps the same visual proportion relative to the legend regardless of the number of categories. Native browser scrollbar, no new custom style (no need to replicate the dedicated scrollbar treatment of `.sidebar-nav` for this case).
+2. **Category icon in the outer ring's slices**: through recharts' `label` prop on the outer `<Pie>` (custom function, not the default), which receives `cx`, `cy`, `midAngle`, `innerRadius`, `outerRadius`, `percent`, `payload` for each slice. The function:
+   - Computes the position at the radial centre of the slice: `radius = innerRadius + (outerRadius - innerRadius) / 2`, then `x`/`y` from `cx`/`cy` + `radius * cos/sin(-midAngle in radians)`.
+   - Hides the icon (returns `null`) if `percent < 0.05` (5% threshold on the total — recharts' `percent` for the outer layer is already `amount / outerLayerSum`, and the outer layer's sum coincides with the total spent in the period since it is filtered to `amount > 0`, so it is the same calculation base as the "% of total" already shown in the legend).
+   - Renders the category's Lucide icon (the same `ICON_MAP` already exported by `components/domain/categories/category-avatar.tsx`, reused here — not duplicated) inside a `<g transform="translate(...)">`, fixed colour `className="text-white"` (contrast guaranteed on any slice colour, since the `SWATCH_CHART_COLOR` fills are all mid tones 400-500; no light/dark variation needed because the slice's own fill does not vary by theme).
+   - `labelLine={false}` on the outer `<Pie>` to disable recharts' automatic connecting line (not needed, the icon is already inside the slice).
+   - The inner layer (`fissa`/`variabile`) does **not** get this treatment — it stays without icons, unchanged.
 
-Nessuna nuova funzione di calcolo pura necessaria (il filtro 5% usa direttamente il `percent` fornito da recharts, non richiede una funzione testabile separata — è puro passthrough di un dato già calcolato dalla libreria). Nessun impatto sulla legenda, sull'editing budget, o sull'ordinamento già implementati.
+No new pure calculation function needed (the 5% filter uses the `percent` provided by recharts directly, it does not require a separate testable function — it is a pure passthrough of a value already computed by the library). No impact on the legend, budget editing, or ordering already implemented.

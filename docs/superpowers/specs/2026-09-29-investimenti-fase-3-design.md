@@ -1,106 +1,106 @@
-# Investimenti, Fase 3: rischio e diversificazione
+# Investimenti, Phase 3: risk and diversification
 
-**Data**: 2026-09-29
-**Stato**: implementata il 2026-09-29 nella stessa sessione del design, su richiesta dell'utente ("andiamo alla fase 3 della sezione investimenti"), branch `claude/serene-goldberg-r8qw3k`. Non ancora mergiata.
-**Spec madre**: `2026-09-27-investimenti-design.md`, sezione 1 (roadmap): "Volatilità, massima perdita dal picco, Sharpe, beta, correlazioni; settore e geografia (look-through ETF dove i dati gratuiti lo permettono); sovrapposizione tra ETF; allocazione obiettivo e 'dove mettere il prossimo PAC'".
+**Date**: 2026-09-29
+**Status**: implemented on 2026-09-29 in the same session as the design, at the user's request ("andiamo alla fase 3 della sezione investimenti" — "let's go to phase 3 of the investments section"), branch `claude/serene-goldberg-r8qw3k`. Not yet merged.
+**Parent spec**: `2026-09-27-investimenti-design.md`, section 1 (roadmap): "Volatility, maximum drawdown from peak, Sharpe, beta, correlations; sector and geography (ETF look-through where free data allows); overlap between ETFs; target allocation and 'where to put the next PAC'".
 
-## Scelte dell'utente (2026-09-29)
+## User choices (2026-09-29)
 
-| Domanda | Scelta |
+| Question | Choice |
 |---|---|
-| Tutta la fase o a pezzi | **Tutta insieme**, come la Fase 2 |
-| Da dove prendere settore e area degli ETF | **Yahoo + correzione manuale** per strumento |
-| Su cosa si definisce l'allocazione obiettivo | **Per strumento** (es. VWCE 70%, BTP 20%, BTC 10%) |
-| Tasso privo di rischio per lo Sharpe | **€STR dalla BCE**, aggiornato dal cron |
+| Whole phase or in pieces | **All together**, like Phase 2 |
+| Where to get ETF sector and region | **Yahoo + manual correction** per instrument |
+| What the target allocation is defined on | **Per instrument** (e.g. VWCE 70%, BTP 20%, BTC 10%) |
+| Risk-free rate for Sharpe | **€STR from the ECB**, updated by the cron |
 
-## 1. Rischio (card "Quanto rischia")
+## 1. Risk ("Quanto rischia" — "How much risk" card)
 
-Sullo stesso periodo della card principale (1M/3M/1A/Max), come i rendimenti della Fase 2. Logica pura in `lib/calc/risk.ts`.
+Over the same period as the main card (1M/3M/1A/Max), like Phase 2's returns. Pure logic in `lib/calc/risk.ts`.
 
-**Rendimenti giornalieri usati**: quelli del TWR della Fase 2 (`computeDailyReturns`), senza i giorni con niente investito e senza **sabato e domenica quando il rendimento è esattamente zero** (mercati chiusi: contarli abbasserebbe la volatilità). Con le crypto il weekend si muove e resta. Gli anni si contano dai dati: osservazioni per anno = `n × 365 / giorni di calendario coperti` (circa 252 con ETF, 365 con sole crypto), così non serve sapere quali borse ci sono.
+**Daily returns used**: those of Phase 2's TWR (`computeDailyReturns`), without the days with nothing invested and without **Saturdays and Sundays when the return is exactly zero** (markets closed: counting them would lower volatility). With crypto the weekend moves and stays. Years are counted from the data: observations per year = `n × 365 / calendar days covered` (about 252 with ETFs, 365 with crypto only), so there's no need to know which exchanges are involved.
 
-- **Volatilità annua**: deviazione standard campionaria dei rendimenti giornalieri × √(osservazioni per anno). Frase: "In un anno normale può muoversi di circa ±X% (due anni su tre)". Accanto, quella dell'indice di confronto se scelto ("più/meno movimentato di …").
-- **Massima perdita dal picco**: sull'indice del TWR (non sul valore, che salirebbe con i versamenti). Picco, minimo, recupero (primo giorno di nuovo al picco) o "non ancora recuperata", e perdita attuale dal picco. Grafico "sott'acqua" (area della perdita dal picco nel tempo); su 1A/Max un punto per mese col minimo del mese, per non nascondere il fondo.
-- **Sharpe**: `(media giornaliera − €STR medio / osservazioni per anno) / dev. standard × √(osservazioni per anno)`. €STR medio sui giorni osservati (ultimo valore disponibile a ogni data). Solo per valuta EUR: per le altre valute si usa zero e si dice. Se la tabella €STR è vuota (es. prima del primo giro del cron) si usa zero e si dice. Lettura: < 0 "hai reso meno di un conto deposito", < 0,5 "poco premiato per il rischio", < 1 "discreto", ≥ 1 "buono".
-- **Beta e correlazione con l'indice di confronto** (solo con benchmark scelto nella card dei rendimenti): rendimenti giornalieri dell'indice in valuta utente negli stessi giorni. Beta = cov / var dell'indice. Frase: "Quando l'indice si muove dell'1%, il portafoglio tende a muoversi dello X%".
-- **Minimi**: volatilità e perdita dal picco da 20 osservazioni; Sharpe, beta e correlazioni da 60. Sotto 250 osservazioni (circa un anno di borsa) la card avverte "meno di un anno di dati: numeri indicativi".
+- **Annual volatility**: sample standard deviation of daily returns × √(observations per year). Sentence: "In un anno normale può muoversi di circa ±X% (due anni su tre)" ("In a normal year it can move by about ±X% (two years out of three)"). Next to it, the benchmark's if chosen ("più/meno movimentato di …" — "more/less volatile than …").
+- **Maximum drawdown from peak**: on the TWR index (not on the value, which would rise with contributions). Peak, trough, recovery (first day back at the peak) or "non ancora recuperata" ("not yet recovered"), and current drawdown from the peak. "Underwater" chart (area of the drawdown over time); on 1A/Max one point per month with the month's minimum, so as not to hide the bottom.
+- **Sharpe**: `(daily mean − average €STR / observations per year) / standard deviation × √(observations per year)`. Average €STR over the observed days (latest available value at each date). EUR currency only: for other currencies zero is used and stated. If the €STR table is empty (e.g. before the first cron run) zero is used and stated. Reading: < 0 "hai reso meno di un conto deposito" ("you earned less than a deposit account"), < 0.5 "poco premiato per il rischio" ("poorly rewarded for the risk"), < 1 "discreto" ("fair"), ≥ 1 "buono" ("good").
+- **Beta and correlation with the benchmark** (only with a benchmark chosen in the returns card): daily returns of the index in user currency on the same days. Beta = cov / var of the index. Sentence: "Quando l'indice si muove dell'1%, il portafoglio tende a muoversi dello X%" ("When the index moves 1%, the portfolio tends to move X%").
+- **Minimums**: volatility and drawdown from 20 observations; Sharpe, beta and correlations from 60. Below 250 observations (about one trading year) the card warns "meno di un anno di dati: numeri indicativi" ("less than a year of data: indicative numbers").
 
-**Limite noto**: prezzi di chiusura di borse con orari diversi (USA dopo l'Europa) abbassano un po' le correlazioni giornaliere. Accettato.
+**Known limit**: closing prices of exchanges with different hours (US after Europe) lower daily correlations somewhat. Accepted.
 
-## 2. Diversificazione: settore e area geografica (look-through)
+## 2. Diversification: sector and geographic region (look-through)
 
-### Dati
+### Data
 
-Per ogni strumento, per ciascuna dimensione (settore, area), si sceglie **una** fonte in quest'ordine:
+For each instrument, for each dimension (sector, region), **one** source is chosen in this order:
 
-1. **Manuale dell'utente** (per utente, per strumento, per dimensione): vince sempre. La parte non assegnata finisce in "Non classificato".
-2. **Dal tipo**: crypto → settore "Crypto", area "Senza area"; ETC → settore "Materie prime", area "Senza area"; obbligazione → settore "Obbligazioni", area dal paese dell'ISIN.
-3. **Yahoo** (`quoteSummary`, moduli `topHoldings` e `assetProfile`): per ETF e fondi i pesi per settore (`sectorWeightings`, solo la parte azionaria) scalati sulla quota azionaria (`stockPosition`), il resto in "Obbligazioni" / "Liquidità" / "Altro"; per le azioni settore e paese dell'azienda. Yahoo **non dà la ripartizione per area degli ETF**.
-4. **Stima dall'indice** (aggiunta a quanto scelto dall'utente, perché Yahoo non ha le aree degli ETF): una tabella di pochi indici molto diffusi (FTSE All-World / MSCI ACWI, MSCI World, S&P 500 / MSCI USA, Nasdaq-100, MSCI Emerging Markets, Europa, Giappone, FTSE MIB) riconosciuti dal nome dello strumento, con aree e settori approssimati al 2025-2026. Gli ETF settoriali/tematici (nome con "Information Technology", "Health Care", "Clean Energy"…) non si riconoscono; quelli "fattoriali" (small cap, value, momentum, dividendi…) prendono solo le aree. Si dice sempre "stima dall'indice".
-5. Azioni senza dati Yahoo: area dal paese dell'ISIN (per gli ETF l'ISIN dice solo dove è domiciliato il fondo, IE/LU, quindi non si usa).
-6. Altrimenti "Non classificato".
+1. **User's manual entry** (per user, per instrument, per dimension): always wins. The unassigned part ends up in "Non classificato" ("Unclassified").
+2. **From the type**: crypto → sector "Crypto", region "Senza area" ("No region"); ETC → sector "Materie prime" ("Commodities"), region "Senza area"; bond → sector "Obbligazioni" ("Bonds"), region from the ISIN country.
+3. **Yahoo** (`quoteSummary`, modules `topHoldings` and `assetProfile`): for ETFs and funds the weights per sector (`sectorWeightings`, equity part only) scaled to the equity share (`stockPosition`), the rest in "Obbligazioni" / "Liquidità" / "Altro" (Bonds / Cash / Other); for stocks the company's sector and country. Yahoo **doesn't give the regional breakdown of ETFs**.
+4. **Estimate from the index** (added to what the user chose, because Yahoo doesn't have ETF regions): a table of a few very widespread indices (FTSE All-World / MSCI ACWI, MSCI World, S&P 500 / MSCI USA, Nasdaq-100, MSCI Emerging Markets, Europe, Japan, FTSE MIB) recognized from the instrument's name, with regions and sectors approximated to 2025-2026. Sector/thematic ETFs (name with "Information Technology", "Health Care", "Clean Energy"…) are not recognized; "factor" ones (small cap, value, momentum, dividends…) only get the regions. It always says "stima dall'indice" ("estimate from the index").
+5. Stocks without Yahoo data: region from the ISIN country (for ETFs the ISIN only says where the fund is domiciled, IE/LU, so it isn't used).
+6. Otherwise "Non classificato".
 
-**Chiavi chiuse** (per sommare fonti diverse): settori `tecnologia, finanza, salute, industria, consumi_ciclici, consumi_difensivi, comunicazioni, energia, materiali, servizi_pubblici, immobiliare` + `obbligazioni, liquidita, materie_prime, crypto, altro, non_classificato`. Aree `nord_america, europa, italia, giappone, pacifico, emergenti, nessuna, non_classificato`. L'Italia è separata dall'Europa (BTP e azioni italiane sono tipici di un portafoglio italiano); nelle stime dall'indice l'Italia resta dentro "Europa" (pesa meno dell'1% negli indici globali).
+**Closed keys** (to sum different sources): sectors `tecnologia, finanza, salute, industria, consumi_ciclici, consumi_difensivi, comunicazioni, energia, materiali, servizi_pubblici, immobiliare` + `obbligazioni, liquidita, materie_prime, crypto, altro, non_classificato`. Regions `nord_america, europa, italia, giappone, pacifico, emergenti, nessuna, non_classificato`. Italy is separate from Europe (BTPs and Italian stocks are typical of an Italian portfolio); in index estimates Italy stays inside "Europa" (it weighs less than 1% in global indices).
 
-**Tabelle** (migration `0004_investimenti_fase_3`):
-- `instrument_profiles` (una riga per strumento, comune a tutti gli utenti): simbolo Yahoo usato, `fetched_at`, `sectors`/`asset_mix`/`holdings` (jsonb), `sector`/`country` dell'azienda. Una risposta vuota salva comunque la riga (così non si richiede ogni giorno).
-- `user_instrument_breakdowns` (utente, strumento): `sectors` e `areas` jsonb, null = usa l'automatico.
+**Tables** (migration `0004_investimenti_fase_3`):
+- `instrument_profiles` (one row per instrument, shared by all users): Yahoo symbol used, `fetched_at`, `sectors`/`asset_mix`/`holdings` (jsonb), the company's `sector`/`country`. An empty response still saves the row (so it isn't requested every day).
+- `user_instrument_breakdowns` (user, instrument): `sectors` and `areas` jsonb, null = use the automatic one.
 
-**Aggiornamento**: il cron `market-prices` aggiorna i profili degli strumenti posseduti di tipo ETF/fondo/azione/ETC più vecchi di 30 giorni o mai scaricati, al massimo 20 per giro (per non consumare Yahoo). Quando la pagina carica i dati e uno strumento posseduto non ha ancora un profilo, lo scarica subito in `after()` (al massimo 5 per volta, un tentativo per strumento all'ora con chiave Redis). Errori solo loggati (`market.profiles.failed`), mai propagati.
+**Update**: the `market-prices` cron updates the profiles of held instruments of type ETF/fund/stock/ETC that are older than 30 days or never downloaded, at most 20 per run (so as not to use up Yahoo). When the page loads the data and a held instrument has no profile yet, it downloads it immediately in `after()` (at most 5 at a time, one attempt per instrument per hour with a Redis key). Errors only logged (`market.profiles.failed`), never propagated.
 
-### Interfaccia
+### Interface
 
-Card "Diversificazione": due barre (Per settore, Per area) con la stessa grafica della composizione, una frase per ciascuna (settore prevalente; quota fuori dall'area principale, quota in Italia), la **copertura** ("il 12% del valore non è classificato") e l'elenco degli strumenti con la fonte usata ("Yahoo", "Stima dall'indice", "Manuale", "Nessun dato") e il bottone "Correggi" che apre un dialog con le percentuali per area e per settore (somma ≤ 100%, il resto è "Non classificato"; "Torna all'automatico" cancella la correzione).
+"Diversificazione" ("Diversification") card: two bars (Per settore, Per area — By sector, By region) with the same graphics as the composition, one sentence for each (prevailing sector; share outside the main region, share in Italy), the **coverage** ("il 12% del valore non è classificato" — "12% of the value is unclassified") and the list of instruments with the source used ("Yahoo", "Stima dall'indice", "Manuale", "Nessun dato" — "Yahoo", "Estimate from the index", "Manual", "No data") and the "Correggi" ("Correct") button that opens a dialog with percentages per region and per sector (sum ≤ 100%, the rest is "Non classificato"; "Torna all'automatico" ("Back to automatic") deletes the correction).
 
-## 3. Sovrapposizioni e correlazioni
+## 3. Overlaps and correlations
 
-Card "Sovrapposizioni", logica pura in `lib/investments/overlap.ts` e `lib/calc/risk.ts`.
+"Sovrapposizioni" ("Overlaps") card, pure logic in `lib/investments/overlap.ts` and `lib/calc/risk.ts`.
 
-- **ETF che si sovrappongono** (coppie di ETF/fondi posseduti):
-  - stesso indice stimato → "replicano lo stesso indice" (sovrapposizione 100%);
-  - due indici "ampi" diversi della tabella (es. MSCI World e FTSE All-World) → `Σ min(peso area A, peso area B)` (World/All-World ≈ 88%): assume che dentro un'area due indici ampi possiedano le stesse aziende, vero in prima approssimazione per indici a capitalizzazione. Nasdaq-100 non è "ampio";
-  - altrimenti, con i **primi 10 titoli** di Yahoo di entrambi → `Σ min(peso)` sui titoli in comune, presentato come "almeno X% in comune tra i primi 10 titoli".
-  - Si mostrano le coppie sopra il 20%.
-- **Azioni che hai anche dentro un ETF**: se un'azione posseduta compare tra i primi 10 titoli di un ETF posseduto, "Apple pesa il 4,6% in VWCE: in tutto ci hai X €" (valore diretto + valore dell'ETF × peso).
-- **Correlazioni**: matrice tra le prime 8 posizioni per valore, sui rendimenti di prezzo in valuta utente calcolati solo nei giorni in cui **entrambi** gli strumenti hanno una chiusura (rendimenti sugli stessi intervalli, niente prezzi "vecchi"); almeno 20 giorni in comune, altrimenti la casella è vuota. Frase: la coppia più correlata (≥ 0,8: "si muovono quasi insieme") e la correlazione media.
+- **Overlapping ETFs** (pairs of held ETFs/funds):
+  - same estimated index → "replicano lo stesso indice" ("they track the same index", 100% overlap);
+  - two different "broad" indices from the table (e.g. MSCI World and FTSE All-World) → `Σ min(weight region A, weight region B)` (World/All-World ≈ 88%): assumes that within a region two broad indices hold the same companies, true to a first approximation for cap-weighted indices. Nasdaq-100 is not "broad";
+  - otherwise, with Yahoo's **top 10 holdings** of both → `Σ min(weight)` over the holdings in common, presented as "almeno X% in comune tra i primi 10 titoli" ("at least X% in common among the top 10 holdings").
+  - Pairs above 20% are shown.
+- **Stocks you also hold inside an ETF**: if a held stock appears among the top 10 holdings of a held ETF, "Apple pesa il 4,6% in VWCE: in tutto ci hai X €" ("Apple weighs 4.6% in VWCE: in total you have X € in it") (direct value + ETF value × weight).
+- **Correlations**: matrix among the top 8 positions by value, on price returns in user currency computed only on the days when **both** instruments have a close (returns over the same intervals, no "stale" prices); at least 20 days in common, otherwise the cell is empty. Sentence: the most correlated pair (≥ 0.8: "si muovono quasi insieme" — "they move almost together") and the average correlation.
 
-## 4. Allocazione obiettivo e prossimo versamento
+## 4. Target allocation and next contribution
 
-- Nuova tabella `investment_targets (portfolio_id, instrument_id, weight)`, unica per coppia. Obiettivo **per strumento**, anche per strumenti non ancora posseduti (per pianificare un ETF nuovo). `PUT /api/investments/targets { targets: [{ instrumentId, weight }] }` sostituisce tutto in una transazione; lista vuota = nessun obiettivo. Validazione: pesi tra 0 e 1, somma 100% (tolleranza 0,01%), strumenti visibili all'utente, al massimo 30.
-- **Confronto**: per ogni strumento peso attuale, obiettivo, scostamento; "in linea" entro ±5 punti (`ALLOCATION_TOLERANCE`). Gli strumenti posseduti fuori obiettivo compaiono con obiettivo 0. Gli strumenti senza prezzo sono esclusi dal calcolo e segnalati.
-- **Prossimo versamento** (importo modificabile, di default il totale mensile dei PAC attivi o 100): solo acquisti, niente vendite. Si "riempie" per primo lo strumento più sotto obiettivo in proporzione al suo peso, fino a portare tutti allo stesso livello (water-filling): trova `λ` tale che `Σ max(0, w_i·λ − valore_i) = importo`. Gli acquisti sotto il 10% dell'importo si scartano e si ridistribuiscono (evita ordini da pochi euro con commissioni fisse). Per ciascuno: importo, peso dopo l'acquisto, bottone "Registra" che precompila il form con quote stimate dall'ultimo prezzo.
-- Dialog "Obiettivo": parte dai pesi attuali (arrotondati), righe con percentuale, "Aggiungi strumento" con il selettore esistente, somma in fondo che deve fare 100%, "Distribuisci il resto" sull'ultima riga.
+- New table `investment_targets (portfolio_id, instrument_id, weight)`, unique per pair. Target **per instrument**, including instruments not yet held (to plan a new ETF). `PUT /api/investments/targets { targets: [{ instrumentId, weight }] }` replaces everything in one transaction; empty list = no target. Validation: weights between 0 and 1, sum 100% (tolerance 0.01%), instruments visible to the user, at most 30.
+- **Comparison**: for each instrument current weight, target, deviation; "in linea" ("on target") within ±5 points (`ALLOCATION_TOLERANCE`). Held instruments outside the target appear with target 0. Instruments without a price are excluded from the calculation and flagged.
+- **Next contribution** (editable amount, by default the monthly total of active PACs — piani di accumulo, recurring investment plans — or 100): purchases only, no sales. The instrument furthest below target is "filled" first in proportion to its weight, until all are brought to the same level (water-filling): find `λ` such that `Σ max(0, w_i·λ − value_i) = amount`. Purchases below 10% of the amount are discarded and redistributed (avoids orders of a few euros with fixed commissions). For each: amount, weight after the purchase, "Registra" ("Record") button that prefills the form with units estimated from the latest price.
+- "Obiettivo" ("Target") dialog: starts from the current weights (rounded), rows with percentage, "Aggiungi strumento" ("Add instrument") with the existing selector, sum at the bottom that must be 100%, "Distribuisci il resto" ("Distribute the rest") on the last row.
 
-## 5. Tasso privo di rischio (€STR)
+## 5. Risk-free rate (€STR)
 
-- Fonte BCE Data API, serie `EST/B.EU000A2X2A25.WT` (tasso €STR giornaliero, in %), CSV. Nuova tabella `interest_rates (series, date, rate, source)`, `rate` come frazione (0,0192 = 1,92%).
-- Cron `market-prices`: ultimi 30 giorni, oppure dall'inizio della serie (ottobre 2019) se la tabella è vuota. Un errore non fa fallire il cron (`market.rates.failed`). Fonte finta al 2% con `MARKET_DATA_FAKE=1`.
-- Prima di ottobre 2019 non ci sono dati: la media si fa sui giorni disponibili.
+- Source ECB Data API, series `EST/B.EU000A2X2A25.WT` (daily €STR rate, in %), CSV. New table `interest_rates (series, date, rate, source)`, `rate` as a fraction (0.0192 = 1.92%).
+- `market-prices` cron: last 30 days, or from the start of the series (October 2019) if the table is empty. An error doesn't make the cron fail (`market.rates.failed`). Fake source at 2% with `MARKET_DATA_FAKE=1`.
+- Before October 2019 there is no data: the average is computed on the available days.
 
-## Dove sta il codice
+## Where the code lives
 
-- `lib/calc/risk.ts`: rendimenti per il rischio, volatilità, perdita dal picco, Sharpe, beta, correlazioni.
-- `lib/investments/exposure-keys.ts` (chiavi, etichette, paesi → aree), `index-profiles.ts`, `exposure.ts` (fonte per strumento e aggregazione), `overlap.ts`, `allocation.ts`, `risk-insights.ts`.
+- `lib/calc/risk.ts`: returns for risk, volatility, drawdown, Sharpe, beta, correlations.
+- `lib/investments/exposure-keys.ts` (keys, labels, countries → regions), `index-profiles.ts`, `exposure.ts` (source per instrument and aggregation), `overlap.ts`, `allocation.ts`, `risk-insights.ts`.
 - `lib/market-data/providers/yahoo.ts` (`fetchYahooProfile`), `providers/estr.ts`, `profiles.ts`, `rates.ts`.
-- API: `PUT /api/investments/targets`, `PUT /api/instruments/[id]/breakdown`; `GET /api/investments/overview` restituisce anche obiettivi, profili, correzioni e €STR.
+- API: `PUT /api/investments/targets`, `PUT /api/instruments/[id]/breakdown`; `GET /api/investments/overview` also returns targets, profiles, corrections and €STR.
 - UI: `components/domain/investments/risk/`, `diversification/`, `allocation/`.
 
-## Corretto guardando la pagina dal vivo
+## Fixed by looking at the live page
 
-- Un'azione presente in più ETF compariva una volta per ETF, ciascuna con un "in tutto" parziale: ora una riga per azione con l'esposizione complessiva e l'elenco degli ETF.
-- Nel dialog di correzione il "Salva" restava disabilitato se la dimensione **non toccata** superava 100% per gli arrotondamenti a un decimale dei valori automatici: ora si controllano solo le dimensioni modificate, e un totale appena sopra 100 si riporta a 100.
-- Volatilità scritta ±4,6% nel riquadro e "±5%" nella frase: ora un decimale ovunque.
+- A stock present in several ETFs appeared once per ETF, each with a partial "in tutto" ("in total"): now one row per stock with the overall exposure and the list of ETFs.
+- In the correction dialog "Salva" ("Save") stayed disabled if the **untouched** dimension exceeded 100% due to one-decimal rounding of the automatic values: now only the modified dimensions are checked, and a total just above 100 is brought back to 100.
+- Volatility written as ±4.6% in the box and "±5%" in the sentence: now one decimal everywhere.
 
-## Rimandato consapevolmente
+## Knowingly deferred
 
-- Ripartizione per area degli ETF da fonti ufficiali degli emittenti (file delle posizioni complete iShares/Vanguard: formati diversi per emittente, fragili).
-- Sovrapposizione esatta sulle posizioni complete (servirebbero le stesse fonti).
-- Obiettivo per classe di asset (azionario/obbligazionario) e ribilanciamento con vendite (anche per le tasse: Fase 4).
-- Tasso privo di rischio per valute diverse da EUR.
-- Altri indicatori (Sortino, VaR, tracking error).
+- Regional breakdown of ETFs from the issuers' official sources (iShares/Vanguard full holdings files: different formats per issuer, fragile).
+- Exact overlap on the full holdings (would need the same sources).
+- Target per asset class (equity/bond) and rebalancing with sales (also for taxes: Phase 4).
+- Risk-free rate for currencies other than EUR.
+- Other indicators (Sortino, VaR, tracking error).
 
-## Da verificare dopo il merge (non verificabile dal sandbox)
+## To verify after the merge (not verifiable from the sandbox)
 
-- La migration la applica il Job PreSync.
-- `quoteSummary` di Yahoo risponde dalla VPS e per quali ETF UCITS dà i settori (dal sandbox Yahoo è bloccato).
-- La BCE restituisce la serie €STR (dopo il primo giro del cron la tabella `interest_rates` ha righe).
+- The migration is applied by the PreSync Job.
+- Yahoo's `quoteSummary` responds from the VPS and for which UCITS ETFs it gives sectors (Yahoo is blocked from the sandbox).
+- The ECB returns the €STR series (after the first cron run the `interest_rates` table has rows).

@@ -91,7 +91,7 @@ export function ReportForm({ context, initialKind = "problema", compact = false,
           value={message}
           onChange={(event) => setMessage(event.target.value)}
           maxLength={REPORT_MESSAGE_MAX_LENGTH}
-          placeholder={PLACEHOLDERS[kind]}
+          placeholder={tr(PLACEHOLDERS[kind])}
           className={compact ? "min-h-24" : "min-h-28"}
           aria-describedby="support-message-hint"
         />

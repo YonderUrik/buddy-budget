@@ -1,53 +1,53 @@
-# Autenticazione con better-auth
+# Authentication with better-auth
 
-**Data**: 2026-07-04
-**Stato**: approvato
+**Date**: 2026-07-04
+**Status**: approved
 
-## Contesto
+## Context
 
-Il modello dati di base (conti, categorie, transazioni, budget) è stato implementato e mergiato. La tabella `users` attuale è uno stub consapevole (id, currency, created_at) pensato per essere rimodellato all'arrivo dell'autenticazione vera. Questo spec definisce quel rimodellamento e l'intero sistema di autenticazione.
+The base data model (accounts, categories, transactions, budgets) has been implemented and merged. The current `users` table is a conscious stub (id, currency, created_at) meant to be reshaped when real authentication arrives. This spec defines that reshaping and the whole authentication system.
 
-## Cosa questo spec copre
+## What this spec covers
 
-- Schema Postgres per le 4 tabelle auth (`auth_user`, `auth_session`, `auth_account`, `auth_verification`)
-- Configurazione better-auth: magic link, Google OAuth, Drizzle adapter, `additionalFields`
-- Route e pagine: `/login`, `/onboarding`, `/api/auth/[...all]`
-- Middleware Next.js per protezione route e redirect onboarding
-- Pattern di accesso alla sessione in server components, client components, Route Handlers
-- Strategia di migrazione dallo stub `users` alle tabelle auth
+- Postgres schema for the 4 auth tables (`auth_user`, `auth_session`, `auth_account`, `auth_verification`)
+- better-auth configuration: magic link, Google OAuth, Drizzle adapter, `additionalFields`
+- Routes and pages: `/login`, `/onboarding`, `/api/auth/[...all]`
+- Next.js middleware for route protection and the onboarding redirect
+- Session access patterns in server components, client components, Route Handlers
+- Migration strategy from the `users` stub to the auth tables
 
-## Cosa NON copre (fuori scope)
+## What it does NOT cover (out of scope)
 
-- Rate limiting via Redis (better-auth usa il suo sistema in-memory come default; Redis adapter da aggiungere quando l'infra sarà pronta)
-- Template HTML per le email del magic link (testo semplice per ora)
-- Implementazione i18n: il campo `language` su `auth_user` non viene aggiunto in questa fase perché la libreria i18n non è ancora scelta; si aggiunge quando quella decisione viene presa
-- Qualunque schermata dell'app: questo spec produce solo auth, middleware, e la pagina onboarding
+- Rate limiting via Redis (better-auth uses its in-memory system by default; the Redis adapter will be added when the infra is ready)
+- HTML templates for the magic link emails (plain text for now)
+- i18n implementation: the `language` field on `auth_user` is not added in this phase because the i18n library has not been chosen yet; it will be added when that decision is made
+- Any app screen: this spec only produces auth, middleware, and the onboarding page
 
 ---
 
-## 1. Schema database
+## 1. Database schema
 
-### Tabelle auth (nuove)
+### Auth tables (new)
 
-better-auth richiede 4 tabelle. Tutte ricevono il prefisso `auth_` per evitare conflitti con la tabella di dominio `accounts` già esistente.
+better-auth requires 4 tables. They all get the `auth_` prefix to avoid conflicts with the existing `accounts` domain table.
 
 **`auth_user`**
 
-| Colonna | Tipo | Note |
+| Column | Type | Notes |
 |---|---|---|
-| `id` | text, PK | better-auth usa text (non uuid) per l'id utente |
-| `name` | text, not null | nome visualizzato |
+| `id` | text, PK | better-auth uses text (not uuid) for the user id |
+| `name` | text, not null | display name |
 | `email` | text, not null, unique | |
 | `email_verified` | boolean, not null, default false | |
-| `image` | text, nullable | URL avatar (da Google OAuth) |
-| `currency` | text, not null, default `'EUR'` | codice ISO 4217, impostato in onboarding; ereditato dallo stub `users` via `additionalFields` |
-| `onboarding_completed` | boolean, not null, default false | false → redirect a `/onboarding` dopo il login; true → accesso normale all'app |
+| `image` | text, nullable | avatar URL (from Google OAuth) |
+| `currency` | text, not null, default `'EUR'` | ISO 4217 code, set during onboarding; inherited from the `users` stub via `additionalFields` |
+| `onboarding_completed` | boolean, not null, default false | false → redirect to `/onboarding` after login; true → normal access to the app |
 | `created_at` | timestamp, not null | |
 | `updated_at` | timestamp, not null | |
 
 **`auth_session`**
 
-| Colonna | Tipo | Note |
+| Column | Type | Notes |
 |---|---|---|
 | `id` | text, PK | |
 | `user_id` | text, FK → `auth_user.id`, not null | |
@@ -59,36 +59,36 @@ better-auth richiede 4 tabelle. Tutte ricevono il prefisso `auth_` per evitare c
 
 **`auth_account`**
 
-| Colonna | Tipo | Note |
+| Column | Type | Notes |
 |---|---|---|
 | `id` | text, PK | |
 | `user_id` | text, FK → `auth_user.id`, not null | |
-| `account_id` | text, not null | id dell'account presso il provider OAuth |
-| `provider_id` | text, not null | es. `"google"`, `"credential"` |
+| `account_id` | text, not null | id of the account at the OAuth provider |
+| `provider_id` | text, not null | e.g. `"google"`, `"credential"` |
 | `access_token` | text, nullable | |
 | `refresh_token` | text, nullable | |
 | `id_token` | text, nullable | |
 | `expires_at` | timestamp, nullable | |
-| `password` | text, nullable | non usato (no password auth) |
+| `password` | text, nullable | unused (no password auth) |
 | `created_at` / `updated_at` | timestamp, not null | |
 
 **`auth_verification`**
 
-| Colonna | Tipo | Note |
+| Column | Type | Notes |
 |---|---|---|
 | `id` | text, PK | |
-| `identifier` | text, not null | email dell'utente |
-| `value` | text, not null | token del magic link |
+| `identifier` | text, not null | the user's email |
+| `value` | text, not null | magic link token |
 | `expires_at` | timestamp, not null | |
 | `created_at` / `updated_at` | timestamp, not null | |
 
-### Aggiornamento tabelle di dominio
+### Domain table updates
 
-Le FK in `categories`, `accounts`, `transactions`, `budgets` passano da `users.id` ad `auth_user.id`. Il tipo della colonna `user_id` rimane `text` (non più `uuid`) per allinearsi al tipo PK di `auth_user`.
+The FKs in `categories`, `accounts`, `transactions`, `budgets` move from `users.id` to `auth_user.id`. The type of the `user_id` column becomes `text` (no longer `uuid`) to match the PK type of `auth_user`.
 
 ---
 
-## 2. Configurazione better-auth
+## 2. better-auth configuration
 
 ### `lib/auth/index.ts` — server only
 
@@ -161,25 +161,25 @@ export const authClient = createAuthClient({
 });
 ```
 
-### Variabili d'ambiente
+### Environment variables
 
 ```
 # .env.local
-BETTER_AUTH_SECRET=          # stringa random lunga, firma token sessione
-BETTER_AUTH_URL=             # es. http://localhost:3000
-NEXT_PUBLIC_APP_URL=         # uguale a BETTER_AUTH_URL (usato dal client)
+BETTER_AUTH_SECRET=          # long random string, signs session tokens
+BETTER_AUTH_URL=             # e.g. http://localhost:3000
+NEXT_PUBLIC_APP_URL=         # same as BETTER_AUTH_URL (used by the client)
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 RESEND_API_KEY=
-RESEND_FROM=                 # es. noreply@buddybudget.app
-DATABASE_URL=                # già presente (Neon in dev)
+RESEND_FROM=                 # e.g. noreply@buddybudget.app
+DATABASE_URL=                # already present (Neon in dev)
 ```
 
 ---
 
-## 3. Route e pagine
+## 3. Routes and pages
 
-### `/api/auth/[...all]/route.ts` — handler better-auth
+### `/api/auth/[...all]/route.ts` — better-auth handler
 
 ```ts
 import { auth } from "@/lib/auth";
@@ -188,25 +188,25 @@ import { toNextJsHandler } from "better-auth/next-js";
 export const { GET, POST } = toNextJsHandler(auth);
 ```
 
-### `app/(auth)/login/page.tsx` — pagina pubblica
+### `app/(auth)/login/page.tsx` — public page
 
-Form con un campo email e due CTA:
-- **"Continua con email"** → `authClient.signIn.magicLink({ email, callbackURL: "/" })`
-- **"Continua con Google"** → `authClient.signIn.social({ provider: "google", callbackURL: "/" })`
+Form with an email field and two CTAs:
+- **"Continua con email"** ("Continue with email") → `authClient.signIn.magicLink({ email, callbackURL: "/" })`
+- **"Continua con Google"** ("Continue with Google") → `authClient.signIn.social({ provider: "google", callbackURL: "/" })`
 
-Dopo l'invio del magic link la pagina mostra un messaggio di conferma ("Controlla la tua casella email"). Il link nell'email porta a `/api/auth/[...all]`, che verifica il token e redirige a `callbackURL`; il middleware intercetta e gestisce l'onboarding se necessario.
+After the magic link is sent, the page shows a confirmation message ("Controlla la tua casella email" — "Check your inbox"). The link in the email leads to `/api/auth/[...all]`, which verifies the token and redirects to `callbackURL`; the middleware intercepts and handles onboarding if needed.
 
-### `app/(auth)/onboarding/page.tsx` — semi-pubblica
+### `app/(auth)/onboarding/page.tsx` — semi-public
 
-Accessibile solo a utenti autenticati con `onboarding_completed = false` (il middleware redirige tutti gli altri). Raccoglie:
-- **Valuta**: select con le valute supportate al lancio, default EUR
+Accessible only to authenticated users with `onboarding_completed = false` (the middleware redirects everyone else). It collects:
+- **Currency**: a select with the currencies supported at launch, default EUR
 
-Al submit chiama `POST /api/user/onboarding`. Dopo la risposta 200 redirige a `/`.
+On submit it calls `POST /api/user/onboarding`. After the 200 response it redirects to `/`.
 
 ### `app/api/user/onboarding/route.ts`
 
 ```ts
-// Aggiorna currency e onboarding_completed su auth_user
+// Updates currency and onboarding_completed on auth_user
 const session = await auth.api.getSession({ headers: request.headers });
 if (!session) return new Response(null, { status: 401 });
 
@@ -222,23 +222,23 @@ return new Response(null, { status: 200 });
 
 ## 4. Middleware
 
-File: `middleware.ts` (root del progetto).
+File: `middleware.ts` (project root).
 
-Logica in ordine:
+Logic, in order:
 
-1. **Route pubbliche** (`/login`, `/api/auth/*`, `/_next/*`, `/favicon.ico`) → passa senza controllo
-2. **Nessuna sessione** → redirect a `/login?redirect=<url-corrente>`
-3. **Sessione valida + `onboarding_completed = false`** → redirect a `/onboarding` (eccetto se si è già su `/onboarding`)
-4. **Sessione valida + onboarding completato** → lascia passare
+1. **Public routes** (`/login`, `/api/auth/*`, `/_next/*`, `/favicon.ico`) → pass through without checks
+2. **No session** → redirect to `/login?redirect=<current-url>`
+3. **Valid session + `onboarding_completed = false`** → redirect to `/onboarding` (unless already on `/onboarding`)
+4. **Valid session + onboarding completed** → let through
 
-La sessione si legge con:
+The session is read with:
 ```ts
 const session = await auth.api.getSession({ headers: request.headers });
 ```
 
 ---
 
-## 5. Pattern di accesso alla sessione
+## 5. Session access patterns
 
 ### Server Components
 ```ts
@@ -261,49 +261,49 @@ const { data: session, isPending } = authClient.useSession();
 ```ts
 const session = await auth.api.getSession({ headers: request.headers });
 if (!session) return new Response(null, { status: 401 });
-// ogni Route Handler che restituisce dati personali deve avere questo controllo
+// every Route Handler that returns personal data must have this check
 ```
 
-**Convenzione**: le query Drizzle usano sempre `where(eq(table.userId, session.user.id))` — mai fidarsi di un `userId` passato dal client nel body della richiesta.
+**Convention**: Drizzle queries always use `where(eq(table.userId, session.user.id))` — never trust a `userId` passed by the client in the request body.
 
 ---
 
-## 6. Strategia di migrazione
+## 6. Migration strategy
 
-**Situazione di partenza** (su `main`): tabella `users` con `id uuid`, `currency text`, `created_at timestamp`. Le FK di `categories`, `accounts`, `transactions`, `budgets` puntano a `users.id`.
+**Starting point** (on `main`): `users` table with `id uuid`, `currency text`, `created_at timestamp`. The FKs of `categories`, `accounts`, `transactions`, `budgets` point to `users.id`.
 
-**Una singola migration** eseguita in transazione:
+**A single migration** run in a transaction:
 
-1. Drop FK constraints su tutte e quattro le tabelle figlie
-2. Drop tabella `users`
-3. Crea `auth_user`, `auth_session`, `auth_account`, `auth_verification`
-4. Altera `user_id` in ciascuna tabella figlia da `uuid` a `text` (i valori esistenti vengono castati — in dev con Neon è irrilevante, nessun dato reale)
-5. Ricrea FK constraints `user_id → auth_user.id`
-6. Ricrea indice su `(user_id, date)` in `transactions` (era su `uuid`, ora su `text`)
+1. Drop the FK constraints on all four child tables
+2. Drop the `users` table
+3. Create `auth_user`, `auth_session`, `auth_account`, `auth_verification`
+4. Alter `user_id` in each child table from `uuid` to `text` (existing values are cast — irrelevant in dev with Neon, no real data)
+5. Recreate the FK constraints `user_id → auth_user.id`
+6. Recreate the index on `(user_id, date)` in `transactions` (it was on `uuid`, now on `text`)
 
-**In sviluppo (Neon)**: `drizzle-kit push` — applica direttamente, nessun file di migration generato. Veloce da iterare.
+**In development (Neon)**: `drizzle-kit push` — applies directly, no migration file generated. Fast to iterate.
 
-**In produzione (futuro)**: `drizzle-kit generate` + `drizzle-kit migrate` per file `.sql` versionati. La transizione è prevista nel piano infra.
+**In production (future)**: `drizzle-kit generate` + `drizzle-kit migrate` for versioned `.sql` files. The transition is planned in the infra plan.
 
-**Dati da preservare**: nessuno — siamo in fase di sviluppo, nessun utente reale.
+**Data to preserve**: none — we are in development, no real users.
 
 ---
 
-## Struttura file prodotta
+## Resulting file structure
 
 ```
 lib/
   auth/
-    index.ts          istanza auth (server only)
+    index.ts          auth instance (server only)
     client.ts         authClient (client only)
   db/
     schema/
-      auth.ts         quattro tabelle auth_* (sostituisce users.ts)
-      categories.ts   aggiornato: user_id text → auth_user
-      accounts.ts     aggiornato: user_id text → auth_user
-      transactions.ts aggiornato: user_id text → auth_user
-      budgets.ts      aggiornato: user_id text → auth_user
-      index.ts        barrel aggiornato
+      auth.ts         four auth_* tables (replaces users.ts)
+      categories.ts   updated: user_id text → auth_user
+      accounts.ts     updated: user_id text → auth_user
+      transactions.ts updated: user_id text → auth_user
+      budgets.ts      updated: user_id text → auth_user
+      index.ts        updated barrel
 app/
   (auth)/
     login/
@@ -322,13 +322,13 @@ middleware.ts
 
 ---
 
-## Fuori scope e futuro
+## Out of scope and future
 
-**Cosa saltiamo consapevolmente**:
-- **Redis rate limiting**: better-auth usa un sistema in-memory di default; Redis adapter da aggiungere quando il piano infra riprenderà
-- **Template email HTML**: testo semplice per ora; un componente React Email si aggiunge se/quando serve
-- **Campo `language` su `auth_user`**: la libreria i18n non è ancora scelta; il campo viene aggiunto insieme a quella decisione
+**What we consciously skip**:
+- **Redis rate limiting**: better-auth uses an in-memory system by default; the Redis adapter will be added when the infra plan resumes
+- **HTML email templates**: plain text for now; a React Email component will be added if/when needed
+- **`language` field on `auth_user`**: the i18n library has not been chosen yet; the field will be added together with that decision
 
-**Cosa è previsto dopo questo**:
-- **Schermata Spese** (o altra schermata di dominio): primo spec UI che consuma il modello dati + auth
-- **Piano infra** (k3s, CI/CD, Redis): quando ci sarà abbastanza applicazione reale da meritare un deploy
+**What is planned after this**:
+- **Spese screen** (or another domain screen): the first UI spec that consumes the data model + auth
+- **Infra plan** (k3s, CI/CD, Redis): when there is enough real application to deserve a deploy

@@ -1,4 +1,4 @@
-# Esempio da integrare nel repository infra. Non applicare senza configurare immagine e secret.
+# Example to integrate into the infra repository. Do not apply without configuring image and secret.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

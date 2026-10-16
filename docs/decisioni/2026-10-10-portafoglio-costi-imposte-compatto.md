@@ -1,6 +1,6 @@
-# 2026-10-10 — Portafoglio: «Costi e imposte» in un pulsante, schede senza barra
+# 2026-10-10 — Portafoglio (Portfolio): «Costi e imposte» ("Costs and taxes") in a button, tabs without scrollbar
 
-- La simulazione «e se costi e imposte fossero rimasti investiti?» non è più un blocco di testo con due interruttori sotto il grafico: è il pulsante «Costi e imposte» accanto al selettore del periodo, che apre un popover con gli stessi due interruttori. Default: simulazione spenta. Con la simulazione accesa il pulsante si tinge e mostra «· 1/2»; la riga «Simulazione · +X €» sotto l'importo resta.
-- Evento Umami `investment_reinvest_toggled` invariato.
-- Schede di sezione e chip dei conti scorrono di lato senza disegnare la barra (`.scrollbar-hidden`, anche `overflow-y: hidden`): su finestre strette la barra orizzontale delle schede si sommava a quella verticale della pagina.
-- Non riprodotto con i dati demo: una seconda barra verticale annidata. Se persiste, serve screenshot/browser per individuarla.
+- The «e se costi e imposte fossero rimasti investiti?» ("what if costs and taxes had stayed invested?") simulation is no longer a block of text with two toggles below the chart: it is the «Costi e imposte» button next to the period selector, which opens a popover with the same two toggles. Default: simulation off. With the simulation on, the button is tinted and shows «· 1/2»; the «Simulazione · +X €» row below the amount remains.
+- Umami event `investment_reinvest_toggled` unchanged.
+- Section tabs and account chips scroll sideways without drawing the scrollbar (`.scrollbar-hidden`, also `overflow-y: hidden`): on narrow windows the horizontal scrollbar of the tabs added to the page's vertical one.
+- Not reproduced with demo data: a second nested vertical scrollbar. If it persists, a screenshot/browser is needed to locate it.

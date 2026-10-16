@@ -1,6 +1,6 @@
 {
   "name": "buddy-budget",
-  "version": "0.68.0",
+  "version": "0.70.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "packageManager": "pnpm@11.5.0",
@@ -29,7 +29,7 @@
     "better-auth": "^1.6.33",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.45.3",
+    "drizzle-orm": "^0.45.4",
     "fflate": "^0.8.3",
     "ioredis": "^5.11.1",
     "lucide-react": "^1.23.0",

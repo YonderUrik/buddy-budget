@@ -1,236 +1,236 @@
-# Gruppi di spesa per le categorie (Dovute / Volute / Te futuro / Saltuarie) — design
+# Spending groups for categories (Dovute / Volute / Te futuro / Saltuarie) — design
 
-Data: 2026-09-22 · Stato: approvato in brainstorming, in attesa di revisione spec
+Date: 2026-09-22 · Status: approved in brainstorming, awaiting spec review
 
-## Obiettivo
+## Goal
 
-Sostituire la classificazione a due livelli delle categorie di spesa (`fissa` / `variabile`) con quattro
-**gruppi di spesa**, ispirati a un metodo di budgeting per "destinazione" del denaro:
+Replace the two-level classification of expense categories (`fissa` / `variabile`, fixed / variable) with four
+**spending groups**, inspired by a budgeting method based on the "destination" of money:
 
-| Chiave      | Etichetta UI | Colore | Descrizione (mostrata in `/categorie`) |
+| Key         | UI label | Color  | Description (shown in `/categorie`) |
 |-------------|--------------|--------|-----------------------------------------|
-| `dovuta`    | Dovute       | rosso  | Spese necessarie per vivere e mantenere lo stile di vita base: senza queste avresti problemi pratici o legali. |
-| `voluta`    | Volute       | giallo | Migliorano la qualità della vita ma potresti farne a meno: desideri, svago, comfort. |
-| `futuro`    | Te futuro    | verde  | Risparmio e investimenti trattati come spesa prioritaria, non come ciò che avanza. |
-| `saltuaria` | Saltuarie    | blu    | Spese necessarie ma non mensili: tasse annuali, manutenzioni, regali. |
+| `dovuta`    | Dovute ("Must-haves") | red    | Expenses needed to live and keep a basic lifestyle: without them you'd have practical or legal problems. |
+| `voluta`    | Volute ("Wants") | yellow | They improve quality of life but you could do without them: wishes, leisure, comfort. |
+| `futuro`    | Te futuro ("Future you") | green  | Savings and investments treated as a priority expense, not as what's left over. |
+| `saltuaria` | Saltuarie ("Occasional") | blue   | Necessary but not monthly expenses: annual taxes, maintenance, gifts. |
 
-Le entrate restano un tipo a sé (`entrata`), invariato.
+Income remains a type of its own (`entrata`), unchanged.
 
-## Decisioni prese in brainstorming
+## Decisions made in brainstorming
 
-1. **"Te futuro" conta come spesa normale**: entra in "Speso nel periodo" e in tutti i totali di uscita come
-   oggi. Il gruppo serve a raggruppare/colorare, non cambia nessun totale.
-2. **"Saltuarie" è solo un raggruppamento**: nessuna logica extra (niente budget annuale spalmato né
-   accantonamento mensile — eventualmente nella futura sezione Budget).
-3. **Migrazione = reset delle categorie**: le categorie vengono riportate alla nuova lista di default; le
-   personalizzazioni vanno perse (accettato dall'utente).
-4. **Etichette UI brevi e colloquiali**: Dovute · Volute · Te futuro · Saltuarie.
-5. **Modello dati: approccio A** — si sostituiscono i valori dell'enum `category_type` invece di aggiungere
-   una colonna `group` separata (la direzione entrata/uscita resta derivata da `type === "entrata"`).
+1. **"Te futuro" counts as a normal expense**: it goes into "Speso nel periodo" ("Spent in the period") and into all expense totals as
+   today. The group is for grouping/coloring, it changes no totals.
+2. **"Saltuarie" is only a grouping**: no extra logic (no annual budget spread out nor
+   monthly set-aside — possibly in the future Budget section).
+3. **Migration = category reset**: categories are brought back to the new default list;
+   customizations are lost (accepted by the user).
+4. **Short, conversational UI labels**: Dovute · Volute · Te futuro · Saltuarie.
+5. **Data model: approach A** — the values of the `category_type` enum are replaced instead of adding
+   a separate `group` column (income/expense direction stays derived from `type === "entrata"`).
 
-## Fuori scope (consapevolmente)
+## Out of scope (knowingly)
 
-- Budget per gruppo (stile 50/30/20) → con la futura sezione **Budget** separata, già in lista.
-- Filtro per gruppo nella schermata Transazioni.
-- Accantonamento mensile / budget annuale per le Saltuarie.
-- Preservare categorie personalizzate durante la migrazione (scelto il reset).
+- Budget per group (50/30/20 style) → with the future separate **Budget** section, already on the list.
+- Filter by group in the Transazioni (Transactions) screen.
+- Monthly set-aside / annual budget for Saltuarie.
+- Preserving custom categories during the migration (reset chosen).
 
-## 1. Dati
+## 1. Data
 
 ### Enum
 
 `category_type`: `dovuta | voluta | futuro | saltuaria | entrata`.
 
-### Modulo unico dei gruppi — `lib/categories/groups.ts`
+### Single groups module — `lib/categories/groups.ts`
 
-Unica fonte di verità, importata da tutti i layer (non dipende da React né dal DB):
+Single source of truth, imported by all layers (depends on neither React nor the DB):
 
-- `CATEGORY_TYPES` (tuple `as const`) e `type CategoryType`.
-- `EXPENSE_GROUP_KEYS` ordinati (`dovuta`, `voluta`, `futuro`, `saltuaria`) e `type ExpenseGroup`.
+- `CATEGORY_TYPES` (`as const` tuple) and `type CategoryType`.
+- Ordered `EXPENSE_GROUP_KEYS` (`dovuta`, `voluta`, `futuro`, `saltuaria`) and `type ExpenseGroup`.
 - `EXPENSE_GROUPS: Record<ExpenseGroup, { label; shortDescription; description; colorVar }>` —
-  `colorVar` è il nome del token CSS (`--group-dovuta`, …), mai un hex.
-- `CATEGORY_TYPE_LABELS: Record<CategoryType, string>` (le 4 etichette + "Entrata").
+  `colorVar` is the name of the CSS token (`--group-dovuta`, …), never a hex.
+- `CATEGORY_TYPE_LABELS: Record<CategoryType, string>` (the 4 labels + "Entrata" ("Income")).
 - `isExpenseGroup(type): type is ExpenseGroup`.
 - `DEFAULT_NEW_CATEGORY_TYPE = "voluta"`.
 
-Tutti i punti che oggi ripetono l'unione letterale `"fissa" | "variabile" | "entrata"` la sostituiscono con
-`CategoryType` / `ExpenseGroup`: dimenticarne uno deve diventare un errore di `tsc`, non un bug silenzioso.
-Lo schema Drizzle usa `pgEnum("category_type", CATEGORY_TYPES)`; lo Zod usa `z.enum(CATEGORY_TYPES)`.
+All places that today repeat the literal union `"fissa" | "variabile" | "entrata"` replace it with
+`CategoryType` / `ExpenseGroup`: forgetting one must become a `tsc` error, not a silent bug.
+The Drizzle schema uses `pgEnum("category_type", CATEGORY_TYPES)`; Zod uses `z.enum(CATEGORY_TYPES)`.
 
-### Categoria fallback "Da categorizzare"
+### Fallback category "Da categorizzare"
 
-Resta `isFallback: true`. Il suo `type` nel DB diventa `voluta` (serve un valore non-null, è arbitrario):
-**nessuna statistica deve classificarla per `type`** — tutte le aggregazioni la instradano per `isFallback`
-in un bucket dedicato "Da categorizzare" (oggi invece finiva silenziosamente tra le variabili).
+It stays `isFallback: true`. Its `type` in the DB becomes `voluta` (a non-null value is needed, it's arbitrary):
+**no statistic must classify it by `type`** — all aggregations route it via `isFallback`
+into a dedicated "Da categorizzare" ("To categorize") bucket (today it silently ended up among the variable ones).
 
-### Nuove categorie di default (`DEFAULT_CATEGORIES`)
+### New default categories (`DEFAULT_CATEGORIES`)
 
-Icone tutte già presenti in `CATEGORY_ICONS`.
+All icons already present in `CATEGORY_ICONS`. Names are app UI text and stay in Italian.
 
-| Gruppo | Nome | Icona |
+| Group | Name | Icon |
 |---|---|---|
-| Dovute | Affitto & Mutuo | home |
-| Dovute | Bollette & Utenze | zap |
-| Dovute | Internet & Telefono | wifi |
-| Dovute | Spesa alimentare | shopping-cart |
-| Dovute | Trasporti & Carburante | fuel |
-| Dovute | Salute & Farmaci | pill |
-| Dovute | Assicurazioni | shield |
-| Dovute | Rate & Finanziamenti | credit-card |
-| Dovute | Figli & Istruzione | graduation-cap |
-| Dovute | Animali domestici | paw-print |
-| Volute | Ristoranti & Bar | utensils |
-| Volute | Abbonamenti & Streaming | tv |
-| Volute | Svago & Hobby | gamepad-2 |
-| Volute | Sport & Benessere | dumbbell |
-| Volute | Abbigliamento | shirt |
-| Volute | Shopping & Tecnologia | laptop |
-| Volute | Cura personale | scissors |
-| Volute | Viaggi & Vacanze | plane |
-| Te futuro | Fondo emergenza | wallet |
-| Te futuro | Risparmio per obiettivi | piggy-bank |
-| Te futuro | Investimenti | coins |
-| Te futuro | Pensione integrativa | landmark |
-| Saltuarie | Tasse & Bolli | receipt |
-| Saltuarie | Manutenzione auto | wrench |
-| Saltuarie | Casa & Arredamento | sofa |
-| Saltuarie | Regali & Ricorrenze | gift |
-| Saltuarie | Imprevisti | alert-triangle |
+| Dovute | Affitto & Mutuo (Rent & Mortgage) | home |
+| Dovute | Bollette & Utenze (Bills & Utilities) | zap |
+| Dovute | Internet & Telefono (Internet & Phone) | wifi |
+| Dovute | Spesa alimentare (Groceries) | shopping-cart |
+| Dovute | Trasporti & Carburante (Transport & Fuel) | fuel |
+| Dovute | Salute & Farmaci (Health & Medicines) | pill |
+| Dovute | Assicurazioni (Insurance) | shield |
+| Dovute | Rate & Finanziamenti (Instalments & Loans) | credit-card |
+| Dovute | Figli & Istruzione (Children & Education) | graduation-cap |
+| Dovute | Animali domestici (Pets) | paw-print |
+| Volute | Ristoranti & Bar (Restaurants & Bars) | utensils |
+| Volute | Abbonamenti & Streaming (Subscriptions & Streaming) | tv |
+| Volute | Svago & Hobby (Leisure & Hobbies) | gamepad-2 |
+| Volute | Sport & Benessere (Sport & Wellness) | dumbbell |
+| Volute | Abbigliamento (Clothing) | shirt |
+| Volute | Shopping & Tecnologia (Shopping & Tech) | laptop |
+| Volute | Cura personale (Personal care) | scissors |
+| Volute | Viaggi & Vacanze (Travel & Holidays) | plane |
+| Te futuro | Fondo emergenza (Emergency fund) | wallet |
+| Te futuro | Risparmio per obiettivi (Savings for goals) | piggy-bank |
+| Te futuro | Investimenti (Investments) | coins |
+| Te futuro | Pensione integrativa (Supplementary pension) | landmark |
+| Saltuarie | Tasse & Bolli (Taxes & Stamp duties) | receipt |
+| Saltuarie | Manutenzione auto (Car maintenance) | wrench |
+| Saltuarie | Casa & Arredamento (Home & Furniture) | sofa |
+| Saltuarie | Regali & Ricorrenze (Gifts & Occasions) | gift |
+| Saltuarie | Imprevisti (Unexpected expenses) | alert-triangle |
 | — (fallback) | Da categorizzare | help-circle (red, `isFallback`) |
-| Entrate | Stipendio | banknote |
+| Entrate | Stipendio (Salary) | banknote |
 | Entrate | Freelance | briefcase |
-| Entrate | Dividendi e interessi | trending-up |
-| Entrate | Rimborsi | calculator |
-| Entrate | Altre entrate | package |
+| Entrate | Dividendi e interessi (Dividends and interest) | trending-up |
+| Entrate | Rimborsi (Refunds) | calculator |
+| Entrate | Altre entrate (Other income) | package |
 
-Lista estesa su richiesta dell'utente (2026-09-22) pensando alle spese di una persona media, senza frammentare.
+List extended at the user's request (2026-09-22) with an average person's expenses in mind, without fragmenting.
 
-I colori delle singole categorie restano dalla palette `SWATCH_COLORS` (assegnati nella lista; l'utente può
-usare "Distribuisci colori"). I colori dei **gruppi** sono token separati (vedi §2).
+The colors of individual categories still come from the `SWATCH_COLORS` palette (assigned in the list; the user can
+use "Distribuisci colori" ("Distribute colors")). The colors of the **groups** are separate tokens (see §2).
 
-Consumatori di `DEFAULT_CATEGORIES` da aggiornare automaticamente (usano la lista, nessuna modifica logica):
-`lib/auth/index.ts` (seed nuovo utente), `lib/db/seed.ts`. `lib/db/backfill-category-appearance.ts` è uno
-script one-shot storico già eseguito: resta, ma il reset lo rende obsoleto (annotarlo nel suo JSDoc).
+Consumers of `DEFAULT_CATEGORIES` that update automatically (they use the list, no logic change):
+`lib/auth/index.ts` (new user seed), `lib/db/seed.ts`. `lib/db/backfill-category-appearance.ts` is a
+historical one-shot script already run: it stays, but the reset makes it obsolete (note it in its JSDoc).
 
-### Migrazione DB
+### DB migration
 
-1. Script di migrazione enum versionato nel repo e idempotente, `lib/db/migrate-category-groups.ts`
-   (`pnpm db:migrate-category-groups`). Non una migration Drizzle: il DB di questo progetto è gestito con
-   `db:push` e il journal Drizzle contiene solo la baseline `0000`, quindi `db:migrate` non è affidabile.
-   Lo script legge i valori correnti da `pg_enum` ed esegue solo ciò che manca:
+1. Enum migration script versioned in the repo and idempotent, `lib/db/migrate-category-groups.ts`
+   (`pnpm db:migrate-category-groups`). Not a Drizzle migration: this project's DB is managed with
+   `db:push` and the Drizzle journal contains only the `0000` baseline, so `db:migrate` is not reliable.
+   The script reads the current values from `pg_enum` and runs only what is missing:
    `ALTER TYPE category_type RENAME VALUE 'fissa' TO 'dovuta'`,
    `ALTER TYPE category_type RENAME VALUE 'variabile' TO 'voluta'`,
    `ALTER TYPE category_type ADD VALUE IF NOT EXISTS 'futuro' BEFORE 'entrata'`,
    `ALTER TYPE category_type ADD VALUE IF NOT EXISTS 'saltuaria' BEFORE 'entrata'`
-   (ordine finale identico a `CATEGORY_TYPES` → `db:push` non propone modifiche su questo enum).
-   `ADD VALUE` gira fuori da transazioni; il reset dati è uno step separato.
-   **Attenzione DB condiviso**: dopo la rinomina, il codice di `main` non ancora mergiato (che scrive
-   `"fissa"`/`"variabile"`) è incompatibile col DB fino al merge — finestra da tenere breve.
-2. Script one-shot `lib/db/reset-categories.ts` (`pnpm db:reset-categories`), idempotente, una transazione
-   **per utente**:
-   - assicura che esista la categoria fallback (riusando la logica di `lib/categorization/fallback.ts`);
-   - per ogni default: se esiste una categoria con quel nome **o con un nome vecchio mappato**
-     (`LEGACY_CATEGORY_NAMES` in `lib/db/schema/categories.ts`, ricostruita da git log su **tutte** le liste
-     di default storicamente sedute, non solo l'ultima prima di questa: default pre-icone/colori
+   (final order identical to `CATEGORY_TYPES` → `db:push` proposes no changes on this enum).
+   `ADD VALUE` runs outside transactions; the data reset is a separate step.
+   **Shared DB warning**: after the rename, the not-yet-merged `main` code (which writes
+   `"fissa"`/`"variabile"`) is incompatible with the DB until the merge — a window to keep short.
+2. One-shot script `lib/db/reset-categories.ts` (`pnpm db:reset-categories`), idempotent, one transaction
+   **per user**:
+   - ensures the fallback category exists (reusing the logic of `lib/categorization/fallback.ts`);
+   - for each default: if a category exists with that name **or with a mapped old name**
+     (`LEGACY_CATEGORY_NAMES` in `lib/db/schema/categories.ts`, rebuilt from git log over **all** the default lists
+     historically seeded, not just the last one before this: pre-icons/colors defaults
      (2026-07-03→2026-07-21) "Affitto"→"Affitto & Mutuo", "Bollette & casa"→"Bollette & Utenze",
      "Ristoranti"→"Ristoranti & Bar", "Svago"→"Svago & Hobby", "Trasporti"→"Trasporti & Carburante";
-     default 2026-07-26 "Assicurazioni & Tasse"→"Assicurazioni", "Risparmi & Investimenti"→"Investimenti",
+     2026-07-26 defaults "Assicurazioni & Tasse"→"Assicurazioni", "Risparmi & Investimenti"→"Investimenti",
      "Trasporti & Auto"→"Trasporti & Carburante", "Salute & Cura"→"Salute & Farmaci",
      "Svago & Hobbies"→"Svago & Hobby", "Abbonamenti"→"Abbonamenti & Streaming",
      "Shopping"→"Shopping & Tecnologia", "Viaggi"→"Viaggi & Vacanze", "Regali"→"Regali & Ricorrenze";
-     prima versione gruppi di spesa (2026-09-22, pre-estensione a 33) "Manutenzione auto/casa"→"Manutenzione auto",
-     "Sport & Palestra"→"Sport & Benessere". **"Altro"** (default storico fino al 2026-07-21) resta
-     deliberatamente non mappato: nessun equivalente naturale nella nuova lista, quindi il reset lo elimina
-     come categoria personalizzata (le sue transazioni finiscono su "Da categorizzare")
-     la aggiorna (nome, tipo, icona, colore) preservandone id → transazioni, regole e budget restano collegati;
-     altrimenti la crea;
-   - ogni altra categoria non-fallback non presente nella nuova lista (incluse le personalizzate):
-     transazioni riassegnate alla fallback, budget eliminati, regole di categorizzazione eliminate (la FK ha
-     già `onDelete: cascade`, ma vanno eliminate esplicitamente prima per chiarezza/log), categoria eliminata;
-   - log per utente: categorie aggiornate / create / eliminate, transazioni riassegnate, più i nomi coinvolti
-     (rinominate "da → a", eliminate).
-   - Flag `--dry-run` che stampa lo stesso riepilogo (nomi inclusi) senza scrivere.
-   Lo script va eseguito dall'utente (DB condiviso), dopo la migration.
+     first version of spending groups (2026-09-22, before the extension to 33) "Manutenzione auto/casa"→"Manutenzione auto",
+     "Sport & Palestra"→"Sport & Benessere". **"Altro"** ("Other", historical default until 2026-07-21) is
+     deliberately left unmapped: there is no natural equivalent in the new list, so the reset deletes it
+     as a custom category (its transactions end up in "Da categorizzare"))
+     it updates it (name, type, icon, color) preserving its id → transactions, rules and budgets stay linked;
+     otherwise it creates it;
+   - every other non-fallback category not in the new list (including custom ones):
+     transactions reassigned to the fallback, budgets deleted, categorization rules deleted (the FK already has
+     `onDelete: cascade`, but they are deleted explicitly first for clarity/logging), category deleted;
+   - per-user log: categories updated / created / deleted, transactions reassigned, plus the names involved
+     (renamed "from → to", deleted).
+   - `--dry-run` flag that prints the same summary (names included) without writing.
+   The script must be run by the user (shared DB), after the migration.
 
-## 2. Statistiche e UI
+## 2. Statistics and UI
 
-### Token colore
+### Color tokens
 
-Nuovi token in `app/globals.css`, sia in `:root` sia in `.dark`, esposti in `@theme inline`:
-`--group-dovuta` (rosso), `--group-voluta` (giallo), `--group-futuro` (verde), `--group-saltuaria` (blu),
-`--group-uncategorized` (grigio neutro). Il giallo in tema chiaro va scelto con contrasto sufficiente come
-fill di grafico (non come testo).
+New tokens in `app/globals.css`, both in `:root` and in `.dark`, exposed in `@theme inline`:
+`--group-dovuta` (red), `--group-voluta` (yellow), `--group-futuro` (green), `--group-saltuaria` (blue),
+`--group-uncategorized` (neutral grey). The yellow in the light theme must be chosen with sufficient contrast as
+a chart fill (not as text).
 
-### 2a. Transazioni → card "Per categoria" (`CategoryBreakdownDonut`)
+### 2a. Transazioni → "Per categoria" ("By category") card (`CategoryBreakdownDonut`)
 
-- `computeFixedVsVariable` / `FixedVsVariable` sostituiti da `computeGroupTotals` / `GroupTotals`
+- `computeFixedVsVariable` / `FixedVsVariable` replaced by `computeGroupTotals` / `GroupTotals`
   (`Record<ExpenseGroup, number> & { daCategorizzare: number }`), in `lib/calc/expenses.ts`.
-- `CategoryAmount.type: "fissa" | "variabile"` diventa `group: ExpenseGroup | "daCategorizzare"`
-  (la fallback → `"daCategorizzare"`, riconosciuta via `isFallback`).
-- Anello interno: una fetta per gruppo, nell'ordine di `EXPENSE_GROUP_KEYS`, più "Da categorizzare" solo se > 0.
-- Anello esterno: `sortCategoryAmounts` ordina per gruppo (stesso ordine, "Da categorizzare" in coda) e poi per
-  importo decrescente — l'allineamento angolare con l'anello interno resta garantito.
-- Legenda: pallino col colore del gruppo accanto al nome di ogni riga. Ordinamenti della legenda invariati.
-- JSDoc del componente aggiornato ("layer interno gruppo di spesa").
+- `CategoryAmount.type: "fissa" | "variabile"` becomes `group: ExpenseGroup | "daCategorizzare"`
+  (the fallback → `"daCategorizzare"`, recognized via `isFallback`).
+- Inner ring: one slice per group, in the order of `EXPENSE_GROUP_KEYS`, plus "Da categorizzare" only if > 0.
+- Outer ring: `sortCategoryAmounts` sorts by group (same order, "Da categorizzare" last) and then by
+  descending amount — angular alignment with the inner ring remains guaranteed.
+- Legend: dot with the group color next to each row's name. Legend sort orders unchanged.
+- Component JSDoc updated ("inner layer: spending group").
 
-### 2b. Cash flow → "Dove va ogni euro" (`computeWhereItGoes` / `WhereItGoesBreakdown`)
+### 2b. Cash flow → "Dove va ogni euro" ("Where every euro goes") (`computeWhereItGoes` / `WhereItGoesBreakdown`)
 
-Voci, in quest'ordine: **Dovute, Volute, Te futuro, Saltuarie, Non classificato, Avanzo**.
+Items, in this order: **Dovute, Volute, Te futuro, Saltuarie, Non classificato (Unclassified), Avanzo (Surplus)**.
 
-- "Non classificato" = spese su categoria fallback **+** spese su categoria sconosciuta (oggi solo la seconda).
-- "Risparmio" (entrate − tutte le uscite) rinominato **"Avanzo"**, chiave `avanzo`: con "Te futuro" come
-  spesa, chiamarlo "Risparmio" sarebbe ambiguo. Il calcolo non cambia.
-- Il componente continua a non assumere il numero di voci; aggiunge un pallino col colore del gruppo per le
-  quattro voci di gruppo.
+- "Non classificato" = expenses in the fallback category **+** expenses in an unknown category (today only the latter).
+- "Risparmio" ("Savings", income − all expenses) renamed **"Avanzo"**, key `avanzo`: with "Te futuro" as an
+  expense, calling it "Risparmio" would be ambiguous. The computation doesn't change.
+- The component still doesn't assume the number of items; it adds a dot with the group color for the
+  four group items.
 
 ### 2c. `/categorie`
 
-- Lista divisa in sezioni: Dovute, Volute, Te futuro, Saltuarie, poi Entrate. Ogni sezione ha intestazione
-  con pallino colore gruppo, etichetta e `shortDescription`. La fallback non appartiene a nessun gruppo: sta
-  in una riga a sé dopo le Saltuarie e prima delle Entrate, sotto l'intestazione "Da categorizzare".
-- La logica di raggruppamento è una funzione pura (`groupCategoriesByType` in `lib/categories/groups.ts` o
-  accanto), la pagina resta solo orchestrazione.
-- `AddCategoryForm` e `CategoryRow`: `Select` del tipo con 5 opzioni da `CATEGORY_TYPE_LABELS`, default
-  `DEFAULT_NEW_CATEGORY_TYPE`. Nessuna `TYPE_LABELS` locale duplicata.
+- List divided into sections: Dovute, Volute, Te futuro, Saltuarie, then Entrate (Income). Each section has a header
+  with a group color dot, label and `shortDescription`. The fallback belongs to no group: it sits
+  in a row of its own after Saltuarie and before Entrate, under the "Da categorizzare" header.
+- The grouping logic is a pure function (`groupCategoriesByType` in `lib/categories/groups.ts` or
+  next to it), the page remains only orchestration.
+- `AddCategoryForm` and `CategoryRow`: type `Select` with 5 options from `CATEGORY_TYPE_LABELS`, default
+  `DEFAULT_NEW_CATEGORY_TYPE`. No duplicated local `TYPE_LABELS`.
 
-### 2d. Solo cambio di tipo (nessun effetto visibile)
+### 2d. Type change only (no visible effect)
 
 `lib/validation/categories.ts`, `lib/categorization/match-rule.ts` (`isDirectionCompatible`, `RuleCandidate`),
-`lib/categorization/suggest.ts`, `lib/categorization/fallback.ts`, `app/api/transactions/route.ts` e
-`[id]/route.ts` (segno derivato da `type === "entrata"`, invariato), `app/api/categories/**`,
+`lib/categorization/suggest.ts`, `lib/categorization/fallback.ts`, `app/api/transactions/route.ts` and
+`[id]/route.ts` (sign derived from `type === "entrata"`, unchanged), `app/api/categories/**`,
 `app/api/categorization-rules/**`, `/categorizza`, `category-breakdown-donut.utils.ts` (`TYPE_ORDER`).
 
-### 2e. Invariati
+### 2e. Unchanged
 
-Trend 6 mesi (per categoria), KPI Uscite/Entrate, Panoramica, budget per categoria, sync GoCardless.
+6-month trend (per category), Uscite/Entrate (Expenses/Income) KPIs, Panoramica (Overview), budget per category, GoCardless sync.
 
-## 3. Test
+## 3. Tests
 
-- `lib/categories/groups.test.ts`: ordine gruppi, etichette complete per ogni `CategoryType`,
-  `groupCategoriesByType` (fallback separata, entrate in fondo, gruppi vuoti).
-- `lib/calc/expenses.test.ts`: `computeGroupTotals` (4 gruppi + fallback in `daCategorizzare`, entrate escluse),
-  `computeCategoryBreakdown` con `group`.
-- `category-breakdown-donut.utils.test.ts`: `sortCategoryAmounts` con 4 gruppi + fallback in coda.
-- `lib/calc/cashflow.test.ts`: `computeWhereItGoes` con le 6 voci, fallback in "Non classificato", `avanzo`.
-- `lib/db/schema/categories.test.ts`: ogni default ha icona in `CATEGORY_ICONS`, tipo valido, nomi unici,
-  esattamente una fallback, ogni gruppo ha almeno una categoria.
-- Script di reset: la decisione (cosa aggiornare/creare/eliminare) è una funzione pura `planCategoryReset`
-  testata con vitest, stesso pattern di `buildRulesFromHistory` in `backfill-categorization-rules.ts` —
-  rinomina via `LEGACY_NAME_MAP` preserva l'id; nome esatto vince sul nome legacy; personalizzata in
-  `deletions`; fallback mai toccata; secondo piano sullo stato già resettato = nessuna azione. Il wrapper DB
-  (`resetUserCategories`) applica il piano in transazione.
-- Tutti i fixture di test che usano `"fissa"`/`"variabile"` (≈20 file sotto `app/api/**` e `lib/**`) aggiornati.
-- Verifica finale: `tsc --noEmit` pulito, suite vitest (esclusi i 3 fallimenti noti di `scheduler.test.ts`),
-  `pnpm lint` senza nuovi errori, `grep` di `"fissa"`/`"variabile"` nel codice (esclusi `docs/` e la
-  migration) = 0 risultati.
+- `lib/categories/groups.test.ts`: group order, complete labels for every `CategoryType`,
+  `groupCategoriesByType` (separate fallback, income at the bottom, empty groups).
+- `lib/calc/expenses.test.ts`: `computeGroupTotals` (4 groups + fallback in `daCategorizzare`, income excluded),
+  `computeCategoryBreakdown` with `group`.
+- `category-breakdown-donut.utils.test.ts`: `sortCategoryAmounts` with 4 groups + fallback last.
+- `lib/calc/cashflow.test.ts`: `computeWhereItGoes` with the 6 items, fallback in "Non classificato", `avanzo`.
+- `lib/db/schema/categories.test.ts`: every default has an icon in `CATEGORY_ICONS`, a valid type, unique names,
+  exactly one fallback, every group has at least one category.
+- Reset script: the decision (what to update/create/delete) is a pure function `planCategoryReset`
+  tested with vitest, same pattern as `buildRulesFromHistory` in `backfill-categorization-rules.ts` —
+  rename via `LEGACY_NAME_MAP` preserves the id; exact name wins over legacy name; custom one in
+  `deletions`; fallback never touched; second plan on the already-reset state = no action. The DB wrapper
+  (`resetUserCategories`) applies the plan in a transaction.
+- All test fixtures that use `"fissa"`/`"variabile"` (≈20 files under `app/api/**` and `lib/**`) updated.
+- Final check: clean `tsc --noEmit`, vitest suite (excluding the 3 known failures of `scheduler.test.ts`),
+  `pnpm lint` with no new errors, `grep` of `"fissa"`/`"variabile"` in the code (excluding `docs/` and the
+  migration) = 0 results.
 
-## 4. Documentazione
+## 4. Documentation
 
-- `docs/functional-spec.md`: sezioni Spese/Transazioni e Cash flow aggiornate (gruppi, "Avanzo").
-- `CLAUDE.md`: voce di log + "Stato del progetto".
+- `docs/functional-spec.md`: Spese/Transazioni (Expenses/Transactions) and Cash flow sections updated (groups, "Avanzo").
+- `CLAUDE.md`: log entry + "Stato del progetto" ("Project status").
 
-## Verifica manuale utente (dopo l'implementazione)
+## Manual verification by the user (after implementation)
 
-Eseguire migration + `db:reset-categories --dry-run` poi reale; controllare `/categorie` divisa per sezioni,
-torta con 4 colori di gruppo allineati all'anello esterno, "Dove va ogni euro" con 6 voci, creazione di una
-nuova categoria per ciascun gruppo, nuovo utente con i nuovi default.
+Run migration + `db:reset-categories --dry-run` then for real; check `/categorie` divided into sections,
+pie with 4 group colors aligned with the outer ring, "Dove va ogni euro" with 6 items, creation of a
+new category for each group, new user with the new defaults.

@@ -1,24 +1,24 @@
-# Palette colori/icone estesa + distribuzione automatica colori — Implementation Plan
+# Extended color/icon palette + automatic color distribution — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ampliare la palette colori condivisa Conti/Categorie da 8 a 48 valori (16 base + 32 varianti chiare/scure) e le icone categoria da 28 a 60, più un pulsante "Distribuisci colori" in `/categorie` che riassegna automaticamente un colore univoco a ogni categoria non-fallback.
+**Goal:** Expand the color palette shared by Conti/Categorie (Accounts/Categories) from 8 to 48 values (16 base + 32 light/dark variants) and the category icons from 28 to 60, plus a "Distribuisci colori" ("Distribute colors") button in `/categorie` that automatically reassigns a unique color to each non-fallback category.
 
-**Architecture:** Nessuna migrazione DB (`color`/`icon` sono colonne `text`). Estensione degli enum TS/Zod esistenti (`shared-colors.ts`, `categories.ts`) e delle mappe di rendering (`color-swatches.ts`, `category-avatar.tsx`). Nuova funzione pura `distributeColors` (`lib/calc/`) consumata da un nuovo endpoint atomico `POST /api/categories/distribute-colors`, esposto via una nuova mutation TanStack Query e un componente dominio dedicato.
+**Architecture:** No DB migration (`color`/`icon` are `text` columns). Extension of the existing TS/Zod enums (`shared-colors.ts`, `categories.ts`) and of the rendering maps (`color-swatches.ts`, `category-avatar.tsx`). New pure function `distributeColors` (`lib/calc/`) consumed by a new atomic endpoint `POST /api/categories/distribute-colors`, exposed via a new TanStack Query mutation and a dedicated domain component.
 
 **Tech Stack:** Next.js Route Handlers, Drizzle ORM (Postgres), Zod, TanStack Query, `@base-ui/react` (AlertDialog/Popover), Tailwind CSS v4, lucide-react, Vitest.
 
 ## Global Constraints
 
-- Nessun colore esadecimale o raggio hardcoded nei componenti: usare sempre classi Tailwind o `var(--nome-token)` (regola CLAUDE.md "Design token").
-- Ogni componente/funzione pubblica ha una riga di JSDoc minima.
-- Barrel file (`components/domain/categories/index.ts`) è l'unico punto di import per i consumer esterni.
-- Nessuna logica di business in `app/*/page.tsx`.
-- Riferimento allo spec: `docs/superpowers/specs/2026-07-23-categorie-palette-estesa-distribuzione-design.md`.
+- No hexadecimal colors or hardcoded radii in components: always use Tailwind classes or `var(--nome-token)` (CLAUDE.md "Design token" rule).
+- Every public component/function has a minimal one-line JSDoc.
+- The barrel file (`components/domain/categories/index.ts`) is the only import point for external consumers.
+- No business logic in `app/*/page.tsx`.
+- Spec reference: `docs/superpowers/specs/2026-07-23-categorie-palette-estesa-distribuzione-design.md`.
 
 ---
 
-### Task 1: Palette colori estesa — enum condiviso
+### Task 1: Extended color palette — shared enum
 
 **Files:**
 - Modify: `lib/validation/shared-colors.ts`
@@ -26,11 +26,11 @@
 - Modify: `lib/validation/categories.test.ts:64-66`
 
 **Interfaces:**
-- Produces: `SWATCH_BASE_COLORS: readonly SwatchBaseColor[]` (16 elementi, ordine fisso), `SWATCH_COLORS: readonly SwatchColor[]` (48 elementi, ordine `[...16 base, ...16 light, ...16 dark]`), `type SwatchColor`, `type SwatchBaseColor`.
+- Produces: `SWATCH_BASE_COLORS: readonly SwatchBaseColor[]` (16 elements, fixed order), `SWATCH_COLORS: readonly SwatchColor[]` (48 elements, order `[...16 base, ...16 light, ...16 dark]`), `type SwatchColor`, `type SwatchBaseColor`.
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
-Sostituisci il contenuto di `lib/validation/shared-colors.test.ts`:
+Replace the contents of `lib/validation/shared-colors.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -69,19 +69,19 @@ describe("SWATCH_COLORS", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test, verifica che fallisca**
+- [ ] **Step 2: Run the test, verify it fails**
 
 Run: `pnpm test -- shared-colors.test.ts`
-Expected: FAIL — `SWATCH_BASE_COLORS` non esportato, `SWATCH_COLORS` ha ancora 8 elementi.
+Expected: FAIL — `SWATCH_BASE_COLORS` not exported, `SWATCH_COLORS` still has 8 elements.
 
-- [ ] **Step 3: Riscrivi `lib/validation/shared-colors.ts`**
+- [ ] **Step 3: Rewrite `lib/validation/shared-colors.ts`**
 
 ```ts
 /**
- * Palette colori condivisa da Conti e Categorie: 16 colori base + una variante chiara
- * e una scura per ciascuno (32), per un totale di 48. Le varianti non sono selezionabili
- * manualmente nei picker (solo i 16 base) — esistono per la distribuzione automatica dei
- * colori quando le categorie superano i 16 base senza ripetizioni.
+ * Color palette shared by Conti and Categorie: 16 base colors + one light variant
+ * and one dark variant for each (32), for a total of 48. The variants cannot be selected
+ * manually in the pickers (only the 16 base ones) — they exist for the automatic distribution of
+ * colors when categories exceed the 16 base colors without repetitions.
  */
 export const SWATCH_BASE_COLORS = [
   "slate", "blue", "green", "yellow", "purple", "orange", "red", "teal",
@@ -109,9 +109,9 @@ export const SWATCH_COLORS = [
 export type SwatchColor = (typeof SWATCH_COLORS)[number];
 ```
 
-- [ ] **Step 4: Aggiorna l'assert di lunghezza in `lib/validation/categories.test.ts`**
+- [ ] **Step 4: Update the length assert in `lib/validation/categories.test.ts`**
 
-In `lib/validation/categories.test.ts:63-67`, sostituisci:
+In `lib/validation/categories.test.ts:63-67`, replace:
 
 ```ts
 describe("CATEGORY_COLORS", () => {
@@ -121,7 +121,7 @@ describe("CATEGORY_COLORS", () => {
 });
 ```
 
-Nello stesso file, alla riga del test `"rifiuta un colore fuori enum"` (riga 45-48), il valore `"pink"` ora è valido (è entrato nella palette base) — sostituiscilo con un valore certamente fuori enum:
+In the same file, at the line of the test `"rifiuta un colore fuori enum"` (lines 45-48), the value `"pink"` is now valid (it joined the base palette) — replace it with a value that is certainly outside the enum:
 
 ```ts
   it("rifiuta un colore fuori enum", () => {
@@ -130,7 +130,7 @@ Nello stesso file, alla riga del test `"rifiuta un colore fuori enum"` (riga 45-
   });
 ```
 
-- [ ] **Step 5: Esegui i test, verifica che passino**
+- [ ] **Step 5: Run the tests, verify they pass**
 
 Run: `pnpm test -- shared-colors.test.ts categories.test.ts`
 Expected: PASS
@@ -144,16 +144,16 @@ git commit -m "feat: espandi palette colori condivisa da 8 a 48 (16 base + varia
 
 ---
 
-### Task 2: CSS vars per i nuovi colori (chart fill)
+### Task 2: CSS vars for the new colors (chart fill)
 
 **Files:**
-- Modify: `app/globals.css:88-95` (blocco `:root`) e `:138-145` (blocco `.dark`)
+- Modify: `app/globals.css:88-95` (`:root` block) and `:138-145` (`.dark` block)
 
 **Interfaces:**
-- Consumes: nessuno (solo dati statici).
-- Produces: 40 nuove custom property CSS `--swatch-{token}` (8 nuovi base + 32 varianti), lette da `SWATCH_CHART_COLOR` nel Task 3.
+- Consumes: none (static data only).
+- Produces: 40 new CSS custom properties `--swatch-{token}` (8 new base + 32 variants), read by `SWATCH_CHART_COLOR` in Task 3.
 
-- [ ] **Step 1: Aggiungi le var mancanti nel blocco `:root` (dopo la riga `--swatch-teal: #14b8a6;`, riga 95)**
+- [ ] **Step 1: Add the missing vars in the `:root` block (after the line `--swatch-teal: #14b8a6;`, line 95)**
 
 ```css
   --swatch-pink: #ec4899;
@@ -198,14 +198,14 @@ git commit -m "feat: espandi palette colori condivisa da 8 a 48 (16 base + varia
   --swatch-emerald-dark: #047857;
 ```
 
-- [ ] **Step 2: Aggiungi lo stesso blocco identico nel blocco `.dark`** (dopo `--swatch-teal: #14b8a6;` alla riga 145 — stesso pattern del codice esistente, dove i colori base sono già identici tra `:root` e `.dark`)
+- [ ] **Step 2: Add the same identical block in the `.dark` block** (after `--swatch-teal: #14b8a6;` at line 145 — same pattern as the existing code, where the base colors are already identical between `:root` and `.dark`)
 
-Stesso identico blocco di 40 righe dello Step 1.
+The exact same 40-line block as Step 1.
 
-- [ ] **Step 3: Verifica manuale — nessun test automatico per variabili CSS statiche**
+- [ ] **Step 3: Manual check — no automated test for static CSS variables**
 
 Run: `pnpm build`
-Expected: build passa senza errori (CSS puro, nessun impatto TypeScript).
+Expected: build passes without errors (pure CSS, no TypeScript impact).
 
 - [ ] **Step 4: Commit**
 
@@ -216,22 +216,22 @@ git commit -m "feat: aggiungi CSS vars per i nuovi colori palette (base+varianti
 
 ---
 
-### Task 3: Mappe di rendering colore (avatar, dot, chart)
+### Task 3: Color rendering maps (avatar, dot, chart)
 
 **Files:**
 - Modify: `components/domain/shared/color-swatches.ts`
 
 **Interfaces:**
 - Consumes: `SwatchColor` (Task 1), CSS vars `--swatch-*` (Task 2).
-- Produces: `COLOR_SWATCH_MAP`, `COLOR_DOT`, `SWATCH_CHART_COLOR` con chiave `Record<SwatchColor, ...>` (48 entries), consumati da `CategoryAvatar`/`AccountAvatar` (Task 6) e dai picker (Task 4).
+- Produces: `COLOR_SWATCH_MAP`, `COLOR_DOT`, `SWATCH_CHART_COLOR` keyed by `Record<SwatchColor, ...>` (48 entries), consumed by `CategoryAvatar`/`AccountAvatar` (Task 6) and by the pickers (Task 4).
 
-- [ ] **Step 1: Riscrivi `components/domain/shared/color-swatches.ts`**
+- [ ] **Step 1: Rewrite `components/domain/shared/color-swatches.ts`**
 
 ```ts
 /**
- * Mappa colore -> classi Tailwind (avatar bg/fg, dot pieno) condivisa da conti e categorie.
- * Copre i 16 colori base e le 32 varianti chiare/scure derivate (usate solo dalla
- * distribuzione automatica dei colori, non selezionabili manualmente nei picker).
+ * Color -> Tailwind classes map (avatar bg/fg, solid dot) shared by accounts and categories.
+ * Covers the 16 base colors and the 32 derived light/dark variants (used only by the
+ * automatic color distribution, not selectable manually in the pickers).
  */
 
 import type { SwatchColor } from "@/lib/validation/shared-colors";
@@ -338,7 +338,7 @@ export const COLOR_DOT: Record<SwatchColor, string> = {
   "emerald-dark": "bg-emerald-700",
 };
 
-/** Mappa colore -> CSS var per la torta multilivello (recharts richiede un valore letterale, non una classe Tailwind). */
+/** Color -> CSS var map for the multilevel pie (recharts requires a literal value, not a Tailwind class). */
 export const SWATCH_CHART_COLOR: Record<SwatchColor, string> = {
   slate: "var(--swatch-slate)",
   blue: "var(--swatch-blue)",
@@ -391,10 +391,10 @@ export const SWATCH_CHART_COLOR: Record<SwatchColor, string> = {
 };
 ```
 
-- [ ] **Step 2: Verifica il typecheck**
+- [ ] **Step 2: Verify the typecheck**
 
 Run: `pnpm build`
-Expected: passa senza errori TypeScript (nessuna chiave `SwatchColor` mancante nei tre `Record`).
+Expected: passes without TypeScript errors (no `SwatchColor` key missing in the three `Record`s).
 
 - [ ] **Step 3: Commit**
 
@@ -405,7 +405,7 @@ git commit -m "feat: estendi mappe rendering colore (avatar/dot/chart) a 48 valo
 
 ---
 
-### Task 4: Picker manuale — solo i 16 colori base
+### Task 4: Manual picker — only the 16 base colors
 
 **Files:**
 - Modify: `components/domain/categories/category-icon-color-picker.tsx:11,31`
@@ -413,36 +413,36 @@ git commit -m "feat: estendi mappe rendering colore (avatar/dot/chart) a 48 valo
 
 **Interfaces:**
 - Consumes: `SWATCH_BASE_COLORS` (Task 1).
-- Produces: nessuna nuova interfaccia pubblica — comportamento visivo dei picker esistenti invariato nella forma (griglia colori), solo la fonte dati cambia da 8/48 a 16.
+- Produces: no new public interface — visual behavior of the existing pickers unchanged in form (color grid), only the data source changes from 8/48 to 16.
 
-- [ ] **Step 1: `category-icon-color-picker.tsx` — importa e usa `SWATCH_BASE_COLORS`**
+- [ ] **Step 1: `category-icon-color-picker.tsx` — import and use `SWATCH_BASE_COLORS`**
 
-In `components/domain/categories/category-icon-color-picker.tsx:11`, sostituisci:
+In `components/domain/categories/category-icon-color-picker.tsx:11`, replace:
 ```ts
 import { SWATCH_COLORS } from "@/lib/validation/shared-colors";
 ```
-con:
+with:
 ```ts
 import { SWATCH_BASE_COLORS } from "@/lib/validation/shared-colors";
 ```
 
-Alla riga 31, sostituisci `{SWATCH_COLORS.map((color) => (` con `{SWATCH_BASE_COLORS.map((color) => (`.
+At line 31, replace `{SWATCH_COLORS.map((color) => (` with `{SWATCH_BASE_COLORS.map((color) => (`.
 
-- [ ] **Step 2: `account-icon-color-picker.tsx` — introduci lo stesso filtro**
+- [ ] **Step 2: `account-icon-color-picker.tsx` — introduce the same filter**
 
-`ACCOUNT_COLORS` (in `lib/validation/accounts.ts:12`) resta `= SWATCH_COLORS` (48, usato per la validazione Zod — corretto, non toccare). Per il picker, in `components/domain/accounts/account-icon-color-picker.tsx:8`, aggiungi l'import di `SWATCH_BASE_COLORS` accanto a quello esistente:
+`ACCOUNT_COLORS` (in `lib/validation/accounts.ts:12`) stays `= SWATCH_COLORS` (48, used for Zod validation — correct, do not touch). For the picker, in `components/domain/accounts/account-icon-color-picker.tsx:8`, add the import of `SWATCH_BASE_COLORS` next to the existing one:
 
 ```ts
 import { ACCOUNT_ICONS } from "@/lib/validation/accounts";
 import { SWATCH_BASE_COLORS } from "@/lib/validation/shared-colors";
 ```
 
-(rimuovi `ACCOUNT_COLORS` dall'import esistente, non serve più in questo file). Alla riga 36, sostituisci `{ACCOUNT_COLORS.map((color) => (` con `{SWATCH_BASE_COLORS.map((color) => (`.
+(remove `ACCOUNT_COLORS` from the existing import, it is no longer needed in this file). At line 36, replace `{ACCOUNT_COLORS.map((color) => (` with `{SWATCH_BASE_COLORS.map((color) => (`.
 
-- [ ] **Step 3: Verifica il typecheck**
+- [ ] **Step 3: Verify the typecheck**
 
 Run: `pnpm build`
-Expected: passa senza errori (`color` nei due picker resta tipizzato `SwatchColor`, sottoinsieme valido).
+Expected: passes without errors (`color` in the two pickers stays typed `SwatchColor`, a valid subset).
 
 - [ ] **Step 4: Commit**
 
@@ -453,7 +453,7 @@ git commit -m "feat: limita i picker manuali ai 16 colori base"
 
 ---
 
-### Task 5: Icone categoria estese (28 → 60)
+### Task 5: Extended category icons (28 → 60)
 
 **Files:**
 - Modify: `lib/validation/categories.ts:7-13`
@@ -461,9 +461,9 @@ git commit -m "feat: limita i picker manuali ai 16 colori base"
 - Modify: `components/domain/categories/category-avatar.tsx:4-44`
 
 **Interfaces:**
-- Produces: `CATEGORY_ICONS` (60 elementi), `ICON_MAP: Record<CategoryIcon, LucideIcon>` (60 entries), consumati dal picker (invariato, itera già su `CATEGORY_ICONS`) e da `CategoryAvatar`.
+- Produces: `CATEGORY_ICONS` (60 elements), `ICON_MAP: Record<CategoryIcon, LucideIcon>` (60 entries), consumed by the picker (unchanged, it already iterates over `CATEGORY_ICONS`) and by `CategoryAvatar`.
 
-- [ ] **Step 1: Aggiorna il test di lunghezza in `lib/validation/categories.test.ts:4-7`**
+- [ ] **Step 1: Update the length test in `lib/validation/categories.test.ts:4-7`**
 
 ```ts
 describe("CATEGORY_ICONS", () => {
@@ -477,12 +477,12 @@ describe("CATEGORY_ICONS", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test, verifica che fallisca**
+- [ ] **Step 2: Run the test, verify it fails**
 
 Run: `pnpm test -- categories.test.ts`
-Expected: FAIL — `CATEGORY_ICONS` ha ancora 28 elementi.
+Expected: FAIL — `CATEGORY_ICONS` still has 28 elements.
 
-- [ ] **Step 3: Estendi `CATEGORY_ICONS` in `lib/validation/categories.ts:7-13`**
+- [ ] **Step 3: Extend `CATEGORY_ICONS` in `lib/validation/categories.ts:7-13`**
 
 ```ts
 export const CATEGORY_ICONS = [
@@ -501,9 +501,9 @@ export const CATEGORY_ICONS = [
 export type CategoryIcon = (typeof CATEGORY_ICONS)[number];
 ```
 
-- [ ] **Step 4: Aggiungi le 32 nuove icone a `ICON_MAP` in `components/domain/categories/category-avatar.tsx`**
+- [ ] **Step 4: Add the 32 new icons to `ICON_MAP` in `components/domain/categories/category-avatar.tsx`**
 
-Sostituisci il blocco import (righe 4-9) con:
+Replace the import block (lines 4-9) with:
 
 ```ts
 import {
@@ -520,7 +520,7 @@ import {
 } from "lucide-react";
 ```
 
-Sostituisci il blocco `ICON_MAP` (righe 15-44) con:
+Replace the `ICON_MAP` block (lines 15-44) with:
 
 ```ts
 export const ICON_MAP: Record<CategoryIcon, LucideIcon> = {
@@ -587,10 +587,10 @@ export const ICON_MAP: Record<CategoryIcon, LucideIcon> = {
 };
 ```
 
-- [ ] **Step 5: Esegui i test e il typecheck**
+- [ ] **Step 5: Run the tests and the typecheck**
 
 Run: `pnpm test -- categories.test.ts && pnpm build`
-Expected: PASS — test icone verde, build passa (conferma che tutti i nomi Lucide importati esistono davvero in `lucide-react`; se un nome non esiste, `pnpm build` fallisce con errore di import e va corretto con il nome esatto del pacchetto installato).
+Expected: PASS — icon test green, build passes (confirms that all the imported Lucide names really exist in `lucide-react`; if a name does not exist, `pnpm build` fails with an import error and must be fixed with the exact name from the installed package).
 
 - [ ] **Step 6: Commit**
 
@@ -601,7 +601,7 @@ git commit -m "feat: espandi icone categoria da 28 a 60"
 
 ---
 
-### Task 6: Funzione pura di distribuzione colori
+### Task 6: Pure color distribution function
 
 **Files:**
 - Create: `lib/calc/distribute-colors.ts`
@@ -609,9 +609,9 @@ git commit -m "feat: espandi icone categoria da 28 a 60"
 
 **Interfaces:**
 - Consumes: `SWATCH_COLORS` (Task 1).
-- Produces: `distributeColors(categoryIds: string[]): Record<string, SwatchColor>`, consumata dall'endpoint nel Task 7.
+- Produces: `distributeColors(categoryIds: string[]): Record<string, SwatchColor>`, consumed by the endpoint in Task 7.
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -663,21 +663,21 @@ describe("distributeColors", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test, verifica che fallisca**
+- [ ] **Step 2: Run the test, verify it fails**
 
 Run: `pnpm test -- distribute-colors.test.ts`
-Expected: FAIL con "Cannot find module './distribute-colors'"
+Expected: FAIL with "Cannot find module './distribute-colors'"
 
-- [ ] **Step 3: Implementa `lib/calc/distribute-colors.ts`**
+- [ ] **Step 3: Implement `lib/calc/distribute-colors.ts`**
 
 ```ts
 import { SWATCH_COLORS } from "@/lib/validation/shared-colors";
 import type { SwatchColor } from "@/lib/validation/shared-colors";
 
 /**
- * Assegna un colore a ciascun id categoria (nell'ordine passato, tipicamente createdAt asc)
- * pescando dal pool di 48 colori senza ripetizioni finché possibile. Oltre i 48 elementi il
- * pool si ripete ciclicamente, ma non assegna mai lo stesso colore a due elementi adiacenti.
+ * Assigns a color to each category id (in the order passed, typically createdAt asc)
+ * drawing from the pool of 48 colors without repetitions as long as possible. Beyond 48 elements the
+ * pool repeats cyclically, but it never assigns the same color to two adjacent elements.
  */
 export function distributeColors(categoryIds: string[]): Record<string, SwatchColor> {
   const assignment: Record<string, SwatchColor> = {};
@@ -697,7 +697,7 @@ export function distributeColors(categoryIds: string[]): Record<string, SwatchCo
 }
 ```
 
-- [ ] **Step 4: Esegui il test, verifica che passi**
+- [ ] **Step 4: Run the test, verify it passes**
 
 Run: `pnpm test -- distribute-colors.test.ts`
 Expected: PASS
@@ -719,9 +719,9 @@ git commit -m "feat: aggiungi funzione pura distributeColors per l'assegnazione 
 
 **Interfaces:**
 - Consumes: `distributeColors` (Task 6), `db`/`categories` (`@/lib/db/client`, `@/lib/db/schema/categories`), `auth` (`@/lib/auth`).
-- Produces: `POST` handler che ritorna `200` con `Category[]` aggiornate (colori nuovi), consumato dalla mutation nel Task 8.
+- Produces: `POST` handler that returns `200` with the updated `Category[]` (new colors), consumed by the mutation in Task 8.
 
-- [ ] **Step 1: Scrivi il test di integrazione che fallisce**
+- [ ] **Step 1: Write the failing integration test**
 
 ```ts
 import { NextRequest } from "next/server";
@@ -803,12 +803,12 @@ describe("POST /api/categories/distribute-colors", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test, verifica che fallisca**
+- [ ] **Step 2: Run the test, verify it fails**
 
 Run: `pnpm test -- app/api/categories/distribute-colors/route.test.ts`
-Expected: FAIL — `./route` non esiste. (Nota: richiede Postgres locale raggiungibile, come gli altri test di route esistenti — se non disponibile in questo ambiente, procedi comunque con l'implementazione e segnala che la verifica va fatta dall'utente in locale, come da convenzione già stabilita nel progetto.)
+Expected: FAIL — `./route` does not exist. (Note: requires a reachable local Postgres, like the other existing route tests — if not available in this environment, proceed with the implementation anyway and flag that the check must be done by the user locally, per the convention already established in the project.)
 
-- [ ] **Step 3: Implementa `app/api/categories/distribute-colors/route.ts`**
+- [ ] **Step 3: Implement `app/api/categories/distribute-colors/route.ts`**
 
 ```ts
 import { NextRequest } from "next/server";
@@ -819,10 +819,10 @@ import { categories } from "@/lib/db/schema/categories";
 import { distributeColors } from "@/lib/calc/distribute-colors";
 
 /**
- * POST /api/categories/distribute-colors — riassegna un colore univoco (dal pool di 48)
- * a ogni categoria non-fallback dell'utente, in ordine di creazione; la categoria fallback
- * ("Da categorizzare") non viene mai toccata. Applica tutti gli update in un'unica
- * transazione: se qualcosa fallisce, nessuna categoria viene modificata.
+ * POST /api/categories/distribute-colors — reassigns a unique color (from the pool of 48)
+ * to each non-fallback category of the user, in creation order; the fallback category
+ * ("Da categorizzare") is never touched. Applies all the updates in a single
+ * transaction: if anything fails, no category is modified.
  */
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -855,10 +855,10 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 4: Esegui il test, verifica che passi (se DB disponibile)**
+- [ ] **Step 4: Run the test, verify it passes (if DB available)**
 
 Run: `pnpm test -- app/api/categories/distribute-colors/route.test.ts`
-Expected: PASS (in un ambiente con Postgres locale raggiungibile — stesso vincolo degli altri test di route in questo repo).
+Expected: PASS (in an environment with a reachable local Postgres — same constraint as the other route tests in this repo).
 
 - [ ] **Step 5: Commit**
 
@@ -878,10 +878,10 @@ git commit -m "feat: aggiungi endpoint POST /api/categories/distribute-colors"
 - Consumes: endpoint `POST /api/categories/distribute-colors` (Task 7).
 - Produces: `useDistributeColorsMutation()`, consumata dal componente UI nel Task 9.
 
-- [ ] **Step 1: Aggiungi la mutation in fondo a `lib/queries/categories.ts`**
+- [ ] **Step 1: Add the mutation at the bottom of `lib/queries/categories.ts`**
 
 ```ts
-/** Ridistribuisce automaticamente i colori delle categorie non-fallback ed invalida la lista al successo. */
+/** Automatically redistributes the colors of the non-fallback categories and invalidates the list on success. */
 export function useDistributeColorsMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -900,10 +900,10 @@ export function useDistributeColorsMutation() {
 }
 ```
 
-- [ ] **Step 2: Verifica il typecheck**
+- [ ] **Step 2: Verify the typecheck**
 
 Run: `pnpm build`
-Expected: passa senza errori.
+Expected: passes without errors.
 
 - [ ] **Step 3: Commit**
 
@@ -914,7 +914,7 @@ git commit -m "feat: aggiungi useDistributeColorsMutation"
 
 ---
 
-### Task 9: Componente "Distribuisci colori" + integrazione pagina
+### Task 9: "Distribuisci colori" component + page integration
 
 **Files:**
 - Create: `components/domain/categories/distribute-colors-button.tsx`
@@ -923,14 +923,14 @@ git commit -m "feat: aggiungi useDistributeColorsMutation"
 
 **Interfaces:**
 - Consumes: `useDistributeColorsMutation` (Task 8), `AlertDialog*` (`@/components/ui/alert-dialog`).
-- Produces: `DistributeColorsButton` (nessuna prop, componente autonomo), esportato dal barrel `components/domain/categories`.
+- Produces: `DistributeColorsButton` (no props, self-contained component), exported from the `components/domain/categories` barrel.
 
-- [ ] **Step 1: Crea `components/domain/categories/distribute-colors-button.tsx`**
+- [ ] **Step 1: Create `components/domain/categories/distribute-colors-button.tsx`**
 
 ```tsx
 "use client";
 
-/** Pulsante con conferma che riassegna un colore univoco a ogni categoria non-fallback. */
+/** Button with confirmation that reassigns a unique color to each non-fallback category. */
 
 import * as React from "react";
 import { Shuffle } from "lucide-react";
@@ -991,23 +991,23 @@ export function DistributeColorsButton() {
 }
 ```
 
-- [ ] **Step 2: Esporta dal barrel `components/domain/categories/index.ts`**
+- [ ] **Step 2: Export from the barrel `components/domain/categories/index.ts`**
 
-Aggiungi in fondo al file:
+Add at the bottom of the file:
 
 ```ts
 export { DistributeColorsButton } from "./distribute-colors-button";
 ```
 
-- [ ] **Step 3: Integra il pulsante nell'header di `app/(app)/categorie/page.tsx`**
+- [ ] **Step 3: Integrate the button in the header of `app/(app)/categorie/page.tsx`**
 
-Aggiorna l'import (riga 5):
+Update the import (line 5):
 
 ```ts
 import { AddCategoryForm, CategoryRow, DistributeColorsButton } from "@/components/domain/categories";
 ```
 
-Nel blocco header (righe 15-28), aggiungi il pulsante prima del link "Torna a Spese":
+In the header block (lines 15-28), add the button before the "Torna a Spese" link:
 
 ```tsx
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1029,10 +1029,10 @@ Nel blocco header (righe 15-28), aggiungi il pulsante prima del link "Torna a Sp
       </div>
 ```
 
-- [ ] **Step 4: Verifica il typecheck e il lint**
+- [ ] **Step 4: Verify the typecheck and the lint**
 
 Run: `pnpm build && pnpm lint`
-Expected: entrambi passano senza errori.
+Expected: both pass without errors.
 
 - [ ] **Step 5: Commit**
 
@@ -1043,9 +1043,9 @@ git commit -m "feat: aggiungi pulsante Distribuisci colori nella pagina Categori
 
 ---
 
-## Verifica finale (whole-branch)
+## Final verification (whole-branch)
 
-Dopo l'ultimo task:
+After the last task:
 
 ```bash
 pnpm build
@@ -1053,4 +1053,4 @@ pnpm lint
 pnpm test
 ```
 
-Verifica manuale utente (nessun Postgres/Redis nel sandbox agentico, come da nota già presente in CLAUDE.md per le feature precedenti su categorie): aprire `/categorie`, controllare che il picker mostri 16 pallini colore, creare/rinominare/ricolorare una categoria, poi cliccare "Distribuisci colori" con più categorie esistenti e verificare che i colori risultino tutti diversi tra loro e che "Da categorizzare" resti rossa.
+Manual user verification (no Postgres/Redis in the agentic sandbox, as per the note already in CLAUDE.md for the previous category features): open `/categorie`, check that the picker shows 16 color dots, create/rename/recolor a category, then click "Distribuisci colori" with several existing categories and verify that the colors are all different from each other and that "Da categorizzare" stays red.

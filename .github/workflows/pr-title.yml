@@ -1,7 +1,7 @@
 name: Titolo PR
 
-# Il titolo della PR diventa il messaggio del commit di squash e da lì la versione (release-please):
-# feat → minor, fix/perf → patch, "!" o BREAKING CHANGE → minor finché si è in 0.x. Vedi docs/rilasci.md.
+# The PR title becomes the squash commit message and, from there, the version (release-please):
+# feat → minor, fix/perf → patch, "!" or BREAKING CHANGE → minor while on 0.x. See docs/rilasci.md.
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
@@ -34,5 +34,5 @@ jobs:
             test
             build
             revert
-          # Il titolo è in italiano e può iniziare con maiuscola o nome proprio: nessun vincolo sul soggetto.
+          # The title may start with an uppercase letter or a proper noun: no constraint on the subject.
           subjectPattern: ^.+$

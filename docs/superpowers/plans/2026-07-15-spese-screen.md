@@ -1,36 +1,36 @@
-# Schermata Spese Implementation Plan
+# Spese screen Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Implementare la schermata Spese end-to-end (KPI, grafici, categorie con budget, lista transazioni con editing/dividi/elimina, form di aggiunta), sostituendo lo screen "non ancora implementato" con una versione reale e funzionante, coerente con `docs/functional-spec.md` sezione 3.
+**Goal:** Implement the Spese ("Expenses") screen end to end (KPIs, charts, categories with budget, transaction list with editing/split/delete, add form), replacing the "not yet implemented" screen with a real, working version, consistent with `docs/functional-spec.md` section 3.
 
-**Architecture:** Un motore di calcolo puro (`lib/calc/expenses.ts`) centralizza periodo/KPI/categorie/grafici a partire da una lista di transazioni già filtrata lato client (fetch di una finestra di 13 mesi via `GET /api/transactions?from&to`), seguendo lo stesso pattern Route Handlers + Zod + TanStack Query + ownership check già usato in Conti (`app/api/accounts/`, `lib/queries/accounts.ts`, `components/domain/accounts/`).
+**Architecture:** A pure calculation engine (`lib/calc/expenses.ts`) centralizes period/KPIs/categories/charts starting from a list of transactions already filtered client-side (fetch of a 13-month window via `GET /api/transactions?from&to`), following the same Route Handlers + Zod + TanStack Query + ownership check pattern already used in Conti ("Accounts") (`app/api/accounts/`, `lib/queries/accounts.ts`, `components/domain/accounts/`).
 
-**Tech Stack:** Next.js App Router, Drizzle ORM (schema già esistente), Zod, TanStack Query, shadcn/ui (nuovi componenti `slider` e `chart` da installare), Recharts, Vitest.
+**Tech Stack:** Next.js App Router, Drizzle ORM (schema already existing), Zod, TanStack Query, shadcn/ui (new `slider` and `chart` components to install), Recharts, Vitest.
 
 ## Global Constraints
 
-- Tutte le stringhe visibili sono in italiano (nessuna i18n ancora).
-- Nessun colore/raggio hardcoded nei componenti: solo token Tailwind del tema.
-- JSDoc minimo (una riga `/**`) su ogni componente/funzione pubblica.
-- Barrel file `index.ts` in `components/domain/expenses/` — chi importa da fuori usa sempre quello.
-- Route in `app/` senza logica di business: solo orchestrazione.
-- Pattern API: `auth.api.getSession({ headers })` → 401 se assente; Zod `safeParse` → 400 su errore; helper di ownership `getOwned*` → 404 se non proprio.
-- I test API sono di integrazione contro Postgres reale (vedi `vitest.config.ts`, `fileParallelism: false`): stesso pattern di `app/api/accounts/route.test.ts` (crea `authUser` di test in `beforeEach`, elimina in `afterEach`, `client.end()` in `afterAll`).
-- Riuso deciso: `parseAmount` resta in `lib/validation/accounts.ts` (già generico, non specifico ai conti) — i nuovi moduli lo re-importano da lì invece di duplicarlo.
-- Convenzione segno importo: `transactions.amount` negativo = uscita reale, positivo = entrata. Spese filtra e calcola **solo** `amount < 0`; le entrate restano nella tabella ma invisibili qui (serviranno a una futura schermata Cash flow).
-- Categorie mostrate in "Per categoria": **tutte** quelle dell'utente (query reale, non un array hardcoded delle 8 nominate nello spec) — include quindi anche "Da categorizzare" se ha importi.
+- All visible strings are in Italian (no i18n yet).
+- No hardcoded colors/radii in components: only the theme's Tailwind tokens.
+- Minimal JSDoc (one `/**` line) on every public component/function.
+- `index.ts` barrel file in `components/domain/expenses/` — anyone importing from outside always uses it.
+- Routes in `app/` without business logic: orchestration only.
+- API pattern: `auth.api.getSession({ headers })` → 401 if missing; Zod `safeParse` → 400 on error; `getOwned*` ownership helper → 404 if not owned.
+- API tests are integration tests against a real Postgres (see `vitest.config.ts`, `fileParallelism: false`): same pattern as `app/api/accounts/route.test.ts` (create a test `authUser` in `beforeEach`, delete it in `afterEach`, `client.end()` in `afterAll`).
+- Decided reuse: `parseAmount` stays in `lib/validation/accounts.ts` (already generic, not account-specific) — the new modules re-import it from there instead of duplicating it.
+- Amount sign convention: negative `transactions.amount` = real outflow, positive = income. Spese filters and computes **only** `amount < 0`; income stays in the table but is invisible here (it will serve a future Cash flow screen).
+- Categories shown in "Per categoria" ("By category"): **all** of the user's categories (real query, not a hardcoded array of the 8 named in the spec) — so it also includes "Da categorizzare" ("To categorize") if it has amounts.
 
 ---
 
-### Task 1: Motore di calcolo — intervalli periodo e KPI
+### Task 1: Calculation engine — period ranges and KPIs
 
 **Files:**
 - Create: `lib/calc/expenses.ts`
 - Test: `lib/calc/expenses.test.ts`
 
 **Interfaces:**
-- Produce: `ExpensePeriod = "settimana" | "mese" | "3mesi" | "anno"`, `DateRange { from: Date; to: Date }`, `parseDateOnly(dateStr: string): Date`, `getPeriodRange(period, referenceDate): DateRange`, `getPreviousPeriodRange(period, referenceDate): DateRange`, `isExpense(transaction: Transaction): boolean`, `effectiveAmount(transaction: Transaction): number`, `ExpensesSummary { uscite: number; escluse: number; speseEffettive: number }`, `computeSummary(transactions, range): ExpensesSummary`, `scaleBudgetForPeriod(monthlyTotal: number, period: ExpensePeriod): number`, `ExpensesKpis { speso; budgetTotale; budgetRimanente; giorniRimasti; mediaGiornaliera; mediaGiornalieraPeriodoPrecedente }`, `computeKpis(transactions, budgets, period, referenceDate): ExpensesKpis`
+- Produces: `ExpensePeriod = "settimana" | "mese" | "3mesi" | "anno"`, `DateRange { from: Date; to: Date }`, `parseDateOnly(dateStr: string): Date`, `getPeriodRange(period, referenceDate): DateRange`, `getPreviousPeriodRange(period, referenceDate): DateRange`, `isExpense(transaction: Transaction): boolean`, `effectiveAmount(transaction: Transaction): number`, `ExpensesSummary { uscite: number; escluse: number; speseEffettive: number }`, `computeSummary(transactions, range): ExpensesSummary`, `scaleBudgetForPeriod(monthlyTotal: number, period: ExpensePeriod): number`, `ExpensesKpis { speso; budgetTotale; budgetRimanente; giorniRimasti; mediaGiornaliera; mediaGiornalieraPeriodoPrecedente }`, `computeKpis(transactions, budgets, period, referenceDate): ExpensesKpis`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -175,8 +175,8 @@ describe("computeKpis", () => {
     const transactions = [
       makeTransaction({ date: "2026-02-05", amount: "-300.00" }),
       makeTransaction({ date: "2026-02-10", amount: "-100.00" }),
-      makeTransaction({ date: "2026-02-20", amount: "-50.00" }), // futuro rispetto a referenceDate
-      makeTransaction({ date: "2026-01-15", amount: "-310.00" }), // mese precedente
+      makeTransaction({ date: "2026-02-20", amount: "-50.00" }), // future relative to referenceDate
+      makeTransaction({ date: "2026-01-15", amount: "-310.00" }), // previous month
     ];
     const budgets = [makeBudget({ monthlyAmount: "700.00" })];
 
@@ -195,7 +195,7 @@ describe("computeKpis", () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 Run: `pnpm test lib/calc/expenses.test.ts`
-Expected: FAIL con "Cannot find module './expenses'" o simile
+Expected: FAIL with "Cannot find module './expenses'" or similar
 
 - [ ] **Step 3: Implement `lib/calc/expenses.ts`**
 
@@ -203,7 +203,7 @@ Expected: FAIL con "Cannot find module './expenses'" o simile
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
 
-/** Periodo selezionabile nella schermata Spese. */
+/** Selectable period in the Spese screen. */
 export type ExpensePeriod = "settimana" | "mese" | "3mesi" | "anno";
 
 export interface DateRange {
@@ -213,7 +213,7 @@ export interface DateRange {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/** Costruisce una Date locale (mezzanotte) da una stringa "YYYY-MM-DD", senza slittamenti di fuso orario. */
+/** Builds a local Date (midnight) from a "YYYY-MM-DD" string, without time zone shifts. */
 export function parseDateOnly(dateStr: string): Date {
   const [year, month, day] = dateStr.split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -232,7 +232,7 @@ function endOfMonth(date: Date): Date {
 }
 
 function startOfISOWeek(date: Date): Date {
-  const day = date.getDay(); // 0 = domenica
+  const day = date.getDay(); // 0 = Sunday
   const diffToMonday = day === 0 ? 6 : day - 1;
   return addDays(startOfDay(date), -diffToMonday);
 }
@@ -249,7 +249,7 @@ function daysBetween(from: Date, to: Date): number {
   return Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / MS_PER_DAY);
 }
 
-/** Intervallo calendariale del periodo selezionato, contenente referenceDate. */
+/** Calendar range of the selected period, containing referenceDate. */
 export function getPeriodRange(period: ExpensePeriod, referenceDate: Date): DateRange {
   switch (period) {
     case "settimana": {
@@ -265,7 +265,7 @@ export function getPeriodRange(period: ExpensePeriod, referenceDate: Date): Date
   }
 }
 
-/** Intervallo, di uguale lunghezza calendariale, immediatamente precedente al periodo selezionato. */
+/** Range of equal calendar length immediately preceding the selected period. */
 export function getPreviousPeriodRange(period: ExpensePeriod, referenceDate: Date): DateRange {
   let shiftedReference: Date;
   switch (period) {
@@ -290,12 +290,12 @@ function isWithinRange(date: Date, range: DateRange): boolean {
   return day.getTime() >= range.from.getTime() && day.getTime() <= range.to.getTime();
 }
 
-/** Transazione di spesa reale (uscita bancaria): importo negativo. Le entrate non fanno parte di Spese. */
+/** Real expense transaction (bank outflow): negative amount. Income is not part of Spese. */
 export function isExpense(transaction: Transaction): boolean {
   return Number(transaction.amount) < 0;
 }
 
-/** Importo (negativo) della spesa effettiva dopo "Dividi": amount - excludedAmount. */
+/** (Negative) amount of the actual expense after "Dividi" ("Split"): amount - excludedAmount. */
 export function effectiveAmount(transaction: Transaction): number {
   return Number(transaction.amount) - Number(transaction.excludedAmount);
 }
@@ -306,7 +306,7 @@ export interface ExpensesSummary {
   speseEffettive: number;
 }
 
-/** Somma Uscite / Escluse / Spese effettive (valori positivi) per le transazioni di spesa nell'intervallo. */
+/** Sum of Outflows / Excluded / Actual expenses (positive values) for the expense transactions in the range. */
 export function computeSummary(transactions: Transaction[], range: DateRange): ExpensesSummary {
   const inRange = transactions.filter((t) => isExpense(t) && isWithinRange(parseDateOnly(t.date), range));
   const uscite = inRange.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
@@ -318,7 +318,7 @@ function totalMonthlyBudget(budgets: Budget[]): number {
   return budgets.reduce((sum, b) => sum + Number(b.monthlyAmount), 0);
 }
 
-/** Scala un budget mensile totale sulla lunghezza del periodo selezionato. */
+/** Scales a total monthly budget to the length of the selected period. */
 export function scaleBudgetForPeriod(monthlyTotal: number, period: ExpensePeriod): number {
   switch (period) {
     case "settimana":
@@ -342,9 +342,9 @@ export interface ExpensesKpis {
 }
 
 /**
- * KPI principali di Spese per il periodo selezionato. "Speso" e "Media giornaliera" contano solo i
- * giorni del periodo già trascorsi (fino a referenceDate incluso); "Budget rimanente"/"giorni rimasti"
- * guardano invece all'intero periodo calendariale (anche i giorni futuri).
+ * Main Spese KPIs for the selected period. "Speso" and "Media giornaliera" count only the
+ * days of the period already elapsed (up to and including referenceDate); "Budget rimanente"/"giorni rimasti"
+ * instead look at the whole calendar period (future days included).
  */
 export function computeKpis(
   transactions: Transaction[],
@@ -377,7 +377,7 @@ export function computeKpis(
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `pnpm test lib/calc/expenses.test.ts`
-Expected: PASS (tutti i test verdi)
+Expected: PASS (all tests green)
 
 - [ ] **Step 5: Commit**
 
@@ -388,22 +388,22 @@ git commit -m "feat: motore di calcolo periodo e KPI per Spese"
 
 ---
 
-### Task 2: Motore di calcolo — categorie, fisse/variabili, andamento 6 mesi
+### Task 2: Calculation engine — categories, fixed/variable, 6-month trend
 
 **Files:**
 - Modify: `lib/calc/expenses.ts` (append)
 - Test: `lib/calc/expenses.test.ts` (append)
 
 **Interfaces:**
-- Consuma: `ExpensePeriod`, `DateRange`, `parseDateOnly`, `isExpense`, `effectiveAmount`, `computeSummary` (Task 1)
-- Produce: `CategoryAmount { categoryId: string; name: string; type: "fissa" | "variabile"; amount: number }`, `computeCategoryBreakdown(transactions, categories, period, referenceDate): CategoryAmount[]`, `FixedVsVariable { fissa: number; variabile: number }`, `computeFixedVsVariable(transactions, categories, period, referenceDate): FixedVsVariable`, `MonthlyTotal { year: number; month: number; label: string; total: number }`, `compute6MonthTrend(transactions, referenceDate): MonthlyTotal[]`
+- Consumes: `ExpensePeriod`, `DateRange`, `parseDateOnly`, `isExpense`, `effectiveAmount`, `computeSummary` (Task 1)
+- Produces: `CategoryAmount { categoryId: string; name: string; type: "fissa" | "variabile"; amount: number }`, `computeCategoryBreakdown(transactions, categories, period, referenceDate): CategoryAmount[]`, `FixedVsVariable { fissa: number; variabile: number }`, `computeFixedVsVariable(transactions, categories, period, referenceDate): FixedVsVariable`, `MonthlyTotal { year: number; month: number; label: string; total: number }`, `compute6MonthTrend(transactions, referenceDate): MonthlyTotal[]`
 
 - [ ] **Step 1: Write the failing tests**
 
-Aggiungere in fondo a `lib/calc/expenses.test.ts` (aggiornare anche gli import in cima al file per includere le nuove funzioni):
+Add at the bottom of `lib/calc/expenses.test.ts` (also update the imports at the top of the file to include the new functions):
 
 ```typescript
-// aggiungere agli import esistenti in lib/calc/expenses.test.ts:
+// add to the existing imports in lib/calc/expenses.test.ts:
 // computeCategoryBreakdown, computeFixedVsVariable, compute6MonthTrend
 import type { Category } from "@/lib/db/schema/categories";
 
@@ -454,9 +454,9 @@ describe("computeFixedVsVariable", () => {
 
 describe("compute6MonthTrend", () => {
   it("ritorna 6 mesi calendariali fino a quello corrente, ignorando dati fuori finestra", () => {
-    const referenceDate = new Date(2026, 6, 15); // luglio 2026
+    const referenceDate = new Date(2026, 6, 15); // July 2026
     const transactions = [
-      makeTransaction({ date: "2026-01-10", amount: "-999.00" }), // fuori finestra (gennaio)
+      makeTransaction({ date: "2026-01-10", amount: "-999.00" }), // outside the window (January)
       makeTransaction({ date: "2026-02-10", amount: "-100.00" }),
       makeTransaction({ date: "2026-07-05", amount: "-50.00" }),
     ];
@@ -473,12 +473,12 @@ describe("compute6MonthTrend", () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 Run: `pnpm test lib/calc/expenses.test.ts`
-Expected: FAIL con "computeCategoryBreakdown is not defined" o simile
+Expected: FAIL with "computeCategoryBreakdown is not defined" or similar
 
 - [ ] **Step 3: Append to `lib/calc/expenses.ts`**
 
 ```typescript
-// aggiungere l'import Category in cima al file:
+// add the Category import at the top of the file:
 // import type { Category } from "@/lib/db/schema/categories";
 
 export interface CategoryAmount {
@@ -488,7 +488,7 @@ export interface CategoryAmount {
   amount: number;
 }
 
-/** Spesa effettiva per categoria nel periodo selezionato, una riga per ogni categoria dell'utente. */
+/** Actual expense per category in the selected period, one row for each of the user's categories. */
 export function computeCategoryBreakdown(
   transactions: Transaction[],
   categories: Category[],
@@ -516,7 +516,7 @@ export interface FixedVsVariable {
   variabile: number;
 }
 
-/** Somma spesa effettiva del periodo, raggruppata per tipo categoria (fissa/variabile). */
+/** Sum of the period's actual expense, grouped by category type (fixed/variable). */
 export function computeFixedVsVariable(
   transactions: Transaction[],
   categories: Category[],
@@ -542,7 +542,7 @@ export interface MonthlyTotal {
 
 const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
 
-/** Spesa effettiva totale per ciascuno degli ultimi 6 mesi calendariali (incluso quello corrente), indipendente dal periodo selezionato. */
+/** Total actual expense for each of the last 6 calendar months (including the current one), independent of the selected period. */
 export function compute6MonthTrend(transactions: Transaction[], referenceDate: Date): MonthlyTotal[] {
   const months: MonthlyTotal[] = [];
   for (let i = 5; i >= 0; i--) {
@@ -574,15 +574,15 @@ git commit -m "feat: aggiunge breakdown categorie, fisse/variabili e andamento 6
 
 ---
 
-### Task 3: Validazione — transazioni
+### Task 3: Validation — transactions
 
 **Files:**
 - Create: `lib/validation/transactions.ts`
 - Test: `lib/validation/transactions.test.ts`
 
 **Interfaces:**
-- Consuma: `parseAmount` da `lib/validation/accounts.ts` (esistente, riesportato)
-- Produce: `createTransactionSchema`, `CreateTransactionInput`, `updateTransactionSchema`, `UpdateTransactionInput`
+- Consumes: `parseAmount` from `lib/validation/accounts.ts` (existing, re-exported)
+- Produces: `createTransactionSchema`, `CreateTransactionInput`, `updateTransactionSchema`, `UpdateTransactionInput`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -647,7 +647,7 @@ describe("updateTransactionSchema", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test lib/validation/transactions.test.ts`
-Expected: FAIL con "Cannot find module './transactions'"
+Expected: FAIL with "Cannot find module './transactions'"
 
 - [ ] **Step 3: Implement `lib/validation/transactions.ts`**
 
@@ -695,14 +695,14 @@ git commit -m "feat: validazione Zod per creazione/aggiornamento transazioni"
 
 ---
 
-### Task 4: Validazione — budget
+### Task 4: Validation — budget
 
 **Files:**
 - Create: `lib/validation/budgets.ts`
 - Test: `lib/validation/budgets.test.ts`
 
 **Interfaces:**
-- Produce: `upsertBudgetSchema`, `UpsertBudgetInput`
+- Produces: `upsertBudgetSchema`, `UpsertBudgetInput`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -726,7 +726,7 @@ describe("upsertBudgetSchema", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test lib/validation/budgets.test.ts`
-Expected: FAIL con "Cannot find module './budgets'"
+Expected: FAIL with "Cannot find module './budgets'"
 
 - [ ] **Step 3: Implement `lib/validation/budgets.ts`**
 
@@ -754,14 +754,14 @@ git commit -m "feat: validazione Zod per upsert budget mensile"
 
 ---
 
-### Task 5: API — categorie (lettura)
+### Task 5: API — categories (read)
 
 **Files:**
 - Create: `app/api/categories/route.ts`
 - Test: `app/api/categories/route.test.ts`
 
 **Interfaces:**
-- Produce: `GET /api/categories` → `Category[]`
+- Produces: `GET /api/categories` → `Category[]`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -833,7 +833,7 @@ describe("GET /api/categories", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test app/api/categories/route.test.ts`
-Expected: FAIL con "Cannot find module './route'"
+Expected: FAIL with "Cannot find module './route'"
 
 - [ ] **Step 3: Implement `app/api/categories/route.ts`**
 
@@ -874,15 +874,15 @@ git commit -m "feat: aggiunge GET /api/categories"
 
 ---
 
-### Task 6: API — transazioni (lista e creazione)
+### Task 6: API — transactions (list and create)
 
 **Files:**
 - Create: `app/api/transactions/route.ts`
 - Test: `app/api/transactions/route.test.ts`
 
 **Interfaces:**
-- Consuma: `createTransactionSchema` (Task 3)
-- Produce: `GET /api/transactions?from&to` → `Transaction[]` (solo `amount < 0`), `POST /api/transactions` → `Transaction` (201)
+- Consumes: `createTransactionSchema` (Task 3)
+- Produces: `GET /api/transactions?from&to` → `Transaction[]` (only `amount < 0`), `POST /api/transactions` → `Transaction` (201)
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1021,7 +1021,7 @@ describe("GET/POST /api/transactions", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test app/api/transactions/route.test.ts`
-Expected: FAIL con "Cannot find module './route'"
+Expected: FAIL with "Cannot find module './route'"
 
 - [ ] **Step 3: Implement `app/api/transactions/route.ts`**
 
@@ -1129,15 +1129,15 @@ git commit -m "feat: aggiunge GET/POST /api/transactions"
 
 ---
 
-### Task 7: API — transazione singola (aggiornamento, dividi, eliminazione)
+### Task 7: API — single transaction (update, split, delete)
 
 **Files:**
 - Create: `app/api/transactions/[id]/route.ts`
 - Test: `app/api/transactions/[id]/route.test.ts`
 
 **Interfaces:**
-- Consuma: `updateTransactionSchema` (Task 3), `isValidExcludedAmount` (esistente in `lib/db/schema/transactions.ts`)
-- Produce: `PATCH /api/transactions/[id]`, `DELETE /api/transactions/[id]`
+- Consumes: `updateTransactionSchema` (Task 3), `isValidExcludedAmount` (existing in `lib/db/schema/transactions.ts`)
+- Produces: `PATCH /api/transactions/[id]`, `DELETE /api/transactions/[id]`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1409,7 +1409,7 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test app/api/transactions/[id]/route.test.ts`
-Expected: FAIL con "Cannot find module './route'"
+Expected: FAIL with "Cannot find module './route'"
 
 - [ ] **Step 3: Implement `app/api/transactions/[id]/route.ts`**
 
@@ -1421,7 +1421,7 @@ import { db } from "@/lib/db/client";
 import { isValidExcludedAmount, transactions } from "@/lib/db/schema/transactions";
 import { updateTransactionSchema } from "@/lib/validation/transactions";
 
-/** Recupera una transazione solo se appartiene all'utente indicato, altrimenti null. */
+/** Fetches a transaction only if it belongs to the given user, otherwise null. */
 async function getOwnedTransaction(userId: string, transactionId: string) {
   const [transaction] = await db
     .select()
@@ -1433,9 +1433,9 @@ async function getOwnedTransaction(userId: string, transactionId: string) {
 const MANUAL_ONLY_FIELDS = ["description", "amount", "date"] as const;
 
 /**
- * Aggiorna una transazione del proprio utente; 404 se non propria. Per una transazione "auto" sono
- * modificabili solo categoria ed excludedAmount ("Dividi"): un tentativo di cambiare descrizione,
- * importo o data risponde 403.
+ * Updates one of the user's transactions; 404 if not owned. For an "auto" transaction only
+ * category and excludedAmount ("Dividi") can be changed: an attempt to change description,
+ * amount or date gets a 403.
  */
 export async function PATCH(
   request: NextRequest,
@@ -1489,7 +1489,7 @@ export async function PATCH(
   return Response.json(updated);
 }
 
-/** Elimina una transazione manuale del proprio utente; 404 se non propria, 400 se auto. */
+/** Deletes one of the user's manual transactions; 404 if not owned, 400 if auto. */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -1528,7 +1528,7 @@ git commit -m "feat: aggiunge PATCH/DELETE /api/transactions/[id]"
 
 ---
 
-### Task 8: API — budget (lettura e upsert)
+### Task 8: API — budget (read and upsert)
 
 **Files:**
 - Create: `app/api/budgets/route.ts`
@@ -1537,8 +1537,8 @@ git commit -m "feat: aggiunge PATCH/DELETE /api/transactions/[id]"
 - Test: `app/api/budgets/[categoryId]/route.test.ts`
 
 **Interfaces:**
-- Consuma: `upsertBudgetSchema` (Task 4)
-- Produce: `GET /api/budgets` → `Budget[]`, `PUT /api/budgets/[categoryId]` → `Budget`
+- Consumes: `upsertBudgetSchema` (Task 4)
+- Produces: `GET /api/budgets` → `Budget[]`, `PUT /api/budgets/[categoryId]` → `Budget`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1712,7 +1712,7 @@ describe("PUT /api/budgets/[categoryId]", () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 Run: `pnpm test app/api/budgets`
-Expected: FAIL con "Cannot find module './route'"
+Expected: FAIL with "Cannot find module './route'"
 
 - [ ] **Step 3: Implement**
 
@@ -1745,7 +1745,7 @@ import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { upsertBudgetSchema } from "@/lib/validation/budgets";
 
-/** Crea o aggiorna (upsert) il budget mensile di una categoria del proprio utente; 404 se non propria. */
+/** Creates or updates (upsert) the monthly budget of one of the user's categories; 404 if not owned. */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ categoryId: string }> }
@@ -1797,14 +1797,14 @@ git commit -m "feat: aggiunge GET /api/budgets e PUT /api/budgets/[categoryId]"
 
 ---
 
-### Task 9: Query hook — categorie
+### Task 9: Query hook — categories
 
 **Files:**
 - Create: `lib/queries/categories.ts`
 
 **Interfaces:**
-- Consuma: `GET /api/categories` (Task 5)
-- Produce: `useCategoriesQuery()`
+- Consumes: `GET /api/categories` (Task 5)
+- Produces: `useCategoriesQuery()`
 
 - [ ] **Step 1: Implement `lib/queries/categories.ts`**
 
@@ -1824,7 +1824,7 @@ async function fetchCategories(): Promise<Category[]> {
   return response.json();
 }
 
-/** Recupera la lista delle categorie dell'utente autenticato. */
+/** Fetches the list of the authenticated user's categories. */
 export function useCategoriesQuery() {
   return useQuery({ queryKey: CATEGORIES_QUERY_KEY, queryFn: fetchCategories });
 }
@@ -1833,7 +1833,7 @@ export function useCategoriesQuery() {
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore relativo a `lib/queries/categories.ts`
+Expected: no errors related to `lib/queries/categories.ts`
 
 - [ ] **Step 3: Commit**
 
@@ -1844,14 +1844,14 @@ git commit -m "feat: aggiunge useCategoriesQuery"
 
 ---
 
-### Task 10: Query hook — transazioni
+### Task 10: Query hook — transactions
 
 **Files:**
 - Create: `lib/queries/transactions.ts`
 
 **Interfaces:**
-- Consuma: `GET/POST /api/transactions` (Task 6), `PATCH/DELETE /api/transactions/[id]` (Task 7), `CreateTransactionInput`/`UpdateTransactionInput` (Task 3)
-- Produce: `useTransactionsQuery(from, to)`, `useCreateTransactionMutation()`, `useUpdateTransactionMutation()`, `useDeleteTransactionMutation()`
+- Consumes: `GET/POST /api/transactions` (Task 6), `PATCH/DELETE /api/transactions/[id]` (Task 7), `CreateTransactionInput`/`UpdateTransactionInput` (Task 3)
+- Produces: `useTransactionsQuery(from, to)`, `useCreateTransactionMutation()`, `useUpdateTransactionMutation()`, `useDeleteTransactionMutation()`
 
 - [ ] **Step 1: Implement `lib/queries/transactions.ts`**
 
@@ -1874,12 +1874,12 @@ async function fetchTransactions(from: string, to: string): Promise<Transaction[
   return response.json();
 }
 
-/** Recupera le transazioni di spesa dell'utente nell'intervallo [from, to] (YYYY-MM-DD). */
+/** Fetches the user's expense transactions in the range [from, to] (YYYY-MM-DD). */
 export function useTransactionsQuery(from: string, to: string) {
   return useQuery({ queryKey: transactionsQueryKey(from, to), queryFn: () => fetchTransactions(from, to) });
 }
 
-/** Crea una spesa manuale e invalida tutte le liste di transazioni in cache. */
+/** Creates a manual expense and invalidates all cached transaction lists. */
 export function useCreateTransactionMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1901,7 +1901,7 @@ export function useCreateTransactionMutation() {
   });
 }
 
-/** Aggiorna una transazione (categoria/dividi sempre; descrizione/importo/data solo se manuale) e invalida la cache. */
+/** Updates a transaction (category/split always; description/amount/date only if manual) and invalidates the cache. */
 export function useUpdateTransactionMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1923,7 +1923,7 @@ export function useUpdateTransactionMutation() {
   });
 }
 
-/** Elimina una spesa manuale e invalida la cache. */
+/** Deletes a manual expense and invalidates the cache. */
 export function useDeleteTransactionMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1944,7 +1944,7 @@ export function useDeleteTransactionMutation() {
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore relativo a `lib/queries/transactions.ts`
+Expected: no errors related to `lib/queries/transactions.ts`
 
 - [ ] **Step 3: Commit**
 
@@ -1961,8 +1961,8 @@ git commit -m "feat: aggiunge hook TanStack Query per le transazioni"
 - Create: `lib/queries/budgets.ts`
 
 **Interfaces:**
-- Consuma: `GET /api/budgets` (Task 8), `PUT /api/budgets/[categoryId]` (Task 8), `UpsertBudgetInput` (Task 4)
-- Produce: `useBudgetsQuery()`, `useUpsertBudgetMutation()`
+- Consumes: `GET /api/budgets` (Task 8), `PUT /api/budgets/[categoryId]` (Task 8), `UpsertBudgetInput` (Task 4)
+- Produces: `useBudgetsQuery()`, `useUpsertBudgetMutation()`
 
 - [ ] **Step 1: Implement `lib/queries/budgets.ts`**
 
@@ -1983,12 +1983,12 @@ async function fetchBudgets(): Promise<Budget[]> {
   return response.json();
 }
 
-/** Recupera i budget mensili per categoria dell'utente autenticato. */
+/** Fetches the authenticated user's monthly budgets per category. */
 export function useBudgetsQuery() {
   return useQuery({ queryKey: BUDGETS_QUERY_KEY, queryFn: fetchBudgets });
 }
 
-/** Crea o aggiorna il budget mensile di una categoria e invalida la cache. */
+/** Creates or updates a category's monthly budget and invalidates the cache. */
 export function useUpsertBudgetMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -2014,7 +2014,7 @@ export function useUpsertBudgetMutation() {
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore relativo a `lib/queries/budgets.ts`
+Expected: no errors related to `lib/queries/budgets.ts`
 
 - [ ] **Step 3: Commit**
 
@@ -2025,24 +2025,24 @@ git commit -m "feat: aggiunge hook TanStack Query per i budget"
 
 ---
 
-### Task 12: Installazione componenti shadcn mancanti (slider, chart)
+### Task 12: Installing the missing shadcn components (slider, chart)
 
 **Files:**
-- Create: `components/ui/slider.tsx` (generato da shadcn)
-- Create: `components/ui/chart.tsx` (generato da shadcn)
-- Modify: `package.json` (aggiunge `recharts` e dipendenze slider)
+- Create: `components/ui/slider.tsx` (generated by shadcn)
+- Create: `components/ui/chart.tsx` (generated by shadcn)
+- Modify: `package.json` (adds `recharts` and slider dependencies)
 
-Nessun componente `slider`/`chart` esiste ancora nel repo (verificato: nessun file, nessuna dipendenza `recharts` in `package.json`). Servono per "Dividi" (Task 17) e i grafici (Task 16).
+No `slider`/`chart` component exists in the repo yet (verified: no file, no `recharts` dependency in `package.json`). They are needed for "Dividi" (Task 17) and the charts (Task 16).
 
-- [ ] **Step 1: Installare i componenti**
+- [ ] **Step 1: Install the components**
 
 Run: `pnpm dlx shadcn@latest add slider chart`
-Expected: crea `components/ui/slider.tsx` e `components/ui/chart.tsx`, aggiunge `recharts` (e eventuali dipendenze del primitivo slider) a `package.json`
+Expected: creates `components/ui/slider.tsx` and `components/ui/chart.tsx`, adds `recharts` (and any dependencies of the slider primitive) to `package.json`
 
-- [ ] **Step 2: Verificare che il progetto compili ancora**
+- [ ] **Step 2: Check that the project still compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 3: Commit**
 
@@ -2053,21 +2053,21 @@ git commit -m "chore: installa componenti shadcn slider e chart"
 
 ---
 
-### Task 13: Componente — selettore periodo
+### Task 13: Component — period selector
 
 **Files:**
 - Create: `components/domain/expenses/expenses-period-selector.tsx`
 
 **Interfaces:**
-- Consuma: `ExpensePeriod` (Task 1)
-- Produce: `ExpensesPeriodSelector`, `ExpensesPeriodSelectorProps`
+- Consumes: `ExpensePeriod` (Task 1)
+- Produces: `ExpensesPeriodSelector`, `ExpensesPeriodSelectorProps`
 
 - [ ] **Step 1: Implement**
 
 ```tsx
 "use client";
 
-/** Selettore periodo Settimana/Mese/3 mesi/Anno per la schermata Spese (stesso pattern a pillole di AddAccountForm). */
+/** Settimana/Mese/3 mesi/Anno period selector for the Spese screen (same pill pattern as AddAccountForm). */
 
 import { cn } from "@/lib/utils";
 import type { ExpensePeriod } from "@/lib/calc/expenses";
@@ -2111,7 +2111,7 @@ export function ExpensesPeriodSelector({ value, onChange }: ExpensesPeriodSelect
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 3: Commit**
 
@@ -2122,19 +2122,19 @@ git commit -m "feat: aggiunge ExpensesPeriodSelector"
 
 ---
 
-### Task 14: Componente — KPI cards
+### Task 14: Component — KPI cards
 
 **Files:**
 - Create: `components/domain/expenses/expenses-kpi-cards.tsx`
 
 **Interfaces:**
-- Consuma: `computeKpis`, `ExpensePeriod` (Task 1), `StatCard` (esistente), `formatCurrency` (esistente)
-- Produce: `ExpensesKpiCards`, `ExpensesKpiCardsProps`
+- Consumes: `computeKpis`, `ExpensePeriod` (Task 1), `StatCard` (existing), `formatCurrency` (existing)
+- Produces: `ExpensesKpiCards`, `ExpensesKpiCardsProps`
 
 - [ ] **Step 1: Implement**
 
 ```tsx
-/** Riga di KPI per la schermata Spese: Speso nel periodo, Budget rimanente, Media giornaliera. */
+/** KPI row for the Spese screen: Spent in the period, Remaining budget, Daily average. */
 
 import { StatCard } from "@/components/domain/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2148,7 +2148,7 @@ export interface ExpensesKpiCardsProps {
   budgets: Budget[];
   period: ExpensePeriod;
   currency: string;
-  /** Data di riferimento per il calcolo (default: adesso). */
+  /** Reference date for the calculation (default: now). */
   referenceDate?: Date;
 }
 
@@ -2195,7 +2195,7 @@ export function ExpensesKpiCards({
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 3: Commit**
 
@@ -2206,21 +2206,21 @@ git commit -m "feat: aggiunge ExpensesKpiCards"
 
 ---
 
-### Task 15: Componente — categorie con budget editabile
+### Task 15: Component — categories with editable budget
 
 **Files:**
 - Create: `components/domain/expenses/category-breakdown.tsx`
 
 **Interfaces:**
-- Consuma: `CategoryAmount` (Task 2), `useUpsertBudgetMutation` (Task 11)
-- Produce: `CategoryBreakdown`, `CategoryBreakdownProps`
+- Consumes: `CategoryAmount` (Task 2), `useUpsertBudgetMutation` (Task 11)
+- Produces: `CategoryBreakdown`, `CategoryBreakdownProps`
 
 - [ ] **Step 1: Implement**
 
 ```tsx
 "use client";
 
-/** Blocco "Per categoria": importo speso e budget mensile editabile inline, per ciascuna categoria dell'utente. */
+/** "Per categoria" block: amount spent and inline-editable monthly budget, for each of the user's categories. */
 
 import * as React from "react";
 import { Card } from "@/components/ui/card";
@@ -2305,7 +2305,7 @@ function CategoryBreakdownRow({ entry, budgetAmount, currency, onCommitBudget }:
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 3: Commit**
 
@@ -2316,21 +2316,21 @@ git commit -m "feat: aggiunge CategoryBreakdown con budget editabile inline"
 
 ---
 
-### Task 16: Componente — grafici (donut + andamento 6 mesi)
+### Task 16: Component — charts (donut + 6-month trend)
 
 **Files:**
 - Create: `components/domain/expenses/expense-charts.tsx`
 
 **Interfaces:**
-- Consuma: `FixedVsVariable`, `MonthlyTotal` (Task 2), `components/ui/chart.tsx` (Task 12)
-- Produce: `ExpenseCharts`, `ExpenseChartsProps`
+- Consumes: `FixedVsVariable`, `MonthlyTotal` (Task 2), `components/ui/chart.tsx` (Task 12)
+- Produces: `ExpenseCharts`, `ExpenseChartsProps`
 
 - [ ] **Step 1: Implement**
 
 ```tsx
 "use client";
 
-/** Grafici Spese: donut "Fisse vs variabili" e barre "Andamento ultimi 6 mesi". */
+/** Spese charts: "Fisse vs variabili" donut and "Andamento ultimi 6 mesi" bars. */
 
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2405,7 +2405,7 @@ export function ExpenseCharts({ fixedVsVariable, monthlyTrend }: ExpenseChartsPr
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore. Se l'API esatta di `ChartContainer`/`ChartConfig` generata da shadcn differisse leggermente da quella usata qui, adattare gli import/props a quanto effettivamente generato nel Task 12 (il componente `chart.tsx` di shadcn segue questo pattern in modo standard, ma verificarlo).
+Expected: no errors. If the exact API of the `ChartContainer`/`ChartConfig` generated by shadcn differs slightly from the one used here, adapt the imports/props to what was actually generated in Task 12 (shadcn's `chart.tsx` component follows this pattern in a standard way, but check it).
 
 - [ ] **Step 3: Commit**
 
@@ -2416,21 +2416,21 @@ git commit -m "feat: aggiunge ExpenseCharts (donut fisse/variabili + andamento 6
 
 ---
 
-### Task 17: Componente — slider "Dividi"
+### Task 17: Component — "Dividi" slider
 
 **Files:**
 - Create: `components/domain/expenses/split-slider.tsx`
 
 **Interfaces:**
-- Consuma: `useUpdateTransactionMutation` (Task 10), `components/ui/slider.tsx` (Task 12)
-- Produce: `SplitSlider`, `SplitSliderProps`
+- Consumes: `useUpdateTransactionMutation` (Task 10), `components/ui/slider.tsx` (Task 12)
+- Produces: `SplitSlider`, `SplitSliderProps`
 
 - [ ] **Step 1: Implement**
 
 ```tsx
 "use client";
 
-/** UI "Dividi": ripartisce l'importo di una transazione tra spesa effettiva e quota esclusa dal conteggio. */
+/** "Dividi" UI: splits a transaction's amount between actual expense and the share excluded from the count. */
 
 import * as React from "react";
 import { Slider } from "@/components/ui/slider";
@@ -2479,7 +2479,7 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 3: Commit**
 
@@ -2490,21 +2490,21 @@ git commit -m "feat: aggiunge SplitSlider (Dividi)"
 
 ---
 
-### Task 18: Componente — riga transazione
+### Task 18: Component — transaction row
 
 **Files:**
 - Create: `components/domain/expenses/transaction-row.tsx`
 
 **Interfaces:**
-- Consuma: `useUpdateTransactionMutation`, `useDeleteTransactionMutation` (Task 10), `CurrencyInput` (esistente, riesportato da `components/domain/accounts`), `SplitSlider` (Task 17)
-- Produce: `TransactionRow`, `TransactionRowProps`
+- Consumes: `useUpdateTransactionMutation`, `useDeleteTransactionMutation` (Task 10), `CurrencyInput` (existing, re-exported from `components/domain/accounts`), `SplitSlider` (Task 17)
+- Produces: `TransactionRow`, `TransactionRowProps`
 
 - [ ] **Step 1: Implement**
 
 ```tsx
 "use client";
 
-/** Riga singola della lista Transazioni in Spese: rendering diverso per source manuale/auto. */
+/** Single row of the Transactions list in Spese: different rendering for manual/auto source. */
 
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
@@ -2680,7 +2680,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 3: Commit**
 
@@ -2691,21 +2691,21 @@ git commit -m "feat: aggiunge TransactionRow"
 
 ---
 
-### Task 19: Componente — form "+ Aggiungi"
+### Task 19: Component — "+ Aggiungi" ("+ Add") form
 
 **Files:**
 - Create: `components/domain/expenses/add-transaction-form.tsx`
 
 **Interfaces:**
-- Consuma: `useAccountsQuery` (esistente, da `lib/queries/accounts.ts`), `useCreateTransactionMutation` (Task 10), `CurrencyInput` (esistente)
-- Produce: `AddTransactionForm`, `AddTransactionFormProps`
+- Consumes: `useAccountsQuery` (existing, from `lib/queries/accounts.ts`), `useCreateTransactionMutation` (Task 10), `CurrencyInput` (existing)
+- Produces: `AddTransactionForm`, `AddTransactionFormProps`
 
 - [ ] **Step 1: Implement**
 
 ```tsx
 "use client";
 
-/** Form "+ Aggiungi" spesa: crea una transazione manuale su uno dei conti manuali dell'utente. */
+/** "+ Aggiungi" expense form: creates a manual transaction on one of the user's manual accounts. */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -2861,7 +2861,7 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 3: Commit**
 
@@ -2878,8 +2878,8 @@ git commit -m "feat: aggiunge AddTransactionForm"
 - Create: `components/domain/expenses/index.ts`
 
 **Interfaces:**
-- Consuma: tutti i componenti dei Task 13-19
-- Produce: punto di ingresso unico `@/components/domain/expenses`
+- Consumes: all the components of Tasks 13-19
+- Produces: single entry point `@/components/domain/expenses`
 
 - [ ] **Step 1: Implement**
 
@@ -2887,7 +2887,7 @@ git commit -m "feat: aggiunge AddTransactionForm"
 /**
  * components/domain/expenses — barrel file
  *
- * Punto di ingresso unico per i componenti della schermata Spese.
+ * Single entry point for the Spese screen components.
  */
 
 export { ExpensesPeriodSelector } from "./expenses-period-selector";
@@ -2909,7 +2909,7 @@ export type { AddTransactionFormProps } from "./add-transaction-form";
 - [ ] **Step 2: Verify it compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 3: Commit**
 
@@ -2920,20 +2920,20 @@ git commit -m "feat: aggiunge barrel file per components/domain/expenses"
 
 ---
 
-### Task 21: Pagina Spese
+### Task 21: Spese page
 
 **Files:**
 - Create: `app/(app)/spese/page.tsx`
 
 **Interfaces:**
-- Consuma: barrel `components/domain/expenses` (Task 20), `lib/calc/expenses` (Task 1-2, incluso `computeSummary`), `useTransactionsQuery` (Task 10), `useCategoriesQuery` (Task 9), `useBudgetsQuery` (Task 11), `authClient` (esistente)
+- Consumes: the `components/domain/expenses` barrel (Task 20), `lib/calc/expenses` (Tasks 1-2, including `computeSummary`), `useTransactionsQuery` (Task 10), `useCategoriesQuery` (Task 9), `useBudgetsQuery` (Task 11), `authClient` (existing)
 
 - [ ] **Step 1: Implement**
 
 ```tsx
 "use client";
 
-/** Pagina Spese: orchestra periodo selezionato, KPI, grafici, categorie/budget, lista transazioni e form di aggiunta. */
+/** Spese page: orchestrates the selected period, KPIs, charts, categories/budgets, transaction list and add form. */
 
 import * as React from "react";
 import {
@@ -2963,7 +2963,7 @@ function toDateString(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-/** Finestra di fetch: dal 1° gennaio dell'anno precedente al 31 dicembre corrente — copre "anno", il confronto col periodo precedente e l'andamento 6 mesi. */
+/** Fetch window: from January 1 of the previous year to December 31 of the current one — covers "anno", the comparison with the previous period and the 6-month trend. */
 function fetchWindow(referenceDate: Date): { from: string; to: string } {
   const from = new Date(referenceDate.getFullYear() - 1, 0, 1);
   const to = new Date(referenceDate.getFullYear(), 11, 31);
@@ -3078,7 +3078,7 @@ export default function SpesePage() {
 - [ ] **Step 2: Verify build**
 
 Run: `pnpm build`
-Expected: build completata senza errori
+Expected: build completed without errors
 
 - [ ] **Step 3: Commit**
 
@@ -3087,15 +3087,15 @@ git add "app/(app)/spese/page.tsx"
 git commit -m "feat: aggiunge pagina Spese"
 ```
 
-- [ ] **Step 4: Verifica manuale in browser**
+- [ ] **Step 4: Manual browser verification**
 
-Run: `pnpm dev`, navigare su `/spese` da un utente autenticato con almeno un conto manuale.
-Verificare: selettore periodo cambia KPI/categorie/grafici/lista in modo coerente; "+ Aggiungi" crea una spesa; modifica inline descrizione/importo/data/categoria su una transazione manuale; "Dividi" aggiorna in tempo reale i totali; "✕" elimina una transazione manuale; su una transazione "auto" (se presente da un conto GoCardless) solo categoria e "Dividi" sono modificabili; budget mensile per categoria si salva e "Budget rimanente" lo riflette.
+Run: `pnpm dev`, go to `/spese` as an authenticated user with at least one manual account.
+Check: the period selector changes KPIs/categories/charts/list consistently; "+ Aggiungi" creates an expense; inline editing of description/amount/date/category on a manual transaction; "Dividi" updates the totals in real time; "✕" deletes a manual transaction; on an "auto" transaction (if present from a GoCardless account) only the category and "Dividi" can be changed; the monthly budget per category is saved and "Budget rimanente" ("Remaining budget") reflects it.
 
 ---
 
-## Note per l'esecutore
+## Notes for the implementer
 
-- Ogni task da 1 a 8 segue rigorosamente TDD (test prima, verifica fallimento, implementazione, verifica successo). I task 9-20 non hanno test dedicati perché il progetto non testa componenti/hook TanStack Query — solo funzioni pure e route API (vedi convenzione esistente in `lib/queries/accounts.ts` e `components/domain/accounts/*.tsx`, nessuno dei quali ha test associati salvo `accounts-kpi.utils.test.ts`).
-- Il Task 12 (installazione `slider`/`chart`) è un prerequisito bloccante per i Task 16 e 17: se fallisce o genera un'API diversa da quella assunta qui, va risolto prima di proseguire.
-- Non eseguire mai `git push`: fermarsi al commit locale di ogni task, come da regola di progetto in `CLAUDE.md`.
+- Every task from 1 to 8 strictly follows TDD (test first, verify failure, implementation, verify success). Tasks 9-20 have no dedicated tests because the project does not test TanStack Query components/hooks — only pure functions and API routes (see the existing convention in `lib/queries/accounts.ts` and `components/domain/accounts/*.tsx`, none of which has associated tests except `accounts-kpi.utils.test.ts`).
+- Task 12 (installing `slider`/`chart`) is a blocking prerequisite for Tasks 16 and 17: if it fails or generates an API different from the one assumed here, it must be resolved before going on.
+- Never run `git push`: stop at the local commit of each task, as per the project rule in `CLAUDE.md`.

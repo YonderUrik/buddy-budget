@@ -147,7 +147,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
           id="email"
           type="email"
           inputMode="email"
-          placeholder={EMAIL_PLACEHOLDER}
+          placeholder={tr(EMAIL_PLACEHOLDER)}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required

@@ -15,6 +15,7 @@ import { listingsOnOpenFigi, marketDataDeps, quoteMetaOnProviders } from "@/lib/
 import { updateFxRates } from "@/lib/market-data/update";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { runImportSchema } from "@/lib/validation/investments-import";
+import { saveFormatMetadata } from "@/lib/imports/store";
 
 // Il recupero dello storico degli strumenti importati gira in after().
 export const maxDuration = 300;
@@ -65,6 +66,10 @@ async function handlePost(request: NextRequest) {
 
   if (result.error) return Response.json(result, { status: 422 });
   if (!parsed.data.dryRun && result.counts.error > 0) return Response.json(result, { status: 400 });
+  if (parsed.data.formatMetadata && !parsed.data.statementCsv) {
+    try { await saveFormatMetadata(userId, "mapping", parsed.data.formatMetadata, parsed.data.operations); }
+    catch { requestLogger().warn("import.metadata.failed", { reason: "persistence_failed" }); }
+  }
   if (!parsed.data.dryRun) {
     requestLogger().info("investments.import.completed", { inserted: result.inserted });
     // I movimenti di cassa del rendiconto (es. carta Trade Republic) passano dallo stesso giro della banca.

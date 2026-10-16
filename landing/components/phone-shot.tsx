@@ -4,18 +4,18 @@ import { PHONE_SHOT_SIZE } from "@/lib/screen-size";
 import { PhoneFrame } from "./phone-frame";
 
 export interface PhoneShotProps {
-  /** Id di una schermata di `content/screens.ts` con la versione da telefono (`phone`). */
+  /** Id of a screen in `content/screens.ts` that has the phone version (`phone`). */
   id: ScreenId;
-  /** Altezza dello schermo (vedi `PhoneFrame`). */
+  /** Screen height (see `PhoneFrame`). */
   height?: string;
-  /** Immagine sopra la piega: caricata subito invece che in lazy. */
+  /** Above-the-fold image: loaded eagerly instead of lazily. */
   priority?: boolean;
   className?: string;
 }
 
 /**
- * Screenshot vero dell'app a misura di telefono, nella cornice da telefono. Rende la versione chiara e quella scura e
- * il CSS mostra quella del tema corrente (come `AppShot`).
+ * Real phone-size screenshot of the app inside the phone frame. Renders both the light and the dark version and the
+ * CSS shows the one of the current theme (like `AppShot`).
  */
 export function PhoneShot({ id, height, priority = false, className }: PhoneShotProps) {
   const screen = SCREENS.find((s) => s.id === id);
@@ -23,7 +23,7 @@ export function PhoneShot({ id, height, priority = false, className }: PhoneShot
   return (
     <PhoneFrame height={height} className={className}>
       {SCREEN_THEMES.map((theme) => (
-        // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
+        // eslint-disable-next-line @next/next/no-img-element -- static export: no image optimizer
         <img
           key={theme}
           className={`shot-img shot-${theme}`}

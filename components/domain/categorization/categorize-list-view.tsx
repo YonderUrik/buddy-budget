@@ -6,7 +6,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { toast } from "sonner";
 import { CategorizeGroupRow } from "./categorize-group-row";
-import { LogoCredit } from "./logo-credit";
+import { LogoCredit } from "@/components/domain/shared";
 import { ProgressBar } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

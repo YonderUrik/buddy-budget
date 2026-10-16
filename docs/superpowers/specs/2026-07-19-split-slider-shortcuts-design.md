@@ -1,38 +1,38 @@
-# Design: shortcut e input preciso per "Dividi" (SplitSlider)
+# Design: shortcuts and precise input for "Dividi" (SplitSlider)
 
-**Data**: 2026-07-19
-**Stato**: approvato in brainstorming, in attesa di piano di implementazione
+**Date**: 2026-07-19
+**Status**: approved in brainstorming, awaiting implementation plan
 
-## Contesto
+## Context
 
-`components/domain/expenses/split-slider.tsx` (schermata Spese, meccanismo "Dividi") permette di escludere una parte dell'importo di una transazione dal conteggio spesa (rimborsi, quote condivise, giroconti), tramite uno slider su `excludedAmount`. Bug di imprecisione trascinamento mouse già corretto in questa sessione (libreria `@base-ui/react/slider`: `Control` interno usa `range = values.length > 1`, diverso dal `range` di `Root`, per cui un thumb singolo su value array riceve talvolta un numero scalare invece di un array in `onValueChange`).
+`components/domain/expenses/split-slider.tsx` (Spese screen, "Dividi" — split — mechanism) lets the user exclude part of a transaction's amount from the spending count (refunds, shared shares, transfers between own accounts), via a slider on `excludedAmount`. A mouse-drag imprecision bug has already been fixed in this session (library `@base-ui/react/slider`: the inner `Control` uses `range = values.length > 1`, different from the `range` of `Root`, so a single thumb on an array value sometimes receives a scalar number instead of an array in `onValueChange`).
 
-Feedback utente dopo test manuale: lo slider da solo è poco preciso per impostare un valore esatto. Richiesta: shortcut rapide per il caso d'uso più comune (conto diviso equamente tra n persone) più un campo numerico per il valore esatto.
+User feedback after manual testing: the slider alone is not precise enough to set an exact value. Request: quick shortcuts for the most common use case (a bill split equally among n people) plus a numeric field for the exact value.
 
-## Caso d'uso confermato con l'utente
+## Use case confirmed with the user
 
-"Diviso n" = conto condiviso equamente tra n persone incluso l'utente. La **quota dell'utente** (ciò che deve restare come spesa effettiva) è `totalAmount / n`; il resto è escluso dal conteggio:
+"Split by n" = a bill shared equally among n people including the user. The **user's share** (what must remain as actual spending) is `totalAmount / n`; the rest is excluded from the count:
 
 ```
 excluded = totalAmount - totalAmount / n
 ```
 
-n supportati: 2, 3, 4 (bottoni fissi, nessuna UI per n arbitrario).
+Supported n: 2, 3, 4 (fixed buttons, no UI for arbitrary n).
 
 ## Design
 
-### Componenti UI aggiunti a `SplitSlider`
+### UI components added to `SplitSlider`
 
-1. **Riga bottoni ÷2 ÷3 ÷4** (sopra allo slider esistente): `Button` variant `outline` size `sm` da `components/ui/button`. Al click: calcola `excluded` con la formula sopra, `setExcluded(value)` e **salva subito** (`commit()` esistente, stessa mutation `useUpdateTransactionMutation`).
-2. **Input numerico "Spesa effettiva"**: `Input type="number"` da `components/ui/input`, step `0.01`, min `0`, max `totalAmount`. Mostra `totalAmount - excluded` (non `excluded` direttamente: l'utente ragiona in termini di "quanto conta come spesa", non di quota esclusa). Aggiorna solo lo state locale ad ogni digitazione (nessuna mutation); salva su `onBlur` o `Enter` (`onKeyDown` su tasto `Enter`), con lo stesso `commit()`.
-3. **Slider esistente**: resta sotto, invariato nella logica, sincronizzato con lo stesso state `excluded` (bottoni/input/slider sono tre modi di scrivere allo stesso `excluded`).
-4. **Riga riepilogo testuale esistente** ("Spesa effettiva: ... / Esclusa dal conteggio: ...") resta invariata sotto lo slider.
+1. **Row of ÷2 ÷3 ÷4 buttons** (above the existing slider): `Button` variant `outline` size `sm` from `components/ui/button`. On click: compute `excluded` with the formula above, `setExcluded(value)` and **save immediately** (existing `commit()`, same `useUpdateTransactionMutation` mutation).
+2. **"Spesa effettiva" (actual spending) numeric input**: `Input type="number"` from `components/ui/input`, step `0.01`, min `0`, max `totalAmount`. Shows `totalAmount - excluded` (not `excluded` directly: the user thinks in terms of "how much counts as spending", not of the excluded share). Updates only the local state on every keystroke (no mutation); saves on `onBlur` or `Enter` (`onKeyDown` on the `Enter` key), with the same `commit()`.
+3. **Existing slider**: stays below, logic unchanged, synchronised with the same `excluded` state (buttons/input/slider are three ways of writing to the same `excluded`).
+4. **Existing text summary row** ("Spesa effettiva: ... / Esclusa dal conteggio: ..." — "Actual spending / Excluded from the count") stays unchanged below the slider.
 
-Ordine verticale finale: testo esplicativo → bottoni ÷2÷3÷4 → input "Spesa effettiva" → slider → riepilogo testuale.
+Final vertical order: explanatory text → ÷2÷3÷4 buttons → "Spesa effettiva" input → slider → text summary.
 
-### Validazione condivisa
+### Shared validation
 
-Nuovo helper locale al file (non serve un modulo condiviso, unico punto d'uso oggi):
+New helper local to the file (no shared module needed, the only place it is used today):
 
 ```ts
 function clampExcluded(rawExcluded: number, totalAmount: number): number {
@@ -41,14 +41,14 @@ function clampExcluded(rawExcluded: number, totalAmount: number): number {
 }
 ```
 
-Usato da: bottoni ÷n (per sicurezza, anche se la formula è già in range), input numerico su blur/Enter (converte il valore digitato di "spesa effettiva" in `excluded = totalAmount - value`, poi clamp), e resta disponibile per lo slider se in futuro servisse. Nessuna richiesta di arrotondamento oltre ai 2 decimali già gestiti da `step=0.01`/`formatCurrency`.
+Used by: the ÷n buttons (for safety, even though the formula is already in range), the numeric input on blur/Enter (converts the typed "actual spending" value into `excluded = totalAmount - value`, then clamps), and it stays available for the slider should it be needed in the future. No rounding required beyond the 2 decimals already handled by `step=0.01`/`formatCurrency`.
 
-### Cosa NON cambia
+### What does NOT change
 
-- Nessuna modifica a API, schema DB, `isValidExcludedAmount()` lato server: il valore finale inviato è sempre un `excludedAmount` numerico dentro il range valido già validato server-side.
-- Nessuna modifica al motore di calcolo `lib/calc/expenses.ts`.
-- Bottoni ÷n e slider salvano subito (comportamento "commit on interaction end/click" già esistente); solo l'input numerico ha una politica diversa (blur/Enter) per non generare una mutation ad ogni carattere digitato.
+- No change to the API, DB schema, or server-side `isValidExcludedAmount()`: the final value sent is always a numeric `excludedAmount` within the valid range already validated server-side.
+- No change to the calculation engine `lib/calc/expenses.ts`.
+- The ÷n buttons and the slider save immediately (the existing "commit on interaction end/click" behaviour); only the numeric input has a different policy (blur/Enter) so as not to generate a mutation for every character typed.
 
 ## Testing
 
-Nessun test automatico esistente su questo componente (verificare durante il piano se ce ne sono in `components/domain/expenses/*.test.*`). Se sì, aggiungere casi per: click ÷2/÷3/÷4 con vari `totalAmount` (inclusi importi con centesimi, es. €1.44), input numerico con valore fuori range (negativo, superiore al totale) che deve clampare, input numerico con valore non numerico che non deve rompere lo state. Verifica manuale in browser richiesta per UX (allineamento bottoni/input/slider, dark mode, focus/tab order).
+No existing automated tests on this component (check during the plan whether there are any in `components/domain/expenses/*.test.*`). If so, add cases for: clicking ÷2/÷3/÷4 with various `totalAmount`s (including amounts with cents, e.g. €1.44), numeric input with an out-of-range value (negative, greater than the total) that must clamp, numeric input with a non-numeric value that must not break the state. Manual verification in the browser required for the UX (alignment of buttons/input/slider, dark mode, focus/tab order).

@@ -1,58 +1,58 @@
-# Rilasci e versioni
+# Releases and versions
 
-Una sola versione semver per tutto il repo (app e landing), nel formato `0.MINOR.PATCH` finché si è in 0.x. È calcolata in automatico da [release-please](https://github.com/googleapis/release-please) a partire dai **titoli delle PR**.
+A single semver version for the whole repo (app and landing), in the format `0.MINOR.PATCH` while in 0.x. It is calculated automatically by [release-please](https://github.com/googleapis/release-please) from the **PR titles**.
 
-## Titoli delle PR (Conventional Commits)
+## PR titles (Conventional Commits)
 
-Il merge è sempre uno squash e il titolo della PR diventa il messaggio del commit. La check `Titolo PR` (`.github/workflows/pr-title.yml`) controlla il formato `tipo(ambito opzionale): descrizione`, anche in italiano.
+Merges are always squashed and the PR title becomes the commit message. The `Titolo PR` check (`.github/workflows/pr-title.yml`) verifies the format `type(optional scope): description`, Italian allowed.
 
-| Titolo | Effetto sulla versione |
+| Title | Effect on the version |
 |---|---|
 | `feat: …` | minor (0.2.0 → 0.3.0) |
 | `fix: …`, `perf: …` | patch (0.2.0 → 0.2.1) |
-| `feat!: …` o `BREAKING CHANGE:` nel corpo | minor finché si è in 0.x, major dall'1.0 |
-| `refactor:`, `docs:`, `chore:`, `ci:`, `test:`, `build:` | nessuna release (nel changelog compaiono `feat`, `fix`, `perf`, `refactor`) |
+| `feat!: …` or `BREAKING CHANGE:` in the body | minor while in 0.x, major from 1.0 |
+| `refactor:`, `docs:`, `chore:`, `ci:`, `test:`, `build:` | no release (`feat`, `fix`, `perf`, `refactor` appear in the changelog) |
 
-Dependabot usa già `chore(deps)`: non genera release.
+Dependabot already uses `chore(deps)`: it does not trigger a release.
 
-## Come avviene il cambio versione
+## How the version changes
 
-1. A ogni merge su `main`, il job `release` di `.github/workflows/ci.yml` esegue release-please, che legge i commit dall'ultimo tag e tiene aperta una PR `chore(main): release X.Y.Z` con la versione in `package.json` e `landing/package.json`, `.release-please-manifest.json` e il `CHANGELOG.md`. Se non ci sono `feat`/`fix` dall'ultimo tag, la PR non c'è.
-2. Quando vuoi mettere in produzione, rivedi e **mergia la PR di release**. È l'unico gesto manuale.
-3. Al merge release-please crea il tag `vX.Y.Z` e la GitHub Release con le note; nello stesso run la CI costruisce le immagini con i tag `X.Y.Z`, `sha-xxxxxxx` e `main` e aggiorna il tag nel repo infra (app, migrate, landing), da cui ArgoCD fa il rollout. I deploy compaiono nella scheda *Deployments* (environment `production` e `landing`).
+1. On every merge to `main`, the `release` job of `.github/workflows/ci.yml` runs release-please, which reads the commits since the last tag and keeps open a `chore(main): release X.Y.Z` PR with the version in `package.json` and `landing/package.json`, `.release-please-manifest.json` and the `CHANGELOG.md`. If there are no `feat`/`fix` since the last tag, there is no PR.
+2. When you want to ship to production, review and **merge the release PR**. It is the only manual step.
+3. On merge, release-please creates the `vX.Y.Z` tag and the GitHub Release with the notes; in the same run the CI builds the images with the tags `X.Y.Z`, `sha-xxxxxxx` and `main` and updates the tag in the infra repo (app, migrate, landing), from which ArgoCD does the rollout. Deploys appear in the *Deployments* tab (environments `production` and `landing`).
 
-I merge normali costruiscono le immagini (`sha-…`, `main`) ma **non** le distribuiscono: il deploy avviene solo alle release.
+Normal merges build the images (`sha-…`, `main`) but do **not** deploy them: deployment happens only on releases.
 
-## Configurazione una tantum
+## One-time configuration
 
-- Repo → Settings → Actions → General → *Allow GitHub Actions to create and approve pull requests* (serve a release-please per aprire la PR).
-- `main` richiede la check "Lint, tipi e test" e le PR create col `GITHUB_TOKEN` non fanno partire i workflow: per far girare i check sulla PR di release crea un token (PAT fine-grained con `contents` e `pull requests` in scrittura su questo repo) e salvalo come secret `RELEASE_PLEASE_TOKEN`. Senza, la PR di release si mergia con il bypass da admin. Lo stesso secret serve al workflow degli screenshot della landing (`bot/landing-screens`): con il solo `GITHUB_TOKEN` la sua PR non avvia CI e "Titolo PR" e va rilanciata a mano.
+- Repo → Settings → Actions → General → *Allow GitHub Actions to create and approve pull requests* (needed by release-please to open the PR).
+- `main` requires the "Lint, tipi e test" check, and PRs created with `GITHUB_TOKEN` do not trigger workflows: to run the checks on the release PR, create a token (fine-grained PAT with write access to `contents` and `pull requests` on this repo) and save it as the `RELEASE_PLEASE_TOKEN` secret. Without it, the release PR is merged with the admin bypass. The same secret is used by the landing screenshot workflow (`bot/landing-screens`): with only `GITHUB_TOKEN` its PR does not trigger CI and "Titolo PR", which must be rerun manually.
 
-## Dove si vede la versione
+## Where the version is shown
 
-- App: etichetta in fondo alla sidebar (`v0.2.0 · abc1234`, tooltip con data di build) e `GET /api/health`.
-- Log: ogni riga JSON ha `version` e `commit`; a ogni avvio del pod c'è `app.process.started` (Loki: `{app="buddy-budget"} | json | event="app.process.started"`).
-- Metriche: `buddybudget_build_info{version,commit}` (pannello "Versioni in esecuzione" della dashboard app).
-- Immagini: `ghcr.io/yonderurik/buddy-budget:X.Y.Z` (e `-migrate`, `-landing`); nel repo infra il `newTag` di `kustomization.yaml` è la versione in produzione.
+- App: label at the bottom of the sidebar (`v0.2.0 · abc1234`, tooltip with the build date) and `GET /api/health`.
+- Logs: every JSON line has `version` and `commit`; on each pod start there is `app.process.started` (Loki: `{app="buddy-budget"} | json | event="app.process.started"`).
+- Metrics: `buddybudget_build_info{version,commit}` ("Versioni in esecuzione" ("Running versions") panel of the app dashboard).
+- Images: `ghcr.io/yonderurik/buddy-budget:X.Y.Z` (and `-migrate`, `-landing`); in the infra repo the `newTag` of `kustomization.yaml` is the version in production.
 
-## Note
+## Notes
 
-- Versione iniziale `0.2.0` (2026-10-03), senza storia retroattiva: `bootstrap-sha` in `release-please-config.json` fa partire il conteggio dei commit dal merge che l'ha introdotta.
-- Se il run del merge di release fallisce a metà (immagini o infra), la Release esiste già e un rilancio non rifà il deploy: si rilancia a mano il job di deploy o si aggiorna il `newTag` in infra.
-- Per forzare una versione: commit con `Release-As: X.Y.Z` nel corpo.
+- Initial version `0.2.0` (2026-10-03), without retroactive history: `bootstrap-sha` in `release-please-config.json` starts counting commits from the merge that introduced it.
+- If the release merge run fails halfway (images or infra), the Release already exists and a rerun does not redo the deploy: rerun the deploy job manually or update the `newTag` in infra.
+- To force a version: a commit with `Release-As: X.Y.Z` in the body.
 
-## Immagini e auto-merge
+## Images and auto-merge
 
-- Le immagini (app, migrator, landing) si costruiscono e pubblicano solo nel run del merge della PR di release, con tag `sha-…`, `main` e `X.Y.Z`. Un push normale su `main` esegue solo i test e tiene aggiornata la PR di release.
-- `automerge.yml` abilita l auto-merge (squash) sulle PR di Dependabot patch e su `bot/landing-screens`. Serve "Allow auto-merge" nelle impostazioni del repo e le check obbligatorie sulla branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): è la protezione a decidere quando unire. La PR di release e ogni minor/major restano a mano.
+- The images (app, migrator, landing) are built and published only in the run of the release PR merge, with tags `sha-…`, `main` and `X.Y.Z`. A normal push to `main` only runs the tests and keeps the release PR up to date.
+- `automerge.yml` enables auto-merge (squash) on Dependabot patch PRs and on `bot/landing-screens`. It requires "Allow auto-merge" in the repo settings and the required checks in branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): the protection decides when to merge. The release PR and every minor/major remain manual.
 
-## Dipendenze: solo patch
+## Dependencies: patch only
 
-`dependabot.yml` ignora gli aggiornamenti minor e major (restano quelli di sicurezza) e raggruppa le patch in una PR a settimana per cartella. Le PR hanno il prefisso `fix(deps)` (runtime) o `chore(deps-dev)` (sviluppo): le prime fanno partire una release con release-please, le seconde no. Le GitHub Actions si aggiornano a mano. Per fare di proposito un salto di minor o major si apre una PR normale, o si rimuove temporaneamente la regola `ignore`.
+`dependabot.yml` ignores minor and major updates (security ones remain) and groups patches into one PR per week per folder. PRs have the prefix `fix(deps)` (runtime) or `chore(deps-dev)` (development): the former trigger a release with release-please, the latter do not. GitHub Actions are updated manually. To deliberately jump a minor or major, open a normal PR, or temporarily remove the `ignore` rule.
 
-## Ordine dei job su `main` (dal 2026-10-04)
+## Job order on `main` (since 2026-10-04)
 
-- Un run per commit su `main` (`concurrency` con lo SHA): i merge ravvicinati non si scartano più a vicenda, quindi il run di una release non può saltare.
-- `release` (release-please) non aspetta i test. Le immagini partono subito dopo, in parallelo ai test; il **deploy** (tag nel repo infra) parte solo se le check sono passate (o saltate perché i file dell'app/landing non sono cambiati) e non è mai fallita né annullata una dipendenza.
-- Su `main` il job "Cosa è cambiato" confronta con il commit precedente, come sulle PR: un merge di sola landing o documenti non rifà lint e test dell'app.
-- I job di deploy hanno un gruppo `deploy-infra-*`: se due release arrivano ravvicinate, la più vecchia in attesa si scarta. Inoltre il tag in infra non torna mai a una versione più vecchia di quella già presente.
+- One run per commit on `main` (`concurrency` keyed on the SHA): merges close together no longer cancel each other, so a release run cannot be skipped.
+- `release` (release-please) does not wait for the tests. The images start right after, in parallel with the tests; the **deploy** (tag in the infra repo) starts only if the checks passed (or were skipped because the app/landing files did not change) and no dependency failed or was cancelled.
+- On `main` the "Cosa è cambiato" ("What changed") job compares with the previous commit, as on PRs: a merge touching only the landing or docs does not rerun the app's lint and tests.
+- The deploy jobs have a `deploy-infra-*` group: if two releases arrive close together, the older pending one is discarded. Moreover, the tag in infra never goes back to a version older than the one already present.

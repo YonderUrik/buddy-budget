@@ -1,9 +1,9 @@
-# Pensione nello stile della Panoramica
+# Pensione (Pension) in the Panoramica style
 
-Data: 2026-10-08
+Date: 2026-10-08
 
-- Tutta la sezione Pensione (pagina, cinque schede, form, dialog di import CSV/Excel, stato vuoto) adotta lo stile standard di Panoramica e Liquidità: importo grande con decimali attenuati, grafici a tutta larghezza, sezioni aperte con icona tinta, niente riquadri grigi.
-- Riusati `SectionTitle`, `MoneyHero` e `InfoHint`; l'unico componente nuovo è `PensionSection` (titolo + descrizione + suggerimento), per non ripetere la stessa intestazione in otto schede. L'anello e le card di riepilogo sono sostituiti da `PensionHero` e `PensionInsights`.
-- Nel dialog di import ogni passo è diviso in sotto-sezioni con lo stesso titolo (Scegli il file, Colonne, Anteprima, Cosa cambia).
-- Solo presentazione: nessun cambio a calcoli, dati, eventi Umami, log o migration.
-- Screenshot prima/dopo nella cartella `pensione-stile/` del progetto. Rimandato: il form «Aggiorna i valori» resta in pagina (non diventa un dialog).
+- The whole Pensione section (page, five tabs, form, CSV/Excel import dialog, empty state) adopts the standard style of Panoramica and Liquidità: large amount with dimmed decimals, full-width charts, open sections with tinted icon, no grey boxes.
+- Reused `SectionTitle`, `MoneyHero` and `InfoHint`; the only new component is `PensionSection` (title + description + hint), so as not to repeat the same header in eight tabs. The ring and the summary cards are replaced by `PensionHero` and `PensionInsights`.
+- In the import dialog each step is divided into sub-sections with the same title (Scegli il file, Colonne, Anteprima, Cosa cambia — "Choose the file, Columns, Preview, What changes").
+- Presentation only: no change to calculations, data, Umami events, logs or migrations.
+- Before/after screenshots in the project's `pensione-stile/` folder. Postponed: the «Aggiorna i valori» ("Update the values") form stays in the page (it does not become a dialog).

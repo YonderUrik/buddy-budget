@@ -1,38 +1,38 @@
-# Andamento ultimi 6 mesi: stacked bar per categoria
+# Last 6 months trend: stacked bar by category
 
-Data: 2026-07-23
+Date: 2026-07-23
 
-## Contesto
+## Context
 
-Il grafico "Andamento ultimi 6 mesi" in Spese (`components/domain/expenses/expense-trend-chart.tsx`) mostra oggi una barra singola per mese con il totale speso (`compute6MonthTrend` in `lib/calc/expenses.ts`). Richiesta utente: aggiungere il breakdown per categoria, come uno stacked bar (barre impilate per categoria invece di un unico colore).
+The "Andamento ultimi 6 mesi" (last 6 months trend) chart in Spese (`components/domain/expenses/expense-trend-chart.tsx`) today shows a single bar per month with the total spent (`compute6MonthTrend` in `lib/calc/expenses.ts`). User request: add the per-category breakdown, as a stacked bar (bars stacked by category instead of a single colour).
 
-## Decisioni
+## Decisions
 
-- Lo stacked bar **sostituisce** il bar chart a barra singola attuale (non convive con esso).
-- Con utenti che possono avere 15-20+ categorie, mostrare tutte le categorie come segmenti separati renderebbe grafico e legenda illeggibili. Si mostrano le **top 6** categorie (per spesa totale nel semestre) come segmenti propri, il resto aggregato in un segmento **"Altro"**.
-- Il ranking top 6 è calcolato una volta sull'intero semestre (non per singolo mese), cosà che ogni categoria occupi sempre la stessa "fetta" visiva mese per mese — evita che le categorie cambino posizione/colore da una barra all'altra.
+- The stacked bar **replaces** the current single-bar chart (it does not live alongside it).
+- With users who may have 15-20+ categories, showing every category as a separate segment would make chart and legend unreadable. The **top 6** categories (by total spending over the six months) are shown as their own segments, the rest aggregated into an **"Altro"** ("Other") segment.
+- The top-6 ranking is computed once over the whole six-month period (not per single month), so that each category always occupies the same visual "slice" month after month — this avoids categories changing position/colour from one bar to the next.
 
-## Livello dati (`lib/calc/expenses.ts`)
+## Data layer (`lib/calc/expenses.ts`)
 
-Nuova funzione pura, accanto a `compute6MonthTrend` (che resta invariata, usata altrove/in futuro se serve il solo totale):
+New pure function, next to `compute6MonthTrend` (which stays unchanged, used elsewhere/in the future if only the total is needed):
 
 ```ts
 export interface MonthlyCategoryTotal {
   year: number;
   month: number;
   label: string;
-  amounts: Record<string, number>; // chiave = CategoryTrendSeries.key, valore = spesa effettiva positiva
+  amounts: Record<string, number>; // key = CategoryTrendSeries.key, value = positive actual spending
 }
 
 export interface CategoryTrendSeries {
-  key: string;       // categoryId, o "altro"
-  name: string;      // nome categoria, o "Altro"
-  color: string;      // CategoryColor (token palette condivisa), o "altro" gestito a parte nel componente
+  key: string;       // categoryId, or "altro"
+  name: string;      // category name, or "Altro"
+  color: string;      // CategoryColor (shared palette token), or "altro" handled separately in the component
 }
 
 export interface CategoryMonthlyTrend {
   months: MonthlyCategoryTotal[];
-  series: CategoryTrendSeries[]; // ordine di stacking: rank discendente per spesa totale semestre, "altro" sempre ultimo
+  series: CategoryTrendSeries[]; // stacking order: descending rank by total six-month spending, "altro" always last
 }
 
 export function computeCategoryMonthlyTrend(
@@ -43,42 +43,42 @@ export function computeCategoryMonthlyTrend(
 ): CategoryMonthlyTrend
 ```
 
-Logica:
-1. Per ciascuno dei 6 mesi calendariali (stesso schema di `compute6MonthTrend`: `i` da 5 a 0, `addMonths(referenceDate, -i)`, range pieno `startOfMonth`..`endOfMonth`, **nessun clamp su `today`** — coerente con `compute6MonthTrend`, dato che transazioni future non esistono nella pratica), calcola la spesa effettiva per ciascuna categoria dell'utente con `computeSummary` filtrando le transazioni per `categoryId`.
-2. Somma il totale per categoria sull'intero semestre (across dei 6 mesi).
-3. Ordina le categorie per totale semestrale discendente, prende le prime `topCount` come serie proprie.
-4. Se esistono categorie oltre le prime `topCount` con totale semestrale > 0, aggrega la loro spesa mensile in una serie aggiuntiva `{ key: "altro", name: "Altro", color: "altro" }`, aggiunta in coda a `series`. Se non ce ne sono, `altro` non compare affatto (né in `series` né nelle chiavi di `amounts`).
-5. `amounts` di ogni mese ha una chiave per ogni `series.key` risultante (comprese quelle a 0, per rendering uniforme).
+Logic:
+1. For each of the 6 calendar months (same scheme as `compute6MonthTrend`: `i` from 5 to 0, `addMonths(referenceDate, -i)`, full range `startOfMonth`..`endOfMonth`, **no clamp on `today`** — consistent with `compute6MonthTrend`, since future transactions do not exist in practice), compute the actual spending for each of the user's categories with `computeSummary`, filtering transactions by `categoryId`.
+2. Sum the total per category over the whole six-month period (across the 6 months).
+3. Sort the categories by six-month total descending, take the first `topCount` as their own series.
+4. If there are categories beyond the first `topCount` with a six-month total > 0, aggregate their monthly spending into an extra series `{ key: "altro", name: "Altro", color: "altro" }`, appended at the end of `series`. If there are none, `altro` does not appear at all (neither in `series` nor in the keys of `amounts`).
+5. Each month's `amounts` has a key for every resulting `series.key` (including those at 0, for uniform rendering).
 
-Nessuna modifica a `compute6MonthTrend` esistente: resta disponibile se in futuro serve solo il totale.
+No change to the existing `compute6MonthTrend`: it stays available if only the total is needed in the future.
 
-## Componente UI (`components/domain/expenses/expense-trend-chart.tsx`)
+## UI component (`components/domain/expenses/expense-trend-chart.tsx`)
 
-- Props: `monthlyCategoryTrend: CategoryMonthlyTrend` (sostituisce `monthlyTrend: MonthlyTotal[]`), `currency: string` (invariato).
-- Dati chart: un oggetto per mese con `label` + le chiavi di `amounts` spread (`{ label, ...month.amounts }`).
-- Un `<Bar>` recharts per ogni `series`, tutti con `stackId="trend"`, nell'ordine di `series` (quindi "Altro", se presente, è il segmento più in alto).
-  - Colore: `SWATCH_CHART_COLOR[entry.color as CategoryColor]` per le categorie reali (stesso helper già usato da `CategoryBreakdownDonut`).
-  - Colore fisso `var(--muted-foreground)` per la serie `altro` (non uno swatch, per non essere confuso con una categoria reale che abbia quel colore).
-- Tooltip: riusa il pattern esistente `tooltipValueFormatter` (nome + importo in valuta); `ChartTooltipContent` di shadcn mostra già una riga per ogni serie attiva nel punto hover, nessuna modifica necessaria a quel meccanismo.
-- Legenda propria sotto al grafico: una riga per serie con pallino colorato (stesso colore della serie) + nome. Nessuna interattività (click-to-filter, toggle visibilità) — fuori scope, non richiesto.
-- `ChartConfig` costruito dinamicamente da `series` (necessario perché le chiavi sono dinamiche, a differenza di `TREND_CONFIG` statico attuale).
+- Props: `monthlyCategoryTrend: CategoryMonthlyTrend` (replaces `monthlyTrend: MonthlyTotal[]`), `currency: string` (unchanged).
+- Chart data: one object per month with `label` + the keys of `amounts` spread (`{ label, ...month.amounts }`).
+- One recharts `<Bar>` for each `series`, all with `stackId="trend"`, in the order of `series` (so "Altro", if present, is the topmost segment).
+  - Colour: `SWATCH_CHART_COLOR[entry.color as CategoryColor]` for real categories (the same helper already used by `CategoryBreakdownDonut`).
+  - Fixed colour `var(--muted-foreground)` for the `altro` series (not a swatch, so it is not confused with a real category that has that colour).
+- Tooltip: reuses the existing `tooltipValueFormatter` pattern (name + amount in currency); shadcn's `ChartTooltipContent` already shows one row for each active series at the hover point, no change needed to that mechanism.
+- Own legend below the chart: one row per series with a coloured dot (same colour as the series) + name. No interactivity (click-to-filter, visibility toggle) — out of scope, not requested.
+- `ChartConfig` built dynamically from `series` (needed because the keys are dynamic, unlike the current static `TREND_CONFIG`).
 
-## Integrazione (`app/(app)/spese/page.tsx`)
+## Integration (`app/(app)/spese/page.tsx`)
 
-Sostituire la chiamata a `compute6MonthTrend(filteredTransactions, referenceDate)` (riga 200) con `computeCategoryMonthlyTrend(filteredTransactions, categories, referenceDate)`, passando il risultato come `monthlyCategoryTrend` a `ExpenseTrendChart`.
+Replace the call to `compute6MonthTrend(filteredTransactions, referenceDate)` (line 200) with `computeCategoryMonthlyTrend(filteredTransactions, categories, referenceDate)`, passing the result as `monthlyCategoryTrend` to `ExpenseTrendChart`.
 
-## Edge case
+## Edge cases
 
-- Nessuna spesa nel semestre (per l'utente o dopo un filtro categoria): `series` vuoto, chart vuoto, nessuna legenda — stesso comportamento attuale con dati vuoti.
-- Filtro categoria attivo in pagina (`filterTransactions`, già applicato a monte): le transazioni arrivano già ristrette a quella categoria, quindi lo stacked bar mostra naturalmente solo quella singola serie (mai un segmento "Altro" in quel caso, dato che non esistono altre categorie nelle transazioni filtrate).
-- Categorie con nome/colore duplicato tra loro: non è un caso nuovo introdotto da questa feature (già possibile oggi in Categorie), nessuna gestione speciale necessaria.
+- No spending in the six months (for the user or after a category filter): empty `series`, empty chart, no legend — the same current behaviour with empty data.
+- Category filter active on the page (`filterTransactions`, already applied upstream): the transactions arrive already restricted to that category, so the stacked bar naturally shows only that single series (never an "Altro" segment in that case, since no other categories exist in the filtered transactions).
+- Categories with duplicate names/colours among themselves: not a new case introduced by this feature (already possible today in Categorie), no special handling needed.
 
-## Test
+## Tests
 
-Nuovo test in `lib/calc/expenses.test.ts` per `computeCategoryMonthlyTrend`: ranking top N corretto, aggregazione "Altro" corretta (presente/assente), coerenza chiavi tra mesi, nessuna regressione su `compute6MonthTrend` esistente (invariata).
+New test in `lib/calc/expenses.test.ts` for `computeCategoryMonthlyTrend`: correct top-N ranking, correct "Altro" aggregation (present/absent), key consistency across months, no regression on the existing `compute6MonthTrend` (unchanged).
 
-## Fuori scope (esplicitamente escluso)
+## Out of scope (explicitly excluded)
 
-- Click sulla legenda per filtrare/evidenziare una serie.
-- Rimozione di `compute6MonthTrend` (resta per eventuali usi futuri del solo totale).
-- Modifica del meccanismo di filtro categoria/testo esistente.
+- Clicking the legend to filter/highlight a series.
+- Removal of `compute6MonthTrend` (it stays for possible future uses of the total alone).
+- Changes to the existing category/text filter mechanism.

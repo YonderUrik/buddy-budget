@@ -1,20 +1,20 @@
 import "./phone-frame.css";
 import type { CSSProperties, ReactNode } from "react";
 
-/** Ora nella barra di stato (quella delle immagini dei telefoni, non un dato). */
+/** Time shown in the status bar (the one of phone marketing images, not real data). */
 const STATUS_TIME = "9:41";
 
 export interface PhoneFrameProps {
-  /** Altezza dello schermo (es. `46vh`, `520px`); la larghezza segue le proporzioni 390×844 di un iPhone; all'app restano 390×751. Senza, vale il default del CSS. */
+  /** Screen height (e.g. `46vh`, `520px`); the width follows the 390×844 proportions of an iPhone; the app keeps 390×751. Without it, the CSS default applies. */
   height?: string;
   className?: string;
-  /** Cosa sta sullo schermo sotto la barra di stato: immagini o pannelli posizionati in assoluto (`inset: 0`). */
+  /** What sits on the screen below the status bar: images or panels, absolutely positioned (`inset: 0`). */
   children: ReactNode;
 }
 
 /**
- * Cornice da telefono attorno a una schermata a misura di telefono: scocca con i tasti, isola e barra di stato in alto,
- * indicatore in basso. È decorativa: il testo alternativo lo porta il contenuto.
+ * Phone frame around a phone-size screen: body with keys, island and status bar at the top, home indicator at the
+ * bottom. It is decorative: the alternative text belongs to the content.
  */
 export function PhoneFrame({ height, className, children }: PhoneFrameProps) {
   return (

@@ -1,116 +1,116 @@
-# Categorizzazione automatica basata su regole — design
+# Rule-based automatic categorization — design
 
-Data: 2026-09-10
-Stato: approvato in brainstorming, da tradurre in piano di implementazione
+Date: 2026-09-10
+Status: approved in brainstorming, to be turned into an implementation plan
 
-## Problema
+## Problem
 
-Il sistema attuale di categorizzazione automatica è composto da due meccanismi scollegati, nessuno dei quali conserva memoria delle decisioni dell'utente:
+The current automatic categorization system is made of two disconnected mechanisms, neither of which keeps any memory of the user's decisions:
 
-1. **All'import GoCardless** (`lib/gocardless/categorize.ts`): `resolveCategoryId` cerca l'ultima transazione con descrizione **identica** (`ilike`) già categorizzata. Qualunque variazione — un codice di transazione in coda, una filiale diversa, `SPA` invece di `S.p.A.` — manda la transazione in "Da categorizzare".
-2. **Bottone "Categorizza automaticamente"** (`lib/calc/categorize-suggestions.ts` + `AutoCategorizeWizard`): similarità di Jaccard sui token della descrizione grezza, soglia 0.5, presentata in un wizard modale che chiede conferma **una transazione alla volta**.
+1. **On GoCardless import** (`lib/gocardless/categorize.ts`): `resolveCategoryId` looks for the latest already-categorized transaction with an **identical** description (`ilike`). Any variation — a trailing transaction code, a different branch, `SPA` instead of `S.p.A.` — sends the transaction to "Da categorizzare" ("To categorize").
+2. **"Categorizza automaticamente" ("Categorize automatically") button** (`lib/calc/categorize-suggestions.ts` + `AutoCategorizeWizard`): Jaccard similarity on the tokens of the raw description, threshold 0.5, presented in a modal wizard that asks for confirmation **one transaction at a time**.
 
-Difetti riscontrati nell'uso reale, confermati dall'utente in brainstorming:
+Flaws found in real use, confirmed by the user during brainstorming:
 
-- **Non impara**: una conferma nel wizard vale solo per quella transazione. Lo stesso merchant torna "Da categorizzare" al sync successivo.
-- **Proposte sbagliate o assenti**: il Jaccard lavora sul testo grezzo, quindi il rumore bancario condiviso (`pagamento`, `pos`, `carta`) conta come somiglianza reale fra merchant diversi — limite già annotato nel log del 2026-07-24 e mai risolto. Viceversa, un merchant noto con un suffisso variabile può non raggiungere la soglia.
-- Il motore dei suggerimenti **ignora la direzione** della transazione (entrata/uscita): è la causa a monte del bug trovato dalla review whole-branch del 2026-07-28, in cui il wizard proponeva una categoria di spesa per un'entrata e il PATCH rispondeva 400 senza via d'uscita se non "Salta".
+- **It doesn't learn**: a confirmation in the wizard only applies to that transaction. The same merchant comes back as "Da categorizzare" at the next sync.
+- **Wrong or missing suggestions**: Jaccard works on the raw text, so shared banking noise (`pagamento`, `pos`, `carta`) counts as real similarity between different merchants — a limitation already noted in the 2026-07-24 log and never fixed. Conversely, a known merchant with a variable suffix may not reach the threshold.
+- The suggestion engine **ignores the direction** of the transaction (income/expense): this is the root cause of the bug found by the whole-branch review of 2026-07-28, in which the wizard proposed an expense category for an income and the PATCH answered 400 with no way out other than "Salta" ("Skip").
 
-## Decisioni di prodotto (dal brainstorming)
+## Product decisions (from brainstorming)
 
-| Domanda | Decisione |
+| Question | Decision |
 |---|---|
-| LLM o logica deterministica? | **Ibrido**: regole prima, LLM solo come rete di sicurezza sui casi mai visti. |
-| Autonomia | **Il sistema non applica mai ciò che deduce.** Le deduzioni (similarità, LLM) sono solo proposte. |
-| Eccezione all'autonomia | **Una regola già approvata dall'utente si applica da sola** al sync successivo: non si riconferma ESSELUNGA ogni mese. |
-| Come nasce la memoria | **Appresa dalle conferme, ma materializzata in regole visibili e modificabili** dall'utente. |
-| Dove gira il modello | **Ollama locale nel cluster.** Se nessun modello è collegato, il livello si spegne e il resto funziona identico. |
+| LLM or deterministic logic? | **Hybrid**: rules first, LLM only as a safety net for never-seen cases. |
+| Autonomy | **The system never applies what it infers.** Inferences (similarity, LLM) are only suggestions. |
+| Exception to autonomy | **A rule already approved by the user applies by itself** at the next sync: you don't reconfirm ESSELUNGA every month. |
+| How memory is created | **Learned from confirmations, but materialized as visible rules the user can edit.** |
+| Where the model runs | **Local Ollama in the cluster.** If no model is connected, the layer switches off and everything else works the same. |
 
-Approccio scelto fra tre alternative discusse:
+Approach chosen among three alternatives discussed:
 
-- **A (scelto)** — regole su chiave merchant normalizzata, apprese dalle conferme, ispezionabili.
-- **B (scartato)** — memoria implicita ricalcolata dalle transazioni, senza entità regola: non ispezionabile né correggibile, una deduzione sbagliata si autoalimenta.
-- **C (scartato)** — regole con regex libera e priorità manuale: strumento da sviluppatore; regex generate automaticamente sarebbero imprevedibili e difficili da spiegare. Il tipo di match `contains` copre il bisogno reale (generalizzare su una catena) senza il costo.
+- **A (chosen)** — rules on a normalized merchant key, learned from confirmations, inspectable.
+- **B (discarded)** — implicit memory recomputed from transactions, with no rule entity: neither inspectable nor correctable, a wrong inference feeds itself.
+- **C (discarded)** — rules with free-form regex and manual priority: a developer tool; automatically generated regexes would be unpredictable and hard to explain. The `contains` match type covers the real need (generalizing over a chain) without the cost.
 
-## Modello dati
+## Data model
 
-Nuova tabella `categorization_rules` (`lib/db/schema/categorization-rules.ts`):
+New table `categorization_rules` (`lib/db/schema/categorization-rules.ts`):
 
-| campo | tipo | note |
+| field | type | notes |
 |---|---|---|
 | `id` | uuid pk | |
 | `userId` | text → `auth_user.id` on delete cascade | |
-| `matchType` | enum `merchant` \| `contains` | nuovo `rule_match_type` enum |
-| `pattern` | text | già normalizzato con la stessa funzione della chiave merchant |
+| `matchType` | enum `merchant` \| `contains` | new `rule_match_type` enum |
+| `pattern` | text | already normalized with the same function as the merchant key |
 | `categoryId` | uuid → `categories.id` | |
-| `splitPercentage` | numeric(5,4) nullable | quota "Dividi" da riproporre; `null` = nessuna |
-| `source` | enum `appresa` \| `manuale` | nuovo `rule_source` enum |
-| `hitCount` | integer default 0 | quante volte la regola ha agito |
+| `splitPercentage` | numeric(5,4) nullable | "Dividi" ("Split") share to propose again; `null` = none |
+| `source` | enum `appresa` \| `manuale` | new `rule_source` enum |
+| `hitCount` | integer default 0 | how many times the rule has acted |
 | `lastAppliedAt` | timestamptz nullable | |
 | `createdAt` / `updatedAt` | timestamptz | |
 
-Vincoli: `unique(userId, matchType, pattern)` — riconfermare lo stesso merchant aggiorna la regola invece di duplicarla; indice su `userId`.
+Constraints: `unique(userId, matchType, pattern)` — reconfirming the same merchant updates the rule instead of duplicating it; index on `userId`.
 
-Nessuna modifica alla tabella `transactions`.
+No change to the `transactions` table.
 
-### Chiave merchant
+### Merchant key
 
-Nuovo modulo puro `lib/categorization/merchant-key.ts`, funzione `merchantKey(description: string): string`:
+New pure module `lib/categorization/merchant-key.ts`, function `merchantKey(description: string): string`:
 
-1. lowercase e rimozione diacritici (normalizzazione NFD)
-2. split su non-alfanumerici, scarto dei token puramente numerici
-3. rimozione dei token di rumore bancario (`MERCHANT_NOISE_TOKENS`: `pos`, `pagamento`, `pagam`, `carta`, `acquisto`, `addebito`, `bonifico`, `sepa`, `sdd`, `rif`, `cod`, `operazione`, `ricarica`, …)
-4. rimozione dei suffissi societari (`spa`, `srl`, `snc`, `sas`, `ltd`, `inc`, `bv`, `gmbh`)
-5. join dei token superstiti con spazio singolo
+1. lowercase and diacritics removal (NFD normalization)
+2. split on non-alphanumerics, discarding purely numeric tokens
+3. removal of banking-noise tokens (`MERCHANT_NOISE_TOKENS`: `pos`, `pagamento`, `pagam`, `carta`, `acquisto`, `addebito`, `bonifico`, `sepa`, `sdd`, `rif`, `cod`, `operazione`, `ricarica`, …)
+4. removal of company suffixes (`spa`, `srl`, `snc`, `sas`, `ltd`, `inc`, `bv`, `gmbh`)
+5. join of the surviving tokens with a single space
 
-Esempio: `"PAGAMENTO POS ESSELUNGA SPA VIA ROMA COD.4471"` → `esselunga via roma`.
+Example: `"PAGAMENTO POS ESSELUNGA SPA VIA ROMA COD.4471"` → `esselunga via roma`.
 
-Se dopo la normalizzazione non resta nessun token (descrizione interamente numerica o di solo rumore), la chiave è la descrizione normalizzata a lowercase/trim — stesso fallback già adottato oggi da `descriptionSimilarity`, per non collassare descrizioni diverse su una chiave vuota condivisa.
+If no token remains after normalization (description entirely numeric or made only of noise), the key is the description normalized to lowercase/trim — the same fallback already used today by `descriptionSimilarity`, so as not to collapse different descriptions onto a shared empty key.
 
-## Pipeline di risoluzione
+## Resolution pipeline
 
-Nuovo modulo `lib/categorization/resolve.ts`. Sostituisce `resolveCategoryId` come chiamato da `lib/gocardless/sync.ts`.
+New module `lib/categorization/resolve.ts`. It replaces `resolveCategoryId` as called by `lib/gocardless/sync.ts`.
 
 ```
 resolveCategorization(userId, { description, amount }) 
   → { categoryId, excludedAmount, ruleId } | null
 ```
 
-Ordine stretto, il primo che vince chiude:
+Strict order, the first that wins closes:
 
-1. regola `merchant` con `pattern === merchantKey(description)` → applica
-2. regola `contains` con `merchantKey(description).includes(pattern)` → applica; a più match vince il `pattern` più lungo (più specifico), a pari lunghezza il più recente
-3. nessun match → ritorna `null`, il chiamante assegna la categoria fallback
+1. `merchant` rule with `pattern === merchantKey(description)` → apply
+2. `contains` rule with `merchantKey(description).includes(pattern)` → apply; with multiple matches the longest (most specific) `pattern` wins, at equal length the most recent
+3. no match → returns `null`, the caller assigns the fallback category
 
-**Guard di direzione, obbligatorio in entrambi i rami**: una regola la cui categoria è incompatibile con la direzione della transazione (categoria `entrata` su un importo negativo, o categoria non-`entrata` su un importo positivo) viene ignorata e la valutazione prosegue. È lo stesso invariante che il server già impone su `PATCH /api/transactions/[id]`; la sua assenza nel motore attuale è la causa del bug del 2026-07-28.
+**Direction guard, mandatory in both branches**: a rule whose category is incompatible with the transaction's direction (an `entrata` (income) category on a negative amount, or a non-`entrata` category on a positive amount) is ignored and evaluation continues. It is the same invariant the server already enforces on `PATCH /api/transactions/[id]`; its absence in the current engine is the cause of the 2026-07-28 bug.
 
-Quando una regola vince: `hitCount` incrementato e `lastAppliedAt` aggiornato, nella stessa transazione DB dell'inserimento della transazione.
+When a rule wins: `hitCount` is incremented and `lastAppliedAt` updated, in the same DB transaction as the transaction insert.
 
-`splitPercentage` della regola, se presente, produce `excludedAmount = round(splitPercentage * |amount|)` con il segno di `amount`, coerente con `isValidExcludedAmount`.
+The rule's `splitPercentage`, if present, produces `excludedAmount = round(splitPercentage * |amount|)` with the sign of `amount`, consistent with `isValidExcludedAmount`.
 
-### Debito tecnico chiuso contestualmente
+### Technical debt closed along the way
 
-`getFallbackCategoryId` risolve oggi la categoria fallback **per nome letterale** (`"Da categorizzare"`) invece che per il flag `isFallback` — debito aperto nel log dal 2026-07-21. Dato che questo lavoro riscrive il chiamante, la risoluzione passa al flag `isFallback` (con creazione al volo invariata nel comportamento). Il guard 409 sul rename della fallback resta dov'è.
+`getFallbackCategoryId` currently resolves the fallback category **by literal name** (`"Da categorizzare"`) instead of by the `isFallback` flag — debt open in the log since 2026-07-21. Since this work rewrites the caller, resolution moves to the `isFallback` flag (with on-the-fly creation unchanged in behavior). The 409 guard on renaming the fallback stays where it is.
 
-## Proposte (non applicano mai)
+## Suggestions (never applied)
 
-Nuovo modulo `lib/categorization/suggest.ts`. Opera solo sulle transazioni rimaste sulla categoria fallback, in cascata; ogni transazione riceve al massimo una proposta, dalla prima sorgente che la produce:
+New module `lib/categorization/suggest.ts`. It works only on transactions still in the fallback category, in cascade; each transaction gets at most one suggestion, from the first source that produces one:
 
-1. **Regola simile** — Jaccard fra i token di `merchantKey(description)` e quelli dei `pattern` esistenti, soglia 0.5. Motivo mostrato: «simile alla regola `<pattern>`».
-2. **Storico** — il motore attuale (`computeCategorizeSuggestions`), riscritto per confrontare **chiavi normalizzate** invece di descrizioni grezze. Motivo: «come N transazioni passate».
-3. **Assistente** — Ollama, solo su ciò che resta dopo 1 e 2.
+1. **Similar rule** — Jaccard between the tokens of `merchantKey(description)` and those of the existing `pattern`s, threshold 0.5. Reason shown: «simile alla regola `<pattern>`» ("similar to rule `<pattern>`").
+2. **History** — the current engine (`computeCategorizeSuggestions`), rewritten to compare **normalized keys** instead of raw descriptions. Reason: «come N transazioni passate» ("like N past transactions").
+3. **Assistant** — Ollama, only on what remains after 1 and 2.
 
-Ogni proposta porta `source` (`regola` | `storico` | `assistente`), `confidence` (0–1) e i dati per mostrare il motivo. Il guard di direzione vale anche qui: una proposta incompatibile con la direzione della transazione non viene emessa.
+Each suggestion carries `source` (`regola` | `storico` | `assistente`), `confidence` (0–1) and the data needed to show the reason. The direction guard applies here too: a suggestion incompatible with the transaction's direction is not emitted.
 
-`confidence` non è una scala inventata, è il valore già disponibile per ciascuna sorgente: la similarità di Jaccard con il pattern per `regola`, la `averageSimilarity` dei match della categoria vincente per `storico` (il campo che il motore attuale già calcola), il valore dichiarato dal modello per `assistente`. Sono grandezze non confrontabili fra loro: la UI le mostra sempre accompagnate dal badge di origine, mai come un ranking unico.
+`confidence` is not an invented scale, it is the value already available for each source: the Jaccard similarity with the pattern for `regola`, the `averageSimilarity` of the winning category's matches for `storico` (the field the current engine already computes), the value declared by the model for `assistente`. These quantities are not comparable with each other: the UI always shows them with the origin badge, never as a single ranking.
 
-Le proposte sono calcolate **per transazione** e raggruppate a valle per chiave merchant. Un gruppo prende la proposta della sorgente più alta in cascata fra quelle delle sue transazioni; se all'interno dello stesso gruppo emergono categorie proposte diverse (possibile solo fra `storico` e `assistente`), il gruppo mostra la più frequente e segnala che le singole transazioni divergono, restando espandibile per deciderle una per una.
+Suggestions are computed **per transaction** and grouped downstream by merchant key. A group takes the suggestion from the highest source in the cascade among those of its transactions; if different proposed categories emerge within the same group (only possible between `storico` and `assistente`), the group shows the most frequent and flags that individual transactions diverge, remaining expandable to decide them one by one.
 
-`splitPercentage` proposto solo quando tutte le transazioni di riferimento della categoria vincente hanno la stessa quota — regola già presente oggi, conservata.
+`splitPercentage` is proposed only when all reference transactions of the winning category have the same share — a rule already present today, kept.
 
-## Livello assistente (Ollama)
+## Assistant layer (Ollama)
 
-`lib/categorization/llm/index.ts` espone un'interfaccia stretta:
+`lib/categorization/llm/index.ts` exposes a narrow interface:
 
 ```ts
 interface CategorySuggester {
@@ -119,77 +119,77 @@ interface CategorySuggester {
 getSuggester(): CategorySuggester | null
 ```
 
-Unica implementazione: `OllamaSuggester`, configurata da `OLLAMA_BASE_URL` e `OLLAMA_MODEL`.
+Single implementation: `OllamaSuggester`, configured by `OLLAMA_BASE_URL` and `OLLAMA_MODEL`.
 
-**Requisito esplicito — nessun modello collegato è uno stato normale, non un guasto.** Se `OLLAMA_BASE_URL` non è impostata, `getSuggester()` ritorna `null` e il livello viene saltato: nessun errore, nessun log di allarme, nessun avviso in UI. Lo stesso vale a runtime per connessione rifiutata, timeout (10s) o risposta che non supera la validazione Zod: zero proposte da questo livello, le proposte da regole e storico restano invariate. **L'app non deve mai degradare sotto il comportamento puramente deterministico.**
+**Explicit requirement — no connected model is a normal state, not a failure.** If `OLLAMA_BASE_URL` is not set, `getSuggester()` returns `null` and the layer is skipped: no error, no alarm log, no warning in the UI. The same applies at runtime for connection refused, timeout (10s) or a response that fails Zod validation: zero suggestions from this layer, suggestions from rules and history remain unchanged. **The app must never degrade below the purely deterministic behavior.**
 
-Chiamata in **un solo batch** per tutte le transazioni non risolte, mai una per transazione. Il prompt contiene: elenco delle categorie dell'utente (nome + tipo) e, per ogni transazione, descrizione normalizzata, importo e direzione. Non contiene IBAN, saldi, identificativi di conto o dati dell'utente.
+Called in **a single batch** for all unresolved transactions, never one per transaction. The prompt contains: the list of the user's categories (name + type) and, for each transaction, normalized description, amount and direction. It contains no IBAN, balances, account identifiers or user data.
 
-L'output è validato con Zod (`[{ index, categoryName, confidence }]`); un nome di categoria che non corrisponde a una categoria esistente dell'utente viene **scartato**, mai creato.
+The output is validated with Zod (`[{ index, categoryName, confidence }]`); a category name that doesn't match an existing category of the user is **discarded**, never created.
 
 ## API
 
-- `GET /api/transactions/categorize-suggestions` — esistente, riscritto: risponde con le proposte da **regole + storico**, raggruppate per chiave merchant. Non chiama mai l'assistente, quindi resta veloce e non dipende da Ollama.
-- `POST /api/transactions/categorize-suggestions/ai` — nuovo: riceve le transazioni rimaste senza proposta, interroga l'assistente se configurato, risponde con le proposte aggiuntive (array vuoto se il livello è spento).
-- `POST /api/transactions/categorize-apply` — nuovo, batch: riceve un array di gruppi `{ transactionIds[], categoryId, excludedAmount, createRule }` e scrive **tutto in un'unica transazione DB** (aggiornamento transazioni + creazione/aggiornamento regole). O passa tutto, o non passa niente. Ownership verificata su ogni `transactionId` e su `categoryId`, guard di direzione applicato per transazione.
-- Regole: `GET`/`POST /api/categorization-rules`, `PATCH`/`DELETE /api/categorization-rules/[id]`, con lo stesso pattern di ownership IDOR-safe già usato da `/api/categories/[id]`.
+- `GET /api/transactions/categorize-suggestions` — existing, rewritten: responds with suggestions from **rules + history**, grouped by merchant key. It never calls the assistant, so it stays fast and doesn't depend on Ollama.
+- `POST /api/transactions/categorize-suggestions/ai` — new: receives the transactions left without a suggestion, queries the assistant if configured, responds with the additional suggestions (empty array if the layer is off).
+- `POST /api/transactions/categorize-apply` — new, batch: receives an array of groups `{ transactionIds[], categoryId, excludedAmount, createRule }` and writes **everything in a single DB transaction** (transaction updates + rule creation/update). Either everything goes through, or nothing does. Ownership verified on every `transactionId` and on `categoryId`, direction guard applied per transaction.
+- Rules: `GET`/`POST /api/categorization-rules`, `PATCH`/`DELETE /api/categorization-rules/[id]`, with the same IDOR-safe ownership pattern already used by `/api/categories/[id]`.
 
-## Interfaccia
+## Interface
 
-### Pagina di revisione `/categorizza`
+### Review page `/categorizza`
 
-Sostituisce `AutoCategorizeWizard`. Raggiunta dal bottone "Categorizza automaticamente" già presente in Transazioni.
+Replaces `AutoCategorizeWizard`. Reached from the "Categorizza automaticamente" button already present in Transazioni (Transactions).
 
-Il cambiamento che pesa: **raggruppamento per chiave merchant**. Le transazioni con la stessa chiave sono una riga sola («ESSELUNGA — 7 transazioni, 243,10 €»), espandibile per vedere le singole. Una scelta categorizza l'intero gruppo.
+The change that matters: **grouping by merchant key**. Transactions with the same key are a single row («ESSELUNGA — 7 transazioni, 243,10 €»), expandable to see the individual ones. One choice categorizes the whole group.
 
-Per gruppo: select categoria precompilato con la proposta, badge dell'origine (`Regola simile` / `Storico` / `Assistente`) con la confidenza, controllo split opzionale collassato, checkbox di selezione. In testa: "Seleziona tutto" e **"Applica selezionate (N)"**.
+Per group: category select prefilled with the suggestion, origin badge (`Regola simile` ("Similar rule") / `Storico` ("History") / `Assistente` ("Assistant")) with the confidence, optional collapsed split control, selection checkbox. At the top: "Seleziona tutto" ("Select all") and **"Applica selezionate (N)"** ("Apply selected (N)").
 
-`createRule` è attivo di default: applicare significa insegnare. La regola creata è sempre `merchant` sulla chiave normalizzata — non generalizza mai oltre ciò che l'utente ha effettivamente visto.
+`createRule` is on by default: applying means teaching. The rule created is always `merchant` on the normalized key — it never generalizes beyond what the user has actually seen.
 
-Le proposte dell'assistente arrivano in un secondo momento (chiamata in background dopo il primo render) e si innestano nei gruppi ancora senza proposta. Se non arrivano, la pagina resta esattamente quella che era: nessuno spinner infinito, nessun messaggio di errore.
+Assistant suggestions arrive later (background call after the first render) and slot into the groups still without a suggestion. If they don't arrive, the page stays exactly as it was: no endless spinner, no error message.
 
-### Gestione regole
+### Rule management
 
-Sezione dentro `/categorie`, non una nuova voce di sidebar. Lista delle regole con pattern, tipo di match, categoria, numero di utilizzi. Azioni: modificare pattern e categoria, passare una regola da `merchant` a `contains` (è così che `esselunga via roma` diventa `esselunga` e copre tutte le filiali), eliminare.
+A section inside `/categorie`, not a new sidebar entry. List of rules with pattern, match type, category, number of uses. Actions: edit pattern and category, switch a rule from `merchant` to `contains` (that's how `esselunga via roma` becomes `esselunga` and covers all branches), delete.
 
-## Popolamento iniziale
+## Initial population
 
-Senza regole preesistenti il livello 1 sarebbe vuoto e tutto il carico cadrebbe su storico e assistente. Script one-shot `lib/db/backfill-categorization-rules.ts`: genera regole `appresa` dalle transazioni già categorizzate — una per chiave merchant, categoria più frequente, pareggio risolto sulla più recente, categorie fallback escluse.
+Without pre-existing rules, level 1 would be empty and the whole load would fall on history and assistant. One-shot script `lib/db/backfill-categorization-rules.ts`: generates `appresa` (learned) rules from already-categorized transactions — one per merchant key, most frequent category, ties resolved by the most recent, fallback categories excluded.
 
-**Lo script va eseguito in sessione e il conteggio delle regole create riportato all'utente.** Un backfill scritto e mai lanciato è esattamente l'errore del 2026-07-22 con `backfill-category-appearance.ts`, che ha lasciato dati incoerenti per settimane dietro un piano "completo".
+**The script must be run in the session and the count of rules created reported to the user.** A backfill written and never run is exactly the 2026-07-22 mistake with `backfill-category-appearance.ts`, which left inconsistent data for weeks behind a "complete" plan.
 
 ## Testing
 
-Funzioni pure con vitest, come da convenzione del progetto:
+Pure functions with vitest, per project convention:
 
-- `merchant-key`: rumore, suffissi societari, accenti, token numerici, fallback su descrizione di solo rumore
-- `resolve`: ordine dei rami, `contains` più lungo vince, guard di direzione in entrambi i rami, nessun match
-- `suggest`: cascata fra le tre sorgenti, guard di direzione, coerenza dello split proposto
-- raggruppamento per chiave merchant
-- `CategorySuggester` finto per il livello assistente, **inclusi i casi "non configurato" e "timeout"**, che devono provare l'assenza di degrado
-- API: ownership cross-utente su apply e regole, atomicità del batch
+- `merchant-key`: noise, company suffixes, accents, numeric tokens, fallback on noise-only descriptions
+- `resolve`: branch order, longest `contains` wins, direction guard in both branches, no match
+- `suggest`: cascade among the three sources, direction guard, consistency of the proposed split
+- grouping by merchant key
+- fake `CategorySuggester` for the assistant layer, **including the "not configured" and "timeout" cases**, which must prove there is no degradation
+- API: cross-user ownership on apply and rules, batch atomicity
 
-## Sequenza di implementazione
+## Implementation sequence
 
-Il lavoro è ampio ma ha un ordine naturale in cui ogni fase lascia il sistema funzionante:
+The work is large but has a natural order in which each phase leaves the system working:
 
-1. **Fondamenta** — `merchant-key`, schema `categorization_rules`, migration. Nessun comportamento visibile cambia.
-2. **Pipeline** — `resolve.ts` e sostituzione di `resolveCategoryId` nel sync, con il guard di direzione e la chiusura del debito `isFallback`. Da qui le regole agiscono all'import, anche se non c'è ancora modo di crearle dalla UI.
-3. **Backfill** — script eseguito in sessione: il livello 1 smette di essere vuoto.
-4. **Proposte** — `suggest.ts` e riscrittura dell'endpoint `GET`, ancora consumati dalla UI vecchia.
-5. **Revisione** — pagina `/categorizza`, endpoint batch `categorize-apply`, raggruppamento per merchant. Il wizard esce di scena.
-6. **Gestione regole** — sezione in `/categorie`, endpoint CRUD.
-7. **Assistente** — `CategorySuggester`, `OllamaSuggester`, endpoint `ai`, innesto in background nella pagina di revisione. È l'ultima fase proprio perché tutto deve funzionare senza.
+1. **Foundations** — `merchant-key`, `categorization_rules` schema, migration. No visible behavior changes.
+2. **Pipeline** — `resolve.ts` and replacement of `resolveCategoryId` in the sync, with the direction guard and the closing of the `isFallback` debt. From here rules act on import, even though there's no way yet to create them from the UI.
+3. **Backfill** — script run in the session: level 1 stops being empty.
+4. **Suggestions** — `suggest.ts` and rewrite of the `GET` endpoint, still consumed by the old UI.
+5. **Review** — `/categorizza` page, `categorize-apply` batch endpoint, grouping by merchant. The wizard leaves the stage.
+6. **Rule management** — section in `/categorie`, CRUD endpoints.
+7. **Assistant** — `CategorySuggester`, `OllamaSuggester`, `ai` endpoint, background insertion into the review page. It's the last phase precisely because everything must work without it.
 
-## Fuori scope (deciso, non dimenticato)
+## Out of scope (decided, not forgotten)
 
-- Regex nei pattern e priorità manuale delle regole (approccio C, scartato). Il tipo `contains` copre il bisogno reale.
-- Auto-applicazione delle proposte dedotte: contraddice la decisione di prodotto.
-- Qualunque modifica a KPI, donut e grafici di Transazioni.
-- Rimozione del vecchio `AutoCategorizeWizard` dal repository: resta finché la nuova pagina non è verificata manualmente dall'utente, poi si elimina.
+- Regex in patterns and manual rule priority (approach C, discarded). The `contains` type covers the real need.
+- Auto-applying inferred suggestions: it contradicts the product decision.
+- Any change to KPIs, donut and charts of Transazioni.
+- Removing the old `AutoCategorizeWizard` from the repository: it stays until the new page is manually verified by the user, then it is deleted.
 
-## Rischi noti
+## Known risks
 
-- **Ollama su single-VPS**: un modello locale è il punto fragile dell'infrastruttura (RAM/CPU condivise col resto del cluster). Mitigazione strutturale: il livello è isolato dietro `CategorySuggester`, spento per default in assenza di configurazione, e sostituibile con un'altra implementazione senza toccare il resto.
-- **Regole apprese sbagliate**: una conferma distratta crea una regola che poi si applica da sola. Mitigazione: le regole sono visibili, modificabili e cancellabili dalla pagina di gestione, con il contatore di utilizzi a rendere evidenti quelle che agiscono di più.
-- **Migration DB**: il progetto ha un vincolo unique pre-esistente che blocca `pnpm db:push` (log del 2026-07-27), aggirato finora con `ALTER TABLE` diretti non versionati. Questa tabella nuova va aggiunta con lo stesso metodo solo come ultima risorsa; se possibile, sistemare il blocco alla radice — altrimenti il debito si allarga a una tabella intera invece che a due colonne.
+- **Ollama on a single VPS**: a local model is the fragile point of the infrastructure (RAM/CPU shared with the rest of the cluster). Structural mitigation: the layer is isolated behind `CategorySuggester`, off by default without configuration, and replaceable with another implementation without touching the rest.
+- **Wrongly learned rules**: a distracted confirmation creates a rule that then applies by itself. Mitigation: rules are visible, editable and deletable from the management page, with the usage counter making the most active ones evident.
+- **DB migration**: the project has a pre-existing unique constraint that blocks `pnpm db:push` (log of 2026-07-27), worked around so far with direct, unversioned `ALTER TABLE`s. This new table should be added with the same method only as a last resort; if possible, fix the blocker at the root — otherwise the debt grows to a whole table instead of two columns.

@@ -1,0 +1,5 @@
+Venue: Bitpanda
+Transaction ID,Timestamp,Transaction Type,In/Out,Amount Fiat,Fiat,Amount Asset,Asset,Asset market price,Asset market price currency,Asset class,Product ID,Fee,Fee asset,Fee percent,Spread,Spread Currency,Tax Fiat
+synthetic-deposit,2026-01-01T10:00:00+01:00,deposit,incoming,200.00,EUR,-,EUR,-,-,Fiat,-,0.00000000,EUR,-,-,-,0.00
+synthetic-buy,2026-01-02T10:00:00+01:00,buy,outgoing,200.00,EUR,0.00500000,BTC,40000.00,EUR,Cryptocurrency,1,1.99000000,EUR,0.99,-,-,0.00
+synthetic-last-deposit,2026-01-03T10:00:00+01:00,deposit,incoming,100.00,EUR,-,EUR,-,-,Fiat,-,0.00000000,EUR,-,-,-,0.00

@@ -13,7 +13,7 @@ import { TrackedSection } from "./tracked-section";
 const AREAS = ["Panoramica", "Liquidità", "Investimenti", "Pensione", "Debiti", "Analitiche"] as const;
 
 export interface ScreenGalleryProps {
-  /** Sul telefono mostra la versione a misura di telefono nella cornice da telefono (per le schermate che ce l'hanno), invece di quella intera rimpicciolita. */
+  /** On the phone, shows the phone-size version inside the phone frame (for the screens that have one) instead of the shrunken full screenshot. */
   phoneOnMobile?: boolean;
 }
 
@@ -28,7 +28,7 @@ export function ScreenGallery({ phoneOnMobile = false }: ScreenGalleryProps) {
   const view = useRef<HTMLDivElement>(null);
   const first = useRef(true);
 
-  // Cambio di schermata: la nuova si svela dall'alto con un leggero zoom (non al primo render); il telefono emerge.
+  // Screen change: the new one is revealed from the top with a slight zoom (not on first render); the phone fades in.
   useGSAP(
     () => {
       if (first.current) {

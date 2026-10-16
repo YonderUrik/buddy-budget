@@ -5,16 +5,19 @@
  * divise per sezione con l'imposta stimata sui titoli, cosa cambia quando lo raggiungi e le azioni.
  */
 
-import { ArrowLeftRightIcon, FlagIcon, LandmarkIcon, TrendingUpIcon } from "lucide-react";
+import * as React from "react";
+import { ArrowLeftRightIcon, FlagIcon } from "lucide-react";
 import { AnimatedNumber } from "@/components/motion";
 import { Button } from "@/components/ui/button";
 import { KEPT_GOAL_KINDS } from "@/lib/goals/constants";
 import type { GoalView } from "@/lib/goals/view";
 import { AMOUNT_MASK } from "@/lib/format";
 import { useLocalization } from "@/lib/localization/provider";
+import { LogoCredit } from "@/components/domain/shared";
 import { GOAL_KIND_INFO } from "./goal-kinds";
 import { fireShiftText, statusLabel, statusSentence, type GoalFormatters } from "./goal-format";
 import { GoalIcon } from "./goal-icon";
+import { GoalSourceIcon } from "./goal-source-icon";
 import { GoalNote } from "./goal-note";
 import { GoalProgress } from "./goal-progress";
 import { GoalSectionHeading } from "./goal-section-heading";
@@ -33,8 +36,8 @@ export interface GoalDetailProps {
 }
 
 const GROUPS = [
-  { kind: "account", title: "Liquidità", icon: LandmarkIcon, color: "var(--swatch-teal)" },
-  { kind: "instrument", title: "Investimenti", icon: TrendingUpIcon, color: "var(--swatch-blue)" },
+  { kind: "account", title: "Liquidità" },
+  { kind: "instrument", title: "Investimenti" },
 ] as const;
 
 export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, onToggleAchieved, onDelete, pending = false }: GoalDetailProps) {
@@ -45,6 +48,8 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
   const hidden = fmt.money(0) === AMOUNT_MASK;
   const tax = goal.sources.reduce((sum, s) => sum + s.tax, 0);
   const kept = KEPT_GOAL_KINDS.includes(goal.kind);
+  const [logosShown, setLogosShown] = React.useState(false);
+  const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
@@ -75,7 +80,7 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
               <ul>
                 {items.map((s) => (
                   <li key={s.id} className="flex items-center gap-3 border-b py-3 last:border-b-0">
-                    <GoalIcon icon={group.icon} color={group.color} size="sm" />
+                    <GoalSourceIcon source={s} onRemoteLogo={showLogoCredit} />
                     <div className="flex min-w-0 flex-1 flex-col">
                       <span className="truncate font-medium text-foreground">{s.name}</span>
                       <span className="text-sm text-text-3">
@@ -92,6 +97,7 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
             </div>
           );
         })}
+        <LogoCredit visible={logosShown} />
         {tax > 0 ? <GoalNote>{tr("Per i titoli contiamo il valore al netto dell'imposta stimata se vendessi oggi, con l'aliquota del titolo e senza le minusvalenze da compensare: la scheda Tasse fa il calcolo completo.")}</GoalNote> : null}
       </section>
 

@@ -1,22 +1,22 @@
-# BuddyBudget in self-hosting: app + Postgres + Redis + promemoria dei lavori periodici.
-# Guida completa: docs/self-hosting.md. Avvio rapido: ./scripts/selfhost-init.sh && docker compose up -d
+# BuddyBudget self-hosted: app + Postgres + Redis + scheduler for periodic jobs.
+# Full guide: docs/self-hosting.md. Quick start: ./scripts/selfhost-init.sh && docker compose up -d
 #
-# Le immagini vengono da ghcr.io (BUDDYBUDGET_VERSION, default latest). Per costruirle dal sorgente:
+# Images come from ghcr.io (BUDDYBUDGET_VERSION, default latest). To build them from source:
 #   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 
 name: buddybudget
 
 x-app-env: &app-env
   NODE_ENV: production
-  # sslmode=disable: il Postgres del compose è nella rete interna e non ha certificati. Un Postgres esterno
-  # va invece raggiunto con sslmode=require (vedi docs/self-hosting.md).
+  # sslmode=disable: the compose Postgres is on the internal network and has no certificates. An external Postgres
+  # must instead be reached with sslmode=require (see docs/self-hosting.md).
   DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?Manca POSTGRES_PASSWORD, lancia ./scripts/selfhost-init.sh}@postgres:5432/buddybudget?sslmode=disable
   REDIS_URL: redis://redis:6379
   BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Manca BETTER_AUTH_SECRET}
   BETTER_AUTH_URL: ${APP_URL:-http://localhost:3000}
   APP_URL: ${APP_URL:-http://localhost:3000}
   CRON_SECRET: ${CRON_SECRET:?Manca CRON_SECRET}
-  # Integrazioni facoltative: vuote = spente (vedi .env.selfhost.example).
+  # Optional integrations: empty = off (see .env.selfhost.example).
   RESEND_API_KEY: ${RESEND_API_KEY:-}
   RESEND_FROM: ${RESEND_FROM:-}
   GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
@@ -24,7 +24,7 @@ x-app-env: &app-env
   GOCARDLESS_SECRET_ID: ${GOCARDLESS_SECRET_ID:-}
   GOCARDLESS_SECRET_KEY: ${GOCARDLESS_SECRET_KEY:-}
   LOG_LEVEL: ${LOG_LEVEL:-info}
-  # Facoltativa: cifra descrizioni e note nel database (vedi docs/self-hosting.md, «Backup e ripristino»).
+  # Optional: encrypts descriptions and notes in the database (see docs/self-hosting.md, «Backup e ripristino»).
   DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
 
 services:
@@ -46,7 +46,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    # Solo cache, rate limiting e stato dei job in background: si può perdere senza danni, niente volume.
+    # Only cache, rate limiting and background job state: it can be lost without harm, no volume.
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -54,13 +54,13 @@ services:
       timeout: 3s
       retries: 12
 
-  # Applica le migration e termina. Gira a ogni `up`, quindi un aggiornamento le porta avanti da solo.
+  # Applies the migrations and exits. Runs on every `up`, so an update moves them forward by itself.
   migrate:
     image: ghcr.io/yonderurik/buddy-budget-migrate:${BUDDYBUDGET_VERSION:-latest}
     restart: "no"
     environment:
       DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?Manca POSTGRES_PASSWORD}@postgres:5432/buddybudget?sslmode=disable
-      # Serve solo a `pnpm db:encrypt-fields` (cifratura dei dati già salvati); le migration non la usano.
+      # Needed only by `pnpm db:encrypt-fields` (encryption of already stored data); migrations do not use it.
       DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
     depends_on:
       postgres:
@@ -70,7 +70,7 @@ services:
     image: ghcr.io/yonderurik/buddy-budget:${BUDDYBUDGET_VERSION:-latest}
     restart: unless-stopped
     environment: *app-env
-    # Di default solo da questa macchina: per metterla online usa un reverse proxy HTTPS (docs/self-hosting.md).
+    # By default only from this machine: to put it online use an HTTPS reverse proxy (docs/self-hosting.md).
     ports:
       - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3000}:3000"
     depends_on:
@@ -85,8 +85,8 @@ services:
       retries: 5
       start_period: 30s
 
-  # Chiama gli endpoint /api/cron/* agli stessi orari (UTC) del cluster di produzione: prezzi di mercato,
-  # snapshot del patrimonio, sync bancario, eliminazione account. Senza questo, prezzi e storico non si aggiornano.
+  # Calls the /api/cron/* endpoints at the same times (UTC) as the production cluster: market prices,
+  # net worth snapshots, bank sync, account deletion. Without this, prices and history are not updated.
   cron:
     image: alpine:3.21
     restart: unless-stopped
@@ -105,7 +105,7 @@ services:
           echo "30 6,17,22 * * * $$(call market-prices)"
           echo "50 6,17,23 * * * $$(call net-worth-snapshot)"
           echo "30 3 * * * $$(call account-deletion)"
-          # I lavori bancari partono solo se GoCardless è configurato (senza credenziali risponderebbero 500).
+          # Bank jobs run only if GoCardless is configured (without credentials they would return 500).
           if [ -n "$$GOCARDLESS_SECRET_ID" ]; then
             echo "0 */12 * * * $$(call gocardless-sync)"
             echo "15 4 * * * $$(call gocardless-maintenance)"

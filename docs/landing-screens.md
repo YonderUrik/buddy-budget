@@ -1,37 +1,37 @@
-# Schermate della landing: come restano vere
+# Landing screens: how they stay true
 
-Le immagini dell'app che si vedono su buddybudget.io non sono disegnate: sono **screenshot dell'app vera**, fatti con dati di esempio. Così la landing non può mostrare una schermata che l'app non ha.
+The app images seen on buddybudget.io are not drawn: they are **screenshots of the real app**, taken with sample data. This way the landing cannot show a screen the app does not have.
 
-## Come funziona
+## How it works
 
-1. **Dati di esempio** (`scripts/demo-seed.ts`): crea in un database vuoto un utente fittizio ("Giulia Demo") con conti, ~300 movimenti, investimenti, un mutuo e due prestiti. I numeri sono deterministici (stesso risultato a ogni esecuzione) e lo storico del patrimonio è calcolato dal codice vero (`snapshotUser`). Rifiuta di girare su un DB che contiene altri utenti.
-2. **App vera**: `next build && next start` con `DATABASE_URL` che punta a quel DB.
-3. **Cattura** (`landing/scripts/capture-screens.mjs`): Playwright apre ogni schermata elencata in `landing/content/screens.ts`, con un cookie di sessione firmato per l'utente demo, in tema chiaro e scuro, e salva `landing/public/screens/{light,dark}/<id>.jpg` più `manifest.json`. La finestra è larga 1280 px a 1,5x e si allunga fino all'altezza della pagina (tetto 1500 px, o `maxHeight` della schermata); le dimensioni finiscono nel manifest e `AppShot` le usa. Con `topCrop` salva anche `<id>-top.jpg`, solo i primi 800 px. Con `phone` salva anche `<id>-phone.jpg`: il primo schermo a misura di telefono (390×751 a 2x: lo schermo di un iPhone tolte barra di stato e indicatore, così entra intero nella cornice `PhoneFrame`), usato dal telefono fissato in alto nella home su mobile e dalla galleria «Com'è fatta» sul telefono. Con `PHONE_ONLY=1` rigenera solo queste versioni e lascia nel manifest le misure delle schermate intere. Con `open` (route dinamiche, es. la scheda di un titolo) apre la pagina indicata e clicca il link con quel testo.
-4. **Landing**: il componente `AppShot` mostra l'immagine del tema corrente; galleria e risposte della home usano solo queste immagini.
+1. **Sample data** (`scripts/demo-seed.ts`): creates in an empty database a fictitious user ("Giulia Demo") with accounts, ~300 transactions, investments, a mortgage and two loans. The numbers are deterministic (same result on every run) and the net worth history is calculated by the real code (`snapshotUser`). It refuses to run on a DB that contains other users.
+2. **Real app**: `next build && next start` with `DATABASE_URL` pointing to that DB.
+3. **Capture** (`landing/scripts/capture-screens.mjs`): Playwright opens every screen listed in `landing/content/screens.ts`, with a session cookie signed for the demo user, in light and dark theme, and saves `landing/public/screens/{light,dark}/<id>.jpg` plus `manifest.json`. The window is 1280 px wide at 1.5x and stretches to the page height (capped at 1500 px, or the screen's `maxHeight`); the dimensions go into the manifest and `AppShot` uses them. With `topCrop` it also saves `<id>-top.jpg`, only the first 800 px. With `phone` it also saves `<id>-phone.jpg`: the first screen at phone size (390×751 at 2x: an iPhone screen minus status bar and home indicator, so it fits whole inside the `PhoneFrame` component), used by the phone pinned at the top of the home page on mobile and by the «Com'è fatta» ("How it looks") gallery on the phone. With `PHONE_ONLY=1` it regenerates only these versions and keeps the full-size dimensions in the manifest. With `open` (dynamic routes, e.g. a security's page) it opens the given page and clicks the link with that text.
+4. **Landing**: the `AppShot` component shows the image for the current theme; the home page gallery and answers use only these images.
 
-## Cosa impedisce che diventino false
+## What prevents them from becoming false
 
-- `landing/content/screens.test.ts` (gira nella CI della landing): ogni schermata deve puntare a una route che esiste in `app/(app)/` e avere le due immagini. Se una route viene rinominata o tolta, il test fallisce.
-- Un cambio **grafico** dell'app non fa fallire nulla: va rilanciata la cattura (sotto). Regola: chi cambia in modo visibile una schermata dell'elenco rigenera gli screenshot nella stessa PR.
+- `landing/content/screens.test.ts` (runs in the landing CI): every screen must point to a route that exists in `app/(app)/` and have both images. If a route is renamed or removed, the test fails.
+- A **visual** change to the app does not make anything fail: the capture must be rerun (below). Rule: whoever visibly changes a screen in the list regenerates the screenshots in the same PR.
 
-## Rigenerare gli screenshot
+## Regenerating the screenshots
 
-Servono Postgres, Redis e un Chromium con Playwright.
+You need Postgres, Redis and a Chromium with Playwright.
 
 ```bash
 createdb bb_demo
 export DATABASE_URL=postgresql://USER:PASS@localhost:5432/bb_demo REDIS_URL=redis://localhost:6379 \
-  BETTER_AUTH_SECRET=<un segreto qualsiasi> BETTER_AUTH_URL=http://localhost:3300 APP_URL=http://localhost:3300
+  BETTER_AUTH_SECRET=<any secret> BETTER_AUTH_URL=http://localhost:3300 APP_URL=http://localhost:3300
 pnpm db:migrate
 pnpm demo:seed
 pnpm build && pnpm exec next start -p 3300 &
-cd landing && PLAYWRIGHT_MODULE=<percorso di playwright> pnpm capture:screens
+cd landing && PLAYWRIGHT_MODULE=<path to playwright> pnpm capture:screens
 ```
 
-`BETTER_AUTH_SECRET` deve essere lo stesso per app e cattura (firma il cookie). Variabili opzionali: `DEMO_APP_URL`, `CHROMIUM_PATH`.
+`BETTER_AUTH_SECRET` must be the same for the app and the capture (it signs the cookie). Optional variables: `DEMO_APP_URL`, `CHROMIUM_PATH`.
 
-Il workflow GitHub `landing-screens.yml` fa gli stessi passi da solo: parte una volta al giorno (05:30 UTC), quando su `main` cambiano elenco screen, script di cattura o dati demo, o a mano da Actions (non a ogni merge: con molte PR ravvicinate si rifaceva ogni volta) e apre/aggiorna la PR `bot/landing-screens` con le immagini nuove. La PR la apre `GITHUB_TOKEN`, quindi la CI non parte da sola su di essa. Richiede in Settings → Actions → General "Allow GitHub Actions to create and approve pull requests". **Non è ancora stato eseguito su GitHub.**
+The GitHub workflow `landing-screens.yml` does the same steps on its own: it runs once a day (05:30 UTC), when the screen list, capture script or demo data change on `main`, or manually from Actions (not on every merge: with many PRs close together it was redoing everything each time), and opens/updates the `bot/landing-screens` PR with the new images. The PR is opened by `GITHUB_TOKEN`, so CI does not start on its own on it. It requires "Allow GitHub Actions to create and approve pull requests" in Settings → Actions → General. **It has not been run on GitHub yet.**
 
-## Aggiungere una schermata
+## Adding a screen
 
-Aggiungi una voce a `SCREENS` in `landing/content/screens.ts` (id, area, route reale, didascalia; `phone` se serve anche nella home su mobile, `open` se la route è dinamica), rilancia la cattura e committa le immagini. Se la schermata ha bisogno di dati che il seed non crea, estendi `scripts/demo-seed.ts`.
+Add an entry to `SCREENS` in `landing/content/screens.ts` (id, area, real route, caption; `phone` if it is also needed in the home page on mobile, `open` if the route is dynamic), rerun the capture and commit the images. If the screen needs data the seed does not create, extend `scripts/demo-seed.ts`.

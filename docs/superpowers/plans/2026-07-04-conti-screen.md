@@ -99,7 +99,7 @@ Expected: FAIL — `lib/format.ts` does not exist.
 - [ ] **Step 3: Implement `lib/format.ts`**
 
 ```ts
-/** Formatta un valore numerico come valuta, secondo la valuta e il locale dell'utente. */
+/** Formats a numeric value as currency, according to the user's currency and locale. */
 export function formatCurrency(
   value: number,
   currency: string,
@@ -216,7 +216,7 @@ Expected: FAIL — `lib/validation/accounts.ts` does not exist.
 ```ts
 import { z } from "zod";
 
-/** Opzioni proposte per il tipo di conto nella select; l'utente può comunque digitarne uno libero. */
+/** Options offered for the account type in the select; the user can still type a free one. */
 export const ACCOUNT_TYPE_OPTIONS = [
   "Conto corrente",
   "Conto risparmio",
@@ -224,7 +224,7 @@ export const ACCOUNT_TYPE_OPTIONS = [
   "Contanti",
 ] as const;
 
-/** Converte una stringa importo (virgola o punto come separatore decimale) in numero, o null se non valida. */
+/** Converts an amount string (comma or dot as decimal separator) into a number, or null if invalid. */
 export function parseAmount(raw: string): number | null {
   const normalized = raw.trim().replace(",", ".");
   if (normalized === "") return null;
@@ -288,13 +288,13 @@ Replace the local `formatAmount` helper and hardcoded currency with `formatCurre
 /**
  * StatCard
  *
- * Card per la visualizzazione di un importo finanziario in evidenza.
- * Colora il valore in verde (positivo) o rosso (negativo) tramite i token
- * di tema `--pos` / `--neg`, senza valori hardcoded.
+ * Card for displaying a highlighted financial amount.
+ * Colors the value green (positive) or red (negative) through the theme
+ * tokens `--pos` / `--neg`, without hardcoded values.
  *
- * Riusabilità: accetta qualsiasi `value` numerico e `label` stringa.
- * Non conosce nulla del dominio specifico (conti, spese, ecc.) — la
- * semantica è lasciata al chiamante.
+ * Reusability: accepts any numeric `value` and string `label`.
+ * It knows nothing about the specific domain (accounts, expenses, etc.) — the
+ * semantics are left to the caller.
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -302,24 +302,24 @@ import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
-// Tipi
+// Types
 // ---------------------------------------------------------------------------
 
 export interface StatCardProps {
-  /** Etichetta descrittiva dell'importo (es. "Liquidità totale"). */
+  /** Descriptive label for the amount (e.g. "Liquidità totale"). */
   label: string;
-  /** Valore numerico nella valuta indicata da `currency`. Negativo → rosso; positivo/zero → verde. */
+  /** Numeric value in the currency given by `currency`. Negative → red; positive/zero → green. */
   value: number;
-  /** Codice valuta ISO 4217 (es. "EUR", "USD"). Default: "EUR". */
+  /** ISO 4217 currency code (e.g. "EUR", "USD"). Default: "EUR". */
   currency?: string;
-  /** Testo secondario opzionale sotto il valore (es. "Aggiornato oggi"). */
+  /** Optional secondary text under the value (e.g. "Aggiornato oggi"). */
   subtitle?: string;
-  /** Classi CSS aggiuntive per la Card esterna. */
+  /** Additional CSS classes for the outer Card. */
   className?: string;
 }
 
 // ---------------------------------------------------------------------------
-// Componente
+// Component
 // ---------------------------------------------------------------------------
 
 export function StatCard({ label, value, currency = "EUR", subtitle, className }: StatCardProps) {
@@ -793,7 +793,7 @@ git commit -m "feat: add PATCH/DELETE /api/accounts/[id] route handlers"
 import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-/** Wrapper attorno a TanStack Query. Crea un QueryClient stabile per l'intera sessione del browser. */
+/** Wrapper around TanStack Query. Creates a stable QueryClient for the whole browser session. */
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(() => new QueryClient());
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
@@ -873,12 +873,12 @@ async function fetchAccounts(): Promise<Account[]> {
   return response.json();
 }
 
-/** Recupera la lista dei conti dell'utente autenticato. */
+/** Fetches the list of the authenticated user's accounts. */
 export function useAccountsQuery() {
   return useQuery({ queryKey: ACCOUNTS_QUERY_KEY, queryFn: fetchAccounts });
 }
 
-/** Crea un nuovo conto manuale e invalida la lista al successo. */
+/** Creates a new manual account and invalidates the list on success. */
 export function useCreateAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -900,7 +900,7 @@ export function useCreateAccountMutation() {
   });
 }
 
-/** Aggiorna un conto manuale esistente e invalida la lista al successo. */
+/** Updates an existing manual account and invalidates the list on success. */
 export function useUpdateAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -922,7 +922,7 @@ export function useUpdateAccountMutation() {
   });
 }
 
-/** Elimina (o scollega, per i conti auto) un conto e invalida la lista al successo. */
+/** Deletes (or unlinks, for auto accounts) an account and invalidates the list on success. */
 export function useDeleteAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1027,7 +1027,7 @@ export interface AccountsKpiResult {
   linkedAccountsCount: number;
 }
 
-/** Calcola i KPI aggregati (liquidità totale, conteggio conti) a partire dalla lista conti. */
+/** Computes the aggregate KPIs (total liquidity, account count) from the list of accounts. */
 export function computeAccountsKpi(accounts: Account[]): AccountsKpiResult {
   const totalLiquidity = accounts.reduce((sum, account) => sum + Number(account.balance), 0);
   return { totalLiquidity, linkedAccountsCount: accounts.length };
@@ -1045,10 +1045,10 @@ Expected: PASS (4 tests).
 /**
  * AccountsKpi
  *
- * Riga di KPI per la schermata Conti: liquidità totale (mostrata anche come
- * "Patrimonio netto (solo liquidità)" finché Investimenti/Debiti/Immobile non
- * esistono come entità — vedi docs/superpowers/specs/2026-07-04-conti-screen-design.md)
- * e conteggio conti collegati.
+ * KPI row for the Conti screen: total liquidity (also shown as
+ * "Patrimonio netto (solo liquidità)" until Investimenti/Debiti/Immobile
+ * exist as entities — see docs/superpowers/specs/2026-07-04-conti-screen-design.md)
+ * and count of linked accounts.
  */
 
 import { StatCard } from "@/components/domain/stat-card";
@@ -1058,7 +1058,7 @@ import type { Account } from "@/lib/db/schema/accounts";
 
 export interface AccountsKpiProps {
   accounts: Account[];
-  /** Valuta dell'utente (ISO 4217), usata per formattare gli importi. */
+  /** User's currency (ISO 4217), used to format the amounts. */
   currency: string;
 }
 
@@ -1120,10 +1120,10 @@ git commit -m "feat: add accounts KPI calculation and AccountsKpi component"
 /**
  * AccountRow
  *
- * Riga singola nella lista Conti. Conti manuali: nome/istituto/tipo/saldo
- * editabili inline (salvataggio on-blur) + eliminazione con conferma. Conti
- * auto: campi in sola lettura + azione "Scollega" con conferma (nessuna
- * integrazione bancaria reale dietro per ora — vedi spec).
+ * Single row in the Conti list. Manual accounts: name/institution/type/balance
+ * editable inline (save on blur) + deletion with confirmation. Auto
+ * accounts: read-only fields + "Scollega" action with confirmation (no
+ * real bank integration behind it for now — see spec).
  */
 
 import * as React from "react";
@@ -1166,7 +1166,7 @@ function initialsFor(text: string): string {
 
 export interface AccountRowProps {
   account: Account;
-  /** Valuta dell'utente (ISO 4217), usata per formattare il saldo. */
+  /** User's currency (ISO 4217), used to format the balance. */
   currency: string;
 }
 
@@ -1354,7 +1354,7 @@ Read `components/ui/button.tsx` and note its exact export name and prop signatur
 ```tsx
 "use client";
 
-/** Form "+ Aggiungi conto": crea un nuovo conto manuale. */
+/** "+ Aggiungi conto" form: creates a new manual account. */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -1524,7 +1524,7 @@ git commit -m "feat: add AddAccountForm component"
 /**
  * components/domain/accounts — barrel file
  *
- * Punto di ingresso unico per i componenti della schermata Conti.
+ * Single entry point for the components of the Conti screen.
  */
 
 export { AccountsKpi } from "./accounts-kpi";
@@ -1541,7 +1541,7 @@ export { AddAccountForm } from "./add-account-form";
 ```tsx
 "use client";
 
-/** Pagina Conti: orchestra fetch, KPI, lista conti e form di creazione. Nessuna logica di business qui. */
+/** Conti page: orchestrates fetching, KPIs, account list and creation form. No business logic here. */
 
 import { AccountsKpi, AccountRow, AddAccountForm } from "@/components/domain/accounts";
 import { Card } from "@/components/ui/card";

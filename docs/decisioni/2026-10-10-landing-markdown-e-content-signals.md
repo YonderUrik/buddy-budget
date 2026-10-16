@@ -1,7 +1,7 @@
-# Landing: Markdown per gli agenti e Content-Signal
+# Landing: Markdown for agents and Content-Signal
 
-Data: 2026-10-10
+Date: 2026-10-10
 
-- **Markdown negotiation**: la landing è statica e servita da nginx nel cluster, quindi niente regola Cloudflare (Markdown for Agents è una funzione dei piani a pagamento e non la controlliamo). Dopo `next build`, `landing/scripts/generate-markdown.mjs` scrive un `.md` accanto a ogni pagina (contenuto di `<main>`, titolo, descrizione, canonical) e le mappe nginx `$md_target` / `$markdown_tokens`. Con `Accept: text/markdown` nginx serve il `.md` con `x-markdown-tokens`; senza, HTML. `Vary: Accept` su tutte le pagine; `*/*`, browser e Googlebot ricevono HTML.
-- **Content-Signal** in `/robots.txt` (ora `app/robots.txt/route.ts`, perché `robots.ts` di Next non lo supporta): `ai-train=yes, search=yes, ai-input=yes`, ripetuto anche nel gruppo dei crawler AI. Scelta coerente con sito pubblico, codice AGPL e crawler AI già ammessi. Per vietare l'addestramento: `ai-train=no` in `landing/content/robots.ts` e togliere dall'elenco i crawler di solo training.
-- Nessun impatto sull'app né sul catalogo funzioni.
+- **Markdown negotiation**: the landing is static and served by nginx in the cluster, so no Cloudflare rule (Markdown for Agents is a paid-plan feature and we do not control it). After `next build`, `landing/scripts/generate-markdown.mjs` writes a `.md` next to every page (content of `<main>`, title, description, canonical) and the nginx maps `$md_target` / `$markdown_tokens`. With `Accept: text/markdown` nginx serves the `.md` with `x-markdown-tokens`; without, HTML. `Vary: Accept` on all pages; `*/*`, browsers and Googlebot receive HTML.
+- **Content-Signal** in `/robots.txt` (now `app/robots.txt/route.ts`, because Next's `robots.ts` does not support it): `ai-train=yes, search=yes, ai-input=yes`, also repeated in the AI crawlers group. A choice consistent with a public site, AGPL code and AI crawlers already allowed. To forbid training: `ai-train=no` in `landing/content/robots.ts` and remove the training-only crawlers from the list.
+- No impact on the app or on the feature catalog.

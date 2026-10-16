@@ -1,67 +1,67 @@
 # Cash flow — design
 
-Data: 2026-07-26
+Date: 2026-07-26
 
-## Scopo
+## Purpose
 
-Nuova schermata Cash flow (finora non implementata): confronto entrate vs uscite, non solo visualizzazione spese. Richiede prima colmare un gap esistente — non esiste ancora un modo di inserire entrate (stipendio, freelance, dividendi) nel prodotto.
+New Cash flow screen (not implemented so far): comparison of income vs outflows, not just a view of spending. It first requires filling an existing gap — there is not yet a way to enter income (salary, freelance, dividends) in the product.
 
-## 1. Modello dati
+## 1. Data model
 
-- `categoryTypeEnum` esteso da `["fissa", "variabile"]` a `["fissa", "variabile", "entrata"]`. Nessuna migrazione distruttiva, solo nuovo valore enum.
-- `transactions`: schema invariato. Il segno di `amount` codifica già la direzione (negativo = uscita, positivo = entrata) — nessuna colonna nuova.
-- `budgets`: invariato. Le categorie `entrata` non compariranno mai nei calcoli budget/donut/trend di Spese perché quei calcoli filtrano già `isExpense` (`amount < 0`).
-- Nessuna colonna `isTransfer`. I trasferimenti interni tra conti propri (giroconti) restano un gap noto e rimandato (vedi "Fuori scope").
+- `categoryTypeEnum` extended from `["fissa", "variabile"]` to `["fissa", "variabile", "entrata"]` (fixed, variable, income). No destructive migration, only a new enum value.
+- `transactions`: schema unchanged. The sign of `amount` already encodes the direction (negative = outflow, positive = income) — no new column.
+- `budgets`: unchanged. `entrata` categories will never appear in the Spese budget/donut/trend calculations because those calculations already filter on `isExpense` (`amount < 0`).
+- No `isTransfer` column. Internal transfers between one's own accounts (giroconti) remain a known, deferred gap (see "Out of scope").
 
 ### API
 
-- **GET `/api/transactions`**: oggi filtra hardcoded `amount < 0` (solo uscite). Estesa con parametro opzionale `type` (`uscita` default per retrocompatibilità / `entrata` / `tutte`).
-- **POST `/api/transactions`**: oggi nega sempre l'importo inserito (assume spesa). Il segno da salvare va derivato lato server dal `type` della categoria scelta (`entrata` → importo positivo così com'è, `fissa`/`variabile` → importo negato), non da un campo separato manipolabile dal client.
+- **GET `/api/transactions`**: today it filters hardcoded on `amount < 0` (outflows only). Extended with an optional `type` parameter (`uscita` default for backward compatibility / `entrata` / `tutte`).
+- **POST `/api/transactions`**: today it always negates the entered amount (assumes an expense). The sign to save must be derived server-side from the `type` of the chosen category (`entrata` → positive amount as it is, `fissa`/`variabile` → negated amount), not from a separate field that the client could manipulate.
 
-## 2. Pagina Spese → Transazioni
+## 2. Spese page → Transazioni
 
-- Rebrand: voce sidebar "Spese" → "Transazioni", titolo pagina idem. Route resta `/spese` (rinominare la route non porta beneficio, solo rischio).
-- Nuovo toggle tipo lista: **Tutte / Uscite / Entrate**, default **Uscite** (comportamento attuale invariato di default). Il toggle filtra solo la lista transazioni.
-- KPI cards, donut categorie ("Fisse vs variabili" + budget), trend 6 mesi restano **sempre uscite-only**, indipendenti dal toggle — restano "analisi spesa" concettualmente, non cambiano contenuto quando il toggle è su Entrate. Evita di duplicare lì il lavoro di analisi che spetta a Cash flow.
-- `AddTransactionForm`: nuovo toggle **Spesa/Entrata**. Determina quale sottoinsieme di categorie è selezionabile (fissa+variabile vs entrata). Il segno salvato è derivato server-side dal tipo della categoria scelta (vedi sopra), non da questo toggle direttamente — il toggle esiste solo per filtrare la select categorie lato client.
-- Filtro categoria esistente (`ExpensesFilterBar`) invariato, ma la select categorie in "Aggiungi" esclude `entrata` a meno che il toggle form sia su Entrata.
-- `/categorie`: `add-category-form.tsx` e `category-row.tsx` guadagnano l'opzione "Entrata" nel select tipo (oggi solo Fissa/Variabile).
+- Rebrand: sidebar entry "Spese" → "Transazioni" (Expenses → Transactions), page title likewise. The route stays `/spese` (renaming the route brings no benefit, only risk).
+- New list type toggle: **Tutte / Uscite / Entrate** (All / Outflows / Income), default **Uscite** (current behaviour unchanged by default). The toggle filters only the transaction list.
+- KPI cards, category donut ("Fisse vs variabili" + budget), 6-month trend stay **always outflows-only**, independent of the toggle — they remain conceptually "spending analysis" and do not change content when the toggle is on Entrate. This avoids duplicating there the analysis work that belongs to Cash flow.
+- `AddTransactionForm`: new **Spesa/Entrata** (Expense/Income) toggle. It determines which subset of categories can be selected (fissa+variabile vs entrata). The saved sign is derived server-side from the type of the chosen category (see above), not from this toggle directly — the toggle exists only to filter the category select on the client.
+- Existing category filter (`ExpensesFilterBar`) unchanged, but the category select in "Aggiungi" (Add) excludes `entrata` unless the form toggle is on Entrata.
+- `/categorie`: `add-category-form.tsx` and `category-row.tsx` gain the "Entrata" option in the type select (today only Fissa/Variabile).
 
-## 3. Motore di calcolo — `lib/calc/cashflow.ts` (puro, testato)
+## 3. Calculation engine — `lib/calc/cashflow.ts` (pure, tested)
 
-- `isIncome(t)`: `amount > 0` — simmetrico a `isExpense` in `lib/calc/expenses.ts`.
-- `CashflowPeriod = "3mesi" | "6mesi" | "12mesi" | "24mesi"`, con range/shift/nav costruiti sullo stesso pattern di `getPeriodRange`/`shiftReferenceDate` di Spese (periodo + navigazione avanti/indietro, non solo "ultimi N mesi da oggi").
-- `computeCashflowKpis(transactions, range)`: Entrate medie/mese, Uscite medie/mese (somma piena delle uscite ÷ mesi nel range, nessuna esclusione trasferimenti — debito noto), Flusso netto (entrate − uscite), Tasso di risparmio (`flussoNetto / entrate`, null-safe se entrate = 0).
-- `computeMonthlySeries(transactions, range)`: array mese-per-mese `{ mese, entrate, uscite }` per il grafico a barre affiancate.
-- `computeIncomeSources(transactions, categories, range)`: somma per categoria di tipo `entrata` nel range, ordinata decrescente, con quota % sul totale entrate — stessa forma logica di `computeCategoryBreakdown` ma per entrate.
-- `computeWhereItGoes(transactions, categories, referenceDate)`: mese corrente, 3 voci — Spese fisse, Spese variabili, Risparmio (= entrate − spese fisse − spese variabili del mese; può risultare negativo se si spende più di quanto entra, mostrato così com'è, nessun floor a zero). Investimenti (PAC) omesso: la schermata Investimenti non esiste ancora nel progetto.
-- `computeAccumulatedSavings(transactions, range)`: somma cumulata mese-su-mese del flusso netto lungo la finestra selezionata, per il grafico "Risparmio accumulato" + totale.
+- `isIncome(t)`: `amount > 0` — symmetrical to `isExpense` in `lib/calc/expenses.ts`.
+- `CashflowPeriod = "3mesi" | "6mesi" | "12mesi" | "24mesi"`, with range/shift/nav built on the same pattern as Spese's `getPeriodRange`/`shiftReferenceDate` (period + back/forward navigation, not just "last N months from today").
+- `computeCashflowKpis(transactions, range)`: average income/month, average outflows/month (full sum of outflows ÷ months in the range, no exclusion of transfers — known debt), net flow (income − outflows), savings rate (`netFlow / income`, null-safe if income = 0).
+- `computeMonthlySeries(transactions, range)`: month-by-month array `{ mese, entrate, uscite }` for the side-by-side bar chart.
+- `computeIncomeSources(transactions, categories, range)`: sum per `entrata`-type category in the range, sorted descending, with % share of total income — the same logical shape as `computeCategoryBreakdown` but for income.
+- `computeWhereItGoes(transactions, categories, referenceDate)`: current month, 3 items — fixed expenses, variable expenses, savings (= income − fixed expenses − variable expenses of the month; it can be negative if you spend more than comes in, shown as it is, no floor at zero). Investments (PAC — piano di accumulo, recurring investment plan) omitted: the Investimenti screen does not exist yet in the project.
+- `computeAccumulatedSavings(transactions, range)`: month-over-month cumulative sum of the net flow over the selected window, for the "Risparmio accumulato" (accumulated savings) chart + total.
 
-Tutte le funzioni sono pure e testate con vitest (stesso stile di `expenses.test.ts`), incluse le combinazioni: entrate = 0, mese senza transazioni, risparmio negativo.
+All functions are pure and tested with vitest (same style as `expenses.test.ts`), including the combinations: income = 0, month without transactions, negative savings.
 
-Nessuna nuova route API dedicata: la pagina fetcha transazioni (`type=tutte`) e categorie tramite gli hook TanStack Query esistenti e calcola tutto client-side — stesso pattern già usato da Spese.
+No new dedicated API route: the page fetches transactions (`type=tutte`) and categories through the existing TanStack Query hooks and computes everything client-side — the same pattern already used by Spese.
 
-## 4. UI — `app/(app)/cashflow/page.tsx` (sola lettura)
+## 4. UI — `app/(app)/cashflow/page.tsx` (read-only)
 
-Nuova voce sidebar "Cash flow" → nuova route `/cashflow`. Layout dall'alto:
+New sidebar entry "Cash flow" → new route `/cashflow`. Layout from the top:
 
-1. Header: titolo + `CashflowPeriodSelector` (3M/6M/12M/24M) + navigazione avanti/indietro (stesso pattern di `ExpensesReferenceNav`).
-2. 4 KPI card (`CashflowKpiCards`): Entrate medie, Uscite medie, Flusso netto, Tasso di risparmio — riuso stile `ExpensesKpiCards`.
-3. Grafico "Entrate vs uscite" (`CashflowTrendChart`): barre affiancate recharts, colori dai token `--pos`/`--neg` esistenti.
-4. "Fonti di entrata" (`IncomeSourcesList`): lista categorie entrata con importo e quota %, nessun donut (lista semplice, coerente con la spec funzionale).
-5. "Dove va ogni euro" (`WhereItGoesBreakdown`): 3 voci con importo e % (Fisse / Variabili / Risparmio), riferite al mese corrente.
-6. "Risparmio accumulato" (`AccumulatedSavingsChart`): grafico a linea/area + totale, sulla stessa finestra del periodo selezionato.
+1. Header: title + `CashflowPeriodSelector` (3M/6M/12M/24M) + back/forward navigation (same pattern as `ExpensesReferenceNav`).
+2. 4 KPI cards (`CashflowKpiCards`): Entrate medie, Uscite medie, Flusso netto, Tasso di risparmio (average income, average outflows, net flow, savings rate) — reusing the `ExpensesKpiCards` style.
+3. "Entrate vs uscite" (income vs outflows) chart (`CashflowTrendChart`): recharts side-by-side bars, colours from the existing `--pos`/`--neg` tokens.
+4. "Fonti di entrata" (income sources) (`IncomeSourcesList`): list of income categories with amount and % share, no donut (simple list, consistent with the functional spec).
+5. "Dove va ogni euro" (where every euro goes) (`WhereItGoesBreakdown`): 3 items with amount and % (Fisse / Variabili / Risparmio), referring to the current month.
+6. "Risparmio accumulato" (`AccumulatedSavingsChart`): line/area chart + total, over the same window as the selected period.
 
-Tutti i componenti nuovi vivono in `components/domain/cashflow/` con barrel `index.ts` (layer 2, coerente con l'architettura a layer del progetto). Nessun input/bottone in tutta la pagina — sola lettura, come da spec funzionale.
+All new components live in `components/domain/cashflow/` with barrel `index.ts` (layer 2, consistent with the project's layered architecture). No inputs/buttons anywhere on the page — read-only, as per the functional spec.
 
 ## 5. Testing
 
-- vitest su `lib/calc/cashflow.ts`: KPI, serie mensile, fonti entrata, dove-va-ogni-euro, risparmio accumulato, inclusi edge case (entrate = 0, mese vuoto, risparmio negativo).
-- `app/api/transactions/route.test.ts` esteso: `GET` con parametro `type`, `POST` con segno derivato dal tipo categoria.
-- Componenti categorie (`add-category-form`, `category-row`) e form Transazioni: test esistenti estesi per la nuova opzione "Entrata"/toggle Spesa-Entrata.
+- vitest on `lib/calc/cashflow.ts`: KPIs, monthly series, income sources, where-every-euro-goes, accumulated savings, including edge cases (income = 0, empty month, negative savings).
+- `app/api/transactions/route.test.ts` extended: `GET` with the `type` parameter, `POST` with the sign derived from the category type.
+- Category components (`add-category-form`, `category-row`) and the Transazioni form: existing tests extended for the new "Entrata" option/Spesa-Entrata toggle.
 
-## Fuori scope (esplicitamente rimandato)
+## Out of scope (explicitly deferred)
 
-- **Trasferimenti interni (giroconti)**: nessuna esclusione da "Uscite medie", nessun modello `isTransfer`. Gap noto già presente nella spec funzionale (Cash flow + Analitiche), da affrontare in una sessione dedicata quando servirà davvero.
-- **Investimenti (PAC)** in "Dove va ogni euro": rimandato a quando esisterà la schermata Investimenti con dati reali.
-- **i18n**: stringhe in italiano hardcoded, coerente con lo stato attuale del resto del progetto.
+- **Internal transfers (giroconti)**: no exclusion from "Uscite medie", no `isTransfer` model. A known gap already present in the functional spec (Cash flow + Analitiche), to be tackled in a dedicated session when it is really needed.
+- **Investments (PAC)** in "Dove va ogni euro": deferred until the Investimenti screen exists with real data.
+- **i18n**: hardcoded Italian strings, consistent with the current state of the rest of the project.

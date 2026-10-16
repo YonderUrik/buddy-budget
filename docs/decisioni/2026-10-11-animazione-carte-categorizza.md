@@ -1,7 +1,7 @@
-# Animazione delle carte in Categorizza
+# Card animation in Categorizza
 
-Data: 2026-10-11
+Date: 2026-10-11
 
-Prima la carta decisa spariva e la successiva compariva di colpo, e non si capiva cosa fosse successo. Ora sotto la carta attiva c'è già la successiva, ferma e non interattiva, e la nuova carta sale da lì: il passaggio è continuo. La carta decisa esce nella direzione della scelta (a destra se confermata, a sinistra se si sceglie un'altra categoria) partendo dal punto in cui la si è lasciata, e passa sopra la nuova; se saltata scende in fondo al mazzo, passando sotto. Con «Annulla» la carta rientra dal lato da cui era uscita.
+Before, the decided card vanished and the next one appeared abruptly, and it was not clear what had happened. Now the next card already sits below the active one, still and non-interactive, and the new card rises from there: the transition is continuous. The decided card exits in the direction of the choice (right if confirmed, left if another category is chosen) starting from where it was released, and passes over the new one; if skipped it goes down to the bottom of the deck, passing underneath. With «Annulla» ("Undo") the card comes back in from the side it left.
 
-Uscita in 280 ms con una curva che rallenta, entrata con `SPRING_SOFT`, nessun effetto di luce; con `prefers-reduced-motion` restano solo le dissolvenze (`MotionConfig reducedMotion="user"`). La carta attiva resta montata e azzera il proprio stato a ogni cambio di carta, così `AnimatePresence` può animare l'uscita.
+Exit in 280 ms with a decelerating curve, entry with `SPRING_SOFT`, no light effects; with `prefers-reduced-motion` only the fades remain (`MotionConfig reducedMotion="user"`). The active card stays mounted and resets its own state at every card change, so `AnimatePresence` can animate the exit.

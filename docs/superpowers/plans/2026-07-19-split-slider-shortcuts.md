@@ -1,45 +1,45 @@
-# Shortcut e input preciso per "Dividi" (SplitSlider) Implementation Plan
+# Shortcuts and precise input for "Dividi" (SplitSlider) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Aggiungere a `SplitSlider` (meccanismo "Dividi" nella schermata Spese) bottoni rapidi ÷2/÷3/÷4 e un campo numerico "Spesa effettiva" per impostare un valore preciso, perché lo slider da solo è troppo impreciso per un importo esatto.
+**Goal:** Add to `SplitSlider` (the "Dividi" ("Split") mechanism in the Spese ("Expenses") screen) quick ÷2/÷3/÷4 buttons and a "Spesa effettiva" ("Actual expense") numeric field to set a precise value, because the slider alone is too imprecise for an exact amount.
 
-**Architecture:** Logica di calcolo pura estratta in `components/domain/expenses/split-slider.utils.ts` (testabile con vitest, nessun DOM richiesto). Il componente `SplitSlider` resta l'unico consumer, aggiunge due nuovi controlli sopra allo slider esistente, tutti sincronizzati sullo stesso state `excluded`. `commit()` viene rifattorizzato per accettare il valore esplicitamente da salvare, invece di leggere lo state `excluded` per closure — necessario perché i nuovi handler chiamano `setExcluded(value)` e `commit(value)` nello stesso gestore sincrono, e lo state di React non è aggiornato immediatamente (leggere `excluded` subito dopo `setExcluded` darebbe il valore vecchio).
+**Architecture:** Pure calculation logic extracted into `components/domain/expenses/split-slider.utils.ts` (testable with vitest, no DOM required). The `SplitSlider` component remains the only consumer; it adds two new controls above the existing slider, all synchronized on the same `excluded` state. `commit()` is refactored to accept the value to save explicitly, instead of reading the `excluded` state via closure — needed because the new handlers call `setExcluded(value)` and `commit(value)` in the same synchronous handler, and React state is not updated immediately (reading `excluded` right after `setExcluded` would give the old value).
 
-**Tech Stack:** Next.js (App Router) + TypeScript, React state locale, `@base-ui/react` (Slider/Button/Input via `components/ui/*`), TanStack Query (`useUpdateTransactionMutation` già esistente), vitest per i test di logica pura.
+**Tech Stack:** Next.js (App Router) + TypeScript, local React state, `@base-ui/react` (Slider/Button/Input via `components/ui/*`), TanStack Query (existing `useUpdateTransactionMutation`), vitest for pure-logic tests.
 
 ## Global Constraints
 
-- Stringhe utente in italiano (vedi `CLAUDE.md` → Convenzioni componenti).
-- Nessun colore/raggio hardcoded: solo classi token Tailwind esistenti (già rispettato dal file, non introdurre nuovi valori).
-- Nessuna modifica a API, schema DB, `isValidExcludedAmount()` lato server: resta invariato, il client continua a inviare solo `excludedAmount` numerico.
-- JSDoc minimo (una riga `/**`) su ogni funzione pubblica esportata.
-- Il file `split-slider.tsx` non deve superare ~150 righe di JSX (vedi principio "Un componente, una responsabilità" in `CLAUDE.md`); la logica di calcolo va nel file `.utils.ts` separato, non inline nel componente.
+- User-facing strings in Italian (see `CLAUDE.md` → Component conventions).
+- No hardcoded colors/radii: only existing Tailwind token classes (already respected by the file, do not introduce new values).
+- No changes to the API, DB schema, or server-side `isValidExcludedAmount()`: it stays unchanged, the client keeps sending only a numeric `excludedAmount`.
+- Minimal JSDoc (one `/**` line) on every exported public function.
+- The `split-slider.tsx` file must not exceed ~150 lines of JSX (see the "One component, one responsibility" principle in `CLAUDE.md`); the calculation logic goes in the separate `.utils.ts` file, not inline in the component.
 
 ---
 
-## Stato di partenza (verificato nel codice)
+## Starting state (verified in the code)
 
-`components/domain/expenses/split-slider.tsx` esiste già con: slider singolo su `excludedAmount`, `commit()` che legge `excluded` da closure e chiama `useUpdateTransactionMutation` on `onValueCommitted`, testo esplicativo, riepilogo "Spesa effettiva / Esclusa dal conteggio" sotto lo slider. Nessun test automatico esiste per questo componente né per altri componenti UI in `components/domain/expenses/` (progetto non ha `jsdom`/Testing Library configurati in `vitest.config.ts` — solo test di logica pura, ambiente Node). `components/ui/button.tsx` espone `variant: "outline"` e `size: "sm"`; `components/ui/input.tsx` espone un `Input` standard basato su `@base-ui/react/input`.
+`components/domain/expenses/split-slider.tsx` already exists with: a single slider on `excludedAmount`, `commit()` that reads `excluded` from closure and calls `useUpdateTransactionMutation` on `onValueCommitted`, explanatory text, a "Spesa effettiva / Esclusa dal conteggio" ("Actual expense / Excluded from the count") summary below the slider. No automated test exists for this component or for other UI components in `components/domain/expenses/` (the project does not have `jsdom`/Testing Library configured in `vitest.config.ts` — only pure-logic tests, Node environment). `components/ui/button.tsx` exposes `variant: "outline"` and `size: "sm"`; `components/ui/input.tsx` exposes a standard `Input` based on `@base-ui/react/input`.
 
 ---
 
-### Task 1: Modulo di calcolo puro `split-slider.utils.ts`
+### Task 1: Pure calculation module `split-slider.utils.ts`
 
 **Files:**
 - Create: `components/domain/expenses/split-slider.utils.ts`
 - Test: `components/domain/expenses/split-slider.utils.test.ts`
 
 **Interfaces:**
-- Consumes: nessuna dipendenza da altri task.
+- Consumes: no dependency on other tasks.
 - Produces:
-  - `clampExcluded(rawExcluded: number, totalAmount: number): number` — riporta un valore nel range `[0, totalAmount]`, converte `NaN` in `0`.
-  - `computeSplitExcluded(totalAmount: number, n: number): number` — importo escluso per dividere `totalAmount` in `n` quote uguali, tenendone una come spesa effettiva (`totalAmount - totalAmount/n`), passato per `clampExcluded`.
-  - Usati dal Task 2.
+  - `clampExcluded(rawExcluded: number, totalAmount: number): number` — brings a value into the range `[0, totalAmount]`, converts `NaN` to `0`.
+  - `computeSplitExcluded(totalAmount: number, n: number): number` — excluded amount to divide `totalAmount` into `n` equal shares, keeping one as the actual expense (`totalAmount - totalAmount/n`), passed through `clampExcluded`.
+  - Used by Task 2.
 
-- [ ] **Step 1: Scrivi i test (falliranno: il modulo non esiste ancora)**
+- [ ] **Step 1: Write the tests (they will fail: the module does not exist yet)**
 
-Crea `components/domain/expenses/split-slider.utils.test.ts`:
+Create `components/domain/expenses/split-slider.utils.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -82,32 +82,32 @@ describe("computeSplitExcluded", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test, verifica che falliscano**
+- [ ] **Step 2: Run the tests, verify they fail**
 
 Run: `pnpm exec vitest run components/domain/expenses/split-slider.utils.test.ts`
-Expected: FAIL — `Cannot find module './split-slider.utils'` (o equivalente "failed to resolve import").
+Expected: FAIL — `Cannot find module './split-slider.utils'` (or the equivalent "failed to resolve import").
 
-- [ ] **Step 3: Implementa il modulo**
+- [ ] **Step 3: Implement the module**
 
-Crea `components/domain/expenses/split-slider.utils.ts`:
+Create `components/domain/expenses/split-slider.utils.ts`:
 
 ```ts
-/** Riporta un importo escluso nel range valido [0, totalAmount], sostituendo NaN con 0. */
+/** Brings an excluded amount into the valid range [0, totalAmount], replacing NaN with 0. */
 export function clampExcluded(rawExcluded: number, totalAmount: number): number {
   if (Number.isNaN(rawExcluded)) return 0;
   return Math.min(Math.max(rawExcluded, 0), totalAmount);
 }
 
-/** Calcola l'importo escluso per dividere un totale in n quote uguali, tenendone una come spesa effettiva. */
+/** Computes the excluded amount to divide a total into n equal shares, keeping one as the actual expense. */
 export function computeSplitExcluded(totalAmount: number, n: number): number {
   return clampExcluded(totalAmount - totalAmount / n, totalAmount);
 }
 ```
 
-- [ ] **Step 4: Esegui i test, verifica che passino**
+- [ ] **Step 4: Run the tests, verify they pass**
 
 Run: `pnpm exec vitest run components/domain/expenses/split-slider.utils.test.ts`
-Expected: PASS — 8 test, 0 fallimenti.
+Expected: PASS — 8 tests, 0 failures.
 
 - [ ] **Step 5: Commit**
 
@@ -118,21 +118,21 @@ git commit -m "feat: aggiunge calcolo puro per shortcut divisione spesa"
 
 ---
 
-### Task 2: Bottoni ÷2/÷3/÷4 e input "Spesa effettiva" in `SplitSlider`
+### Task 2: ÷2/÷3/÷4 buttons and "Spesa effettiva" input in `SplitSlider`
 
 **Files:**
-- Modify: `components/domain/expenses/split-slider.tsx` (intero file, sostituito come sotto)
+- Modify: `components/domain/expenses/split-slider.tsx` (whole file, replaced as below)
 
 **Interfaces:**
-- Consumes: `clampExcluded`, `computeSplitExcluded` da `./split-slider.utils` (Task 1).
-- Produces: nessuna nuova esportazione — `SplitSliderProps` invariata, nessun altro file dipende dagli interni di questo componente.
+- Consumes: `clampExcluded`, `computeSplitExcluded` from `./split-slider.utils` (Task 1).
+- Produces: no new exports — `SplitSliderProps` unchanged, no other file depends on this component's internals.
 
-- [ ] **Step 1: Sostituisci il contenuto di `components/domain/expenses/split-slider.tsx`**
+- [ ] **Step 1: Replace the contents of `components/domain/expenses/split-slider.tsx`**
 
 ```tsx
 "use client";
 
-/** UI "Dividi": ripartisce l'importo di una transazione tra spesa effettiva e quota esclusa dal conteggio. */
+/** "Dividi" UI: splits a transaction's amount between actual expense and the share excluded from the count. */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -243,26 +243,26 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
 }
 ```
 
-- [ ] **Step 2: Verifica i tipi**
+- [ ] **Step 2: Check types**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore in `split-slider.tsx` (verifica anche che non ci siano errori preesistenti scorrelati che confondano il risultato — se ce ne sono, isola quelli relativi a questo file).
+Expected: no errors in `split-slider.tsx` (also check that there are no unrelated pre-existing errors muddying the result — if there are, isolate the ones related to this file).
 
 - [ ] **Step 3: Lint**
 
 Run: `pnpm lint`
-Expected: nessun errore/warning su `split-slider.tsx`.
+Expected: no errors/warnings on `split-slider.tsx`.
 
-- [ ] **Step 4: Verifica manuale in browser (nessuna infrastruttura di test a componenti in questo progetto)**
+- [ ] **Step 4: Manual browser verification (no component test infrastructure in this project)**
 
-Avvia `pnpm dev`, apri la schermata Spese, apri "Dividi" su una transazione con importo con centesimi (es. €1.44):
-- Click ÷2: "Spesa effettiva" diventa €0.72, salvataggio parte subito (messaggio "Salvataggio in corso..." appare brevemente).
-- Click ÷3 poi ÷4: il valore si aggiorna coerentemente ogni volta, slider e testo riepilogo restano sincronizzati con l'input.
-- Digita un valore nel campo "Spesa effettiva" (es. "1.00") e premi Tab: il salvataggio parte on blur, slider e riepilogo si aggiornano.
-- Digita un valore fuori range (es. "999" con totale €1.44) e premi Invio: il valore viene clampato a €1.44 (spesa effettiva = totale, esclusa = 0).
-- Digita un valore vuoto/non numerico e fai blur: non deve rompere la UI (deve clampare a 0 o al valore precedente, nessun crash).
-- Trascina lo slider col mouse: nessun errore in console (regressione del fix precedente su `[value]` non iterabile).
-- Verifica in dark mode (toggle tema) che bottoni/input abbiano contrasto leggibile.
+Start `pnpm dev`, open the Spese screen, open "Dividi" on a transaction with a cents amount (e.g. €1.44):
+- Click ÷2: "Spesa effettiva" becomes €0.72, saving starts immediately (the "Salvataggio in corso..." ("Saving...") message appears briefly).
+- Click ÷3 then ÷4: the value updates consistently each time, slider and summary text stay in sync with the input.
+- Type a value in the "Spesa effettiva" field (e.g. "1.00") and press Tab: saving starts on blur, slider and summary update.
+- Type an out-of-range value (e.g. "999" with a €1.44 total) and press Enter: the value is clamped to €1.44 (actual expense = total, excluded = 0).
+- Type an empty/non-numeric value and blur: it must not break the UI (it must clamp to 0 or to the previous value, no crash).
+- Drag the slider with the mouse: no console errors (regression of the earlier fix on non-iterable `[value]`).
+- Check in dark mode (theme toggle) that buttons/input have readable contrast.
 
 - [ ] **Step 5: Commit**
 
@@ -273,8 +273,8 @@ git commit -m "feat: aggiunge shortcut divisione e input spesa effettiva a Split
 
 ---
 
-## Self-Review (svolto durante la scrittura del piano)
+## Self-Review (done while writing the plan)
 
-1. **Copertura spec**: bottoni ÷2÷3÷4 → Task 2 Step 1; input numerico "Spesa effettiva" con commit su blur/Enter → Task 2 Step 1; slider invariato sotto → Task 2 Step 1; validazione condivisa `clampExcluded` → Task 1; nessuna modifica API/DB → dichiarato nei Global Constraints, nessun task tocca `app/api/`. Tutte le sezioni della spec sono coperte.
-2. **Placeholder scan**: nessun TBD/TODO, ogni step ha codice completo.
-3. **Coerenza tipi**: `clampExcluded`/`computeSplitExcluded` stessa firma tra Task 1 (definizione) e Task 2 (uso); `commit(value: number)` sostituisce coerentemente ogni vecchia chiamata `commit` senza argomenti (bottoni, input, slider aggiornati insieme nello stesso task per evitare firme miste in file diversi).
+1. **Spec coverage**: ÷2÷3÷4 buttons → Task 2 Step 1; "Spesa effettiva" numeric input with commit on blur/Enter → Task 2 Step 1; slider unchanged below → Task 2 Step 1; shared `clampExcluded` validation → Task 1; no API/DB changes → stated in Global Constraints, no task touches `app/api/`. All spec sections are covered.
+2. **Placeholder scan**: no TBD/TODO, every step has complete code.
+3. **Type consistency**: `clampExcluded`/`computeSplitExcluded` have the same signature between Task 1 (definition) and Task 2 (use); `commit(value: number)` consistently replaces every old argument-less `commit` call (buttons, input, slider updated together in the same task to avoid mixed signatures across files).

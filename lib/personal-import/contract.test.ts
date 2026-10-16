@@ -62,7 +62,7 @@ describe("personal CSV validation and sandbox", () => {
     const sample = inputForModel(readRawFile('A,B\n' + Array.from({ length: 100 }, () => 'IT60X0542811101000000123456,test@example.test').join('\n')));
     expect(sample.rawCsv?.split('\n')).toHaveLength(101); expect(sample.rawCsv).toContain('test@example.test'); expect(sample.rawCsv).toContain('IT60X');
     vi.stubEnv("OPENROUTER_API_KEY", "synthetic-key"); vi.stubEnv("OPENROUTER_MODEL", "configured/model");
-    const fetcher = vi.fn().mockResolvedValue(Response.json({ choices: [{ message: { content: JSON.stringify({ kind: "javascript", code: "function(){return []}" }) } }] })); vi.stubGlobal("fetch", fetcher);
+    const fetcher = vi.fn().mockResolvedValue(Response.json({ choices: [{ message: { content: JSON.stringify({ kind: "javascript", code: "function(){return []}", metadata: { version: 1, institution: { name: "Example Bank", evidence: "user" }, delimiter: ";", columns: [] } }) } }] })); vi.stubGlobal("fetch", fetcher);
     await generateParser(table, "Example Bank");
     const body = JSON.parse(fetcher.mock.calls[0][1].body);
     expect(JSON.parse(body.messages[1].content)).toEqual({ sourceName: "Example Bank", rawCsv: csv });

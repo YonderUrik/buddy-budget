@@ -1,113 +1,113 @@
-# Investimenti, Fase 4: fiscalità italiana e sezione Proventi
+# Investimenti, Phase 4: Italian taxation and the Proventi section
 
-**Data**: 2026-09-30
-**Stato**: implementata il 2026-09-30 nella stessa sessione del design, branch `claude/fase-4-investimenti-dividenti-c1m3cg`. Non ancora mergiata.
-**Spec madre**: `2026-09-27-investimenti-design.md`, sezione 1 (roadmap): "Plus/minusvalenze, zaino delle minusvalenze con scadenza a 4 anni, distinzione redditi diversi / redditi di capitale (le plus degli ETF armonizzati non compensano le minus), stima tasse prima di una vendita, bollo 0,2%".
+**Date**: 2026-09-30
+**Status**: implemented on 2026-09-30 in the same session as the design, branch `claude/fase-4-investimenti-dividenti-c1m3cg`. Not yet merged.
+**Parent spec**: `2026-09-27-investimenti-design.md`, section 1 (roadmap): "Plusvalenze/minusvalenze (capital gains/losses), zainetto delle minusvalenze (tax-loss carryforward) expiring after 4 years, distinction between redditi diversi / redditi di capitale (miscellaneous income / capital income: gains on harmonized ETFs don't offset losses), tax estimate before a sale, bollo (stamp duty) 0.2%".
 
-Richiesta dell'utente: "Procediamo con la fase 4 degli investimenti. Inoltre sto notando che non abbiamo una parte dedicata a dividendi e simili" (oggi c'è solo la card "Dividendi e cedole" della Fase 2, in fondo a una pagina di 11 card).
+User's request: "Procediamo con la fase 4 degli investimenti. Inoltre sto notando che non abbiamo una parte dedicata a dividendi e simili" ("Let's proceed with phase 4 of investments. Also I'm noticing we don't have a part dedicated to dividends and the like") (today there's only Phase 2's "Dividendi e cedole" ("Dividends and coupons") card, at the bottom of a page with 11 cards).
 
-**Avvertenza di prodotto**: sono stime per capire i numeri, non un calcolo fiscale certificato. La UI lo dice nella scheda Tasse.
+**Product disclaimer**: these are estimates to understand the numbers, not a certified tax calculation. The UI says so in the Tasse (Taxes) tab.
 
-## Scelte dell'utente (2026-09-30)
+## User choices (2026-09-30)
 
-| Domanda | Scelta |
+| Question | Choice |
 |---|---|
-| Dove mettere proventi e tasse | **Schede in Investimenti**; poi, su richiesta dell'utente a metà lavoro ("teniamo la sezione investimenti più pulita e semplice possibile"), anche il resto della pagina diviso in schede tematiche |
-| Cosa nella parte proventi | **Tutto**: previsione 12 mesi, dividendi non registrati, incassi mese per mese lordo/netto con rendimento e crescita del dividendo |
-| Regime fiscale | **Scelto per portafoglio** (amministrato / dichiarativo), default amministrato |
+| Where to put income and taxes | **Tabs in Investimenti (Investments)**; then, at the user's request halfway through the work ("teniamo la sezione investimenti più pulita e semplice possibile" — "let's keep the investments section as clean and simple as possible"), the rest of the page split into thematic tabs too |
+| What goes into the income part | **Everything**: 12-month forecast, unrecorded dividends, month-by-month receipts gross/net with yield and dividend growth |
+| Tax regime | **Chosen per portfolio** (amministrato / dichiarativo — administered, where the broker withholds the tax / declarative, where the taxpayer reports it in the tax return), default amministrato |
 
-## 1. Struttura a schede
+## 1. Tab structure
 
-La pagina Investimenti aveva 11 card una sotto l'altra. Ora sei schede con URL propri, la prima con solo l'essenziale:
+The Investimenti page had 11 cards one below the other. Now six tabs with their own URLs, the first with only the essentials:
 
-| Scheda | Route | Contenuto |
+| Tab | Route | Content |
 |---|---|---|
-| Portafoglio | `/investimenti` | valore e guadagno (card principale col grafico), posizioni, PAC |
-| Performance | `/investimenti/performance` | selettore del periodo, "Quanto sta rendendo" (con confronto), "Quanto rischia", heatmap "Rendimento nel tempo" |
-| Diversificazione | `/investimenti/diversificazione` | composizione per tipo e valuta, settori e aree, sovrapposizioni, allocazione obiettivo |
-| Proventi | `/investimenti/proventi` | dividendi e cedole (sezione 4) |
-| Tasse | `/investimenti/tasse` | fiscalità (sezione 3) |
-| Operazioni | `/investimenti/operazioni` | elenco delle operazioni per mese |
+| Portafoglio (Portfolio) | `/investimenti` | value and gain (main card with the chart), positions, PAC (piano di accumulo, recurring investment plan) |
+| Performance | `/investimenti/performance` | period selector, "Quanto sta rendendo" ("How much it's returning", with comparison), "Quanto rischia" ("How much risk"), "Rendimento nel tempo" ("Return over time") heatmap |
+| Diversificazione (Diversification) | `/investimenti/diversificazione` | composition by type and currency, sectors and regions, overlaps, target allocation |
+| Proventi (Income) | `/investimenti/proventi` | dividends and coupons (section 4) |
+| Tasse (Taxes) | `/investimenti/tasse` | taxation (section 3) |
+| Operazioni (Transactions) | `/investimenti/operazioni` | list of transactions by month |
 
-- `app/(app)/investimenti/layout.tsx` (client): titolo, bottoni Importa/Registra, barra delle schede (`InvestmentsTabs`: link veri, `aria-current`, scorrevole su mobile con la scheda attiva portata in vista, con una piccola icona lucide da 14px per scheda: Wallet, TrendingUp, ChartPie, HandCoins, Landmark, ArrowLeftRight; colore del primario sulla scheda attiva, attenuato sulle altre), dialog "Registra operazione" e import condivisi. Le pagine aprono il dialog precompilato con `useInvestmentsActions()` / `useRegisterFromPlan()` (`components/domain/investments/investments-actions.tsx`).
-- Tutte le schede usano la stessa query dell'overview (`useInvestmentsView`, `lib/queries/investments-view.ts`) al periodo di default (`3mesi`): cambiare scheda non riscarica niente. Performance ha il suo selettore del periodo; la heatmap e Tasse usano `max` (Tasse serve il valore a fine anno per il bollo).
-- Stati comuni (caricamento, errore, portafoglio vuoto) in `InvestmentsViewGate`.
-- La card "Dividendi e cedole" passa da Portafoglio a Proventi.
+- `app/(app)/investimenti/layout.tsx` (client): title, Importa/Registra (Import/Record) buttons, tab bar (`InvestmentsTabs`: real links, `aria-current`, scrollable on mobile with the active tab brought into view, with a small 14px lucide icon per tab: Wallet, TrendingUp, ChartPie, HandCoins, Landmark, ArrowLeftRight; primary color on the active tab, dimmed on the others), shared "Registra operazione" ("Record transaction") and import dialogs. Pages open the prefilled dialog with `useInvestmentsActions()` / `useRegisterFromPlan()` (`components/domain/investments/investments-actions.tsx`).
+- All tabs use the same overview query (`useInvestmentsView`, `lib/queries/investments-view.ts`) at the default period (`3mesi`): switching tab reloads nothing. Performance has its own period selector; the heatmap and Tasse use `max` (Tasse needs the year-end value for the bollo).
+- Common states (loading, error, empty portfolio) in `InvestmentsViewGate`.
+- The "Dividendi e cedole" card moves from Portafoglio to Proventi.
 
-## 2. Dati nuovi (migration `0005_investimenti_fase_4`)
+## 2. New data (migration `0005_investimenti_fase_4`)
 
-| Tabella / colonna | Cosa |
+| Table / column | What |
 |---|---|
 | `investment_portfolios.tax_regime` | `amministrato` (default) / `dichiarativo` |
-| `user_instrument_settings` (utente, strumento) | `tax_rate` (0,26 / 0,125, null = automatico), `tax_harmonized` (null = automatico), per le obbligazioni `coupon_rate` (tasso annuo lordo), `coupon_frequency` (1/2/4), `maturity_date`. Per utente perché gli strumenti sono condivisi: un dato inserito da uno non cambia i conti di un altro |
-| `investment_tax_carryforwards` | minusvalenze pregresse inserite a mano (anno di origine, importo, nota): lo zaino di Fineco da prima che l'utente usasse l'app |
-| `instrument_dividends` (strumento, data di stacco) | dividendo per quota nella valuta dello strumento, dalla fonte; comune a tutti |
-| `instruments.dividends_fetched_at` | ultimo scaricamento dello storico dividendi |
-| `user_dismissed_dividends` (utente, strumento, data) | proposte "da registrare" ignorate |
+| `user_instrument_settings` (user, instrument) | `tax_rate` (0.26 / 0.125, null = automatic), `tax_harmonized` (null = automatic), for bonds `coupon_rate` (gross annual rate), `coupon_frequency` (1/2/4), `maturity_date`. Per user because instruments are shared: data entered by one doesn't change another's figures |
+| `investment_tax_carryforwards` | prior losses entered by hand (year of origin, amount, note): Fineco's zainetto from before the user started using the app |
+| `instrument_dividends` (instrument, ex-dividend date) | dividend per unit in the instrument's currency, from the source; shared by all |
+| `instruments.dividends_fetched_at` | last download of the dividend history |
+| `user_dismissed_dividends` (user, instrument, date) | ignored "to record" suggestions |
 
-**Aliquota automatica**: la correzione dell'utente, altrimenti 12,5% per le obbligazioni il cui nome indica un titolo di Stato (BTP, BOT, CCT, CTZ, Bund, OAT, Bonos, Treasury…), altrimenti l'aliquota salvata sullo strumento (26% di default: la UI di creazione non l'ha mai chiesta). **Armonizzato automatico**: la correzione, altrimenti il valore dello strumento, altrimenti sì (un ETF quotato in Europa è quasi sempre UCITS).
+**Automatic rate**: the user's correction, otherwise 12.5% for bonds whose name indicates a government bond (BTP, BOT, CCT, CTZ, Bund, OAT, Bonos, Treasury…), otherwise the rate saved on the instrument (26% by default: the creation UI never asked for it). **Automatic harmonized**: the correction, otherwise the instrument's value, otherwise yes (an ETF listed in Europe is almost always UCITS).
 
-## 3. Motore fiscale (`lib/calc/taxes.ts`, funzioni pure)
+## 3. Tax engine (`lib/calc/taxes.ts`, pure functions)
 
-Ogni vendita o rimborso produce una plus/minusvalenza col **costo medio ponderato** (commissioni di acquisto incluse, di vendita dedotte, imposte trattenute escluse), convertita alla valuta utente coi cambi delle operazioni (la componente valutaria fa parte della plusvalenza, come per il fisco).
+Each sale or redemption produces a plusvalenza/minusvalenza (capital gain/loss) with the **weighted average cost** (purchase commissions included, sale commissions deducted, withheld taxes excluded), converted to the user's currency with the transactions' exchange rates (the currency component is part of the capital gain, as for the tax authorities).
 
-**Classificazione**:
+**Classification**:
 
-| Strumento | Guadagno | Perdita |
+| Instrument | Gain | Loss |
 |---|---|---|
-| Azioni, obbligazioni, ETC | reddito diverso (compensabile) | minusvalenza nello zaino |
-| ETF, fondi | **reddito di capitale**: tassato per intero, non compensa lo zaino | minusvalenza nello zaino |
-| Crypto | categoria a parte: sempre in dichiarazione, compensa solo con crypto | zaino crypto |
+| Stocks, bonds, ETCs | reddito diverso (miscellaneous income, can be offset) | loss into the zainetto |
+| ETFs, funds | **reddito di capitale** (capital income): taxed in full, doesn't offset the zainetto | loss into the zainetto |
+| Crypto | separate category: always in the tax return, offsets only against crypto | crypto zainetto |
 
-**Aliquote**: 26%, 12,5% per i titoli di Stato. Per compensare tra aliquote diverse tutto si porta a "base al 26%": una plus o minus al 12,5% vale il 48,08% (12,5/26). Crypto: 26% fino al 2025, **33% dal 2026** (Legge di Bilancio 2025); franchigia di 2.000 € di plusvalenze nette annue fino al 2024. ETF non armonizzati: in realtà tassati a IRPEF ordinaria in dichiarazione; qui stimati al 26% con avviso.
+**Rates**: 26%, 12.5% for government bonds. To offset across different rates everything is brought to a "26% basis": a gain or loss at 12.5% counts as 48.08% (12.5/26). Crypto: 26% up to 2025, **33% from 2026** (Legge di Bilancio 2025, the 2025 Budget Law); €2,000 allowance on net annual capital gains up to 2024. Non-harmonized ETFs: actually taxed at ordinary IRPEF (personal income tax) in the tax return; here estimated at 26% with a warning.
 
-**Zaino**: una minusvalenza dell'anno Y si usa fino al 31/12 di Y+4, le più vecchie per prime.
+**Zainetto**: a loss from year Y can be used until 31/12 of Y+4, oldest first.
 
-- **Amministrato** (il broker fa da sostituto d'imposta): le operazioni si scorrono in ordine di data; una plus usa lo zaino disponibile in quel momento e il resto si tassa subito; una minus entra nello zaino e compensa solo plus **successive**. Le crypto seguono comunque le regole del dichiarativo (il broker non le gestisce).
-- **Dichiarativo**: per ogni anno si sommano plus e minus (in base al 26%); se il netto è positivo si usa lo zaino degli anni precedenti, se negativo diventa zaino dell'anno.
+- **Amministrato** (the broker acts as withholding agent): transactions are processed in date order; a gain uses the zainetto available at that moment and the rest is taxed immediately; a loss goes into the zainetto and offsets only **subsequent** gains. Crypto follows the dichiarativo rules anyway (the broker doesn't handle them).
+- **Dichiarativo**: for each year gains and losses are summed (on a 26% basis); if the net is positive the zainetto from previous years is used, if negative it becomes the year's zainetto.
 
-**Minusvalenze pregresse** (inserite a mano): entrano nello zaino con il loro anno; in amministrato disponibili dal 1° gennaio di quell'anno, in dichiarativo dagli anni successivi.
+**Prior losses** (entered by hand): they go into the zainetto with their year; in amministrato available from 1 January of that year, in dichiarativo from the following years.
 
-**Per anno**: plusvalenze, minusvalenze, redditi di capitale da ETF, zaino usato / generato / scaduto, imposte stimate, imposte trattenute registrate sulle vendite, dividendi e cedole (lordo e ritenute registrate), bollo.
+**Per year**: capital gains, capital losses, capital income from ETFs, zainetto used / generated / expired, estimated taxes, withheld taxes recorded on sales, dividends and coupons (gross and recorded withholdings), bollo.
 
-**Bollo**: 0,2% del valore del portafoglio (crypto comprese: per loro vale l'imposta equivalente, in dichiarazione) al 31/12 di ogni anno, in proporzione ai giorni di possesso nel primo anno; per l'anno in corso "se il valore restasse questo" (0,2% del valore di oggi, proporzionato ai giorni di quest'anno in cui c'era qualcosa).
+**Bollo**: 0.2% of the portfolio value (crypto included: for them the equivalent tax applies, in the tax return) at 31/12 of each year, pro rata to the days held in the first year; for the current year "se il valore restasse questo" ("if the value stayed like this": 0.2% of today's value, pro rata to the days this year in which something was held).
 
-**Prima di vendere** (simulatore): si aggiunge al calcolo una vendita ipotetica di oggi (quote scelte, ultimo prezzo) e si confrontano le imposte e lo zaino dell'anno con e senza: così vale per entrambi i regimi con le stesse regole.
+**Before selling** (simulator): a hypothetical sale today (chosen units, latest price) is added to the computation and the year's taxes and zainetto are compared with and without it: this way it works for both regimes with the same rules.
 
-**Opportunità**: zaino in scadenza a fine anno e guadagni non realizzati compensabili (azioni, obbligazioni, ETC, non ETF); posizioni in perdita la cui vendita metterebbe minusvalenze nello zaino.
+**Opportunities**: zainetto expiring at year end and unrealized gains that can be offset (stocks, bonds, ETCs, not ETFs); losing positions whose sale would put losses into the zainetto.
 
 ## 4. Proventi
 
-### Storico dividendi per quota (fonte)
+### Dividend-per-unit history (source)
 
-Yahoo `chart` con `events=div` (intervallo mensile, 10 anni): date di stacco e importo per quota, già corretto per gli split (quindi espresso nelle quote di oggi). Solo azioni, ETF, fondi con simbolo Yahoo. Il cron `market-prices` aggiorna gli storici più vecchi di 7 giorni (massimo 20 per giro); la pagina scarica in `after()` quelli mai scaricati (massimo 5, un tentativo all'ora per strumento). Mai un errore propagato. Fonte finta per lo sviluppo (ENEL semestrale, AAPL trimestrale, un ETF a distribuzione `VHYL.MI` trimestrale).
+Yahoo `chart` with `events=div` (monthly interval, 10 years): ex-dividend dates and amount per unit, already adjusted for splits (so expressed in today's units). Only stocks, ETFs, funds with a Yahoo symbol. The `market-prices` cron updates histories older than 7 days (at most 20 per run); the page downloads in `after()` those never downloaded (at most 5, one attempt per hour per instrument). An error is never propagated. Fake source for development (ENEL semi-annual, AAPL quarterly, a distributing ETF `VHYL.MI` quarterly).
 
-### Calcoli (`lib/investments/dividends.ts`, funzioni pure)
+### Computations (`lib/investments/dividends.ts`, pure functions)
 
-- **Dividendi da registrare**: per ogni stacco dalla prima operazione a oggi, le quote possedute alla chiusura del giorno prima (portate alle quote di oggi con gli split successivi, come l'importo di Yahoo). Se l'utente le possedeva e non c'è un dividendo registrato dello stesso strumento tra 5 giorni prima e 60 giorni dopo lo stacco (ogni dividendo registrato "copre" un solo stacco), si propone: lordo = quote × dividendo per quota, ritenuta stimata con l'aliquota dello strumento. Stessa cosa per le cedole delle obbligazioni con tasso e scadenza inseriti. "Registra" apre il form precompilato (data = stacco, da correggere con quella di pagamento): niente scrittura automatica, perché l'importo netto vero lo dice il broker e oggi un'operazione non si modifica dalla UI. "Ignora" la nasconde per sempre.
-- **Previsione 12 mesi**: per le obbligazioni con tasso e scadenza, le cedole future (nominale × tasso / frequenza) e il rimborso a scadenza (mostrato ma non contato come provento). Periodo: i 12 mesi solari a partire dal prossimo. Per gli altri, gli stacchi dello stesso periodo un anno prima spostati di un anno × quote di oggi. Senza storico della fonte, i dividendi e le cedole registrati in quel periodo, riproporzionati alle quote di oggi. Netto = lordo × (1 − aliquota): ritenute estere non considerate, lo si dice. Raggruppata per mese di stacco.
-- **Incassi mese per mese**: lordo (lordo × cambio), ritenute e commissioni registrate, netto; per anno.
-- **Per strumento**: incassato netto 12 mesi, rendimento sul costo, rendimento attuale (lordo previsto / valore di oggi), crescita annua del dividendo per quota (CAGR sugli anni solari completi, fino a 5, con almeno 2 anni pagati).
+- **Dividends to record**: for each ex-date from the first transaction to today, the units held at the close of the previous day (brought to today's units with subsequent splits, like Yahoo's amount). If the user held them and there's no recorded dividend of the same instrument between 5 days before and 60 days after the ex-date (each recorded dividend "covers" only one ex-date), it is suggested: gross = units × dividend per unit, withholding estimated with the instrument's rate. Same for bond coupons with rate and maturity entered. "Registra" ("Record") opens the prefilled form (date = ex-date, to be corrected with the payment date): no automatic writing, because the true net amount is stated by the broker and today a transaction can't be edited from the UI. "Ignora" ("Ignore") hides it forever.
+- **12-month forecast**: for bonds with rate and maturity, future coupons (face value × rate / frequency) and redemption at maturity (shown but not counted as income). Period: the 12 calendar months starting from next month. For the others, the ex-dates of the same period one year earlier shifted by one year × today's units. Without source history, the dividends and coupons recorded in that period, rescaled to today's units. Net = gross × (1 − rate): foreign withholdings not considered, this is stated. Grouped by ex-date month.
+- **Month-by-month receipts**: gross (gross × exchange rate), recorded withholdings and commissions, net; per year.
+- **Per instrument**: net received over 12 months, yield on cost, current yield (expected gross / today's value), annual dividend-per-unit growth (CAGR over complete calendar years, up to 5, with at least 2 years paid).
 
-## 5. Interfaccia
+## 5. Interface
 
-**Proventi**: riepilogo (card della Fase 2), "Prossimi 12 mesi" (i 12 mesi solari dal prossimo: totale netto, barre per mese, elenco dei prossimi incassi), "Da registrare" (Registra / Ignora, e "Ignora le N più vecchie di un anno" per chi ha importato uno storico senza dividendi), "Mese per mese" (anno selezionabile, barre impilate netto + ritenute), "Per strumento" con "Cedole" per inserire tasso e scadenza dei BTP.
+**Proventi**: summary (Phase 2 card), "Prossimi 12 mesi" ("Next 12 months": the 12 calendar months from next month: net total, bars per month, list of upcoming receipts), "Da registrare" ("To record": Registra / Ignora, and "Ignora le N più vecchie di un anno" ("Ignore the N older than a year") for those who imported a history without dividends), "Mese per mese" ("Month by month": selectable year, stacked bars net + withholdings), "Per strumento" ("By instrument") with "Cedole" ("Coupons") to enter rate and maturity of BTPs.
 
-**Tasse**: regime (selettore con spiegazione), "Anno" (selettore, cifre dell'anno e confronto stima/trattenute), "Zaino" (disponibile, scadenze per anno, minusvalenze pregresse con aggiungi/elimina), "Prima di vendere", "Opportunità", "Impostazioni fiscali degli strumenti" (aliquota e armonizzato per strumento, dialog condiviso con le cedole).
+**Tasse**: regime (selector with explanation), "Anno" ("Year": selector, the year's figures and estimate/withheld comparison), "Zaino" (available, expiries by year, prior losses with add/delete), "Prima di vendere" ("Before selling"), "Opportunità" ("Opportunities"), "Impostazioni fiscali degli strumenti" ("Instruments' tax settings": rate and harmonized per instrument, dialog shared with coupons).
 
-## 6. Route
+## 6. Routes
 
-- `PATCH /api/investments/portfolio`: anche `taxRegime`.
-- `PUT /api/instruments/[id]/settings`: impostazioni fiscali e cedole dell'utente (tutto null = cancella).
+- `PATCH /api/investments/portfolio`: also `taxRegime`.
+- `PUT /api/instruments/[id]/settings`: the user's tax settings and coupons (all null = delete).
 - `POST /api/investments/tax-carryforwards`, `DELETE /api/investments/tax-carryforwards/[id]`.
-- `POST` / `DELETE /api/investments/dividends/dismissed` (`{ items: [...] }`, una o più proposte).
-- I dati nuovi arrivano con `GET /api/investments/overview` (`loadInvestmentData`), che avvia anche lo scaricamento dei dividendi mancanti.
-- Eventi Umami: `investment_tax_regime_set`, `instrument_settings_saved`, `tax_carryforward_added`, `investment_dividend_dismissed`. Export e reset dell'account includono le tabelle per utente nuove.
+- `POST` / `DELETE /api/investments/dividends/dismissed` (`{ items: [...] }`, one or more suggestions).
+- The new data arrives with `GET /api/investments/overview` (`loadInvestmentData`), which also starts downloading missing dividends.
+- Umami events: `investment_tax_regime_set`, `instrument_settings_saved`, `tax_carryforward_added`, `investment_dividend_dismissed`. Account export and reset include the new per-user tables.
 
-## Rimandato consapevolmente
+## Knowingly deferred
 
-- Ritenute estere sui dividendi (credito d'imposta, 15% USA ecc.): la previsione del netto usa solo l'aliquota italiana.
-- Quadri della dichiarazione (RT/RM/RW) compilati: si danno solo le cifre per anno.
-- Date di pagamento dei dividendi (Yahoo dà solo lo stacco).
-- Aliquota "mista" degli ETF obbligazionari con titoli di Stato (si imposta a mano un'aliquota tra le due disponibili).
-- Registrazione automatica dei dividendi senza conferma.
+- Foreign withholding on dividends (tax credit, 15% USA etc.): the net forecast uses only the Italian rate.
+- Completed tax return sections (RT/RM/RW): only the per-year figures are given.
+- Dividend payment dates (Yahoo only gives the ex-date).
+- "Mixed" rate of bond ETFs with government bonds (a rate between the two available is set by hand).
+- Automatic recording of dividends without confirmation.

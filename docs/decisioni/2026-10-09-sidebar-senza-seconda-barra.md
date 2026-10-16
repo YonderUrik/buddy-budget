@@ -1,7 +1,7 @@
-# Sidebar senza seconda barra di scroll
+# Sidebar without a second scrollbar
 
-Data: 2026-10-09
+Date: 2026-10-09
 
-Su finestre basse (sotto ~780 px di altezza) il riepilogo sotto le voci del menu supera lo spazio e la nav della sidebar scorreva da sola, mostrando al passaggio del mouse una barra accanto a quella della pagina: in Liquidità · Movimenti, che è lunga, si vedevano due barre una vicina all'altra.
-La nav resta scorrevole (rotella, tocco, tastiera) ma non disegna più la barra (`.sidebar-nav` in `app/globals.css`). Resta quindi una sola barra visibile, quella della pagina.
-Aperto: se il riepilogo dovesse crescere ancora, valutare di nascondere le righe meno importanti sulle finestre basse invece di farle scorrere.
+On short windows (below ~780 px in height) the summary below the menu items exceeds the space and the sidebar nav scrolled on its own, showing on mouse hover a scrollbar next to the page's: in Liquidità · Movimenti, which is long, two scrollbars were visible side by side.
+The nav stays scrollable (wheel, touch, keyboard) but no longer draws the bar (`.sidebar-nav` in `app/globals.css`). So only one visible scrollbar remains, the page's.
+Open: if the summary grows further, consider hiding the less important rows on short windows instead of making them scroll.

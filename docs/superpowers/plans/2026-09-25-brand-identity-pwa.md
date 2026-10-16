@@ -1,66 +1,66 @@
-# Brand identity + PWA installabile Implementation Plan
+# Brand identity + installable PWA Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Integrare il brand BuddyBudget (logo del designer, palette navy/azzurro/giallo) in tutta l'app e renderla installabile come PWA su desktop/iOS/Android.
+**Goal:** Integrate the BuddyBudget brand (the designer's logo, navy/light blue/yellow palette) across the whole app and make it installable as a PWA on desktop/iOS/Android.
 
-**Architecture:** Sostituzione dei valori dei design token CSS esistenti in `app/globals.css` (nessun nuovo token, nessuna nuova architettura), sostituzione degli asset logo/icona nei punti dove oggi compare un placeholder (`Wallet` lucide, lettera "B" testuale), aggiunta di `app/manifest.ts` (Next.js file convention) e metadata PWA in `app/layout.tsx`. Nessuna modifica a DB, API o logica di dominio.
+**Architecture:** Replacement of the values of the existing CSS design tokens in `app/globals.css` (no new tokens, no new architecture), replacement of the logo/icon assets wherever a placeholder appears today (lucide `Wallet`, text letter "B"), addition of `app/manifest.ts` (Next.js file convention) and PWA metadata in `app/layout.tsx`. No changes to DB, API or domain logic.
 
-**Tech Stack:** Next.js 16 App Router (file convention `app/manifest.ts`, `app/icon.svg`), Tailwind CSS v4 (`@theme inline` già esistente), asset SVG/PNG statici in `public/`.
+**Tech Stack:** Next.js 16 App Router (file convention `app/manifest.ts`, `app/icon.svg`), Tailwind CSS v4 (`@theme inline` already in place), static SVG/PNG assets in `public/`.
 
 **Spec:** `docs/superpowers/specs/2026-09-25-brand-identity-pwa-design.md`
 
 ## Global Constraints
 
-- Nessun colore esadecimale o raggio hardcoded nei componenti: solo classi token/`var(--token)` (regola CLAUDE.md già in vigore) — gli hex nuovi vivono **solo** in `app/globals.css`.
-- `--pos`/`--pos-soft`/`--neg`/`--neg-soft` restano invariati (semantici, non-brand).
-- Nessun service worker, nessuna cache offline, nessun wrapper nativo store — solo manifest + icone.
-- Font invariati (Space Grotesk / Hanken Grotesk).
-- JSDoc minimo su ogni componente toccato, coerente con lo stile esistente nel file.
-- Contrasto testo/sfondo almeno AA (4.5:1 per testo normale) su ogni coppia foreground/background introdotta o modificata.
-- Il file `Archive.zip` nella root del repo (consegna del designer, untracked in git) va eliminato a fine Task 1 una volta estratti gli asset necessari — non va committato.
+- No hardcoded hex colors or radii in components: only token classes/`var(--token)` (CLAUDE.md rule already in force) — the new hex values live **only** in `app/globals.css`.
+- `--pos`/`--pos-soft`/`--neg`/`--neg-soft` stay unchanged (semantic, not brand).
+- No service worker, no offline cache, no native store wrapper — only manifest + icons.
+- Fonts unchanged (Space Grotesk / Hanken Grotesk).
+- Minimal JSDoc on every touched component, consistent with the existing style in the file.
+- Text/background contrast at least AA (4.5:1 for normal text) on every foreground/background pair introduced or changed.
+- The `Archive.zip` file in the repo root (the designer's delivery, untracked in git) must be deleted at the end of Task 1 once the needed assets are extracted — it must not be committed.
 
 ## Review Focus
 
-- **Contrasto testo su superficie**: `--sidebar-foreground` su `--sidebar` navy, `--primary-foreground` su `--primary` azzurro, `--accent-foreground` su `--accent` giallo-soft, in entrambi i temi — un colore scelto "a occhio" può scendere sotto AA e rendere illeggibili menu/bottoni.
-- **Icona PWA mancante o rotta**: se un path in `manifest.ts` non corrisponde a un file realmente copiato in `public/icons/`, l'installazione PWA fallisce silenziosamente (nessun errore visibile in UI, solo prompt "Aggiungi a Home" assente) — verificare che ogni path referenziato esista su disco prima di committare.
-- **Sidebar navy anche in tema chiaro**: è un cambio di comportamento esplicito (prima la sidebar era chiara in tema chiaro) — un elemento che assumeva sidebar chiara (es. `border-sidebar-border` pensato per essere sottile su sfondo chiaro) potrebbe risultare invisibile o troppo tenue su navy; verificare visivamente hover/active/focus state di ogni voce nav in entrambi i temi.
-- **Componente `LoginStory`/`AuthLayout`**: usa `primary-foreground` per quasi tutto il testo del pannello sinistro, assumendo che `--primary` resti uno sfondo sufficientemente scuro/saturo da ospitare testo bianco-quasi-puro — con `--primary` ora azzurro (`#187E98`/`#219EBC`, più chiaro del verde bosco precedente) va controllato che `--primary-foreground` resti leggibile (bianco puro `#FFFFFF` scelto apposta nella spec per questo).
-- **Favicon multi-formato**: `app/icon.svg` convive con `app/favicon.ico` preesistente — se un browser richiede `favicon.ico` e Next non lo serve più perché la convention `icon.svg` lo sostituisce silenziosamente, va verificato che entrambi restino raggiungibili (nessuna rimozione del file `.ico` in questo piano, per non rompere client legacy).
+- **Text-on-surface contrast**: `--sidebar-foreground` on navy `--sidebar`, `--primary-foreground` on light blue `--primary`, `--accent-foreground` on soft-yellow `--accent`, in both themes — a color chosen "by eye" can drop below AA and make menus/buttons unreadable.
+- **Missing or broken PWA icon**: if a path in `manifest.ts` does not match a file actually copied into `public/icons/`, PWA installation fails silently (no visible error in the UI, only the "Add to Home Screen" prompt missing) — check that every referenced path exists on disk before committing.
+- **Navy sidebar in the light theme too**: this is an explicit behavior change (before, the sidebar was light in the light theme) — an element that assumed a light sidebar (e.g. `border-sidebar-border` meant to be subtle on a light background) could end up invisible or too faint on navy; visually check the hover/active/focus states of every nav item in both themes.
+- **`LoginStory`/`AuthLayout` component**: uses `primary-foreground` for almost all the text of the left panel, assuming that `--primary` stays a dark/saturated enough background to host near-pure-white text — with `--primary` now light blue (`#187E98`/`#219EBC`, lighter than the previous forest green) check that `--primary-foreground` stays readable (pure white `#FFFFFF` chosen on purpose in the spec for this).
+- **Multi-format favicon**: `app/icon.svg` coexists with the pre-existing `app/favicon.ico` — if a browser requests `favicon.ico` and Next no longer serves it because the `icon.svg` convention silently replaces it, check that both stay reachable (no removal of the `.ico` file in this plan, so as not to break legacy clients).
 
 ---
 
-## Mappa file
+## File map
 
-**Nuovi:**
-- `public/brand/logo-full-navy.svg`, `public/brand/logo-full-white.svg`, `public/brand/logo-mark.svg` — asset logo statici
-- `public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/apple-touch-icon.png` — icone PWA
-- `app/icon.svg` — favicon Next.js (Next lo serve automaticamente su `/icon.svg`, convention route)
-- `app/manifest.ts` — manifest PWA (Next.js file convention, servito su `/manifest.webmanifest`)
+**New:**
+- `public/brand/logo-full-navy.svg`, `public/brand/logo-full-white.svg`, `public/brand/logo-mark.svg` — static logo assets
+- `public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/apple-touch-icon.png` — PWA icons
+- `app/icon.svg` — Next.js favicon (Next serves it automatically at `/icon.svg`, route convention)
+- `app/manifest.ts` — PWA manifest (Next.js file convention, served at `/manifest.webmanifest`)
 
-**Modificati:**
-- `app/globals.css` — token colore `:root`/`.dark`
-- `components/layout/sidebar.tsx` — logomark al posto della lettera "B" testuale (righe 249-261)
-- `components/layout/mobile-topbar.tsx` — logomark accanto al testo brand
-- `app/(auth)/layout.tsx` — logomark al posto dell'icona `Wallet` (righe 1, 11-16, 40-43)
+**Modified:**
+- `app/globals.css` — `:root`/`.dark` color tokens
+- `components/layout/sidebar.tsx` — logomark instead of the text letter "B" (lines 249-261)
+- `components/layout/mobile-topbar.tsx` — logomark next to the brand text
+- `app/(auth)/layout.tsx` — logomark instead of the `Wallet` icon (lines 1, 11-16, 40-43)
 - `app/layout.tsx` — `viewport`/`themeColor` export, `apple-touch-icon` link
 
-**Rimossi:** nessuno (asset esistenti come `app/favicon.ico` restano, come da Review Focus sopra).
+**Removed:** none (existing assets like `app/favicon.ico` stay, as per the Review Focus above).
 
 ---
 
-### Task 1: Estrazione asset logo
+### Task 1: Logo asset extraction
 
 **Files:**
 - Create: `public/brand/logo-full-navy.svg`, `public/brand/logo-full-white.svg`, `public/brand/logo-mark.svg`
 - Create: `public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/apple-touch-icon.png`
-- Delete: `Archive.zip` (root repo, untracked)
+- Delete: `Archive.zip` (repo root, untracked)
 
 **Interfaces:**
-- Consumes: nessuna (primo task).
-- Produces: i 6 file sopra, referenziati per path esatto da tutti i task successivi.
+- Consumes: none (first task).
+- Produces: the 6 files above, referenced by exact path by all following tasks.
 
-- [ ] **Step 1: Estrarre lo zip in una cartella temporanea**
+- [ ] **Step 1: Extract the zip into a temporary folder**
 
 ```bash
 mkdir -p /tmp/bb-logos
@@ -68,14 +68,14 @@ unzip -o Archive.zip -d /tmp/bb-logos
 find /tmp/bb-logos -type f | grep -v __MACOSX
 ```
 
-Verificare che l'output includa (tra gli altri):
-- `Logo/Source/SVG/buddy budget-01.svg` (wordmark navy)
-- `Logo/Source/SVG/buddy budget-02.svg` (logomark "B", 378×464 viewBox)
-- `Logo/Source/SVG/buddy budget-03.svg` (wordmark bianco su navy)
+Check that the output includes (among others):
+- `Logo/Source/SVG/buddy budget-01.svg` (navy wordmark)
+- `Logo/Source/SVG/buddy budget-02.svg` ("B" logomark, 378×464 viewBox)
+- `Logo/Source/SVG/buddy budget-03.svg` (white wordmark on navy)
 - `App Icon/Android/android_192.png`, `android_512.png`
 - `App Icon/iOS/ios_180.png`
 
-- [ ] **Step 2: Copiare e rinominare gli asset SVG**
+- [ ] **Step 2: Copy and rename the SVG assets**
 
 ```bash
 mkdir -p public/brand public/icons
@@ -84,7 +84,7 @@ cp "/tmp/bb-logos/Logo/Source/SVG/buddy budget-03.svg" public/brand/logo-full-wh
 cp "/tmp/bb-logos/Logo/Source/SVG/buddy budget-02.svg" public/brand/logo-mark.svg
 ```
 
-- [ ] **Step 3: Copiare le icone PNG**
+- [ ] **Step 3: Copy the PNG icons**
 
 ```bash
 cp "/tmp/bb-logos/App Icon/Android/android_192.png" public/icons/icon-192.png
@@ -92,16 +92,16 @@ cp "/tmp/bb-logos/App Icon/Android/android_512.png" public/icons/icon-512.png
 cp "/tmp/bb-logos/App Icon/iOS/ios_180.png" public/icons/apple-touch-icon.png
 ```
 
-- [ ] **Step 4: Verificare i file copiati**
+- [ ] **Step 4: Check the copied files**
 
 ```bash
 ls -la public/brand public/icons
 file public/icons/icon-512.png
 ```
 
-Expected: `icon-512.png` riporta dimensioni 512x512 (o vicine — l'output di `file` su PNG mostra "PNG image data, 512 x 512" o simile); tutti e 6 i file esistono e hanno dimensione > 0.
+Expected: `icon-512.png` reports 512x512 dimensions (or close — the output of `file` on a PNG shows "PNG image data, 512 x 512" or similar); all 6 files exist and have size > 0.
 
-- [ ] **Step 5: Rimuovere lo zip e la cartella temporanea**
+- [ ] **Step 5: Remove the zip and the temporary folder**
 
 ```bash
 rm -f Archive.zip
@@ -117,27 +117,27 @@ git commit -m "chore(brand): aggiungi asset logo e icone PWA dal pacchetto desig
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ```
 
-Nota: `Archive.zip` era untracked, la sua rimozione da disco non produce nulla da committare per quel file.
+Note: `Archive.zip` was untracked, removing it from disk produces nothing to commit for that file.
 
 ---
 
-### Task 2: Token colore brand in `globals.css`
+### Task 2: Brand color tokens in `globals.css`
 
 **Files:**
-- Modify: `app/globals.css:62-155` (blocco `:root`)
-- Modify: `app/globals.css:157-249` (blocco `.dark`)
+- Modify: `app/globals.css:62-155` (`:root` block)
+- Modify: `app/globals.css:157-249` (`.dark` block)
 
 **Interfaces:**
-- Consumes: nessuno.
-- Produces: nuovi valori per `--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--primary`, `--primary-foreground`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--accent`, `--accent-foreground`, `--destructive`, `--border`, `--input`, `--ring`, `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-primary-foreground`, `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-border`, `--sidebar-ring` — nomi dei token invariati, solo i valori esadecimali/rgba cambiano. Ogni componente che già consuma questi token (tutta l'app, essendo su Tailwind `@theme inline`) li eredita senza modifiche al proprio codice.
+- Consumes: none.
+- Produces: new values for `--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--primary`, `--primary-foreground`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--accent`, `--accent-foreground`, `--destructive`, `--border`, `--input`, `--ring`, `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-primary-foreground`, `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-border`, `--sidebar-ring` — token names unchanged, only the hex/rgba values change. Every component that already consumes these tokens (the whole app, being on Tailwind `@theme inline`) inherits them without changes to its own code.
 
-- [ ] **Step 1: Sostituire il blocco `:root` (righe 62-155)**
+- [ ] **Step 1: Replace the `:root` block (lines 62-155)**
 
-Sostituire l'intero blocco `:root { ... }` con:
+Replace the whole `:root { ... }` block with:
 
 ```css
 :root {
-  /* Design token brand BuddyBudget (palette light) — vedi docs/superpowers/specs/2026-09-25-brand-identity-pwa-design.md */
+  /* BuddyBudget brand design tokens (light palette) — see docs/superpowers/specs/2026-09-25-brand-identity-pwa-design.md */
   --background: #f6f8fa;
   --foreground: #0f0f3f;
   --text-2: #4a4d73;
@@ -232,15 +232,15 @@ Sostituire l'intero blocco `:root { ... }` con:
 }
 ```
 
-Nota: `--text-2`/`--text-3` non erano nella spec originale con valori espliciti — qui derivati dalla stessa logica del set precedente (testo secondario/terziario, stessa tinta di `--foreground` schiarita), per restare coerenti col resto della palette navy senza introdurre una tinta estranea. `--chart-*`, `--group-*`, `--swatch-*` restano invariati (fuori scope: `--chart-*` non è referenziato da nessun componente, `--group-*`/`--swatch-*` sono palette semantiche/funzionali indipendenti dal brand, già trattate come tali nelle decisioni pregresse del progetto).
+Note: `--text-2`/`--text-3` were not in the original spec with explicit values — here they are derived with the same logic as the previous set (secondary/tertiary text, same hue as `--foreground`, lightened), to stay consistent with the rest of the navy palette without introducing a foreign hue. `--chart-*`, `--group-*`, `--swatch-*` stay unchanged (out of scope: `--chart-*` is not referenced by any component, `--group-*`/`--swatch-*` are semantic/functional palettes independent of the brand, already treated as such in the project's earlier decisions).
 
-- [ ] **Step 2: Sostituire il blocco `.dark` (righe 157-249)**
+- [ ] **Step 2: Replace the `.dark` block (lines 157-249)**
 
-Sostituire l'intero blocco `.dark { ... }` con:
+Replace the whole `.dark { ... }` block with:
 
 ```css
 .dark {
-  /* Design token brand BuddyBudget (palette dark) — vedi docs/superpowers/specs/2026-09-25-brand-identity-pwa-design.md */
+  /* BuddyBudget brand design tokens (dark palette) — see docs/superpowers/specs/2026-09-25-brand-identity-pwa-design.md */
   --background: #0f0f3f;
   --foreground: #ecedf7;
   --text-2: #a3a6c9;
@@ -334,23 +334,23 @@ Sostituire l'intero blocco `.dark { ... }` con:
 }
 ```
 
-- [ ] **Step 3: Verificare il contrasto delle coppie chiave (calcolo manuale, nessun tool grafico disponibile)**
+- [ ] **Step 3: Check the contrast of the key pairs (manual calculation, no graphical tool available)**
 
-Calcolare il rapporto di contrasto WCAG (luminanza relativa) per:
-- `--primary-foreground` (`#ffffff`) su `--primary` chiaro (`#187e98`) → atteso ≥ 4.5:1
-- `--sidebar-foreground` (`#ecedf7`) su `--sidebar` (`#0f0f3f`) → atteso ≥ 4.5:1 (praticamente bianco su navy quasi-nero, ampiamente sopra soglia)
-- `--accent-foreground` chiaro (`#8a5a00`) su `--background` chiaro (`#f6f8fa`), assumendo il testo compaia su un badge con sfondo `--accent` composito su `--background` → atteso ≥ 4.5:1
-- `--foreground` (`#0f0f3f`) su `--background` chiaro (`#f6f8fa`) → atteso ≥ 4.5:1 (quasi nero su quasi bianco, ampio margine)
+Compute the WCAG contrast ratio (relative luminance) for:
+- `--primary-foreground` (`#ffffff`) on light `--primary` (`#187e98`) → expected ≥ 4.5:1
+- `--sidebar-foreground` (`#ecedf7`) on `--sidebar` (`#0f0f3f`) → expected ≥ 4.5:1 (practically white on near-black navy, well above the threshold)
+- light `--accent-foreground` (`#8a5a00`) on light `--background` (`#f6f8fa`), assuming the text appears on a badge with an `--accent` background composited on `--background` → expected ≥ 4.5:1
+- `--foreground` (`#0f0f3f`) on light `--background` (`#f6f8fa`) → expected ≥ 4.5:1 (near-black on near-white, wide margin)
 
-Se un valore risulta sotto soglia, scurire/schiarire quel colore specifico (senza cambiare la tinta) finché non supera la soglia, poi ripetere lo Step 1 o 2 con il valore corretto.
+If a value is below the threshold, darken/lighten that specific color (without changing the hue) until it passes, then repeat Step 1 or 2 with the corrected value.
 
-- [ ] **Step 4: Verificare che il progetto compili**
+- [ ] **Step 4: Check that the project compiles**
 
 ```bash
 pnpm tsc --noEmit
 ```
 
-Expected: nessun errore (questo task non tocca codice TypeScript, solo CSS — il comando verifica che non ci siano regressioni accidentali).
+Expected: no errors (this task touches no TypeScript code, only CSS — the command checks there are no accidental regressions).
 
 - [ ] **Step 5: Commit**
 
@@ -363,7 +363,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 3: Logomark in sidebar e topbar mobile
+### Task 3: Logomark in the sidebar and mobile topbar
 
 **Files:**
 - Modify: `components/layout/sidebar.tsx:249-261`
@@ -371,15 +371,15 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `public/brand/logo-mark.svg` (Task 1).
-- Produces: nessuna nuova interfaccia pubblica — sostituzione visiva interna ai due componenti, nessuna prop nuova.
+- Produces: no new public interface — visual replacement internal to the two components, no new props.
 
-- [ ] **Step 1: Sostituire il monogramma testuale in `AppSidebar` (righe 249-261)**
+- [ ] **Step 1: Replace the text monogram in `AppSidebar` (lines 249-261)**
 
-In `components/layout/sidebar.tsx`, sostituire:
+In `components/layout/sidebar.tsx`, replace:
 
 ```tsx
         {isCollapsed ? (
-          /* Monogramma quando collapsed */
+          /* Monogram when collapsed */
           <span
             className="font-heading text-lg font-bold text-sidebar-primary"
             aria-label="BuddyBudget"
@@ -393,7 +393,7 @@ In `components/layout/sidebar.tsx`, sostituire:
         )}
 ```
 
-con:
+with:
 
 ```tsx
         {isCollapsed ? (
@@ -421,11 +421,11 @@ con:
         )}
 ```
 
-`Image` da `next/image` è già importato in cima al file (riga 23). Le dimensioni `width`/`height` riflettono il rapporto d'aspetto reale del logomark (viewBox `378.1462 463.8719` ≈ 0.815:1).
+`Image` from `next/image` is already imported at the top of the file (line 23). The `width`/`height` dimensions reflect the real aspect ratio of the logomark (viewBox `378.1462 463.8719` ≈ 0.815:1).
 
-- [ ] **Step 2: Sostituire il testo brand in `MobileTopbar` (righe 59-62)**
+- [ ] **Step 2: Replace the brand text in `MobileTopbar` (lines 59-62)**
 
-In `components/layout/mobile-topbar.tsx`, sostituire:
+In `components/layout/mobile-topbar.tsx`, replace:
 
 ```tsx
       {/* Brand */}
@@ -434,7 +434,7 @@ In `components/layout/mobile-topbar.tsx`, sostituire:
       </span>
 ```
 
-con:
+with:
 
 ```tsx
       {/* Brand */}
@@ -451,27 +451,27 @@ con:
       </span>
 ```
 
-e aggiungere l'import in cima al file (dopo la riga 18 `import { Menu } from "lucide-react";`):
+and add the import at the top of the file (after line 18 `import { Menu } from "lucide-react";`):
 
 ```tsx
 import Image from "next/image";
 ```
 
-- [ ] **Step 3: Verificare che il progetto compili**
+- [ ] **Step 3: Check that the project compiles**
 
 ```bash
 pnpm tsc --noEmit
 ```
 
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 4: Avviare il dev server e controllare visivamente**
+- [ ] **Step 4: Start the dev server and check visually**
 
 ```bash
 pnpm dev
 ```
 
-Aprire `/panoramica` (richiede login — se non disponibile in questo ambiente, verificare almeno che non ci siano errori console/build; la verifica visiva completa resta comunque a carico della verifica manuale utente finale). Controllare: sidebar espansa mostra logomark + "BuddyBudget", sidebar collassata mostra solo logomark leggibile su sfondo navy, topbar mobile (`<768px`) mostra logomark + testo.
+Open `/panoramica` (requires login — if not available in this environment, at least check that there are no console/build errors; the full visual check remains part of the user's final manual verification). Check: expanded sidebar shows logomark + "BuddyBudget", collapsed sidebar shows only the logomark, readable on the navy background, mobile topbar (`<768px`) shows logomark + text.
 
 - [ ] **Step 5: Commit**
 
@@ -484,32 +484,32 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 4: Logomark nel pannello di login
+### Task 4: Logomark in the login panel
 
 **Files:**
 - Modify: `app/(auth)/layout.tsx:1, 11-16, 40-43`
 
 **Interfaces:**
 - Consumes: `public/brand/logo-mark.svg` (Task 1).
-- Produces: nessuna — sostituzione visiva interna.
+- Produces: none — internal visual replacement.
 
-- [ ] **Step 1: Rimuovere l'import di `Wallet` e aggiungere quello di `Image`**
+- [ ] **Step 1: Remove the `Wallet` import and add the `Image` one**
 
-In `app/(auth)/layout.tsx`, sostituire la riga 1:
+In `app/(auth)/layout.tsx`, replace line 1:
 
 ```tsx
 import { Wallet } from "lucide-react";
 ```
 
-con:
+with:
 
 ```tsx
 import Image from "next/image";
 ```
 
-- [ ] **Step 2: Sostituire il badge icona nel pannello desktop (righe 11-16)**
+- [ ] **Step 2: Replace the icon badge in the desktop panel (lines 11-16)**
 
-Sostituire:
+Replace:
 
 ```tsx
         <div className="flex items-center gap-2.5 font-heading text-xl font-bold">
@@ -520,7 +520,7 @@ Sostituire:
         </div>
 ```
 
-con:
+with:
 
 ```tsx
         <div className="flex items-center gap-2.5 font-heading text-xl font-bold">
@@ -531,11 +531,11 @@ con:
         </div>
 ```
 
-(il badge quadrato bianco `bg-primary-foreground` resta come cornice, il logomark a colori sostituisce l'icona `Wallet` monocromatica al suo interno — coerente col fatto che il logomark ha i propri colori e non usa `currentColor`.)
+(the white square `bg-primary-foreground` badge stays as a frame, the colored logomark replaces the monochrome `Wallet` icon inside it — consistent with the fact that the logomark has its own colors and does not use `currentColor`.)
 
-- [ ] **Step 3: Sostituire l'header mobile (righe 40-43, numerazione originale — dopo lo Step 2 sono shiftate di poche righe, cercare per contenuto)**
+- [ ] **Step 3: Replace the mobile header (lines 40-43, original numbering — after Step 2 they are shifted by a few lines, search by content)**
 
-Sostituire:
+Replace:
 
 ```tsx
         <div className="flex items-center gap-2 p-6 font-heading text-lg font-bold text-primary lg:hidden">
@@ -544,7 +544,7 @@ Sostituire:
         </div>
 ```
 
-con:
+with:
 
 ```tsx
         <div className="flex items-center gap-2 p-6 font-heading text-lg font-bold text-primary lg:hidden">
@@ -553,13 +553,13 @@ con:
         </div>
 ```
 
-- [ ] **Step 4: Verificare che il progetto compili**
+- [ ] **Step 4: Check that the project compiles**
 
 ```bash
 pnpm tsc --noEmit
 ```
 
-Expected: nessun errore, nessun import inutilizzato (`Wallet` non più referenziato nel file).
+Expected: no errors, no unused imports (`Wallet` no longer referenced in the file).
 
 - [ ] **Step 5: Commit**
 
@@ -579,24 +579,24 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `public/brand/logo-mark.svg` (Task 1).
-- Produces: favicon servita automaticamente da Next.js su `/icon.svg` e referenziata nei `<link>` generati nell'head.
+- Produces: favicon served automatically by Next.js at `/icon.svg` and referenced in the `<link>` tags generated in the head.
 
-- [ ] **Step 1: Copiare il logomark come favicon**
+- [ ] **Step 1: Copy the logomark as the favicon**
 
 ```bash
 cp public/brand/logo-mark.svg app/icon.svg
 ```
 
-Next.js riconosce `app/icon.svg` come file convention e genera automaticamente il tag `<link rel="icon">` corrispondente, in aggiunta al preesistente `app/favicon.ico` (che resta invariato, vedi Review Focus). Nessuna modifica di codice necessaria in `app/layout.tsx` per questo step.
+Next.js recognises `app/icon.svg` as a file convention and automatically generates the corresponding `<link rel="icon">` tag, in addition to the pre-existing `app/favicon.ico` (which stays unchanged, see Review Focus). No code change needed in `app/layout.tsx` for this step.
 
-- [ ] **Step 2: Verificare che il progetto compili**
+- [ ] **Step 2: Check that the project compiles**
 
 ```bash
 pnpm tsc --noEmit
 pnpm build
 ```
 
-Expected: build pulita, nessun errore. Il build log elenca `/icon.svg` tra le route generate.
+Expected: clean build, no errors. The build log lists `/icon.svg` among the generated routes.
 
 - [ ] **Step 3: Commit**
 
@@ -609,7 +609,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 6: Manifest PWA e metadata
+### Task 6: PWA manifest and metadata
 
 **Files:**
 - Create: `app/manifest.ts`
@@ -617,17 +617,17 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/apple-touch-icon.png` (Task 1).
-- Produces: `/manifest.webmanifest` servito automaticamente da Next.js; `themeColor`/`viewport` esportati da `app/layout.tsx` seguendo la convenzione Next.js `generateViewport`/`viewport`.
+- Produces: `/manifest.webmanifest` served automatically by Next.js; `themeColor`/`viewport` exported from `app/layout.tsx` following the Next.js `generateViewport`/`viewport` convention.
 
-- [ ] **Step 1: Scrivere `app/manifest.ts`**
+- [ ] **Step 1: Write `app/manifest.ts`**
 
 ```ts
 import type { MetadataRoute } from "next";
 
 /**
- * Manifest PWA di BuddyBudget: rende l'app installabile su desktop, iOS e Android
- * ("Aggiungi a Home"/"Installa app"). Nessun service worker: l'app resta un client
- * che richiede rete, non funziona offline.
+ * BuddyBudget PWA manifest: makes the app installable on desktop, iOS and Android
+ * ("Aggiungi a Home"/"Installa app"). No service worker: the app stays a client
+ * that requires the network, it does not work offline.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -668,17 +668,17 @@ export default function manifest(): MetadataRoute.Manifest {
 }
 ```
 
-- [ ] **Step 2: Aggiungere `viewport` e `apple-touch-icon` a `app/layout.tsx`**
+- [ ] **Step 2: Add `viewport` and `apple-touch-icon` to `app/layout.tsx`**
 
-In `app/layout.tsx`, dopo l'import `import type { Metadata } from "next";` (riga 1), aggiungere:
+In `app/layout.tsx`, after the import `import type { Metadata } from "next";` (line 1), add:
 
 ```tsx
 import type { Metadata, Viewport } from "next";
 ```
 
-(sostituisce la riga 1 esistente, aggiungendo `Viewport` all'import).
+(replaces the existing line 1, adding `Viewport` to the import).
 
-Dopo il blocco `export const metadata: Metadata = { ... };` (righe 23-26), aggiungere:
+After the `export const metadata: Metadata = { ... };` block (lines 23-26), add:
 
 ```tsx
 export const viewport: Viewport = {
@@ -687,7 +687,7 @@ export const viewport: Viewport = {
 };
 ```
 
-E aggiornare `metadata` per includere l'icona Apple touch (sostituire il blocco righe 23-26):
+And update `metadata` to include the Apple touch icon (replace the block at lines 23-26):
 
 ```tsx
 export const metadata: Metadata = {
@@ -704,25 +704,25 @@ export const metadata: Metadata = {
 };
 ```
 
-`appleWebApp` è il campo tipizzato di Next.js `Metadata` che genera sia `apple-mobile-web-app-capable` sia `apple-mobile-web-app-status-bar-style` sia `apple-mobile-web-app-title`; non serve scrivere i tag `<meta>` a mano.
+`appleWebApp` is the typed field of Next.js `Metadata` that generates `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style` and `apple-mobile-web-app-title`; no need to write the `<meta>` tags by hand.
 
-- [ ] **Step 3: Verificare che il progetto compili**
+- [ ] **Step 3: Check that the project compiles**
 
 ```bash
 pnpm tsc --noEmit
 pnpm build
 ```
 
-Expected: build pulita. Il log del build elenca `/manifest.webmanifest` tra le route generate.
+Expected: clean build. The build log lists `/manifest.webmanifest` among the generated routes.
 
-- [ ] **Step 4: Verificare manualmente il manifest servito**
+- [ ] **Step 4: Manually check the served manifest**
 
 ```bash
 pnpm dev
 curl -s http://localhost:3000/manifest.webmanifest
 ```
 
-Expected: JSON valido con `"name":"BuddyBudget"`, 4 entry in `icons`, ognuna con `src` che risponde 200:
+Expected: valid JSON with `"name":"BuddyBudget"`, 4 entries in `icons`, each with a `src` that responds 200:
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/icons/icon-192.png
@@ -730,7 +730,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/icons/icon-512.pn
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/icons/apple-touch-icon.png
 ```
 
-Expected: `200` per tutti e tre.
+Expected: `200` for all three.
 
 - [ ] **Step 5: Commit**
 
@@ -743,15 +743,15 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 7: Verifica finale
+### Task 7: Final check
 
-**Files:** nessuno (solo verifica, nessuna modifica).
+**Files:** none (check only, no changes).
 
 **Interfaces:**
-- Consumes: l'intero lavoro dei Task 1-6.
-- Produces: conferma che il branch è pronto per la review finale/merge.
+- Consumes: the whole work of Tasks 1-6.
+- Produces: confirmation that the branch is ready for final review/merge.
 
-- [ ] **Step 1: Build e typecheck completi**
+- [ ] **Step 1: Full build and typecheck**
 
 ```bash
 pnpm tsc --noEmit
@@ -759,29 +759,29 @@ pnpm build
 pnpm lint
 ```
 
-Expected: tutti e tre puliti (nessun nuovo errore rispetto a quelli pre-esistenti già noti in CLAUDE.md — verificare che eventuali errori residui siano solo quelli già documentati, es. `react-hooks/set-state-in-effect` in `theme-toggle.tsx`/`CategoryLegendRow`).
+Expected: all three clean (no new errors compared to the pre-existing ones already known in CLAUDE.md — check that any remaining errors are only the already documented ones, e.g. `react-hooks/set-state-in-effect` in `theme-toggle.tsx`/`CategoryLegendRow`).
 
-- [ ] **Step 2: Grep di sicurezza — nessun hex hardcoded introdotto fuori da `globals.css`**
+- [ ] **Step 2: Safety grep — no hardcoded hex introduced outside `globals.css`**
 
 ```bash
 grep -rn "#0f0f3f\|#219ebc\|#ffb703\|#187e98" --include="*.tsx" --include="*.ts" app components | grep -v globals.css
 ```
 
-Expected: nessun risultato (tutti i riferimenti colore nei componenti passano da token, come richiesto dalle Global Constraints).
+Expected: no results (all color references in components go through tokens, as required by the Global Constraints).
 
-- [ ] **Step 3: Verifica visiva delle schermate principali (dev server)**
+- [ ] **Step 3: Visual check of the main screens (dev server)**
 
 ```bash
 pnpm dev
 ```
 
-Controllare in entrambi i temi (chiaro/scuro, toggle in sidebar): `/panoramica`, `/conti`, `/transazioni`, `/cash-flow`, `/categorie`, pagina di login (`/login`), `/style-guide`. Verificare in particolare (Review Focus): leggibilità testo su sidebar navy, leggibilità pannello login, nessun elemento che assumeva sfondo chiaro sidebar risulti ora invisibile.
+Check in both themes (light/dark, toggle in the sidebar): `/panoramica`, `/conti`, `/transazioni`, `/cash-flow`, `/categorie`, login page (`/login`), `/style-guide`. Check in particular (Review Focus): text readability on the navy sidebar, readability of the login panel, no element that assumed a light sidebar background is now invisible.
 
-- [ ] **Step 4: Aggiornare CLAUDE.md**
+- [ ] **Step 4: Update CLAUDE.md**
 
-Aggiungere una voce nel log delle decisioni (`CLAUDE.md`, sezione "Log delle decisioni") che descrive: sostituzione palette con brand navy/azzurro/giallo dal pacchetto logo del designer, cambio comportamentale sidebar navy fissa in entrambi i temi, PWA installabile via `app/manifest.ts` (nessun service worker/offline), asset in `public/brand/`+`public/icons/`. Aggiornare "Stato del progetto" se cambia lo stato generale.
+Add an entry to the decision log (`CLAUDE.md`, "Log delle decisioni" (Decision log) section) describing: palette replaced with the navy/light blue/yellow brand from the designer's logo package, behavior change with a fixed navy sidebar in both themes, installable PWA via `app/manifest.ts` (no service worker/offline), assets in `public/brand/`+`public/icons/`. Update "Stato del progetto" (Project status) if the overall status changes.
 
-- [ ] **Step 5: Commit finale**
+- [ ] **Step 5: Final commit**
 
 ```bash
 git add CLAUDE.md

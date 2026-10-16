@@ -29,12 +29,12 @@ export interface FaqItem {
 /** Domande frequenti: poche e corte, lo stesso testo nella sezione visibile e nei dati strutturati FAQPage (Google vuole che coincidano). */
 export const FAQ: readonly FaqItem[] = [
   { question: "È gratis?", answer: "Sì, durante la beta. Se cambierà lo diremo in anticipo e potrai esportare tutto in un file ZIP." },
-  { question: "Serve collegare la banca?", answer: "No: puoi aggiungere i conti a mano o importare un CSV. Il collegamento, in sola lettura con l'Open Banking (PSD2), serve solo a non scrivere i movimenti." },
-  { question: "Le tasse sono quelle vere?", answer: "Sono stime con le regole italiane (zainetto a quattro anni, 26% o 12,5% per i titoli di Stato, bollo), pensate per decidere. Il conteggio definitivo è del tuo intermediario o del commercialista." },
-  { question: "Cosa non fa?", answer: "Non dà consigli su cosa comprare o vendere, non sposta denaro e non fa ordini al broker. I prezzi sono chiusure di fine giornata, non in tempo reale." },
-  { question: "In quali lingue e paesi posso usare l’app?", answer: "Il prodotto Italia è disponibile in italiano e inglese; il prodotto Germania in tedesco e inglese. La valuta si sceglie nelle impostazioni. Per la Germania sono disponibili le funzioni essenziali e stime fiscali parziali con limiti espliciti; pensione, AVD e simulatori avanzati restano nascosti in attesa di revisione. Questo sito e gli esempi fiscali mostrati qui sono in italiano e si riferiscono al prodotto Italia." },
+  { question: "Serve collegare la banca?", answer: "No. Puoi aggiungere i conti a mano o caricare un file. Il collegamento serve solo a non scrivere i movimenti a mano, e può solo leggere." },
+  { question: "Le tasse sono quelle vere?", answer: "Sono stime con le regole italiane (26% sui guadagni, 12,5% sui titoli di Stato, perdite da scalare per quattro anni, bollo). Servono per decidere. Il conto definitivo lo fa la banca o il commercialista." },
+  { question: "Cosa non fa?", answer: "Non ti dice cosa comprare o vendere. Non sposta soldi e non fa ordini al broker. I prezzi sono di fine giornata, non in tempo reale." },
+  { question: "In quali lingue e paesi posso usare l’app?", answer: "In Italia in italiano e inglese, in Germania in tedesco e inglese. La valuta la scegli nelle impostazioni. Per la Germania ci sono le funzioni essenziali e stime delle tasse parziali, con i limiti scritti chiaramente; pensione e simulatori avanzati restano nascosti in attesa di revisione. Questo sito e gli esempi sulle tasse sono in italiano e parlano del prodotto Italia." },
   { question: "Dove stanno i miei dati e posso portarli via?", answer: (FIELD_ENCRYPTION_LIVE ? "Su un server in Germania, con le connessioni cifrate e descrizioni e note dei movimenti cifrate anche nel database." : "Su un server in Germania, con le connessioni cifrate.") + " Non vendiamo i dati e non c'è pubblicità. Scarichi tutto in ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
-  { question: "Funziona sul telefono?", answer: "Sì, dal browser, e si installa sulla schermata Home come app (PWA). Non è negli store." },
+  { question: "Funziona sul telefono?", answer: "Sì, dal browser, e si può mettere sulla schermata Home come un'app. Non è negli store." },
 ];
 
 /** Indirizzo del supporto: risponde una persona. */

@@ -1,0 +1,35 @@
+/*
+ * Phone frame for phone-size screenshots: dark body with a glossy edge, black bezel around the screen, side keys,
+ * island and status bar at the top, home indicator at the bottom. The screen has iPhone proportions (390×844); the
+ * status bar (7 %) and the indicator band (4 %) leave 390×751 to the app, the same size as the `<id>-phone.jpg`
+ * captures, so a screenshot fits whole with no cropping. Every size is relative to the screen width (`--pf-w`),
+ * derived from the wanted height (`--pf-h`). Theme tokens only.
+ */
+.pf { --pf-h: 46vh; --pf-w: calc(var(--pf-h) * 390 / 844); --pf-bz: calc(var(--pf-w) * 0.015); position: relative; width: fit-content; padding: calc(var(--pf-w) * 0.024); border-radius: calc(var(--pf-w) * 0.175); background: var(--phone-body); box-shadow: inset 0 0 0 1px var(--phone-edge), 0 0 0 1px color-mix(in srgb, var(--ink) 25%, transparent), 0 30px 70px -25px var(--shadow-win); }
+.pf-bezel { padding: var(--pf-bz); border-radius: calc(var(--pf-w) * 0.155); background: var(--phone-bezel); }
+.pf-screen { position: relative; width: var(--pf-w); height: var(--pf-h); padding-bottom: calc(var(--pf-h) * 0.04); border-radius: calc(var(--pf-w) * 0.135); overflow: hidden; background: var(--a-card); display: flex; flex-direction: column; }
+/* status bar: time, island and icons, as on the phone */
+.pf-status { position: relative; flex: none; height: calc(var(--pf-h) * 0.07); display: flex; align-items: center; justify-content: space-between; padding: 0 calc(var(--pf-w) * 0.075); background: var(--a-card); color: var(--a-fg); }
+.pf-time { font: 600 max(7px, calc(var(--pf-w) * 0.043)) var(--f-b); letter-spacing: -0.01em; }
+.pf-island { position: absolute; left: 50%; top: calc(var(--pf-w) * 0.028); width: calc(var(--pf-w) * 0.32); height: calc(var(--pf-w) * 0.09); margin-left: calc(var(--pf-w) * -0.16); border-radius: 99px; background: var(--phone-island); }
+.pf-icons { display: flex; align-items: center; gap: calc(var(--pf-w) * 0.02); }
+.pf-signal { display: flex; align-items: flex-end; gap: 1px; height: calc(var(--pf-w) * 0.03); }
+.pf-signal i { width: max(1.5px, calc(var(--pf-w) * 0.011)); border-radius: 1px; background: currentColor; }
+.pf-signal i:nth-child(1) { height: 40%; }
+.pf-signal i:nth-child(2) { height: 60%; }
+.pf-signal i:nth-child(3) { height: 80%; }
+.pf-signal i:nth-child(4) { height: 100%; }
+.pf-battery { position: relative; width: calc(var(--pf-w) * 0.065); height: calc(var(--pf-w) * 0.032); border: 1px solid currentColor; border-radius: 2px; opacity: 0.9; }
+.pf-battery::before { content: ""; position: absolute; inset: 1px; right: 20%; border-radius: 1px; background: currentColor; }
+.pf-battery::after { content: ""; position: absolute; right: -3px; top: 30%; width: 1.5px; height: 40%; background: currentColor; border-radius: 0 1px 1px 0; }
+/* the app area (390×751): callers put images or panels in it, absolutely positioned (`inset: 0`) */
+.pf-view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--a-bg); }
+.pf-view > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+/* home indicator, in the band reserved below the app */
+.pf-home { position: absolute; left: 50%; bottom: calc(var(--pf-w) * 0.022); width: calc(var(--pf-w) * 0.36); height: max(3px, calc(var(--pf-w) * 0.013)); margin-left: calc(var(--pf-w) * -0.18); border-radius: 99px; background: var(--a-fg); opacity: 0.75; }
+/* keys: mute, volume up and down on the left, power on the right */
+.pf-key { position: absolute; width: calc(var(--pf-w) * 0.022); border-radius: 2px; background: var(--phone-key); }
+.pf-mute { left: calc(var(--pf-w) * -0.02); top: 17%; height: 4%; }
+.pf-up { left: calc(var(--pf-w) * -0.02); top: 24.5%; height: 7%; }
+.pf-down { left: calc(var(--pf-w) * -0.02); top: 33.5%; height: 7%; }
+.pf-power { right: calc(var(--pf-w) * -0.02); top: 27%; height: 11%; }

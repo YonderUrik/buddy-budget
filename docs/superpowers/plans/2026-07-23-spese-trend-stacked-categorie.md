@@ -1,30 +1,30 @@
-# Andamento 6 mesi: stacked bar per categoria Implementation Plan
+# 6-month trend: stacked bar per category Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Il grafico "Andamento ultimi 6 mesi" in Spese mostra uno stacked bar per categoria (top 6 + "Altro") invece di una barra a colore singolo con solo il totale.
+**Goal:** The "Andamento ultimi 6 mesi" ("Last 6 months trend") chart in Spese (Expenses) shows a stacked bar per category (top 6 + "Altro" ("Other")) instead of a single-color bar with only the total.
 
-**Architecture:** Nuova funzione pura `computeCategoryMonthlyTrend` in `lib/calc/expenses.ts` (stesso schema di `compute6MonthTrend`, non modificata) che calcola, per ciascuno dei 6 mesi calendariali, la spesa effettiva per le top 6 categorie (per spesa totale sul semestre) più un aggregato "Altro" per il resto. `ExpenseTrendChart` viene riscritto per renderizzare un `<Bar>` recharts per serie con `stackId` comune, colori dalla palette condivisa (`SWATCH_CHART_COLOR`), tooltip e legenda propria coerenti col resto della UI di Spese.
+**Architecture:** New pure function `computeCategoryMonthlyTrend` in `lib/calc/expenses.ts` (same scheme as `compute6MonthTrend`, which is not modified) that computes, for each of the 6 calendar months, the actual spending for the top 6 categories (by total spending over the half-year) plus an "Altro" aggregate for the rest. `ExpenseTrendChart` is rewritten to render one recharts `<Bar>` per series with a common `stackId`, colors from the shared palette (`SWATCH_CHART_COLOR`), tooltip and its own legend consistent with the rest of the Spese UI.
 
-**Tech Stack:** Next.js/TypeScript, recharts (via componente `ChartContainer`/`Bar`/`BarChart` di shadcn), vitest.
+**Tech Stack:** Next.js/TypeScript, recharts (via shadcn's `ChartContainer`/`Bar`/`BarChart` component), vitest.
 
 ## Global Constraints
 
-- Nessun colore/valore hardcoded nei componenti: usare sempre i token tema (`SWATCH_CHART_COLOR`, `var(--muted-foreground)`), mai hex letterali.
-- JSDoc minimo su funzioni/componenti pubblici (una riga).
-- Tutte le stringhe visibili all'utente in italiano ("Altro", ecc.).
-- `compute6MonthTrend` esistente NON va rimosso né modificato.
+- No hardcoded colors/values in components: always use the theme tokens (`SWATCH_CHART_COLOR`, `var(--muted-foreground)`), never literal hex.
+- Minimal JSDoc on public functions/components (one line).
+- All user-visible strings in Italian ("Altro", etc.).
+- The existing `compute6MonthTrend` must NOT be removed or modified.
 
 ---
 
 ### Task 1: `computeCategoryMonthlyTrend` in `lib/calc/expenses.ts`
 
 **Files:**
-- Modify: `lib/calc/expenses.ts` (aggiungere dopo `compute6MonthTrend`, circa riga 323)
-- Test: `lib/calc/expenses.test.ts` (aggiungere dopo il blocco `describe("compute6MonthTrend", ...)`, circa riga 242)
+- Modify: `lib/calc/expenses.ts` (add after `compute6MonthTrend`, around line 323)
+- Test: `lib/calc/expenses.test.ts` (add after the `describe("compute6MonthTrend", ...)` block, around line 242)
 
 **Interfaces:**
-- Consumes: `Transaction`, `Category` (già importati in `expenses.ts`), `computeSummary(transactions, range): ExpensesSummary`, `MONTH_LABELS`, `addMonths`/`startOfMonth`/`endOfMonth` (funzioni interne già presenti nel file).
+- Consumes: `Transaction`, `Category` (already imported in `expenses.ts`), `computeSummary(transactions, range): ExpensesSummary`, `MONTH_LABELS`, `addMonths`/`startOfMonth`/`endOfMonth` (internal functions already present in the file).
 - Produces:
   ```ts
   export interface MonthlyCategoryTotal {
@@ -49,11 +49,11 @@
     topCount?: number
   ): CategoryMonthlyTrend
   ```
-  Usati da Task 2 (`ExpenseTrendChart`, `app/(app)/spese/page.tsx`).
+  Used by Task 2 (`ExpenseTrendChart`, `app/(app)/spese/page.tsx`).
 
-- [ ] **Step 1: Scrivi i test falliti**
+- [ ] **Step 1: Write the failing tests**
 
-Aggiungi in `lib/calc/expenses.test.ts`, subito dopo il blocco `describe("compute6MonthTrend", ...)` (riga 242 circa). Aggiorna anche l'import in cima al file per includere `computeCategoryMonthlyTrend`:
+Add in `lib/calc/expenses.test.ts`, right after the `describe("compute6MonthTrend", ...)` block (around line 242). Also update the import at the top of the file to include `computeCategoryMonthlyTrend`:
 
 ```ts
 import {
@@ -75,12 +75,12 @@ import {
 } from "./expenses";
 ```
 
-Nuovo blocco di test:
+New test block:
 
 ```ts
 describe("computeCategoryMonthlyTrend", () => {
   it("assegna alle top `topCount` categorie una serie propria, ordinate per spesa totale semestre discendente, e aggrega il resto in 'altro'", () => {
-    const referenceDate = new Date(2026, 6, 15); // luglio 2026
+    const referenceDate = new Date(2026, 6, 15); // July 2026
     const categories = [
       makeCategory({ id: "cat-a", name: "A", color: "blue" }),
       makeCategory({ id: "cat-b", name: "B", color: "green" }),
@@ -139,14 +139,14 @@ describe("computeCategoryMonthlyTrend", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm vitest run lib/calc/expenses.test.ts`
-Expected: FAIL — `computeCategoryMonthlyTrend` non è esportata da `./expenses` (errore di import/undefined).
+Expected: FAIL — `computeCategoryMonthlyTrend` is not exported from `./expenses` (import/undefined error).
 
-- [ ] **Step 3: Implementa `computeCategoryMonthlyTrend`**
+- [ ] **Step 3: Implement `computeCategoryMonthlyTrend`**
 
-Aggiungi in `lib/calc/expenses.ts`, subito dopo la chiusura della funzione `compute6MonthTrend` (dopo la riga 323 `}`):
+Add in `lib/calc/expenses.ts`, right after the closing of the `compute6MonthTrend` function (after line 323 `}`):
 
 ```ts
 export interface MonthlyCategoryTotal {
@@ -170,10 +170,10 @@ export interface CategoryMonthlyTrend {
 const OTHER_TREND_SERIES_KEY = "altro";
 
 /**
- * Spesa effettiva per categoria sugli ultimi 6 mesi calendariali, con le top `topCount` categorie
- * (per spesa totale sul semestre) come serie proprie e il resto aggregato in una serie "Altro".
- * Il ranking è calcolato una sola volta sull'intero semestre, cosà che ogni categoria mantenga
- * sempre lo stesso segmento/colore da un mese all'altro.
+ * Actual spending per category over the last 6 calendar months, with the top `topCount` categories
+ * (by total spending over the half-year) as their own series and the rest aggregated into an "Altro" series.
+ * The ranking is computed only once over the whole half-year, so that each category always keeps
+ * the same segment/color from one month to the next.
  */
 export function computeCategoryMonthlyTrend(
   transactions: Transaction[],
@@ -236,10 +236,10 @@ export function computeCategoryMonthlyTrend(
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm vitest run lib/calc/expenses.test.ts`
-Expected: PASS — tutti i test in `expenses.test.ts`, incluso il nuovo blocco `computeCategoryMonthlyTrend`.
+Expected: PASS — all the tests in `expenses.test.ts`, including the new `computeCategoryMonthlyTrend` block.
 
 - [ ] **Step 5: Commit**
 
@@ -250,24 +250,24 @@ git commit -m "feat: aggiungi computeCategoryMonthlyTrend per stacked bar per ca
 
 ---
 
-### Task 2: Stacked bar in `ExpenseTrendChart` + integrazione pagina Spese
+### Task 2: Stacked bar in `ExpenseTrendChart` + Spese page integration
 
 **Files:**
-- Modify: `components/domain/expenses/expense-trend-chart.tsx` (riscrittura completa, era 58 righe)
-- Modify: `app/(app)/spese/page.tsx:18-26` (import), `:199-202` (uso componente)
+- Modify: `components/domain/expenses/expense-trend-chart.tsx` (complete rewrite, it was 58 lines)
+- Modify: `app/(app)/spese/page.tsx:18-26` (import), `:199-202` (component usage)
 
 **Interfaces:**
-- Consumes: `computeCategoryMonthlyTrend` e i tipi `CategoryMonthlyTrend`/`CategoryTrendSeries`/`MonthlyCategoryTotal` da Task 1 (`lib/calc/expenses.ts`); `SWATCH_CHART_COLOR: Record<SwatchColor, string>` da `components/domain/shared/color-swatches.ts`; `CategoryColor` da `lib/validation/categories.ts` (alias di `SwatchColor`).
-- Produces: `ExpenseTrendChart({ monthlyCategoryTrend, currency })` — sostituisce la prop `monthlyTrend: MonthlyTotal[]` con `monthlyCategoryTrend: CategoryMonthlyTrend`. Nessun altro file consuma `ExpenseTrendChartProps` oltre a `app/(app)/spese/page.tsx`.
+- Consumes: `computeCategoryMonthlyTrend` and the types `CategoryMonthlyTrend`/`CategoryTrendSeries`/`MonthlyCategoryTotal` from Task 1 (`lib/calc/expenses.ts`); `SWATCH_CHART_COLOR: Record<SwatchColor, string>` from `components/domain/shared/color-swatches.ts`; `CategoryColor` from `lib/validation/categories.ts` (alias of `SwatchColor`).
+- Produces: `ExpenseTrendChart({ monthlyCategoryTrend, currency })` — replaces the prop `monthlyTrend: MonthlyTotal[]` with `monthlyCategoryTrend: CategoryMonthlyTrend`. No other file consumes `ExpenseTrendChartProps` besides `app/(app)/spese/page.tsx`.
 
-- [ ] **Step 1: Riscrivi `components/domain/expenses/expense-trend-chart.tsx`**
+- [ ] **Step 1: Rewrite `components/domain/expenses/expense-trend-chart.tsx`**
 
-Sostituisci l'intero contenuto del file con:
+Replace the whole content of the file with:
 
 ```tsx
 "use client";
 
-/** Grafico Spese: barre impilate "Andamento ultimi 6 mesi", un segmento per categoria (top 6 + eventuale "Altro"). */
+/** Spese chart: stacked bars "Andamento ultimi 6 mesi", one segment per category (top 6 + possibly "Altro"). */
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
@@ -278,7 +278,7 @@ import { formatCurrency } from "@/lib/format";
 import type { CategoryMonthlyTrend, CategoryTrendSeries } from "@/lib/calc/expenses";
 import type { CategoryColor } from "@/lib/validation/categories";
 
-/** Colore fisso (non uno swatch) per la serie aggregata "Altro", per non confondersi con una categoria reale. */
+/** Fixed color (not a swatch) for the aggregated "Altro" series, so it is not confused with a real category. */
 const OTHER_SERIES_COLOR = "var(--muted-foreground)";
 
 export interface ExpenseTrendChartProps {
@@ -286,7 +286,7 @@ export interface ExpenseTrendChartProps {
   currency: string;
 }
 
-/** Formatta il valore del tooltip (nome + importo in valuta) al posto del default numerico di ChartTooltipContent. */
+/** Formats the tooltip value (name + amount in currency) instead of the numeric default of ChartTooltipContent. */
 function tooltipValueFormatter(currency: string) {
   return function TooltipValue(value: ValueType | undefined, name: NameType | undefined) {
     return (
@@ -348,9 +348,9 @@ export function ExpenseTrendChart({ monthlyCategoryTrend, currency }: ExpenseTre
 }
 ```
 
-- [ ] **Step 2: Aggiorna `app/(app)/spese/page.tsx`**
+- [ ] **Step 2: Update `app/(app)/spese/page.tsx`**
 
-In cima al file (righe 18-26), sostituisci l'import di `compute6MonthTrend` con `computeCategoryMonthlyTrend`:
+At the top of the file (lines 18-26), replace the import of `compute6MonthTrend` with `computeCategoryMonthlyTrend`:
 
 ```ts
 import {
@@ -364,7 +364,7 @@ import {
 } from "@/lib/calc/expenses";
 ```
 
-Alla fine del file (righe 199-202), sostituisci la chiamata al componente:
+At the end of the file (lines 199-202), replace the component call:
 
 ```tsx
           <ExpenseTrendChart
@@ -373,18 +373,18 @@ Alla fine del file (righe 199-202), sostituisci la chiamata al componente:
           />
 ```
 
-- [ ] **Step 3: Verifica build e lint**
+- [ ] **Step 3: Verify build and lint**
 
 Run: `pnpm build`
-Expected: build completata senza errori TypeScript (in particolare nessun riferimento residuo a `compute6MonthTrend`/`monthlyTrend` in `expense-trend-chart.tsx` o `page.tsx`).
+Expected: build completed without TypeScript errors (in particular no leftover reference to `compute6MonthTrend`/`monthlyTrend` in `expense-trend-chart.tsx` or `page.tsx`).
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore introdotto (il debito tecnico preesistente di 2 errori `react-hooks/set-state-in-effect`, non toccato da questo task, può restare).
+Expected: no new errors introduced (the pre-existing technical debt of 2 `react-hooks/set-state-in-effect` errors, not touched by this task, may remain).
 
-- [ ] **Step 4: Esegui l'intera suite di test**
+- [ ] **Step 4: Run the whole test suite**
 
 Run: `pnpm vitest run`
-Expected: PASS — nessuna regressione nei test esistenti (`expenses.test.ts`, `distribute-colors.test.ts`, `split-slider.utils.test.ts`, `category-breakdown-donut.utils.test.ts`, ecc.).
+Expected: PASS — no regressions in the existing tests (`expenses.test.ts`, `distribute-colors.test.ts`, `split-slider.utils.test.ts`, `category-breakdown-donut.utils.test.ts`, etc.).
 
 - [ ] **Step 5: Commit**
 
@@ -395,10 +395,10 @@ git commit -m "feat: stacked bar per categoria in Andamento 6 mesi (Spese)"
 
 ---
 
-## Verifica manuale (fuori dai task, da fare dall'utente)
+## Manual verification (outside the tasks, to be done by the user)
 
-Come per le feature precedenti su Spese/Categorie, nessun Postgres/Redis è disponibile nel sandbox agentico per un test in browser reale. Da verificare manualmente:
-- Con più di 6 categorie con spesa nel semestre: il segmento "Altro" appare, colore grigio distinguibile dalle categorie reali.
-- Con 6 o meno categorie con spesa: nessun segmento "Altro", nessuna voce "Altro" in legenda.
-- Tooltip al hover su una barra mensile mostra tutte le serie di quel mese con l'importo corretto in valuta.
-- Legenda sotto al grafico elenca le stesse serie del chart, con lo stesso ordine e colore.
+As for the previous Spese/Categorie features, no Postgres/Redis is available in the agentic sandbox for a real browser test. To verify manually:
+- With more than 6 categories with spending in the half-year: the "Altro" segment appears, in a gray color distinguishable from the real categories.
+- With 6 or fewer categories with spending: no "Altro" segment, no "Altro" entry in the legend.
+- The tooltip on hover over a monthly bar shows all the series of that month with the correct amount in currency.
+- The legend below the chart lists the same series as the chart, with the same order and color.

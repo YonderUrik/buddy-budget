@@ -1,8 +1,8 @@
-# 2026-10-10 — Audit SEO: correzioni tecniche della landing
+# 2026-10-10 — SEO audit: technical fixes to the landing
 
-Dall'audit di buddybudget.io del 10 ottobre (solo le voci con controlli falliti):
-- **4xx (1) e link interni rotti (2)**: l'indirizzo `privacy@buddybudget.io` nel testo di Privacy e Termini veniva sostituito da Cloudflare con `/cdn-cgi/l/email-protection`, che per un crawler senza JavaScript è un 404. Ora è un link `mailto:` racchiuso in `<!--email_off-->` (`components/legal-page.tsx`).
-- **Dati strutturati (13)**: `SoftwareApplication` (layout, su ogni pagina) e `WebApplication` (due calcolatori) richiedono `aggregateRating` o `review`, che non abbiamo e non inventiamo: tolti. Restano `Organization` e `WebSite` ovunque, `FAQPage` solo nella home (dove le domande sono visibili), `WebPage` sui calcolatori.
-- **h1 uguale al title (1)**: la guida sullo zainetto ha un title proprio.
-- **HSTS (2)**: header in `landing/nginx.conf` e `_headers` (apice); middleware Traefik `hsts` nel repo infra per il redirect di `www`.
-- **Rimandati / non risolvibili qui**: robots.txt «formato non valido» (la riga `Content-Signal` è nella specifica contentsignals.org e ignorata dai parser conformi a RFC 9309: si tiene), «poco testo rispetto all'HTML» (il payload RSC di Next pesa ~22 KB per pagina) e «poche parole» (`/schermate`, `/funzioni/investimenti`): servono testi, in capo al lavoro sul copy della landing.
+From the buddybudget.io audit of 10 October (only the items with failed checks):
+- **4xx (1) and broken internal links (2)**: the address `privacy@buddybudget.io` in the Privacy and Terms text was replaced by Cloudflare with `/cdn-cgi/l/email-protection`, which for a crawler without JavaScript is a 404. It is now a `mailto:` link wrapped in `<!--email_off-->` (`components/legal-page.tsx`).
+- **Structured data (13)**: `SoftwareApplication` (layout, on every page) and `WebApplication` (two calculators) require `aggregateRating` or `review`, which we do not have and do not invent: removed. `Organization` and `WebSite` remain everywhere, `FAQPage` only on the home (where the questions are visible), `WebPage` on the calculators.
+- **h1 equal to the title (1)**: the guide on the zainetto fiscale (tax-loss carryforward) has its own title.
+- **HSTS (2)**: header in `landing/nginx.conf` and `_headers` (apex); Traefik `hsts` middleware in the infra repo for the `www` redirect.
+- **Postponed / not solvable here**: robots.txt «formato non valido» ("invalid format": the `Content-Signal` line is in the contentsignals.org specification and ignored by RFC 9309-compliant parsers: kept), «poco testo rispetto all'HTML» ("little text relative to HTML": Next's RSC payload weighs ~22 KB per page) and «poche parole» ("few words": `/schermate`, `/funzioni/investimenti`): they need copy, part of the work on the landing copy.

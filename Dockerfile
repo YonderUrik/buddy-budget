@@ -1,28 +1,28 @@
 # syntax=docker/dockerfile:1
 # check=skip=SecretsUsedInArgOrEnv
-# (check=skip: i valori ENV "segreti" dello stage builder sono segnaposto fittizi, l'avviso non è pertinente.)
+# (check=skip: the "secret" ENV values in the builder stage are fake placeholders, the warning does not apply.)
 
-# ---- base: Node + pnpm alla versione fissata in package.json ----
+# ---- base: Node + pnpm at the version pinned in package.json ----
 FROM node:24-alpine AS base
 RUN npm install -g pnpm@11.5.0
 WORKDIR /app
 
-# ---- deps: dipendenze complete (servono a build e migrator) ----
+# ---- deps: full dependencies (needed by build and migrator) ----
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc .pnpmfile.cjs ./
 RUN pnpm install --frozen-lockfile
 
 # ---- builder: next build ----
 FROM deps AS builder
-# SHA del commit (build-arg dalla CI): .git è escluso dal contesto, senza questo l'etichetta versione
-# nell'app mostrerebbe solo il semver.
+# Commit SHA (build-arg from CI): .git is excluded from the context, without this the version label
+# in the app would show only the semver.
 ARG GIT_COMMIT_SHA=""
 ENV GIT_COMMIT_SHA=${GIT_COMMIT_SHA}
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-# Valori FITTIZI solo per la build: alcuni moduli leggono l'env all'import (client DB/Redis, Resend,
-# better-auth) e next build li importa. Non arrivano nell'immagine finale: lo stage runner parte da zero
-# e l'env vero arriva a runtime (validato in instrumentation.ts).
+# FAKE values for the build only: some modules read env at import time (DB/Redis client, Resend,
+# better-auth) and next build imports them. They do not reach the final image: the runner stage starts from scratch
+# and the real env arrives at runtime (validated in instrumentation.ts).
 ENV DATABASE_URL=postgresql://build:build@localhost:5432/build?sslmode=disable \
     REDIS_URL=redis://localhost:6379 \
     BETTER_AUTH_SECRET=build-only-placeholder-secret-0000000000 \
@@ -30,7 +30,7 @@ ENV DATABASE_URL=postgresql://build:build@localhost:5432/build?sslmode=disable \
     RESEND_API_KEY=re_build_placeholder
 RUN pnpm build
 
-# ---- migrator: esegue le migration Drizzle (Job PreSync in k8s) ----
+# ---- migrator: runs the Drizzle migrations (PreSync Job in k8s) ----
 FROM deps AS migrator
 COPY tsconfig.json drizzle.config.ts ./
 COPY lib ./lib
@@ -38,7 +38,7 @@ COPY scripts ./scripts
 USER node
 CMD ["pnpm", "db:migrate"]
 
-# ---- csv-worker: processo separato per analisi AI e sandbox ----
+# ---- csv-worker: separate process for AI analysis and sandbox ----
 FROM deps AS csv-worker
 COPY tsconfig.json ./
 COPY lib ./lib
@@ -47,7 +47,7 @@ ENV NODE_ENV=production
 USER node
 CMD ["pnpm", "worker:csv"]
 
-# ---- runner: immagine dell'app ----
+# ---- runner: app image ----
 FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production \

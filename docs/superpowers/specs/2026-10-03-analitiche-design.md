@@ -1,43 +1,43 @@
-# Analitiche (strumenti avanzati): progetto
+# Analitiche (advanced tools): design
 
-Stato: implementata sul branch `claude/project-thread-idnurb` (PR in revisione). Piano di ricerca originale: Claude Doc "Piano sezione Analitica (FIRE e patrimonio)", poi ristretto su richiesta dell'utente.
+Status: implemented on branch `claude/project-thread-idnurb` (PR under review). Original research plan: Claude Doc "Piano sezione Analitica (FIRE e patrimonio)" ("Analytics section plan (FIRE and net worth)"), later narrowed at the user's request.
 
-## Obiettivo e principi
+## Goal and principles
 
-Una sezione per chi vuole "smanettare": FIRE, scenari, rischio e costi. Tre regole decise dall'utente:
+A section for those who want to "tinker": FIRE, scenarios, risk and costs. Three rules decided by the user:
 
-1. **Solo analisi avanzate.** Niente di ciò che si ricava già da Panoramica, Movimenti, Investimenti, Pensione.
-2. **Tutto spiegato.** Ogni analitica ha cosa significa, come leggerla, come è calcolata, limiti e fonti; guida alla prima visita; nessun numero senza contesto.
-3. **Visibile a tutti.** Voce di sidebar sempre presente (scelta dell'utente, 2026-10-03: nessun interruttore, «se qualcuno vuole entrare entra»); chi non è interessato non ci va.
+1. **Advanced analyses only.** Nothing that can already be derived from Panoramica (Overview), Movimenti (Transactions), Investimenti (Investments), Pensione (Pension).
+2. **Everything explained.** Each analysis has what it means, how to read it, how it's computed, limits and sources; a guide on the first visit; no number without context.
+3. **Visible to everyone.** Sidebar entry always present (user's choice, 2026-10-03: no toggle, «se qualcuno vuole entrare entra» — "if someone wants to go in, they go in"); those not interested don't go there.
 
-## Schede
+## Tabs
 
-| Scheda | Contenuto | Motore |
+| Tab | Content | Engine |
 | --- | --- | --- |
-| Obiettivo FIRE | numero FIRE (lordo e al netto delle imposte latenti), progresso, anni al traguardo, lean FIRE, Coast FIRE, due tabelle di sensibilità | `lib/calc/fire.ts`, `liquidation.ts` |
-| Simulazione | Monte Carlo del patrimonio (accumulo + pensione), probabilità di successo, fasce 10°-90° | `lib/calc/monte-carlo.ts` |
-| Prelievi | fissa, percentuale, Guyton-Klinger (semplificata), Vanguard dinamica sugli stessi scenari | `monte-carlo.ts` (`compareRules`) |
-| Crescita | variazione del patrimonio finanziario = risparmio + mercato/altro (per differenza) | `growth-split.ts` |
-| Rischio | volatilità, calo massimo, Sharpe, Sortino, Calmar, VaR/CVaR 95%, concentrazione, contributo al rischio (Eulero) | `risk-extras.ts`, `risk.ts` |
-| Costi e tasse | TER (inserito a mano) + bollo, erosione a 30 anni, imposta se si vende tutto | `costs.ts`, `liquidation.ts` |
+| Obiettivo FIRE (FIRE target) | FIRE number (gross and net of latent taxes), progress, years to target, lean FIRE, Coast FIRE, two sensitivity tables | `lib/calc/fire.ts`, `liquidation.ts` |
+| Simulazione (Simulation) | Monte Carlo of net worth (accumulation + retirement), probability of success, 10th-90th percentile bands | `lib/calc/monte-carlo.ts` |
+| Prelievi (Withdrawals) | fixed, percentage, Guyton-Klinger (simplified), Vanguard dynamic on the same scenarios | `monte-carlo.ts` (`compareRules`) |
+| Crescita (Growth) | change in financial net worth = savings + market/other (by difference) | `growth-split.ts` |
+| Rischio (Risk) | volatility, maximum drawdown, Sharpe, Sortino, Calmar, 95% VaR/CVaR, concentration, risk contribution (Euler) | `risk-extras.ts`, `risk.ts` |
+| Costi e tasse (Costs and taxes) | TER (entered by hand) + bollo (stamp duty), erosion over 30 years, tax if everything is sold | `costs.ts`, `liquidation.ts` |
 
-## Dati e ipotesi
+## Data and assumptions
 
-- Nessuna fonte nuova: `lib/analitiche/base.ts` compone, lato client, conti, movimenti degli ultimi 13 mesi, snapshot del patrimonio, investimenti (`useInvestmentsOverviewQuery("max")`), previdenza e debiti.
-- Ipotesi in `analytics_assumptions` (una riga per utente, JSON validato con zod in `lib/analitiche/assumptions.ts`, campi invalidi tornano al default). Valori di partenza prudenti: prelievo 3,5%, rendimento reale 4%, volatilità 12%, inflazione 2%, 40 anni di pensione, regola fissa.
-- Spesa e risparmio sono ricavati dagli ultimi 12 mesi interi se ci sono almeno 3 mesi di dati; altrimenti non si inventa nulla e la scheda chiede di scriverli.
-- API: `GET/PUT /api/analytics/assumptions`, `POST /api/analytics/walkthrough` (tutte `withRoute`).
+- No new source: `lib/analitiche/base.ts` composes, client-side, accounts, transactions of the last 13 months, net worth snapshots, investments (`useInvestmentsOverviewQuery("max")`), pension and debts.
+- Assumptions in `analytics_assumptions` (one row per user, JSON validated with zod in `lib/analitiche/assumptions.ts`, invalid fields fall back to the default). Prudent starting values: 3.5% withdrawal, 4% real return, 12% volatility, 2% inflation, 40 years of retirement, fixed rule.
+- Spending and savings are derived from the last 12 full months if there are at least 3 months of data; otherwise nothing is made up and the tab asks the user to enter them.
+- API: `GET/PUT /api/analytics/assumptions`, `POST /api/analytics/walkthrough` (all `withRoute`).
 
-## Modello di simulazione (scelte)
+## Simulation model (choices)
 
-Passo annuale, rendimenti reali lognormali con media aritmetica `r` e volatilità `σ`; generatore mulberry32 con seme per percorso, così le quattro regole vedono gli stessi mercati. Pensione pubblica opzionale: dal anno scelto riduce il prelievo e la regola riparte dal nuovo livello. Soglie Guyton-Klinger (bande ±20%, aggiustamenti 10%, nessun taglio negli ultimi 15 anni) e limiti Vanguard (−2,5% / +5%) dalla letteratura, dichiarati "semplificati". Limiti noti: rendimenti indipendenti e senza code pesanti, nessuna fonte storica.
+Annual step, lognormal real returns with arithmetic mean `r` and volatility `σ`; mulberry32 generator with a seed per path, so the four rules see the same markets. Optional state pension: from the chosen year it reduces the withdrawal and the rule restarts from the new level. Guyton-Klinger thresholds (±20% bands, 10% adjustments, no cuts in the last 15 years) and Vanguard limits (−2.5% / +5%) from the literature, declared "simplified". Known limits: independent returns without fat tails, no historical source.
 
-## Rimandato consapevolmente
+## Knowingly deferred
 
-- Dataset storici lunghi (backtest su serie reali, bootstrap, stress di sequenza, fattori): licenze (es. JST è CC BY-NC-SA) e peso; da riprendere se l'uso lo giustifica.
-- TER automatico da Yahoo (oggi inserito a mano), ottimizzazione dell'ordine di vendita, esposizione valutaria, glidepath, salvataggio di più scenari con nome.
-- Pannello Grafana "uso di Analitiche" nel repo infra (gli eventi Umami `analytics_*` ci sono già).
+- Long historical datasets (backtests on real series, bootstrap, sequence stress, factors): licenses (e.g. JST is CC BY-NC-SA) and weight; to be picked up if usage justifies it.
+- Automatic TER from Yahoo (today entered by hand), optimization of the selling order, currency exposure, glidepath, saving several named scenarios.
+- Grafana "Analitiche usage" panel in the infra repo (the Umami `analytics_*` events already exist).
 
-## Osservabilità
+## Observability
 
-Log: `analytics.assumptions.saved` (campi cambiati), `analytics.walkthrough.seen`. Umami: `analytics_tab_viewed`, `analytics_assumptions_saved`, `analytics_guide_closed`, `analytics_guide_reopened`, `analytics_explainer_opened`. Nessun job in background, cron o dipendenza esterna: nessuna metrica né alert.
+Logs: `analytics.assumptions.saved` (fields changed), `analytics.walkthrough.seen`. Umami: `analytics_tab_viewed`, `analytics_assumptions_saved`, `analytics_guide_closed`, `analytics_guide_reopened`, `analytics_explainer_opened`. No background job, cron or external dependency: no metric or alert.

@@ -1,11 +1,11 @@
-# Navigazione su telefono: viste dal titolo e pulsante «indietro» unico (2026-10-11)
+# Navigation on phone: views from the title and a single «back» button (2026-10-11)
 
-**Viste delle sezioni.** Sotto i 1024 px il menu a tendina «Movimenti · 1 di 5» (PR #271) è sostituito dal titolo della pagina: in piccolo il nome della sezione, sotto la vista corrente «Movimenti ⌄», che apre un foglio dal basso con tutte le viste e le descrizioni (`SectionHeading` + `SectionViewsSheet` in `components/domain/shared`). Scelta di Daniele (proposta B) tra chip scorrevoli, titolo-selettore e foglio dalla barra in basso: libera una riga e usa lo stesso foglio del resto dell'app; restano due tocchi per cambiare vista. Da 1024 px in su resta il segmentato. Eventi Umami `section_views_opened` e `section_view_chosen`. Mockup e analisi nel thread «Navigazione mobile».
+**Section views.** Below 1024 px the «Movimenti · 1 di 5» dropdown menu (PR #271) is replaced by the page title: the section name in small type, below it the current view «Movimenti ⌄», which opens a bottom sheet with all views and descriptions (`SectionHeading` + `SectionViewsSheet` in `components/domain/shared`). Daniele's choice (proposal B) among scrolling chips, title-selector and sheet from the bottom bar: it frees a row and uses the same sheet as the rest of the app; changing view still takes two taps. From 1024 px up the segmented control remains. Umami events `section_views_opened` and `section_view_chosen`. Mockups and analysis in the thread «Navigazione mobile».
 
-**Pulsante indietro.**
+**Back button.**
 
-Le pagine figlie (Categorizza, Importa da CSV, dettaglio di un debito, scheda di un titolo, gruppo di Impostazioni su telefono, Conti trovati dopo il collegamento della banca) avevano cinque ritorni diversi: solo icona da 32 px, testo sottolineato «← Torna a…», freccia o chevron, con o senza area di tocco da 44 px. Ora usano tutte `BackLink` (`components/domain/shared`): «‹ Nome della pagina madre», sopra il titolo, area di tocco 44 px, stesso colore.
+Child pages (Categorizza, Importa da CSV, debt detail, security page, Impostazioni group on phone, Conti trovati after linking the bank) had five different ways back: 32 px icon only, underlined text «← Torna a…» ("← Back to…"), arrow or chevron, with or without a 44 px touch area. Now they all use `BackLink` (`components/domain/shared`): «‹ Nome della pagina madre» ("‹ Parent page name"), above the title, 44 px touch area, same colour.
 
-Il ritorno porta sempre alla pagina madre (navigazione «su», non cronologia). Dove la testata della sezione ripeteva il nome subito sopra al ritorno (Debiti, Impostazioni su telefono) la testata non si mostra più. In Impostazioni, «‹ Impostazioni» dopo aver aperto un gruppo dall'elenco torna indietro nella cronologia: il tasto indietro del telefono non riapre il gruppo appena chiuso.
+Going back always leads to the parent page («up» navigation, not history). Where the section header repeated the name right above the back link (Debiti, Impostazioni on phone) the header is no longer shown. In Impostazioni, «‹ Impostazioni» after opening a group from the list goes back in history: the phone's back button does not reopen the group just closed.
 
-Rimandati: il tasto indietro del telefono che chiude fogli e dialog invece di cambiare pagina (oggi lo fa solo il menu «Altro»); la riga di chip come scorciatoia.
+Postponed: the phone's back button closing sheets and dialogs instead of changing page (today only the «Altro» menu does it); the chip row as a shortcut.

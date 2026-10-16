@@ -1,7 +1,7 @@
-# Investimenti: la scheda Titoli non c'è più, il titolo si apre dalle Posizioni
+# Investimenti (Investments): the Titoli (Securities) tab is gone, a security opens from Posizioni (Positions)
 
-- Tolta la scheda «Titoli». Il nome di ogni posizione è un link alla pagina del titolo (`/investimenti/titoli/[id]`, invariata: la usano email degli avvisi e sidebar).
-- Nel Portafoglio, in testa alle Posizioni, c'è la ricerca «Cerca un titolo» (nome, ticker, ISIN; trova anche titoli venduti con operazioni e quelli di mercato); scegliere un risultato apre la pagina del titolo.
-- I titoli seguiti ma non posseduti (watchlist, con avvisi e variazione) stanno nella sezione «Seguiti» sotto le Posizioni, mostrata solo se ce ne sono. Nulla di quanto c'era in Titoli è perso.
-- `/investimenti/titoli` reindirizza a `/investimenti`; la pagina del titolo evidenzia Portafoglio e il suo «indietro» torna lì; il «Mostra tutti» della sidebar porta al Portafoglio.
-- Osservabilità: nuovo evento Umami `investment_title_searched` (solo tipo dello strumento). Nessun nuovo log o metrica.
+- Removed the «Titoli» tab. The name of each position is a link to the security page (`/investimenti/titoli/[id]`, unchanged: used by alert emails and the sidebar).
+- In the Portfolio, at the top of Posizioni, there is the «Cerca un titolo» ("Search for a security") search (name, ticker, ISIN; it also finds securities sold with operations and market ones); choosing a result opens the security page.
+- Securities followed but not owned (watchlist, with alerts and change) are in the «Seguiti» ("Followed") section below Posizioni, shown only if there are any. Nothing that was in Titoli is lost.
+- `/investimenti/titoli` redirects to `/investimenti`; the security page highlights Portafoglio and its «back» returns there; the sidebar's «Mostra tutti» ("Show all") leads to the Portfolio.
+- Observability: new Umami event `investment_title_searched` (instrument type only). No new log or metric.

@@ -1,10 +1,10 @@
-# Analitiche: rendimento atteso dallo storico, cursore fino al 50%
+# Analitiche (Analytics): expected return from history, slider up to 50%
 
-Data: 2026-10-12
+Date: 2026-10-12
 
-- Il rendimento reale di Analitiche parte, di default, da quello che il portafoglio ha fatto davvero: ultimi 24 mesi se lo storico li copre (15 giorni di tolleranza), altrimenti 12, altrimenti il 4% prudente di prima. È time-weighted e annualizzato (versamenti e prelievi non contano come guadagno, stesso calcolo della pagina Investimenti), poi tolta l'inflazione osservata nel periodo o, se l'indice non lo copre, quella delle ipotesi.
-- Nessun numero sotto 1.000 € investiti, con meno di 12 mesi di storico o con titoli senza prezzo (sembrerebbero perdite): resta il valore prudente e la riga sotto il cursore dice perché.
-- Nuovo campo `expectedReturnAuto` nelle ipotesi (JSON, nessuna migration): vero di default; chi aveva salvato un rendimento diverso dal 4% resta sul suo. Salvare un rendimento lo rende manuale; «Usa il tuo rendimento» torna all'automatico.
-- Cursore e limiti da −2% a 50%; sopra l'8% reale compare un avviso (le borse mondiali hanno reso in media intorno al 5% reale nel lungo periodo), senza bloccare.
-- Osservabilità: log `analytics.return_source.changed`, eventi Umami `analytics_return_source_shown` e `analytics_return_source_changed`.
-- Rimandato: usare il money-weighted al posto del time-weighted. La finestra si sceglie dal 2026-10-12 (`2026-10-12-analitiche-periodo-dei-dati.md`).
+- Analitiche's real return starts, by default, from what the portfolio actually did: last 24 months if the history covers them (15 days of tolerance), otherwise 12, otherwise the previous prudent 4%. It is time-weighted and annualized (contributions and withdrawals do not count as gain, same calculation as the Investimenti page), then net of the inflation observed in the period or, if the index does not cover it, that of the assumptions.
+- No number below €1,000 invested, with less than 12 months of history or with securities without a price (they would look like losses): the prudent value remains and the row below the slider says why.
+- New `expectedReturnAuto` field in the assumptions (JSON, no migration): true by default; whoever had saved a return other than 4% stays on theirs. Saving a return makes it manual; «Usa il tuo rendimento» ("Use your return") goes back to automatic.
+- Slider and limits from −2% to 50%; above 8% real a warning appears (world stock markets returned on average around 5% real over the long run), without blocking.
+- Observability: log `analytics.return_source.changed`, Umami events `analytics_return_source_shown` and `analytics_return_source_changed`.
+- Postponed: using money-weighted instead of time-weighted. The window can be chosen since 2026-10-12 (`2026-10-12-analitiche-periodo-dei-dati.md`).

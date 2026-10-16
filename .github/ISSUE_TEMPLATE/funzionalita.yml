@@ -1,28 +1,28 @@
-name: Proponi una funzionalità
-description: Un'idea per migliorare BuddyBudget
+name: Suggest a feature
+description: An idea to improve BuddyBudget
 labels: ["enhancement"]
 body:
   - type: textarea
     id: problema
     attributes:
-      label: Che problema vuoi risolvere
-      description: Descrivi la situazione in cui oggi ti manca qualcosa, prima della soluzione.
+      label: What problem do you want to solve
+      description: Describe the situation in which something is missing today, before the solution.
     validations:
       required: true
   - type: textarea
     id: proposta
     attributes:
-      label: Cosa proponi
-      description: Come immagini che funzioni. Se hai visto la stessa cosa altrove, indicalo.
+      label: What you propose
+      description: How you imagine it would work. If you have seen the same thing elsewhere, say so.
     validations:
       required: true
   - type: textarea
     id: alternative
     attributes:
-      label: Alternative considerate
+      label: Alternatives considered
   - type: checkboxes
     id: contributo
     attributes:
-      label: Contributo
+      label: Contribution
       options:
-        - label: Mi piacerebbe lavorarci io (ne parliamo qui prima di scrivere codice)
+        - label: I would like to work on it myself (we discuss it here before writing code)

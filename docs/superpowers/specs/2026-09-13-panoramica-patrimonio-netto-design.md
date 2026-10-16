@@ -1,141 +1,141 @@
-# Panoramica — patrimonio netto nel tempo
+# Panoramica — net worth over time
 
-**Data**: 2026-09-13
-**Stato**: design approvato, piano di implementazione da scrivere
-**Schermata**: Panoramica (home), oggi segnaposto in `app/(app)/page.tsx`
+**Date**: 2026-09-13
+**Status**: design approved, implementation plan to be written
+**Screen**: Panoramica ("Overview", home), currently a placeholder in `app/(app)/page.tsx`
 
-## Obiettivo
+## Goal
 
-La home deve dare **a colpo d'occhio** il senso del patrimonio dell'utente e di come sta andando, aggregando le sezioni esistenti (Conti, Transazioni, Cash flow) e predisponendo l'arrivo di quelle future (Investimenti, Pensione, Debiti) senza doverla ridisegnare. Requisito non negoziabile dell'utente: **un grafico temporale dell'andamento del patrimonio netto**. Tutto il resto deve restare minimale.
+The home page must give **at a glance** a sense of the user's wealth and how it is going, aggregating the existing sections (Conti (Accounts), Transazioni (Transactions), Cash flow) and preparing for the arrival of future ones (Investimenti (Investments), Pensione (Pension), Debiti (Debts)) without having to redesign it. Non-negotiable requirement from the user: **a time chart of the net worth trend**. Everything else must stay minimal.
 
-## Vincolo tecnico di partenza
+## Starting technical constraint
 
-Il DB non ha alcuno storico dei saldi: `accounts.balance` è un singolo valore corrente. Inoltre le transazioni manuali **non** aggiornano `accounts.balance` (lo scrivono solo `POST`/`PATCH /api/accounts` e il sync GoCardless in `lib/gocardless/sync.ts`): per i conti manuali saldo e movimenti sono scollegati.
+The DB has no balance history at all: `accounts.balance` is a single current value. Moreover, manual transactions do **not** update `accounts.balance` (it is written only by `POST`/`PATCH /api/accounts` and by the GoCardless sync in `lib/gocardless/sync.ts`): for manual accounts, balance and transactions are disconnected.
 
-## Decisioni prese in brainstorming
+## Decisions made in brainstorming
 
-| Tema | Scelta | Alternative scartate |
+| Topic | Choice | Discarded alternatives |
 |---|---|---|
-| Storico | **Ibrido**: snapshot reali da oggi in avanti + ricostruzione iniziale derivata dalle transazioni | Solo ricostruzione (falsa sui conti manuali, impossibile per investimenti); solo snapshot (grafico vuoto per mesi) |
-| Cadenza snapshot | **Giornaliera**, grafico a granularità adattiva | Mensile (1M/3M con 1-3 punti, inutile) |
-| Combinazione | **Ricostruzione materializzata una tantum** in tabella + cron giornaliero dedicato | Ricostruzione calcolata a ogni richiesta (merge complesso, numeri passati instabili); snapshot scritto alla prima apertura del giorno (buchi, race condition) |
-| Contenuto home | **Grafico + contesto essenziale**: composizione per classe di asset + card "Questo mese" | Solo grafico nudo; contesto + ultimi movimenti (duplica Transazioni) |
+| History | **Hybrid**: real snapshots from today onwards + initial reconstruction derived from transactions | Reconstruction only (false on manual accounts, impossible for investments); snapshots only (empty chart for months) |
+| Snapshot cadence | **Daily**, chart with adaptive granularity | Monthly (1M/3M with 1-3 points, useless) |
+| Combination | **One-off reconstruction materialized** in a table + dedicated daily cron | Reconstruction computed on every request (complex merge, unstable past numbers); snapshot written on the first visit of the day (gaps, race conditions) |
+| Home content | **Chart + essential context**: composition by asset class + "Questo mese" ("This month") card | Bare chart only; context + latest transactions (duplicates Transazioni) |
 
-## 1. Dati
+## 1. Data
 
-### Tabella `net_worth_snapshots`
+### Table `net_worth_snapshots`
 
-| Colonna | Tipo | Note |
+| Column | Type | Notes |
 |---|---|---|
 | `id` | uuid PK | `defaultRandom()` |
 | `userId` | text, FK `auth_user.id` | `onDelete: cascade` |
-| `date` | date | giorno di riferimento |
-| `assetClass` | text | valori validati da costante TS `ASSET_CLASSES`; oggi solo `"liquidita"` |
-| `amount` | numeric(14,2) | può essere negativo (debiti futuri) |
-| `source` | text | `"snapshot"` (reale) o `"derivato"` (ricostruito) |
+| `date` | date | reference day |
+| `assetClass` | text | values validated by TS constant `ASSET_CLASSES`; today only `"liquidita"` |
+| `amount` | numeric(14,2) | can be negative (future debts) |
+| `source` | text | `"snapshot"` (real) or `"derivato"` (reconstructed) |
 | `createdAt` / `updatedAt` | timestamptz | |
 
-- Vincolo unique `(userId, date, assetClass)`; indice `(userId, date)`.
-- `assetClass` e `source` sono `text` + costanti TS, **non** enum Postgres: aggiungere classi future (`investimenti`, `pensione`, `debiti`) non richiede migrazioni. Stesso criterio già adottato per `categories.color`/`icon`.
-- Le righe sono **totali per classe**, non per singolo conto: eliminare un conto non riscrive lo storico.
-- Precedenza: una riga `snapshot` sovrascrive sempre una `derivato` dello stesso giorno/classe; una `derivato` non sovrascrive mai niente.
+- Unique constraint `(userId, date, assetClass)`; index `(userId, date)`.
+- `assetClass` and `source` are `text` + TS constants, **not** Postgres enums: adding future classes (`investimenti`, `pensione`, `debiti`) requires no migrations. Same criterion already adopted for `categories.color`/`icon`.
+- Rows are **totals per class**, not per account: deleting an account does not rewrite history.
+- Precedence: a `snapshot` row always overwrites a `derivato` row for the same day/class; a `derivato` row never overwrites anything.
 
-### Snapshot giornaliero
+### Daily snapshot
 
-- Nuovo scheduler `startNetWorthScheduler()` (cron alle 23:50, orario del server), registrato in `instrumentation.ts` accanto a `startGoCardlessScheduler()` ma indipendente da esso. Stesso guard "no-op se già avviato" del modulo GoCardless.
-- Per ogni utente con almeno un conto: se l'utente non ha ancora snapshot, esegue prima la ricostruzione (vedi sotto); poi scrive `liquidita = Σ accounts.balance` con upsert idempotente `source = "snapshot"`.
-- Un errore su un utente viene loggato e non blocca gli altri (stesso pattern di `runDueSyncs`).
-- Giorni saltati (server fermo) non vengono recuperati: il lettore ripete l'ultimo valore noto.
+- New scheduler `startNetWorthScheduler()` (cron at 23:50, server time), registered in `instrumentation.ts` next to `startGoCardlessScheduler()` but independent of it. Same "no-op if already started" guard as the GoCardless module.
+- For each user with at least one account: if the user has no snapshots yet, it first runs the reconstruction (see below); then writes `liquidita = Σ accounts.balance` with an idempotent upsert `source = "snapshot"`.
+- An error on one user is logged and doesn't block the others (same pattern as `runDueSyncs`).
+- Skipped days (server down) are not recovered: the reader repeats the last known value.
 
-### Ricostruzione una tantum
+### One-off reconstruction
 
-Scatta quando l'utente non ha **alcuna** riga in `net_worth_snapshots`, da due punti: il cron giornaliero e la prima chiamata a `GET /api/net-worth/snapshots` (così un utente nuovo vede lo storico subito). Scrive con `onConflictDoNothing`, quindi due esecuzioni concorrenti non producono duplicati né sovrascritture.
+It triggers when the user has **no** rows in `net_worth_snapshots`, from two places: the daily cron and the first call to `GET /api/net-worth/snapshots` (so a new user sees the history immediately). It writes with `onConflictDoNothing`, so two concurrent runs produce neither duplicates nor overwrites.
 
-Per ogni giorno `G` dal giorno del primo movimento di un conto Auto fino a **ieri** incluso, limitato agli ultimi **24 mesi**:
+For each day `G` from the day of the first transaction of an Auto account up to and including **yesterday**, limited to the last **24 months**:
 
 ```
-liquidità(G) = Σ saldi attuali dei conti Auto
-             − Σ amount dei movimenti dei conti Auto con date > G
-             + Σ saldi attuali dei conti manuali
+liquidità(G) = Σ current balances of Auto accounts
+             − Σ amount of Auto account transactions with date > G
+             + Σ current balances of manual accounts
 ```
 
-- Si usa `amount` **pieno**, non `effectiveAmount`: "Dividi" modifica cosa conta come spesa, non la cassa uscita dal conto.
-- I conti manuali restano costanti al saldo attuale su tutto lo storico ricostruito.
-- Se non esistono movimenti Auto non viene scritta alcuna riga derivata.
+- The **full** `amount` is used, not `effectiveAmount`: "Dividi" ("Split") changes what counts as an expense, not the cash that left the account.
+- Manual accounts stay constant at their current balance across the whole reconstructed history.
+- If no Auto transactions exist, no derived row is written.
 
-**Limiti accettati consapevolmente**: storico piatto per i conti manuali; movimenti più vecchi importati dopo la ricostruzione non la aggiornano (nessuna rigenerazione, fuori scope).
+**Limits knowingly accepted**: flat history for manual accounts; older transactions imported after the reconstruction don't update it (no regeneration, out of scope).
 
-## 2. Calcolo e API
+## 2. Computation and API
 
-Pattern invariato rispetto a Cash flow: API sottili che restituiscono righe grezze, calcolo in funzioni pure lato client.
+Pattern unchanged compared with Cash flow: thin APIs returning raw rows, computation in pure client-side functions.
 
-### `lib/calc/net-worth.ts` (funzioni pure, testate)
+### `lib/calc/net-worth.ts` (pure, tested functions)
 
 - `type NetWorthPeriod = "1mese" | "3mesi" | "1anno" | "max"`.
-- `deriveLiquidityHistory(accounts, transactions, today)` → righe giornaliere derivate secondo la formula della sezione 1 (solo conti Auto nella sottrazione, massimo 24 mesi, fino a ieri).
-- `getNetWorthPeriodRange(period, today)` → intervallo date; `max` parte dalla prima data disponibile negli snapshot.
+- `deriveLiquidityHistory(accounts, transactions, today)` → derived daily rows according to the formula in section 1 (only Auto accounts in the subtraction, at most 24 months, up to yesterday).
+- `getNetWorthPeriodRange(period, today)` → date range; `max` starts from the first date available in the snapshots.
 - `buildNetWorthSeries(snapshots, todayTotal, period, today)`:
-  - somma le classi di asset per giorno;
-  - riempie i giorni mancanti ripetendo l'ultimo valore noto (nessun punto prima del primo valore disponibile);
-  - l'ultimo punto è `todayTotal`, calcolato dai saldi correnti;
-  - granularità: un punto al giorno per `1mese`/`3mesi`; per `1anno`/`max` il valore dell'ultimo giorno di ogni mese (il mese in corso usa il valore di oggi);
-  - ogni punto riporta se è derivato (`isEstimated`), per il tooltip.
-- `computeNetWorthChange(series)` → `{ start, end, delta, deltaPct }`, `deltaPct = null` quando `start === 0` o la serie ha meno di 2 punti.
+  - sums the asset classes per day;
+  - fills missing days by repeating the last known value (no point before the first available value);
+  - the last point is `todayTotal`, computed from current balances;
+  - granularity: one point per day for `1mese`/`3mesi`; for `1anno`/`max` the value of the last day of each month (the current month uses today's value);
+  - each point reports whether it is derived (`isEstimated`), for the tooltip.
+- `computeNetWorthChange(series)` → `{ start, end, delta, deltaPct }`, `deltaPct = null` when `start === 0` or the series has fewer than 2 points.
 
-Il modulo di scrittura su DB (ricostruzione + snapshot) sta in un file server separato, `lib/net-worth/snapshots.ts` (scheduler in `lib/net-worth/scheduler.ts`), e usa `deriveLiquidityHistory`; non contiene logica di calcolo propria.
+The DB write module (reconstruction + snapshot) lives in a separate server file, `lib/net-worth/snapshots.ts` (scheduler in `lib/net-worth/scheduler.ts`), and uses `deriveLiquidityHistory`; it contains no computation logic of its own.
 
 ### `GET /api/net-worth/snapshots?from&to`
 
-- Autenticazione come le altre route (`auth.api.getSession`), 401 senza sessione; `from`/`to` in formato `YYYY-MM-DD` obbligatori, 400 altrimenti.
-- Se l'utente non ha righe, esegue la ricostruzione una tantum prima di leggere.
-- Restituisce solo le righe dell'utente autenticato nell'intervallo.
-- Hook client `useNetWorthSnapshotsQuery(from, to)` in `lib/queries/net-worth.ts`.
+- Authentication like the other routes (`auth.api.getSession`), 401 without a session; `from`/`to` in `YYYY-MM-DD` format mandatory, 400 otherwise.
+- If the user has no rows, it runs the one-off reconstruction before reading.
+- Returns only the authenticated user's rows within the range.
+- Client hook `useNetWorthSnapshotsQuery(from, to)` in `lib/queries/net-worth.ts`.
 
-### Riuso esistente
+### Existing reuse
 
-- Totale di oggi: `computeAccountsKpi(accounts).totalLiquidity` sui conti di `useAccountsQuery` → il grafico si aggiorna appena cambia un saldo, senza invalidazioni dedicate.
-- "Questo mese": `computeMonthlySeries` di `lib/calc/cashflow.ts` sulle transazioni del mese corrente (`type = "tutte"`); "Messo da parte" = entrate − uscite effettive.
+- Today's total: `computeAccountsKpi(accounts).totalLiquidity` on the accounts from `useAccountsQuery` → the chart updates as soon as a balance changes, without dedicated invalidations.
+- "Questo mese": `computeMonthlySeries` from `lib/calc/cashflow.ts` on the current month's transactions (`type = "tutte"`); "Messo da parte" ("Set aside") = effective income − expenses.
 
 ## 3. UI
 
 ### Route
 
-- Pagina in `app/(app)/panoramica/page.tsx` (la voce sidebar "Panoramica" punta già a `/panoramica`).
-- `app/(app)/page.tsx` diventa un `redirect("/panoramica")`; il segnaposto attuale viene rimosso.
-- La pagina orchestra soltanto: nessun calcolo inline.
+- Page in `app/(app)/panoramica/page.tsx` (the "Panoramica" sidebar entry already points to `/panoramica`).
+- `app/(app)/page.tsx` becomes a `redirect("/panoramica")`; the current placeholder is removed.
+- The page only orchestrates: no inline computation.
 
-### Composizione (dall'alto, `max-w-4xl` come Cash flow)
+### Composition (top to bottom, `max-w-4xl` like Cash flow)
 
-1. **Intestazione**: titolo "Panoramica" + data odierna estesa in italiano.
+1. **Header**: title "Panoramica" + today's date written out in Italian.
 2. **`NetWorthChartCard`**:
-   - totale corrente in `font-heading`, grande;
-   - variazione assoluta e percentuale colorata `text-pos`/`text-neg`, con etichetta del periodo ("negli ultimi 3 mesi");
-   - selettore periodo 1M / 3M / 1A / Max, **default 3M**;
-   - grafico ad area Recharts tramite `components/ui/chart.tsx`, essenziale (niente griglia pesante), colori solo da token tema;
-   - tooltip con data e valore; per i punti derivati aggiunge la dicitura "stimato".
-3. **`NetWorthCompositionRow`**: una mini-card per ogni classe di asset effettivamente presente — nessun segnaposto "presto". Oggi una sola card "Liquidità · N conti" che porta a `/conti`; le classi future compariranno automaticamente. Scelta confermata dall'utente anche se oggi il valore coincide con il totale.
-4. **`MonthSummaryCard`**: "Questo mese" con Entrate, Uscite, Messo da parte; porta a `/cash-flow`.
+   - current total in `font-heading`, large;
+   - absolute and percentage change colored `text-pos`/`text-neg`, with the period label ("negli ultimi 3 mesi" — "over the last 3 months");
+   - period selector 1M / 3M / 1A / Max, **default 3M**;
+   - Recharts area chart via `components/ui/chart.tsx`, essential (no heavy grid), colors only from theme tokens;
+   - tooltip with date and value; for derived points it adds the label "stimato" ("estimated").
+3. **`NetWorthCompositionRow`**: one mini-card per asset class actually present — no "presto" ("soon") placeholder. Today a single "Liquidità · N conti" ("Cash · N accounts") card linking to `/conti`; future classes will appear automatically. Choice confirmed by the user even though today the value matches the total.
+4. **`MonthSummaryCard`**: "Questo mese" with Entrate (Income), Uscite (Expenses), Messo da parte; links to `/cash-flow`.
 
-Componenti in `components/domain/net-worth/` con barrel `index.ts`; tipi delle props esportati; JSDoc di una riga su ogni componente/funzione pubblica.
+Components in `components/domain/net-worth/` with an `index.ts` barrel; prop types exported; one-line JSDoc on each public component/function.
 
-### Stati
+### States
 
-- **Nessun conto**: al posto del grafico un invito ad aggiungere o collegare un conto, con link a `/conti`; niente composizione né "Questo mese" vuoti.
-- **Un solo punto** (nessuno storico, nessun movimento Auto): totale grande + nota "L'andamento comparirà nei prossimi giorni", niente grafico e niente variazione.
-- **Caricamento**: skeleton con la stessa struttura del contenuto (evita layout shift).
-- **Errore**: messaggio + "Riprova", stesso pattern di Cash flow.
+- **No account**: instead of the chart, an invitation to add or link an account, with a link to `/conti`; no empty composition or "Questo mese".
+- **Single point** (no history, no Auto transactions): large total + note "L'andamento comparirà nei prossimi giorni" ("The trend will appear in the next few days"), no chart and no change.
+- **Loading**: skeleton with the same structure as the content (avoids layout shift).
+- **Error**: message + "Riprova" ("Retry"), same pattern as Cash flow.
 
-## Test
+## Tests
 
-- **Funzioni pure** (`lib/calc/net-worth.test.ts`): ricostruzione (sottrazione solo Auto, manuali costanti, `amount` pieno anche con `excludedAmount` ≠ 0, taglio a 24 mesi, nessuna riga senza movimenti Auto); riempimento dei giorni mancanti; granularità adattiva e mese corrente; ultimo punto = totale di oggi; `deltaPct` nullo.
-- **Route** (`app/api/net-worth/snapshots/route.test.ts`): 401 senza sessione; 400 su date non valide; ricostruzione eseguita una sola volta anche con chiamate ripetute; isolamento tra utenti.
-- **Scrittura snapshot**: upsert idempotente sullo stesso giorno; `snapshot` sovrascrive `derivato`, `derivato` non sovrascrive `snapshot`.
-- **Verifica manuale utente** (nessun browser/Postgres reale nel sandbox agentico): grafico con storico stimato su utente con conti Auto, cambio periodo, tooltip "stimato", aggiornamento del totale dopo modifica di un saldo, stato "nessun conto", redirect da `/`.
+- **Pure functions** (`lib/calc/net-worth.test.ts`): reconstruction (subtraction only for Auto, manual constant, full `amount` even with `excludedAmount` ≠ 0, 24-month cut-off, no rows without Auto transactions); filling of missing days; adaptive granularity and current month; last point = today's total; null `deltaPct`.
+- **Route** (`app/api/net-worth/snapshots/route.test.ts`): 401 without session; 400 on invalid dates; reconstruction run only once even with repeated calls; isolation between users.
+- **Snapshot writing**: idempotent upsert on the same day; `snapshot` overwrites `derivato`, `derivato` doesn't overwrite `snapshot`.
+- **Manual verification by the user** (no real browser/Postgres in the agent sandbox): chart with estimated history on a user with Auto accounts, period change, "stimato" tooltip, total update after editing a balance, "no account" state, redirect from `/`.
 
-## Fuori scope (rimandato consapevolmente)
+## Out of scope (knowingly postponed)
 
-- Classi di asset `investimenti`, `pensione`, `debiti`: arriveranno con le rispettive schermate; lo schema è già pronto ad accoglierle senza migrazioni.
-- Lista "Ultimi movimenti": duplicherebbe Transazioni.
-- Donut "Allocazione patrimonio": ha senso solo con almeno 2 classi; da riconsiderare quando arrivano gli Investimenti.
-- Rigenerazione manuale dello storico derivato e storico per singolo conto.
-- Snapshot scatenati dal sync GoCardless (oltre al cron giornaliero).
+- Asset classes `investimenti`, `pensione`, `debiti`: they will arrive with their respective screens; the schema is already ready to take them without migrations.
+- "Ultimi movimenti" ("Latest transactions") list: it would duplicate Transazioni.
+- "Allocazione patrimonio" ("Wealth allocation") donut: only makes sense with at least 2 classes; to be reconsidered when Investimenti arrives.
+- Manual regeneration of the derived history and per-account history.
+- Snapshots triggered by the GoCardless sync (in addition to the daily cron).

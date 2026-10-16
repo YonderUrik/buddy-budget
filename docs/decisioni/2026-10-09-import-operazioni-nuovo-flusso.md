@@ -1,30 +1,30 @@
-# Importa operazioni: nuovo flusso e testi
+# Importa operazioni (Import operations): new flow and copy
 
-Data: 2026-10-09
+Date: 2026-10-09
 
-Il dialog «Importa operazioni» (Investimenti) è ridisegnato nello stile di Panoramica e Liquidità: sezioni aperte con icona tinta, numeri grandi, niente riquadri grigi. Nessun parser o calcolo è cambiato; cambiano presentazione, testi e ordine delle informazioni.
+The «Importa operazioni» dialog (Investimenti) is redesigned in the style of Panoramica and Liquidità: open sections with tinted icon, large numbers, no grey boxes. No parser or calculation has changed; presentation, copy and order of information change.
 
-- **Percorso**: File → Anteprima → Strumenti → Conferma, sempre con gli stessi nomi (prima il secondo passo cambiava tra «Colonne» e «Controllo»). Su telefono «Passo 2 di 4» con barra a segmenti, perché le etichette non ci stavano.
-- **Scelta del broker**: elenco di righe (non schede) e, sotto la riga scelta, istruzioni numerate per esportare il file (`exportSteps` e `note` in `providers.ts`, al posto di `howTo`). La scelta resta facoltativa: il formato si riconosce anche dal file.
-- **Errori**: `lib/investments/import/messages.ts` riscrive i messaggi dei parser («Riga 225: amount non valido» → «Alla riga 225 il campo «importo» non contiene un valore valido» + cosa fare); il messaggio originale resta come «Dettaglio tecnico». Messaggi sconosciuti passano invariati, senza suggerimenti inventati.
-- **Strumenti**: `describeChoice` racconta lo stato (già tuo, nuovo collegato in automatico, da controllare, prezzi del broker perché in un'altra valuta, non trovato, fonti non raggiungibili). Gli strumenti che chiedono attenzione sono in cima con la ricerca già aperta; per gli altri il cambio è su richiesta.
-- **Conferma e dopo**: numeri in evidenza, righe da correggere con la loro spiegazione, e a import concluso «Cosa è successo» e «Cosa fare ora» con i link a Operazioni e (per Trade Republic) a Liquidità.
+- **Path**: File → Anteprima → Strumenti → Conferma (File → Preview → Instruments → Confirm), always with the same names (previously the second step switched between «Colonne» and «Controllo»). On phone «Passo 2 di 4» ("Step 2 of 4") with a segmented bar, because the labels did not fit.
+- **Broker choice**: list of rows (not cards) and, below the chosen row, numbered instructions to export the file (`exportSteps` and `note` in `providers.ts`, instead of `howTo`). The choice stays optional: the format is also recognized from the file.
+- **Errors**: `lib/investments/import/messages.ts` rewrites the parsers' messages («Riga 225: amount non valido» → «Alla riga 225 il campo «importo» non contiene un valore valido» ("At row 225 the «importo» field does not contain a valid value") + what to do); the original message remains as «Dettaglio tecnico» ("Technical detail"). Unknown messages pass through unchanged, without invented suggestions.
+- **Instruments**: `describeChoice` describes the state (already yours, new linked automatically, to check, broker prices because in another currency, not found, sources unreachable). Instruments that need attention are at the top with search already open; for the others the change is on request.
+- **Confirmation and after**: numbers highlighted, rows to fix with their explanation, and when the import is complete «Cosa è successo» ("What happened") and «Cosa fare ora» ("What to do now") with links to Operazioni and (for Trade Republic) to Liquidità.
 
-Scelte tra alternative: gli errori stanno in cima al contenuto e vengono portati in vista (non in fondo, dove su telefono restringevano l'area scorrevole); le righe saltate di proposito (es. imposta di bollo) sono raggruppate per motivo, quelle da correggere elencate una a una; la scelta del broker resta nel primo passo invece di diventare un passo a sé, per tenere quattro passi.
+Choices among alternatives: errors are at the top of the content and are scrolled into view (not at the bottom, where on phone they shrank the scrollable area); rows skipped on purpose (e.g. bollo, stamp duty) are grouped by reason, those to fix listed one by one; the broker choice stays in the first step instead of becoming a step of its own, to keep four steps.
 
-Rimandato: spostare la scelta del portafoglio di destinazione anche per gli altri broker, riepilogo con importi totali per valuta, import di più file Fineco insieme. Screenshot prima/dopo nel progetto, cartella `investimenti-import-flusso`.
+Postponed: moving the choice of destination portfolio for the other brokers too, summary with total amounts per currency, import of several Fineco files together. Before/after screenshots in the project, folder `investimenti-import-flusso`.
 
-## Gestione importazioni (stessa PR)
+## Import management (same PR)
 
-Su richiesta dell'utente («sembra messa lì a caso») la sezione in Operazioni è ridisegnata: non più un «Gestisci importazioni» chiuso con due pulsanti uguali per ogni riga, ma una sezione «Importazioni» sempre visibile.
+At the user's request («sembra messa lì a caso», "it looks like it was put there at random") the section in Operazioni is redesigned: no longer a collapsed «Gestisci importazioni» with two identical buttons for each row, but an «Importazioni» ("Imports") section that is always visible.
 
-- **Lista**: raggruppata per broker; ogni riga ha periodo coperto, data di caricamento, dettagli (posizioni, movimenti di cassa) e stato (Importato, N avvisi, o lo stato del CSV personale). Dopo sei righe «Mostra tutte». Vive in `import-history.ts` (puro, testato) e `import-history-list.tsx`.
-- **Azioni**: tolto «Aggiorna CSV» (apriva solo il dialog, senza dire cosa faceva); ora un solo «Importa un file» e una frase che spiega che un file più recente sostituisce i periodi sovrapposti. Resta «Elimina» per riga.
-- **Conferma di eliminazione** (`import-delete-dialog.tsx`): «Viene eliminato» con l'elenco dei caricamenti coinvolti (anche quelli successivi dello stesso conto) e «Resta com'è», con pulsante esplicito («Elimina 2 importazioni»). Logica di eliminazione invariata.
-- **Riparti da zero** spostato in «Opzioni avanzate», senza riquadro e con il pulsante non più pieno rosso.
+- **List**: grouped by broker; each row has period covered, upload date, details (positions, cash movements) and state (Importato, N avvisi — "Imported, N warnings" — or the state of the personal CSV). After six rows «Mostra tutte» ("Show all"). It lives in `import-history.ts` (pure, tested) and `import-history-list.tsx`.
+- **Actions**: removed «Aggiorna CSV» ("Update CSV": it only opened the dialog, without saying what it did); now a single «Importa un file» ("Import a file") and a sentence explaining that a more recent file replaces the overlapping periods. «Elimina» ("Delete") remains per row.
+- **Delete confirmation** (`import-delete-dialog.tsx`): «Viene eliminato» ("Will be deleted") with the list of uploads involved (including later ones of the same account) and «Resta com'è» ("Stays as is"), with an explicit button («Elimina 2 importazioni», "Delete 2 imports"). Deletion logic unchanged.
+- **Riparti da zero** ("Start from scratch") moved into «Opzioni avanzate» ("Advanced options"), without a box and with the button no longer solid red.
 
-Rimandato: numero di operazioni per importazione e vista di cosa contiene (richiedono un'estensione dell'API `/api/investments/statements`), annullamento dell'ultima importazione.
+Postponed: number of operations per import and a view of what it contains (they require an extension of the `/api/investments/statements` API), undo of the last import.
 
-## Semplificazione (richiesta dell'utente)
+## Simplification (user request)
 
-Tolti «Altro CSV» dall'elenco dei broker, il modello da scaricare, il campo «incolla il contenuto» e le frasi ripetute (anteprima, elenco importazioni). Al loro posto, in cima al primo passo, un riquadro «Novità» che porta a «Crea il tuo formato con l'AI» (`/importazioni`). Un CSV non riconosciuto continua a passare dalla mappatura delle colonne: non è più presentato come scelta, ma resta come ripiego.
+Removed «Altro CSV» ("Other CSV") from the broker list, the downloadable template, the «incolla il contenuto» ("paste the content") field and the repeated sentences (preview, import list). In their place, at the top of the first step, a «Novità» ("What's new") panel that leads to «Crea il tuo formato con l'AI» ("Create your format with AI", `/importazioni`). An unrecognized CSV still goes through column mapping: it is no longer presented as a choice, but remains as a fallback.

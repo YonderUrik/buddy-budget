@@ -1,12 +1,12 @@
-# Investimenti nello stile della Panoramica
+# Investimenti (Investments) in the Panoramica style
 
-Data: 2026-10-08
+Date: 2026-10-08
 
-Daniele vuole la Panoramica rifatta (ispirazione Wealthfolio) come standard del prodotto: Investimenti, tutte le schede, la adotta a gruppi di schede, una PR per gruppo. Solo presentazione: nessun calcolo, dato o route cambia.
-Regole del linguaggio, riusate dalla Panoramica: un solo grafico a tutta larghezza con importo grande (`MoneyHero`, decimali attenuati) e selettore del periodo centrato sotto; le altre parti sono sezioni aperte senza riquadro, con icona tinta nel colore del loro ambito (`SectionHeading`) e righe separate da filettature; due colonne da `lg` (3/5 + 2/5); pagina larga come la Panoramica (`max-w-6xl`).
-Nuovo componente `PanelSection` (`components/domain/investments`) che sostituisce `Card` + `CardTitle` nelle schede; `MoneyHero` ora è esportato dal barrel di `net-worth`. Tutte le schede (Portafoglio, Performance, Diversificazione, Dividendi, Tasse, Operazioni, Titoli e pagina di un titolo) sono nello stesso PR, perché la sessione lavora su un solo branch. Le schede lunghe usano due colonne (3/5 + 2/5) da `lg`; la heatmap dei rendimenti resta a tutta larghezza.
-Rimandato: «Gestisci importazioni» (Operazioni) e i dialog restano come prima.
+Daniele wants the redone Panoramica (Wealthfolio-inspired) as the product standard: Investimenti, all tabs, adopts it in groups of tabs, one PR per group. Presentation only: no calculation, data or route changes.
+Rules of the visual language, reused from the Panoramica: a single full-width chart with a large amount (`MoneyHero`, dimmed decimals) and period selector centred below; the other parts are open sections without a box, with an icon tinted in the colour of their area (`SectionHeading`) and rows separated by rules; two columns from `lg` (3/5 + 2/5); page as wide as the Panoramica (`max-w-6xl`).
+New `PanelSection` component (`components/domain/investments`) replacing `Card` + `CardTitle` in the tabs; `MoneyHero` is now exported from the `net-worth` barrel. All tabs (Portafoglio, Performance, Diversificazione, Dividendi, Tasse, Operazioni, Titoli and the security page) are in the same PR, because the session works on a single branch. Long tabs use two columns (3/5 + 2/5) from `lg`; the returns heatmap stays full width.
+Postponed: «Gestisci importazioni» ("Manage imports", in Operazioni) and the dialogs remain as before.
 
-## Dialog
+## Dialogs
 
-Anche i dialog di Investimenti (registra/modifica operazione, import in 4 passi, prezzo manuale, benchmark, impostazioni strumento, obiettivi di allocazione, correzione area/settore, gestione e reset import) seguono lo stile: `PanelDialogHeader` (icona tinta + titolo + descrizione), `DialogSections`/`DialogSection` per le sotto-sezioni, `DialogActions` per il piè con azioni, `DialogSteps` per il percorso dell'import (`components/domain/investments/dialog-parts.tsx`). Solo presentazione; le conferme `AlertDialog` restano invariate.
+The Investimenti dialogs too (record/edit operation, 4-step import, manual price, benchmark, instrument settings, allocation targets, area/sector correction, import management and reset) follow the style: `PanelDialogHeader` (tinted icon + title + description), `DialogSections`/`DialogSection` for sub-sections, `DialogActions` for the footer with actions, `DialogSteps` for the import path (`components/domain/investments/dialog-parts.tsx`). Presentation only; the `AlertDialog` confirmations are unchanged.

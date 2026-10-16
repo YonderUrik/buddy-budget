@@ -1,65 +1,65 @@
-# Fase 6 — App in parallelo — Runbook
+# Phase 6 — App in parallel — Runbook
 
-> **Stato (2026-09-27):** Task 1-8 eseguiti (le checkbox sotto non sono state spuntate durante l'esecuzione; lo stato reale è nei commit dei due repo e nel log di `CLAUDE.md`). Il tracking Umami (Task 7 Step 8-9) è stato corretto dopo: route `/stats/script.js` + `/stats/api/send` con `stripPrefix`, non `/stats/script`. Resta il **Task 9** (verifica manuale utente).
+> **Status (2026-09-27):** Tasks 1-8 executed (the checkboxes below were not ticked during execution; the real status is in the commits of the two repos and in the `CLAUDE.md` log). Umami tracking (Task 7 Steps 8-9) was fixed afterwards: route `/stats/script.js` + `/stats/api/send` with `stripPrefix`, not `/stats/script`. **Task 9** remains (manual user verification).
 
-> **Per chi esegue:** questo è un piano in formato runbook guidato, non un piano TDD su codice applicativo — stesso formato delle Fasi 1-5 (`docs/superpowers/plans/2026-09-26-fase-*.md`, `2026-09-27-fase-5-observability.md`), coerente con lo standard esplicito del progetto ("ogni fase diventa un piano in formato runbook guidato", `CLAUDE.md`). Ogni task produce manifest verificabili con `kubectl`/`curl` reali via Tailscale, non test automatici — l'unico task con codice applicativo (Task 7, script Umami) resta comunque minimo e verificato dal vivo. **REQUIRED SUB-SKILL:** superpowers:executing-plans (esecuzione inline in questa sessione, coerente col vincolo di processo dell'utente — le azioni su account/DNS/terminale restano sue, Claude prepara e verifica).
+> **For the executor:** this is a plan in guided runbook format, not a TDD plan on application code — same format as Phases 1-5 (`docs/superpowers/plans/2026-09-26-fase-*.md`, `2026-09-27-fase-5-observability.md`), consistent with the project's explicit standard ("every phase becomes a plan in guided runbook format", `CLAUDE.md`). Every task produces manifests verifiable with real `kubectl`/`curl` via Tailscale, not automated tests — the only task with application code (Task 7, Umami script) is still minimal and verified live. **REQUIRED SUB-SKILL:** superpowers:executing-plans (inline execution in this session, consistent with the user's process constraint — actions on accounts/DNS/terminal remain theirs, Claude prepares and verifies).
 
-**Goal:** far girare BuddyBudget dentro il cluster k3s su `app.buddybudget.io` con dati reali (dump da Neon), CronJob al posto di Vercel Cron, Umami per l'analytics, e un ciclo CI→GHCR→repo infra→ArgoCD completamente automatico — pronto per la verifica manuale completa prima del cutover (Fase 7).
+**Goal:** run BuddyBudget inside the k3s cluster on `app.buddybudget.io` with real data (dump from Neon), CronJobs instead of Vercel Cron, Umami for analytics, and a fully automatic CI→GHCR→infra repo→ArgoCD loop — ready for the full manual verification before the cutover (Phase 7).
 
-**Architecture:** nuovo namespace `app` nel repo `buddy-budget-infra` (Deployment 2 repliche + Service + IngressRoute Traefik + Job PreSync migration, gestito da ArgoCD come tutti i componenti dalla Fase 3), dati copiati da Neon a CloudNativePG con `pg_dump`/`pg_restore`, due `CronJob` k8s al posto di Vercel Cron, Umami come secondo Deployment con un DB dedicato nello stesso cluster CNPG (CRD `Database` + ruolo dichiarativo), step aggiuntivo nella CI del repo app che aggiorna il tag immagine nel repo infra via `kustomize edit set image`.
+**Architecture:** new `app` namespace in the `buddy-budget-infra` repo (Deployment with 2 replicas + Service + Traefik IngressRoute + PreSync migration Job, managed by ArgoCD like all components since Phase 3), data copied from Neon to CloudNativePG with `pg_dump`/`pg_restore`, two k8s `CronJob`s instead of Vercel Cron, Umami as a second Deployment with a dedicated DB in the same CNPG cluster (`Database` CRD + declarative role), an extra step in the app repo's CI that updates the image tag in the infra repo via `kustomize edit set image`.
 
-**Tech Stack:** Kubernetes (k3s) via ArgoCD, Kustomize + KSOPS (SOPS/age) per i segreti, CloudNativePG (CRD `Cluster`/`Database`), Traefik `IngressRoute`, GitHub Actions, Docker (immagini già costruite da Fase 0: `buddy-budget` target `runner`, `buddy-budget-migrate` target `migrator`), Umami (immagine ufficiale `ghcr.io/umami-software/umami:postgresql-latest`).
+**Tech Stack:** Kubernetes (k3s) via ArgoCD, Kustomize + KSOPS (SOPS/age) for secrets, CloudNativePG (`Cluster`/`Database` CRDs), Traefik `IngressRoute`, GitHub Actions, Docker (images already built since Phase 0: `buddy-budget` target `runner`, `buddy-budget-migrate` target `migrator`), Umami (official image `ghcr.io/umami-software/umami:postgresql-latest`).
 
-**Spec:** `docs/superpowers/specs/2026-09-27-fase-6-app-parallelo-design.md` (e riferimento `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md`, sezione Fasi riga 6 e architettura riga 53 per il Job PreSync di migration).
+**Spec:** `docs/superpowers/specs/2026-09-27-fase-6-app-parallelo-design.md` (and reference `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md`, Phases section row 6 and architecture line 53 for the PreSync migration Job).
 
 ## Global Constraints
 
-- Nessuna build sulla VPS: solo immagini già costruite da GitHub Actions (`ghcr.io/YonderUrik/buddy-budget`, `ghcr.io/YonderUrik/buddy-budget-migrate`).
-- Tutto dichiarativo e ricostruibile: ogni manifest va nel repo `buddy-budget-infra`, nessun `kubectl apply` manuale fuori da debug temporaneo annotato (principio già scritto nello spec principale).
-- Segreti sempre cifrati con SOPS/age nel repo (`*.enc.yaml` + `kustomization.yaml`/`generator.yaml` KSOPS), mai in chiaro nel filesystem più del tempo necessario a cifrarli — stesso schema già usato per R2/tunnel/Slack/Grafana.
-- `resources.requests`/`limits` espliciti su ogni container nuovo (regola già in vigore in tutte le fasi precedenti).
-- NetworkPolicy: solo regole di `Ingress` esplicite (default-deny + eccezioni mirate) — questo repo non ha mai introdotto regole di `Egress`, si resta coerenti con quella scelta anche qui piuttosto che introdurre un pattern nuovo.
-- Cron Vercel disattivati **prima** di attivare i CronJob k8s equivalenti (rate limit GoCardless condiviso ~4 chiamate/giorno/conto — vedi Task 1).
-- Dump/restore e creazione di credenziali reali (password DB, PAT GitHub, chiavi Google/GoCardless) restano azioni dell'utente da terminale: Claude prepara i comandi esatti, non li esegue con credenziali proprie.
+- No builds on the VPS: only images already built by GitHub Actions (`ghcr.io/YonderUrik/buddy-budget`, `ghcr.io/YonderUrik/buddy-budget-migrate`).
+- Everything declarative and rebuildable: every manifest goes into the `buddy-budget-infra` repo, no manual `kubectl apply` outside annotated temporary debugging (principle already written in the main spec).
+- Secrets always encrypted with SOPS/age in the repo (`*.enc.yaml` + KSOPS `kustomization.yaml`/`generator.yaml`), never in plain text on the filesystem longer than needed to encrypt them — same scheme already used for R2/tunnel/Slack/Grafana.
+- Explicit `resources.requests`/`limits` on every new container (rule already in force in all previous phases).
+- NetworkPolicy: only explicit `Ingress` rules (default-deny + targeted exceptions) — this repo has never introduced `Egress` rules, and we stay consistent with that choice here too rather than introducing a new pattern.
+- Vercel crons disabled **before** activating the equivalent k8s CronJobs (shared GoCardless rate limit of ~4 calls/day/account — see Task 1).
+- Dump/restore and the creation of real credentials (DB passwords, GitHub PAT, Google/GoCardless keys) remain user actions from the terminal: Claude prepares the exact commands, it does not run them with its own credentials.
 
 ## Review Focus
 
-- **App non raggiungibile dal Redis/Postgres per un NetworkPolicy dimenticata**: il namespace `data` ha oggi solo `default-deny-ingress` senza eccezioni (commento esplicito nel repo: "l'eccezione si aggiunge insieme a quel namespace" — cioè qui). Se il Task 2 non aggiunge l'`allow-app-to-data`, l'app va in crash loop su `/api/health/ready` con timeout, non un errore ovvio.
-- **Migration Job che gira su schema vuoto prima del restore**: se il Task 5 (deploy app + PreSync Job) viene eseguito prima del Task 4 (restore dati), il Job di migration crea da zero le tabelle sulla baseline Drizzle; il successivo `pg_restore` del dump Neon fallirebbe su tabelle già esistenti (o le sovrascriverebbe silenziosamente con `--clean`, perdendo la marcatura "già migrato"). L'ordine Task 4 → Task 5 è vincolante, va rispettato esplicitamente, non solo per numerazione.
-- **Google OAuth rotto su `app.buddybudget.io`**: better-auth costruisce il redirect Google da `BETTER_AUTH_URL`; se il redirect URI non è aggiunto in Google Cloud Console, il login Google fallisce con `redirect_uri_mismatch` — non un problema di configurazione k8s, va fatto a mano fuori dal cluster (Task 5).
-- **Doppio sync GoCardless per un ordine invertito**: se i CronJob k8s (Task 6) vengono applicati prima di aver disattivato i cron Vercel (Task 1), i due stack sincronizzano lo stesso conto reale in parallelo, il primo run supera il rate limit sandbox e blocca i sync per il resto della giornata su entrambi.
-- **DATABASE_URL senza `sslmode` esplicito**: `resolveDbSsl` (`lib/db/ssl.ts`) impone TLS in produzione (`NODE_ENV=production`, già baked nell'immagine `runner`) a meno che l'URL non specifichi `sslmode`; CNPG qui non ha TLS configurato lato client per queste connessioni interne, quindi senza `?sslmode=disable` esplicito l'app non si avvia (connessione rifiutata) — debito già annotato in Fase 0 ("da decidere in Fase 6 con sslmode esplicito nei manifest k8s"), risolto qui nel Task 3.
+- **App unable to reach Redis/Postgres because of a forgotten NetworkPolicy**: the `data` namespace today only has `default-deny-ingress` with no exceptions (explicit comment in the repo: "the exception is added together with that namespace" — i.e. here). If Task 2 does not add `allow-app-to-data`, the app goes into a crash loop on `/api/health/ready` with a timeout, not an obvious error.
+- **Migration Job running on an empty schema before the restore**: if Task 5 (app deploy + PreSync Job) is run before Task 4 (data restore), the migration Job creates the tables from scratch on the Drizzle baseline; the subsequent `pg_restore` of the Neon dump would fail on already existing tables (or overwrite them silently with `--clean`, losing the "already migrated" marking). The order Task 4 → Task 5 is binding and must be respected explicitly, not just by numbering.
+- **Google OAuth broken on `app.buddybudget.io`**: better-auth builds the Google redirect from `BETTER_AUTH_URL`; if the redirect URI is not added in Google Cloud Console, Google login fails with `redirect_uri_mismatch` — not a k8s configuration problem, it must be done by hand outside the cluster (Task 5).
+- **Double GoCardless sync because of an inverted order**: if the k8s CronJobs (Task 6) are applied before disabling the Vercel crons (Task 1), the two stacks sync the same real account in parallel, the first run exceeds the sandbox rate limit and blocks syncs for the rest of the day on both.
+- **DATABASE_URL without an explicit `sslmode`**: `resolveDbSsl` (`lib/db/ssl.ts`) enforces TLS in production (`NODE_ENV=production`, already baked into the `runner` image) unless the URL specifies `sslmode`; CNPG here has no client-side TLS configured for these internal connections, so without an explicit `?sslmode=disable` the app does not start (connection refused) — debt already noted in Phase 0 ("to be decided in Phase 6 with explicit sslmode in the k8s manifests"), resolved here in Task 3.
 
 ---
 
-## Ordine dei passi
+## Order of steps
 
-1. Disattivare i cron Vercel.
-2. Namespace `app`: NetworkPolicy + ResourceQuota/LimitRange (senza ancora Deployment/Secret).
-3. Segreti app: GHCR pull secret + Secret applicativo (con `DATABASE_URL`/`REDIS_URL` corretti).
-4. Migrazione dati Neon → CNPG (dump/restore + verifica conteggio righe).
-5. Deploy app (Deployment 2 repliche + Service + IngressRoute + Job PreSync migration) + DNS + redirect Google OAuth.
-6. CronJob k8s (`gocardless-sync`, `net-worth-snapshot`).
-7. Umami (DB dedicato in CNPG, Deployment, Tailscale Ingress, script di tracking nell'app).
-8. Step CI: aggiornamento automatico del tag immagine nel repo infra.
-9. Verifica manuale utente end-to-end.
+1. Disable the Vercel crons.
+2. `app` namespace: NetworkPolicy + ResourceQuota/LimitRange (still without Deployment/Secret).
+3. App secrets: GHCR pull secret + application Secret (with correct `DATABASE_URL`/`REDIS_URL`).
+4. Data migration Neon → CNPG (dump/restore + row count check).
+5. App deploy (Deployment with 2 replicas + Service + IngressRoute + PreSync migration Job) + DNS + Google OAuth redirect.
+6. k8s CronJobs (`gocardless-sync`, `net-worth-snapshot`).
+7. Umami (dedicated DB in CNPG, Deployment, Tailscale Ingress, tracking script in the app).
+8. CI step: automatic update of the image tag in the infra repo.
+9. End-to-end manual user verification.
 
 ---
 
-### Task 1: Disattivare i cron Vercel
+### Task 1: Disable the Vercel crons
 
 **Files:**
-- Modify: `vercel.json` (repo app, ramo `main`)
+- Modify: `vercel.json` (app repo, `main` branch)
 
 **Interfaces:**
-- Consumes: nessuna.
-- Produces: nessun cron attivo lato Vercel da questo punto in poi — precondizione per il Task 6.
+- Consumes: none.
+- Produces: no active cron on the Vercel side from this point on — precondition for Task 6.
 
-- [ ] **Step 1: Rimuovere la sezione `crons`**
+- [ ] **Step 1: Remove the `crons` section**
 
-Leggere `vercel.json`, rimuovere l'intera chiave `"crons"` (le route `/api/cron/*` restano nel codice, invariate — sono i CronJob k8s del Task 6 a chiamarle da qui in avanti).
+Read `vercel.json`, remove the whole `"crons"` key (the `/api/cron/*` routes stay in the code, unchanged — from here on it is the k8s CronJobs of Task 6 that call them).
 
-- [ ] **Step 2: Commit e push su `main`**
+- [ ] **Step 2: Commit and push to `main`**
 
 ```bash
 git add vercel.json
@@ -67,25 +67,25 @@ git commit -m "chore: disattiva Vercel Cron, sostituiti dai CronJob k8s (Fase 6)
 git push origin main
 ```
 
-- [ ] **Step 3: Verifica su Vercel**
+- [ ] **Step 3: Verify on Vercel**
 
-L'utente controlla in Vercel → Project → Settings → Cron Jobs che la lista sia vuota dopo il redeploy automatico del push. Confermare esplicitamente prima di passare al Task 6 (non c'è fretta: i Task 2-5 non toccano GoCardless).
+The user checks in Vercel → Project → Settings → Cron Jobs that the list is empty after the automatic redeploy triggered by the push. Confirm explicitly before moving to Task 6 (no hurry: Tasks 2-5 do not touch GoCardless).
 
 ---
 
-### Task 2: Namespace `app` — NetworkPolicy e Quota
+### Task 2: `app` namespace — NetworkPolicy and Quota
 
 **Files:**
-- Create: `argocd/manifests/app/namespace.yaml` (repo `buddy-budget-infra`)
+- Create: `argocd/manifests/app/namespace.yaml` (`buddy-budget-infra` repo)
 - Create: `argocd/manifests/app/networkpolicy.yaml`
 - Create: `argocd/manifests/app/quota.yaml`
 - Create: `argocd/manifests/app/kustomization.yaml`
 - Create: `argocd/apps/app.yaml`
-- Modify: `argocd/manifests/security/networkpolicy-data.yaml` (aggiunge l'eccezione verso `data`)
+- Modify: `argocd/manifests/security/networkpolicy-data.yaml` (adds the exception towards `data`)
 
 **Interfaces:**
-- Consumes: nessuna (primo manifest del namespace `app`).
-- Produces: namespace `app` esistente con `default-deny-ingress` + eccezione da `ingress` (Traefik); eccezione in `data` che i Task successivi (Secret, Deployment) danno per scontata.
+- Consumes: none (first manifest of the `app` namespace).
+- Produces: existing `app` namespace with `default-deny-ingress` + exception from `ingress` (Traefik); exception in `data` that the following Tasks (Secret, Deployment) take for granted.
 
 - [ ] **Step 1: Namespace + NetworkPolicy + Quota**
 
@@ -108,7 +108,7 @@ spec:
   podSelector: {}
   policyTypes: [Ingress]
 ---
-# Traefik (namespace ingress) deve poter raggiungere l'app sulla porta 3000.
+# Traefik (ingress namespace) must be able to reach the app on port 3000.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -147,8 +147,8 @@ spec:
         cpu: 500m
         memory: 512Mi
 ---
-# Margine sopra il budget RAM stimato nello spec principale (300-600Mi per 2 repliche Next.js,
-# + Umami nello stesso namespace).
+# Headroom above the RAM budget estimated in the main spec (300-600Mi for 2 Next.js replicas,
+# + Umami in the same namespace).
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -170,7 +170,7 @@ resources:
   - quota.yaml
 ```
 
-- [ ] **Step 2: Application ArgoCD**
+- [ ] **Step 2: ArgoCD Application**
 
 ```yaml
 # argocd/apps/app.yaml
@@ -196,10 +196,10 @@ spec:
       - CreateNamespace=true
 ```
 
-- [ ] **Step 3: Eccezione NetworkPolicy in `data`**
+- [ ] **Step 3: NetworkPolicy exception in `data`**
 
 ```yaml
-# argocd/manifests/security/networkpolicy-data.yaml — sostituire il contenuto con:
+# argocd/manifests/security/networkpolicy-data.yaml — replace the content with:
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -210,7 +210,7 @@ spec:
   podSelector: {}
   policyTypes: [Ingress]
 ---
-# L'app (namespace app) deve poter raggiungere Postgres (5432) e Redis (6379).
+# The app (app namespace) must be able to reach Postgres (5432) and Redis (6379).
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -231,7 +231,7 @@ spec:
           port: 6379
 ```
 
-- [ ] **Step 4: Commit, push, verifica**
+- [ ] **Step 4: Commit, push, verify**
 
 ```bash
 git add argocd/manifests/app argocd/apps/app.yaml argocd/manifests/security/networkpolicy-data.yaml
@@ -239,33 +239,33 @@ git commit -m "feat: namespace app (NetworkPolicy + quota) e eccezione verso dat
 git push origin main
 ```
 
-Verifica (via Tailscale): `kubectl get ns app` → esiste; `kubectl get networkpolicy -n app` → 2 policy; `kubectl get networkpolicy -n data` → 2 policy (default-deny + allow-app-to-data).
+Verification (via Tailscale): `kubectl get ns app` → exists; `kubectl get networkpolicy -n app` → 2 policies; `kubectl get networkpolicy -n data` → 2 policies (default-deny + allow-app-to-data).
 
 ---
 
-### Task 3: Segreti app
+### Task 3: App secrets
 
 **Files:**
 - Create: `argocd/manifests/app/ghcr-pull-secret.enc.yaml`
 - Create: `argocd/manifests/app/app-secrets.enc.yaml`
 - Create: `argocd/manifests/app/generator.yaml`
-- Modify: `argocd/manifests/app/kustomization.yaml` (aggiunge `generators`)
+- Modify: `argocd/manifests/app/kustomization.yaml` (adds `generators`)
 
 **Interfaces:**
-- Consumes: namespace `app` dal Task 2.
-- Produces: `Secret/ghcr-pull-secret` (tipo `kubernetes.io/dockerconfigjson`, per l'`imagePullSecrets` del Task 5), `Secret/app-env` con le chiavi `DATABASE_URL`, `REDIS_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `RESEND_FROM`, `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY`, `CRON_SECRET` — nomi identici a `serverEnvSchema` (`lib/env.ts:10-27`), consumati dal Task 5 via `envFrom`.
+- Consumes: `app` namespace from Task 2.
+- Produces: `Secret/ghcr-pull-secret` (type `kubernetes.io/dockerconfigjson`, for the `imagePullSecrets` of Task 5), `Secret/app-env` with the keys `DATABASE_URL`, `REDIS_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `RESEND_FROM`, `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY`, `CRON_SECRET` — names identical to `serverEnvSchema` (`lib/env.ts:10-27`), consumed by Task 5 via `envFrom`.
 
-- [ ] **Step 1: Recuperare la password del ruolo `buddybudget` generata da CNPG**
+- [ ] **Step 1: Retrieve the password of the `buddybudget` role generated by CNPG**
 
 ```bash
 kubectl get secret buddybudget-pg-app -n data -o jsonpath='{.data.password}' | base64 -d
 ```
 
-(Il nome esatto del Secret dipende dalla convenzione CNPG per il cluster `buddybudget-pg` definito in Fase 4 — verificare con `kubectl get secrets -n data | grep buddybudget-pg` se `buddybudget-pg-app` non esiste.)
+(The exact Secret name depends on the CNPG convention for the `buddybudget-pg` cluster defined in Phase 4 — check with `kubectl get secrets -n data | grep buddybudget-pg` if `buddybudget-pg-app` does not exist.)
 
-- [ ] **Step 2: Preparare il file in chiaro (temporaneo, mai committato)**
+- [ ] **Step 2: Prepare the plain-text file (temporary, never committed)**
 
-Nello scratchpad, un file `app-secrets.yaml`:
+In the scratchpad, an `app-secrets.yaml` file:
 
 ```yaml
 apiVersion: v1
@@ -289,18 +289,18 @@ stringData:
   CRON_SECRET: "<stesso valore già in uso su Vercel>"
 ```
 
-`BETTER_AUTH_URL`/`APP_URL` sono diversi dal valore Vercel per design (nuovo dominio) — tutti gli altri sono riusati identici, così GoCardless/Resend/Google continuano a riconoscere le stesse credenziali (la rotazione di tutti i segreti resta pianificata per la chiusura della Fase 7, non qui).
+(The `<…>` placeholders mean "password from Step 1" and "same value already in use on Vercel".) `BETTER_AUTH_URL`/`APP_URL` differ from the Vercel value by design (new domain) — all the others are reused unchanged, so GoCardless/Resend/Google keep recognizing the same credentials (the rotation of all secrets remains planned for the close of Phase 7, not here).
 
-- [ ] **Step 3: Cifrare con SOPS**
+- [ ] **Step 3: Encrypt with SOPS**
 
 ```bash
 sops --encrypt --age <chiave-pubblica-age-del-progetto> app-secrets.yaml > argocd/manifests/app/app-secrets.enc.yaml
 rm app-secrets.yaml
 ```
 
-- [ ] **Step 4: PAT GitHub per il pull dell'immagine privata**
+- [ ] **Step 4: GitHub PAT for pulling the private image**
 
-L'utente crea un PAT (classic, scope `read:packages`) su GitHub, incollato una sola volta in chat per generare il file cifrato:
+The user creates a PAT (classic, scope `read:packages`) on GitHub, pasted only once in the chat to generate the encrypted file:
 
 ```bash
 kubectl create secret docker-registry ghcr-pull-secret \
@@ -313,7 +313,7 @@ sops --encrypt --age <chiave-pubblica-age-del-progetto> ghcr-pull-secret.yaml > 
 rm ghcr-pull-secret.yaml
 ```
 
-- [ ] **Step 5: Generator KSOPS + kustomization**
+- [ ] **Step 5: KSOPS generator + kustomization**
 
 ```yaml
 # argocd/manifests/app/generator.yaml
@@ -340,7 +340,7 @@ generators:
   - generator.yaml
 ```
 
-- [ ] **Step 6: Commit, push, verifica**
+- [ ] **Step 6: Commit, push, verify**
 
 ```bash
 git add argocd/manifests/app/app-secrets.enc.yaml argocd/manifests/app/ghcr-pull-secret.enc.yaml argocd/manifests/app/generator.yaml argocd/manifests/app/kustomization.yaml
@@ -348,40 +348,40 @@ git commit -m "feat: segreti app (env applicativo + pull secret GHCR)"
 git push origin main
 ```
 
-Verifica: `kubectl get secret app-env -n app -o jsonpath='{.data.DATABASE_URL}' | base64 -d` mostra la stringa attesa (con `?sslmode=disable`); `kubectl get secret ghcr-pull-secret -n app` esiste, tipo `kubernetes.io/dockerconfigjson`.
+Verification: `kubectl get secret app-env -n app -o jsonpath='{.data.DATABASE_URL}' | base64 -d` shows the expected string (with `?sslmode=disable`); `kubectl get secret ghcr-pull-secret -n app` exists, type `kubernetes.io/dockerconfigjson`.
 
 ---
 
-### Task 4: Migrazione dati Neon → CNPG
+### Task 4: Data migration Neon → CNPG
 
-**Files:** nessuno (operazione da terminale, nessun file nel repo).
+**Files:** none (terminal operation, no file in the repo).
 
 **Interfaces:**
-- Consumes: connection string Neon (produzione attuale), `Service` CNPG `buddybudget-pg-rw.data.svc.cluster.local:5432` (dal Task 3).
-- Produces: database `buddybudget` in CNPG popolato con i dati reali — precondizione del Task 5 (l'ordine è vincolante, vedi Review Focus).
+- Consumes: Neon connection string (current production), CNPG `Service` `buddybudget-pg-rw.data.svc.cluster.local:5432` (from Task 3).
+- Produces: `buddybudget` database in CNPG populated with the real data — precondition of Task 5 (the order is binding, see Review Focus).
 
-- [ ] **Step 1: Dump da Neon**
+- [ ] **Step 1: Dump from Neon**
 
-Da un terminale con la connection string Neon (mai in chat):
+From a terminal with the Neon connection string (never in the chat):
 
 ```bash
 pg_dump --format=custom --file=buddybudget-neon.dump "$NEON_DATABASE_URL"
 ```
 
-- [ ] **Step 2: Trasferire il dump alla VPS via Tailscale**
+- [ ] **Step 2: Transfer the dump to the VPS via Tailscale**
 
 ```bash
 scp buddybudget-neon.dump deploy@<ip-tailscale-vps>:/tmp/
 ```
 
-- [ ] **Step 3: Restore dentro il cluster**
+- [ ] **Step 3: Restore inside the cluster**
 
-Da un pod temporaneo con client Postgres (stesso pattern usato per la prova di restore di Fase 4):
+From a temporary pod with a Postgres client (same pattern used for the Phase 4 restore test):
 
 ```bash
 kubectl run pg-client --rm -it --image=postgres:17 --restart=Never -n data -- bash
-# dentro il pod:
-# (il dump va reso raggiungibile al pod, es. con kubectl cp invece di scp diretto se il pod non ha rete verso la VPS host)
+# inside the pod:
+# (the dump must be made reachable from the pod, e.g. with kubectl cp instead of a direct scp if the pod has no network to the VPS host)
 ```
 
 ```bash
@@ -394,11 +394,11 @@ pg_restore --clean --if-exists --no-owner --role=buddybudget \
   /tmp/buddybudget-neon.dump
 ```
 
-(`--clean --if-exists` così un secondo restore successivo, durante la verifica manuale, sovrascrive pulito invece di fallire su oggetti già esistenti.)
+(`--clean --if-exists` so that a later second restore, during the manual verification, overwrites cleanly instead of failing on already existing objects.)
 
-- [ ] **Step 4: Verifica conteggio righe**
+- [ ] **Step 4: Row count check**
 
-Per ogni tabella non vuota (elenco da `lib/db/schema/`), confrontare `SELECT count(*) FROM <tabella>` tra Neon e CNPG. Esempio rapido per le tabelle principali:
+For every non-empty table (list from `lib/db/schema/`), compare `SELECT count(*) FROM <tabella>` between Neon and CNPG. Quick example for the main tables:
 
 ```sql
 SELECT
@@ -408,24 +408,24 @@ SELECT
   (SELECT count(*) FROM categories) AS categorie;
 ```
 
-Eseguita sia su Neon (`psql "$NEON_DATABASE_URL"`) sia su CNPG (`kubectl exec` nel pod client o via port-forward), i numeri devono coincidere.
+Run both on Neon (`psql "$NEON_DATABASE_URL"`) and on CNPG (`kubectl exec` into the client pod or via port-forward); the numbers must match.
 
 ---
 
-### Task 5: Deploy app — Deployment, Service, IngressRoute, migration Job
+### Task 5: App deploy — Deployment, Service, IngressRoute, migration Job
 
 **Files:**
 - Create: `argocd/manifests/app/deployment.yaml`
 - Create: `argocd/manifests/app/service.yaml`
 - Create: `argocd/manifests/app/ingressroute.yaml`
 - Create: `argocd/manifests/app/migration-job.yaml`
-- Modify: `argocd/manifests/app/kustomization.yaml` (aggiunge le risorse + `images:`)
+- Modify: `argocd/manifests/app/kustomization.yaml` (adds the resources + `images:`)
 
 **Interfaces:**
-- Consumes: `Secret/app-env`, `Secret/ghcr-pull-secret` (Task 3), database popolato (Task 4).
-- Produces: `Service/buddy-budget.app.svc.cluster.local:3000` — consumato dai `CronJob` del Task 6 e dall'`IngressRoute`.
+- Consumes: `Secret/app-env`, `Secret/ghcr-pull-secret` (Task 3), populated database (Task 4).
+- Produces: `Service/buddy-budget.app.svc.cluster.local:3000` — consumed by the `CronJob`s of Task 6 and by the `IngressRoute`.
 
-- [ ] **Step 1: Migration Job (hook PreSync)**
+- [ ] **Step 1: Migration Job (PreSync hook)**
 
 ```yaml
 # argocd/manifests/app/migration-job.yaml
@@ -532,7 +532,7 @@ spec:
           port: 3000
 ```
 
-- [ ] **Step 4: Kustomization con tag immagine gestito da CI**
+- [ ] **Step 4: Kustomization with the image tag managed by CI**
 
 ```yaml
 # argocd/manifests/app/kustomization.yaml
@@ -553,17 +553,17 @@ images:
     newTag: main
 ```
 
-(Il campo `images:` è il punto che il Task 8 aggiornerà automaticamente da CI con `kustomize edit set image`.)
+(The `images:` field is what Task 8 will update automatically from CI with `kustomize edit set image`.)
 
-- [ ] **Step 5: DNS + record Cloudflare**
+- [ ] **Step 5: DNS + Cloudflare record**
 
-L'utente crea il record DNS `app.buddybudget.io` su Cloudflare puntato al tunnel (stesso pattern di `test.buddybudget.io`/`status.buddybudget.io`, già create nelle fasi precedenti) — il tunnel cloudflared instrada già per `Host()` verso Traefik (catch-all da Fase 5), nessuna modifica alla configurazione del tunnel stesso.
+The user creates the DNS record `app.buddybudget.io` on Cloudflare pointing to the tunnel (same pattern as `test.buddybudget.io`/`status.buddybudget.io`, already created in the previous phases) — the cloudflared tunnel already routes by `Host()` to Traefik (catch-all since Phase 5), no change to the tunnel configuration itself.
 
-- [ ] **Step 6: Redirect URI Google OAuth**
+- [ ] **Step 6: Google OAuth redirect URI**
 
-L'utente aggiunge in Google Cloud Console → Credentials → il client OAuth esistente → Authorized redirect URIs: `https://app.buddybudget.io/api/auth/callback/google` (better-auth costruisce il redirect da `BETTER_AUTH_URL` su questo path fisso).
+The user adds in Google Cloud Console → Credentials → the existing OAuth client → Authorized redirect URIs: `https://app.buddybudget.io/api/auth/callback/google` (better-auth builds the redirect from `BETTER_AUTH_URL` on this fixed path).
 
-- [ ] **Step 7: Commit, push, verifica**
+- [ ] **Step 7: Commit, push, verify**
 
 ```bash
 git add argocd/manifests/app/deployment.yaml argocd/manifests/app/service.yaml argocd/manifests/app/ingressroute.yaml argocd/manifests/app/migration-job.yaml argocd/manifests/app/kustomization.yaml
@@ -571,24 +571,24 @@ git commit -m "feat: deploy app buddy-budget (Deployment 2 repliche, Service, In
 git push origin main
 ```
 
-Verifica: `kubectl get pods -n app` → Job `buddy-budget-migrate-*` completato (`Completed`), 2 pod `buddy-budget-*` `Running` e `Ready`; `curl -I https://app.buddybudget.io/api/health` → `200` da fuori la tailnet; login (magic link e Google) funzionante contro i dati reali del Task 4.
+Verification: `kubectl get pods -n app` → Job `buddy-budget-migrate-*` completed (`Completed`), 2 `buddy-budget-*` pods `Running` and `Ready`; `curl -I https://app.buddybudget.io/api/health` → `200` from outside the tailnet; login (magic link and Google) working against the real data from Task 4.
 
 ---
 
-### Task 6: CronJob k8s
+### Task 6: k8s CronJobs
 
 **Files:**
 - Create: `argocd/manifests/app/cronjob-gocardless-sync.yaml`
 - Create: `argocd/manifests/app/cronjob-net-worth-snapshot.yaml`
-- Modify: `argocd/manifests/app/kustomization.yaml` (aggiunge le risorse)
+- Modify: `argocd/manifests/app/kustomization.yaml` (adds the resources)
 
 **Interfaces:**
-- Consumes: `Service/buddy-budget.app.svc.cluster.local:3000` (Task 5), `Secret/app-env` (chiave `CRON_SECRET`).
-- Produces: nessuno consumato da altri task — deliverable terminale della sincronizzazione automatica.
+- Consumes: `Service/buddy-budget.app.svc.cluster.local:3000` (Task 5), `Secret/app-env` (key `CRON_SECRET`).
+- Produces: nothing consumed by other tasks — final deliverable of the automatic sync.
 
-**Precondizione vincolante:** Task 1 completato e verificato (cron Vercel disattivati).
+**Binding precondition:** Task 1 completed and verified (Vercel crons disabled).
 
-- [ ] **Step 1: CronJob gocardless-sync**
+- [ ] **Step 1: gocardless-sync CronJob**
 
 ```yaml
 # argocd/manifests/app/cronjob-gocardless-sync.yaml
@@ -623,7 +623,7 @@ spec:
                 limits: { cpu: 100m, memory: 64Mi }
 ```
 
-- [ ] **Step 2: CronJob net-worth-snapshot**
+- [ ] **Step 2: net-worth-snapshot CronJob**
 
 ```yaml
 # argocd/manifests/app/cronjob-net-worth-snapshot.yaml
@@ -658,10 +658,10 @@ spec:
                 limits: { cpu: 100m, memory: 64Mi }
 ```
 
-- [ ] **Step 3: Aggiungere le risorse alla kustomization**
+- [ ] **Step 3: Add the resources to the kustomization**
 
 ```yaml
-# argocd/manifests/app/kustomization.yaml — aggiungere alle resources esistenti:
+# argocd/manifests/app/kustomization.yaml — add to the existing resources:
   - cronjob-gocardless-sync.yaml
   - cronjob-net-worth-snapshot.yaml
 ```
@@ -674,14 +674,14 @@ git commit -m "feat: CronJob k8s gocardless-sync e net-worth-snapshot"
 git push origin main
 ```
 
-- [ ] **Step 5: Verifica con esecuzione manuale (non aspettare lo schedule)**
+- [ ] **Step 5: Verify with a manual run (do not wait for the schedule)**
 
 ```bash
 kubectl create job --from=cronjob/gocardless-sync gocardless-sync-test -n app
 kubectl logs -n app job/gocardless-sync-test
 ```
 
-Atteso: risposta `200`/corpo JSON dalla route, nessun errore di rete/autorizzazione. Ripetere per `net-worth-snapshot`. Cancellare i Job di test dopo la verifica (`kubectl delete job -n app gocardless-sync-test`).
+Expected: `200` response/JSON body from the route, no network/authorization errors. Repeat for `net-worth-snapshot`. Delete the test Jobs after the verification (`kubectl delete job -n app gocardless-sync-test`).
 
 ---
 
@@ -689,25 +689,25 @@ Atteso: risposta `200`/corpo JSON dalla route, nessun errore di rete/autorizzazi
 
 **Files:**
 - Create: `argocd/manifests/cnpg/umami-role-credentials.enc.yaml`
-- Modify: `argocd/manifests/cnpg/cluster.yaml` (aggiunge `spec.managed.roles`)
+- Modify: `argocd/manifests/cnpg/cluster.yaml` (adds `spec.managed.roles`)
 - Modify: `argocd/manifests/cnpg/kustomization.yaml`
 - Modify: `argocd/manifests/cnpg/generator.yaml`
-- Create: `argocd/manifests/app/umami-database.yaml` (CRD `Database`)
+- Create: `argocd/manifests/app/umami-database.yaml` (`Database` CRD)
 - Create: `argocd/manifests/app/umami-secrets.enc.yaml`
 - Create: `argocd/manifests/app/umami-deployment.yaml`
 - Modify: `argocd/manifests/app/kustomization.yaml`
 - Create: `argocd/manifests/admin-ingress/umami.yaml`
 - Modify: `argocd/manifests/admin-ingress/kustomization.yaml`
-- Modify: `app/layout.tsx` (repo app — script di tracking)
+- Modify: `app/layout.tsx` (app repo — tracking script)
 
 **Interfaces:**
-- Consumes: cluster CNPG `buddybudget-pg` (Fase 4), Tailscale Ingress (pattern Fase 3/5).
-- Produces: `Service/umami.app.svc.cluster.local:3000`, dashboard raggiungibile solo via Tailscale — nessun consumatore successivo in questo piano.
+- Consumes: CNPG cluster `buddybudget-pg` (Phase 4), Tailscale Ingress (Phase 3/5 pattern).
+- Produces: `Service/umami.app.svc.cluster.local:3000`, dashboard reachable only via Tailscale — no later consumer in this plan.
 
-- [ ] **Step 1: Ruolo Postgres dedicato per Umami**
+- [ ] **Step 1: Dedicated Postgres role for Umami**
 
 ```bash
-# genera una password casuale
+# generate a random password
 UMAMI_DB_PASSWORD=$(openssl rand -base64 24)
 kubectl create secret generic umami-role-credentials -n data \
   --from-literal=password="$UMAMI_DB_PASSWORD" \
@@ -716,10 +716,10 @@ sops --encrypt --age <chiave-pubblica-age-del-progetto> umami-role-credentials.y
 rm umami-role-credentials.yaml
 ```
 
-Annotare `$UMAMI_DB_PASSWORD` da parte, serve al Step 3.
+Keep `$UMAMI_DB_PASSWORD` aside, it is needed in Step 3.
 
 ```yaml
-# argocd/manifests/cnpg/cluster.yaml — aggiungere sotto spec:
+# argocd/manifests/cnpg/cluster.yaml — add under spec:
   managed:
     roles:
       - name: umami
@@ -730,11 +730,11 @@ Annotare `$UMAMI_DB_PASSWORD` da parte, serve al Step 3.
 ```
 
 ```yaml
-# argocd/manifests/cnpg/generator.yaml — aggiungere ai files:
+# argocd/manifests/cnpg/generator.yaml — add to files:
   - umami-role-credentials.enc.yaml
 ```
 
-- [ ] **Step 2: Database Umami**
+- [ ] **Step 2: Umami database**
 
 ```yaml
 # argocd/manifests/app/umami-database.yaml
@@ -750,7 +750,7 @@ spec:
     name: buddybudget-pg
 ```
 
-- [ ] **Step 3: Secret env Umami**
+- [ ] **Step 3: Umami env Secret**
 
 ```bash
 cat <<YAML > umami-secrets.yaml
@@ -768,9 +768,9 @@ sops --encrypt --age <chiave-pubblica-age-del-progetto> umami-secrets.yaml > arg
 rm umami-secrets.yaml
 ```
 
-Aggiungere `umami-secrets.enc.yaml` ai `files` di `argocd/manifests/app/generator.yaml` (Task 3, Step 5).
+Add `umami-secrets.enc.yaml` to the `files` of `argocd/manifests/app/generator.yaml` (Task 3, Step 5).
 
-- [ ] **Step 4: Deployment + Service Umami**
+- [ ] **Step 4: Umami Deployment + Service**
 
 ```yaml
 # argocd/manifests/app/umami-deployment.yaml
@@ -814,11 +814,11 @@ spec:
       targetPort: 3000
 ```
 
-- [ ] **Step 5: Tailscale Ingress (solo admin, non pubblico)**
+- [ ] **Step 5: Tailscale Ingress (admin only, not public)**
 
 ```yaml
-# argocd/manifests/admin-ingress/umami.yaml — stesso schema esatto di grafana.yaml/argocd.yaml:
-# spec.tls[0].hosts[0] per il nome device .ts.net, mai l'annotazione tailscale.com/hostname.
+# argocd/manifests/admin-ingress/umami.yaml — exactly the same scheme as grafana.yaml/argocd.yaml:
+# spec.tls[0].hosts[0] for the .ts.net device name, never the tailscale.com/hostname annotation.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -837,19 +837,19 @@ spec:
 ```
 
 ```yaml
-# argocd/manifests/admin-ingress/kustomization.yaml — aggiungere alle resources:
+# argocd/manifests/admin-ingress/kustomization.yaml — add to resources:
   - umami.yaml
 ```
 
-- [ ] **Step 6: Aggiungere le risorse Umami alla kustomization app**
+- [ ] **Step 6: Add the Umami resources to the app kustomization**
 
 ```yaml
-# argocd/manifests/app/kustomization.yaml — aggiungere alle resources:
+# argocd/manifests/app/kustomization.yaml — add to resources:
   - umami-database.yaml
   - umami-deployment.yaml
 ```
 
-- [ ] **Step 7: Commit, push, verifica**
+- [ ] **Step 7: Commit, push, verify**
 
 ```bash
 git add argocd/manifests/cnpg argocd/manifests/app argocd/manifests/admin-ingress
@@ -857,14 +857,14 @@ git commit -m "feat: Umami self-hosted (DB dedicato in CNPG, Tailscale Ingress)"
 git push origin main
 ```
 
-Verifica: `kubectl get pods -n app -l app=umami` → `Running`; `kubectl get databases.postgresql.cnpg.io -n data` → `umami` nello stato `applied`; da un dispositivo sulla tailnet, `https://umami.<tailnet>.ts.net` mostra la schermata di login Umami (credenziali di default `admin`/`umami` — l'utente le cambia subito dal primo login).
+Verification: `kubectl get pods -n app -l app=umami` → `Running`; `kubectl get databases.postgresql.cnpg.io -n data` → `umami` in state `applied`; from a device on the tailnet, `https://umami.<tailnet>.ts.net` shows the Umami login screen (default credentials `admin`/`umami` — the user changes them right away at first login).
 
-- [ ] **Step 8: Creare il sito in Umami e collegare lo script di tracking**
+- [ ] **Step 8: Create the site in Umami and wire the tracking script**
 
-L'utente crea un "Website" nella dashboard Umami (nome `BuddyBudget`, dominio `app.buddybudget.io`), copia lo `website-id` generato.
+The user creates a "Website" in the Umami dashboard (name `BuddyBudget`, domain `app.buddybudget.io`) and copies the generated `website-id`.
 
 ```tsx
-// app/layout.tsx — aggiungere nel <head>, solo se le env sono presenti
+// app/layout.tsx — add in the <head>, only if the env vars are present
 {process.env.NEXT_PUBLIC_UMAMI_SRC && process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
   <script
     defer
@@ -874,10 +874,10 @@ L'utente crea un "Website" nella dashboard Umami (nome `BuddyBudget`, dominio `a
 )}
 ```
 
-`NEXT_PUBLIC_UMAMI_SRC=https://umami.app.svc.cluster.local` non è raggiungibile dal browser (è un hostname interno al cluster): serve invece uno script servito pubblicamente. Opzione più semplice, coerente col resto (nessuna nuova esposizione pubblica): aggiungere una seconda route sull'`IngressRoute` esistente di `buddy-budget` (Task 5) che instrada `Host(`app.buddybudget.io`) && PathPrefix(`/stats/script.js`)` verso il `Service/umami`, così lo script è servito dallo stesso dominio dell'app senza esporre l'intera dashboard Umami pubblicamente:
+`NEXT_PUBLIC_UMAMI_SRC=https://umami.app.svc.cluster.local` is not reachable from the browser (it is a hostname internal to the cluster): a publicly served script is needed instead. The simplest option, consistent with the rest (no new public exposure): add a second route on the existing `buddy-budget` `IngressRoute` (Task 5) that routes `Host(`app.buddybudget.io`) && PathPrefix(`/stats/script.js`)` to `Service/umami`, so the script is served from the same domain as the app without exposing the whole Umami dashboard publicly:
 
 ```yaml
-# argocd/manifests/app/ingressroute.yaml — aggiungere una route:
+# argocd/manifests/app/ingressroute.yaml — add a route:
     - match: Host(`app.buddybudget.io`) && PathPrefix(`/stats/script.js`)
       kind: Rule
       services:
@@ -885,9 +885,9 @@ L'utente crea un "Website" nella dashboard Umami (nome `BuddyBudget`, dominio `a
           port: 3000
 ```
 
-Con `NEXT_PUBLIC_UMAMI_SRC=/stats/script.js` (path relativo, nessun hostname). Aggiungere `NEXT_PUBLIC_UMAMI_SRC` e `NEXT_PUBLIC_UMAMI_WEBSITE_ID` a `argocd/manifests/app/app-secrets.enc.yaml` (non sensibili in sé, ma già dentro quel Secret per comodità — nessun nuovo file).
+With `NEXT_PUBLIC_UMAMI_SRC=/stats/script.js` (relative path, no hostname). Add `NEXT_PUBLIC_UMAMI_SRC` and `NEXT_PUBLIC_UMAMI_WEBSITE_ID` to `argocd/manifests/app/app-secrets.enc.yaml` (not sensitive per se, but already inside that Secret for convenience — no new file).
 
-- [ ] **Step 9: Commit finale, verifica tracking**
+- [ ] **Step 9: Final commit, verify tracking**
 
 ```bash
 git add argocd/manifests/app/ingressroute.yaml
@@ -895,27 +895,27 @@ git commit -m "feat: instrada /stats/script.js verso Umami per servire lo script
 git push origin main
 ```
 
-Aprire `https://app.buddybudget.io` da un browser, controllare in Umami → Realtime che la visita compaia.
+Open `https://app.buddybudget.io` from a browser, check in Umami → Realtime that the visit appears.
 
 ---
 
-### Task 8: Step CI — aggiornamento automatico del tag immagine
+### Task 8: CI step — automatic update of the image tag
 
 **Files:**
-- Modify: `.github/workflows/ci.yml` (repo app)
+- Modify: `.github/workflows/ci.yml` (app repo)
 
 **Interfaces:**
-- Consumes: tag immagine pubblicato dal job `image` esistente (`ci.yml`, già presente).
-- Produces: commit automatico su `buddy-budget-infra` che ArgoCD sincronizza da solo — nessun task successivo lo consuma direttamente.
+- Consumes: image tag published by the existing `image` job (`ci.yml`, already present).
+- Produces: automatic commit on `buddy-budget-infra` that ArgoCD syncs on its own — no later task consumes it directly.
 
-- [ ] **Step 1: Deploy key di scrittura**
+- [ ] **Step 1: Write deploy key**
 
-L'utente genera una coppia di chiavi dedicata (`ssh-keygen -t ed25519 -f infra-deploy-key -N ""`), aggiunge la pubblica come deploy key **con permesso di scrittura** sul repo `buddy-budget-infra` (`gh repo deploy-key add infra-deploy-key.pub --repo YonderUrik/buddy-budget-infra --title ci-tag-update --allow-write`), e salva la privata come secret del repo app: `gh secret set INFRA_DEPLOY_KEY --repo YonderUrik/buddy-budget < infra-deploy-key`.
+The user generates a dedicated key pair (`ssh-keygen -t ed25519 -f infra-deploy-key -N ""`), adds the public key as a deploy key **with write permission** on the `buddy-budget-infra` repo (`gh repo deploy-key add infra-deploy-key.pub --repo YonderUrik/buddy-budget-infra --title ci-tag-update --allow-write`), and saves the private key as a secret of the app repo: `gh secret set INFRA_DEPLOY_KEY --repo YonderUrik/buddy-budget < infra-deploy-key`.
 
-- [ ] **Step 2: Nuovo job nel workflow**
+- [ ] **Step 2: New job in the workflow**
 
 ```yaml
-# .github/workflows/ci.yml — aggiungere dopo il job `image`:
+# .github/workflows/ci.yml — add after the `image` job:
   update-infra-tag:
     name: Aggiorna tag immagine nel repo infra
     needs: image
@@ -945,7 +945,7 @@ L'utente genera una coppia di chiavi dedicata (`ssh-keygen -t ed25519 -f infra-d
           git push
 ```
 
-- [ ] **Step 3: Commit, push, verifica end-to-end**
+- [ ] **Step 3: Commit, push, end-to-end verification**
 
 ```bash
 git add .github/workflows/ci.yml
@@ -953,27 +953,27 @@ git commit -m "feat: CI aggiorna automaticamente il tag immagine nel repo infra"
 git push origin main
 ```
 
-Fare un commit di prova (es. un commento in un file qualsiasi) per innescare l'intero ciclo: attendere che `ci.yml` finisca, controllare che `buddy-budget-infra` abbia un nuovo commit automatico con lo sha corretto, controllare in ArgoCD (`kubectl get application app -n argocd -o jsonpath='{.status.sync.status}'` o UI) che sincronizzi da solo entro pochi minuti, e che i pod `buddy-budget-*` vengano ricreati con la nuova immagine (`kubectl get pods -n app -o jsonpath='{.items[*].spec.containers[*].image}'`).
+Make a test commit (e.g. a comment in any file) to trigger the whole loop: wait for `ci.yml` to finish, check that `buddy-budget-infra` has a new automatic commit with the correct sha, check in ArgoCD (`kubectl get application app -n argocd -o jsonpath='{.status.sync.status}'` or the UI) that it syncs on its own within a few minutes, and that the `buddy-budget-*` pods are recreated with the new image (`kubectl get pods -n app -o jsonpath='{.items[*].spec.containers[*].image}'`).
 
 ---
 
-### Task 9: Verifica manuale utente end-to-end
+### Task 9: End-to-end manual user verification
 
-**Files:** nessuno.
+**Files:** none.
 
 **Interfaces:**
-- Consumes: tutto quanto costruito nei Task 1-8.
-- Produces: via libera per pianificare la Fase 7 (cutover).
+- Consumes: everything built in Tasks 1-8.
+- Produces: green light to plan Phase 7 (cutover).
 
-- [ ] **Checklist da eseguire su `https://app.buddybudget.io` (dati reali dal Task 4):**
-  - Login (magic link + Google) funzionanti.
-  - Panoramica: patrimonio netto, grafico storico, composizione.
-  - Conti: elenco, saldi, sync manuale di un conto Auto (verifica anche che il CronJob `gocardless-sync` non abbia già consumato il budget giornaliero del rate limit sandbox).
-  - Transazioni: lista, filtri, categorizzazione automatica/manuale, donut, trend 6 mesi.
-  - Cash flow: KPI, fonti di entrata, "dove va ogni euro".
-  - Categorie: CRUD, gruppi di spesa, distribuzione colori.
-  - `/categorizza`: proposte e applicazione batch.
-  - Verifica che Umami registri le visite (`Realtime` nella dashboard).
-  - Verifica che i due CronJob abbiano girato almeno una volta secondo schedule (non solo il test manuale del Task 6) — controllare `kubectl get cronjobs -n app` → `LAST SCHEDULE` valorizzato dopo l'orario previsto.
+- [ ] **Checklist to run on `https://app.buddybudget.io` (real data from Task 4):**
+  - Login (magic link + Google) working.
+  - Panoramica (Overview): net worth, historical chart, composition.
+  - Conti (Accounts): list, balances, manual sync of an Auto account (also check that the `gocardless-sync` CronJob has not already used up the daily budget of the sandbox rate limit).
+  - Transazioni (Transactions): list, filters, automatic/manual categorization, donut, 6-month trend.
+  - Cash flow: KPIs, income sources, "dove va ogni euro" ("where every euro goes").
+  - Categorie (Categories): CRUD, spending groups, color distribution.
+  - `/categorizza`: suggestions and batch application.
+  - Check that Umami records visits (`Realtime` in the dashboard).
+  - Check that the two CronJobs have run at least once on schedule (not just the manual test of Task 6) — check `kubectl get cronjobs -n app` → `LAST SCHEDULE` set after the expected time.
 
-- [ ] **Esito**: se tutto funziona, si può procedere a pianificare la Fase 7 (cutover). Eventuali bug vanno corretti qui (nel worktree/branch infra o nel codice app), non rimandati alla fase di cutover.
+- [ ] **Outcome**: if everything works, Phase 7 (cutover) can be planned. Any bugs must be fixed here (in the infra worktree/branch or in the app code), not deferred to the cutover phase.

@@ -1,32 +1,32 @@
-# Andamento 6 mesi: ricalcolo top/ordine mensile Implementation Plan
+# 6-month trend: monthly top/order recalculation Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Nello stacked bar "Andamento ultimi 6 mesi" (Spese), sia la selezione delle categorie "top" sia l'ordine di impilamento (incluso il segmento "Altro") vengono ricalcolati indipendentemente per ciascun mese, in base all'importo di quel mese, invece di un ranking fisso sull'intero semestre.
+**Goal:** In the "Andamento ultimi 6 mesi" ("Last 6 months trend") stacked bar (Spese, i.e. Expenses), both the selection of the "top" categories and the stacking order (including the "Altro" ("Other") segment) are recalculated independently for each month, based on that month's amount, instead of a fixed ranking over the whole half-year.
 
-**Architecture:** `computeCategoryMonthlyTrend` in `lib/calc/expenses.ts` viene sostituita da `computeCategoryMonthlyStacks`, che per ogni mese produce un array `segments` già ordinato per importo decrescente (categorie individuali + eventuale "Altro" riordinato insieme, non fisso in coda). `ExpenseTrendChart` viene riscritto per un rendering "a slot posizionali" (un `<Bar>` recharts per posizione nello stack, colore per singolo mese via `<Cell>`) dato che recharts condivide l'ordine di stacking tra tutte le barre di un `BarChart` in base all'ordine di dichiarazione dei componenti `<Bar>` — non esiste un ordine nativo per-mese con un `<Bar>` per categoria. Tooltip custom (non il `formatter` di `ChartTooltipContent`, pensato per nomi di serie fissi) legge i segmenti reali del mese sotto hover direttamente dalla riga dati.
+**Architecture:** `computeCategoryMonthlyTrend` in `lib/calc/expenses.ts` is replaced by `computeCategoryMonthlyStacks`, which for each month produces a `segments` array already sorted by descending amount (individual categories + possibly "Altro" reordered together, not fixed at the end). `ExpenseTrendChart` is rewritten for a "positional slot" rendering (one recharts `<Bar>` per position in the stack, color per single month via `<Cell>`) since recharts shares the stacking order across all the bars of a `BarChart` based on the declaration order of the `<Bar>` components — there is no native per-month order with one `<Bar>` per category. A custom tooltip (not the `formatter` of `ChartTooltipContent`, designed for fixed series names) reads the actual segments of the hovered month directly from the data row.
 
-**Tech Stack:** Next.js/TypeScript, recharts 3.8 (via `ChartContainer`/`Bar`/`BarChart`/`Cell`/`Tooltip` di shadcn), vitest.
+**Tech Stack:** Next.js/TypeScript, recharts 3.8 (via shadcn's `ChartContainer`/`Bar`/`BarChart`/`Cell`/`Tooltip`), vitest.
 
 ## Global Constraints
 
-- Nessun colore/valore hardcoded nei componenti: usare sempre i token tema (`SWATCH_CHART_COLOR`, `var(--muted-foreground)`), mai hex letterali.
-- JSDoc minimo su funzioni/componenti pubblici (una riga).
-- Tutte le stringhe visibili all'utente in italiano ("Altro", ecc.).
-- `compute6MonthTrend` esistente NON va rimossa né modificata.
-- Il segmento con l'importo più alto di un mese va alla **base** della barra (primo `<Bar>` dichiarato = base dello stack in recharts).
-- **Nessuna legenda fissa** sotto al grafico: l'identificazione della categoria avviene solo via tooltip.
+- No hardcoded colors/values in components: always use the theme tokens (`SWATCH_CHART_COLOR`, `var(--muted-foreground)`), never literal hex.
+- Minimal JSDoc on public functions/components (one line).
+- All user-visible strings in Italian ("Altro", etc.).
+- The existing `compute6MonthTrend` must NOT be removed or modified.
+- The segment with the highest amount of a month goes at the **base** of the bar (first declared `<Bar>` = base of the stack in recharts).
+- **No fixed legend** below the chart: the category is identified only via the tooltip.
 
 ---
 
 ### Task 1: `computeCategoryMonthlyStacks` in `lib/calc/expenses.ts`
 
 **Files:**
-- Modify: `lib/calc/expenses.ts:325-409` (sostituisce interamente `MonthlyCategoryTotal`/`CategoryTrendSeries`/`CategoryMonthlyTrend`/`computeCategoryMonthlyTrend`, introdotte nel piano precedente su questo stesso branch)
-- Test: `lib/calc/expenses.test.ts:14` (import), `lib/calc/expenses.test.ts:245-303` (sostituisce il blocco `describe("computeCategoryMonthlyTrend", ...)`)
+- Modify: `lib/calc/expenses.ts:325-409` (entirely replaces `MonthlyCategoryTotal`/`CategoryTrendSeries`/`CategoryMonthlyTrend`/`computeCategoryMonthlyTrend`, introduced in the previous plan on this same branch)
+- Test: `lib/calc/expenses.test.ts:14` (import), `lib/calc/expenses.test.ts:245-303` (replaces the `describe("computeCategoryMonthlyTrend", ...)` block)
 
 **Interfaces:**
-- Consumes: `Transaction`, `Category` (già importati in `expenses.ts`), `computeSummary(transactions, range): ExpensesSummary`, `MONTH_LABELS: string[]`, `addMonths`/`startOfMonth`/`endOfMonth` (funzioni interne già presenti nel file, usate da `compute6MonthTrend`).
+- Consumes: `Transaction`, `Category` (already imported in `expenses.ts`), `computeSummary(transactions, range): ExpensesSummary`, `MONTH_LABELS: string[]`, `addMonths`/`startOfMonth`/`endOfMonth` (internal functions already present in the file, used by `compute6MonthTrend`).
 - Produces:
   ```ts
   export interface MonthlyStackSegment {
@@ -48,30 +48,30 @@
     topCount?: number
   ): MonthlyCategoryStack[]
   ```
-  Usati da Task 2 (`ExpenseTrendChart`, `app/(app)/spese/page.tsx`).
+  Used by Task 2 (`ExpenseTrendChart`, `app/(app)/spese/page.tsx`).
 
-- [ ] **Step 1: Aggiorna l'import nel test file**
+- [ ] **Step 1: Update the import in the test file**
 
-In `lib/calc/expenses.test.ts`, riga 14, sostituisci:
+In `lib/calc/expenses.test.ts`, line 14, replace:
 
 ```ts
   computeCategoryMonthlyTrend,
 ```
 
-con:
+with:
 
 ```ts
   computeCategoryMonthlyStacks,
 ```
 
-- [ ] **Step 2: Sostituisci il blocco di test**
+- [ ] **Step 2: Replace the test block**
 
-In `lib/calc/expenses.test.ts`, sostituisci l'intero blocco da riga 245 (`describe("computeCategoryMonthlyTrend", () => {`) a riga 303 (il `});` che lo chiude) con:
+In `lib/calc/expenses.test.ts`, replace the whole block from line 245 (`describe("computeCategoryMonthlyTrend", () => {`) to line 303 (the `});` that closes it) with:
 
 ```ts
 describe("computeCategoryMonthlyStacks", () => {
   it("ricalcola composizione e ordine in modo indipendente per ogni mese (non un ranking fisso sul totale semestre)", () => {
-    const referenceDate = new Date(2026, 6, 15); // luglio 2026
+    const referenceDate = new Date(2026, 6, 15); // July 2026
     const categories = [
       makeCategory({ id: "cat-a", name: "A", color: "blue" }),
       makeCategory({ id: "cat-b", name: "B", color: "green" }),
@@ -117,7 +117,7 @@ describe("computeCategoryMonthlyStacks", () => {
     const months = computeCategoryMonthlyStacks(transactions, categories, referenceDate, 2);
     const jul = months.find((m) => m.month === 6);
 
-    // top individuali: cat-a (100), cat-b (50). Resto: cat-c+cat-d+cat-e = 95 -> "Altro" si piazza tra cat-a e cat-b.
+    // individual tops: cat-a (100), cat-b (50). Rest: cat-c+cat-d+cat-e = 95 -> "Altro" lands between cat-a and cat-b.
     expect(jul?.segments).toEqual([
       { key: "cat-a", name: "A", color: "blue", amount: 100 },
       { key: "altro", name: "Altro", color: "altro", amount: 95 },
@@ -156,14 +156,14 @@ describe("computeCategoryMonthlyStacks", () => {
 });
 ```
 
-- [ ] **Step 3: Esegui i test e verifica che falliscano**
+- [ ] **Step 3: Run the tests and verify they fail**
 
 Run: `pnpm vitest run lib/calc/expenses.test.ts`
-Expected: FAIL — `computeCategoryMonthlyStacks` non è esportata da `./expenses` (errore di import/undefined), oltre a eventuali errori residui per riferimenti rimasti a `computeCategoryMonthlyTrend` se lo Step 4 non è ancora stato fatto.
+Expected: FAIL — `computeCategoryMonthlyStacks` is not exported from `./expenses` (import/undefined error), plus possible leftover errors for references still pointing to `computeCategoryMonthlyTrend` if Step 4 has not been done yet.
 
-- [ ] **Step 4: Sostituisci l'implementazione**
+- [ ] **Step 4: Replace the implementation**
 
-In `lib/calc/expenses.ts`, sostituisci l'intero blocco da riga 325 (`export interface MonthlyCategoryTotal {`) a riga 409 (il `}` che chiude `computeCategoryMonthlyTrend`) con:
+In `lib/calc/expenses.ts`, replace the whole block from line 325 (`export interface MonthlyCategoryTotal {`) to line 409 (the `}` that closes `computeCategoryMonthlyTrend`) with:
 
 ```ts
 export interface MonthlyStackSegment {
@@ -183,11 +183,11 @@ export interface MonthlyCategoryStack {
 const OTHER_STACK_SEGMENT_KEY = "altro";
 
 /**
- * Spesa effettiva per categoria sugli ultimi 6 mesi calendariali, con le top `topCount` categorie
- * e un eventuale segmento "Altro" ricalcolati indipendentemente per ciascun mese (non un ranking
- * fisso sul totale semestre): la stessa categoria può occupare posizioni diverse, o finire dentro
- * "Altro", da un mese all'altro. "Altro" è riordinato insieme alle categorie individuali per
- * importo, non è fisso in coda.
+ * Actual spending per category over the last 6 calendar months, with the top `topCount` categories
+ * and a possible "Altro" segment recalculated independently for each month (not a fixed ranking
+ * on the half-year total): the same category can take different positions, or end up inside
+ * "Altro", from one month to the next. "Altro" is reordered together with the individual categories by
+ * amount, it is not fixed at the end.
  */
 export function computeCategoryMonthlyStacks(
   transactions: Transaction[],
@@ -244,10 +244,10 @@ export function computeCategoryMonthlyStacks(
 }
 ```
 
-- [ ] **Step 5: Esegui i test e verifica che passino**
+- [ ] **Step 5: Run the tests and verify they pass**
 
 Run: `pnpm vitest run lib/calc/expenses.test.ts`
-Expected: PASS — tutti i test in `expenses.test.ts`, incluso il nuovo blocco `computeCategoryMonthlyStacks`. Nessuna regressione sugli altri blocchi (in particolare `compute6MonthTrend`, invariato).
+Expected: PASS — all the tests in `expenses.test.ts`, including the new `computeCategoryMonthlyStacks` block. No regressions in the other blocks (in particular `compute6MonthTrend`, unchanged).
 
 - [ ] **Step 6: Commit**
 
@@ -258,24 +258,24 @@ git commit -m "feat: ricalcola top/ordine mensile in computeCategoryMonthlyStack
 
 ---
 
-### Task 2: Rendering a slot posizionali in `ExpenseTrendChart` + integrazione pagina Spese
+### Task 2: Positional-slot rendering in `ExpenseTrendChart` + Spese page integration
 
 **Files:**
-- Modify: `components/domain/expenses/expense-trend-chart.tsx` (riscrittura completa, era 81 righe)
-- Modify: `app/(app)/spese/page.tsx:20` (import), `:199-202` (uso componente)
+- Modify: `components/domain/expenses/expense-trend-chart.tsx` (complete rewrite, it was 81 lines)
+- Modify: `app/(app)/spese/page.tsx:20` (import), `:199-202` (component usage)
 
 **Interfaces:**
-- Consumes: `computeCategoryMonthlyStacks`, `MonthlyCategoryStack`, `MonthlyStackSegment` da Task 1 (`lib/calc/expenses.ts`); `SWATCH_CHART_COLOR: Record<SwatchColor, string>` da `components/domain/shared/color-swatches.ts`; `CategoryColor` da `lib/validation/categories.ts` (alias di `SwatchColor`); `formatCurrency(amount: number, currency: string): string` da `lib/format.ts`.
-- Produces: `ExpenseTrendChart({ monthlyStacks, currency })` — sostituisce la prop `monthlyCategoryTrend: CategoryMonthlyTrend` con `monthlyStacks: MonthlyCategoryStack[]`. Unico consumer: `app/(app)/spese/page.tsx` (già confermato nel piano precedente su questo branch, nessun altro file importa `ExpenseTrendChartProps`).
+- Consumes: `computeCategoryMonthlyStacks`, `MonthlyCategoryStack`, `MonthlyStackSegment` from Task 1 (`lib/calc/expenses.ts`); `SWATCH_CHART_COLOR: Record<SwatchColor, string>` from `components/domain/shared/color-swatches.ts`; `CategoryColor` from `lib/validation/categories.ts` (alias of `SwatchColor`); `formatCurrency(amount: number, currency: string): string` from `lib/format.ts`.
+- Produces: `ExpenseTrendChart({ monthlyStacks, currency })` — replaces the prop `monthlyCategoryTrend: CategoryMonthlyTrend` with `monthlyStacks: MonthlyCategoryStack[]`. Only consumer: `app/(app)/spese/page.tsx` (already confirmed in the previous plan on this branch, no other file imports `ExpenseTrendChartProps`).
 
-- [ ] **Step 1: Riscrivi `components/domain/expenses/expense-trend-chart.tsx`**
+- [ ] **Step 1: Rewrite `components/domain/expenses/expense-trend-chart.tsx`**
 
-Sostituisci l'intero contenuto del file con:
+Replace the whole content of the file with:
 
 ```tsx
 "use client";
 
-/** Grafico Spese: barre impilate "Andamento ultimi 6 mesi", segmenti per categoria ricalcolati mese per mese (top 6 + eventuale "Altro", ordine per importo di quel mese specifico). */
+/** Spese chart: stacked bars "Andamento ultimi 6 mesi", per-category segments recalculated month by month (top 6 + possibly "Altro", ordered by the amount of that specific month). */
 
 import { Bar, BarChart, CartesianGrid, Cell, XAxis } from "recharts";
 import type { TooltipProps } from "recharts";
@@ -286,7 +286,7 @@ import { formatCurrency } from "@/lib/format";
 import type { MonthlyCategoryStack, MonthlyStackSegment } from "@/lib/calc/expenses";
 import type { CategoryColor } from "@/lib/validation/categories";
 
-/** Colore fisso (non uno swatch) per il segmento aggregato "Altro", per non confondersi con una categoria reale. */
+/** Fixed color (not a swatch) for the aggregated "Altro" segment, so it is not confused with a real category. */
 const OTHER_SEGMENT_COLOR = "var(--muted-foreground)";
 
 export interface ExpenseTrendChartProps {
@@ -304,7 +304,7 @@ function segmentColor(segment: MonthlyStackSegment): string {
   return segment.key === "altro" ? OTHER_SEGMENT_COLOR : SWATCH_CHART_COLOR[segment.color as CategoryColor];
 }
 
-/** Trasforma i mesi in righe dati recharts con uno slot posizionale (`posNAmount`) per ciascuna posizione dello stack, fino a `maxSlots`. */
+/** Turns the months into recharts data rows with one positional slot (`posNAmount`) for each stack position, up to `maxSlots`. */
 function buildRows(months: MonthlyCategoryStack[], maxSlots: number): MonthlyStackRow[] {
   return months.map((month) => {
     const row: MonthlyStackRow = { label: month.label, segments: month.segments };
@@ -319,7 +319,7 @@ interface MonthlyStackTooltipProps extends TooltipProps<number, string> {
   currency: string;
 }
 
-/** Tooltip custom: legge i segmenti reali del mese sotto hover dalla riga dati (`payload[0].payload.segments`), perché nome/colore per slot cambiano ogni mese e il `formatter` di `ChartTooltipContent` assume un nome fisso per serie. */
+/** Custom tooltip: reads the actual segments of the hovered month from the data row (`payload[0].payload.segments`), because name/color per slot change every month and the `formatter` of `ChartTooltipContent` assumes a fixed name per series. */
 function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipProps) {
   const row = payload?.[0]?.payload as MonthlyStackRow | undefined;
   if (!active || !row || row.segments.length === 0) return null;
@@ -372,21 +372,21 @@ export function ExpenseTrendChart({ monthlyStacks, currency }: ExpenseTrendChart
 }
 ```
 
-- [ ] **Step 2: Aggiorna `app/(app)/spese/page.tsx`**
+- [ ] **Step 2: Update `app/(app)/spese/page.tsx`**
 
-Riga 20, sostituisci l'import:
+Line 20, replace the import:
 
 ```ts
   computeCategoryMonthlyTrend,
 ```
 
-con:
+with:
 
 ```ts
   computeCategoryMonthlyStacks,
 ```
 
-Righe 199-202, sostituisci la chiamata al componente:
+Lines 199-202, replace the component call:
 
 ```tsx
           <ExpenseTrendChart
@@ -395,18 +395,18 @@ Righe 199-202, sostituisci la chiamata al componente:
           />
 ```
 
-- [ ] **Step 3: Verifica build e lint**
+- [ ] **Step 3: Verify build and lint**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore TypeScript (in particolare nessun riferimento residuo a `computeCategoryMonthlyTrend`/`CategoryMonthlyTrend`/`monthlyCategoryTrend` in `expense-trend-chart.tsx` o `page.tsx`). Nota: `pnpm build` in questo sandbox richiede `DATABASE_URL` (nessun Postgres disponibile) — `tsc --noEmit` è la verifica di tipo equivalente senza bisogno del DB, coerente con la nota già presente in CLAUDE.md.
+Expected: no TypeScript errors (in particular no leftover reference to `computeCategoryMonthlyTrend`/`CategoryMonthlyTrend`/`monthlyCategoryTrend` in `expense-trend-chart.tsx` or `page.tsx`). Note: `pnpm build` in this sandbox requires `DATABASE_URL` (no Postgres available) — `tsc --noEmit` is the equivalent type check without needing the DB, consistent with the note already in CLAUDE.md.
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore introdotto (il debito tecnico preesistente di 2 errori `react-hooks/set-state-in-effect` in `components/theme-toggle.tsx` e `category-breakdown-donut.tsx`, non toccati da questo task, può restare).
+Expected: no new errors introduced (the pre-existing technical debt of 2 `react-hooks/set-state-in-effect` errors in `components/theme-toggle.tsx` and `category-breakdown-donut.tsx`, not touched by this task, may remain).
 
-- [ ] **Step 4: Esegui l'intera suite di test puri**
+- [ ] **Step 4: Run the whole suite of pure tests**
 
 Run: `pnpm vitest run lib/`
-Expected: PASS su tutti i file — nessuna regressione nei test esistenti (`expenses.test.ts` con i nuovi test di Task 1, `distribute-colors.test.ts`, `split-slider.utils.test.ts`, `category-breakdown-donut.utils.test.ts`, ecc.). I test di integrazione DB (`lib/db/integration.test.ts`, `lib/gocardless/*.test.ts`) falliscono per assenza di Postgres in questo sandbox — limite ambientale noto, non una regressione di questo task.
+Expected: PASS on all files — no regressions in the existing tests (`expenses.test.ts` with the new Task 1 tests, `distribute-colors.test.ts`, `split-slider.utils.test.ts`, `category-breakdown-donut.utils.test.ts`, etc.). The DB integration tests (`lib/db/integration.test.ts`, `lib/gocardless/*.test.ts`) fail due to the absence of Postgres in this sandbox — a known environmental limit, not a regression of this task.
 
 - [ ] **Step 5: Commit**
 
@@ -417,11 +417,11 @@ git commit -m "feat: rendering a slot posizionali per ordine stack mensile in An
 
 ---
 
-## Verifica manuale (fuori dai task, da fare dall'utente)
+## Manual verification (outside the tasks, to be done by the user)
 
-Nessun Postgres/Redis disponibile nel sandbox agentico per un test in browser reale. Da verificare manualmente:
-- Passando da un mese all'altro, l'ordine dei segmenti nella barra cambia coerentemente con gli importi di quel mese (il più grande sempre alla base).
-- Un mese in cui "Altro" supera una categoria "top": il segmento "Altro" (grigio) appare più in basso nello stack di quella categoria, non sempre in cima.
-- Un mese con poche categorie attive: barra visibilmente più bassa, nessun segmento vuoto/fantasma.
-- Nessuna legenda fissa sotto al grafico; il tooltip al hover su una barra mostra solo i segmenti realmente presenti quel mese, con nome e importo corretti.
-- Nessuna categoria con spesa nel semestre (o filtro categoria che azzera tutto): barre vuote, nessun errore console.
+No Postgres/Redis available in the agentic sandbox for a real browser test. To verify manually:
+- Moving from one month to the next, the order of the segments in the bar changes consistently with that month's amounts (the largest always at the base).
+- A month in which "Altro" exceeds a "top" category: the "Altro" segment (gray) appears lower in the stack than that category, not always on top.
+- A month with few active categories: visibly lower bar, no empty/ghost segment.
+- No fixed legend below the chart; the tooltip on hover over a bar shows only the segments actually present that month, with correct name and amount.
+- No category with spending in the half-year (or a category filter that zeroes everything): empty bars, no console errors.

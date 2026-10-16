@@ -1,64 +1,64 @@
-# Dividi/Escludi per le entrate Implementation Plan
+# Dividi/Escludi ("Split/Exclude") for income Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Abilitare il meccanismo "Dividi" (`excludedAmount`/`effectiveAmount`), oggi disponibile solo per le uscite, anche per le transazioni entrata — permettendo di escludere in tutto o in parte un'entrata (rimborsi, giroconti, storni) dal conteggio come reddito reale, ovunque nel motore di calcolo Cash flow.
+**Goal:** Enable the "Dividi" ("Split") mechanism (`excludedAmount`/`effectiveAmount`), today available only for outflows, also for income transactions — allowing an income entry (refunds, transfers between own accounts, reversals) to be excluded in whole or in part from counting as real income, everywhere in the Cash flow calculation engine.
 
-**Architecture:** Nessuna modifica a schema/API/validazione — `excludedAmount` ed `effectiveAmount` sono già generici sul segno. Si rimuovono i guard `!isIncome` che nascondevano la UI "Dividi" per le entrate in `TransactionRow` e `AutoCategorizeWizard`, si rendono dinamiche (in base al segno) le etichette testuali di `SplitSlider` e dello slider interno del wizard, e si sostituisce `Number(t.amount)` con `effectiveAmount(t)` in ogni somma di entrate del motore `lib/calc/cashflow.ts`.
+**Architecture:** No change to schema/API/validation — `excludedAmount` and `effectiveAmount` are already sign-agnostic. The `!isIncome` guards that hid the "Dividi" UI for income in `TransactionRow` and `AutoCategorizeWizard` are removed, the text labels of `SplitSlider` and of the wizard's inner slider become dynamic (based on the sign), and `Number(t.amount)` is replaced with `effectiveAmount(t)` in every income sum of the `lib/calc/cashflow.ts` engine.
 
 **Tech Stack:** Next.js App Router, TypeScript, React, vitest, TanStack Query.
 
 ## Global Constraints
 
-- Tutte le stringhe visibili in italiano (i18n non ancora implementata).
-- Nessun colore/raggio hardcoded: usa i token Tailwind/CSS var esistenti.
-- Nessuna modifica a schema DB, validazione Zod, route API — il meccanismo `excludedAmount`/`effectiveAmount`/`isValidExcludedAmount` è già generico sul segno, non richiede modifiche.
-- Package manager: `pnpm`. Test: `pnpm test` (= `vitest run`).
-- Nessuno script `typecheck` dedicato: usa `pnpm exec tsc --noEmit` per la verifica di tipo dei task che toccano solo componenti React (nessuna convenzione di test automatico per `.tsx` in questo repo — solo `lib/calc/*.test.ts` esiste per questo piano).
-- Il bottone "Dividi" mantiene lo stesso testo per entrambe le direzioni — solo il contenuto interno di `SplitSlider`/dello slider del wizard cambia in base al segno, nessuna nuova stringa "Escludi" separata.
+- All visible strings in Italian (i18n not yet implemented).
+- No hardcoded color/radius: use the existing Tailwind tokens/CSS vars.
+- No change to the DB schema, Zod validation, API routes — the `excludedAmount`/`effectiveAmount`/`isValidExcludedAmount` mechanism is already sign-agnostic and needs no changes.
+- Package manager: `pnpm`. Tests: `pnpm test` (= `vitest run`).
+- No dedicated `typecheck` script: use `pnpm exec tsc --noEmit` for the type check of the tasks that touch only React components (no automated test convention for `.tsx` in this repo — only `lib/calc/*.test.ts` exists for this plan).
+- The "Dividi" button keeps the same text for both directions — only the inner content of `SplitSlider`/of the wizard slider changes based on the sign, no new separate "Escludi" string.
 
 ---
 
 ## File Structure
 
 **Modify:**
-- `lib/calc/cashflow.ts` — sostituisce `Number(t.amount)` con `effectiveAmount(t)` in ogni somma di entrate.
-- `lib/calc/cashflow.test.ts` — nuovi test di regressione per il punto sopra.
-- `components/domain/expenses/transaction-row.tsx` — rimuove il guard che nasconde "Dividi" per le entrate.
-- `components/domain/expenses/split-slider.tsx` — etichetta/testo dinamici in base al segno dell'importo.
-- `components/domain/expenses/auto-categorize-wizard.tsx` — rimuove il guard che nasconde lo slider di split per le entrate, etichette dinamiche, `onConfirm` non azzera più `excludedAmount` per le entrate.
+- `lib/calc/cashflow.ts` — replaces `Number(t.amount)` with `effectiveAmount(t)` in every income sum.
+- `lib/calc/cashflow.test.ts` — new regression tests for the point above.
+- `components/domain/expenses/transaction-row.tsx` — removes the guard that hides "Dividi" for income.
+- `components/domain/expenses/split-slider.tsx` — dynamic label/text based on the sign of the amount.
+- `components/domain/expenses/auto-categorize-wizard.tsx` — removes the guard that hides the split slider for income, dynamic labels, `onConfirm` no longer zeroes `excludedAmount` for income.
 
 ---
 
-### Task 1: Motore di calcolo — le entrate contano l'importo effettivo post-"Dividi"
+### Task 1: Calculation engine — income counts the effective amount after "Dividi"
 
 **Files:**
 - Modify: `lib/calc/cashflow.ts`
 - Test: `lib/calc/cashflow.test.ts`
 
 **Interfaces:**
-- Consuma: `effectiveAmount` (già importata in `cashflow.ts` da `./expenses`, nessun nuovo import necessario).
-- Produce: nessuna nuova funzione/tipo esportato — cambia solo il comportamento interno di `computeCashflowKpis`, `computeMonthlySeries`, `computeIncomeSources`, `computeWhereItGoes` (firme invariate).
+- Consumes: `effectiveAmount` (already imported in `cashflow.ts` from `./expenses`, no new import needed).
+- Produces: no new exported function/type — only the internal behavior of `computeCashflowKpis`, `computeMonthlySeries`, `computeIncomeSources`, `computeWhereItGoes` changes (signatures unchanged).
 
-- [ ] **Step 1: Scrivi i test falliti**
+- [ ] **Step 1: Write the failing tests**
 
-Aggiungi questi 4 test (uno per funzione toccata) nei rispettivi blocchi `describe` già esistenti in `lib/calc/cashflow.test.ts`.
+Add these 4 tests (one per touched function) in the respective `describe` blocks already existing in `lib/calc/cashflow.test.ts`.
 
-Nel blocco `describe("computeCashflowKpis", ...)` (dopo il test `"conta come uscita solo la spesa effettiva post-'Dividi' (amount - excludedAmount)"`, prima della chiusura `});` del describe):
+In the `describe("computeCashflowKpis", ...)` block (after the test `"conta come uscita solo la spesa effettiva post-'Dividi' (amount - excludedAmount)"`, before the closing `});` of the describe):
 
 ```typescript
   it("conta come entrata solo la quota effettiva post-'Dividi' (amount - excludedAmount)", () => {
     const transactions = [
-      makeTransaction({ amount: "1000.00", excludedAmount: "400.00", date: "2026-01-10" }), // effettiva: 600
+      makeTransaction({ amount: "1000.00", excludedAmount: "400.00", date: "2026-01-10" }), // effective: 600
     ];
 
     const kpis = computeCashflowKpis(transactions, range, todayAfterPeriod);
 
-    expect(kpis.entrateMedie).toBe(300); // 600 di entrata effettiva totale ÷ 2 mesi
+    expect(kpis.entrateMedie).toBe(300); // 600 of total effective income ÷ 2 months
   });
 ```
 
-Nel blocco `describe("computeMonthlySeries", ...)` (dopo il test `"conta come uscita solo la spesa effettiva post-'Dividi'"`, prima della chiusura `});` del describe):
+In the `describe("computeMonthlySeries", ...)` block (after the test `"conta come uscita solo la spesa effettiva post-'Dividi'"`, before the closing `});` of the describe):
 
 ```typescript
   it("conta come entrata solo la quota effettiva post-'Dividi'", () => {
@@ -73,7 +73,7 @@ Nel blocco `describe("computeMonthlySeries", ...)` (dopo il test `"conta come us
   });
 ```
 
-Nel blocco `describe("computeIncomeSources", ...)` (dopo il test `"include un'entrata sulla categoria fallback..."`, prima della chiusura `});` del describe):
+In the `describe("computeIncomeSources", ...)` block (after the test `"include un'entrata sulla categoria fallback..."`, before the closing `});` of the describe):
 
 ```typescript
   it("conta come entrata solo la quota effettiva post-'Dividi', sia nel totale sia per categoria", () => {
@@ -85,7 +85,7 @@ Nel blocco `describe("computeIncomeSources", ...)` (dopo il test `"include un'en
         amount: "1000.00",
         excludedAmount: "400.00",
         date: "2026-01-05",
-      }), // effettiva: 600
+      }), // effective: 600
     ];
 
     const sources = computeIncomeSources(transactions, [stipendio], range);
@@ -95,7 +95,7 @@ Nel blocco `describe("computeIncomeSources", ...)` (dopo il test `"include un'en
   });
 ```
 
-Nel blocco `describe("computeWhereItGoes", ...)` (dopo il test `"conta come spesa solo l'importo effettivo post-'Dividi'"`, prima della chiusura `});` del describe):
+In the `describe("computeWhereItGoes", ...)` block (after the test `"conta come spesa solo l'importo effettivo post-'Dividi'"`, before the closing `});` of the describe):
 
 ```typescript
   it("conta come entrata solo la quota effettiva post-'Dividi' nel totale usato come denominatore", () => {
@@ -107,7 +107,7 @@ Nel blocco `describe("computeWhereItGoes", ...)` (dopo il test `"conta come spes
         amount: "1000.00",
         excludedAmount: "400.00",
         date: "2026-02-01",
-      }), // effettiva: 600
+      }), // effective: 600
     ];
 
     const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
@@ -117,75 +117,75 @@ Nel blocco `describe("computeWhereItGoes", ...)` (dopo il test `"conta come spes
   });
 ```
 
-- [ ] **Step 2: Esegui i test per verificare che falliscano**
+- [ ] **Step 2: Run the tests to verify they fail**
 
 Run: `pnpm exec vitest run lib/calc/cashflow.test.ts`
-Expected: FAIL sui 4 nuovi test (i valori attesi non corrispondono, perché il codice attuale somma `Number(t.amount)` grezzo invece di `effectiveAmount(t)`).
+Expected: FAIL on the 4 new tests (the expected values do not match, because the current code sums the raw `Number(t.amount)` instead of `effectiveAmount(t)`).
 
-- [ ] **Step 3: Implementa il cambiamento minimo**
+- [ ] **Step 3: Implement the minimal change**
 
-In `lib/calc/cashflow.ts`, sostituisci ciascuna delle 4 righe seguenti (identificale per contenuto esatto, non per numero di riga — il file può essere leggermente diverso da questa descrizione):
+In `lib/calc/cashflow.ts`, replace each of the following 4 lines (identify them by exact content, not by line number — the file may differ slightly from this description):
 
-Riga in `computeCashflowKpis`:
+Line in `computeCashflowKpis`:
 ```typescript
   const entrate = inRange.filter(isIncome).reduce((sum, t) => sum + Number(t.amount), 0);
 ```
-diventa:
+becomes:
 ```typescript
   const entrate = inRange.filter(isIncome).reduce((sum, t) => sum + effectiveAmount(t), 0);
 ```
 
-Riga in `computeMonthlySeries` (dentro l'oggetto ritornato dalla `.map`):
+Line in `computeMonthlySeries` (inside the object returned by the `.map`):
 ```typescript
       entrate: inMonth.filter(isIncome).reduce((sum, t) => sum + Number(t.amount), 0),
 ```
-diventa:
+becomes:
 ```typescript
       entrate: inMonth.filter(isIncome).reduce((sum, t) => sum + effectiveAmount(t), 0),
 ```
 
-Due righe in `computeIncomeSources`:
+Two lines in `computeIncomeSources`:
 ```typescript
   const totalEntrate = inRange.reduce((sum, t) => sum + Number(t.amount), 0);
 ```
-diventa:
+becomes:
 ```typescript
   const totalEntrate = inRange.reduce((sum, t) => sum + effectiveAmount(t), 0);
 ```
-e:
+and:
 ```typescript
     amountByCategoryId.set(t.categoryId, (amountByCategoryId.get(t.categoryId) ?? 0) + Number(t.amount));
 ```
-diventa:
+becomes:
 ```typescript
     amountByCategoryId.set(t.categoryId, (amountByCategoryId.get(t.categoryId) ?? 0) + effectiveAmount(t));
 ```
 
-Riga in `computeWhereItGoes`:
+Line in `computeWhereItGoes`:
 ```typescript
   const entrate = inMonth.filter(isIncome).reduce((sum, t) => sum + Number(t.amount), 0);
 ```
-diventa:
+becomes:
 ```typescript
   const entrate = inMonth.filter(isIncome).reduce((sum, t) => sum + effectiveAmount(t), 0);
 ```
 
-Nessuna modifica alle firme delle funzioni, nessun `Math.abs` necessario: `effectiveAmount` per un'entrata (amount positivo, excludedAmount con lo stesso segno per costruzione — vedi `isValidExcludedAmount`) resta positivo.
+No change to the function signatures, no `Math.abs` needed: `effectiveAmount` for an income entry (positive amount, excludedAmount with the same sign by construction — see `isValidExcludedAmount`) stays positive.
 
-Aggiorna anche i commenti JSDoc che menzionano esplicitamente "le uscite contano la spesa effettiva post-'Dividi'" per riflettere che ora vale anche per le entrate — cerca le stringhe `"Le uscite contano solo la spesa effettiva post-\"Dividi\""` (JSDoc di `computeCashflowKpis`) e `"Serie mensile entrate/uscite per ciascun mese calendariale nel range (inclusi i mesi senza transazioni, a 0). Le uscite contano la spesa effettiva post-\"Dividi\"."` (JSDoc di `computeMonthlySeries`) e riformulale per menzionare entrambe le direzioni, es. "Entrate e uscite contano solo l'importo effettivo post-'Dividi' (`effectiveAmount`)."
+Also update the JSDoc comments that explicitly mention "outflows count the effective spending after 'Dividi'" to reflect that it now applies to income too — search for the strings `"Le uscite contano solo la spesa effettiva post-\"Dividi\""` (JSDoc of `computeCashflowKpis`) and `"Serie mensile entrate/uscite per ciascun mese calendariale nel range (inclusi i mesi senza transazioni, a 0). Le uscite contano la spesa effettiva post-\"Dividi\"."` (JSDoc of `computeMonthlySeries`) and rephrase them to mention both directions, e.g. "Entrate e uscite contano solo l'importo effettivo post-'Dividi' (`effectiveAmount`)."
 
-- [ ] **Step 4: Esegui i test per verificare che passino**
+- [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `pnpm exec vitest run lib/calc/cashflow.test.ts`
-Expected: PASS (tutti i test, inclusi i 4 nuovi e tutti quelli preesistenti).
+Expected: PASS (all tests, including the 4 new ones and all the pre-existing ones).
 
-- [ ] **Step 5: Verifica tipo e suite completa**
+- [ ] **Step 5: Verify types and the full suite**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 Run: `pnpm test`
-Expected: solo eventuali fallimenti pre-esistenti e non correlati (es. `lib/gocardless/scheduler.test.ts`), nessun nuovo fallimento.
+Expected: only possible pre-existing and unrelated failures (e.g. `lib/gocardless/scheduler.test.ts`), no new failures.
 
 - [ ] **Step 6: Commit**
 
@@ -196,18 +196,18 @@ git commit -m "feat: entrate contano l'importo effettivo post-Dividi nel motore 
 
 ---
 
-### Task 2: `TransactionRow` — bottone "Dividi" visibile anche per le entrate
+### Task 2: `TransactionRow` — "Dividi" button visible for income too
 
 **Files:**
 - Modify: `components/domain/expenses/transaction-row.tsx`
 
 **Interfaces:**
-- Consuma: nessuna nuova dipendenza — `SplitSlider` (Task 3) resta importata come oggi, riceve `transaction` per intero e determina da sola la direzione.
-- Produce: nessuna nuova prop pubblica — `TransactionRowProps` invariata.
+- Consumes: no new dependency — `SplitSlider` (Task 3) stays imported as today, receives the whole `transaction` and determines the direction by itself.
+- Produces: no new public prop — `TransactionRowProps` unchanged.
 
-- [ ] **Step 1: Rimuovi il guard che nasconde "Dividi" per le entrate**
+- [ ] **Step 1: Remove the guard that hides "Dividi" for income**
 
-In `components/domain/expenses/transaction-row.tsx`, sostituisci:
+In `components/domain/expenses/transaction-row.tsx`, replace:
 
 ```typescript
           {!isIncome && (
@@ -222,7 +222,7 @@ In `components/domain/expenses/transaction-row.tsx`, sostituisci:
           )}
 ```
 
-con:
+with:
 
 ```typescript
           <button
@@ -235,12 +235,12 @@ con:
           </button>
 ```
 
-Il resto del componente (badge "Diviso", importo "Netto", `netAmount`/`isSplit`) non richiede modifiche: sono già scritti con `Math.abs(...)` e funzionano correttamente per importi positivi.
+The rest of the component (badge "Diviso", amount "Netto", `netAmount`/`isSplit`) needs no changes: they are already written with `Math.abs(...)` and work correctly for positive amounts.
 
-- [ ] **Step 2: Verifica di tipo**
+- [ ] **Step 2: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 3: Commit**
 
@@ -251,24 +251,24 @@ git commit -m "feat: mostra bottone Dividi anche sulle transazioni entrata"
 
 ---
 
-### Task 3: `SplitSlider` — etichetta e testo esplicativo dinamici in base al segno
+### Task 3: `SplitSlider` — dynamic label and explanatory text based on the sign
 
 **Files:**
 - Modify: `components/domain/expenses/split-slider.tsx`
 
 **Interfaces:**
-- Consuma: `transaction.amount` (già disponibile via prop `transaction`, nessuna nuova prop necessaria).
-- Produce: `SplitSliderProps` invariata.
+- Consumes: `transaction.amount` (already available via the `transaction` prop, no new prop needed).
+- Produces: `SplitSliderProps` unchanged.
 
-- [ ] **Step 1: Deriva la direzione e sostituisci il testo esplicativo statico**
+- [ ] **Step 1: Derive the direction and replace the static explanatory text**
 
-In `components/domain/expenses/split-slider.tsx`, dentro `SplitSlider`, subito dopo la riga `const totalAmount = Math.abs(Number(transaction.amount));`, aggiungi:
+In `components/domain/expenses/split-slider.tsx`, inside `SplitSlider`, right after the line `const totalAmount = Math.abs(Number(transaction.amount));`, add:
 
 ```typescript
   const isIncome = Number(transaction.amount) > 0;
 ```
 
-Sostituisci:
+Replace:
 
 ```typescript
       <p className="text-xs text-muted-foreground">
@@ -277,7 +277,7 @@ Sostituisci:
       </p>
 ```
 
-con:
+with:
 
 ```typescript
       <p className="text-xs text-muted-foreground">
@@ -287,9 +287,9 @@ con:
       </p>
 ```
 
-- [ ] **Step 2: Etichetta dinamica del campo numerico**
+- [ ] **Step 2: Dynamic label of the numeric field**
 
-Sostituisci:
+Replace:
 
 ```typescript
         <label htmlFor={`spesa-effettiva-${transaction.id}`} className="text-xs text-muted-foreground">
@@ -297,7 +297,7 @@ Sostituisci:
         </label>
 ```
 
-con:
+with:
 
 ```typescript
         <label htmlFor={`spesa-effettiva-${transaction.id}`} className="text-xs text-muted-foreground">
@@ -305,11 +305,11 @@ con:
         </label>
 ```
 
-(l'attributo `id`/`htmlFor` resta `spesa-effettiva-${transaction.id}` per entrambe le direzioni — è un identificatore interno, non testo visibile, non serve differenziarlo).
+(the `id`/`htmlFor` attribute stays `spesa-effettiva-${transaction.id}` for both directions — it is an internal identifier, not visible text, no need to differentiate it).
 
-- [ ] **Step 3: Etichetta dinamica nel riepilogo sotto lo slider**
+- [ ] **Step 3: Dynamic label in the summary below the slider**
 
-Sostituisci:
+Replace:
 
 ```typescript
       <div className="flex justify-between text-xs text-muted-foreground">
@@ -318,7 +318,7 @@ Sostituisci:
       </div>
 ```
 
-con:
+with:
 
 ```typescript
       <div className="flex justify-between text-xs text-muted-foreground">
@@ -329,24 +329,24 @@ con:
       </div>
 ```
 
-- [ ] **Step 4: Aggiorna il JSDoc del file**
+- [ ] **Step 4: Update the file's JSDoc**
 
-Sostituisci la prima riga del file:
-
-```typescript
-/** UI "Dividi": ripartisce l'importo di una transazione tra spesa effettiva e quota esclusa dal conteggio. */
-```
-
-con:
+Replace the first line of the file:
 
 ```typescript
-/** UI "Dividi": ripartisce l'importo di una transazione (spesa o entrata) tra quota effettiva e quota esclusa dal conteggio. */
+/** "Dividi" UI: splits a transaction's amount between effective spending and the share excluded from the count. */
 ```
 
-- [ ] **Step 5: Verifica di tipo**
+with:
+
+```typescript
+/** "Dividi" UI: splits a transaction's amount (expense or income) between the effective share and the share excluded from the count. */
+```
+
+- [ ] **Step 5: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 6: Commit**
 
@@ -357,18 +357,18 @@ git commit -m "feat: SplitSlider mostra etichette dedicate per le entrate"
 
 ---
 
-### Task 4: `AutoCategorizeWizard` — split visibile anche per le entrate
+### Task 4: `AutoCategorizeWizard` — split visible for income too
 
 **Files:**
 - Modify: `components/domain/expenses/auto-categorize-wizard.tsx`
 
 **Interfaces:**
-- Consuma: nessuna nuova dipendenza.
-- Produce: nessuna nuova prop pubblica — `AutoCategorizeWizardProps`/`AutoCategorizeStepProps` invariate. Il comportamento di `onConfirm`/`handleConfirm` cambia (non azzera più `excludedAmount` per le entrate).
+- Consumes: no new dependency.
+- Produces: no new public prop — `AutoCategorizeWizardProps`/`AutoCategorizeStepProps` unchanged. The behavior of `onConfirm`/`handleConfirm` changes (it no longer zeroes `excludedAmount` for income).
 
-- [ ] **Step 1: Rimuovi il guard che nasconde lo slider di split per le entrate, rendi dinamiche le etichette**
+- [ ] **Step 1: Remove the guard that hides the split slider for income, make the labels dynamic**
 
-In `components/domain/expenses/auto-categorize-wizard.tsx`, dentro `AutoCategorizeStep`, sostituisci:
+In `components/domain/expenses/auto-categorize-wizard.tsx`, inside `AutoCategorizeStep`, replace:
 
 ```typescript
         {!isIncome && (
@@ -391,7 +391,7 @@ In `components/domain/expenses/auto-categorize-wizard.tsx`, dentro `AutoCategori
         )}
 ```
 
-con:
+with:
 
 ```typescript
         <div className="flex flex-col gap-1.5">
@@ -414,9 +414,9 @@ con:
         </div>
 ```
 
-- [ ] **Step 2: Passa sempre `excluded` a `onConfirm`, non più azzerato per le entrate**
+- [ ] **Step 2: Always pass `excluded` to `onConfirm`, no longer zeroed for income**
 
-Sostituisci:
+Replace:
 
 ```typescript
         <Button
@@ -428,7 +428,7 @@ Sostituisci:
         </Button>
 ```
 
-con:
+with:
 
 ```typescript
         <Button type="button" onClick={() => onConfirm(categoryId, excluded)} disabled={isPending}>
@@ -436,10 +436,10 @@ con:
         </Button>
 ```
 
-- [ ] **Step 3: Verifica di tipo**
+- [ ] **Step 3: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore. Nota: la variabile `isIncome` resta usata (per il filtro categorie e per l'etichetta dinamica), quindi non diventa un import/variabile inutilizzata.
+Expected: no errors. Note: the `isIncome` variable stays in use (for the category filter and for the dynamic label), so it does not become an unused import/variable.
 
 - [ ] **Step 4: Commit**
 
@@ -450,15 +450,15 @@ git commit -m "feat: abilita Dividi anche per le entrate nel wizard Categorizza 
 
 ---
 
-## Verifica finale
+## Final verification
 
-Dopo il Task 4, esegui in sequenza:
+After Task 4, run in sequence:
 
 ```bash
 pnpm exec tsc --noEmit
 pnpm test
 ```
 
-Nessun nuovo errore di tipo, nessun nuovo test fallito rispetto alla baseline nota (solo eventuali fallimenti pre-esistenti e non correlati in `lib/gocardless/scheduler.test.ts`).
+No new type errors, no new failing tests compared to the known baseline (only possible pre-existing and unrelated failures in `lib/gocardless/scheduler.test.ts`).
 
-Verifica manuale utente (nessun Postgres/Redis garantito nel sandbox agentico): aprire una transazione entrata in Transazioni, cliccare "Dividi", verificare che lo slider mostri "Entrata effettiva" e il testo esplicativo corretto, escludere una quota e verificare che il KPI/le liste in Cash flow riflettano solo la quota netta; ripetere lo stesso controllo dal wizard "Categorizza automaticamente" su una transazione entrata proposta.
+Manual user verification (no Postgres/Redis guaranteed in the agentic sandbox): open an income transaction in Transazioni (Transactions), click "Dividi", verify that the slider shows "Entrata effettiva" and the correct explanatory text, exclude a share and verify that the KPI/lists in Cash flow reflect only the net share; repeat the same check from the "Categorizza automaticamente" wizard on a proposed income transaction.

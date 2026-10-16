@@ -1,51 +1,51 @@
-> **Stato: in pausa (2026-07-03).** Deciso con l'utente di partire prima con il codice applicativo (modello dati / prime schermate) e tornare su questa infra quando ci sarà qualcosa di concreto da deployare. Il piano resta valido così com'è per quando riprenderà.
+> **Status: paused (2026-07-03).** Decided with the user to start with the application code first (data model / first screens) and come back to this infra when there is something concrete to deploy. The plan remains valid as is for when it resumes.
 
-# Fondamenta infra (Docker + k3s + CI/CD) Implementation Plan
+# Infra foundations (Docker + k3s + CI/CD) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rendere l'app Next.js attuale (placeholder) raggiungibile in produzione su un cluster k3s self-hosted, con deploy automatico ad ogni merge su `main`.
+**Goal:** Make the current (placeholder) Next.js app reachable in production on a self-hosted k3s cluster, with automatic deploy on every merge to `main`.
 
-**Architecture:** Un solo Deployment k8s nel namespace `production` di un cluster k3s single-VPS (Hetzner). GitHub Actions builda l'immagine Docker, la pubblica su GHCR e aggiorna il Deployment via `kubectl`. Nessun dominio reale ancora disponibile: l'Ingress usa un host placeholder da sostituire quando il dominio sarà pronto; TLS è esplicitamente fuori scope di questo piano.
+**Architecture:** A single k8s Deployment in the `production` namespace of a single-VPS k3s cluster (Hetzner). GitHub Actions builds the Docker image, publishes it to GHCR and updates the Deployment via `kubectl`. No real domain available yet: the Ingress uses a placeholder host to be replaced when the domain is ready; TLS is explicitly out of scope for this plan.
 
-**Tech Stack:** Next.js standalone output, Docker multi-stage build, Kubernetes (namespace/Deployment/Service/Ingress su Traefik, l'Ingress controller incluso in k3s), GitHub Actions, GHCR.
+**Tech Stack:** Next.js standalone output, Docker multi-stage build, Kubernetes (namespace/Deployment/Service/Ingress on Traefik, the Ingress controller bundled with k3s), GitHub Actions, GHCR.
 
 ## Global Constraints
 
-- **L'agente non esegue MAI comandi git in questo repo** (regola di progetto in `CLAUDE.md`), nemmeno `status` o `diff` in sola lettura. Ogni step che normalmente prevede `git add`/`commit`/`push` va invece presentato all'utente come comando esatto da eseguire lui stesso, con richiesta esplicita di conferma prima di procedere al task successivo.
-- Package manager: **pnpm** (repo usa `pnpm-lock.yaml`).
-- Owner/repo GitHub: **YonderUrik/buddy-budget** → immagine GHCR: `ghcr.io/yonderurik/buddy-budget` (nomi immagine GHCR devono essere minuscoli).
-- Namespace k8s unico: **production** (nessuno staging, per decisione in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`).
-- Provider VPS: **Hetzner Cloud** (nessuna preferenza espressa, scelto per costo/affidabilità come da spec).
-- Nessun dominio reale disponibile: host Ingress placeholder `budget.example.com`, da sostituire in `deploy/k8s/ingress.yaml` quando esisterà un dominio vero. **TLS/cert-manager fuori scope** di questo piano.
-- Ambiente di sviluppo corrente: **niente Docker, niente kubectl, niente accesso SSH a un VPS reale**. I task che richiedono queste risorse sono marcati esplicitamente come "Manuale" e vanno eseguiti da chi ha effettivamente accesso a quelle risorse (l'utente, o un operatore con le credenziali), non da un agente in questo ambiente sandboxed.
+- **The agent NEVER runs git commands in this repo** (project rule in `CLAUDE.md`), not even read-only `status` or `diff`. Every step that would normally involve `git add`/`commit`/`push` must instead be presented to the user as the exact command to run themselves, with an explicit request for confirmation before moving on to the next task.
+- Package manager: **pnpm** (the repo uses `pnpm-lock.yaml`).
+- GitHub owner/repo: **YonderUrik/buddy-budget** → GHCR image: `ghcr.io/yonderurik/buddy-budget` (GHCR image names must be lowercase).
+- Single k8s namespace: **production** (no staging, per the decision in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`).
+- VPS provider: **Hetzner Cloud** (no preference expressed, chosen for cost/reliability as per the spec).
+- No real domain available: placeholder Ingress host `budget.example.com`, to be replaced in `deploy/k8s/ingress.yaml` when a real domain exists. **TLS/cert-manager out of scope** for this plan.
+- Current development environment: **no Docker, no kubectl, no SSH access to a real VPS**. Tasks that need these resources are explicitly marked as "Manual" and must be run by whoever actually has access to those resources (the user, or an operator with the credentials), not by an agent in this sandboxed environment.
 
 ---
 
 ## File Structure
 
-- `next.config.ts` (modifica) — aggiunge `output: "standalone"`, richiesto dal Dockerfile per copiare solo i file necessari a runtime.
-- `Dockerfile` (nuovo, root) — build multi-stage (deps → builder → runner) che produce l'immagine di produzione.
-- `.dockerignore` (nuovo, root) — esclude `node_modules`, `.next`, `.git`, file `.env*` dal build context.
-- `deploy/k8s/namespace.yaml` (nuovo) — namespace `production`.
-- `deploy/k8s/deployment.yaml` (nuovo) — Deployment dell'app, 1 replica, probe di readiness/liveness su `/`.
-- `deploy/k8s/service.yaml` (nuovo) — Service ClusterIP che espone la porta 3000 del Deployment.
-- `deploy/k8s/ingress.yaml` (nuovo) — Ingress Traefik con host placeholder.
-- `.github/workflows/deploy.yml` (nuovo) — pipeline CI/CD: build & push immagine su GHCR, poi deploy sul cluster via `kubectl`.
+- `next.config.ts` (modify) — adds `output: "standalone"`, required by the Dockerfile to copy only the files needed at runtime.
+- `Dockerfile` (new, root) — multi-stage build (deps → builder → runner) that produces the production image.
+- `.dockerignore` (new, root) — excludes `node_modules`, `.next`, `.git`, `.env*` files from the build context.
+- `deploy/k8s/namespace.yaml` (new) — `production` namespace.
+- `deploy/k8s/deployment.yaml` (new) — app Deployment, 1 replica, readiness/liveness probes on `/`.
+- `deploy/k8s/service.yaml` (new) — ClusterIP Service exposing the Deployment's port 3000.
+- `deploy/k8s/ingress.yaml` (new) — Traefik Ingress with a placeholder host.
+- `.github/workflows/deploy.yml` (new) — CI/CD pipeline: build & push the image to GHCR, then deploy to the cluster via `kubectl`.
 
 ---
 
-### Task 1: Output standalone di Next.js
+### Task 1: Next.js standalone output
 
 **Files:**
 - Modify: `next.config.ts`
-- Test: nessun file di test dedicato — la verifica è l'esito del build.
+- Test: no dedicated test file — the check is the build outcome.
 
 **Interfaces:**
-- Consumes: nessuna dipendenza da task precedenti.
-- Produces: dopo `pnpm build`, la cartella `.next/standalone/server.js` esiste — è il file che il Dockerfile (Task 2) copierà nell'immagine finale ed eseguirà con `node server.js`.
+- Consumes: no dependency on previous tasks.
+- Produces: after `pnpm build`, `.next/standalone/server.js` exists — it is the file the Dockerfile (Task 2) will copy into the final image and run with `node server.js`.
 
-- [ ] **Step 1: Aggiungere `output: "standalone"` a `next.config.ts`**
+- [ ] **Step 1: Add `output: "standalone"` to `next.config.ts`**
 
 ```ts
 import type { NextConfig } from "next";
@@ -57,19 +57,19 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 ```
 
-- [ ] **Step 2: Buildare e verificare che l'output standalone venga generato**
+- [ ] **Step 2: Build and verify that the standalone output is generated**
 
 Run: `pnpm build`
-Expected: il comando termina senza errori e stampa un riepilogo delle route (`Route (app) ...`).
+Expected: the command finishes without errors and prints a summary of the routes (`Route (app) ...`).
 
-- [ ] **Step 3: Verificare che `server.js` sia stato generato**
+- [ ] **Step 3: Verify that `server.js` was generated**
 
 Run (PowerShell): `Test-Path .next/standalone/server.js`
 Expected: `True`
 
-- [ ] **Step 4: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 4: Commit (manual — the agent does not run git in this repo)**
 
-Presenta all'utente questo comando esatto da eseguire lui stesso, poi attendi conferma prima di procedere:
+Present the user with this exact command to run themselves, then wait for confirmation before proceeding:
 
 ```bash
 git add next.config.ts
@@ -78,17 +78,17 @@ git commit -m "build: enable Next.js standalone output for Docker"
 
 ---
 
-### Task 2: Dockerfile multi-stage
+### Task 2: Multi-stage Dockerfile
 
 **Files:**
 - Create: `Dockerfile`
 - Create: `.dockerignore`
 
 **Interfaces:**
-- Consumes: `.next/standalone/server.js` e `.next/static/` prodotti dal Task 1 (`pnpm build` con `output: "standalone"`); `public/` esistente nel repo.
-- Produces: un'immagine Docker che espone la porta **3000** e si avvia con `node server.js` — è il contratto che `deploy/k8s/deployment.yaml` (Task 3) assume (`containerPort: 3000`, probe su `/`).
+- Consumes: `.next/standalone/server.js` and `.next/static/` produced by Task 1 (`pnpm build` with `output: "standalone"`); `public/` already in the repo.
+- Produces: a Docker image that exposes port **3000** and starts with `node server.js` — this is the contract `deploy/k8s/deployment.yaml` (Task 3) assumes (`containerPort: 3000`, probes on `/`).
 
-- [ ] **Step 1: Creare `.dockerignore`**
+- [ ] **Step 1: Create `.dockerignore`**
 
 ```
 node_modules
@@ -100,7 +100,7 @@ docs
 .env.*
 ```
 
-- [ ] **Step 2: Creare `Dockerfile`**
+- [ ] **Step 2: Create `Dockerfile`**
 
 ```dockerfile
 # syntax=docker/dockerfile:1
@@ -132,16 +132,16 @@ ENV HOSTNAME="0.0.0.0"
 CMD ["node", "server.js"]
 ```
 
-- [ ] **Step 3: Verifica locale (solo se Docker è disponibile)**
+- [ ] **Step 3: Local check (only if Docker is available)**
 
-Questo ambiente di sviluppo non ha Docker installato, quindi questo step non è eseguibile qui. Se lo esegui su una macchina con Docker Desktop:
+This development environment does not have Docker installed, so this step cannot be run here. If you run it on a machine with Docker Desktop:
 
 Run: `docker build -t buddybudget:test .`
-Expected: l'ultima riga di output è `naming to docker.io/library/buddybudget:test` (BuildKit) o `Successfully tagged buddybudget:test` (builder classico), senza errori nei passaggi precedenti.
+Expected: the last output line is `naming to docker.io/library/buddybudget:test` (BuildKit) or `Successfully tagged buddybudget:test` (classic builder), with no errors in the previous steps.
 
-Se non hai Docker in locale, salta questo step: il Dockerfile viene comunque validato realmente nel Task 7, quando la pipeline CI (Task 4) lo builda su un runner GitHub Actions che ha Docker preinstallato.
+If you do not have Docker locally, skip this step: the Dockerfile is validated for real anyway in Task 7, when the CI pipeline (Task 4) builds it on a GitHub Actions runner that has Docker preinstalled.
 
-- [ ] **Step 4: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 4: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add Dockerfile .dockerignore
@@ -150,7 +150,7 @@ git commit -m "build: add multi-stage Dockerfile for production image"
 
 ---
 
-### Task 3: Manifest Kubernetes (namespace, Deployment, Service, Ingress)
+### Task 3: Kubernetes manifests (namespace, Deployment, Service, Ingress)
 
 **Files:**
 - Create: `deploy/k8s/namespace.yaml`
@@ -159,10 +159,10 @@ git commit -m "build: add multi-stage Dockerfile for production image"
 - Create: `deploy/k8s/ingress.yaml`
 
 **Interfaces:**
-- Consumes: immagine `ghcr.io/yonderurik/buddy-budget:latest` prodotta dalla pipeline (Task 4); porta container 3000 e path di health `/` definiti dal Dockerfile (Task 2).
-- Produces: Deployment `buddybudget` e Service `buddybudget` nel namespace `production` — nomi che la pipeline (Task 4) userà in `kubectl set image deployment/buddybudget ...` e in `kubectl apply -f deploy/k8s/`. Secret `ghcr-pull-secret` atteso come riferimento (creato manualmente nel Task 6).
+- Consumes: image `ghcr.io/yonderurik/buddy-budget:latest` produced by the pipeline (Task 4); container port 3000 and health path `/` defined by the Dockerfile (Task 2).
+- Produces: Deployment `buddybudget` and Service `buddybudget` in the `production` namespace — names the pipeline (Task 4) will use in `kubectl set image deployment/buddybudget ...` and in `kubectl apply -f deploy/k8s/`. Secret `ghcr-pull-secret` expected as a reference (created manually in Task 6).
 
-- [ ] **Step 1: Creare `deploy/k8s/namespace.yaml`**
+- [ ] **Step 1: Create `deploy/k8s/namespace.yaml`**
 
 ```yaml
 apiVersion: v1
@@ -171,7 +171,7 @@ metadata:
   name: production
 ```
 
-- [ ] **Step 2: Creare `deploy/k8s/deployment.yaml`**
+- [ ] **Step 2: Create `deploy/k8s/deployment.yaml`**
 
 ```yaml
 apiVersion: apps/v1
@@ -212,7 +212,7 @@ spec:
             periodSeconds: 20
 ```
 
-- [ ] **Step 3: Creare `deploy/k8s/service.yaml`**
+- [ ] **Step 3: Create `deploy/k8s/service.yaml`**
 
 ```yaml
 apiVersion: v1
@@ -228,7 +228,7 @@ spec:
       targetPort: 3000
 ```
 
-- [ ] **Step 4: Creare `deploy/k8s/ingress.yaml`**
+- [ ] **Step 4: Create `deploy/k8s/ingress.yaml`**
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -251,21 +251,21 @@ spec:
                   number: 3000
 ```
 
-- [ ] **Step 5: Validare la sintassi YAML di ciascun file**
+- [ ] **Step 5: Validate the YAML syntax of each file**
 
 Run: `pnpm dlx js-yaml deploy/k8s/namespace.yaml`
-Expected: stampa JSON `{ "apiVersion": "v1", "kind": "Namespace", ... }` senza errori.
+Expected: prints JSON `{ "apiVersion": "v1", "kind": "Namespace", ... }` with no errors.
 
 Run: `pnpm dlx js-yaml deploy/k8s/deployment.yaml`
-Expected: stampa JSON con `"kind": "Deployment"` senza errori.
+Expected: prints JSON with `"kind": "Deployment"` with no errors.
 
 Run: `pnpm dlx js-yaml deploy/k8s/service.yaml`
-Expected: stampa JSON con `"kind": "Service"` senza errori.
+Expected: prints JSON with `"kind": "Service"` with no errors.
 
 Run: `pnpm dlx js-yaml deploy/k8s/ingress.yaml`
-Expected: stampa JSON con `"kind": "Ingress"` senza errori.
+Expected: prints JSON with `"kind": "Ingress"` with no errors.
 
-- [ ] **Step 6: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 6: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add deploy/k8s/
@@ -274,16 +274,16 @@ git commit -m "feat: add Kubernetes manifests for production namespace"
 
 ---
 
-### Task 4: Pipeline GitHub Actions (build → GHCR → deploy)
+### Task 4: GitHub Actions pipeline (build → GHCR → deploy)
 
 **Files:**
 - Create: `.github/workflows/deploy.yml`
 
 **Interfaces:**
-- Consumes: `Dockerfile` (Task 2), manifest in `deploy/k8s/` (Task 3), secret repo GitHub `KUBECONFIG` (creato manualmente nel Task 6).
-- Produces: ad ogni push su `main`, un'immagine `ghcr.io/yonderurik/buddy-budget:<sha>` e `:latest`, e un rollout del Deployment `buddybudget` nel namespace `production` con l'immagine appena pubblicata.
+- Consumes: `Dockerfile` (Task 2), manifests in `deploy/k8s/` (Task 3), GitHub repo secret `KUBECONFIG` (created manually in Task 6).
+- Produces: on every push to `main`, an image `ghcr.io/yonderurik/buddy-budget:<sha>` and `:latest`, and a rollout of the `buddybudget` Deployment in the `production` namespace with the freshly published image.
 
-- [ ] **Step 1: Creare `.github/workflows/deploy.yml`**
+- [ ] **Step 1: Create `.github/workflows/deploy.yml`**
 
 ```yaml
 name: Deploy
@@ -353,12 +353,12 @@ jobs:
           kubectl -n production rollout status deployment/buddybudget --timeout=120s
 ```
 
-- [ ] **Step 2: Validare la sintassi YAML del workflow**
+- [ ] **Step 2: Validate the workflow's YAML syntax**
 
 Run: `pnpm dlx js-yaml .github/workflows/deploy.yml`
-Expected: stampa JSON con `"name": "Deploy"` senza errori.
+Expected: prints JSON with `"name": "Deploy"` with no errors.
 
-- [ ] **Step 3: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 3: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add .github/workflows/deploy.yml
@@ -367,67 +367,67 @@ git commit -m "ci: add build, push and deploy pipeline for production"
 
 ---
 
-### Task 5 (Manuale — richiede un VPS reale): Provisioning VPS + installazione k3s
+### Task 5 (Manual — requires a real VPS): VPS provisioning + k3s installation
 
-Questo task non è eseguibile da un agente in questo ambiente: richiede di creare una risorsa a pagamento reale (VPS Hetzner) e accedervi via SSH. Chi esegue questo task deve avere accesso a un account Hetzner Cloud e a un terminale con SSH.
+This task cannot be run by an agent in this environment: it requires creating a real paid resource (Hetzner VPS) and accessing it via SSH. Whoever runs this task must have access to a Hetzner Cloud account and a terminal with SSH.
 
 **Interfaces:**
-- Produces: un cluster k3s raggiungibile via SSH, con un file kubeconfig locale che il Task 6 userà per creare i secret e verificare il cluster, e che la pipeline (Task 4) userà per il deploy.
+- Produces: a k3s cluster reachable via SSH, with a local kubeconfig file that Task 6 will use to create the secrets and check the cluster, and that the pipeline (Task 4) will use to deploy.
 
-- [ ] **Step 1: Creare il server su Hetzner Cloud**
+- [ ] **Step 1: Create the server on Hetzner Cloud**
 
-Nella console Hetzner Cloud (o via `hcloud` CLI se preferisci): crea un server tipo `CX22` (2 vCPU, 4GB RAM — sufficiente per k3s + un'app Next.js in questa fase), immagine `Ubuntu 24.04`, con la tua chiave SSH pubblica associata. Annota l'IP pubblico assegnato (verrà indicato come `<VPS_IP>` nei prossimi step).
+In the Hetzner Cloud console (or via the `hcloud` CLI if you prefer): create a `CX22` server (2 vCPU, 4GB RAM — enough for k3s + a Next.js app at this stage), image `Ubuntu 24.04`, with your public SSH key attached. Note the assigned public IP (it will be referred to as `<VPS_IP>` in the next steps).
 
-- [ ] **Step 2: Installare k3s sul server**
+- [ ] **Step 2: Install k3s on the server**
 
-SSH nel server:
+SSH into the server:
 
 ```bash
 ssh root@<VPS_IP>
 curl -sfL https://get.k3s.io | sh -
 ```
 
-Expected: l'installer termina senza errori e stampa `[INFO]  systemd: Starting k3s`.
+Expected: the installer finishes without errors and prints `[INFO]  systemd: Starting k3s`.
 
-- [ ] **Step 3: Verificare che il nodo sia pronto**
+- [ ] **Step 3: Verify that the node is ready**
 
-Ancora via SSH sul server:
+Still via SSH on the server:
 
 Run: `k3s kubectl get nodes`
-Expected: una riga con lo stato `Ready`.
+Expected: one line with status `Ready`.
 
-- [ ] **Step 4: Copiare il kubeconfig in locale**
+- [ ] **Step 4: Copy the kubeconfig locally**
 
-Dal tuo terminale locale (non sul server):
+From your local terminal (not on the server):
 
 ```bash
 ssh root@<VPS_IP> cat /etc/rancher/k3s/k3s.yaml > k3s-kubeconfig.yaml
 ```
 
-Poi modifica `k3s-kubeconfig.yaml` sostituendo `https://127.0.0.1:6443` con `https://<VPS_IP>:6443` (il file usa l'IP locale del server per default, va corretto per essere usabile da fuori).
+Then edit `k3s-kubeconfig.yaml`, replacing `https://127.0.0.1:6443` with `https://<VPS_IP>:6443` (by default the file uses the server's local IP; it must be corrected to be usable from outside).
 
-**Nota di sicurezza**: questo kubeconfig contiene credenziali con accesso amministrativo completo al cluster. Non committarlo mai nel repo — verrà usato solo nel Task 6 per generare il secret GitHub, poi va conservato in un posto sicuro (es. password manager) e cancellato dalla working directory locale.
+**Security note**: this kubeconfig contains credentials with full administrative access to the cluster. Never commit it to the repo — it will only be used in Task 6 to generate the GitHub secret, then it must be kept somewhere safe (e.g. a password manager) and deleted from the local working directory.
 
-- [ ] **Step 5: Verificare l'accesso remoto**
+- [ ] **Step 5: Verify remote access**
 
-Dal tuo terminale locale, con `kubectl` installato:
+From your local terminal, with `kubectl` installed:
 
 Run: `kubectl --kubeconfig k3s-kubeconfig.yaml get nodes`
-Expected: stessa riga con stato `Ready` vista nello Step 3, questa volta ottenuta da remoto.
+Expected: the same line with status `Ready` seen in Step 3, this time obtained remotely.
 
 ---
 
-### Task 6 (Manuale — richiede accesso al cluster e a GitHub): Secret di deploy
+### Task 6 (Manual — requires access to the cluster and to GitHub): Deploy secrets
 
 **Interfaces:**
-- Consumes: `k3s-kubeconfig.yaml` prodotto dal Task 5.
-- Produces: secret `ghcr-pull-secret` nel namespace `production` del cluster (che `deploy/k8s/deployment.yaml`, Task 3, referenzia in `imagePullSecrets`), e secret repo GitHub `KUBECONFIG` (che la pipeline, Task 4, legge in `Configure kubeconfig`).
+- Consumes: `k3s-kubeconfig.yaml` produced by Task 5.
+- Produces: secret `ghcr-pull-secret` in the cluster's `production` namespace (which `deploy/k8s/deployment.yaml`, Task 3, references in `imagePullSecrets`), and GitHub repo secret `KUBECONFIG` (which the pipeline, Task 4, reads in `Configure kubeconfig`).
 
-- [ ] **Step 1: Creare un GitHub Personal Access Token per il pull da GHCR**
+- [ ] **Step 1: Create a GitHub Personal Access Token for pulling from GHCR**
 
-Su GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens: crea un token con permesso `read:packages` sul repository `YonderUrik/buddy-budget`. Annota il token (verrà indicato come `<GHCR_PAT>` nello step successivo, usato una sola volta).
+On GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens: create a token with the `read:packages` permission on the `YonderUrik/buddy-budget` repository. Note the token (it will be referred to as `<GHCR_PAT>` in the next step, used only once).
 
-- [ ] **Step 2: Applicare il namespace e creare il secret `ghcr-pull-secret` sul cluster**
+- [ ] **Step 2: Apply the namespace and create the `ghcr-pull-secret` secret on the cluster**
 
 ```bash
 kubectl --kubeconfig k3s-kubeconfig.yaml apply -f deploy/k8s/namespace.yaml
@@ -440,69 +440,69 @@ kubectl --kubeconfig k3s-kubeconfig.yaml create secret docker-registry ghcr-pull
 
 Expected: `secret/ghcr-pull-secret created`.
 
-- [ ] **Step 3: Aggiungere il secret `KUBECONFIG` al repository GitHub**
+- [ ] **Step 3: Add the `KUBECONFIG` secret to the GitHub repository**
 
 ```bash
 base64 -w0 k3s-kubeconfig.yaml
 ```
 
-Copia l'output. Su GitHub → repository `YonderUrik/buddy-budget` → Settings → Secrets and variables → Actions → New repository secret: nome `KUBECONFIG`, valore l'output copiato.
+Copy the output. On GitHub → repository `YonderUrik/buddy-budget` → Settings → Secrets and variables → Actions → New repository secret: name `KUBECONFIG`, value the copied output.
 
-- [ ] **Step 4: Rimuovere il kubeconfig dalla working directory locale**
+- [ ] **Step 4: Remove the kubeconfig from the local working directory**
 
 ```bash
 rm k3s-kubeconfig.yaml
 ```
 
-Da questo punto il kubeconfig vive solo come secret GitHub (usato dalla pipeline) e — se vuoi mantenerne una copia per debug manuale futuro — in un password manager, non su disco in chiaro.
+From this point on the kubeconfig lives only as a GitHub secret (used by the pipeline) and — if you want to keep a copy for future manual debugging — in a password manager, not on disk in plaintext.
 
 ---
 
-### Task 7 (Manuale — trigger reale della pipeline): Primo deploy end-to-end
+### Task 7 (Manual — real pipeline trigger): First end-to-end deploy
 
-Questo task richiede di pushare su GitHub, quindi va eseguito dall'utente (l'agente non esegue mai `git push` in questo repo).
+This task requires pushing to GitHub, so it must be run by the user (the agent never runs `git push` in this repo).
 
-- [ ] **Step 1: Pushare i commit dei Task 1-4 su `main`**
+- [ ] **Step 1: Push the commits of Tasks 1-4 to `main`**
 
-A questo punto i Task 1-4 dovrebbero già essere stati committati singolarmente (vedi i loro Step di commit). Presenta all'utente:
+At this point Tasks 1-4 should already have been committed individually (see their commit Steps). Present to the user:
 
 ```bash
 git push origin main
 ```
 
-- [ ] **Step 2: Osservare l'esecuzione della pipeline**
+- [ ] **Step 2: Watch the pipeline run**
 
-Su GitHub → repository → tab Actions: verifica che il workflow "Deploy" parta automaticamente e che entrambi i job (`build-and-push`, `deploy`) terminino con stato verde (successo). Se il job `deploy` fallisce su `Configure kubeconfig` o su un errore di connessione, verifica che il secret `KUBECONFIG` (Task 6, Step 3) sia stato salvato correttamente.
+On GitHub → repository → Actions tab: check that the "Deploy" workflow starts automatically and that both jobs (`build-and-push`, `deploy`) finish green (success). If the `deploy` job fails on `Configure kubeconfig` or on a connection error, check that the `KUBECONFIG` secret (Task 6, Step 3) was saved correctly.
 
-- [ ] **Step 3: Verificare che il pod sia in esecuzione**
+- [ ] **Step 3: Verify that the pod is running**
 
 ```bash
 kubectl --kubeconfig k3s-kubeconfig.yaml -n production get pods
 ```
 
-(Se hai già rimosso il file locale come da Task 6 Step 4, puoi rigenerarlo temporaneamente da `ssh root@<VPS_IP> cat /etc/rancher/k3s/k3s.yaml`, oppure eseguire il comando via SSH direttamente sul server con `k3s kubectl -n production get pods`.)
+(If you already removed the local file as per Task 6 Step 4, you can temporarily regenerate it from `ssh root@<VPS_IP> cat /etc/rancher/k3s/k3s.yaml`, or run the command via SSH directly on the server with `k3s kubectl -n production get pods`.)
 
-Expected: una riga con `STATUS` = `Running` e `READY` = `1/1`.
+Expected: one line with `STATUS` = `Running` and `READY` = `1/1`.
 
-- [ ] **Step 4: Verificare che l'app risponda attraverso l'Ingress**
+- [ ] **Step 4: Verify that the app responds through the Ingress**
 
-Dato che non esiste ancora un dominio reale puntato al server, verifica il routing Traefik passando l'host placeholder in un header esplicito, contro l'IP pubblico del VPS:
+Since there is no real domain pointing at the server yet, verify Traefik routing by passing the placeholder host in an explicit header, against the VPS public IP:
 
 ```bash
 curl -H "Host: budget.example.com" http://<VPS_IP>/
 ```
 
-Expected: l'HTML restituito contiene la stringa `Benvenuto in BuddyBudget` (il testo della home page placeholder in `app/page.tsx`).
+Expected: the returned HTML contains the string `Benvenuto in BuddyBudget` (the text of the placeholder home page in `app/page.tsx`).
 
-- [ ] **Step 5: Confermare il completamento**
+- [ ] **Step 5: Confirm completion**
 
-Se lo Step 4 ha restituito l'HTML atteso, le fondamenta infra sono operative: da questo momento, ogni merge su `main` builda, pubblica e deploya automaticamente. I prossimi piani (Database, Autenticazione, ecc. — vedi `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`) partiranno da questa base.
+If Step 4 returned the expected HTML, the infra foundations are operational: from now on, every merge to `main` builds, publishes and deploys automatically. The next plans (Database, Authentication, etc. — see `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`) will start from this base.
 
 ---
 
-## Fuori scope di questo piano (rimandato consapevolmente)
+## Out of scope for this plan (consciously deferred)
 
-- **Dominio reale + TLS/cert-manager**: l'Ingress usa un host placeholder; da aggiornare (e aggiungere TLS) quando esisterà un dominio.
-- **Staging environment**: solo `production` per ora, come da spec.
-- **Postgres, Redis, autenticazione, osservabilità**: oggetto dei piani successivi elencati nello spec di architettura.
-- **Rollback automatico o strategie di deploy avanzate (blue/green, canary)**: `kubectl set image` + `rollout status` è sufficiente per un singolo servizio a bassissimo traffico in questa fase.
+- **Real domain + TLS/cert-manager**: the Ingress uses a placeholder host; to be updated (and TLS added) when a domain exists.
+- **Staging environment**: only `production` for now, as per the spec.
+- **Postgres, Redis, authentication, observability**: subject of the later plans listed in the architecture spec.
+- **Automatic rollback or advanced deploy strategies (blue/green, canary)**: `kubectl set image` + `rollout status` is enough for a single very-low-traffic service at this stage.

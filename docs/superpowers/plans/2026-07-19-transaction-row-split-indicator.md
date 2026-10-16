@@ -1,41 +1,41 @@
-# Indicatore visivo "Diviso" in TransactionRow Implementation Plan
+# "Diviso" visual indicator in TransactionRow Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rendere visibile nella riga transazione (senza aprire il pannello "Dividi") che una transazione è stata divisa, mostrando l'importo netto come cifra principale, un badge "Diviso" e l'importo pieno originale in piccolo.
+**Goal:** Make it visible in the transaction row (without opening the "Dividi" ("Split") panel) that a transaction has been split, showing the net amount as the main figure, a "Diviso" ("Split") badge and the original full amount in small print.
 
-**Architecture:** Modifica puramente di rendering condizionale in `components/domain/expenses/transaction-row.tsx`, basata su `excludedAmount` già presente su `transaction` (nessun nuovo dato, nessuna nuova chiamata). Nessun altro file coinvolto.
+**Architecture:** A purely conditional-rendering change in `components/domain/expenses/transaction-row.tsx`, based on `excludedAmount` already present on `transaction` (no new data, no new calls). No other file involved.
 
-**Tech Stack:** Next.js (App Router) + TypeScript, componenti `Badge`/`CurrencyInput` esistenti.
+**Tech Stack:** Next.js (App Router) + TypeScript, existing `Badge`/`CurrencyInput` components.
 
 ## Global Constraints
 
-- Stringhe utente in italiano.
-- Nessun colore/raggio hardcoded: solo classi token Tailwind esistenti.
-- Nessuna modifica a `SplitSlider`, API, schema DB, motore di calcolo (`lib/calc/expenses.ts`).
-- Il campo importo delle transazioni "Manuale" deve continuare a editare l'importo pieno (`transaction.amount`), mai il netto — l'indicazione del netto è solo informativa, in un elemento separato non editabile.
-- JSDoc minimo (una riga `/**`) già presente in cima al file, non serve aggiungerne di nuovo per queste modifiche interne.
+- User-facing strings in Italian.
+- No hardcoded colors/radii: only existing Tailwind token classes.
+- No changes to `SplitSlider`, API, DB schema, calculation engine (`lib/calc/expenses.ts`).
+- The amount field of "Manuale" ("Manual") transactions must keep editing the full amount (`transaction.amount`), never the net — the net indication is informational only, in a separate non-editable element.
+- Minimal JSDoc (one `/**` line) already present at the top of the file; no need to add more for these internal changes.
 
 ---
 
-## Stato di partenza (verificato nel codice)
+## Starting state (verified in the code)
 
-`components/domain/expenses/transaction-row.tsx` esiste già. Riga Auto (sola lettura, righe 128-131 circa): un solo `<p>` con l'importo pieno. Riga Manuale (righe 132-141 circa): `CurrencyInput` che edita `amountValue` (inizializzato a `Math.abs(Number(transaction.amount))`). Badge Auto/Manuale a riga 124-126. `transaction.excludedAmount` è già un campo della riga `Transaction` (usato in `SplitSlider`), sempre disponibile qui senza fetch aggiuntivi. Nessuna infrastruttura di test a componenti in questo progetto (nessun jsdom/Testing Library) — questa modifica non ha test automatici, solo verifica manuale in browser.
+`components/domain/expenses/transaction-row.tsx` already exists. Auto row (read-only, roughly lines 128-131): a single `<p>` with the full amount. Manual row (roughly lines 132-141): `CurrencyInput` editing `amountValue` (initialized to `Math.abs(Number(transaction.amount))`). Auto/Manuale badge at lines 124-126. `transaction.excludedAmount` is already a field of the `Transaction` row (used in `SplitSlider`), always available here without extra fetches. No component test infrastructure in this project (no jsdom/Testing Library) — this change has no automated tests, only manual browser verification.
 
 ---
 
-### Task 1: Badge "Diviso" + importo netto/pieno in TransactionRow
+### Task 1: "Diviso" badge + net/full amount in TransactionRow
 
 **Files:**
 - Modify: `components/domain/expenses/transaction-row.tsx`
 
 **Interfaces:**
-- Consumes: nessuna dipendenza da altri task (piano a task singolo).
-- Produces: nessuna nuova esportazione — `TransactionRowProps` invariata.
+- Consumes: no dependency on other tasks (single-task plan).
+- Produces: no new exports — `TransactionRowProps` unchanged.
 
-- [ ] **Step 1: Aggiungi le costanti derivate subito dopo gli state esistenti**
+- [ ] **Step 1: Add the derived constants right after the existing state**
 
-Nel file `components/domain/expenses/transaction-row.tsx`, subito dopo la riga `const [splitOpen, setSplitOpen] = React.useState(false);` (circa riga 42), aggiungi:
+In `components/domain/expenses/transaction-row.tsx`, right after the line `const [splitOpen, setSplitOpen] = React.useState(false);` (around line 42), add:
 
 ```tsx
   const excludedAmount = Math.abs(Number(transaction.excludedAmount));
@@ -44,9 +44,9 @@ Nel file `components/domain/expenses/transaction-row.tsx`, subito dopo la riga `
   const isSplit = excludedAmount > 0;
 ```
 
-- [ ] **Step 2: Aggiungi il badge "Diviso" accanto al badge Auto/Manuale esistente**
+- [ ] **Step 2: Add the "Diviso" badge next to the existing Auto/Manuale badge**
 
-Sostituisci:
+Replace:
 
 ```tsx
           <Badge variant={isAuto ? "secondary" : "outline"} className="shrink-0">
@@ -54,7 +54,7 @@ Sostituisci:
           </Badge>
 ```
 
-con:
+with:
 
 ```tsx
           <Badge variant={isAuto ? "secondary" : "outline"} className="shrink-0">
@@ -68,9 +68,9 @@ con:
           )}
 ```
 
-- [ ] **Step 3: Sostituisci il blocco importo (sia ramo Auto sia ramo Manuale)**
+- [ ] **Step 3: Replace the amount block (both the Auto and Manuale branches)**
 
-Sostituisci l'intero blocco:
+Replace the whole block:
 
 ```tsx
           {isAuto ? (
@@ -89,7 +89,7 @@ Sostituisci l'intero blocco:
           )}
 ```
 
-con:
+with:
 
 ```tsx
           {isAuto ? (
@@ -122,26 +122,26 @@ con:
           )}
 ```
 
-- [ ] **Step 4: Verifica i tipi**
+- [ ] **Step 4: Check types**
 
-Run: `pnpm exec tsc --noEmit` (o, se l'ambiente ha il problema noto `ERR_PNPM_IGNORED_BUILDS` di pnpm exec, `node node_modules/typescript/bin/tsc --noEmit`)
-Expected: nessun errore in `transaction-row.tsx`.
+Run: `pnpm exec tsc --noEmit` (or, if the environment has the known pnpm exec `ERR_PNPM_IGNORED_BUILDS` issue, `node node_modules/typescript/bin/tsc --noEmit`)
+Expected: no errors in `transaction-row.tsx`.
 
 - [ ] **Step 5: Lint**
 
-Run: `pnpm exec eslint components/domain/expenses/transaction-row.tsx` (o `node node_modules/eslint/bin/eslint.js components/domain/expenses/transaction-row.tsx`)
-Expected: nessun errore/warning.
+Run: `pnpm exec eslint components/domain/expenses/transaction-row.tsx` (or `node node_modules/eslint/bin/eslint.js components/domain/expenses/transaction-row.tsx`)
+Expected: no errors/warnings.
 
-- [ ] **Step 6: Verifica manuale in browser (nessuna infrastruttura di test a componenti in questo progetto)**
+- [ ] **Step 6: Manual browser verification (no component test infrastructure in this project)**
 
-Avvia `pnpm dev`, apri la schermata Spese:
-- Transazione Auto **non divisa**: rendering identico a prima (solo importo pieno, nessun badge "Diviso", nessuna riga barrata).
-- Transazione Auto **divisa** (apri "Dividi" e sposta lo slider/usa ÷2): badge "Diviso" appare accanto ad "Auto"; la cifra principale mostra il netto; sotto appare l'importo pieno barrato in piccolo.
-- Transazione Manuale **non divisa**: rendering identico a prima (input editabile, nessuna riga "Netto" sotto).
-- Transazione Manuale **divisa**: badge "Diviso" appare accanto a "Manuale"; l'input continua a mostrare/editare l'importo pieno (verifica che editarlo e salvare funzioni ancora); sotto l'input appare "Netto: €X" in piccolo.
-- Riporta lo split a 0 dal pannello Dividi (÷1 non esiste come shortcut: usa lo slider o l'input "Spesa effettiva" per azzerare l'esclusione): badge e riga netta/barrata scompaiono, torna al rendering originale.
-- Verifica in dark mode che badge e testo barrato/piccolo abbiano contrasto leggibile.
-- Verifica che il layout non si rompa su schermo stretto (mobile): la colonna importo si allarga verticalmente (due righe) ma non deve spingere il resto del layout fuori posto.
+Start `pnpm dev`, open the Spese ("Expenses") screen:
+- **Unsplit** Auto transaction: rendering identical to before (full amount only, no "Diviso" badge, no struck-through line).
+- **Split** Auto transaction (open "Dividi" and move the slider/use ÷2): the "Diviso" badge appears next to "Auto"; the main figure shows the net; below it, the full amount appears struck through in small print.
+- **Unsplit** Manual transaction: rendering identical to before (editable input, no "Netto" ("Net") line below).
+- **Split** Manual transaction: the "Diviso" badge appears next to "Manuale"; the input keeps showing/editing the full amount (check that editing and saving it still works); below the input, "Netto: €X" appears in small print.
+- Bring the split back to 0 from the Dividi panel (÷1 does not exist as a shortcut: use the slider or the "Spesa effettiva" ("Actual expense") input to reset the exclusion): the badge and the net/struck-through line disappear, back to the original rendering.
+- Check in dark mode that the badge and the struck-through/small text have readable contrast.
+- Check that the layout does not break on a narrow screen (mobile): the amount column grows vertically (two lines) but must not push the rest of the layout out of place.
 
 - [ ] **Step 7: Commit**
 
@@ -152,8 +152,8 @@ git commit -m "feat: mostra indicatore Diviso e importo netto in TransactionRow"
 
 ---
 
-## Self-Review (svolto durante la scrittura del piano)
+## Self-Review (done while writing the plan)
 
-1. **Copertura spec**: badge "Diviso" → Step 2; riga Auto con netto+barrato → Step 3; riga Manuale con input invariato + nota netto → Step 3; nessuna modifica a SplitSlider/API/schema/motore di calcolo → dichiarato nei Global Constraints, nessun altro file toccato. Tutte le sezioni della spec sono coperte.
-2. **Placeholder scan**: nessun TBD/TODO, ogni step ha codice completo, before/after espliciti.
-3. **Coerenza tipi**: `excludedAmount`/`fullAmount`/`netAmount`/`isSplit` definiti una sola volta (Step 1) e riusati identici negli Step 2-3, nessuna doppia definizione o nome divergente.
+1. **Spec coverage**: "Diviso" badge → Step 2; Auto row with net + struck-through → Step 3; Manual row with unchanged input + net note → Step 3; no changes to SplitSlider/API/schema/calculation engine → stated in Global Constraints, no other file touched. All spec sections are covered.
+2. **Placeholder scan**: no TBD/TODO, every step has complete code, explicit before/after.
+3. **Type consistency**: `excludedAmount`/`fullAmount`/`netAmount`/`isSplit` defined only once (Step 1) and reused identically in Steps 2-3, no double definition or diverging name.

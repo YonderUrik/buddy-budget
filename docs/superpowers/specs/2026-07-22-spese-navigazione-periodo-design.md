@@ -1,55 +1,55 @@
-# Navigazione periodo in Spese
+# Period navigation in Spese
 
-Data: 2026-07-22
+Date: 2026-07-22
 
-## Contesto
+## Context
 
-La schermata Spese (`app/(app)/spese/page.tsx`) ha un selettore Settimana/Mese/3 mesi/Anno (`ExpensesPeriodSelector`), ma `referenceDate` è sempre `new Date()` fisso — non esiste modo di vedere mesi/periodi passati o futuri (entro il limite "non oltre oggi"). L'utente vuole poter cambiare mese (es. passare da Luglio a Giugno) e, generalizzando, farlo per qualunque tipo di periodo selezionato.
+The Spese (Expenses) screen (`app/(app)/spese/page.tsx`) has a Settimana/Mese/3 mesi/Anno (Week/Month/3 months/Year) selector (`ExpensesPeriodSelector`), but `referenceDate` is always a fixed `new Date()` — there is no way to see past or future months/periods (within the "not beyond today" limit). The user wants to be able to change month (e.g. go from July to June) and, more generally, to do so for any selected period type.
 
-## Problema architetturale da risolvere
+## Architectural problem to solve
 
-`referenceDate` oggi serve due scopi diversi dentro `computeKpis` e `computeCategoryBreakdown` (`lib/calc/expenses.ts`):
+Today `referenceDate` serves two different purposes inside `computeKpis` and `computeCategoryBreakdown` (`lib/calc/expenses.ts`):
 
-1. **Quale periodo mostrare** — input di `getPeriodRange(period, referenceDate)`.
-2. **"Oggi", per il taglio giorni-trascorsi** — dentro `computeKpis`, `elapsedRange.to = min(range.to, referenceDate-come-oggi)`.
+1. **Which period to show** — input of `getPeriodRange(period, referenceDate)`.
+2. **"Today", for the elapsed-days cut-off** — inside `computeKpis`, `elapsedRange.to = min(range.to, referenceDate-as-today)`.
 
-Se `referenceDate` diventa navigabile e resta l'unico parametro, un mese passato calcolerebbe "giorni trascorsi"/"media giornaliera" come se quel mese fosse ancora in corso fino al giorno-del-mese corrente, invece di considerarlo interamente concluso. Dato sbagliato in un'app finanziaria.
+If `referenceDate` becomes navigable and stays the only parameter, a past month would compute "elapsed days"/"daily average" as if that month were still in progress up to the current day of the month, instead of treating it as fully concluded. Wrong data in a finance app.
 
-**Fix**: separare i due ruoli in due parametri distinti passati alle funzioni di calcolo:
-- `referenceDate` — il periodo che l'utente sta guardando (naviga avanti/indietro)
-- `today` — `new Date()` reale, sempre, usato solo per il taglio giorni-trascorsi
+**Fix**: separate the two roles into two distinct parameters passed to the calculation functions:
+- `referenceDate` — the period the user is looking at (navigates back/forward)
+- `today` — the real `new Date()`, always, used only for the elapsed-days cut-off
 
-Le funzioni `computeKpis` e `computeCategoryBreakdown` in `lib/calc/expenses.ts` cambiano firma per accettare `today` come parametro esplicito separato (non più dedotto da `referenceDate`). `compute6MonthTrend` resta con un solo parametro: l'andamento 6 mesi segue la vista corrente (se navighi a Marzo, mostra gli ultimi 6 mesi fino a Marzo), non serve distinguerlo da "oggi".
+The functions `computeKpis` and `computeCategoryBreakdown` in `lib/calc/expenses.ts` change signature to accept `today` as a separate explicit parameter (no longer deduced from `referenceDate`). `compute6MonthTrend` keeps a single parameter: the 6-month trend follows the current view (if you navigate to March, it shows the last 6 months up to March), there is no need to distinguish it from "today".
 
-## Nuove funzioni pure (`lib/calc/expenses.ts`)
+## New pure functions (`lib/calc/expenses.ts`)
 
 ### `shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, direction: 1 | -1): Date`
 
-Sposta `referenceDate` di un'unità di periodo:
-- `settimana`: ±7 giorni
-- `mese`: ±1 mese
-- `3mesi`: ±3 mesi
-- `anno`: ±1 anno
+Shifts `referenceDate` by one period unit:
+- `settimana`: ±7 days
+- `mese`: ±1 month
+- `3mesi`: ±3 months
+- `anno`: ±1 year
 
-Riusa gli helper interni già esistenti (`addDays`, `addMonths`) con lo stesso pattern di `getPreviousPeriodRange`.
+Reuses the existing internal helpers (`addDays`, `addMonths`) with the same pattern as `getPreviousPeriodRange`.
 
-### Blocco navigazione futura
+### Blocking future navigation
 
-Nessuna nuova funzione dedicata: il componente calcola `getPeriodRange(period, referenceDate).to >= startOfDay(today reale)` per disabilitare il pulsante "next" (periodo corrente o oltre = non si va oltre). `startOfDay` va esportata da `lib/calc/expenses.ts` (oggi è locale al modulo) oppure replicata nel componente — si esporta per evitare duplicazione.
+No new dedicated function: the component computes `getPeriodRange(period, referenceDate).to >= startOfDay(real today)` to disable the "next" button (current period or beyond = you cannot go further). `startOfDay` must be exported from `lib/calc/expenses.ts` (today it is local to the module) or replicated in the component — it is exported to avoid duplication.
 
-### Etichetta periodo
+### Period label
 
-Nuova funzione `formatPeriodLabel(period: ExpensePeriod, range: DateRange): string`, formattazione in italiano:
-- `mese`: `"Luglio 2026"` (nome mese esteso + anno)
-- `settimana`: `"21–27 lug"` (stesso anno) o `"28 dic – 3 gen"` (a cavallo d'anno, mostra entrambi gli anni se diversi: `"28 dic 2026 – 3 gen 2027"`)
-- `3mesi`: `"Mag – Lug 2026"` (mese abbreviato inizio – mese abbreviato fine + anno fine; se a cavallo d'anno mostra entrambi gli anni)
+New function `formatPeriodLabel(period: ExpensePeriod, range: DateRange): string`, Italian formatting:
+- `mese`: `"Luglio 2026"` (full month name + year)
+- `settimana`: `"21–27 lug"` (same year) or `"28 dic – 3 gen"` (across years, shows both years if different: `"28 dic 2026 – 3 gen 2027"`)
+- `3mesi`: `"Mag – Lug 2026"` (abbreviated start month – abbreviated end month + end year; if across years shows both years)
 - `anno`: `"2026"`
 
-Usa `Intl.DateTimeFormat("it-IT", ...)` per i nomi mese, coerente col resto del codice (`app/(app)/spese/page.tsx` già usa `Intl.DateTimeFormat("it-IT", ...)`).
+Uses `Intl.DateTimeFormat("it-IT", ...)` for the month names, consistent with the rest of the code (`app/(app)/spese/page.tsx` already uses `Intl.DateTimeFormat("it-IT", ...)`).
 
-Questa label sostituisce l'attuale sottotitolo range-date sotto il titolo "Spese" in `page.tsx` (righe 76-79) — non coesistono due rappresentazioni testuali dello stesso range.
+This label replaces the current date-range subtitle under the "Spese" title in `page.tsx` (lines 76-79) — two textual representations of the same range do not coexist.
 
-## Nuovo componente: `ExpensesReferenceNav`
+## New component: `ExpensesReferenceNav`
 
 `components/domain/expenses/expenses-reference-nav.tsx`. Props:
 
@@ -61,35 +61,35 @@ export interface ExpensesReferenceNavProps {
 }
 ```
 
-Rende: `‹ [label cliccabile] ›`. Le frecce chiamano `onChange(shiftReferenceDate(period, referenceDate, ±1))`. La freccia "next" è disabilitata secondo la regola di blocco futuro sopra.
+Renders: `‹ [clickable label] ›`. The arrows call `onChange(shiftReferenceDate(period, referenceDate, ±1))`. The "next" arrow is disabled according to the future-blocking rule above.
 
-Click sulla label apre un popover (nuovo primitive shadcn `components/ui/popover.tsx`, da aggiungere con `pnpm dlx shadcn@latest add popover`) con:
-- frecce `‹ 2026 ›` per cambiare anno (anno futuro disabilitato)
-- griglia 3×4 dei 12 mesi abbreviati (stessi label di `MONTH_LABELS`, che va esportata da `lib/calc/expenses.ts`), mese futuro (rispetto a oggi reale) disabilitato
+Clicking the label opens a popover (new shadcn primitive `components/ui/popover.tsx`, to be added with `pnpm dlx shadcn@latest add popover`) with:
+- `‹ 2026 ›` arrows to change the year (future year disabled)
+- a 3×4 grid of the 12 abbreviated months (the same labels as `MONTH_LABELS`, which must be exported from `lib/calc/expenses.ts`), future months (relative to the real today) disabled
 
-Selezionare un mese chiama `onChange(new Date(year, month, 1))` — il periodo attivo (Settimana/Mese/3 mesi/Anno) si ricalcola sopra quella nuova data tramite `getPeriodRange`, invariato.
+Selecting a month calls `onChange(new Date(year, month, 1))` — the active period (Week/Month/3 months/Year) is recomputed on that new date through `getPeriodRange`, unchanged.
 
-Il componente vive in `components/domain/expenses/index.ts` (barrel) accanto agli altri.
+The component lives in `components/domain/expenses/index.ts` (barrel) next to the others.
 
-## Modifiche a `page.tsx`
+## Changes to `page.tsx`
 
-- `referenceDate` da `useMemo` costante a `useState<Date>(() => new Date())`.
-- Aggiunto `const today = React.useMemo(() => new Date(), [])` per il parametro "oggi reale" passato a `computeKpis`/`computeCategoryBreakdown` (via `ExpensesKpiCards` e il calcolo category breakdown inline).
-- Sottotitolo sotto "Spese" sostituito da `formatPeriodLabel(period, range)` dentro `ExpensesReferenceNav`, che si posiziona nell'header accanto a `ExpensesPeriodSelector`.
-- `fetchWindow(referenceDate)` resta identica nella firma — si sposta automaticamente seguendo `referenceDate` navigato, nessuna modifica necessaria.
+- `referenceDate` goes from a constant `useMemo` to `useState<Date>(() => new Date())`.
+- Added `const today = React.useMemo(() => new Date(), [])` for the "real today" parameter passed to `computeKpis`/`computeCategoryBreakdown` (via `ExpensesKpiCards` and the inline category breakdown calculation).
+- The subtitle under "Spese" is replaced by `formatPeriodLabel(period, range)` inside `ExpensesReferenceNav`, which sits in the header next to `ExpensesPeriodSelector`.
+- `fetchWindow(referenceDate)` keeps the same signature — it moves automatically following the navigated `referenceDate`, no change needed.
 
-## Modifiche a `ExpensesKpiCards`
+## Changes to `ExpensesKpiCards`
 
-Aggiunge prop `today: Date` (nuovo, richiesto, non opzionale — obbliga il chiamante a passarlo esplicitamente invece di un default silenzioso che potrebbe nascondere l'errore concettuale corretto in questo design). `computeKpis(transactions, budgets, period, referenceDate, today)`.
+Adds the prop `today: Date` (new, required, not optional — it forces the caller to pass it explicitly instead of a silent default that could hide the conceptual error fixed in this design). `computeKpis(transactions, budgets, period, referenceDate, today)`.
 
-## Cosa NON cambia
+## What does NOT change
 
-- `ExpensesPeriodSelector` (pillole Settimana/Mese/3 mesi/Anno): invariato.
-- `CategoryBreakdownDonut`, `ExpenseTrendChart`, `TransactionRow`, `AddTransactionForm`: invariati (ricevono già dati calcolati, non conoscono `referenceDate` direttamente se non tramite le funzioni di calcolo già navigate).
-- Nessuna modifica al modello dati/API — tutto lato client, la finestra di fetch già copre l'intervallo necessario seguendo `referenceDate`.
+- `ExpensesPeriodSelector` (Settimana/Mese/3 mesi/Anno pills): unchanged.
+- `CategoryBreakdownDonut`, `ExpenseTrendChart`, `TransactionRow`, `AddTransactionForm`: unchanged (they already receive computed data and know `referenceDate` only through the already navigated calculation functions).
+- No change to the data model/API — everything is client-side, the fetch window already covers the needed range by following `referenceDate`.
 
 ## Testing
 
-- `lib/calc/expenses.test.ts`: nuovi test per `shiftReferenceDate` (tutti e 4 i tipi periodo, incluso cambio anno per `mese`/`anno` a cavallo confine) e `formatPeriodLabel` (tutti e 4 i tipi, incluso caso a cavallo d'anno per `settimana`/`3mesi`).
-- `computeKpis`/`computeCategoryBreakdown`: aggiornare i test esistenti alla nuova firma con `today` esplicito; aggiungere un caso con `referenceDate` nel passato (mese concluso) che verifica `giorniRimasti = 0` e `mediaGiornaliera` calcolata sull'intero mese, non troncata a "oggi".
-- Nessun test browser automatizzato disponibile in questo ambiente (nessun Postgres/Redis) — verifica manuale utente richiesta dopo l'implementazione, come per le feature precedenti di Spese.
+- `lib/calc/expenses.test.ts`: new tests for `shiftReferenceDate` (all 4 period types, including year change for `mese`/`anno` across the boundary) and `formatPeriodLabel` (all 4 types, including the across-years case for `settimana`/`3mesi`).
+- `computeKpis`/`computeCategoryBreakdown`: update the existing tests to the new signature with explicit `today`; add a case with `referenceDate` in the past (concluded month) that checks `giorniRimasti = 0` and `mediaGiornaliera` computed over the whole month, not truncated to "today".
+- No automated browser tests available in this environment (no Postgres/Redis) — manual verification by the user required after implementation, as for the previous Spese features.

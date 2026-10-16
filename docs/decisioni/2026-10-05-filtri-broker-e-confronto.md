@@ -1,10 +1,10 @@
-# Filtri broker e confronto dei rendimenti
+# Broker filters and return comparison
 
-Data: 2026-10-05
+Date: 2026-10-05
 
-Richiesti sia inclusione/esclusione dei broker dal portafoglio combinato sia sovrapposizione dei rendimenti. Filtro temporaneo condiviso tra le schede Investimenti: non elimina import e non cambia patrimonio generale, cassa o sidebar; si azzera ricaricando/uscendo dalla sezione. Origine ricavata dalla chiave del broker anche nello stesso portafoglio; righe legacy dedicate riconosciute, altre manuali/import precedenti separate. Confronto in percentuale TWR con date reali e linea combinata ricalcolata, mai somma dei rendimenti. Eventi Umami per selezione e overlay, nessuna scrittura finanziaria o migration.
+Both inclusion/exclusion of brokers from the combined portfolio and overlay of returns were requested. Temporary filter shared across the Investimenti (Investments) tabs: it does not delete imports and does not change overall net worth, cash or sidebar; it resets on reload/leaving the section. Origin derived from the broker key even within the same portfolio; dedicated legacy rows recognized, other manual/earlier imports kept separate. Comparison as TWR percentage with real dates and a recalculated combined line, never a sum of returns. Umami events for selection and overlay, no financial writes or migration.
 
-Il Portafoglio mostra anche titoli + liquidità dei conti broker collegati, inclusi saldi negativi e conti senza operazioni. I collegamenti vengono deduplicati per conto e filtrati per broker.
-La liquidità resta già conteggiata nel patrimonio generale: nessuna modifica ai calcoli globali. Grafici e rendimenti restano dei soli titoli; il cash riporta la data dell’ultimo rendiconto, senza simulare aggiornamenti in tempo reale.
+The Portfolio also shows securities + cash of the linked broker accounts, including negative balances and accounts without operations. Links are deduplicated per account and filtered by broker.
+Cash is already counted in overall net worth: no change to the global calculations. Charts and returns remain securities-only; the cash shows the date of the latest statement, without simulating real-time updates.
 
-Aggiornamento 2026-10-06: su richiesta dell’utente il cash si attiva con «Includi liquidità» nella card Portafoglio esistente, senza riquadro aggiuntivo. Attivo inizialmente; spento mostra solo titoli, senza cambiare saldi salvati o grafici.
+Update 2026-10-06: at the user's request, cash is enabled with «Includi liquidità» ("Include cash") in the existing Portfolio card, without an extra panel. On by default; when off it shows securities only, without changing saved balances or charts.

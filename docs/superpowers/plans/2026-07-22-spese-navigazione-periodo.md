@@ -1,38 +1,38 @@
-# Navigazione periodo in Spese — Implementation Plan
+# Period navigation in Spese — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rendere navigabile il periodo mostrato nella schermata Spese (frecce prev/next + menu jump-to mese/anno), per tutti e 4 i tipi di periodo (Settimana/Mese/3 mesi/Anno), senza rompere il calcolo dei KPI per periodi passati.
+**Goal:** Make the period shown in the Spese ("Expenses") screen navigable (prev/next arrows + jump-to month/year menu), for all 4 period types (Settimana/Mese/3 mesi/Anno — week/month/3 months/year), without breaking the KPI calculation for past periods.
 
-**Architecture:** `referenceDate` (quale periodo si guarda) e `today` (data reale, per il calcolo giorni-trascorsi) diventano due parametri distinti nelle funzioni pure di `lib/calc/expenses.ts`. Un nuovo componente `ExpensesReferenceNav` gestisce navigazione (frecce) e jump diretto (popover con griglia mese/anno), sostituendo il sottotitolo statico in `app/(app)/spese/page.tsx`.
+**Architecture:** `referenceDate` (which period is being viewed) and `today` (the real date, for the elapsed-days calculation) become two distinct parameters in the pure functions of `lib/calc/expenses.ts`. A new `ExpensesReferenceNav` component handles navigation (arrows) and direct jump (popover with a month/year grid), replacing the static subtitle in `app/(app)/spese/page.tsx`.
 
 **Tech Stack:** Next.js App Router, TypeScript, vitest, shadcn/ui (style `base-nova`, `@base-ui/react`), Tailwind CSS v4.
 
 ## Global Constraints
 
-- Tutte le stringhe visibili in italiano.
-- Nessun colore/raggio hardcoded: solo classi Tailwind sui token del tema (`text-muted-foreground`, `bg-muted`, `text-foreground`, ecc.).
-- Ogni funzione pubblica in `lib/calc/expenses.ts` ha un JSDoc minimo (una riga).
-- Componenti shadcn si aggiungono con `pnpm dlx shadcn@latest add <nome>` e non si modificano a mano (salvo adattamento token, non necessario qui).
-- Riferimento spec: `docs/superpowers/specs/2026-07-22-spese-navigazione-periodo-design.md`.
+- All visible strings in Italian.
+- No hardcoded colors/radii: only Tailwind classes on theme tokens (`text-muted-foreground`, `bg-muted`, `text-foreground`, etc.).
+- Every public function in `lib/calc/expenses.ts` has a minimal JSDoc (one line).
+- shadcn components are added with `pnpm dlx shadcn@latest add <nome>` and are not modified by hand (except for token adaptation, not needed here).
+- Spec reference: `docs/superpowers/specs/2026-07-22-spese-navigazione-periodo-design.md`.
 
 ---
 
-### Task 1: `shiftReferenceDate` + export helper esistenti
+### Task 1: `shiftReferenceDate` + export existing helpers
 
 **Files:**
-- Modify: `lib/calc/expenses.ts:21-23` (esporta `startOfDay`), `lib/calc/expenses.ts:238` (esporta `MONTH_LABELS`), aggiunge `shiftReferenceDate` dopo `getPreviousPeriodRange` (dopo la riga 85)
+- Modify: `lib/calc/expenses.ts:21-23` (export `startOfDay`), `lib/calc/expenses.ts:238` (export `MONTH_LABELS`), add `shiftReferenceDate` after `getPreviousPeriodRange` (after line 85)
 - Test: `lib/calc/expenses.test.ts`
 
 **Interfaces:**
-- Produce: `export function startOfDay(date: Date): Date`, `export const MONTH_LABELS: string[]`, `export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, direction: 1 | -1): Date` — usati dai Task 2, 4, 5.
+- Produces: `export function startOfDay(date: Date): Date`, `export const MONTH_LABELS: string[]`, `export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, direction: 1 | -1): Date` — used by Tasks 2, 4, 5.
 
-- [ ] **Step 1: Scrivi i test falliti**
+- [ ] **Step 1: Write the failing tests**
 
-Aggiungi in fondo a `lib/calc/expenses.test.ts` (dopo il blocco `describe("compute6MonthTrend", ...)`, prima della chiusura del file) e aggiorna l'import in cima al file aggiungendo `shiftReferenceDate`:
+Add at the bottom of `lib/calc/expenses.test.ts` (after the `describe("compute6MonthTrend", ...)` block, before the end of the file) and update the import at the top of the file adding `shiftReferenceDate`:
 
 ```ts
-// nell'import esistente in cima al file, aggiungi shiftReferenceDate all'elenco:
+// in the existing import at the top of the file, add shiftReferenceDate to the list:
 import {
   computeKpis,
   computeSummary,
@@ -58,13 +58,13 @@ describe("shiftReferenceDate", () => {
   });
 
   it("mese sposta di un mese avanti e indietro, attraversando il cambio anno", () => {
-    const referenceDate = new Date(2026, 0, 15); // gennaio 2026
+    const referenceDate = new Date(2026, 0, 15); // January 2026
     expect(shiftReferenceDate("mese", referenceDate, 1)).toEqual(new Date(2026, 1, 15));
     expect(shiftReferenceDate("mese", referenceDate, -1)).toEqual(new Date(2025, 11, 15));
   });
 
   it("3mesi sposta di 3 mesi avanti e indietro", () => {
-    const referenceDate = new Date(2026, 5, 15); // giugno 2026
+    const referenceDate = new Date(2026, 5, 15); // June 2026
     expect(shiftReferenceDate("3mesi", referenceDate, 1)).toEqual(new Date(2026, 8, 15));
     expect(shiftReferenceDate("3mesi", referenceDate, -1)).toEqual(new Date(2026, 2, 15));
   });
@@ -77,34 +77,34 @@ describe("shiftReferenceDate", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: FAIL — `shiftReferenceDate` non esportata da `./expenses`.
+Expected: FAIL — `shiftReferenceDate` not exported from `./expenses`.
 
-- [ ] **Step 3: Implementa**
+- [ ] **Step 3: Implement**
 
-In `lib/calc/expenses.ts`, cambia (riga 21):
+In `lib/calc/expenses.ts`, change (line 21):
 ```ts
 function startOfDay(date: Date): Date {
 ```
-in:
+to:
 ```ts
 export function startOfDay(date: Date): Date {
 ```
 
-Cambia (riga 238):
+Change (line 238):
 ```ts
 const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
 ```
-in:
+to:
 ```ts
 export const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
 ```
 
-Aggiungi subito dopo la funzione `getPreviousPeriodRange` (dopo la riga 85, prima di `function isWithinRange`):
+Add right after the `getPreviousPeriodRange` function (after line 85, before `function isWithinRange`):
 ```ts
-/** Sposta referenceDate di un'unità di periodo (avanti se direction=1, indietro se direction=-1). */
+/** Shifts referenceDate by one period unit (forward if direction=1, backward if direction=-1). */
 export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, direction: 1 | -1): Date {
   switch (period) {
     case "settimana":
@@ -119,10 +119,10 @@ export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, d
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: PASS, tutti i test incluso il nuovo blocco `shiftReferenceDate`.
+Expected: PASS, all tests including the new `shiftReferenceDate` block.
 
 - [ ] **Step 5: Commit**
 
@@ -136,16 +136,16 @@ git commit -m "feat: aggiunge shiftReferenceDate per navigare i periodi in Spese
 ### Task 2: `formatPeriodLabel`
 
 **Files:**
-- Modify: `lib/calc/expenses.ts` (aggiunge funzione dopo `shiftReferenceDate`)
+- Modify: `lib/calc/expenses.ts` (adds a function after `shiftReferenceDate`)
 - Test: `lib/calc/expenses.test.ts`
 
 **Interfaces:**
-- Consuma: `DateRange`, `ExpensePeriod` (già esistenti in `lib/calc/expenses.ts`)
-- Produce: `export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): string` — usata dal Task 4 (`ExpensesReferenceNav`) e da `page.tsx`.
+- Consumes: `DateRange`, `ExpensePeriod` (already existing in `lib/calc/expenses.ts`)
+- Produces: `export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): string` — used by Task 4 (`ExpensesReferenceNav`) and by `page.tsx`.
 
-- [ ] **Step 1: Scrivi i test falliti**
+- [ ] **Step 1: Write the failing tests**
 
-Aggiungi `formatPeriodLabel` all'import in cima a `lib/calc/expenses.test.ts` (stesso import modificato al Task 1), poi aggiungi in fondo al file:
+Add `formatPeriodLabel` to the import at the top of `lib/calc/expenses.test.ts` (the same import modified in Task 1), then add at the bottom of the file:
 
 ```ts
 describe("formatPeriodLabel", () => {
@@ -181,21 +181,21 @@ describe("formatPeriodLabel", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: FAIL — `formatPeriodLabel` non esportata da `./expenses`.
+Expected: FAIL — `formatPeriodLabel` not exported from `./expenses`.
 
-- [ ] **Step 3: Implementa**
+- [ ] **Step 3: Implement**
 
-Aggiungi in `lib/calc/expenses.ts`, subito dopo `shiftReferenceDate`:
+Add to `lib/calc/expenses.ts`, right after `shiftReferenceDate`:
 
 ```ts
 function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/** Etichetta leggibile del periodo mostrato in Spese, formattata secondo il tipo (mese/settimana/3mesi/anno). */
+/** Readable label of the period shown in Spese, formatted according to the type (mese/settimana/3mesi/anno). */
 export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): string {
   const sameYear = range.from.getFullYear() === range.to.getFullYear();
   switch (period) {
@@ -226,10 +226,10 @@ export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): stri
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: PASS, tutti i test incluso il nuovo blocco `formatPeriodLabel`.
+Expected: PASS, all tests including the new `formatPeriodLabel` block.
 
 - [ ] **Step 5: Commit**
 
@@ -240,57 +240,57 @@ git commit -m "feat: aggiunge formatPeriodLabel per l'etichetta periodo in Spese
 
 ---
 
-### Task 3: separare `referenceDate` (vista) da `today` (oggi reale) in `computeKpis`/`computeCategoryBreakdown`/`computeFixedVsVariable`
+### Task 3: separate `referenceDate` (view) from `today` (real today) in `computeKpis`/`computeCategoryBreakdown`/`computeFixedVsVariable`
 
 **Files:**
 - Modify: `lib/calc/expenses.ts:148-173` (`computeKpis`), `lib/calc/expenses.ts:185-207` (`computeCategoryBreakdown`), `lib/calc/expenses.ts:215-229` (`computeFixedVsVariable`)
-- Modify: `components/domain/expenses/expenses-kpi-cards.tsx` (aggiunge prop `today`)
-- Modify: `app/(app)/spese/page.tsx` (aggiunge `today`, aggiorna le chiamate)
+- Modify: `components/domain/expenses/expenses-kpi-cards.tsx` (adds the `today` prop)
+- Modify: `app/(app)/spese/page.tsx` (adds `today`, updates the calls)
 - Test: `lib/calc/expenses.test.ts`
 
 **Interfaces:**
-- Consuma: `startOfDay` (esportata al Task 1)
-- Produce: nuove firme `computeKpis(transactions, budgets, period, referenceDate, today)`, `computeCategoryBreakdown(transactions, categories, period, referenceDate, today)`, `computeFixedVsVariable(transactions, categories, period, referenceDate, today)` — usate da Task 4/5 (indirettamente, tramite `page.tsx`) e da qualunque chiamante futuro.
+- Consumes: `startOfDay` (exported in Task 1)
+- Produces: new signatures `computeKpis(transactions, budgets, period, referenceDate, today)`, `computeCategoryBreakdown(transactions, categories, period, referenceDate, today)`, `computeFixedVsVariable(transactions, categories, period, referenceDate, today)` — used by Tasks 4/5 (indirectly, via `page.tsx`) and by any future caller.
 
-- [ ] **Step 1: Aggiorna i test esistenti (li rendi falliti dalla firma nuova) e aggiungi il caso "periodo passato"**
+- [ ] **Step 1: Update the existing tests (the new signature makes them fail) and add the "past period" case**
 
-In `lib/calc/expenses.test.ts`, sostituisci la chiamata nel blocco `describe("computeKpis", ...)`:
+In `lib/calc/expenses.test.ts`, replace the call in the `describe("computeKpis", ...)` block:
 
 ```ts
     const kpis = computeKpis(transactions, budgets, "mese", referenceDate);
 ```
-con:
+with:
 ```ts
     const kpis = computeKpis(transactions, budgets, "mese", referenceDate, referenceDate);
 ```
 
-Sostituisci la chiamata nel blocco `describe("computeCategoryBreakdown", ...)`:
+Replace the call in the `describe("computeCategoryBreakdown", ...)` block:
 ```ts
     const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15));
 ```
-con:
+with:
 ```ts
     const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
 ```
 
-Sostituisci la chiamata nel blocco `describe("computeFixedVsVariable", ...)`:
+Replace the call in the `describe("computeFixedVsVariable", ...)` block:
 ```ts
     const result = computeFixedVsVariable(transactions, categories, "mese", new Date(2026, 1, 15));
 ```
-con:
+with:
 ```ts
     const result = computeFixedVsVariable(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
 ```
 
-Aggiungi un nuovo test nel blocco `describe("computeKpis", ...)`, dopo il test esistente:
+Add a new test in the `describe("computeKpis", ...)` block, after the existing test:
 
 ```ts
   it("un periodo passato (mese concluso) conta tutti i giorni come trascorsi, indipendentemente da 'oggi'", () => {
-    const referenceDate = new Date(2026, 1, 15); // vista: metà febbraio 2026
-    const today = new Date(2026, 3, 10); // oggi reale: aprile 2026, febbraio è già concluso
+    const referenceDate = new Date(2026, 1, 15); // view: mid-February 2026
+    const today = new Date(2026, 3, 10); // real today: April 2026, February is already over
     const transactions = [
       makeTransaction({ date: "2026-02-05", amount: "-100.00" }),
-      makeTransaction({ date: "2026-02-28", amount: "-180.00" }), // fine mese: futuro rispetto a referenceDate, passato rispetto a today
+      makeTransaction({ date: "2026-02-28", amount: "-180.00" }), // end of month: future relative to referenceDate, past relative to today
     ];
     const budgets = [makeBudget({ monthlyAmount: "280.00" })];
 
@@ -302,22 +302,22 @@ Aggiungi un nuovo test nel blocco `describe("computeKpis", ...)`, dopo il test e
   });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: FAIL — troppi argomenti passati a funzioni con firma vecchia (errore TypeScript) o, se TS non blocca subito vitest, il nuovo test sul periodo passato fallisce perché `computeKpis` interpreta ancora `referenceDate` come "oggi".
+Expected: FAIL — too many arguments passed to functions with the old signature (TypeScript error) or, if TS does not block vitest right away, the new past-period test fails because `computeKpis` still interprets `referenceDate` as "today".
 
-- [ ] **Step 3: Implementa**
+- [ ] **Step 3: Implement**
 
-In `lib/calc/expenses.ts`, sostituisci l'intera funzione `computeKpis` (righe 148-173) con:
+In `lib/calc/expenses.ts`, replace the whole `computeKpis` function (lines 148-173) with:
 
 ```ts
 /**
- * KPI principali di Spese per il periodo selezionato. "Speso" e "Media giornaliera" contano solo i
- * giorni del periodo già trascorsi rispetto a `today` (la data reale corrente); "Budget rimanente"/
- * "giorni rimasti" guardano invece all'intero periodo calendariale (anche i giorni futuri).
- * `referenceDate` è il periodo che si sta guardando (può essere passato o presente, mai futuro);
- * `today` è sempre la data reale, indipendente da quale periodo si sta navigando.
+ * Main Spese KPIs for the selected period. "Speso" and "Media giornaliera" count only the
+ * days of the period already elapsed relative to `today` (the current real date); "Budget rimanente"/
+ * "giorni rimasti" instead look at the whole calendar period (future days included).
+ * `referenceDate` is the period being viewed (can be past or present, never future);
+ * `today` is always the real date, independent of which period is being navigated.
  */
 export function computeKpis(
   transactions: Transaction[],
@@ -352,10 +352,10 @@ export function computeKpis(
 }
 ```
 
-Sostituisci l'intera funzione `computeCategoryBreakdown` (righe 185-207) con:
+Replace the whole `computeCategoryBreakdown` function (lines 185-207) with:
 
 ```ts
-/** Spesa effettiva per categoria nel periodo selezionato, una riga per ogni categoria dell'utente. */
+/** Actual expense per category in the selected period, one row for each of the user's categories. */
 export function computeCategoryBreakdown(
   transactions: Transaction[],
   categories: Category[],
@@ -386,10 +386,10 @@ export function computeCategoryBreakdown(
 }
 ```
 
-Sostituisci l'intera funzione `computeFixedVsVariable` (righe 215-229) con:
+Replace the whole `computeFixedVsVariable` function (lines 215-229) with:
 
 ```ts
-/** Somma spesa effettiva del periodo, raggruppata per tipo categoria (fissa/variabile). */
+/** Sum of the period's actual expense, grouped by category type (fixed/variable). */
 export function computeFixedVsVariable(
   transactions: Transaction[],
   categories: Category[],
@@ -408,10 +408,10 @@ export function computeFixedVsVariable(
 }
 ```
 
-Ora aggiorna `components/domain/expenses/expenses-kpi-cards.tsx`: sostituisci l'intero file con:
+Now update `components/domain/expenses/expenses-kpi-cards.tsx`: replace the whole file with:
 
 ```tsx
-/** Riga di KPI per la schermata Spese: Speso nel periodo, Budget rimanente, Media giornaliera. */
+/** KPI row for the Spese screen: Spent in the period, Remaining budget, Daily average. */
 
 import { StatCard } from "@/components/domain/stat-card";
 import { computeKpis, type ExpensePeriod } from "@/lib/calc/expenses";
@@ -423,9 +423,9 @@ export interface ExpensesKpiCardsProps {
   budgets: Budget[];
   period: ExpensePeriod;
   currency: string;
-  /** Periodo che l'utente sta guardando (può essere passato o presente). */
+  /** Period the user is viewing (can be past or present). */
   referenceDate: Date;
-  /** Data reale corrente, per il taglio giorni-trascorsi — indipendente da referenceDate. */
+  /** Current real date, for the elapsed-days cut — independent of referenceDate. */
   today: Date;
 }
 
@@ -463,23 +463,23 @@ export function ExpensesKpiCards({
 }
 ```
 
-(Nota: `referenceDate` era opzionale con default `new Date()` — ora è obbligatoria, coerente con `today` obbligatoria: nessun default silenzioso su un valore concettualmente critico.)
+(Note: `referenceDate` was optional with a `new Date()` default — now it is required, consistent with the required `today`: no silent default on a conceptually critical value.)
 
-Infine, in `app/(app)/spese/page.tsx`:
+Finally, in `app/(app)/spese/page.tsx`:
 
-Sostituisci (riga 43):
+Replace (line 43):
 ```tsx
   const referenceDate = React.useMemo(() => new Date(), []);
 ```
-con:
+with:
 ```tsx
   const referenceDate = React.useMemo(() => new Date(), []);
   const today = React.useMemo(() => new Date(), []);
 ```
 
-(la conversione di `referenceDate` a stato navigabile avviene nel Task 4; qui resta costante ma `today` viene introdotta come concetto separato, già collegata ai chiamanti)
+(converting `referenceDate` into navigable state happens in Task 4; here it stays constant, but `today` is introduced as a separate concept, already wired to the callers)
 
-Sostituisci (righe 131-136):
+Replace (lines 131-136):
 ```tsx
           <CategoryBreakdownDonut
             categoryAmounts={computeCategoryBreakdown(safeTransactions, safeCategories, period, referenceDate)}
@@ -488,7 +488,7 @@ Sostituisci (righe 131-136):
             currency={currency}
           />
 ```
-con:
+with:
 ```tsx
           <CategoryBreakdownDonut
             categoryAmounts={computeCategoryBreakdown(safeTransactions, safeCategories, period, referenceDate, today)}
@@ -498,7 +498,7 @@ con:
           />
 ```
 
-Sostituisci (righe 123-129):
+Replace (lines 123-129):
 ```tsx
           <ExpensesKpiCards
             transactions={safeTransactions}
@@ -508,7 +508,7 @@ Sostituisci (righe 123-129):
             referenceDate={referenceDate}
           />
 ```
-con:
+with:
 ```tsx
           <ExpensesKpiCards
             transactions={safeTransactions}
@@ -520,13 +520,13 @@ con:
           />
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: PASS, tutti i test incluso il nuovo test "periodo passato".
+Expected: PASS, all tests including the new "past period" test.
 
-Run anche: `pnpm exec tsc --noEmit`
-Expected: nessun errore di tipo (nessun chiamante rimasto con la firma vecchia).
+Also run: `pnpm exec tsc --noEmit`
+Expected: no type errors (no caller left with the old signature).
 
 - [ ] **Step 5: Commit**
 
@@ -537,26 +537,26 @@ git commit -m "fix: separa referenceDate (vista) da today (oggi reale) nei calco
 
 ---
 
-### Task 4: `ExpensesReferenceNav` (frecce prev/next) e navigazione in `page.tsx`
+### Task 4: `ExpensesReferenceNav` (prev/next arrows) and navigation in `page.tsx`
 
 **Files:**
 - Create: `components/domain/expenses/expenses-reference-nav.tsx`
-- Test: `components/domain/expenses/expenses-reference-nav.tsx` non ha test dedicati (componente UI, non logica pura) — verificato tramite `pnpm exec tsc --noEmit` e build; la logica pura sottostante (`shiftReferenceDate`, `formatPeriodLabel`) è già testata nei Task 1-2
+- Test: `components/domain/expenses/expenses-reference-nav.tsx` has no dedicated tests (UI component, not pure logic) — verified via `pnpm exec tsc --noEmit` and build; the underlying pure logic (`shiftReferenceDate`, `formatPeriodLabel`) is already tested in Tasks 1-2
 - Modify: `components/domain/expenses/index.ts` (barrel)
-- Modify: `app/(app)/spese/page.tsx` (referenceDate diventa stato, sostituisce il sottotitolo)
+- Modify: `app/(app)/spese/page.tsx` (referenceDate becomes state, replaces the subtitle)
 
 **Interfaces:**
-- Consuma: `formatPeriodLabel`, `getPeriodRange`, `shiftReferenceDate`, `startOfDay` (Task 1/2), `ExpensePeriod`
-- Produce: `ExpensesReferenceNav` con props `{ period: ExpensePeriod; referenceDate: Date; onChange: (newReferenceDate: Date) => void }` — esteso dal Task 5 con il popover, non cambia la firma.
+- Consumes: `formatPeriodLabel`, `getPeriodRange`, `shiftReferenceDate`, `startOfDay` (Task 1/2), `ExpensePeriod`
+- Produces: `ExpensesReferenceNav` with props `{ period: ExpensePeriod; referenceDate: Date; onChange: (newReferenceDate: Date) => void }` — extended by Task 5 with the popover, the signature does not change.
 
-- [ ] **Step 1: Crea il componente**
+- [ ] **Step 1: Create the component**
 
-Crea `components/domain/expenses/expenses-reference-nav.tsx`:
+Create `components/domain/expenses/expenses-reference-nav.tsx`:
 
 ```tsx
 "use client";
 
-/** Frecce prev/next per navigare il periodo mostrato in Spese, con l'etichetta del periodo attivo. */
+/** Prev/next arrows to navigate the period shown in Spese, with the label of the active period. */
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -609,23 +609,23 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange }: Expens
 }
 ```
 
-- [ ] **Step 2: Aggiungi al barrel**
+- [ ] **Step 2: Add to the barrel**
 
-In `components/domain/expenses/index.ts`, aggiungi dopo la riga `export type { ExpensesPeriodSelectorProps } from "./expenses-period-selector";`:
+In `components/domain/expenses/index.ts`, add after the line `export type { ExpensesPeriodSelectorProps } from "./expenses-period-selector";`:
 
 ```ts
 export { ExpensesReferenceNav } from "./expenses-reference-nav";
 export type { ExpensesReferenceNavProps } from "./expenses-reference-nav";
 ```
 
-- [ ] **Step 3: Verifica di compilazione**
+- [ ] **Step 3: Compile check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore (il componente non è ancora usato da nessuna pagina, ma deve compilare da solo).
+Expected: no errors (the component is not yet used by any page, but it must compile on its own).
 
 - [ ] **Step 4: Wire in `page.tsx`**
 
-In `app/(app)/spese/page.tsx`, aggiungi `ExpensesReferenceNav` all'import esistente da `@/components/domain/expenses` (ordine alfabetico):
+In `app/(app)/spese/page.tsx`, add `ExpensesReferenceNav` to the existing import from `@/components/domain/expenses` (alphabetical order):
 
 ```tsx
 import {
@@ -639,18 +639,18 @@ import {
 } from "@/components/domain/expenses";
 ```
 
-Sostituisci (dal Task 3):
+Replace (from Task 3):
 ```tsx
   const referenceDate = React.useMemo(() => new Date(), []);
   const today = React.useMemo(() => new Date(), []);
 ```
-con:
+with:
 ```tsx
   const [referenceDate, setReferenceDate] = React.useState<Date>(() => new Date());
   const today = React.useMemo(() => new Date(), []);
 ```
 
-Sostituisci il blocco titolo+sottotitolo:
+Replace the title+subtitle block:
 ```tsx
         <div>
           <h1 className="font-heading text-2xl font-medium text-foreground">Spese</h1>
@@ -660,7 +660,7 @@ Sostituisci il blocco titolo+sottotitolo:
           </p>
         </div>
 ```
-con:
+with:
 ```tsx
         <div>
           <h1 className="font-heading text-2xl font-medium text-foreground">Spese</h1>
@@ -668,13 +668,13 @@ con:
         </div>
 ```
 
-- [ ] **Step 5: Verifica di compilazione e build**
+- [ ] **Step 5: Compile and build check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 Run: `pnpm build`
-Expected: build completata senza errori.
+Expected: build completed without errors.
 
 - [ ] **Step 6: Commit**
 
@@ -685,33 +685,33 @@ git commit -m "feat: aggiunge navigazione prev/next del periodo in Spese"
 
 ---
 
-### Task 5: menu jump-to mese/anno (popover)
+### Task 5: jump-to month/year menu (popover)
 
 **Files:**
 - Create (via CLI): `components/ui/popover.tsx`
-- Modify: `components/domain/expenses/expenses-reference-nav.tsx` (sostituzione completa)
+- Modify: `components/domain/expenses/expenses-reference-nav.tsx` (full replacement)
 
 **Interfaces:**
-- Consuma: `MONTH_LABELS` (Task 1), primitive `Popover`/`PopoverTrigger`/`PopoverContent` generate dalla CLI shadcn
-- Produce: nessuna nuova interfaccia pubblica — `ExpensesReferenceNavProps` invariata rispetto al Task 4.
+- Consumes: `MONTH_LABELS` (Task 1), `Popover`/`PopoverTrigger`/`PopoverContent` primitives generated by the shadcn CLI
+- Produces: no new public interface — `ExpensesReferenceNavProps` unchanged from Task 4.
 
-- [ ] **Step 1: Aggiungi il primitive popover**
+- [ ] **Step 1: Add the popover primitive**
 
 Run: `pnpm dlx shadcn@latest add popover`
-Expected: crea `components/ui/popover.tsx`.
+Expected: creates `components/ui/popover.tsx`.
 
-Poi leggi il file generato (`components/ui/popover.tsx`) e conferma che esporta `Popover`, `PopoverTrigger`, `PopoverContent` (stesso pattern di `Dialog`/`DialogTrigger`/`DialogContent` in `components/ui/dialog.tsx`: `PopoverContent` include già `Portal`/`Positioner` internamente, quindi si usa direttamente senza wrapper aggiuntivi). Se i nomi generati differiscono, adatta gli import nello Step 2 di conseguenza.
+Then read the generated file (`components/ui/popover.tsx`) and confirm it exports `Popover`, `PopoverTrigger`, `PopoverContent` (same pattern as `Dialog`/`DialogTrigger`/`DialogContent` in `components/ui/dialog.tsx`: `PopoverContent` already includes `Portal`/`Positioner` internally, so it is used directly without extra wrappers). If the generated names differ, adapt the imports in Step 2 accordingly.
 
-- [ ] **Step 2: Sostituisci `expenses-reference-nav.tsx` con la versione che include il popover**
+- [ ] **Step 2: Replace `expenses-reference-nav.tsx` with the version that includes the popover**
 
-Sostituisci l'intero contenuto di `components/domain/expenses/expenses-reference-nav.tsx` con:
+Replace the whole content of `components/domain/expenses/expenses-reference-nav.tsx` with:
 
 ```tsx
 "use client";
 
 /**
- * Navigazione del periodo mostrato in Spese: frecce prev/next + click sull'etichetta per aprire
- * un menu di salto diretto a un mese/anno specifico (griglia mesi, anni futuri/mesi futuri disabilitati).
+ * Navigation of the period shown in Spese: prev/next arrows + click on the label to open
+ * a menu for jumping directly to a specific month/year (month grid, future years/months disabled).
  */
 
 import * as React from "react";
@@ -834,16 +834,16 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange }: Expens
 }
 ```
 
-- [ ] **Step 3: Verifica di compilazione e build**
+- [ ] **Step 3: Compile and build check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore. Se `PopoverTrigger`/`PopoverContent` non accettano `className`/`children` come scritto sopra, correggi in base alle props effettive generate da shadcn (verificate nello Step 1).
+Expected: no errors. If `PopoverTrigger`/`PopoverContent` do not accept `className`/`children` as written above, fix it based on the actual props generated by shadcn (checked in Step 1).
 
 Run: `pnpm build`
-Expected: build completata senza errori.
+Expected: build completed without errors.
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: PASS (nessuna funzione pura toccata in questo task).
+Expected: PASS (no pure function touched in this task).
 
 - [ ] **Step 4: Commit**
 
@@ -854,10 +854,10 @@ git commit -m "feat: aggiunge menu jump-to mese/anno alla navigazione periodo in
 
 ---
 
-## Verifica manuale (fuori scope dei task automatizzati)
+## Manual verification (outside the scope of the automated tasks)
 
-Nessun Postgres/Redis disponibile in questo ambiente per un browser reale (come per le feature precedenti di Spese). Dopo l'esecuzione dei 5 task, l'utente deve verificare manualmente:
-- Frecce prev/next cambiano il periodo mostrato per tutti e 4 i tipi (Settimana/Mese/3 mesi/Anno).
-- Freccia "next" disabilitata quando si è già nel periodo corrente.
-- Click sull'etichetta apre il popover; mesi/anni futuri disabilitati; selezionare un mese passato aggiorna KPI/grafici/lista transazioni coerentemente.
-- KPI corretti su un mese passato (giorni rimasti = 0, media giornaliera calcolata sull'intero mese, non troncata a "oggi").
+No Postgres/Redis available in this environment for a real browser (as for the earlier Spese features). After running the 5 tasks, the user must verify manually:
+- Prev/next arrows change the period shown for all 4 types (Settimana/Mese/3 mesi/Anno).
+- The "next" arrow is disabled when already in the current period.
+- Clicking the label opens the popover; future months/years disabled; selecting a past month updates KPIs/charts/transaction list consistently.
+- Correct KPIs on a past month (days left = 0, daily average computed over the whole month, not truncated at "today").

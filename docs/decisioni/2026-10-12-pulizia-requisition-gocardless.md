@@ -1,10 +1,10 @@
-# Pulizia delle requisition GoCardless rimaste senza riga (2026-10-12)
+# Cleanup of GoCardless requisitions left without a row (2026-10-12)
 
-Una diagnosi in produzione mostrava 26 requisition su GoCardless contro 5 note a DB. Due buchi della pulizia giornaliera:
-le requisition sconosciute si eliminavano solo con `GOCARDLESS_CLEANUP_DELETE_UNKNOWN` (spento) e dopo 30 giorni, e un
-tentativo `pending` che GoCardless dava già `LN` (callback persa) restava per sempre. Ora una requisition sconosciuta è
-**nostra** se la sua `reference` è una nostra connessione o il suo URL di ritorno è `<APP_URL>/api/gocardless/callback`:
-le nostre mai collegate si eliminano dopo 3 giorni (`stale_requisition`), quelle di altri ambienti restano dietro il flag;
-le `LN` sconosciute non si eliminano mai da sole, finiscono nei log una per una (`gocardless.cleanup.linked_unknown`) e si
-eliminano solo se approvate per id in `GOCARDLESS_CLEANUP_APPROVED_REQUISITIONS`. Il tentativo `LN` senza conti segue la
-grazia delle orfane (7 giorni). Eliminare non libera il posto del mese (lo conta GoCardless), ma tiene pulita la lista.
+A diagnosis in production showed 26 requisitions on GoCardless versus 5 known in the DB. Two gaps in the daily cleanup:
+unknown requisitions were deleted only with `GOCARDLESS_CLEANUP_DELETE_UNKNOWN` (off) and after 30 days, and a
+`pending` attempt that GoCardless already reported as `LN` (lost callback) stayed forever. Now an unknown requisition is
+**ours** if its `reference` is one of our connections or its return URL is `<APP_URL>/api/gocardless/callback`:
+ours that were never linked are deleted after 3 days (`stale_requisition`), those of other environments stay behind the flag;
+unknown `LN` ones are never deleted on their own, they end up in the logs one by one (`gocardless.cleanup.linked_unknown`) and are
+deleted only if approved by id in `GOCARDLESS_CLEANUP_APPROVED_REQUISITIONS`. The `LN` attempt without accounts follows the
+orphans' grace period (7 days). Deleting does not free the month's slot (GoCardless counts it), but it keeps the list clean.

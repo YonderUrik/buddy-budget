@@ -1,76 +1,76 @@
-# Accessibilità
+# Accessibility
 
-BuddyBudget vuole essere utilizzabile da chiunque, anche con tastiera, screen reader, zoom o movimento ridotto. Questo documento dice a che punto siamo, senza promettere più di quanto è stato verificato.
+BuddyBudget aims to be usable by anyone, including with a keyboard, screen reader, zoom or reduced motion. This document says where we stand, without promising more than has been verified.
 
-## Obiettivo e stato
+## Goal and status
 
-- **Obiettivo**: [WCAG 2.2](https://www.w3.org/TR/WCAG22/) livello AA per l'app (`app.buddybudget.io`) e per la landing (`buddybudget.io`).
-- **Stato**: è un obiettivo, **non una conformità certificata**. Non è stato fatto nessun audit esterno né una verifica completa con screen reader. Il progetto è sviluppato da una persona sola.
-- Ultima revisione di questo documento: 2026-10-10.
+- **Goal**: [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA for the app (`app.buddybudget.io`) and for the landing page (`buddybudget.io`).
+- **Status**: it is a goal, **not a certified conformance**. No external audit or full screen reader check has been carried out. The project is developed by a single person.
+- Last review of this document: 2026-10-10.
 
-## Cosa c'è oggi
+## What is there today
 
-Verificato leggendo il codice, non con un audit:
+Verified by reading the code, not through an audit:
 
-- **Componenti**: le primitive in `components/ui/` sono shadcn su [Base UI](https://base-ui.com/), che gestisce ruoli, stati ARIA, trappola del focus e chiusura con `Esc` in dialog, menu, popover, select e cursori.
-- **Focus visibile**: bottoni e controlli hanno uno stile `focus-visible` (anello con il token `ring`).
-- **Lingua**: la pagina dichiara `lang="it"`.
-- **Contenuto principale**: `<main id="main-content">` è raggiungibile dal focus programmatico.
-- **Etichette**: i controlli senza testo (icone) usano `aria-label`; il testo solo per screen reader usa `sr-only`; le decorazioni sono `aria-hidden`.
-- **Tema**: chiaro e scuro, con colori da token in `app/globals.css`. Entrate e uscite hanno anche segno e testo, non solo il colore.
-- **Movimento ridotto**: le animazioni (numeri che scorrono, testi che cambiano, grafico del login) rispettano `prefers-reduced-motion`: il provider Motion usa `reducedMotion="user"` e i componenti più vistosi restano fermi.
-- **Mobile**: barra di navigazione in basso e menu «Altro» con aree di tocco di almeno 44 px nei punti principali (`min-h-11`).
-- **Importi nascosti**: il pulsante «nascondi importi» è un interruttore con stato esposto.
-- **Grafici**: Recharts con `accessibilityLayer` almeno nel grafico del patrimonio netto.
+- **Components**: the primitives in `components/ui/` are shadcn on [Base UI](https://base-ui.com/), which handles roles, ARIA states, focus trapping and closing with `Esc` in dialogs, menus, popovers, selects and sliders.
+- **Visible focus**: buttons and controls have a `focus-visible` style (ring with the `ring` token).
+- **Language**: the page declares `lang="it"`.
+- **Main content**: `<main id="main-content">` can receive programmatic focus.
+- **Labels**: controls without text (icons) use `aria-label`; screen-reader-only text uses `sr-only`; decorations are `aria-hidden`.
+- **Theme**: light and dark, with colors from tokens in `app/globals.css`. Income and expenses also have a sign and text, not just color.
+- **Reduced motion**: animations (rolling numbers, changing text, the sign-in chart) respect `prefers-reduced-motion`: the Motion provider uses `reducedMotion="user"` and the most eye-catching components stay still.
+- **Mobile**: bottom navigation bar and «Altro» ("More") menu with touch targets of at least 44 px in the main places (`min-h-11`).
+- **Hidden amounts**: the «nascondi importi» ("hide amounts") button is a toggle with exposed state.
+- **Charts**: Recharts with `accessibilityLayer`, at least in the net worth chart.
 
-## Limiti noti
+## Known limitations
 
-Cose che **non** sappiamo essere a posto o che sappiamo mancanti:
+Things we do **not** know to be fine, or that we know are missing:
 
-- Non c'è un link «Vai al contenuto» (skip link) visibile: `main` è pronto a riceverlo, ma il link non esiste ancora.
-- Non è mai stato fatto un giro completo con VoiceOver, NVDA, JAWS o TalkBack.
-- I contrasti dei token non sono stati misurati sistematicamente in entrambi i temi (in particolare `text-2`/`text-3` e i testi su sfondi tinti).
-- I grafici trasmettono i dati soprattutto in modo visivo: non tutti hanno una tabella o un riepilogo testuale alternativo.
-- Drag & drop (es. board delle categorie): non è verificato che esista un'alternativa completa da tastiera.
-- Lo zoom al 200% e il reflow a 320 px non sono stati controllati su tutte le schermate.
-- Non ci sono test automatici di accessibilità in CI (né axe, né Lighthouse); ESLint applica solo le regole `jsx-a11y` incluse in `eslint-config-next`.
-- L'interfaccia è solo in italiano.
-- Le pagine esterne collegate (es. flusso di consenso della banca, login Google) dipendono da terzi.
+- There is no visible «Vai al contenuto» ("Skip to content") link: `main` is ready to receive it, but the link does not exist yet.
+- A full pass with VoiceOver, NVDA, JAWS or TalkBack has never been done.
+- Token contrast has not been systematically measured in both themes (in particular `text-2`/`text-3` and text on tinted backgrounds).
+- Charts convey data mostly visually: not all of them have a table or an alternative text summary.
+- Drag & drop (e.g. the categories board): it has not been verified that a complete keyboard alternative exists.
+- 200% zoom and reflow at 320 px have not been checked on all screens.
+- There are no automated accessibility tests in CI (neither axe nor Lighthouse); ESLint only applies the `jsx-a11y` rules included in `eslint-config-next`.
+- The interface is in Italian only.
+- Linked external pages (e.g. the bank consent flow, Google sign-in) depend on third parties.
 
-## Segnalare un problema
+## Reporting a problem
 
-Se qualcosa non è utilizzabile, dillo: è un difetto da correggere, non una richiesta di favore.
+If something is not usable, say so: it is a defect to fix, not a request for a favor.
 
-- Dall'app: pagina **Aiuto** (`/aiuto`), scegli il tipo di segnalazione.
-- Su GitHub: [apri una issue](https://github.com/YonderUrik/buddy-budget/issues/new/choose) e scrivi «accessibilità» nel titolo, con browser, dispositivo e tecnologia assistiva usata.
-- Per email: support@buddybudget.io.
+- From the app: the **Aiuto** ("Help") page (`/aiuto`), choose the report type.
+- On GitHub: [open an issue](https://github.com/YonderUrik/buddy-budget/issues/new/choose) and write "accessibility" in the title, with the browser, device and assistive technology used.
+- By email: support@buddybudget.io.
 
-Indica la pagina, cosa volevi fare e cosa è successo. Le segnalazioni di accessibilità hanno la stessa priorità dei bug.
+Say which page, what you wanted to do and what happened. Accessibility reports have the same priority as bugs.
 
-## Per chi contribuisce
+## For contributors
 
-Ogni PR che cambia l'interfaccia controlla questi punti (sono anche nel modello della PR):
+Every PR that changes the interface checks these points (they are also in the PR template):
 
-1. **Tastiera**: tutto si raggiunge e si usa con `Tab`, `Shift+Tab`, `Invio`, `Spazio`, frecce ed `Esc`; l'ordine del focus segue quello visivo; il focus è sempre visibile e non resta intrappolato.
-2. **Nomi e ruoli**: ogni controllo ha un nome accessibile (testo visibile o `aria-label`); si usano elementi nativi (`button`, `a`, `label`) prima di `div` con `role`; i titoli seguono una gerarchia sensata.
-3. **Contrasto**: testo almeno 4,5:1 (3:1 per testo grande e componenti), in tema chiaro **e** scuro; usare solo i token del tema. Mai il solo colore per distinguere un significato (verde/rosso → anche segno o testo).
-4. **Movimento ridotto**: ogni animazione nuova si ferma o si semplifica con `prefers-reduced-motion` (`useReducedMotion` o `MotionConfig`).
-5. **Aree di tocco**: bersagli di almeno 24×24 px (WCAG 2.2, 2.5.8), meglio 44 px su mobile.
-6. **Errori e stati**: errori di form associati al campo (`aria-describedby`/`aria-invalid`), aggiornamenti dinamici annunciati (`role="status"`/`aria-live`) quando servono.
-7. **Grafici e immagini**: un'alternativa testuale (valore chiave, tabella o descrizione); immagini decorative `alt=""`/`aria-hidden`.
-8. **Zoom e reflow**: nessuno scroll orizzontale a 320 px e con zoom al 200%.
-9. **Screen reader**: per le modifiche che toccano flussi principali, una prova con VoiceOver (macOS/iOS), NVDA (Windows) o TalkBack (Android), annotata nella PR. Se non è stata fatta, scrivilo.
+1. **Keyboard**: everything can be reached and used with `Tab`, `Shift+Tab`, `Enter`, `Space`, arrows and `Esc`; focus order follows visual order; focus is always visible and never gets trapped.
+2. **Names and roles**: every control has an accessible name (visible text or `aria-label`); native elements (`button`, `a`, `label`) are used before a `div` with `role`; headings follow a sensible hierarchy.
+3. **Contrast**: text at least 4.5:1 (3:1 for large text and components), in light **and** dark theme; use only theme tokens. Never color alone to convey meaning (green/red → also sign or text).
+4. **Reduced motion**: every new animation stops or simplifies with `prefers-reduced-motion` (`useReducedMotion` or `MotionConfig`).
+5. **Touch targets**: targets of at least 24×24 px (WCAG 2.2, 2.5.8), preferably 44 px on mobile.
+6. **Errors and states**: form errors associated with the field (`aria-describedby`/`aria-invalid`), dynamic updates announced (`role="status"`/`aria-live`) when needed.
+7. **Charts and images**: a text alternative (key value, table or description); decorative images `alt=""`/`aria-hidden`.
+8. **Zoom and reflow**: no horizontal scrolling at 320 px and at 200% zoom.
+9. **Screen reader**: for changes touching main flows, a test with VoiceOver (macOS/iOS), NVDA (Windows) or TalkBack (Android), noted in the PR. If it was not done, say so.
 
-### Strumenti consigliati
+### Recommended tools
 
-- Estensione [axe DevTools](https://www.deque.com/axe/devtools/) o la scheda Accessibilità di Lighthouse in Chrome.
-- Navigazione solo da tastiera e zoom al 200%.
+- The [axe DevTools](https://www.deque.com/axe/devtools/) extension or the Lighthouse Accessibility tab in Chrome.
+- Keyboard-only navigation and 200% zoom.
 - VoiceOver (`Cmd+F5`), NVDA, TalkBack.
-- Emulazione di `prefers-reduced-motion` e `prefers-color-scheme` negli strumenti per sviluppatori.
-- Misuratori di contrasto (es. [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)).
+- Emulation of `prefers-reduced-motion` and `prefers-color-scheme` in the developer tools.
+- Contrast checkers (e.g. [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)).
 
-## Riferimenti
+## References
 
 - [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
 - [Base UI](https://base-ui.com/)
-- [Aggiungere una pagina di accessibilità a un repository (GitHub)](https://docs.github.com/communities/setting-up-your-project-for-healthy-contributions/adding-an-accessibility-page-to-your-repository)
+- [Adding an accessibility page to a repository (GitHub)](https://docs.github.com/communities/setting-up-your-project-for-healthy-contributions/adding-an-accessibility-page-to-your-repository)

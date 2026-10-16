@@ -1,5 +1,5 @@
-# 2026-10-10 — Override di proxy-addr (alert Dependabot 127)
+# 2026-10-10 — Override of proxy-addr (Dependabot alert 127)
 
-`proxy-addr` 2.0.7 (critical, IP spoofing via subnet IPv4-mapped) arriva solo da `shadcn > @modelcontextprotocol/sdk > express`. Dependabot non può aggiornarlo da solo: è transitivo e il pacchetto diretto non cambia versione.
-Si usa un `overrides` in `pnpm-workspace.yaml` che porta `proxy-addr` a >=2.0.8. Nell'app non è raggiunto: `express` non gira nel runtime e nessun trust subnet è configurato.
-Quando `shadcn` aggiorna le proprie dipendenze l'override si può togliere. Gli altri advisory transitivi di `pnpm audit` non sono toccati, per scelta.
+`proxy-addr` 2.0.7 (critical, IP spoofing via IPv4-mapped subnet) comes only from `shadcn > @modelcontextprotocol/sdk > express`. Dependabot cannot update it on its own: it is transitive and the direct package does not change version.
+An `overrides` in `pnpm-workspace.yaml` brings `proxy-addr` to >=2.0.8. In the app it is not reached: `express` does not run in the runtime and no trust subnet is configured.
+When `shadcn` updates its own dependencies the override can be removed. The other transitive advisories from `pnpm audit` are not touched, by choice.

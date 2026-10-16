@@ -18,6 +18,9 @@ import { updateFxRates } from "@/lib/market-data/update";
 import { marketDataDeps } from "@/lib/market-data/runtime";
 import { personalImportEmailContent } from "./emails";
 import { generateParser, ModelInputError } from "./generate";
+import { analyzeWithFallback } from "./analysis";
+import { saveFormatMetadata } from "@/lib/imports/store";
+import { notifyImportSupport } from "./support-report";
 
 export async function processOne() {
   const lease = randomUUID();
@@ -37,11 +40,22 @@ export async function processOne() {
     const [saved] = job.parserId ? await db.select().from(parsers).where(and(eq(parsers.id, job.parserId), eq(parsers.formatId, job.formatId))) : [];
     phase = "generate";
     const [source] = await db.select({ name: formats.name }).from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, job.userId)));
-    const generated = saved ? { parser: parserSchema.parse(JSON.parse(unseal(saved.encryptedParser, job.userId))), model: saved.model } : await generateParser(table, source?.name);
-    phase = "execute";
-    const outcomes = await executeParser(generated.parser, table);
-    const repeated = await executeParser(generated.parser, table);
-    if (JSON.stringify(outcomes) !== JSON.stringify(repeated)) throw new Error("Parser non deterministico");
+    const generated = await analyzeWithFallback({
+      table,
+      saved: saved ? () => ({ parser: parserSchema.parse(JSON.parse(unseal(saved.encryptedParser, job.userId))), model: saved.model }) : undefined,
+      generate: () => generateParser(table, source?.name), execute: executeParser,
+      onFallback: async failureReport => {
+        if (job.consentVersion !== "openrouter-raw-zdr-v3") throw new ModelInputError("Il formato salvato non legge questo file. Avvia una nuova analisi per autorizzare il tentativo automatico con l'AI.");
+        const claimed = await db.update(jobs).set({ parserId: null, failureReport: job.failureReport ?? failureReport }).where(owned).returning({ id: jobs.id });
+        if (!claimed.length) throw new Error("Lease non più disponibile");
+        logger.warn("personal_import.fallback.started", { jobId: job.id, reason: failureReport.reason });
+      },
+    });
+    const { outcomes } = generated;
+    if (generated.parser.kind === "javascript" && generated.parser.metadata) {
+      try { await saveFormatMetadata(job.userId, "ai", generated.parser.metadata, outcomes.filter(o => o.kind === "cash" || o.kind === "investment")); }
+      catch { logger.warn("import.metadata.failed", { jobId: job.id, reason: "persistence_failed" }); }
+    }
     phase = "fx";
     const currency = await getUserCurrency(job.userId);
     const fx = await resolveFxRates(outcomes.flatMap(o => o.kind === "cash" || o.kind === "investment" ? [{ line: o.row, date: o.date, currency: o.currency }] : []), {
@@ -56,25 +70,27 @@ export async function processOne() {
     await db.transaction(async tx => {
       const [current] = await tx.select().from(jobs).where(owned).for("update");
       if (!current) return;
-      let parserId = saved?.id;
+      let parserId = generated.reused ? saved?.id : undefined;
       if (!errors.length && !parserId) {
         const [version] = await tx.insert(parsers).values({ formatId: job.formatId, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(generated.parser), job.userId), model: generated.model }).returning(); parserId = version.id;
       }
       // Con righe da controllare il parser non è ancora del formato: viaggia cifrato nell'anteprima e viene salvato
       // solo se l'utente importa saltando quelle righe (vedi `confirmImport`), mai se rianalizza o carica un altro file.
       const preview: Preview = { headers: table.headers, currency, records, parser: errors.length && !parserId ? generated.parser : undefined };
-      await tx.update(jobs).set({ status: errors.length ? "review_failed" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: errors.length ? describeRowErrors(errors.length, outcomes.length) : null, lease: null, leaseUntil: null }).where(owned);
+      await tx.update(jobs).set({ status: errors.length ? "review_failed" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: errors.length ? describeRowErrors(errors.length, outcomes.length) : null, failureReport: current.failureReport ?? (errors.length ? { phase: "parse", reason: "unrecognized_rows", rows: errors.slice(0, 100).map(o => o.row + 1), count: errors.length, fallback: false } : null), lease: null, leaseUntil: null }).where(owned);
     });
     logger.info("personal_import.completed", { jobId: job.id, count: outcomes.length, rejected: errors.length });
   } catch (error) {
     const terminal = job.attempts >= 3 || error instanceof ModelInputError;
     await db.update(jobs).set({ status: terminal ? "failed" : "queued", error: error instanceof ModelInputError ? error.message : "Analisi non riuscita. Verifica il CSV e riprova; nessun movimento è stato importato.", availableAt: new Date(Date.now() + job.attempts * 60000), encryptedCsv: terminal ? null : job.encryptedCsv, lease: null, leaseUntil: null }).where(owned);
     logger.warn("personal_import.failed", { jobId: job.id, reason: "analysis_failed", phase });
+    await db.update(jobs).set({ failureReport: { phase: phase === "fx" ? "fx" : "generate", reason: error instanceof ModelInputError ? "model_input_rejected" : phase === "fx" ? "exchange_rate_unavailable" : "analysis_failed", fallback: false } }).where(and(eq(jobs.id, job.id), sql`${jobs.failureReport} is null`, eq(jobs.attempts, job.attempts)));
   }
   return true;
 }
 
 export async function maintainJobs() {
+  await notifyImportSupport();
   await db.update(jobs).set({ encryptedCsv: null, encryptedPreview: null, status: "expired", lease: null, leaseUntil: null }).where(and(lte(jobs.expiresAt, new Date()), sql`${jobs.status} not in ('imported', 'expired')`));
   // Ready is durable: a restart after analysis resumes the atomic import without another AI call.
   const [ready] = await db.select().from(jobs).where(and(eq(jobs.status, "ready"), lte(jobs.availableAt, new Date()))).orderBy(jobs.createdAt).limit(1);
@@ -85,7 +101,7 @@ export async function maintainJobs() {
       await categorizeNewMovementsSafely(ready.userId);
     } catch (error) {
       await db.update(jobs).set(error instanceof ImportError
-        ? { status: "review_failed", error: error.message, notifiedAt: null }
+        ? { status: "review_failed", error: error.message, notifiedAt: null, failureReport: ready.failureReport ?? { phase: "save" as const, reason: "financial_validation_failed", fallback: false } }
         : { availableAt: new Date(Date.now() + 60000) }
       ).where(and(eq(jobs.id, ready.id), eq(jobs.status, "ready")));
       logger.warn("personal_import.save_failed", { jobId: ready.id, reason: error instanceof ImportError ? "validation_failed" : "retry_pending" });

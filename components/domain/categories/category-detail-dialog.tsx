@@ -108,7 +108,7 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
               id="category-description"
               value={description}
               maxLength={CATEGORY_DESCRIPTION_MAX_LENGTH}
-              placeholder={DESCRIPTION_PLACEHOLDER}
+              placeholder={tr(DESCRIPTION_PLACEHOLDER)}
               onChange={(event) => setDescription(event.target.value)}
               onBlur={commitDescription}
               onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()}

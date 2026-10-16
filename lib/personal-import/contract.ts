@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { formatMetadataSchema } from "@/lib/imports";
 import { parseDate } from "@/lib/investments/import/values";
 import { isValidIsin } from "@/lib/validation/investments";
 
@@ -15,7 +16,7 @@ export const outcomeSchema = z.discriminatedUnion("kind", [
 ]);
 export type Outcome = z.infer<typeof outcomeSchema>;
 export const parserSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("javascript"), code: z.string().min(1).max(32000) }),
+  z.object({ kind: z.literal("javascript"), code: z.string().min(1).max(32000), metadata: formatMetadataSchema.optional() }),
   z.object({ kind: z.literal("mapping"), dateColumn: z.number().int().min(0), amountColumn: z.number().int().min(0), descriptionColumn: z.number().int().min(0), currencyColumn: z.number().int().min(0).nullable(), currency: z.string().regex(/^[A-Z]{3}$/), dateOrder: z.enum(["ymd", "dmy", "mdy"]), decimal: z.enum([".", ","]) }),
 ]);
 export type PersonalParser = z.infer<typeof parserSchema>;

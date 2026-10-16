@@ -2,6 +2,7 @@ import { pgTable, jsonb, text, uuid, timestamp, integer, index, unique } from "d
 import { authUser } from "./auth";
 import { accounts } from "./accounts";
 import { investmentPortfolios } from "./investments";
+import type { AnalysisFailure } from "@/lib/personal-import/analysis";
 export const personalFormats = pgTable("personal_formats", {
   id: uuid("id").primaryKey().defaultRandom(), userId: text("user_id").notNull().references(() => authUser.id, { onDelete: "cascade" }),
   name: text("name").notNull(), accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }), portfolioId: uuid("portfolio_id").references(() => investmentPortfolios.id, { onDelete: "set null" }),
@@ -19,6 +20,11 @@ export const personalImportJobs = pgTable("personal_import_jobs", {
   status: text("status").notNull().default("queued"), encryptedCsv: text("encrypted_csv"), encryptedPreview: text("encrypted_preview"),
   importLedger: jsonb("import_ledger").$type<{ cashIds: string[]; tradeIds: string[]; receiptKeys: string[]; skipped?: number }>(),
   error: text("error"), attempts: integer("attempts").notNull().default(0), lease: uuid("lease"), leaseUntil: timestamp("lease_until", { withTimezone: true }),
+  failureReport: jsonb("failure_report").$type<AnalysisFailure>(),
+  brokerProvider: text("broker_provider"),
+  sourceFingerprint: text("source_fingerprint"),
+  supportNotifiedAt: timestamp("support_notified_at", { withTimezone: true }),
+  supportNotifyAfter: timestamp("support_notify_after", { withTimezone: true }).notNull().defaultNow(),
   availableAt: timestamp("available_at", { withTimezone: true }).notNull().defaultNow(),
   estimatedAt: timestamp("estimated_at", { withTimezone: true }).notNull(), expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   notifiedAt: timestamp("notified_at", { withTimezone: true }), notifyAfter: timestamp("notify_after", { withTimezone: true }).notNull().defaultNow(),

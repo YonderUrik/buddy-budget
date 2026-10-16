@@ -4160,5 +4160,12 @@
   "Media di tutte le tue uscite degli ultimi mesi: molte non hanno ancora una categoria, quindi è una stima larga. Puoi cambiarla.": "Durchschnitt all deiner Ausgaben der letzten Monate: vieles hat noch keine Kategorie, daher ist es eine grobe Schätzung. Du kannst ihn ändern.",
   "Spese al mese": "Ausgaben pro Monat",
   "Azioni per {0}": "Aktionen für {0}",
-  "Con {0} mesi delle tue spese sarebbero circa {1}. Sui conti hai {2} che nessun obiettivo usa ancora.": "Mit {0} Monaten deiner Ausgaben wären es etwa {1}. Auf deinen Konten liegen {2}, die noch kein Sparziel nutzt."
+  "Con {0} mesi delle tue spese sarebbero circa {1}. Sui conti hai {2} che nessun obiettivo usa ancora.": "Mit {0} Monaten deiner Ausgaben wären es etwa {1}. Auf deinen Konten liegen {2}, die noch kein Sparziel nutzt.",
+  "nome@esempio.it": "name@beispiel.de",
+  "Acconsento all'analisi AI del file, anche automaticamente se il formato salvato non riesce a leggerlo.": "Ich stimme der KI-Analyse der Datei zu, auch automatisch, wenn das gespeicherte Format sie nicht lesen kann.",
+  "Se la lettura fallisce, autorizzo l'analisi AI automatica del file completo tramite OpenRouter, inclusi eventuali dati personali, senza conservazione presso il provider. Dopo i controlli i dati vengono importati automaticamente e il supporto riceve un report tecnico.": "Falls das Einlesen fehlschlägt, stimme ich der automatischen KI-Analyse der vollständigen Datei über OpenRouter zu, einschließlich personenbezogener Daten, ohne Speicherung beim Anbieter. Nach der Prüfung werden die Daten automatisch importiert und der Support erhält einen technischen Bericht.",
+  "La lettura standard non è riuscita. L'analisi AI è stata avviata automaticamente; il supporto riceverà il report dell'errore.": "Das reguläre Einlesen ist fehlgeschlagen. Die KI-Analyse wurde automatisch gestartet; der Support erhält einen Fehlerbericht.",
+  "Segui l'analisi": "Analyse verfolgen",
+  "Analisi AI avviata": "KI-Analyse gestartet",
+  "Impossibile avviare l'analisi AI": "KI-Analyse konnte nicht gestartet werden"
 }

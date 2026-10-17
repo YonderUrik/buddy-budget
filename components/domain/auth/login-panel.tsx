@@ -33,10 +33,12 @@ export interface LoginPanelProps {
   notice?: string;
   /** Forget the account remembered on this device (e.g. it has just been deleted). */
   forgetRemembered?: boolean;
+  /** Link to the public demo, shown under the sign-in buttons; omitted where the demo is off. */
+  demoHref?: string;
 }
 
 /** Login page content: «Rientra in BuddyBudget», the full form, or «Controlla la tua email» once a link went out. */
-export function LoginPanel({ redirectTo, notice, forgetRemembered = false }: LoginPanelProps) {
+export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoHref }: LoginPanelProps) {
   const { t: tr } = useLocalization();
   const actions = useLoginActions(redirectTo);
   const { user: remembered, forget } = useReturningUser();
@@ -144,6 +146,15 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false }: Log
         {actions.googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
         {actions.googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
       </Button>
+
+      {demoHref && (
+        <p className="text-sm text-text-2">
+          {tr("Vuoi solo dare un'occhiata?")}{" "}
+          <a href={demoHref} className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
+            {tr("Prova la demo")}
+          </a>
+        </p>
+      )}
 
       <LegalLinksNote />
     </div>

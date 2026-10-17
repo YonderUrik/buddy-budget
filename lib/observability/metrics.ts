@@ -13,7 +13,7 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications" | "inactive_accounts";
+export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications" | "inactive_accounts" | "public_demo";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type SupportReportKind = "problema" | "domanda" | "idea";
@@ -40,6 +40,8 @@ export interface UsageSnapshot {
 }
 export type ActivationStep = "conto" | "import" | "investimento" | "obiettivo" | "completa" | "chiusa" | "demo_attiva";
 export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed";
+/** Public demo (`/demo`): a visitor opened it, it was unavailable (off or not seeded yet), a write was blocked, the data was rebuilt. */
+export type PublicDemoEvent = "session_started" | "unavailable" | "write_blocked" | "reset";
 export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions" | "goals";
 export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts" | "pension_snapshots";
 
@@ -66,6 +68,7 @@ export const CRON_NAMES: readonly CronName[] = [
   "gocardless_maintenance",
   "notifications",
   "inactive_accounts",
+  "public_demo",
 ];
 
 /** Modalità del cron di pulizia GoCardless (`dry-run` conta soltanto, non elimina). */
@@ -167,6 +170,7 @@ interface MetricsState {
   inactiveAccounts: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
   startEvents: Counter<"event">;
+  publicDemoEvents: Counter<"event" | "language">;
   notificationEmails: Counter<"kind" | "outcome">;
   notificationDigestSections: Counter<"section" | "outcome">;
   notificationUnsubscribes: Counter<"kind" | "source">;
@@ -359,6 +363,12 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}start_events_total`,
     help: "Eventi dei primi passi: dati d'esempio avviati o azzerati, checklist chiusa, riaperta o completata.",
     labelNames: ["event"],
+    registers: r,
+  });
+  state.publicDemoEvents = new Counter({
+    name: `${METRIC_PREFIX}public_demo_events_total`,
+    help: "Demo pubblica: sessioni aperte, demo non disponibile, scritture bloccate e ricostruzioni dei dati, per lingua.",
+    labelNames: ["event", "language"],
     registers: r,
   });
   state.consentNotices = new Counter({
@@ -727,4 +737,9 @@ export function recordConsentNotice(kind: ConsentNoticeKind, outcome: ConsentNot
 /** Registra un evento dei primi passi (demo avviata/azzerata, checklist chiusa/riaperta/completata). */
 export function recordStartEvent(event: StartEvent): void {
   metrics().startEvents.inc({ event });
+}
+
+/** Public demo events; `language` is the demo's interface language (closed enum it/en/de). */
+export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "en" | "de"): void {
+  metrics().publicDemoEvents.inc({ event, language });
 }

@@ -28,6 +28,8 @@ export interface LogFields {
   /** Tipo di un'operazione di investimento (enum chiuso: acquisto, vendita...). */
   operationType?: string;
   outcome?: string;
+  /** Interface language of a public demo account (closed enum it/en/de): never a user's own preference. */
+  language?: string;
   /** Tipo di una segnalazione di supporto (enum chiuso `ReportKind`) e codice di riferimento `SUP-XXXXXX` (non personale). */
   reportKind?: string;
   /** Da dove parte una segnalazione al supporto (pagina, pulsante, errore). */

@@ -5,9 +5,12 @@ import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { needsLegalAcceptance } from "@/lib/legal";
+import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemoUserId, isReadOnlyMethod } from "@/lib/public-demo/config";
+import { LANGUAGES, type Language } from "@/lib/localization/config";
 
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
-const PUBLIC_PATH_PREFIXES = ["/login", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/_next", "/favicon.ico"];
+// /demo opens the read-only public demo (it decides itself whether a session exists).
+const PUBLIC_PATH_PREFIXES = ["/login", "/demo", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/_next", "/favicon.ico"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";
@@ -53,6 +56,12 @@ export async function proxy(request: NextRequest) {
   }
 
   const { onboardingCompleted, deletionScheduledAt } = session.user;
+
+  // Public demo: a shared sample account, so its sessions can read everything and write nothing.
+  if (isPublicDemoUserId(session.user.id) && pathname.startsWith("/api/") && !isReadOnlyMethod(request.method)) {
+    const language = (LANGUAGES as readonly string[]).includes(session.user.language ?? "") ? (session.user.language as Language) : "en";
+    return NextResponse.json({ code: PUBLIC_DEMO_READ_ONLY_CODE, error: translate(language, PUBLIC_DEMO_READ_ONLY_MESSAGE) }, { status: 403 });
+  }
 
   // Account disattivato: finché non viene riattivato si vede solo la pagina dedicata; le API rispondono 403,
   // tranne quella di riattivazione (e /api/auth, pubblica, per uscire).

@@ -15,6 +15,8 @@ import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
 import { touchLastActive } from "@/lib/account/last-active";
+import { isPublicDemoUserId } from "@/lib/public-demo/config";
+import { publicDemo } from "./public-demo-plugin";
 
 /** Client Resend creato al primo uso: senza RESEND_API_KEY (self-hosting) il costruttore lancerebbe già all'import. */
 function getResend(): Resend | null {
@@ -66,6 +68,8 @@ export const auth = betterAuth({
     }),
     // Cookie readable by the page (no database field): lets the login page offer the method used last time.
     lastLoginMethod(),
+    // Read-only sample accounts anyone can open from the landing (`/demo`), when PUBLIC_DEMO_ENABLED=true.
+    publicDemo(),
   ],
   socialProviders: googleProvider,
   // Espliciti (sono anche i default di better-auth) perché la pagina Impostazioni li mostra all'utente.
@@ -135,6 +139,8 @@ export const auth = betterAuth({
         before: async (session) => ({ data: { ...session, ipAddress: truncateIp(session.ipAddress) } }),
         /** Ogni sessione creata è un accesso riuscito (magic link o Google): solo un contatore, nessun dato utente. */
         after: async (session) => {
+          // Demo visits are counted by the public demo metric, not as sign-ins or activity of a real account.
+          if (isPublicDemoUserId(session.userId)) return;
           recordAuthEvent("sign_in");
           await touchLastActive(session.userId);
         },
@@ -142,7 +148,7 @@ export const auth = betterAuth({
       update: {
         /** Il rinnovo di una sessione (al più una volta al giorno di utilizzo) è un segno di attività: serve al cron degli account inattivi. */
         after: async (session) => {
-          if (session?.userId) await touchLastActive(session.userId);
+          if (session?.userId && !isPublicDemoUserId(session.userId)) await touchLastActive(session.userId);
         },
       },
     },

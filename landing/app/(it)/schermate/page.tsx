@@ -19,7 +19,7 @@ export const metadata: Metadata = pageMetadata("it", {
 
 export default function Page() {
   return (
-    <ContentPage title={<>Le schermate dell&apos;app</>} lead={<>Screenshot dell&apos;app vera, con i dati di una persona inventata. Scegli un&apos;area e una schermata.</>} current={CONTENT_PATHS.schermate}
+    <ContentPage title={<>Le schermate dell&apos;app</>} lead={<>Screenshot dell&apos;app vera. Scegli un&apos;area e una schermata.</>} current={CONTENT_PATHS.schermate}
       wide
       disclaimer={false}
       crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Schermate" }]}

@@ -59,7 +59,6 @@ export interface SumText {
   cents: string;
   /** Currency written after a row's figure (Italian); English writes it before with `prefix`. */
   suffix?: string;
-  caption: string;
   /** Under the list: what the visitor can do with the amounts. */
   hint: string;
   /** Button that puts the sample figures back. */
@@ -79,7 +78,6 @@ export const SUM = {
   ] satisfies readonly SumRow[],
   cents: ",53 €",
   suffix: " €",
-  caption: "Dati d'esempio: Giulia, una persona inventata.",
   hint: "Scrivi i tuoi importi: il conto si rifà da solo e niente esce da questa pagina.",
   reset: "Rimetti i dati d'esempio",
   fieldLabel: "Importo di {place}",
@@ -251,8 +249,10 @@ export interface TrustFact {
 }
 
 export interface TrustText {
-  /** The heading, stepped over two lines (the second indented). */
-  title: readonly [string, string];
+  /** The heading: a plain statement of what the section covers. */
+  title: string;
+  /** One line under the heading that says in plain words what the app can and cannot do with the accounts. */
+  lede: string;
   /** Names of the row groups of the table: what happens to the data, the limits, the code. */
   groups: { facts: string; limits: string; code: string };
   /** Column headers of the table (read by screen readers, hidden on the phone). */
@@ -263,9 +263,10 @@ export interface TrustText {
   moreHref: string;
 }
 
-/** «Legge soltanto. Non sposta soldi.»: four facts for everyone, two limits said plainly. Every sentence is verified in `security.ts`. */
+/** «Cosa fa l'app con i tuoi dati»: four facts for everyone, two limits said plainly. Every sentence is verified in `security.ts`. */
 export const TRUST = {
-  title: ["Legge soltanto.", "Non sposta soldi."],
+  title: "Cosa fa l'app con i tuoi dati",
+  lede: "Legge i tuoi conti per mostrartene i numeri. Non può spostare soldi né fare pagamenti.",
   groups: { facts: "I tuoi dati", limits: "Limiti, detti chiari", code: "Il codice" },
   columns: { group: "Gruppo", what: "Cosa", how: "Come", source: "Fonte" },
   facts: [

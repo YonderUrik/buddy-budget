@@ -116,10 +116,9 @@
 .tax-sp + .tax-sp p { font-weight: 600; }
 .tax-more { margin-top: 56px; }
 
-/* ---------- trust: a heading on two steps, then one table without lines, rows on alternate tones ---------- */
-.trust h2.stepped > span { display: block; }
-.trust h2.stepped > span + span { padding-left: 1.4em; }
-.tt { margin-top: 64px; overflow-x: auto; }
+/* ---------- trust: a plain heading and one line, then one table without lines, rows on alternate tones ---------- */
+.trust-lede { margin-top: 20px; max-width: 40ch; font: 400 clamp(22px, 2.2vw, 32px) / 1.3 var(--f-b); color: var(--ink); }
+.tt { margin-top: 48px; overflow-x: auto; }
 .tt table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 16px; line-height: 1.5; }
 .tt th, .tt td { text-align: left; vertical-align: top; padding: 18px 20px; }
 .tt tbody tr:nth-child(odd):not(.tg-gap) > * { background: color-mix(in srgb, var(--ink) 4%, transparent); }
@@ -188,7 +187,6 @@
 }
 @media (max-width: 600px) {
   .sec h2, .tax h2 { font-size: clamp(44px, 12.4vw, 64px); }
-  .trust h2.stepped > span + span { padding-left: 0.6em; }
   .sum-line { padding-block: 12px; flex-wrap: nowrap; gap: 12px; }
   .sum-name { font-size: clamp(32px, 9.4vw, 48px); min-width: 0; }
   .sum-amt { font-size: clamp(28px, 8.6vw, 44px); flex: none; }

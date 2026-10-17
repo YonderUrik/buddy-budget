@@ -41,27 +41,21 @@ function Group({ name, rows, last }: { name: string; rows: readonly TrustRow[]; 
 }
 
 /**
- * «Legge soltanto. Non sposta soldi.»: what happens to the data, the limits and the code as one table with no lines
+ * «Cosa fa l'app con i tuoi dati»: what happens to the data and the limits as one table with no lines
  * (taste-skill section «Recognition as a table»: groups instead of years, alternate rows on a tone step), then the
  * code itself: the links to read it and the commands to run it at home.
  */
 export function Trust({ text, hood }: { text: TrustText; hood: HoodText }) {
   const facts: TrustRow[] = text.facts.map((f) => ({ what: f.title, how: f.text, source: f.source ? { ...f.source, external: true } : undefined }));
   const limits: TrustRow[] = text.limits.map((l) => ({ what: l.title, how: l.text }));
-  const code: TrustRow[] = hood.facts.map((f) => ({
-    what: f.label,
-    how: f.value,
-    source: SOURCE_URL && f.path ? { href: `${SOURCE_URL}${f.path}`, label: "GitHub", external: true } : undefined,
-  }));
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec trust" field="light" aria-labelledby="sicurezza-t">
       <div className="wrap">
-        <h2 id="sicurezza-t" className="stepped" data-rise>
-          <span>{text.title[0]}</span> <span>{text.title[1]}</span>
-        </h2>
-        <div className="tt" data-rise style={rise(1)}>
+        <h2 id="sicurezza-t" data-rise>{text.title}</h2>
+        <p className="trust-lede" data-rise style={rise(1)}>{text.lede}</p>
+        <div className="tt" data-rise style={rise(2)}>
           <table>
-            <caption className="sr">{`${text.title[0]} ${text.title[1]}`}</caption>
+            <caption className="sr">{text.title}</caption>
             <thead className="sr">
               <tr>
                 <th scope="col">{text.columns.group}</th>
@@ -71,8 +65,7 @@ export function Trust({ text, hood }: { text: TrustText; hood: HoodText }) {
               </tr>
             </thead>
             <Group name={text.groups.facts} rows={facts} />
-            <Group name={text.groups.limits} rows={limits} />
-            <Group name={text.groups.code} rows={code} last />
+            <Group name={text.groups.limits} rows={limits} last />
           </table>
         </div>
         <Link className="more" href={text.moreHref}>{text.more}</Link>

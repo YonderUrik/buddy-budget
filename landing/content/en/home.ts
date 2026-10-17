@@ -64,7 +64,6 @@ export const HOME_EN: HomeContent = {
     ],
     prefix: "€",
     cents: ".53",
-    caption: "Sample data: Giulia, a made-up person.",
     hint: "Type your own amounts: the sum redoes itself and nothing leaves this page.",
     reset: "Put the sample data back",
     fieldLabel: "Amount for {place}",
@@ -157,7 +156,8 @@ export const HOME_EN: HomeContent = {
     more: { href: CONTENT_PATHS.zainetto, label: "Try the calculator, no account needed (in Italian)" },
   },
   trust: {
-    title: ["It only reads.", "It never moves money."],
+    title: "What the app does with your data",
+    lede: "It reads your accounts to show you the numbers. It can't move money or make payments.",
     groups: { facts: "Your data", limits: "Limits, said plainly", code: "The code" },
     columns: { group: "Group", what: "What", how: "How", source: "Source" },
     facts: [

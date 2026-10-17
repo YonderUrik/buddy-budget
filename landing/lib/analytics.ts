@@ -32,8 +32,6 @@ export interface LandingEvents {
   screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
   theme_toggled: { theme: "light" | "dark" };
-  /** /sicurezza page: step opened in the data path diagram. */
-  security_node_selected: { node: "tu" | "banca" | "gocardless" | "buddybudget" };
   source_link_click: { location: "footer" | "sezione" };
   /** Home, «Sotto il cofano»: the self-hosting commands copied. */
   self_host_command_copied: undefined;

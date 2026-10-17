@@ -114,6 +114,8 @@ export interface ProductEvents {
   subscription_details_opened: { decision: "da-confermare" | "confermato" | "escluso" | "terminato" };
   category_created: { group: CategoryType };
   pwa_installed: undefined;
+  /** The native app (Capacitor shell) was opened from a link; `kind`: magic link or another app page, `platform`: ios/android. */
+  native_link_opened: { kind: "accesso" | "pagina"; platform: string };
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
   investment_operation_updated: { type: InvestmentTransactionType };

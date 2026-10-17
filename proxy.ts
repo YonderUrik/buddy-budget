@@ -6,8 +6,9 @@ import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { needsLegalAcceptance } from "@/lib/legal";
 
+// /.well-known/* holds the app-link files iOS and Android fetch without a session.
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
-const PUBLIC_PATH_PREFIXES = ["/login", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/_next", "/favicon.ico"];
+const PUBLIC_PATH_PREFIXES = ["/login", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/.well-known", "/_next", "/favicon.ico"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";

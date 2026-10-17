@@ -213,4 +213,46 @@ describe("runNotifications", () => {
       expect(broken.send).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("phone notifications", () => {
+    const devices = [{ platform: "ios", token: "t-ios" }];
+    const pushOk = () => vi.fn(async () => ({ sent: 1, failed: 0, removed: 0, unconfigured: 0 }));
+
+    it("sends the push next to the email when the phone channel is on, without amounts", async () => {
+      const sendPush = pushOk();
+      const { deps, send } = fakeDeps([user({ deadlineAlertsEnabled: true, pushEnabled: true })], { loadPushDevices: async () => devices, sendPush });
+      const result = await run(deps);
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(sendPush).toHaveBeenCalledWith(devices, "deadlines", expect.objectContaining({ title: "Rata in arrivo", path: "/debiti/finanziamenti" }));
+      expect(JSON.stringify(sendPush.mock.calls[0])).not.toContain("600");
+      expect(result).toMatchObject({ sent: 1, pushed: 1 });
+    });
+
+    it("with email off only the phone gets it, and a push that arrives keeps the alert from repeating", async () => {
+      const sendPush = pushOk();
+      const { deps, send, claimed } = fakeDeps([user({ deadlineAlertsEnabled: true, emailEnabled: false, pushEnabled: true })], { loadPushDevices: async () => devices, sendPush });
+      await run(deps);
+      expect(send).not.toHaveBeenCalled();
+      expect(claimed.get("u1:deadlines")?.size).toBe(1);
+    });
+
+    it("keeps the alert when the email fails but the phone got it, releases it when both fail", async () => {
+      const kept = fakeDeps([user({ deadlineAlertsEnabled: true, pushEnabled: true })], { send: vi.fn(async () => false), loadPushDevices: async () => devices, sendPush: pushOk() });
+      expect((await run(kept.deps)).failed).toBe(0);
+      expect(kept.claimed.get("u1:deadlines")?.size).toBe(1);
+      const lost = fakeDeps([user({ deadlineAlertsEnabled: true, pushEnabled: true })], {
+        send: vi.fn(async () => false),
+        loadPushDevices: async () => devices,
+        sendPush: vi.fn(async () => ({ sent: 0, failed: 1, removed: 0, unconfigured: 0 })),
+      });
+      expect((await run(lost.deps)).failed).toBe(1);
+      expect(lost.claimed.get("u1:deadlines")?.size ?? 0).toBe(0);
+    });
+
+    it("sends nothing and claims nothing when the phone channel is on but no phone is registered and email is off", async () => {
+      const { deps, claimed } = fakeDeps([user({ deadlineAlertsEnabled: true, emailEnabled: false, pushEnabled: true })], { loadPushDevices: async () => [], sendPush: pushOk() });
+      await run(deps);
+      expect(claimed.size).toBe(0);
+    });
+  });
 });

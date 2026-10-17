@@ -46,6 +46,8 @@ export const NOTIFICATION_DEFAULTS = {
   budgetAlertsEnabled: false,
   deadlineAlertsEnabled: false,
   goalAlertsEnabled: false,
+  emailEnabled: true,
+  pushEnabled: false,
 };
 
 export interface NotificationPreferences {
@@ -54,6 +56,9 @@ export interface NotificationPreferences {
   budgetAlertsEnabled: boolean;
   deadlineAlertsEnabled: boolean;
   goalAlertsEnabled: boolean;
+  /** Channels for the kinds above: email (the default) and push notifications on the phone app. */
+  emailEnabled: boolean;
+  pushEnabled: boolean;
 }
 
 /** Soglie (percentuale del budget mensile speso) che fanno scattare un avviso. */

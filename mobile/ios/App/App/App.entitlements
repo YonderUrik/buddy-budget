@@ -7,5 +7,13 @@
 	<array>
 		<string>applinks:app.buddybudget.io</string>
 	</array>
+	<!-- Push notifications (APNs). Xcode sets "production" in archives distributed through TestFlight and the App Store. -->
+	<key>aps-environment</key>
+	<string>development</string>
+	<!-- Sign in with Apple: required by App Store guideline 4.8 next to Google sign-in. -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

@@ -9,7 +9,7 @@
 export const RETURNING_USER_STORAGE_KEY = "bb.returning-user";
 
 /** Sign-in methods the login page can offer again. */
-export type ReturningMethod = "email" | "google";
+export type ReturningMethod = "email" | "google" | "apple";
 
 export interface ReturningUser {
   email: string;
@@ -25,6 +25,7 @@ const MASK = "•••";
 export function toReturningMethod(value: string | null | undefined): ReturningMethod | null {
   if (value === "magic-link") return "email";
   if (value === "google") return "google";
+  if (value === "apple") return "apple";
   return null;
 }
 
@@ -36,7 +37,7 @@ export function parseReturningUser(raw: string | null): ReturningUser | null {
     if (!value || typeof value !== "object") return null;
     const { email, method } = value as Record<string, unknown>;
     if (typeof email !== "string" || !email.includes("@")) return null;
-    return { email, method: method === "email" || method === "google" ? method : null };
+    return { email, method: method === "email" || method === "google" || method === "apple" ? method : null };
   } catch {
     return null;
   }

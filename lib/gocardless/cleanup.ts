@@ -20,7 +20,7 @@ import {
   type CleanupPolicy,
 } from "./cleanup-plan";
 import { GoCardlessError, deleteAgreement, deleteRequisition, getRequisition, listAgreements, listRequisitions } from "./client";
-import { gocardlessRedirectUrl } from "./redirect";
+import { gocardlessOwnRedirectUrls } from "./redirect";
 
 export interface CleanupOptions {
   /** `dry-run`: calcola e registra cosa eliminerebbe, senza toccare GoCardless né le righe. */
@@ -216,10 +216,10 @@ export async function runGoCardlessCleanup(options: CleanupOptions): Promise<Cle
   return report;
 }
 
-/** URL di ritorno di questa app, per riconoscere le nostre requisition; senza APP_URL nessuna risulta nostra. */
-function ownRedirectUrl(): string | undefined {
+/** Return URLs of this app (web and phone app), to recognise our requisitions; without APP_URL none counts as ours. */
+function ownRedirectUrl(): string[] | undefined {
   try {
-    return gocardlessRedirectUrl();
+    return gocardlessOwnRedirectUrls();
   } catch {
     return undefined;
   }

@@ -78,11 +78,11 @@ export default async function RootLayout({
             <MotionProvider>
               {children}
               <Toaster />
+              <NativeAppBridge />
             </MotionProvider>
           </ThemeProvider>
         </QueryProvider></LocalizationProvider>
         <PwaInstallTracker />
-        <NativeAppBridge />
       </body>
     </html>
   );

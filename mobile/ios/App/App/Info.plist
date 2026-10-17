@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Usa Face ID per sbloccare BuddyBudget.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -10,6 +12,15 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>buddybudget</string>
+			</array>
+		</dict>
+		<dict>
+			<!-- Google Sign-In returns here: the iOS OAuth client ID reversed (build setting GOOGLE_IOS_REVERSED_CLIENT_ID). -->
+			<key>CFBundleURLName</key>
+			<string>google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(GOOGLE_IOS_REVERSED_CLIENT_ID)</string>
 			</array>
 		</dict>
 	</array>

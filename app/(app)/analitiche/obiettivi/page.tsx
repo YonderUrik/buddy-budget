@@ -15,7 +15,7 @@ import { useNotificationPreferencesQuery, useUpdateNotificationPreferencesMutati
 const NEW_PARAM = "nuovo";
 const KIND_PARAM = "tipo";
 const FROM_PARAM = "da";
-const OPEN_SOURCES = ["panoramica", "novita", "email"] as const;
+const OPEN_SOURCES = ["panoramica", "novita", "email", "notifica"] as const;
 
 /** Vista Obiettivi di Analitiche: piano del risparmio, lista per priorità e form per un obiettivo nuovo. */
 export default function ObiettiviPage() {

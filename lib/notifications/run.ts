@@ -24,6 +24,9 @@ import { buildInvestmentDigest, type InvestmentDigest } from "./investments-dige
 import { budgetAlertEmail, deadlineAlertEmail, digestEmail, goalsEmail, NOTIFICATION_SETTINGS_PATH, type BuiltEmail, type EmailContext } from "./emails";
 import { buildGoalsDigest, findGoalNotice, type GoalsDigest } from "./goals";
 import { sendNotificationEmail } from "./send";
+import { budgetAlertPush, deadlineAlertPush, digestPush, goalsPush } from "./push-messages";
+import { pushDevices } from "@/lib/db/schema/push-devices";
+import { defaultPushDeps, purgeStalePushDevices, sendPushToDevices, type PushMessage, type PushSendResult } from "@/lib/push";
 import { claimKeys, isAlertCapped, loadSentKeys, purgeNotificationLog, releaseKeys } from "./store";
 import { createUnsubscribeToken, unsubscribePageUrl } from "./token";
 
@@ -65,6 +68,11 @@ export interface NotificationDeps {
   releaseKeys(userId: string, kind: NotificationKind, keys: string[]): Promise<void>;
   send(to: string, email: BuiltEmail, options: { appUrl: string; unsubscribeToken: string }): Promise<boolean>;
   purgeLog(now: Date): Promise<number>;
+  /** Phones of the user with the app (only read when push is on). Absent = no push channel (tests, scripts). */
+  loadPushDevices?(userId: string): Promise<{ platform: string; token: string }[]>;
+  sendPush?(devices: { platform: string; token: string }[], kind: NotificationKind, message: PushMessage): Promise<PushSendResult>;
+  /** Deletes devices the app has not registered for a long time. */
+  purgePushDevices?(now: Date): Promise<number>;
 }
 
 export interface NotificationsResult {
@@ -77,6 +85,8 @@ export interface NotificationsResult {
   empty: number;
   failed: number;
   purged: number;
+  /** Phones that received a push notification (one message can reach several phones of the same user). */
+  pushed: number;
   /** True se il giro si è fermato per il limite di tempo: i restanti ripartono al giro dopo. */
   timedOut: boolean;
 }
@@ -96,6 +106,7 @@ export const databaseDeps: NotificationDeps = {
             eq(notificationPreferences.deadlineAlertsEnabled, true),
             eq(notificationPreferences.goalAlertsEnabled, true),
           ),
+          or(eq(notificationPreferences.emailEnabled, true), eq(notificationPreferences.pushEnabled, true)),
         ),
       )
       .orderBy(asc(authUser.id));
@@ -111,6 +122,8 @@ export const databaseDeps: NotificationDeps = {
         budgetAlertsEnabled: r.prefs.budgetAlertsEnabled,
         deadlineAlertsEnabled: r.prefs.deadlineAlertsEnabled,
         goalAlertsEnabled: r.prefs.goalAlertsEnabled,
+        emailEnabled: r.prefs.emailEnabled,
+        pushEnabled: r.prefs.pushEnabled,
       },
     }));
   },
@@ -142,6 +155,9 @@ export const databaseDeps: NotificationDeps = {
   releaseKeys,
   send: sendNotificationEmail,
   purgeLog: purgeNotificationLog,
+  loadPushDevices: (userId) => db.select({ platform: pushDevices.platform, token: pushDevices.token }).from(pushDevices).where(eq(pushDevices.userId, userId)),
+  sendPush: (devices, kind, message) => sendPushToDevices(devices, kind, message, defaultPushDeps()),
+  purgePushDevices: purgeStalePushDevices,
 };
 
 /** Maschera da usare al posto degli importi se l'utente ha scelto «nascondi importi». */
@@ -174,19 +190,39 @@ export async function runNotifications(options: {
   const now = options.now ?? new Date();
   const log = options.log ?? logger;
   const deps = options.deps ?? databaseDeps;
-  const result: NotificationsResult = { mode, users: 0, sent: 0, wouldSend: 0, capped: 0, empty: 0, failed: 0, purged: 0, timedOut: false };
+  const result: NotificationsResult = { mode, users: 0, sent: 0, wouldSend: 0, capped: 0, empty: 0, failed: 0, purged: 0, pushed: 0, timedOut: false };
   if (mode === "off") return result;
   const appUrl = options.appUrl ?? getAppUrl();
   const startedAt = Date.now();
 
   const outcome = (kind: NotificationKind, value: NotificationEmailOutcome) => recordNotificationEmail(kind, value);
 
-  /** Prenota, invia e (se fallisce) rilascia. In dry-run conta soltanto. */
-  async function deliver(user: NotificationUser, kind: NotificationKind, build: (ctx: EmailContext) => BuiltEmail, keys: string[], extraKeys: string[] = []): Promise<void> {
+  /** Phones that get the push for this user: none when push is off or the channel is not wired (tests). */
+  async function pushTargets(user: NotificationUser): Promise<{ platform: string; token: string }[]> {
+    if (!user.preferences.pushEnabled || !deps.loadPushDevices || !deps.sendPush) return [];
+    try {
+      return await deps.loadPushDevices(user.id);
+    } catch (error) {
+      log.warn("notifications.push.devices_failed", { user: hashUserId(user.id), kind: "devices", error });
+      return [];
+    }
+  }
+
+  /**
+   * Prenota, invia sui canali scelti (email e/o telefono) e, se nessun canale riesce, rilascia. In dry-run conta soltanto.
+   * The keys are claimed once for both channels: an alert is never repeated because one of the two failed.
+   */
+  async function deliver(user: NotificationUser, kind: NotificationKind, build: (ctx: EmailContext) => BuiltEmail, push: PushMessage, keys: string[], extraKeys: string[] = []): Promise<void> {
+    const wantsEmail = user.preferences.emailEnabled;
+    const devices = await pushTargets(user);
+    if (!wantsEmail && devices.length === 0) return;
     if (mode === "dry-run") {
       result.wouldSend += 1;
-      outcome(kind, "dry_run");
-      log.info("notifications.email.dry_run", { user: hashUserId(user.id), kind });
+      if (wantsEmail) {
+        outcome(kind, "dry_run");
+        log.info("notifications.email.dry_run", { user: hashUserId(user.id), kind });
+      }
+      if (devices.length > 0) log.info("notifications.push.dry_run", { user: hashUserId(user.id), kind, count: devices.length });
       return;
     }
     const claimed = await deps.claimKeys(user.id, kind, keys, now);
@@ -197,24 +233,37 @@ export async function runNotifications(options: {
     }
     // Le soglie più basse della stessa categoria si segnano senza condizionare l'invio: potrebbero essere già lì.
     const claimedExtra = await deps.claimKeys(user.id, kind, extraKeys.filter((k) => !keys.includes(k)), now);
-    const ctx = contextFor(user, kind, appUrl);
-    let ok = false;
-    try {
-      ok = await deps.send(user.email, build(ctx), { appUrl, unsubscribeToken: ctx.token });
-    } catch (error) {
-      // L'indirizzo non va nei log: solo l'utente in forma di hash.
-      log.warn("notifications.email.failed", { user: hashUserId(user.id), kind, error });
+    let emailOk = false;
+    if (wantsEmail) {
+      const ctx = contextFor(user, kind, appUrl);
+      try {
+        emailOk = await deps.send(user.email, build(ctx), { appUrl, unsubscribeToken: ctx.token });
+      } catch (error) {
+        // L'indirizzo non va nei log: solo l'utente in forma di hash.
+        log.warn("notifications.email.failed", { user: hashUserId(user.id), kind, error });
+      }
+      outcome(kind, emailOk ? "sent" : "failed");
+      if (emailOk) log.info("notifications.email.sent", { user: hashUserId(user.id), kind, count: keys.length });
+      else log.warn("notifications.email.failed", { user: hashUserId(user.id), kind });
     }
-    if (!ok) {
+    let pushed = 0;
+    if (devices.length > 0 && deps.sendPush) {
+      try {
+        const sent = await deps.sendPush(devices, kind, push);
+        pushed = sent.sent;
+        const event = sent.sent > 0 ? "notifications.push.sent" : "notifications.push.failed";
+        log[sent.sent > 0 ? "info" : "warn"](event, { user: hashUserId(user.id), kind, count: sent.sent, skipped: sent.unconfigured, deleted: sent.removed, rejected: sent.failed });
+      } catch (error) {
+        log.warn("notifications.push.failed", { user: hashUserId(user.id), kind, error });
+      }
+    }
+    if (!emailOk && pushed === 0) {
       await deps.releaseKeys(user.id, kind, [...keys, ...claimedExtra]);
       result.failed += 1;
-      outcome(kind, "failed");
-      log.warn("notifications.email.failed", { user: hashUserId(user.id), kind });
       return;
     }
-    result.sent += 1;
-    outcome(kind, "sent");
-    log.info("notifications.email.sent", { user: hashUserId(user.id), kind, count: keys.length });
+    result.pushed += pushed;
+    if (emailOk) result.sent += 1;
   }
 
   /** Gli investimenti sono un di più: se il calcolo fallisce il riepilogo parte lo stesso, con la sola liquidità. */
@@ -260,7 +309,7 @@ export async function runNotifications(options: {
       const view = await loadUserGoals(user);
       if (view) {
         const notice = findGoalNotice({ view, alreadySent: await deps.loadSentKeys(user.id, "goals", now), now });
-        if (notice.keys.length > 0) await deliver(user, "goals", (ctx) => goalsEmail(notice, ctx), notice.keys);
+        if (notice.keys.length > 0) await deliver(user, "goals", (ctx) => goalsEmail(notice, ctx), goalsPush(notice), notice.keys);
       }
     }
     if (preferences.deadlineAlertsEnabled) {
@@ -270,7 +319,7 @@ export async function runNotifications(options: {
           result.capped += 1;
           outcome("deadlines", "capped");
         } else {
-          await deliver(user, "deadlines", (ctx) => deadlineAlertEmail(alerts, ctx), alerts.map((a) => a.itemKey));
+          await deliver(user, "deadlines", (ctx) => deadlineAlertEmail(alerts, ctx), deadlineAlertPush(alerts), alerts.map((a) => a.itemKey));
         }
       }
     }
@@ -290,7 +339,7 @@ export async function runNotifications(options: {
             result.capped += 1;
             outcome("budget", "capped");
           } else {
-            await deliver(user, "budget", (ctx) => budgetAlertEmail(alerts, ctx), alerts.map((a) => a.itemKey), alerts.flatMap((a) => a.itemKeys));
+            await deliver(user, "budget", (ctx) => budgetAlertEmail(alerts, ctx), budgetAlertPush(alerts), alerts.map((a) => a.itemKey), alerts.flatMap((a) => a.itemKeys));
           }
         }
       }
@@ -312,7 +361,7 @@ export async function runNotifications(options: {
           result.empty += 1;
           outcome("digest", "empty");
         } else {
-          await deliver(user, "digest", (ctx) => digestEmail(data, ctx), [period.key]);
+          await deliver(user, "digest", (ctx) => digestEmail(data, ctx), digestPush(period), [period.key]);
         }
       }
     }
@@ -338,12 +387,21 @@ export async function runNotifications(options: {
   } catch (error) {
     log.warn("notifications.log.purge_failed", { error });
   }
+  if (mode === "execute" && deps.purgePushDevices) {
+    try {
+      const removed = await deps.purgePushDevices(now);
+      if (removed > 0) log.info("notifications.push.devices_purged", { deleted: removed });
+    } catch (error) {
+      log.warn("notifications.push.purge_failed", { error });
+    }
+  }
   log.info("notifications.run.completed", {
     outcome: mode,
     total: result.users,
     count: result.mode === "execute" ? result.sent : result.wouldSend,
     skipped: result.capped + result.empty,
     deleted: result.purged,
+    processed: result.pushed,
   });
   return result;
 }

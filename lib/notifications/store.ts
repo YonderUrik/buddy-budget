@@ -25,6 +25,8 @@ function toPreferences(row: typeof notificationPreferences.$inferSelect | undefi
     budgetAlertsEnabled: row.budgetAlertsEnabled,
     deadlineAlertsEnabled: row.deadlineAlertsEnabled,
     goalAlertsEnabled: row.goalAlertsEnabled,
+    emailEnabled: row.emailEnabled,
+    pushEnabled: row.pushEnabled,
   };
 }
 

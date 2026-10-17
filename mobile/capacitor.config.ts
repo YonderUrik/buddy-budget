@@ -20,11 +20,33 @@ const config: CapacitorConfig = {
   // Lets the web app (and the server, from the User-Agent) tell the native app apart from a browser.
   appendUserAgent: "BuddyBudgetApp",
   ios: {
-    // Content under the status bar is handled by the web app's safe-area padding (viewport-fit=cover).
+    // Edge to edge: the web app pads its top bar and pages with env(safe-area-inset-*) (viewport-fit=cover).
     contentInset: "never",
   },
   android: {
     allowMixedContent: false,
+  },
+  plugins: {
+    // Only Google and Apple are bundled: the other providers would add SDKs (Facebook, Twitter) the app does not use.
+    SocialLogin: {
+      providers: { google: true, apple: true, facebook: false, twitter: false },
+    },
+    // Badge, sound and banner when a notification arrives with the app in the foreground.
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"],
+    },
+    // Android follows viewport-fit=cover like iOS: edge to edge, with correct env(safe-area-inset-*) values.
+    SystemBars: {
+      insetsHandling: "css",
+      initialViewportFitValueHint: "cover",
+    },
+    // The web app hides the splash as soon as its first screen is drawn (`NativeAppBridge`), so there is no white
+    // flash; the timeout is the safety net (slow network, offline page).
+    SplashScreen: {
+      launchAutoHide: true,
+      launchShowDuration: 2500,
+      backgroundColor: "#ffffff",
+    },
   },
 };
 

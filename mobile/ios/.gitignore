@@ -11,3 +11,6 @@ capacitor-cordova-ios-plugins
 # Generated Config files
 App/App/capacitor.config.json
 App/App/config.xml
+
+# BuddyBudget: Firebase config is not used on iOS (push goes straight to APNs); keep it out if added by mistake.
+GoogleService-Info.plist

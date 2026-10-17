@@ -66,11 +66,13 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
     <header
       className={[
         "group md:hidden",
-        "grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-2",
+        // box-content + safe-area padding: in the native app the bar runs under the status bar (edge to edge); 0 in browsers.
+        "grid box-content h-14 grid-cols-[1fr_auto_1fr] items-center gap-2 pt-[env(safe-area-inset-top)]",
         "bg-sidebar border-b border-sidebar-border",
         "px-4 shrink-0",
       ].join(" ")}
       aria-label={tr("Barra di navigazione")}
+      data-status-bar="on-dark"
     >
       <div className="col-start-1 row-start-1 flex min-w-0 items-center justify-self-start group-has-[[data-topbar-back]]:col-span-2">
         {leading ? leading(menuSlot) : menuSlot}

@@ -8,7 +8,7 @@ describe("inboxPreview", () => {
   });
 
   it("segue la frequenza del riepilogo e l'ordine riepilogo, budget, scadenze, obiettivi", () => {
-    const items = inboxPreview({ digestEnabled: true, digestFrequency: "settimanale", budgetAlertsEnabled: true, deadlineAlertsEnabled: true, goalAlertsEnabled: true });
+    const items = inboxPreview({ digestEnabled: true, digestFrequency: "settimanale", budgetAlertsEnabled: true, deadlineAlertsEnabled: true, goalAlertsEnabled: true, emailEnabled: true, pushEnabled: false });
     expect(items.map((i) => i.kind)).toEqual(["digest", "budget", "deadlines", "goals"]);
     expect(items[0]).toMatchObject({ title: "Riepilogo della settimana", when: "Ogni lunedì" });
     expect(items[1].when).toBe("All'80% e al 100% di un budget");

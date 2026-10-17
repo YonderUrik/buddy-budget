@@ -5,6 +5,7 @@ describe("toReturningMethod", () => {
   it("maps better-auth methods and ignores unknown ones", () => {
     expect(toReturningMethod("magic-link")).toBe("email");
     expect(toReturningMethod("google")).toBe("google");
+    expect(toReturningMethod("apple")).toBe("apple");
     expect(toReturningMethod("passkey")).toBeNull();
     expect(toReturningMethod(null)).toBeNull();
   });

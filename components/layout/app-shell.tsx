@@ -103,7 +103,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   }, [mobileOpen, moreOpen]);
 
   return (
-    <div className="flex h-dvh flex-col bg-background">
+    <div className="flex h-dvh flex-col bg-background md:pt-[env(safe-area-inset-top)]">
       {/* ── Topbar mobile ── */}
       <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} leading={topbarLeading} />
 

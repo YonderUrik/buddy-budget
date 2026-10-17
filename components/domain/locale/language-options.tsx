@@ -49,7 +49,7 @@ export function LanguageOptions({ value, onSelect, available = LANGUAGES, unavai
               selected ? "bg-primary/10" : "enabled:hover:bg-muted",
             )}
           >
-            <Flag code={LANGUAGE_FLAGS[language]} className="h-4 w-6" />
+            <Flag code={LANGUAGE_FLAGS[language]} size="lg" />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="text-sm font-medium text-foreground">{LANGUAGE_NAMES[language]}</span>
               {sample ? <span className="truncate text-xs text-muted-foreground">{sample}</span> : null}

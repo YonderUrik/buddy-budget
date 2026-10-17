@@ -42,7 +42,7 @@ export function LanguageSelect({ value, onChange, variant = "field", disabled = 
           className,
         )}
       >
-        <Flag code={LANGUAGE_FLAGS[value]} className={variant === "link" ? "h-2.5 w-3.5" : undefined} />
+        <Flag code={LANGUAGE_FLAGS[value]} size={variant === "link" ? "sm" : "md"} />
         <span className={variant === "field" ? "flex-1 text-left" : undefined}>{LANGUAGE_NAMES[value]}</span>
         {variant === "field" ? <ChevronRight className="size-4 text-muted-foreground" aria-hidden="true" /> : null}
       </PopoverTrigger>

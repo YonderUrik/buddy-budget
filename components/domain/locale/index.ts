@@ -5,7 +5,7 @@
  */
 
 export { Flag } from "./flag";
-export type { FlagCode, FlagProps } from "./flag";
+export type { FlagCode, FlagProps, FlagSize } from "./flag";
 export { LANGUAGE_FLAGS, COUNTRY_FLAGS } from "./flags";
 export { LanguageOptions } from "./language-options";
 export type { LanguageOptionsProps } from "./language-options";

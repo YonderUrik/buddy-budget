@@ -2,6 +2,27 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.74.1](https://github.com/YonderUrik/buddy-budget/compare/v0.74.0...v0.74.1) (2026-10-17)
+
+
+### Correzioni
+
+* floating capsule bottom bar on the phone web ([#413](https://github.com/YonderUrik/buddy-budget/issues/413)) ([1e3ce68](https://github.com/YonderUrik/buddy-budget/commit/1e3ce680d98ce4077bd666d067439a3720273d7b))
+
+## [0.74.0](https://github.com/YonderUrik/buddy-budget/compare/v0.73.0...v0.74.0) (2026-10-17)
+
+
+### Novità
+
+* navy landing with tall titles and brand yellow, carried into sign-in and app ([#405](https://github.com/YonderUrik/buddy-budget/issues/405)) ([7e22152](https://github.com/YonderUrik/buddy-budget/commit/7e22152682514839e10dd1b85b750bc25629e0d7))
+* tall section titles and big answers inside simulators and calculators ([#411](https://github.com/YonderUrik/buddy-budget/issues/411)) ([c698fda](https://github.com/YonderUrik/buddy-budget/commit/c698fda0ae142bd4d2a29cebf90775fe149cc3ab))
+
+
+### Correzioni
+
+* amount fields no longer crash when the locale leaves four-digit numbers ungrouped ([#406](https://github.com/YonderUrik/buddy-budget/issues/406)) ([b88d9e3](https://github.com/YonderUrik/buddy-budget/commit/b88d9e39f907fa2083bb93f3d24a41d6abd3797f))
+* one period selector with a real calendar for custom ranges ([#408](https://github.com/YonderUrik/buddy-budget/issues/408)) ([dc60a08](https://github.com/YonderUrik/buddy-budget/commit/dc60a08b2b01c48b8f3b222210e9b35662bfc3cc))
+
 ## [0.73.0](https://github.com/YonderUrik/buddy-budget/compare/v0.72.0...v0.73.0) (2026-10-17)
 
 

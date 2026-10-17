@@ -13,7 +13,7 @@
 [![Node.js 24](https://img.shields.io/badge/node-24-339933?logo=nodedotjs&logoColor=white)](.github/workflows/ci.yml)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/yonder)
 
-[Website](https://buddybudget.io) · [Live demo, no sign-up](https://app.buddybudget.io/demo?lang=en) · [Self-hosting](docs/self-hosting.md) · [Local development](#local-development) · [Contributing](CONTRIBUTING.md)
+[Website](https://buddybudget.io) · [Live demo, no sign-up](https://app.buddybudget.io/demo?lang=en) · [Documentation](docs/README.md) · [Self-hosting](docs/self-hosting.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -129,19 +129,19 @@ Components sit on three layers with dependencies pointing only downwards (`ui` �
 
 ## Documentation
 
+The [documentation index](docs/README.md) lists everything, grouped by what you want to do.
+
 | Document | Content |
 | --- | --- |
 | [`docs/self-hosting.md`](docs/self-hosting.md) | Docker installation, HTTPS, updates, backups |
-| [`docs/product-vision.md`](docs/product-vision.md), [`docs/functional-spec.md`](docs/functional-spec.md) | product vision and per-screen specification |
+| [`docs/architecture/`](docs/architecture/overview.md) | how each area works and how every number is calculated, with worked examples |
+| [`ROADMAP.md`](ROADMAP.md) | direction, what is done and what is deferred |
 | [`docs/decisioni/`](docs/decisioni/) | why each choice was made, one decision per file ([earlier archive](docs/decision-log.md)) |
-| [`docs/superpowers/`](docs/superpowers/) | spec and plan for each feature |
-| [`docs/ibkr-import.md`](docs/ibkr-import.md), [`docs/degiro-import.md`](docs/degiro-import.md), [`docs/trade-republic-import.md`](docs/trade-republic-import.md) | broker imports |
-| [`docs/rilasci.md`](docs/rilasci.md) | versions and releases |
 | [`CHANGELOG.md`](CHANGELOG.md) | what changed in each version |
 
 ## Project status
 
-BuddyBudget is in beta and is developed by a single person, with the help of an AI coding assistant. Product country and language are chosen separately during onboarding and in Preferences: Italy in Italian/English, Germany in German/English. For Germany, Italian taxation, pension/TFR, forecast income, Analitiche/FIRE and Italian inflation are temporarily disabled; existing data is preserved. Email translations and the review of legal documents remain separate from the interface. Coming soon: German financial models and push notifications. Bank connection has limited slots during the beta.
+BuddyBudget is in beta and is developed by a single person, with the help of an AI coding assistant. Product country and language are chosen separately during onboarding and in Preferences: Italy in Italian/English, Germany in German/English. For Germany, Italian taxation, pension/TFR, forecast income, Analitiche/FIRE and Italian inflation are temporarily disabled; existing data is preserved. Email translations and the review of legal documents remain separate from the interface. Bank connection has limited slots during the beta. What comes next is in the [roadmap](ROADMAP.md).
 
 ## Contributing, security and contacts
 

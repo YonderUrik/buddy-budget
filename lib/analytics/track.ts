@@ -257,6 +257,10 @@ export interface ProductEvents {
   onboarding_notifications_chosen: { digest: "settimanale" | "mensile" | "off"; budget: boolean; deadlines: boolean; goals?: boolean };
   /** Disiscrizione dalla pagina aperta dal link dell'email; `kind`: tipo disattivato o tutti. */
   notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "goals" | "all" };
+  /** «Rientra in BuddyBudget» on the login page: the one-tap way back in was used (link sent or Google opened). */
+  returning_login_used: { method: "email" | "google" };
+  /** «Non sei tu?» on the login page: the remembered account was forgotten on this device. */
+  returning_login_forgotten: undefined;
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

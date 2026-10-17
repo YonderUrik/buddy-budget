@@ -4187,5 +4187,12 @@
   "Completa prima la configurazione iniziale.": "Schließe zuerst die Ersteinrichtung ab.",
   "Decide tasse e funzioni disponibili.": "Bestimmt Steuern und verfügbare Funktionen.",
   "Cambia solo testi, date e numeri.": "Ändert nur Texte, Daten und Zahlen.",
-  "Disponibile col paese {0}": "Verfügbar mit dem Land {0}"
+  "Disponibile col paese {0}": "Verfügbar mit dem Land {0}",
+  "Rientra in BuddyBudget": "Zurück bei BuddyBudget anmelden",
+  "Su questo dispositivo ricordiamo il tuo account, così non devi riscrivere l'email.": "Auf diesem Gerät merken wir uns dein Konto, damit du deine E-Mail nicht erneut eingeben musst.",
+  "Ultimo accesso con Google": "Zuletzt mit Google angemeldet",
+  "Ultimo accesso con il link via email": "Zuletzt mit dem E-Mail-Link angemeldet",
+  "Il link arriva a questo indirizzo e vale {0} minuti.": "Der Link geht an diese Adresse und ist {0} Minuten gültig.",
+  "Mandami il link via email": "Schick mir den Link per E-Mail",
+  "Non sei tu? Usa un altro account": "Nicht du? Anderes Konto verwenden"
 }

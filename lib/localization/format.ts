@@ -28,3 +28,16 @@ export function localizedFormats(locale: string) {
     },
   };
 }
+
+/**
+ * Thousand and decimal separators for a number input in `locale`, always different from each other.
+ * Read from a seven-digit number: some engines leave four-digit numbers ungrouped in Italian and Spanish
+ * (CLDR minimum grouping digits = 2), and react-number-format throws when the two separators are equal.
+ */
+export function numberSeparators(locale: string): { thousand: string; decimal: string } {
+  const parts = new Intl.NumberFormat(locale, { useGrouping: true }).formatToParts(1234567.5);
+  const decimal = parts.find((part) => part.type === "decimal")?.value ?? ".";
+  const group = parts.find((part) => part.type === "group")?.value;
+  const thousand = group && group !== decimal ? group : decimal === "," ? "." : ",";
+  return { thousand, decimal };
+}

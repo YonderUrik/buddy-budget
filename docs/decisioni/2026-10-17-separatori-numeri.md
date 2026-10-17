@@ -1,0 +1,3 @@
+# Number inputs: separators that never collide (2026-10-17)
+
+`CurrencyInput` read the thousand and decimal separators from `Intl.NumberFormat(locale).formatToParts(1234.5)`. In engines that apply the CLDR "minimum grouping digits = 2" rule (Italian, Spanish, Polish), a four-digit number has no group separator, so the fallback `,` matched the Italian decimal `,` and react-number-format threw: every screen with an amount field (first seen in step 2 of a new savings goal) fell into the error page. `numberSeparators(locale)` in `lib/localization/format.ts` now reads them from a seven-digit number and guarantees they differ; tested in `lib/localization/format.test.ts`. PR #401 (month selects) fixed a different crash on the same step.

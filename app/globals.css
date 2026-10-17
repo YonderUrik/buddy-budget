@@ -10,11 +10,18 @@
   --font-sans: var(--font-hanken);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-space-grotesk);
+  --font-display: var(--font-sofia-condensed);
   --color-pos: var(--pos);
   --color-pos-soft: var(--pos-soft);
   --color-neg: var(--neg);
   --color-neg-soft: var(--neg-soft);
   --color-highlight: var(--highlight);
+  --color-brand-navy: var(--brand-navy);
+  --color-on-brand-navy: var(--on-brand-navy);
+  --color-on-brand-navy-2: var(--on-brand-navy-2);
+  --color-sun: var(--sun);
+  --color-sun-hover: var(--sun-hover);
+  --color-on-sun: var(--on-sun);
   --color-risk-1: var(--risk-1);
   --color-risk-2: var(--risk-2);
   --color-risk-3: var(--risk-3);
@@ -94,6 +101,13 @@
   --neg-soft: rgba(176, 71, 59, 0.09);
   /* Evidenziatore giallo del brand (cella selezionata del foglio nel login) */
   --highlight: #fff3cf;
+  /* brand navy and yellow, as on the landing: the navy ground of the sign-in preview, the yellow of the main button */
+  --brand-navy: #0b1c2a;
+  --on-brand-navy: #f4f6f7;
+  --on-brand-navy-2: #a1a1aa;
+  --sun: #ffb703;
+  --sun-hover: #d99500;
+  --on-sun: #18181b;
   --risk-1: #2f7d57;
   --risk-2: #b89a1e;
   --risk-3: #d9731a;
@@ -174,6 +188,12 @@
 }
 
 .dark {
+  --brand-navy: #0b1b27;
+  --on-brand-navy: #f4f6f7;
+  --on-brand-navy-2: #a1a1aa;
+  --sun: #ffb703;
+  --sun-hover: #d99500;
+  --on-sun: #18181b;
   /* Palette dark: grigi neutri, azzurro brand solo come accento. */
   --background: #111113;
   --foreground: #ececef;

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { useConnectionAccountsQuery, useFinalizeConnectionMutation } from "@/lib/queries/gocardless";
 import type { FinalizeSelectionInput } from "@/lib/validation/gocardless";
+import { PAGE_TITLE } from "@/components/domain/shared";
 
 const NEW_ACCOUNT_VALUE = "__new__";
 const CONFIRM_LABEL = "Conferma";
@@ -80,7 +81,7 @@ export default function CollegaBancaPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4 p-4 sm:p-6">
-      <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Conti trovati")}</h1>
+      <h1 className={PAGE_TITLE}>{tr("Conti trovati")}</h1>
       <p className="text-sm text-muted-foreground">{tr("Seleziona quali conti importare. Puoi crearne di nuovi o ricollegarli a un conto già esistente.")}</p>
 
       <div className="flex flex-col gap-3">

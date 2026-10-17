@@ -19,10 +19,8 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ContentPage kicker="Calcolatore gratuito, senza account" current={CONTENT_PATHS.zainetto} crumbs={[{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.strumenti, label: "Calcolatori" }, { label: "Zainetto fiscale" }]} ctaTitle="Lo zainetto si aggiorna da solo." ctaText="In BuddyBudget minusvalenze, scadenze a 4 anni, bollo e imposta di una vendita ipotetica si calcolano dalle tue operazioni. Non c'è un foglio da rifare ogni anno." ctaLocation="calcolatore_zainetto">
+    <ContentPage title="Calcolatore dello zainetto fiscale" lead={<>Inserisci la plusvalenza dell&apos;anno e le minusvalenze che ti porti dietro: vedi quali puoi ancora usare, quante ne compensi e quanta imposta paghi.</>} kicker="Calcolatore gratuito, senza account" current={CONTENT_PATHS.zainetto} crumbs={[{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.strumenti, label: "Calcolatori" }, { label: "Zainetto fiscale" }]} ctaTitle="Lo zainetto si aggiorna da solo." ctaText="In BuddyBudget minusvalenze, scadenze a 4 anni, bollo e imposta di una vendita ipotetica si calcolano dalle tue operazioni. Non c'è un foglio da rifare ogni anno." ctaLocation="calcolatore_zainetto">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "Calcolatore zainetto fiscale", url: `${SITE_URL}${CONTENT_PATHS.zainetto}`, inLanguage: "it-IT", description: DESCRIPTION, isPartOf: { "@id": `${SITE_URL}/#website` } }} />
-      <h1>Calcolatore dello zainetto fiscale</h1>
-      <p className="lead">Inserisci la plusvalenza dell&apos;anno e le minusvalenze che ti porti dietro: vedi quali puoi ancora usare, quante ne compensi e quanta imposta paghi.</p>
       <ZainettoCalculator />
       <p className="note">Stima semplificata: una sola categoria di reddito, nessun arrotondamento di legge, regole dei titoli di Stato non ponderate. Non sostituisce il rendiconto del tuo intermediario né un consulente.</p>
       <h2>Come funziona il calcolo</h2>

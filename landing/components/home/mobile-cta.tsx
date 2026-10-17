@@ -34,7 +34,7 @@ export function MobileCta({ label, login }: { label: string; login: string }) {
   return (
     <div className={`mcta${on ? "" : " off"}`} aria-hidden={!on}>
       <CtaLink className="btn ghost" href={APP_LINKS.login} location="mobile_bar" target="login">{login}</CtaLink>
-      <CtaLink className="btn main" href={APP_LINKS.signup} location="mobile_bar" target="signup" arrow>{label}</CtaLink>
+      <CtaLink className="btn main sun" href={APP_LINKS.signup} location="mobile_bar" target="signup" arrow>{label}</CtaLink>
     </div>
   );
 }

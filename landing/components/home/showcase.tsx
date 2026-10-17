@@ -92,7 +92,7 @@ export function Showcase() {
   return (
     <TrackedSection id="dentro" section="dentro" className="sec show" aria-labelledby="dentro-t">
       <div className="wrap">
-        <SectionHead id="dentro-t" title={SHOWCASE.title} intro={SHOWCASE.intro} />
+        <SectionHead id="dentro-t" title={SHOWCASE.title} />
         <div className="tabs" role="tablist" aria-label="Schermate">
           {SHOWCASE.tabs.map((tab, i) => (
             <button

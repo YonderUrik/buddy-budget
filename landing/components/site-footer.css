@@ -1,7 +1,9 @@
 /* Footer on the navy of the app's sidebar: it sits right under the closing, on the home and on every content page. */
 .sf { background: var(--navy); color: var(--on-navy2); font: 500 14px var(--f-b); padding-block: 24px 40px; margin-top: 72px; border-top: 1px solid color-mix(in srgb, var(--on-navy) 10%, transparent); }
 /* every page ends with the navy closing: the footer attaches to it */
-main:has(.close) + .sf { margin-top: 0; }
+main:has(.close) ~ .sf { margin-top: 0; }
+/* the name across the whole width, barely lighter than the ground; cut at the baseline so it reads as a band */
+.sf-word { margin: 0 0 28px; padding-top: 24px; text-align: center; white-space: nowrap; overflow: hidden; font: 200 22.5vw / 0.74 var(--f-d); letter-spacing: -0.01em; color: color-mix(in srgb, var(--on-navy) 9%, var(--navy)); user-select: none; }
 .sf .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
 .sf nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; }
 .sf .sp { flex: 1; }

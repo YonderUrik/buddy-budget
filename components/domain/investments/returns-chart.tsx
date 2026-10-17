@@ -66,7 +66,7 @@ export function ReturnsChart({ series, benchmarkName, onInspect, onSelectRange }
     <div>
       <h3 className="text-sm font-medium">{tr("Rendimento del portafoglio · TWR cumulato")}</h3>
       <p className="text-xs text-muted-foreground">{tr("Base 0% a inizio periodo. Il grafico mostra il rendimento degli investimenti, indipendente dai versamenti.")}</p>
-      <p className="text-xs text-muted-foreground">{tr("Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure usa le date in «Personalizzato».")}</p>
+      <p className="text-xs text-muted-foreground">{tr("Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.")}</p>
     </div>
     <ChartContainer config={CHART_CONFIG} className="h-64 w-full select-none">
       <LineChart data={series} margin={{ left: 4, right: 8 }}

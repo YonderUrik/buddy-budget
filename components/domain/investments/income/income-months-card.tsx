@@ -11,7 +11,7 @@ import type { IncomePayment } from "@/lib/investments/income";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { track } from "@/lib/analytics";
 import * as React from "react";
-import { SegmentedControl } from "@/components/domain/shared";
+import { PeriodSelector } from "@/components/domain/shared";
 
 import type { IncomeYearDetail } from "@/lib/investments/dividends";
 
@@ -44,7 +44,7 @@ export function IncomeMonthsCard({ years, payments, instrumentsById, currency }:
   return (
     <PanelSection icon={BanknoteIcon} title={tr("Dividendi incassati")} color="var(--swatch-amber)"
       action={
-        options.length > 0 ? <SegmentedControl options={options} value={String(year.year)} onChange={(value) => { setSelected(value); setExpanded(true); track("investment_dividends_details_opened", { source: "year" }); }} className="flex-wrap max-w-full" ariaLabel={tr("Anno")} /> : null
+        options.length > 0 ? <PeriodSelector options={options} value={String(year.year)} onChange={(value) => { setSelected(value); setExpanded(true); track("investment_dividends_details_opened", { source: "year" }); }} ariaLabel={tr("Anno")} /> : null
       }>
       <div className="flex flex-col gap-4">
         <dl className="grid grid-cols-3 gap-3 text-sm">

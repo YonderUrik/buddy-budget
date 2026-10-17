@@ -32,7 +32,7 @@ export default function PerformancePage() {
           <p className="text-sm text-muted-foreground">{periodLabel}</p>
         </div>
         <PortfolioPeriodSelector value={performance.period} range={performance.customRange} today={performance.todayKey}
-          onChange={performance.changePeriod} onRangeChange={performance.changeRange} />
+          onChange={performance.changePeriod} onRangeChange={performance.changeRange} surface="performance" showRangeCaption={false} />
       </div>
       {performance.selection ? <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/30 p-3">
         <p className="text-sm">{tr("Intervallo selezionato sul grafico ·")}{" "}{periodLabel}</p>

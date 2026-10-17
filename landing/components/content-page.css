@@ -14,7 +14,7 @@
 /* the tall display face of the home titles */
 .cp h1 { font: 300 clamp(48px, 6.4vw, 84px) / 0.94 var(--f-d); margin: 0; max-width: 14em; }
 .cp .lead { color: var(--ink2); font-size: clamp(17px, 1.5vw, 19px); line-height: 1.55; margin: 18px 0 0; max-width: 58ch; }
-.cp h2 { font: 600 clamp(22px, 2.6vw, 30px) / 1.15 var(--f-h); letter-spacing: -0.025em; margin: 56px 0 14px; }
+.cp h2 { font: 300 clamp(36px, 4.4vw, 56px) / 0.95 var(--f-d); margin: 64px 0 16px; }
 .cp h3 { font: 600 18px / 1.3 var(--f-h); margin: 28px 0 8px; }
 .cp p, .cp li { color: var(--ink2); font-size: 17px; line-height: 1.65; }
 .cp p { margin: 0 0 14px; max-width: 66ch; }
@@ -66,9 +66,9 @@
 .tool { margin: 32px 0 0; padding: 12px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: stretch; }
 .tool-card { padding: 20px 20px 8px; }
 .tool-card[aria-live] { border-radius: var(--r-card); background: var(--bg); padding: 20px; }
-.tool-card h2 { margin: 0 0 18px; font-size: 19px; }
+.cp .tool-card h2 { margin: 0 0 18px; font-size: clamp(30px, 3vw, 38px); }
 .res .key { border-bottom: 0; padding: 16px 0 8px; align-items: baseline; }
-.res .key b { font-size: clamp(32px, 5vw, 44px); letter-spacing: -0.03em; color: var(--accent); }
+.res .key b { font-size: clamp(40px, 6vw, 60px); line-height: 1; letter-spacing: -0.035em; color: var(--ink); }
 @media (max-width: 760px) { .tool { grid-template-columns: 1fr; } .tool-card { padding: 16px 12px 4px; } .tool-card[aria-live] { padding: 16px; } }
 
 /* Features: cards with a tinted icon. */

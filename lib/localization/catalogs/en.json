@@ -4201,5 +4201,12 @@
   "3 titoli": "3 holdings",
   "Mutuo e prestiti": "Mortgage and loans",
   "Dati di una persona inventata": "Data of a made-up person",
-  "Tutti i tuoi soldi, in un numero solo.": "All your money, in a single number."
+  "Tutti i tuoi soldi, in un numero solo.": "All your money, in a single number.",
+  "Finisci prima di": "You finish earlier by",
+  "{0} invece di {1}, e risparmi {2} di interessi.": "{0} instead of {1}, and you save {2} in interest.",
+  "Conviene: risparmi": "Worth it: you save",
+  "Non conviene: spenderesti in più": "Not worth it: you would spend more",
+  "Al netto delle spese, che rientrano in {0} mesi.": "Net of costs, which pay back in {0} months.",
+  "Al netto delle spese.": "Net of costs.",
+  "Tra interessi e spese.": "Between interest and costs."
 }

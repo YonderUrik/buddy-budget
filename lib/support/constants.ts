@@ -59,9 +59,6 @@ export const REPORT_RATE_WINDOW_SECONDS = 60 * 60;
 /** Casella che riceve le segnalazioni; sovrascrivibile lato server con `SUPPORT_EMAIL_TO`. */
 export const SUPPORT_EMAIL = "support@buddybudget.io";
 
-/** Buy Me a Coffee page where people can support the project with a small donation. */
-export const DONATION_URL = "https://buymeacoffee.com/yonder";
-
 /** Repository open source dell'app: issue, release e policy di sicurezza. */
 export const REPO_URL = "https://github.com/YonderUrik/buddy-budget";
 

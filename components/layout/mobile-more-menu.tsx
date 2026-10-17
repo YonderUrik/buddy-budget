@@ -19,7 +19,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { ChevronDown, ChevronRight, Coffee, ExternalLink, EyeOff, LifeBuoy, LogOut, Settings, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronRight, EyeOff, LifeBuoy, LogOut, Settings, SlidersHorizontal, X } from "lucide-react";
 
 import { usePrivacy } from "@/components/privacy-provider";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
@@ -28,9 +28,6 @@ import type { NavBadge, NavItem } from "@/components/layout/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth/client";
 import { LEGAL_LINKS } from "@/lib/legal";
-import { track } from "@/lib/analytics";
-import { DONATION_URL } from "@/lib/support/constants";
-import { useShowDonationLink } from "@/lib/support/donation";
 import { cn } from "@/lib/utils";
 
 /** Cosa ha toccato l'utente nel menu (tipo chiuso, per le statistiche d'uso). */
@@ -128,7 +125,6 @@ export function MobileMoreMenu({
   const user = mounted ? sessionData?.user : undefined;
   const userName = user?.name ?? tr("Il tuo account");
   const sections = items.filter((i) => !i.comingSoon);
-  const showDonation = useShowDonationLink();
 
   async function signOut() {
     markNavigating();
@@ -262,25 +258,6 @@ export function MobileMoreMenu({
                   <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
                 </Link>
               </li>
-              {showDonation && <li>
-                <a
-                  href={DONATION_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => track("donation_link_opened", { source: "menu_altro" })}
-                  className={ROW_CLASS}
-                >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Coffee className="size-5" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold leading-tight">{tr("Offrimi un caffè")}</span>
-                    <span className="block text-xs leading-snug text-text-2">{tr("Sostieni BuddyBudget su Buy Me a Coffee")}</span>
-                  </span>
-                  <ExternalLink className="size-4 shrink-0 text-text-3" aria-hidden="true" />
-                  <span className="sr-only">{tr("(si apre in una nuova scheda)")}</span>
-                </a>
-              </li>}
             </ul>
 
             {/* Nascondi importi: l'unico interruttore veloce */}

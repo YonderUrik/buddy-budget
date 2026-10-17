@@ -1,6 +1,6 @@
 # Product Marketing Context
 
-**Document version:** v1
+**Document version:** v2
 **Last updated:** 2026-10-17
 
 Shared context read by the marketing skills in `.claude/skills/` (copywriting, cro, social, ads, ad-creative, seo-audit…). Facts here must stay verifiable in the product; when the product changes, update this file in the same PR. User-facing copy is Italian (also English and German); this file is in English like the rest of the repo.
@@ -99,7 +99,7 @@ Market note: no rival combines budget + investments + Italian tax + debts (compe
 | Calm | Short sentences, no urgency | Cold | «Importo, tasso e durata. Una volta sola.» |
 | Honest about limits | Limits stated next to features | Apologetic | «Banca in sola lettura · Server in Germania» |
 
-**Tone by context:**
+**Tone by context:** (third person or product voice on social, never the founder)
 - Support: direct, first person, names what happens next.
 - Launch: what's new in plain words, one limit stated.
 - Errors: what happened, what to do, «Segnala questo problema».
@@ -125,7 +125,7 @@ Market note: no rival combines budget + investments + Italian tax + debts (compe
 
 ## Paid Ads (optional)
 **Target CPA / ROAS:** MISSING (no revenue yet; decide a max cost per account created).
-**Monthly budget and daily variance:** MISSING.
+**Monthly budget and daily variance:** 50 € per month (2026-10-17): no always-on campaign; two windows around Show HN (3-9 Nov) and Product Hunt (17-23 Nov), boosting organic posts that already performed.
 **Conversions that count:** account created (Umami); landing visits by `utm_content`.
 **Known tracking weaknesses:** no Meta Pixel / Conversions API; Umami is cookieless, so ad attribution relies on UTM only.
 **Constraint:** bank connections are capped (40 in total), so ads must not promise bank sync to large audiences.
@@ -135,6 +135,7 @@ Market note: no rival combines budget + investments + Italian tax + debts (compe
 *Decisions and tested lessons. Newest first.*
 | Date | Learning | Evidence | Applies to | Status |
 |------|----------|----------|------------|--------|
+| 2026-10-17 | Social and ads speak with the product's voice: the founder never appears (no face, no voice) and founder-led angles like «Lo costruisco io» are out | Owner decision | social, ads, ad-creative, video | active |
 | 2026-10-16 | Reels with a small phone scrolling screenshots and the same music were rejected; animate the data full screen, show the real screen zoomed on the point, vary music | Owner review of the first 6 reels | video, social, ad-creative | active |
 | 2026-10-16 | No highlight boxes in videos; use a camera zoom toward the point | Owner review | video | active |
 | 2026-10-12 | No «gratis»/«beta»/price in ads and videos | Owner decision: app likely paid when advertised | ads, ad-creative, social | active |
@@ -142,4 +143,5 @@ Market note: no rival combines budget + investments + Italian tax + debts (compe
 
 ## Changelog
 *Newest first.*
+- v2 (2026-10-17) — Ads budget set to 50 €/month; founder never appears in social or ads.
 - v1 (2026-10-17) — Initial context drafted from the README, landing copy, editorial plan and project decisions.

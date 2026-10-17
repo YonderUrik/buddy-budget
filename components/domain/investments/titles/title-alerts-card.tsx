@@ -1,6 +1,6 @@
 "use client";
 
-import { localizedFormats } from "@/lib/localization/format";
+import { localizedFormats, parseLocaleNumber } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
@@ -27,10 +27,10 @@ const DIRECTION_OPTIONS: { value: PriceAlertDirection; label: string }[] = [
   { value: "sotto", label: "Scende sotto" },
 ];
 
-/** Numero digitato con virgola o punto → numero, o null se non valido. */
-export function parseTargetInput(text: string): number | null {
-  const value = Number(text.trim().replace(",", "."));
-  return text.trim() !== "" && Number.isFinite(value) && value > 0 ? value : null;
+/** Positive number typed in the user's locale ("1.234,5" in Italian, "1,234.5" in English), or null if invalid. */
+export function parseTargetInput(text: string, locale = "it-IT"): number | null {
+  const value = parseLocaleNumber(text, locale);
+  return value !== null && value > 0 ? value : null;
 }
 
 export interface TitleAlertsCardProps {
@@ -54,7 +54,7 @@ export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, sup
   const [target, setTarget] = React.useState("");
   const create = useCreateAlertMutation(instrumentId);
   const remove = useDeleteAlertMutation(instrumentId);
-  const value = parseTargetInput(target);
+  const value = parseTargetInput(target, formattingLocale);
 
   function submit(event: React.FormEvent) {
     event.preventDefault();

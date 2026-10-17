@@ -18,6 +18,7 @@ import { formatIndicator } from "./indicator-meta";
 import { IndicatorItem } from "./indicator-item";
 
 const YAHOO_SOURCE = "Fonte: Yahoo Finance, aggiornata una volta al giorno (non ufficiale).";
+const TER_SOURCE = "TER: Yahoo Finance, aggiornata una volta al giorno (non ufficiale).";
 
 export interface TitleFundSectionsProps {
   fundamentals: TitleFundamentals;
@@ -28,7 +29,7 @@ export interface TitleFundSectionsProps {
 
 export function TitleFundSections({ fundamentals: f, positionValue, currency }: TitleFundSectionsProps) {
   const { locale: formattingLocale } = useLocalization();
-  const { formatPct } = localizedFormats(formattingLocale);
+  const { formatPct, formatRatio } = localizedFormats(formattingLocale);
 
 
   const { formatCurrency } = localizedFormats(formattingLocale);
@@ -47,7 +48,7 @@ export function TitleFundSections({ fundamentals: f, positionValue, currency }: 
         <PanelSection icon={ScaleIcon} title={tr("Quanto costa il paniere")} color="var(--swatch-indigo)" description={tr("Media pesata dei titoli contenuti nel fondo.")}>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
             {basket.map((b) => (
-              <IndicatorItem key={b.id} label={tr(b.label)} value={b.value} hint={tr(b.hint)} help={{ id: b.id, title: b.label, formula: `${b.hint} Media pesata calcolata da Yahoo sui titoli del fondo.`, source: YAHOO_SOURCE }} />
+              <IndicatorItem key={b.id} label={tr(b.label)} value={b.value} hint={tr(b.hint)} help={{ id: b.id, title: b.label, formula: tr("{0} Media pesata calcolata da Yahoo sui titoli del fondo.", {0: b.hint}), source: YAHOO_SOURCE }} />
             ))}
           </dl>
         </PanelSection>
@@ -61,7 +62,7 @@ export function TitleFundSections({ fundamentals: f, positionValue, currency }: 
         >
           <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
             {positionValue !== null ? (
-              <IndicatorItem label={tr("Sulla tua posizione")} value={`≈ ${formatCurrency(positionValue * ter, currency)} l'anno`} hint={tr("Valore di oggi × TER, già scalato dal prezzo.")} />
+              <IndicatorItem label={tr("Sulla tua posizione")} value={tr("≈ {0} l'anno", {0: formatCurrency(positionValue * ter, currency)})} hint={tr("Valore di oggi × TER, già scalato dal prezzo.")} />
             ) : null}
             {TER_EXAMPLE_YEARS.map((years) => (
               <IndicatorItem
@@ -71,9 +72,9 @@ export function TitleFundSections({ fundamentals: f, positionValue, currency }: 
                 hint={tr("Differenza rispetto allo stesso fondo senza costi.")}
                 help={{
                   id: `ter_${years}`,
-                  title: `Costo del TER in ${years} anni`,
-                  formula: `${formatCurrency(TER_EXAMPLE_AMOUNT, currency)} × (1,05^${years} − (1,05 × (1 − TER))^${years}): quanto manca al capitale finale rispetto a un fondo senza costi.`,
-                  source: YAHOO_SOURCE.replace("Fonte", "TER"),
+                  title: tr("Costo del TER in {0} anni", {0: years}),
+                  formula: tr("{0} × ({1}^{2} − ({1} × (1 − TER))^{2}): quanto manca al capitale finale rispetto a un fondo senza costi.", {0: formatCurrency(TER_EXAMPLE_AMOUNT, currency), 1: formatRatio(1 + TER_EXAMPLE_RETURN, 2), 2: years}),
+                  source: TER_SOURCE,
                 }}
               />
             ))}

@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-17T15:52:13.005Z",
+  "capturedAt": "2026-10-17T18:31:17.024Z",
   "app": "http://localhost:3300",
   "language": "en",
   "viewport": {
@@ -126,14 +126,6 @@
       "phone": true
     },
     {
-      "id": "debiti",
-      "theme": "light",
-      "route": "/debiti",
-      "width": 1920,
-      "height": 1647,
-      "phone": true
-    },
-    {
       "id": "simulatore",
       "theme": "light",
       "route": "/debiti/finanziamenti",
@@ -262,14 +254,6 @@
       "phone": true
     },
     {
-      "id": "debiti",
-      "theme": "dark",
-      "route": "/debiti",
-      "width": 1920,
-      "height": 1647,
-      "phone": true
-    },
-    {
       "id": "simulatore",
       "theme": "dark",
       "route": "/debiti/finanziamenti",
@@ -283,6 +267,22 @@
       "route": "/analitiche",
       "width": 1920,
       "height": 1652,
+      "phone": true
+    },
+    {
+      "id": "debiti",
+      "theme": "light",
+      "route": "/debiti",
+      "width": 1920,
+      "height": 1647,
+      "phone": true
+    },
+    {
+      "id": "debiti",
+      "theme": "dark",
+      "route": "/debiti",
+      "width": 1920,
+      "height": 1647,
       "phone": true
     }
   ]

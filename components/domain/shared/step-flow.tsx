@@ -59,15 +59,14 @@ export function StepProgress({ index, count, label, className }: StepProgressPro
   const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <p className="text-xs font-medium text-muted-foreground" aria-live="polite">{tr("Passo")}{" "}{index + 1}{" "}{tr("di")}{" "}{count}
-      </p>
+      <p className="text-xs font-medium text-muted-foreground" aria-live="polite">{tr("Passo {0} di {1}", {0: index + 1, 1: count})}</p>
       <div
         role="progressbar"
         aria-label={tr(label)}
         aria-valuemin={1}
         aria-valuemax={count}
         aria-valuenow={index + 1}
-        aria-valuetext={`Passo ${index + 1} di ${count}`}
+        aria-valuetext={tr("Passo {0} di {1}", {0: index + 1, 1: count})}
         className="flex gap-1.5"
       >
         {Array.from({ length: count }, (_, i) => (

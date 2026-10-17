@@ -10,6 +10,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
+import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
 import { AuthPreview } from "./auth-preview";
 
@@ -30,6 +31,7 @@ export interface AuthFrameProps {
 /** Form panel on the left and the app preview on navy on the right; without the preview, the panel widens and centres. */
 export function AuthFrame({ brand, foot, aside, asideHiddenOn = [], children, className }: AuthFrameProps) {
   const pathname = usePathname();
+  const { t: tr } = useLocalization();
   const showAside = !asideHiddenOn.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 
   return (
@@ -40,7 +42,7 @@ export function AuthFrame({ brand, foot, aside, asideHiddenOn = [], children, cl
         {foot && <div className={cn("w-full", !showAside && "mx-auto max-w-2xl")}>{foot}</div>}
       </section>
       {showAside && (
-        <aside className="hidden place-items-center overflow-hidden bg-brand-navy p-12 lg:grid" aria-label="Anteprima dell'app">
+        <aside className="hidden place-items-center overflow-hidden bg-brand-navy p-12 lg:grid" aria-label={tr("Anteprima dell'app")}>
           {aside ?? <AuthPreview />}
         </aside>
       )}

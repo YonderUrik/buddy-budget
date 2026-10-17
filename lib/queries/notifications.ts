@@ -3,12 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NotificationPreferences } from "@/lib/notifications";
 import type { UpdateNotificationPreferencesInput } from "@/lib/validation/notifications";
+import { pageText } from "@/lib/localization/page-text";
 
 const NOTIFICATIONS_KEY = ["notification-preferences"] as const;
 
 async function failure(response: Response, fallback: string): Promise<Error> {
   const body = (await response.json().catch(() => null)) as { error?: string } | null;
-  return new Error(body?.error ?? fallback);
+  return new Error(body?.error ?? pageText(fallback));
 }
 
 /** Preferenze sulle email di riepilogo e avviso. */

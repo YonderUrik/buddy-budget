@@ -30,9 +30,21 @@ function withRequestIdHeader(response: Response, requestId: string): Response {
   }
 }
 
+/** The error message in the user's language; the response as it is when the language cannot be resolved (tests, scripts). */
+async function localizedError(response: Response): Promise<Response> {
+  if (response.status < 400) return response;
+  try {
+    const { translateErrorResponse } = await import("@/lib/localization/route-errors");
+    return await translateErrorResponse(response);
+  } catch {
+    return response;
+  }
+}
+
 /**
  * Avvolge un Route Handler: requestId (accettato o generato e restituito in `x-request-id`), durata,
  * log `http.request.completed|failed`, metriche HTTP, e 500 generico sulle eccezioni non gestite.
+ * The `error` of a JSON error response is translated into the user's language (Italian sources in the catalogs).
  * `name` è un nome STATICO (es. "transactions.update"), mai il path reale: finisce nelle etichette
  * delle metriche. Dentro l'handler il logger della richiesta si ottiene con `requestLogger()`.
  */
@@ -71,7 +83,7 @@ export function withRoute<R extends Request, A extends unknown[]>(
       } catch (error) {
         log.warn("metrics.record.failed", { error });
       }
-      return withRequestIdHeader(response, requestId);
+      return withRequestIdHeader(await localizedError(response), requestId);
     });
   };
 }

@@ -16,6 +16,7 @@ import { formatIndicator, formatOperand, type IndicatorFormat } from "./indicato
 export interface IndicatorExplanation {
   /** Chiave statica per l'evento di analisi (es. "pe"). */
   id: string;
+  /** Italian source texts, translated here. */
   title: string;
   formula: string;
   /** Il calcolo con i numeri veri, se l'indicatore è calcolato dall'app. */
@@ -34,20 +35,20 @@ export function IndicatorHelp({ id, title, formula, indicator, format = "multipl
     <Popover onOpenChange={(open) => open && track("title_indicator_opened", { indicator: id })}>
       <PopoverTrigger
         className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-        aria-label={tr("Come si calcola: {0}", {0: title})}
+        aria-label={tr("Come si calcola: {0}", {0: tr(title)})}
       >
         <CircleHelpIcon className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent className="flex max-w-80 flex-col gap-2 text-sm">
         <p className="font-heading font-medium text-foreground">{tr(title)}</p>
-        <p className="text-muted-foreground">{formula}</p>
+        <p className="text-muted-foreground">{tr(formula)}</p>
         {indicator ? (
           <p className="rounded-lg bg-muted px-3 py-2 font-heading tabular-nums text-foreground">
             {formatOperand(indicator.numerator, currency, priceCurrency, locale)}{" "}{tr("÷")}{" "}{formatOperand(indicator.denominator, currency, priceCurrency, locale)} {"="}{" "}
             <span className="font-medium">{formatIndicator(indicator.value, format, locale)}</span>
           </p>
         ) : null}
-        <p className="text-xs text-muted-foreground">{source}</p>
+        <p className="text-xs text-muted-foreground">{tr(source)}</p>
       </PopoverContent>
     </Popover>
   );

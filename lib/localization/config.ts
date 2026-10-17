@@ -10,6 +10,11 @@ export const COUNTRY_LANGUAGES: Record<ProductCountry, readonly Language[]> = { 
 export const LANGUAGE_NAMES: Record<Language, string> = { it: "Italiano", en: "English", de: "Deutsch" };
 export const LANGUAGE_LOCALES: Record<Language, string> = { it: "it-IT", en: "en-GB", de: "de-DE" };
 export const LANGUAGE_COOKIE = "bb-language";
+/** Interface language of a number/date locale ("en-GB" → "en"); unknown locales fall back to English. */
+export function languageOfLocale(locale: string): Language {
+  const primary = locale.slice(0, 2).toLowerCase();
+  return LANGUAGES.includes(primary as Language) ? (primary as Language) : "en";
+}
 export const DEFAULT_PROFILE: LocaleProfile = { productCountry: "IT", language: "it" };
 
 /**

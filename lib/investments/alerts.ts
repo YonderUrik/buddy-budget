@@ -3,7 +3,8 @@
  * serale che li legge e li segna sta in `alerts-run.ts`.
  */
 
-import { renderEmail } from "@/lib/email";
+import { emailLocale, renderEmail } from "@/lib/email";
+import type { Language } from "@/lib/localization/config";
 import type { PriceAlertDirection } from "@/lib/db/schema/investments";
 
 export const ALERT_DIRECTION_LABELS: Record<PriceAlertDirection, string> = { sopra: "sale sopra", sotto: "scende sotto" };
@@ -13,11 +14,11 @@ export function isAlertTriggered(direction: PriceAlertDirection, targetPrice: nu
   return direction === "sopra" ? close >= targetPrice : close <= targetPrice;
 }
 
-/** Prezzo formattato nella valuta dello strumento (fino a 4 decimali per i titoli a prezzo basso). */
-export function formatAlertPrice(value: number, currency: string): string {
+/** Price in the instrument's currency and the reader's locale (up to 4 decimals for low-priced securities). */
+export function formatAlertPrice(value: number, currency: string, locale = "it-IT"): string {
   const fractionDigits = Math.abs(value) < 10 ? 4 : 2;
   try {
-    return new Intl.NumberFormat("it-IT", {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency,
       minimumFractionDigits: 2,
@@ -37,23 +38,34 @@ export interface AlertEmailParams {
   closeDate: string;
   appUrl: string;
   instrumentId: string;
+  /** Recipient's interface language; Italian when absent. */
+  language?: Language;
 }
 
-/** Oggetto, testo e HTML dell'email di un avviso scattato. Pura, per poterla testare. */
+/**
+ * Subject, text and HTML of the email for a triggered alert, in `params.language` (Italian by default) with prices and
+ * date in its locale. Pure, so it can be tested.
+ */
 export function alertEmailContent(params: AlertEmailParams): { subject: string; text: string; html: string } {
-  const target = formatAlertPrice(params.targetPrice, params.currency);
-  const close = formatAlertPrice(params.closePrice, params.currency);
-  const verb = ALERT_DIRECTION_LABELS[params.direction];
+  const { t, locale, language } = emailLocale(params.language);
+  const target = formatAlertPrice(params.targetPrice, params.currency, locale);
+  const close = formatAlertPrice(params.closePrice, params.currency, locale);
+  const name = params.instrumentName;
+  const above = params.direction === "sopra";
+  // Italian keeps the ISO close date it always had; English and German get a written date.
+  const closeDate =
+    language === "it" ? params.closeDate : new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${params.closeDate}T12:00:00Z`));
+  const move = above ? t("{0} sale sopra {1}", name, target) : t("{0} scende sotto {1}", name, target);
   return {
-    subject: `Avviso di prezzo: ${params.instrumentName} ${verb} ${target}`,
+    subject: above ? t("Avviso di prezzo: {0} sale sopra {1}", name, target) : t("Avviso di prezzo: {0} scende sotto {1}", name, target),
     ...renderEmail(
       {
-        title: "Avviso di prezzo",
-        lead: `${params.instrumentName} ${verb} ${target}. Ultima chiusura: **${close}** (${params.closeDate}).`,
-        cta: { label: "Guarda il titolo", url: `${params.appUrl}/investimenti/titoli/${params.instrumentId}` },
-        footnote: "L'avviso è scattato una volta e non si ripete: puoi crearne uno nuovo dalla pagina del titolo. Questa non è una raccomandazione di investimento.",
+        title: t("Avviso di prezzo"),
+        lead: t("{0}. Ultima chiusura: **{1}** ({2}).", move, close, closeDate),
+        cta: { label: t("Guarda il titolo"), url: `${params.appUrl}/investimenti/titoli/${params.instrumentId}` },
+        footnote: t("L'avviso è scattato una volta e non si ripete: puoi crearne uno nuovo dalla pagina del titolo. Questa non è una raccomandazione di investimento."),
       },
-      { appUrl: params.appUrl },
+      { appUrl: params.appUrl, language },
     ),
   };
 }

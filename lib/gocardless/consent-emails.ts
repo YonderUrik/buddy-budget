@@ -1,46 +1,48 @@
 import "server-only";
 import { Resend } from "resend";
-import { renderEmail } from "@/lib/email";
+import { emailLocale, renderEmail } from "@/lib/email";
 import { getAppUrl } from "@/lib/env";
+import type { Language } from "@/lib/localization/config";
 import { hashUserId, logger, recordConsentNotice, type ConsentNoticeKind } from "@/lib/observability";
 
 /** Percorso (relativo all'app) a cui portano le email: apre direttamente il flusso di rinnovo in Conti. */
 export const RENEW_PATH = "/liquidita/conti?rinnova=1";
 
-const DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" });
-
-/** Oggetto, testo e HTML degli avvisi sul consenso bancario. Pura, per poterla testare. */
+/**
+ * Subject, text and HTML of the bank consent notices, in `params.language` (Italian by default) with the date in its
+ * locale. Pure, so it can be tested.
+ */
 export function consentEmailContent(
   kind: ConsentNoticeKind,
-  params: { institutionName: string; appUrl: string; expiresAt?: Date | null }
+  params: { institutionName: string; appUrl: string; expiresAt?: Date | null; language?: Language }
 ): { subject: string; text: string; html: string } {
-  const cta = { label: "Rinnova il collegamento", url: `${params.appUrl}${RENEW_PATH}` };
-  const footnote = "Ricevi questa email perché hai collegato un conto con Open Banking.";
+  const { t, locale, language } = emailLocale(params.language);
+  const bank = params.institutionName;
+  const cta = { label: t("Rinnova il collegamento"), url: `${params.appUrl}${RENEW_PATH}` };
+  const footnote = t("Ricevi questa email perché hai collegato un conto con Open Banking.");
   if (kind === "expiring") {
-    const when = params.expiresAt ? `il ${DATE_FORMAT.format(params.expiresAt)}` : "a breve";
+    const lead = params.expiresAt
+      ? t(
+          "Il consenso a leggere i tuoi conti di {0} scade **il {1}**. Rinnovarlo richiede un minuto. Se non lo fai, i dati restano in BuddyBudget ma saldi e movimenti smettono di aggiornarsi.",
+          bank,
+          new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" }).format(params.expiresAt),
+        )
+      : t("Il consenso a leggere i tuoi conti di {0} scade **a breve**. Rinnovarlo richiede un minuto. Se non lo fai, i dati restano in BuddyBudget ma saldi e movimenti smettono di aggiornarsi.", bank);
     return {
-      subject: `Il collegamento con ${params.institutionName} sta per scadere`,
-      ...renderEmail(
-        {
-          title: "Collegamento bancario in scadenza",
-          lead: `Il consenso a leggere i tuoi conti di ${params.institutionName} scade **${when}**. Rinnovarlo richiede un minuto. Se non lo fai, i dati restano in BuddyBudget ma saldi e movimenti smettono di aggiornarsi.`,
-          cta,
-          footnote,
-        },
-        { appUrl: params.appUrl },
-      ),
+      subject: t("Il collegamento con {0} sta per scadere", bank),
+      ...renderEmail({ title: t("Collegamento bancario in scadenza"), lead, cta, footnote }, { appUrl: params.appUrl, language }),
     };
   }
   return {
-    subject: `Il collegamento con ${params.institutionName} è scaduto`,
+    subject: t("Il collegamento con {0} è scaduto", bank),
     ...renderEmail(
       {
-        title: "Collegamento bancario scaduto",
-        lead: `Il collegamento con ${params.institutionName} non è più attivo: saldi e movimenti non si aggiornano. Rinnovalo per riprendere la sincronizzazione, i dati già importati non vanno persi.`,
+        title: t("Collegamento bancario scaduto"),
+        lead: t("Il collegamento con {0} non è più attivo: saldi e movimenti non si aggiornano. Rinnovalo per riprendere la sincronizzazione, i dati già importati non vanno persi.", bank),
         cta,
         footnote,
       },
-      { appUrl: params.appUrl },
+      { appUrl: params.appUrl, language },
     ),
   };
 }
@@ -52,13 +54,14 @@ export function consentEmailContent(
 export async function sendConsentEmail(
   to: string,
   kind: ConsentNoticeKind,
-  context: { userId: string; institutionName: string; expiresAt?: Date | null }
+  context: { userId: string; institutionName: string; expiresAt?: Date | null; language?: Language }
 ): Promise<boolean> {
   try {
     const { subject, text, html } = consentEmailContent(kind, {
       institutionName: context.institutionName,
       expiresAt: context.expiresAt,
       appUrl: getAppUrl(),
+      language: context.language,
     });
     const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM!, to, subject, text, html });
     if (error) {

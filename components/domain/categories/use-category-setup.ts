@@ -42,14 +42,14 @@ export function useCategorySetup(): UseCategorySetupResult {
 
   const setup = React.useMemo(() => items.map(({ key, name, type, enabled }) => ({ key, name, type, enabled })), [items]);
   const customized = React.useMemo(() => isCustomized(setup), [setup]);
-  const problem = React.useMemo(() => validateCategorySetup(setup, [FALLBACK_SETUP_NAME]), [setup]);
+  const problem = React.useMemo(() => validateCategorySetup(setup, [FALLBACK_SETUP_NAME], language), [setup, language]);
 
   const update = (index: number, patch: Partial<CategoryProposalItem>) =>
     setItems((current) => current.map((item, position) => (position === index ? { ...item, ...patch } : item)));
 
   /** Motivo per cui le scelte, con questa modifica, non andrebbero; null se vanno. */
   const check = (next: CategoryProposalItem[]) =>
-    validateCategorySetup(next.map(({ key, name, type, enabled }) => ({ key, name, type, enabled })), [FALLBACK_SETUP_NAME]);
+    validateCategorySetup(next.map(({ key, name, type, enabled }) => ({ key, name, type, enabled })), [FALLBACK_SETUP_NAME], language);
 
   return {
     items,

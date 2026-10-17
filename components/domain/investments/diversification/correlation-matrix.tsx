@@ -5,6 +5,8 @@
 
 import type { CorrelationMatrix as Matrix } from "@/lib/calc/risk";
 import type { Instrument } from "@/lib/db/schema/investments";
+import { languageOfLocale } from "@/lib/localization/config";
+import { translate } from "@/lib/localization/messages";
 import { formatDecimal } from "../percent";
 
 /** Colore di una correlazione: rosso per le coppie che si muovono insieme (meno diversificazione), verde per le opposte. */
@@ -52,7 +54,7 @@ export function CorrelationMatrix({ matrix, instrumentsById, locale = "it-IT" }:
                     key={matrix.instrumentIds[j]}
                     className="h-9 w-11 rounded text-center text-foreground"
                     style={{ backgroundColor: i === j ? "transparent" : correlationColor(value) }}
-                    aria-label={`${names[i]} e ${names[j]}: ${format(value, locale)}`}
+                    aria-label={translate(languageOfLocale(locale), "{0} e {1}: {2}", { 0: names[i], 1: names[j], 2: format(value, locale) })}
                   >
                     {i === j ? "" : format(value, locale)}
                   </td>

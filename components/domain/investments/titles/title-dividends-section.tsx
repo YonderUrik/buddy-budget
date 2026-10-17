@@ -45,7 +45,7 @@ export function TitleDividendsSection({ dividends, currency }: TitleDividendsSec
               label: String(y.year),
               value: y.amount,
               muted: y.partial,
-              title: `${y.year}${y.partial ? " (finora)" : ""}: ${formatPerShare(y.amount, currency, formattingLocale)}`,
+              title: y.partial ? tr("{0} (finora): {1}", {0: y.year, 1: formatPerShare(y.amount, currency, formattingLocale)}) : `${y.year}: ${formatPerShare(y.amount, currency, formattingLocale)}`,
             }))}
           />
           {current?.partial ? (
@@ -59,7 +59,7 @@ export function TitleDividendsSection({ dividends, currency }: TitleDividendsSec
               label={tr("Rendimento oggi")}
               value={formatPct(dividends.yieldToday, 2)}
               hint={tr("Dividendi degli ultimi 12 mesi ÷ prezzo.")}
-              help={{ id: "dividend_yield", title: "Rendimento da dividendo", formula: `Dividendi per quota staccati negli ultimi 12 mesi (${formatPerShare(dividends.trailing, currency, formattingLocale)}) ÷ ultima chiusura.`, source: SOURCE }}
+              help={{ id: "dividend_yield", title: "Rendimento da dividendo", formula: tr("Dividendi per quota staccati negli ultimi 12 mesi ({0}) ÷ ultima chiusura.", {0: formatPerShare(dividends.trailing, currency, formattingLocale)}), source: SOURCE }}
             />
           ) : null}
           {dividends.yieldOnCost !== null ? (
@@ -73,7 +73,7 @@ export function TitleDividendsSection({ dividends, currency }: TitleDividendsSec
           {dividends.growth !== null ? (
             <IndicatorItem
               label={tr("Crescita media")}
-              value={`${formatSignedPct(dividends.growth)} l'anno`}
+              value={tr("{0} l'anno", {0: formatSignedPct(dividends.growth)})}
               hint={tr("Dividendo per quota, ultimi {0} anni interi.", {0: dividends.growthYears})}
               help={{ id: "dividend_growth", title: "Crescita media del dividendo", formula: "Crescita annua composta del dividendo per quota tra il primo e l'ultimo anno intero dello storico.", source: SOURCE }}
             />

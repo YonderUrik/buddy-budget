@@ -1,9 +1,12 @@
 /**
- * Messaggi di errore e di scarto dell'import riscritti per chi li legge: cosa non va e cosa fare. Le parole originali
- * dei parser restano il dato (e vengono mostrate come dettaglio), qui si cambia solo come si presentano.
+ * Import error and skip messages rewritten for the reader: what is wrong and what to do. The parsers' original words
+ * stay the data (and are shown as detail); here only their presentation changes. Sources are Italian and are
+ * translated into the viewer's language through the catalogs (`translateServerMessage`).
  */
+import type { Language } from "@/lib/localization/config";
+import { translateServerMessage } from "@/lib/localization/messages";
 
-/** Un problema spiegato: `text` dice cosa non va, `hint` cosa fare (assente se non c'è nulla da fare). */
+/** An explained problem: `text` says what is wrong, `hint` what to do (absent when there is nothing to do). */
 export interface ExplainedMessage {
   text: string;
   hint?: string;
@@ -11,7 +14,7 @@ export interface ExplainedMessage {
 
 const CHECK_FILE = "controlla quel valore nel file, oppure riesporta il file dal broker senza modificarlo.";
 
-/** Nome leggibile dei campi che i parser dei broker citano con il nome tecnico della colonna. */
+/** Readable name of the fields that broker parsers cite by their technical column name. */
 const FIELD_LABELS: Record<string, string> = {
   amount: "importo",
   price: "prezzo",
@@ -27,10 +30,29 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 /**
- * Spiega il messaggio di una riga che l'import scarta o rifiuta (normalizzazione generica o parser di un broker).
- * I messaggi che non riconosce passano com'erano, senza suggerimenti inventati.
+ * Explains the message of a row the import skips or rejects (generic normalisation or a broker parser), in `language`.
+ * Unrecognised messages pass through as they were (translated when the catalog knows them), with no invented hints.
  */
-export function explainRowMessage(message: string): ExplainedMessage {
+export function explainRowMessage(message: string, language: Language = "it"): ExplainedMessage {
+  return localizeExplained(language, explainRow(message));
+}
+
+/** A file name before the message («IBKR 2024.csv: …») is kept as is; only the message after it is translated. */
+const FILE_PREFIX = /^(.+?\.(?:csv|xlsx|xls|txt)): ([\s\S]+)$/i;
+
+/** An import message (parser, batch or server) in `language`, keeping a leading file name untouched. */
+export function translateImportMessage(language: Language, message: string): string {
+  if (language === "it") return message;
+  const prefixed = FILE_PREFIX.exec(message);
+  return prefixed ? `${prefixed[1]}: ${translateServerMessage(language, prefixed[2])}` : translateServerMessage(language, message);
+}
+
+function localizeExplained(language: Language, explained: ExplainedMessage): ExplainedMessage {
+  if (language === "it") return explained;
+  return { text: translateImportMessage(language, explained.text), ...(explained.hint ? { hint: translateServerMessage(language, explained.hint) } : {}) };
+}
+
+function explainRow(message: string): ExplainedMessage {
   let m: RegExpExecArray | null;
   if ((m = /^Tipo "(.*)" ignorato$/.exec(message))) {
     return { text: `«${m[1]}» non è un acquisto, una vendita né un dividendo: la salto.` };
@@ -61,7 +83,7 @@ export function explainRowMessage(message: string): ExplainedMessage {
   if (message === "Rapporto dello split mancante (va nella colonna delle quote)") {
     return { text: "Manca il rapporto dello split.", hint: "scrivilo nella colonna delle quantità (per esempio 2 per uno split 2 a 1)." };
   }
-  // Parser dei broker: «Riga 225: amount non valido», «numero colonne non valido»...
+  // Broker parsers: «Riga 225: amount non valido», «numero colonne non valido»...
   if ((m = /^(?:Riga (\d+): )?([a-z_]+) non valido$/.exec(message)) && m[2] in FIELD_LABELS) {
     const where = m[1] ? `Alla riga ${m[1]} ` : "";
     return { text: `${where}${where ? "il" : "Il"} campo «${FIELD_LABELS[m[2]]}» non contiene un valore valido.`, hint: CHECK_FILE };
@@ -73,8 +95,12 @@ export function explainRowMessage(message: string): ExplainedMessage {
   return { text: message };
 }
 
-/** Spiega un errore che riguarda tutto il file (formato, lettura, import rifiutato). */
-export function explainFileError(message: string): ExplainedMessage {
+/** Explains an error about the whole file (format, reading, rejected import), in `language`. */
+export function explainFileError(message: string, language: Language = "it"): ExplainedMessage {
+  return localizeExplained(language, explainFile(message));
+}
+
+function explainFile(message: string): ExplainedMessage {
   if (message.startsWith("Questo file non sembra un export di ")) {
     return { text: message.replace(/ (Sembra invece|Scegli un altro).*$/, ""), hint: /Sembra invece un file di (.+?):/.exec(message) ? `Scegli la scheda ${/Sembra invece un file di (.+?):/.exec(message)![1]}, oppure tocca di nuovo la scheda scelta per lasciar riconoscere il formato al file.` : "Scegli il broker giusto, «Altro CSV» o lascia riconoscere il formato al file." };
   }
@@ -90,6 +116,5 @@ export function explainFileError(message: string): ExplainedMessage {
   if (message.startsWith("Seleziona al massimo")) return { text: message, hint: "importa i file in più volte." };
   if (message.startsWith("Ogni file deve essere più piccolo")) return { text: message, hint: "riesporta il file con un periodo più breve." };
   if (message.startsWith("La selezione supera")) return { text: message, hint: "importa i file in più volte." };
-  const rowIssue = explainRowMessage(message);
-  return rowIssue;
+  return explainRow(message);
 }

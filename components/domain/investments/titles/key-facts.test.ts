@@ -13,7 +13,7 @@ describe("keyFacts", () => {
       type: "etf", currency: "EUR", locale: "it-IT", stats, stock: null, dividends: null,
       fundamentals: { ...EMPTY_FUNDAMENTALS, expenseRatio: 0.0022, totalAssets: 8.5e9, fundCategory: "Azionario globale" },
     });
-    expect(facts.map((f) => f.label)).toEqual(["Costo annuo (TER)", "Patrimonio", "Categoria", "Volatilità", "Dal massimo"]);
+    expect(facts.map((f) => f.label)).toEqual(["Costo annuo (TER)", "Patrimonio gestito", "Categoria", "Volatilità", "Dal massimo"]);
     expect(facts[0]).toMatchObject({ value: "0,22%", note: "22 EUR ogni 10.000" });
   });
 
@@ -33,5 +33,12 @@ describe("keyFacts", () => {
     expect(keyFacts({ ...input, locale: "en-GB" })[0].value).toBe("0.22%");
     expect(keyFacts({ ...input, locale: "de-DE" })[0].value).toBe("0,22\u00a0%");
     expect(keyFacts({ ...input, locale: "en-GB" }).find((f) => f.label === "Dal massimo")?.value).toBe("−4.0%");
+  });
+
+  it("writes notes and words in the user's language", () => {
+    const input = { type: "etf" as const, currency: "EUR", stats: { ...stats, fromHigh: 0 }, stock: null, dividends: null, fundamentals: { ...EMPTY_FUNDAMENTALS, expenseRatio: 0.0022 } };
+    expect(keyFacts({ ...input, locale: "en-GB" })[0].note).toBe("22 EUR per 10,000");
+    expect(keyFacts({ ...input, locale: "de-DE" })[0].note).toBe("22 EUR je 10.000");
+    expect(keyFacts({ ...input, locale: "en-GB" }).find((f) => f.label === "Dal massimo")).toMatchObject({ value: "at its highs", note: "52 weeks" });
   });
 });

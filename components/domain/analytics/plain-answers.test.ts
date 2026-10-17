@@ -72,4 +72,16 @@ describe("plain-answers", () => {
     expect(text).toContain("465");
     expect(costsSentences({ ...summary, totalValue: 0 }, null, 30, PLAN.liquidation, "EUR")).toHaveLength(1);
   });
+
+  it("writes the sentences in the user's language", () => {
+    const today = new Date(2026, 5, 1);
+    expect(timelineHeadline(PLAN, today, "en")).toBe("Around 2046, in 20 years.");
+    expect(timelineHeadline(PLAN, today, "de")).toBe("Etwa 2046, noch 20 Jahre.");
+    expect(journeySentences(PLAN, null, "EUR", undefined, "en")[0]).toBe("You have €200,000 of the €857,143 you need: 23% of the way.");
+    expect(successVerdict(0.95, "de").text).toBe("Robust: reicht in der großen Mehrheit der Szenarien");
+    const results = [mc("fissa", 0.2), mc("percentuale", 1)];
+    expect(lastingAnswer(results, "fissa", 40, "en")!.headline).toBe("If you stopped today, your wealth would last 40 years in 20% of the simulated scenarios (rule: fixed spending).");
+    const summary = { rows: [], totalValue: 35000, annualCost: 71, annualPct: 0.002, missingTerValue: 0 };
+    expect(costsSentences(summary, null, 30, { ...PLAN.liquidation, latentTax: 0 }, "EUR", "de")).toEqual(["Fondskosten und Stempelsteuer: 71\u00a0€ pro Jahr (0,20\u00a0% des Portfolios)."]);
+  });
 });

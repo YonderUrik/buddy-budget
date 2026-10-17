@@ -32,13 +32,15 @@ export interface NetWorthCompositionRowProps {
 /** Opacità delle fette non evidenziate mentre una è in primo piano. */
 const DIMMED_SLICE_OPACITY = 0.35;
 
-function percent(ratio: number): string {
-  return `${Math.round(ratio * 100)}%`;
+/** Whole percentage in the user's locale ("25%" in Italian, "25 %" in German). */
+function percent(ratio: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(ratio);
 }
 
-function investedSentence(share: number): string {
-  if (share === 0) return "Per ora è tutto liquidità.";
-  return `Il ${percent(share)} è investito, il resto è liquidità.`;
+/** Invested share in words, in the user's language. */
+function investedSentence(share: number, locale: string, tr: (source: string, values?: Record<string, string>) => string): string {
+  if (share === 0) return tr("Per ora è tutto liquidità.");
+  return tr("Il {0} è investito, il resto è liquidità.", { 0: percent(share, locale) });
 }
 
 export function NetWorthCompositionRow({ items, currency, title = "Dove sta il tuo patrimonio", className, onSliceSelect }: NetWorthCompositionRowProps) {
@@ -63,13 +65,13 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
     setLockedKey((current) => (current === key ? null : key));
   };
   const pieConfig: ChartConfig = Object.fromEntries(pieItems.map((item) => [item.label, { label: item.label, color: colorFor(item.key) }]));
-  const pieSummary = tr("Composizione del patrimonio: {0}.", { 0: pieItems.map((item) => `${tr(item.label)} ${percent(item.share)}`).join(", ") });
+  const pieSummary = tr("Composizione del patrimonio: {0}.", { 0: pieItems.map((item) => `${tr(item.label)} ${percent(item.share, formattingLocale)}`).join(", ") });
 
   return (
     <Card className={className}>
       <CardHeader className="gap-1">
         <CardTitle className="font-heading text-lg font-medium text-foreground">{tr(title)}</CardTitle>
-        {investedShare !== null && !showPie ? <p className="text-sm text-foreground">{investedSentence(investedShare)}</p> : null}
+        {investedShare !== null && !showPie ? <p className="text-sm text-foreground">{investedSentence(investedShare, formattingLocale, tr)}</p> : null}
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
         {showPie ? (
@@ -109,11 +111,11 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                 <>
                   <span className="max-w-full truncate text-xs text-muted-foreground">{tr(focusItem.label)}</span>
                   <span className="font-heading text-lg font-medium tabular-nums text-foreground">{format(focusItem.amount)}</span>
-                  <span className="text-xs tabular-nums text-muted-foreground">{percent(focusItem.share)}{" "}{tr("del totale")}</span>
+                  <span className="text-xs tabular-nums text-muted-foreground">{percent(focusItem.share, formattingLocale)}{" "}{tr("del totale")}</span>
                 </>
               ) : investedShare !== null ? (
                 <>
-                  <span className="font-heading text-2xl font-medium tabular-nums text-foreground">{percent(investedShare)}</span>
+                  <span className="font-heading text-2xl font-medium tabular-nums text-foreground">{percent(investedShare, formattingLocale)}</span>
                   <span className="text-xs text-muted-foreground">{tr("investito")}</span>
                 </>
               ) : null}
@@ -142,7 +144,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                     {item.detail}
                     {assetCount > 1 && !item.isLiability ? (
                       <>
-                        {` · ${percent(item.share)}`}
+                        {` · ${percent(item.share, formattingLocale)}`}
                         <span className="hidden sm:inline">{" "}{tr("del totale")}</span>
                       </>
                     ) : null}

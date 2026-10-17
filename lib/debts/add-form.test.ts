@@ -13,6 +13,24 @@ describe("parseAmount", () => {
     expect(parseAmount("  ")).toBeUndefined();
     expect(parseAmount("abc")).toBeUndefined();
   });
+
+  it("reads the user's locale", () => {
+    expect(parseAmount("1,234.56", "en-GB")).toBe(1234.56);
+    expect(parseAmount("1234.5", "en-GB")).toBe(1234.5);
+    expect(parseAmount("6.9", "en-GB")).toBe(6.9);
+    expect(parseAmount("1,250", "en-GB")).toBe(1250);
+    expect(parseAmount("1.234,56", "de-DE")).toBe(1234.56);
+    expect(parseAmount("6,9", "de-DE")).toBe(6.9);
+    expect(parseAmount("1 250,50", "it-IT")).toBe(1250.5);
+  });
+});
+
+describe("resolveAddForm in English", () => {
+  it("reads amounts with English separators", () => {
+    const r = resolveAddForm(form({ principal: "10,000", installment: "860.66", installments: "12" }), "en-GB");
+    expect(r.ok && r.value.inputs.principal).toBe(10000);
+    expect(r.ok && r.value.inputs.annualRate).toBeCloseTo(6, 2);
+  });
 });
 
 describe("resolveAddForm", () => {

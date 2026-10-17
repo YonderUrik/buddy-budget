@@ -5,23 +5,23 @@ import type { SectionId } from "@/lib/analytics";
 import { useSectionView } from "@/lib/use-section-view";
 
 export interface TrackedSectionProps {
-  /** Id HTML della sezione (ancora). */
+  /** HTML id of the section (anchor). */
   id: string;
-  /** Nome dell'evento `section_view`. */
+  /** Name of the `section_view` event. */
   section: SectionId;
   as?: ElementType;
   className?: string;
-  /** Segna la sezione come scura sotto la nav (la nav passa allo stile scuro). */
-  navDark?: boolean;
+  /** Id of the heading that names the section. */
+  "aria-labelledby"?: string;
   children: ReactNode;
 }
 
-/** Sezione che invia `section_view` a Umami la prima volta che entra davvero in vista. */
-export function TrackedSection({ id, section, as: Tag = "section", className, navDark, children }: TrackedSectionProps) {
+/** Section that sends `section_view` to Umami the first time it really comes into view. */
+export function TrackedSection({ id, section, as: Tag = "section", className, "aria-labelledby": labelledBy, children }: TrackedSectionProps) {
   const ref = useRef<HTMLElement>(null);
   useSectionView(ref, section);
   return (
-    <Tag id={id} ref={ref} className={className} data-nav-dark={navDark ? "" : undefined}>
+    <Tag id={id} ref={ref} className={className} aria-labelledby={labelledBy}>
       {children}
     </Tag>
   );

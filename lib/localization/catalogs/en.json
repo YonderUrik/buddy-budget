@@ -3726,8 +3726,6 @@
   "3 conti": "3 accounts",
   "3 posizioni": "3 holdings",
   "3 debiti": "3 debts",
-  "6 di 6 · con i dati di una persona inventata": "6 of 6 · with the data of a made-up person",
-  "E in tutto, quanto ho?": "And all together, how much do I have?",
   "(nascosta)": "(hidden)",
   "(riga vuota)": "(empty line)",
   "1 riga da controllare": "1 line to check",
@@ -4198,5 +4196,10 @@
   "Ultimo accesso con il link via email": "Last signed in with the email link",
   "Il link arriva a questo indirizzo e vale {0} minuti.": "The link goes to this address and is valid for {0} minutes.",
   "Mandami il link via email": "Email me the link",
-  "Non sei tu? Usa un altro account": "Not you? Use another account"
+  "Non sei tu? Usa un altro account": "Not you? Use another account",
+  "Conti in banca": "Bank accounts",
+  "3 titoli": "3 holdings",
+  "Mutuo e prestiti": "Mortgage and loans",
+  "Dati di una persona inventata": "Data of a made-up person",
+  "Tutti i tuoi soldi, in un numero solo.": "All your money, in a single number."
 }

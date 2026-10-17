@@ -1,6 +1,5 @@
-/* Pagina /sicurezza: sezioni con riferimento, tabella del foglio «cosa salviamo», domande a tendina per il resto. */
+/* /sicurezza page: sections, the «cosa salviamo» table, collapsible questions for the rest. */
 .sp-sec { margin-top: 56px; }
-.sp-sec > .ref { margin-bottom: 8px; }
 .cp .sp-sec > h2 { margin-top: 0; }
 .sp-table { margin-top: 24px; overflow-x: auto; }
 .sp-table table { width: 100%; border-collapse: collapse; font-size: 15.5px; }

@@ -30,7 +30,7 @@ export function buildLlmsTxt(): string {
   lines.push(
     "Fatti essenziali:",
     "",
-    "- App web di finanza personale in italiano per chi vive in Italia: conti e spese, investimenti, fondo pensione, debiti e patrimonio netto in un posto solo.",
+    "- App web di finanza personale in italiano per chi vive in Italia: conto, investimenti, fondo pensione e mutuo sommati in un patrimonio netto aggiornato ogni giorno, con spese, rendimenti, tasse e rate nello stesso posto.",
     "- Calcola le tasse sugli investimenti con le regole italiane (zainetto fiscale a quattro anni, ETF armonizzati, titoli di Stato al 12,5%, imposta di bollo). Sono stime, non consulenza.",
     "- Gratuita durante la beta. Si usa dal browser e si installa come PWA; non è nei negozi di app.",
     "- La banca si collega in sola lettura con l'Open Banking (PSD2); i server sono in Germania; i dati si esportano in un file ZIP.",

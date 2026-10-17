@@ -3,7 +3,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 /** Selettore periodo 1M/3M/1A/Max del grafico patrimonio netto. */
 
-import { SegmentedControl } from "@/components/domain/shared";
+import { PeriodSelector } from "@/components/domain/shared";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 
 const PERIOD_OPTIONS = [
@@ -20,5 +20,5 @@ export interface NetWorthPeriodSelectorProps {
 
 export function NetWorthPeriodSelector({ value, onChange }: NetWorthPeriodSelectorProps) {
   const { t: tr } = useLocalization();
-  return <SegmentedControl options={PERIOD_OPTIONS} value={value} onChange={onChange} ariaLabel={tr("Periodo del grafico")} />;
+  return <PeriodSelector options={PERIOD_OPTIONS} value={value} onChange={onChange} ariaLabel={tr("Periodo del grafico")} />;
 }

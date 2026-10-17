@@ -976,7 +976,6 @@
   "Partono tutte spente. Ognuna ha il link per disattivarla e le ritrovi in Impostazioni.": "Alle sind zunächst deaktiviert. Jede E-Mail enthält einen Abmeldelink; verwalten kannst du sie unter Einstellungen.",
   "Passa al tema chiaro": "Zum hellen Design wechseln",
   "Passa al tema scuro": "Zum dunklen Design wechseln",
-  "Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure usa le date in «Personalizzato».": "Bewege den Zeiger über ein Datum, um die Zahlen oben zu aktualisieren. Klicke und ziehe für einen Zeitraum oder gib Daten unter „Benutzerdefiniert“ ein.",
   "Passi del nuovo conto": "Schritte zum neuen Konto",
   "Passi del nuovo fondo": "Schritte zum neuen Fonds",
   "Passi del nuovo movimento": "Schritte zum neuen Umsatz",
@@ -4201,5 +4200,13 @@
   "3 titoli": "3 Positionen",
   "Mutuo e prestiti": "Hypothek und Kredite",
   "Dati di una persona inventata": "Daten einer erfundenen Person",
-  "Tutti i tuoi soldi, in un numero solo.": "Dein ganzes Geld, in einer einzigen Zahl."
+  "Tutti i tuoi soldi, in un numero solo.": "Dein ganzes Geld, in einer einzigen Zahl.",
+  "Scegli le date": "Daten wählen",
+  "Tocca l'ultimo giorno": "Letzten Tag antippen",
+  "Tocca l'ultimo mese": "Letzten Monat antippen",
+  "Date scelte: {0}. Cambia le date": "Gewählte Daten: {0}. Daten ändern",
+  "Mese precedente": "Vorheriger Monat",
+  "Mese successivo": "Nächster Monat",
+  "scegli il mese": "Monat wählen",
+  "Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.": "Bewege den Zeiger über ein Datum, um die Zahlen oben zu aktualisieren. Klicke und ziehe für einen Zeitraum oder wähle Daten im Kalender neben den Zeiträumen."
 }

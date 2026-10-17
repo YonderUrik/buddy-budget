@@ -1,7 +1,7 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
 
-/** Pagina Impostazioni: cinque gruppi (account, aspetto e uso, notifiche e assistente, privacy e dati, zona pericolosa). */
+/** Settings page: five groups (account, look and use, notifications and AI, privacy and data, danger zone). */
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

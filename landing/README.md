@@ -33,4 +33,4 @@ nginx image (`Dockerfile`, config in `nginx.conf`) built by CI and served by the
 
 ## Umami events
 
-`cta_click` (location, target), `section_view`, `showcase_tab_selected`, `screen_selected`, `catalog_area_selected`, `security_node_selected`, `source_link_click`, `self_host_command_copied`, `back_link_click`, `theme_toggled`. The closed type is in `lib/analytics.ts`: categorical props only, never personal data.
+`cta_click` (location, target), `section_view`, `showcase_tab_selected`, `screen_selected`, `catalog_area_selected`, `source_link_click`, `self_host_command_copied`, `back_link_click`, `theme_toggled`. The closed type is in `lib/analytics.ts`: categorical props only, never personal data.

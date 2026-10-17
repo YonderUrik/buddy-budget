@@ -51,41 +51,33 @@ export interface FlowNode {
   label: string;
   /** Riga sotto l'etichetta. */
   role: string;
-  /** Titolo della colonna «cosa riceve». */
-  seesTitle: string;
   /** Cosa vede o riceve questo passaggio. */
   sees: readonly string[];
   /** Cosa non vede mai. */
   never: readonly string[];
 }
 
-/** Texts of the data path diagram (`DataFlow`), in one language. */
+/** Texts of the data path (`DataPath`), in one language. */
 export interface FlowContent {
-  kicker?: string;
   title: string;
   lede: string;
-  /** What travels on each link, in the order of the nodes. */
+  /** What travels from each step to the next, in the order of the nodes. */
   links: readonly string[];
   nodes: readonly FlowNode[];
-  /** `aria-label` of the steps. */
-  label: string;
-  /** Title of the «never» column. */
+  /** Word that opens the «never» sentence of each step. */
   neverTitle: string;
 }
 
-/** Il percorso dei dati quando colleghi una banca, nodo per nodo (diagramma interattivo). */
+/** The data path when you connect a bank, step by step. */
 export const FLOW = {
-  kicker: "Il percorso dei tuoi dati",
-  title: "Dove passano i tuoi dati quando colleghi la banca.",
-  lede: "Le credenziali restano alla banca. Verso BuddyBudget viaggiano solo saldi e movimenti, in sola lettura. Tocca un passaggio per vedere cosa riceve.",
+  title: "Il percorso, passo per passo.",
+  lede: "Le credenziali restano alla banca. Verso BuddyBudget arrivano solo saldi e movimenti, in sola lettura.",
   /** Cosa viaggia su ogni collegamento, nell'ordine dei nodi. */
   links: ["Credenziali e conferma", "Consenso in sola lettura", "Saldi e movimenti"],
-  label: "Passaggi dei dati",
-  neverTitle: "Cosa non succede mai",
+  neverTitle: "Mai.",
   nodes: [
     {
       id: "tu",
-      seesTitle: "Cosa fai tu",
       label: "Tu",
       role: "Scegli la banca nell'app",
       sees: ["Scegli quale banca collegare e quali conti condividere.", "Puoi scollegare la banca quando vuoi, dall'app o dalla tua banca."],
@@ -93,7 +85,6 @@ export const FLOW = {
     },
     {
       id: "banca",
-      seesTitle: "Cosa fa la tua banca",
       label: "La tua banca",
       role: "Dove inserisci le credenziali",
       sees: ["Ti identifica con le sue credenziali e una conferma in più (autenticazione forte), come quando entri nell'home banking.", `Ti chiede di autorizzare la lettura dei conti per al massimo ${BANK_CONSENT_DAYS} giorni.`],
@@ -101,7 +92,6 @@ export const FLOW = {
     },
     {
       id: "gocardless",
-      seesTitle: "Cosa riceve GoCardless",
       label: "GoCardless",
       role: "Fornitore autorizzato (PSD2)",
       sees: ["GoCardless SAS è autorizzata dall'autorità francese di vigilanza (ACPR, n. 17118) a fornire servizi di informazione sui conti.", "Riceve dalla banca saldi, dati del conto e movimenti e li passa a BuddyBudget, perché l'hai chiesto tu. Ne conserva una copia secondo le sue condizioni e gli obblighi di legge."],
@@ -109,7 +99,6 @@ export const FLOW = {
     },
     {
       id: "buddybudget",
-      seesTitle: "Cosa riceve BuddyBudget",
       label: "BuddyBudget",
       role: "Server in Germania",
       sees: ["Chiede soltanto saldi, dati del conto e movimenti: nel codice non esiste nessuna funzione di pagamento.", FIELD_ENCRYPTION_LIVE
@@ -128,10 +117,9 @@ export interface StoredRow {
   detail: string;
 }
 
-/** «Cosa salviamo e cosa no», come una tabella del foglio. */
+/** What we keep and what never reaches us, one row per kind of data. */
 export const STORED = {
-  kicker: "Cosa salviamo",
-  title: "Cosa conserviamo, e cosa non arriva mai.",
+  title: "Cosa teniamo, e cosa non arriva mai.",
   rows: [
     { what: "Credenziali della banca", kept: "no", keptLabel: "Mai", detail: "Restano alla banca: le inserisci solo nelle sue pagine." },
     { what: "Password", kept: "no", keptLabel: "Mai", detail: "Non esistono: entri con un link via email, valido pochi minuti, o con Google." },
@@ -190,7 +178,7 @@ export interface Pillar {
 
 /** Come si protegge l'accesso e come si tolgono i dati. */
 export const CONTROLS = {
-  question: "Come porto via o cancello i miei dati?",
+  title: "Porti via o cancelli tutto.",
   items: [
     { title: "Scollega la banca", text: "Togliendo l'ultimo conto di una banca revochiamo subito il consenso su GoCardless. Il consenso scade comunque dopo 90 giorni e lo rinnovi solo se vuoi." },
     { title: "Scarica i tuoi dati", text: "Da Impostazioni scarichi un file ZIP con tutto, in JSON e CSV." },
@@ -201,7 +189,7 @@ export const CONTROLS = {
 
 /** Cosa non promettiamo: limiti detti apertamente, perché la fiducia si regge anche su quello che non si dice. */
 export const LIMITS = {
-  question: "Cosa non promettete?",
+  title: "Quello che non promettiamo.",
   items: [
     {
       title: "Non è cifrato end-to-end",
@@ -215,10 +203,10 @@ export const LIMITS = {
 
 /** Testata della pagina. */
 export const SECURITY_PAGE = {
-  h1: "Sicurezza e privacy: cosa succede ai tuoi dati",
+  h1: "Cosa succede ai tuoi dati",
   title: "Sicurezza e privacy: come BuddyBudget tratta i tuoi dati",
   description: "Come funziona il collegamento alla banca in sola lettura (PSD2), cosa salviamo e cosa no, dove sono i server e come cancelli tutto. Con le fonti ufficiali.",
-  lead: "Collegare la banca a un'app chiede fiducia. Qui trovi cosa succede ai tuoi dati, passo per passo, con le fonti per controllarlo da solo.",
+  lead: "L'app legge i tuoi conti e non può spostare soldi. Qui c'è il percorso dei dati, cosa teniamo e cosa no, con le fonti per controllare.",
 } as const;
 
 /** A sentence with links: plain strings and link pieces (`/…` internal, `mailto:` or `https:` outside). */
@@ -243,11 +231,11 @@ export interface SecurityContent {
     legalNote: readonly RichPart[];
   };
   flow: FlowContent;
-  stored: { title: string; headers: { what: string; kept: string; detail: string }; rows: readonly StoredRow[] };
+  stored: { title: string; rows: readonly StoredRow[] };
   gocardless: { question: string; lede: string; rows: readonly FactRow[]; note: readonly RichPart[] };
   analytics: { question: string; lede: string; rows: readonly FactRow[]; note: readonly RichPart[] };
-  controls: { question: string; items: readonly Pillar[] };
-  limits: { question: string; items: readonly Pillar[] };
+  controls: { title: string; items: readonly Pillar[] };
+  limits: { title: string; items: readonly Pillar[] };
   sources: Record<keyof typeof SECURITY_SOURCES, Source>;
   sourcesChecked: string;
 }
@@ -272,7 +260,7 @@ export const SECURITY_IT: SecurityContent = {
     ],
   },
   flow: FLOW,
-  stored: { title: STORED.title, headers: { what: "Dato", kept: "Lo conserviamo?", detail: "Dettagli" }, rows: STORED.rows },
+  stored: { title: STORED.title, rows: STORED.rows },
   gocardless: {
     ...GOCARDLESS_DATA,
     note: [

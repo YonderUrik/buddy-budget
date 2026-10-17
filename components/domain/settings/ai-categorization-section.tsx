@@ -2,12 +2,14 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * Sezione «Assistente per le categorie»: consenso esplicito (spento di default) a inviare il nome pulito degli
- * esercenti a un servizio esterno per ricevere proposte di categoria, e la scelta di far applicare da sole le proposte
- * sicure (dal 90%, dalle scelte passate o dall'AI), che si ritrovano in Categorizza → «Messe dall'app».
+ * «Assistente per le categorie» section (name quoted by the privacy policy): where the app uses AI (summary), the explicit consent (off by default) to send the
+ * cleaned merchant name to an external service for category proposals, and the choice to let safe proposals (90% and
+ * up, from past choices or from the AI) apply on their own, listed in Categorizza → «Messe dall'app». Only the AI rows
+ * carry the «Usa l'AI» tag.
  */
 
 import { AiCategorizationInstructions } from "./ai-categorization-instructions";
+import { AiUsageSummary } from "./ai-usage-summary";
 import { Switch } from "@/components/ui/switch";
 import { track } from "@/lib/analytics";
 import { localizedCategorizationText } from "@/lib/categorization/origin";
@@ -32,13 +34,15 @@ export function AiCategorizationSection() {
       preview={<CategoryProposalPreview />}
       description={tr("Propone una categoria per i movimenti nuovi di sincronizzazioni e importazioni. Quelle in dubbio le scegli tu; se vuoi, quando è quasi certa l'app la mette da sola e la ritrovi in Categorizza.")}
     >
+      <AiUsageSummary />
       {isLoading ? (
         <div className="h-16 animate-pulse rounded-lg bg-muted" aria-busy="true" />
       ) : isError || !data ? (
         <p className="text-sm text-neg" role="alert">{tr("Impossibile caricare l'impostazione.")}</p>
       ) : (
         <SettingsRow
-          label={tr("Proponi le categorie")}
+          ai
+          label={tr("Proponi le categorie con l'AI")}
           hint={
             data.available
               ? tr("Se attivo, il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone) viene inviato a un servizio esterno insieme alle categorie e alle tue eventuali istruzioni, con conservazione dei dati disattivata. Puoi revocare in ogni momento.")
@@ -53,14 +57,14 @@ export function AiCategorizationSection() {
             onCheckedChange={(checked) =>
               update.mutate(checked, { onSuccess: () => track("ai_categorization_toggled", { enabled: checked }) })
             }
-            aria-label={tr("Proponi le categorie")}
+            aria-label={tr("Proponi le categorie con l'AI")}
           />
         </SettingsRow>
       )}
       {data && (
         <SettingsRow
           label={tr("Lascia che l'app scelga quando è quasi certa")}
-          hint={tr("Le tue regole valgono sempre. Se attivo, l'app mette da sola anche le categorie di cui è quasi certa (almeno al {0}%, dalle tue scelte passate o, se lo hai attivato, dall'assistente). Le ritrovi in Categorizza → «Messe dall'app», dove puoi cambiarle.", {0: confidencePercent(AUTO_APPLY_THRESHOLD)})}
+          hint={tr("Non usa l'AI da sola. Le tue regole valgono sempre. Se attivo, l'app mette da sola anche le categorie di cui è quasi certa (almeno al {0}%, dalle tue scelte passate o, se lo hai attivato, dall'assistente). Le ritrovi in Categorizza → «Messe dall'app», dove puoi cambiarle.", {0: confidencePercent(AUTO_APPLY_THRESHOLD)})}
           htmlFor="categorie-sicure-da-sole"
         >
           <Switch

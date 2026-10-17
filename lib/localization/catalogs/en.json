@@ -4167,5 +4167,9 @@
   "La lettura standard non è riuscita. L'analisi AI è stata avviata automaticamente; il supporto riceverà il report dell'errore.": "Standard reading failed. AI analysis started automatically; support will receive an error report.",
   "Segui l'analisi": "View analysis progress",
   "Analisi AI avviata": "AI analysis started",
-  "Impossibile avviare l'analisi AI": "Unable to start AI analysis"
+  "Impossibile avviare l'analisi AI": "Unable to start AI analysis",
+  "Stai esplorando i dati d'esempio: azzerali per aggiungere i tuoi.": "You're exploring the example data: clear it to add your own.",
+  "Hai già dei conti: i dati d'esempio sono per chi parte da zero.": "You already have accounts: the example data is for starting from scratch.",
+  "I dati d'esempio sono già attivi.": "The example data is already active.",
+  "Completa prima la configurazione iniziale.": "Finish the initial setup first."
 }

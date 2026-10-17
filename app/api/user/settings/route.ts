@@ -8,7 +8,8 @@ import { listLinkedProviders } from "@/lib/account/sessions";
 import { readJson, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { resolveHomePage } from "@/lib/account/home-pages";
 import { updateUserSettingsSchema } from "@/lib/validation/user-settings";
-import { withRoute } from "@/lib/observability";
+import { requestLogger, withRoute } from "@/lib/observability";
+import { localizeDemo } from "@/lib/start/demo";
 
 /** Profilo e preferenze dell'utente per la pagina Impostazioni, con metodi di accesso e scadenza dell'accesso recente. */
 async function handleGet(request: NextRequest) {
@@ -50,6 +51,11 @@ async function handlePatch(request: NextRequest) {
     .update(authUser)
     .set({ ...parsed.data, updatedAt: new Date() })
     .where(eq(authUser.id, session.user.id));
+  // The example data follows the interface language, so it is rewritten when the language changes.
+  if (language !== current.language) {
+    const localized = await localizeDemo(session.user.id, language);
+    if (localized > 0) requestLogger().info("onboarding.demo.localized", { count: localized });
+  }
   return new Response(null, { status: 204 });
 }
 

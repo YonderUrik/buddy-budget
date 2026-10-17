@@ -4167,5 +4167,9 @@
   "La lettura standard non è riuscita. L'analisi AI è stata avviata automaticamente; il supporto riceverà il report dell'errore.": "Das reguläre Einlesen ist fehlgeschlagen. Die KI-Analyse wurde automatisch gestartet; der Support erhält einen Fehlerbericht.",
   "Segui l'analisi": "Analyse verfolgen",
   "Analisi AI avviata": "KI-Analyse gestartet",
-  "Impossibile avviare l'analisi AI": "KI-Analyse konnte nicht gestartet werden"
+  "Impossibile avviare l'analisi AI": "KI-Analyse konnte nicht gestartet werden",
+  "Stai esplorando i dati d'esempio: azzerali per aggiungere i tuoi.": "Du siehst dir gerade die Beispieldaten an: Setze sie zurück, um deine eigenen hinzuzufügen.",
+  "Hai già dei conti: i dati d'esempio sono per chi parte da zero.": "Du hast bereits Konten: Die Beispieldaten sind für einen Start bei null gedacht.",
+  "I dati d'esempio sono già attivi.": "Die Beispieldaten sind bereits aktiv.",
+  "Completa prima la configurazione iniziale.": "Schließe zuerst die Ersteinrichtung ab."
 }

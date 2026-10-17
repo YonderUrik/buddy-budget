@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDemoData } from "./demo-data";
+import { buildDemoData, DEMO_TEXTS, translateDemoText } from "./demo-data";
 import { countDoneSteps, shouldShowChecklist } from "./steps";
 
 describe("buildDemoData", () => {
@@ -20,6 +20,30 @@ describe("buildDemoData", () => {
   it("marca i conti come demo nel nome", () => {
     expect(data.checking.name).toMatch(/demo/);
     expect(data.savings.name).toMatch(/demo/);
+  });
+
+  it("writes texts in the interface language and keeps amounts and dates identical", () => {
+    for (const language of ["en", "de"] as const) {
+      const localized = buildDemoData(today, language);
+      expect(localized.checking.name).toBe(DEMO_TEXTS[language].checking);
+      const shape = (t: { category: string; amount: number; date: string }) => [t.category, t.amount, t.date];
+      expect(localized.transactions.map(shape)).toEqual(data.transactions.map(shape));
+      expect(localized.liquidityHistory).toEqual(data.liquidityHistory);
+      const allowed = new Set(Object.values(DEMO_TEXTS[language]));
+      expect(localized.transactions.every((t) => allowed.has(t.description))).toBe(true);
+    }
+  });
+
+  it("uses language-independent category keys", () => {
+    expect(new Set(data.transactions.map((t) => t.category))).toEqual(
+      new Set(["stipendio", "risparmio", "affitto", "bollette", "spesa", "trasporti", "ristoranti", "abbonamenti", "benessere", "shopping"])
+    );
+  });
+
+  it("translates only texts the demo wrote", () => {
+    expect(translateDemoText("Affitto", "de")).toBe("Miete");
+    expect(translateDemoText("Current account · demo", "it")).toBe("Conto corrente · demo");
+    expect(translateDemoText("Affitto di ottobre", "en")).toBeNull();
   });
 });
 

@@ -66,7 +66,7 @@ export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currenc
             <li key={key}>
               <div className="flex justify-between gap-3">
                 <span className="font-semibold">{tr(EXPENSE_GROUPS[key].label)}</span>
-                <span className="font-mono tabular-nums">{money(groups[key])}</span>
+                <span className="tabular-nums">{money(groups[key])}</span>
               </div>
               <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-muted" role="presentation">
                 <div className="h-full rounded-full" style={{ width: `${(groups[key] / groupMax) * 100}%`, backgroundColor: EXPENSE_GROUPS[key].colorVar }} />

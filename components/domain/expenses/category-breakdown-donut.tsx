@@ -107,7 +107,7 @@ export function CategoryBreakdownDonut({
     return (
       <div className="flex w-full items-center justify-between gap-3">
         <span className="text-muted-foreground">{name}</span>
-        <span className="font-mono font-medium tabular-nums text-foreground">
+        <span className="font-medium tabular-nums text-foreground">
           {formatCurrency(Number(value), currency)}
         </span>
       </div>
@@ -162,31 +162,6 @@ export function CategoryBreakdownDonut({
   });
   const sortedLegendEntries = sortLegendEntries(enrichedEntries, sortCriterion, sortDirection);
 
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const [canScrollUp, setCanScrollUp] = React.useState(false);
-  const [canScrollDown, setCanScrollDown] = React.useState(false);
-
-  const checkScroll = React.useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const { scrollTop, scrollHeight, clientHeight } = el;
-    setCanScrollUp(scrollTop > 2);
-    setCanScrollDown(scrollTop + clientHeight < scrollHeight - 2);
-  }, []);
-
-  React.useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    const observer = new ResizeObserver(checkScroll);
-    observer.observe(el);
-    return () => {
-      el.removeEventListener("scroll", checkScroll);
-      observer.disconnect();
-    };
-  }, [checkScroll, sortedLegendEntries.length]);
-
   const innerKeys: CategoryGroupKey[] = [
     ...EXPENSE_GROUP_KEYS,
     ...(groupTotals.daCategorizzare > 0 ? ([UNCATEGORIZED_GROUP_KEY] as const) : []),
@@ -211,7 +186,7 @@ export function CategoryBreakdownDonut({
   return (
     <Card className="p-0">
       <CardHeader className="pt-4">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr("Per categoria")}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{tr("Per categoria")}</CardTitle>
         <CardAction className="flex items-center gap-1">
           <Select value={sortCriterion} onValueChange={(value) => handleCriterionChange(value as LegendSortCriterion)}>
             <SelectTrigger size="sm" className="w-36">
@@ -261,24 +236,7 @@ export function CategoryBreakdownDonut({
         </ChartContainer>
 
         <div className="relative min-w-0">
-          {/* Indicatori gradient fade: segnalano all'utente che la lista continua sopra/sotto */}
           <div
-            aria-hidden="true"
-            className={cn(
-              "pointer-events-none absolute top-0 inset-x-0 z-10 h-6 bg-gradient-to-b from-card to-transparent transition-opacity duration-200",
-              canScrollUp ? "opacity-100" : "opacity-0"
-            )}
-          />
-          <div
-            aria-hidden="true"
-            className={cn(
-              "pointer-events-none absolute bottom-0 inset-x-0 z-10 h-8 bg-gradient-to-t from-card to-transparent transition-opacity duration-200",
-              canScrollDown ? "opacity-100" : "opacity-0"
-            )}
-          />
-
-          <div
-            ref={scrollRef}
             className="max-h-56 divide-y divide-border overflow-y-auto pr-1.5 custom-scrollbar"
           >
             {sortedLegendEntries.map((entry) => (

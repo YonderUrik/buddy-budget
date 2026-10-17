@@ -173,7 +173,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const instrumentField = (
     <Field label={tr("Strumento")}>
       {editing ? (
-        <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{instrument?.name ?? tr("Strumento")}</p>
+        <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-foreground">{instrument?.name ?? tr("Strumento")}</p>
       ) : (
         <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
       )}

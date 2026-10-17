@@ -1,26 +1,25 @@
-/* Schede per area in riga sopra lo screenshot, che così usa tutta la larghezza della pagina. */
-.gal-nav { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-top: 36px; padding: 18px 20px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); }
+/* Screens grouped by area in one row above the screenshot, which then uses the whole page width. */
+.gal-nav { display: flex; flex-wrap: wrap; gap: 20px 36px; margin-top: 36px; }
 .gal-area { display: grid; gap: 8px; }
-.gal-area-t { font: 600 11px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink3); }
+.gal-area-t { font: 700 15px var(--f-b); color: var(--ink); }
 .gal-area-b { display: flex; flex-wrap: wrap; gap: 4px; }
-.gal-tab { border: 0; background: transparent; padding: 7px 12px; border-radius: var(--r-sm); color: var(--ink2); font: 500 15px var(--f-b); cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s; }
-.gal-tab:hover { background: var(--head); color: var(--ink); }
-.gal-tab[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--accent); font-weight: 600; }
+.gal-tab { border: 0; background: color-mix(in srgb, var(--ink) 5%, transparent); padding: 0 14px; min-height: 40px; border-radius: 999px; color: var(--ink2); font: 500 15px var(--f-b); cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s; }
+.gal-tab:hover { background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
+.gal-tab[aria-pressed="true"] { background: var(--ink); color: var(--bg); font-weight: 600; }
 .gal-view { margin-top: 32px; }
 .cp .gal-cap { margin: 0 0 20px; font-size: 17px; color: var(--ink2); max-width: 60em; }
-.gal-cap b { color: var(--ink); font-family: var(--f-h); margin-right: 10px; }
-/* Sul telefono ogni area è una riga (nome a sinistra, schermate a capo a destra): tutto visibile, niente scorrimento laterale. */
+.gal-cap b { color: var(--ink); margin-right: 10px; }
+/* On the phone each area is one row (name on the left, screens wrapping on the right): everything visible, no sideways scrolling. */
 @media (max-width: 760px) {
-  .gal-nav { display: grid; gap: 10px; padding: 14px 16px; margin-top: 28px; }
+  .gal-nav { display: grid; gap: 14px; margin-top: 28px; }
   .gal-area { grid-template-columns: 92px minmax(0, 1fr); align-items: baseline; gap: 8px; }
-  .gal-area + .gal-area { border-top: 1px solid var(--line); padding-top: 10px; }
-  .gal-area-t { font-size: 10.5px; letter-spacing: 0.1em; }
+  .gal-area-t { font-size: 14px; }
   .gal-area-b { gap: 2px 4px; }
-  .gal-tab { padding: 6px 10px; font-size: 14.5px; }
+  .gal-tab { padding: 0 12px; font-size: 14.5px; }
 }
-/* With `phoneOnMobile`: on the phone the full screenshot gives way to the phone-size one, inside the frame. */
+/* With `phoneOnMobile`: on the phone the full screenshot gives way to the phone-size one. */
 .gal-phone { display: none; }
 @media (max-width: 760px) {
   .gal-pm .gal-desk { display: none; }
-  .gal-pm .gal-phone { display: block; margin: 0 auto; --pf-h: min(72vh, 560px); }
+  .gal-pm .gal-phone { display: block; margin: 0 auto; --ps-h: min(72vh, 560px); }
 }

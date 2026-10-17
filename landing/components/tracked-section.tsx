@@ -11,17 +11,19 @@ export interface TrackedSectionProps {
   section: SectionId;
   as?: ElementType;
   className?: string;
+  /** Ground of the section, read by the bar to take its colours (`data-field`, see `use-field-under-bar`). */
+  field?: "navy" | "light" | "alt" | "sun";
   /** Id of the heading that names the section. */
   "aria-labelledby"?: string;
   children: ReactNode;
 }
 
 /** Section that sends `section_view` to Umami the first time it really comes into view. */
-export function TrackedSection({ id, section, as: Tag = "section", className, "aria-labelledby": labelledBy, children }: TrackedSectionProps) {
+export function TrackedSection({ id, section, as: Tag = "section", className, field, "aria-labelledby": labelledBy, children }: TrackedSectionProps) {
   const ref = useRef<HTMLElement>(null);
   useSectionView(ref, section);
   return (
-    <Tag id={id} ref={ref} className={className} aria-labelledby={labelledBy}>
+    <Tag id={id} ref={ref} className={className} data-field={field} aria-labelledby={labelledBy}>
       {children}
     </Tag>
   );

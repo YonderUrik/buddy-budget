@@ -17,7 +17,7 @@ export function AnalyticsCard({ title, explainer, children }: AnalyticsCardProps
   const { t: tr } = useLocalization();
   return (
     <section className="flex flex-col gap-4 border-t pt-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr(title)}</h3>
+      <h3 className="text-sm font-medium text-muted-foreground">{tr(title)}</h3>
       {children}
       {explainer ? <Explainer id={explainer} /> : null}
     </section>
@@ -48,5 +48,5 @@ export function Metric({ label, value, sub, tone = "default", term }: MetricProp
 
 /** Messaggio quando mancano i dati per un'analitica: dice che cosa serve. */
 export function MissingData({ children }: { children: ReactNode }) {
-  return <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">{children}</p>;
+  return <p className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">{children}</p>;
 }

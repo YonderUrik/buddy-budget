@@ -11,7 +11,7 @@ export default async function UnsubscribePage({ searchParams }: { searchParams: 
   const payload = verifyUnsubscribeToken(t);
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-10">
-      <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+      <div className="rounded-xl bg-card p-6">
         {payload && t ? (
           <UnsubscribeCard token={t} scope={payload.scope} preferencesHref={NOTIFICATION_SETTINGS_PATH} privacyEmail={PRIVACY_EMAIL} />
         ) : (

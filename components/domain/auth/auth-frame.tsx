@@ -14,15 +14,15 @@ import { cn } from "@/lib/utils";
 import { AuthPreview } from "./auth-preview";
 
 export interface AuthFrameProps {
-  /** Riga in alto del pannello (marchio e, a destra, la scelta della lingua). */
+  /** Top row of the panel (brand and, on the right, the language choice). */
   brand: React.ReactNode;
-  /** Riga in fondo al pannello (link al sito, sicurezza, aiuto). */
+  /** Bottom row of the panel (links to the site, security, help). */
   foot?: React.ReactNode;
-  /** Contenuto a destra del form; di default l'anteprima della Panoramica. */
+  /** Content on the right of the form; by default the net-worth preview. */
   aside?: React.ReactNode;
-  /** Percorsi in cui il contenuto a destra non si mostra (es. l'onboarding, dove conta solo il form). */
+  /** Paths where the right-hand content is not shown (e.g. onboarding, where only the form matters). */
   asideHiddenOn?: readonly string[];
-  /** Il form della pagina. */
+  /** The page's form. */
   children: React.ReactNode;
   className?: string;
 }
@@ -34,7 +34,7 @@ export function AuthFrame({ brand, foot, aside, asideHiddenOn = [], children, cl
 
   return (
     <div className={cn("min-h-dvh bg-background", showAside && "lg:grid lg:grid-cols-[520px_minmax(0,1fr)]", className)}>
-      <section className={cn("flex min-h-dvh flex-col bg-card px-5 pb-8 pt-6 lg:px-14 lg:pb-10 lg:pt-9", showAside && "lg:border-r lg:border-border")}>
+      <section className={cn("flex min-h-dvh flex-col bg-card px-5 pb-8 pt-6 lg:px-14 lg:pb-10 lg:pt-9")}>
         <div className={cn("flex w-full items-center justify-between gap-4", !showAside && "mx-auto max-w-2xl")}>{brand}</div>
         <div className={cn("my-auto w-full py-10 lg:py-12", showAside ? "max-w-[400px]" : "mx-auto max-w-2xl")}>{children}</div>
         {foot && <div className={cn("w-full", !showAside && "mx-auto max-w-2xl")}>{foot}</div>}

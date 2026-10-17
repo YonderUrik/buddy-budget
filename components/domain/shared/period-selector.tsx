@@ -65,7 +65,7 @@ export function PeriodSelector<T extends string>({ options, value, onChange, ari
     : null;
 
   const pill = (active: boolean) => active ? (
-    <motion.span layoutId={pillId} transition={SPRING_BOUNCY} aria-hidden="true" className="absolute inset-0 rounded-md bg-background shadow-sm" />
+    <motion.span layoutId={pillId} transition={SPRING_BOUNCY} aria-hidden="true" className="absolute inset-0 rounded-md bg-background" />
   ) : null;
   const tone = (active: boolean) => active ? "text-foreground" : "text-muted-foreground hover:text-foreground";
 

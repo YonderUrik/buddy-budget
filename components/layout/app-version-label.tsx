@@ -20,7 +20,7 @@ export function AppVersionLabel({ info = APP_BUILD_INFO, compact = false, classN
   const details = formatVersionDetails(info, locale);
   return (
     <p
-      className={cn("truncate font-mono text-[11px] leading-none tabular-nums", className)}
+      className={cn("truncate text-[11px] leading-none tabular-nums", className)}
       title={details}
       aria-label={details.replaceAll("\n", ", ")}
     >

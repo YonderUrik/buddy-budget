@@ -54,7 +54,7 @@ export function PensionHero({ name, performance, snapshots, currency, className 
       </p>
       <MoneyHero value={value} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
       <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm">
-        <span className={cn("inline-flex items-center gap-1.5 font-mono font-semibold tabular-nums", tone)}>
+        <span className={cn("inline-flex items-center gap-1.5 font-semibold tabular-nums", tone)}>
           <Icon className="size-4" aria-hidden="true" />
           {sign}
           {money(Math.abs(gain), currency)}

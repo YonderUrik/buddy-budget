@@ -61,7 +61,7 @@ export function ImportStatementStep({ fileName, providerName, rows, warnings, ca
                   <span className="text-muted-foreground">{m.date.split("-").reverse().join("/")} {"·"}</span>
                   {m.description}
                 </span>
-                <span className="shrink-0 font-mono text-xs tabular-nums">{m.amount.toFixed(2)}{" "}{m.currency}</span>
+                <span className="shrink-0 text-xs tabular-nums">{m.amount.toFixed(2)}{" "}{m.currency}</span>
               </li>
             ))}
           </ul>

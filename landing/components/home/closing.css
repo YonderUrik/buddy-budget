@@ -1,12 +1,15 @@
-/* Closing on the navy of the app's sidebar, home and content pages alike; the footer follows on the same ground. */
-.close { padding: 104px 0; background: var(--navy); color: var(--on-navy); text-align: center; }
-.close h2 { color: var(--on-navy); margin: 0 auto; font: 300 clamp(48px, 6.4vw, 96px) / 0.92 var(--f-d); max-width: 12em; }
-.close p { margin: 16px auto 0; color: var(--on-navy2); max-width: 46ch; font-size: 17px; line-height: 1.55; }
-.close .cta { margin-top: 30px; justify-content: center; }
-.close .btn { height: 48px; padding: 0 22px; font-size: 16px; }
-.close .btn.ghost { background: var(--on-navy); color: var(--navy); border-color: var(--on-navy); }
-.close .btn.ghost:hover { background: color-mix(in srgb, var(--on-navy) 88%, var(--navy)); }
-.close .btn.plain { background: transparent; color: var(--on-navy); border-color: color-mix(in srgb, var(--on-navy) 30%, transparent); }
-.close .btn.plain:hover { border-color: var(--on-navy); }
-@media (max-width: 1000px) { .close { padding: 72px 0; } }
-@media (max-width: 600px) { .close .cta { flex-direction: column; align-items: stretch; } .close .btn { justify-content: center; } }
+/* The close, on the navy field: the idea again at display size, the sentence and the links bottom-left, the single
+   sign-up button bottom-right. On the home (`.full`) it fills the screen; content pages end on a shorter one. */
+.close { padding-block: 128px 72px; }
+.close.full { min-height: 100svh; display: flex; }
+.close .wrap { width: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 72px; }
+.close h2 { font: 300 clamp(64px, 10vw, 168px) / 0.86 var(--f-d); letter-spacing: -0.015em; color: var(--on-navy); max-width: 11em; }
+.close-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px 64px; flex-wrap: wrap; }
+.close-foot p { color: var(--on-navy2); font-size: clamp(18px, 1.5vw, 21px); line-height: 1.5; max-width: 44ch; }
+.close-foot .tlink { color: var(--on-navy); }
+@media (max-width: 1000px) {
+  .close { padding-block: 96px 48px; }
+  .close.full { min-height: 88svh; }
+  .close-foot { flex-direction: column; align-items: stretch; }
+  .close-foot .btn { width: 100%; }
+}

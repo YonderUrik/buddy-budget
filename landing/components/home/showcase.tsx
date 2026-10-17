@@ -6,17 +6,17 @@ import type { ShowcaseId, ShowcaseText } from "@/content/home";
 import { track } from "@/lib/analytics";
 import type { Locale } from "@/lib/i18n";
 import { MOTION_OK } from "@/lib/motion/motion-ok";
+import { rise } from "@/lib/motion/rise";
 import { PhoneShot } from "../phone-shot";
 import { TrackedSection } from "../tracked-section";
 import { ScreenCrop } from "./screen-crop";
-import { SectionHead } from "./section-head";
 
 /** How long a programmatic scroll (tab tap) is allowed to move the track before swipes count as the reader's again (ms). */
 const SETTLE_MS = 700;
 
 /**
- * «Cosa ti dice, ogni giorno»: five tabs like the app's segmented control, each with the real screen (window on
- * desktop, phone on the phone), the figure and the hook. The panels sit in a native scroll-snap track: a tap on a
+ * «Cosa ti dice, ogni giorno»: four tabs set as plain words, each with the real screen (the desktop capture on
+ * desktop, the phone capture on the phone, no frames), the figure and the hook. The panels sit in a native scroll-snap track: a tap on a
  * tab scrolls to the panel, a swipe on the phone moves the tabs along. Every choice sends `showcase_tab_selected`.
  */
 export function Showcase({ text, locale }: { text: ShowcaseText; locale: Locale }) {
@@ -90,10 +90,10 @@ export function Showcase({ text, locale }: { text: ShowcaseText; locale: Locale 
   const panelId = (id: ShowcaseId) => `dentro-${id}`;
 
   return (
-    <TrackedSection id="dentro" section="dentro" className="sec show" aria-labelledby="dentro-t">
+    <TrackedSection id="dentro" section="dentro" className="sec show" field="alt" aria-labelledby="dentro-t">
       <div className="wrap">
-        <SectionHead id="dentro-t" title={text.title} />
-        <div className="tabs" role="tablist" aria-label={text.tabsLabel}>
+        <h2 id="dentro-t" data-rise>{text.title}</h2>
+        <div className="tabs" data-rise style={rise(1)} role="tablist" aria-label={text.tabsLabel}>
           {text.tabs.map((tab, i) => (
             <button
               key={tab.id}
@@ -128,7 +128,7 @@ export function Showcase({ text, locale }: { text: ShowcaseText; locale: Locale 
                 {tab.more ? <Link className="more" href={tab.more.href}>{tab.more.label}</Link> : null}
               </div>
               <div>
-                <ScreenCrop id={tab.shot} ratio="16 / 11" locale={locale} />
+                <ScreenCrop id={tab.shot} ratio="16 / 11" locale={locale} sizes="(max-width: 1000px) 100vw, 760px" />
                 <PhoneShot id={tab.shot} locale={locale} />
               </div>
             </article>

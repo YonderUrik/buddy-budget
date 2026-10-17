@@ -128,8 +128,8 @@ export function PensionImportMappingStep({ fileName, table, mapping, rows, missi
                       <tr key={s.line} className="border-b border-border/60 last:border-b-0">
                         <td className="py-2 pr-2 tabular-nums text-text-2">{s.line}</td>
                         <td className="whitespace-nowrap px-2 py-2 font-semibold">{formatShortDateKey(s.date)}</td>
-                        <td className="px-2 py-2 text-right font-mono tabular-nums">{money(s.netContributions, currency)}</td>
-                        <td className="py-2 pl-2 text-right font-mono tabular-nums">{money(s.value, currency)}</td>
+                        <td className="px-2 py-2 text-right tabular-nums">{money(s.netContributions, currency)}</td>
+                        <td className="py-2 pl-2 text-right tabular-nums">{money(s.value, currency)}</td>
                       </tr>
                     ))}
                   </tbody>

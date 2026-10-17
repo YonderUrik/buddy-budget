@@ -30,7 +30,7 @@ export function UncategorizedCallout({
   const noun = count === 1 ? tr("transazione da categorizzare") : tr("transazioni da categorizzare");
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-neg/30 bg-neg-soft/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl bg-neg-soft/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <p className="flex items-center gap-2 text-sm text-foreground">
         <span className="inline-flex size-2 shrink-0 rounded-full bg-neg" aria-hidden="true" />
         <span>

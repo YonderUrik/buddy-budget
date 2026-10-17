@@ -45,7 +45,7 @@ export function InvestmentsViewGate({
     );
   }
   if (error) return <LoadError message={errorMessage} onRetry={onRetry} />;
-  if (empty && disabled.size) return <div className="space-y-3 rounded-xl border p-6 text-center"><p>{tr("Nessuna operazione per i broker selezionati.")}</p><Button variant="outline" onClick={() => { showAll(); track("investment_broker_filter_changed", { action: "all" }); }}>{tr("Mostra tutti i broker")}</Button></div>;
+  if (empty && disabled.size) return <div className="space-y-3 rounded-xl bg-muted/50 p-6 text-center"><p>{tr("Nessuna operazione per i broker selezionati.")}</p><Button variant="outline" onClick={() => { showAll(); track("investment_broker_filter_changed", { action: "all" }); }}>{tr("Mostra tutti i broker")}</Button></div>;
   if (empty) {
     return (
       <EmptyState

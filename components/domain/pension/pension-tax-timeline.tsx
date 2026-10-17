@@ -84,7 +84,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
       <div ref={trackRef} className="relative pt-6">
         <div className="flex h-3 w-full overflow-hidden rounded-full bg-foreground/10">
           <span className="h-full bg-neg/70" style={{ width: `${flatShare}%` }} />
-          <span className="h-full bg-gradient-to-r from-neg/70 to-pos" style={{ width: `${100 - flatShare}%` }} />
+          <span className="h-full bg-pos/70" style={{ width: `${100 - flatShare}%` }} />
         </div>
         {interactive && shownYears !== realYears ? (
           <span className="absolute bottom-0 h-3 w-0.5 -translate-x-1/2 rounded-full bg-foreground/40" style={{ left: `${realPosition}%` }} title={tr("Oggi")} aria-hidden="true" />

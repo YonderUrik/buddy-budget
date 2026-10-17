@@ -26,7 +26,7 @@ export function SettingsPreview({ caption, children, className }: SettingsPrevie
   return (
     <figure className="m-0 flex flex-col gap-2">
       <div aria-hidden="true" className={cn("relative overflow-hidden rounded-xl bg-muted/60 p-3 sm:p-4", className)}>
-        <span className="absolute right-2 top-2 rounded-full bg-background/80 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-text-3">{tr("Anteprima")}</span>
+        <span className="absolute right-2 top-2 rounded-full bg-background/80 px-2 py-0.5 text-xs font-medium text-text-3">{tr("Anteprima")}</span>
         {children}
       </div>
       <figcaption className="text-xs text-muted-foreground">{tr(caption)}</figcaption>
@@ -96,7 +96,7 @@ export function EmailPreview() {
   const { t: tr } = useLocalization();
   return (
     <SettingsPreview caption="Un esempio di cosa ricevi: il riepilogo dell'ultimo periodo e, se li attivi, gli avvisi su budget e scadenze.">
-      <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-lg bg-card p-3 shadow-sm">
+      <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-lg bg-card p-3">
         <div className="flex items-center gap-2">
           <span className="size-5 rounded-full bg-primary/15" />
           <p className="text-xs font-semibold text-foreground">{tr("Il tuo mese in BuddyBudget")}</p>
@@ -123,7 +123,7 @@ export function CategoryProposalPreview() {
   const { t: tr } = useLocalization();
   return (
     <SettingsPreview caption="L'assistente propone: quelle in dubbio le scegli tu, quelle quasi certe può metterle l'app da sola, e restano da controllare.">
-      <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-lg bg-card p-3 shadow-sm">
+      <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-lg bg-card p-3">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-semibold text-foreground">{tr("Esercente")}</p>
           <Bar className="w-10" />

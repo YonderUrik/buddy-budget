@@ -32,7 +32,7 @@ export function DataFlow({ content = FLOW, initial = DEFAULT_NODE }: { content?:
   };
 
   return (
-    <div className="df cell">
+    <div className="df" data-ui>
       <div className="df-track" role="tablist" aria-label={content.label}>
         {content.nodes.map((n, i) => {
           const Icon = NODE_ICONS[n.id];

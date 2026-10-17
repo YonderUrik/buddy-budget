@@ -80,11 +80,11 @@ export function DebtsExitCard({ debts, currency }: DebtsExitCardProps) {
       </ol>
       <div className="flex justify-between gap-3 border-t pt-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{tr("Libero da debiti")}</p>
+          <p className="text-sm font-medium text-muted-foreground">{tr("Libero da debiti")}</p>
           <p className="font-heading text-xl font-medium text-foreground">{formatMonthYear(plan.endDate)}</p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{tr("Interessi risparmiati")}</p>
+          <p className="text-sm font-medium text-muted-foreground">{tr("Interessi risparmiati")}</p>
           <p className="font-heading text-xl font-medium tabular-nums text-pos">{money(plan.interestSaved)}</p>
         </div>
       </div>

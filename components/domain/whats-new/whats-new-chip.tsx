@@ -41,7 +41,7 @@ export function WhatsNewChip({ entry, onDismiss, delay = 0.6 }: WhatsNewChipProp
           >
             <SparklesIcon className="size-3.5" aria-hidden />
           </motion.span>
-          <span className="text-sweep-once font-medium underline-offset-4 group-hover:underline">{tr("Novità:")}{" "}{tr(entry.title)}</span>
+          <span className="font-medium underline-offset-4 group-hover:underline">{tr("Novità:")}{" "}{tr(entry.title)}</span>
         </PopoverTrigger>
       </motion.span>
       <PopoverContent align="start" className="w-80 gap-3 p-4">

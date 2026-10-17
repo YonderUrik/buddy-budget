@@ -140,11 +140,9 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
         </Button>
       </form>
 
-      <div className="flex items-center gap-3 text-sm text-text-3">
-        <span className="h-px flex-1 bg-border" />{tr("oppure")}<span className="h-px flex-1 bg-border" />
-      </div>
+      <p className="text-center text-sm text-text-3">{tr("oppure")}</p>
 
-      <Button variant="outline" className="h-11 w-full text-base" type="button" onClick={() => void actions.signInWithGoogle()} disabled={busy}>
+      <Button variant="outline" className="h-11 w-full rounded-full text-base" type="button" onClick={() => void actions.signInWithGoogle()} disabled={busy}>
         {actions.googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
         {actions.googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
       </Button>

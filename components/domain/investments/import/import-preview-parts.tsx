@@ -99,7 +99,7 @@ export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
                 {dateLabel(row.operation.date)} {"·"}{tr(TRANSACTION_TYPE_LABELS[row.operation.type])}
               </span>
             </span>
-            <span className="shrink-0 text-right font-mono text-xs tabular-nums text-muted-foreground">
+            <span className="shrink-0 text-right text-xs tabular-nums text-muted-foreground">
               {row.operation.quantity ? tr("{0} × ", { 0: NUMBER_FORMAT.format(row.operation.quantity) }) : ""}
               {NUMBER_FORMAT.format(row.operation.grossAmount ?? row.operation.price)}
             </span>
@@ -122,8 +122,8 @@ export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
               <td className="whitespace-nowrap py-1.5 pr-2">{dateLabel(row.operation.date)}</td>
               <td className="px-2 py-1.5">{tr(TRANSACTION_TYPE_LABELS[row.operation.type])}</td>
               <td className="max-w-48 truncate px-2 py-1.5">{row.identity.symbol ?? row.identity.isin ?? row.identity.name}</td>
-              <td className="px-2 py-1.5 text-right font-mono tabular-nums">{row.operation.quantity ? NUMBER_FORMAT.format(row.operation.quantity) : "—"}</td>
-              <td className="py-1.5 pl-2 text-right font-mono tabular-nums">{NUMBER_FORMAT.format(row.operation.grossAmount ?? row.operation.price)}</td>
+              <td className="px-2 py-1.5 text-right tabular-nums">{row.operation.quantity ? NUMBER_FORMAT.format(row.operation.quantity) : "—"}</td>
+              <td className="py-1.5 pl-2 text-right tabular-nums">{NUMBER_FORMAT.format(row.operation.grossAmount ?? row.operation.price)}</td>
             </tr>
           ))}
         </tbody>

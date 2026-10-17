@@ -6,6 +6,7 @@ import type { LandingEvents } from "@/lib/analytics";
 import { counterpart } from "@/content/locales";
 import { otherLocale, type Locale } from "@/lib/i18n";
 import { BackLink } from "./back-link";
+import { rise } from "@/lib/motion/rise";
 import { Closing } from "./home/closing";
 import { SiteFooter } from "./site-footer";
 import { SiteNav } from "./site-nav";
@@ -26,7 +27,6 @@ export interface ContentPageProps {
   ctaText: string;
   ctaLocation: CtaLocation;
   current?: string;
-  kicker?: string;
   disclaimer?: boolean;
   wide?: boolean;
   locale?: Locale;
@@ -36,14 +36,14 @@ export interface ContentPageProps {
 
 /**
  * Frame of the content pages (calculators, guides, features, security): the same navy bar as the home, a navy head
- * with the back link, the kicker, the title in the display face and the lead, then the body on the light page and
+ * with the back link, the title in the display face and the lead, then the body on the light page and
  * the same navy closing as the home with a title and a sentence of this page.
  * `title` and `lead` open the page on the navy head. `crumbs` is the path from the home page: the nearest ancestor with an `href` becomes the «‹» back link above the title.
- * `kicker` is the small label above the title («Calcolatore gratuito, senza account»). `current` is the path of the page
+ * `current` is the path of the page
  * (highlights the menu entry); `disclaimer` shows the tax notice at the end of the body (off on pages without
  * estimates); `wide` widens the body for galleries and catalogs. `locale` picks the chrome texts (`UI`).
  */
-export function ContentPage({ title, lead, crumbs, children, ctaTitle, ctaText, ctaLocation, current, kicker, disclaimer = true, wide = false, locale = "it", alternate }: ContentPageProps) {
+export function ContentPage({ title, lead, crumbs, children, ctaTitle, ctaText, ctaLocation, current, disclaimer = true, wide = false, locale = "it", alternate }: ContentPageProps) {
   const t = UI[locale].content;
   const parent = crumbs.slice(0, -1).findLast((c) => c.href);
   const isHome = (href: string) => href === "/" || href === "/en";
@@ -52,15 +52,14 @@ export function ContentPage({ title, lead, crumbs, children, ctaTitle, ctaText, 
     <>
       <SiteNav current={current} locale={locale} alternate={switchTo} />
       <main className="cp">
-        <header className="cp-head">
+        <header className="cp-head" data-field="navy">
           <div className={`wrap cp-wrap${wide ? " cp-wide" : ""}`}>
             {parent ? <BackLink href={parent.href!} label={isHome(parent.href!) ? t.home : parent.label} /> : null}
-            {kicker ? <span className="kicker">{kicker}</span> : null}
-            <h1>{title}</h1>
-            <p className="lead">{lead}</p>
+            <h1 data-rise>{title}</h1>
+            <p className="lead" data-rise style={rise(1)}>{lead}</p>
           </div>
         </header>
-        <div className={`wrap cp-wrap cp-body${wide ? " cp-wide" : ""}`}>
+        <div data-field="light" className={`wrap cp-wrap cp-body${wide ? " cp-wide" : ""}`}>
           {children}
           {disclaimer ? <p className="cp-disclaimer" role="note"><strong>{t.disclaimerStrong}</strong> {t.disclaimer}</p> : null}
         </div>

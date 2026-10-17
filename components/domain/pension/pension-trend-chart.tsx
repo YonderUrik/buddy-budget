@@ -35,16 +35,10 @@ export function PensionTrendChart({ snapshots, currency, height = DEFAULT_HEIGHT
     <div>
       <ChartContainer config={CHART_CONFIG} className="w-full" style={{ height }}>
         <ComposedChart data={data} margin={{ left: 0, right: 0 }}>
-          <defs>
-            <linearGradient id="pension-contributions-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-netContributions)" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="var(--color-netContributions)" stopOpacity={0} />
-            </linearGradient>
-          </defs>
           <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={36} padding={{ left: 16, right: 16 }} />
           <YAxis hide domain={[0, "auto"]} />
           <ChartTooltip cursor={false} content={<PensionChartTooltip config={CHART_CONFIG} currency={currency} title={(point) => String(point.label ?? "")} />} />
-          <Area isAnimationActive={false} type="stepAfter" dataKey="netContributions" stroke="var(--color-netContributions)" strokeWidth={2} fill="url(#pension-contributions-fill)" />
+          <Area isAnimationActive={false} type="stepAfter" dataKey="netContributions" stroke="var(--color-netContributions)" strokeWidth={2} fill="var(--color-netContributions)" fillOpacity={0.12} />
           <Line isAnimationActive={false} type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2.6} dot={false} />
         </ComposedChart>
       </ChartContainer>

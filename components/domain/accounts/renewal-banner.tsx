@@ -17,7 +17,7 @@ export interface RenewalBannerProps {
 export function RenewalBanner({ alerts, onRenew, renewHref, renewLabel = "Rinnova" }: RenewalBannerProps) {
   if (alerts.length === 0) return null;
   return (
-    <div role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3 sm:p-4">
+    <div role="alert" className="flex flex-wrap items-center gap-3 rounded-xl bg-destructive/10 p-3 sm:p-4">
       <AlertTriangle size={18} className="shrink-0 text-destructive" aria-hidden />
       <ul className="min-w-0 flex-1 space-y-0.5 text-sm text-foreground">
         {alerts.map((alert) => (

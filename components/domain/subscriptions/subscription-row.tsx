@@ -67,7 +67,7 @@ export function SubscriptionRow({ item, currency, today, onOpen, actions, onRemo
           <span className="block text-sm text-text-2">{itemHint(item, today)}</span>
         </span>
         <span className="shrink-0 text-right">
-          <span className="block font-mono font-semibold tabular-nums">{item.amount !== null ? formatCurrency(item.amount, currency) : "—"}</span>
+          <span className="block font-semibold tabular-nums">{item.amount !== null ? formatCurrency(item.amount, currency) : "—"}</span>
           {rise ? (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-neg">
               <TrendingUpIcon className="size-3.5" aria-hidden="true" />{tr("era")}{" "}{formatCurrency(rise.from, currency)}

@@ -72,7 +72,7 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
             {watching ? <EyeOffIcon size={15} aria-hidden="true" /> : <EyeIcon size={15} aria-hidden="true" />}
             {watching ? tr("Non seguire più") : tr("Segui")}
           </Button>
-          <Button className="gap-1.5 shadow-xs" onClick={onRegister}>
+          <Button className="gap-1.5" onClick={onRegister}>
             <PlusIcon size={15} aria-hidden="true" />{" "}{tr("Registra")}</Button>
         </div>
       </div>

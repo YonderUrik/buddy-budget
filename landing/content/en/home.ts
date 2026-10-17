@@ -49,11 +49,10 @@ export const FAQ_EN: readonly FaqItem[] = [
 export const HOME_EN: HomeContent = {
   locale: "en",
   hero: {
-    title: "All your money, in one number.",
+    title: ["All your money,", "in one number."],
     lede: "Bank accounts, investments, pension and mortgage, added up. Updated every day, with the taxes worked out.",
     cta: "Get started free",
     demo: "Try the demo",
-    how: "How it works",
   },
   sum: {
     title: "Net worth",
@@ -65,7 +64,10 @@ export const HOME_EN: HomeContent = {
     ],
     prefix: "€",
     cents: ".53",
-    caption: "Sample data.",
+    caption: "Sample data: Giulia, a made-up person.",
+    hint: "Type your own amounts: the sum redoes itself and nothing leaves this page.",
+    reset: "Put the sample data back",
+    fieldLabel: "Amount for {place}",
   },
   places: {
     title: "Four places, one number.",
@@ -124,15 +126,6 @@ export const HOME_EN: HomeContent = {
         more: { href: EN_PATHS.featureInvestments, label: "All about investments" },
       },
       {
-        id: "tasse",
-        tab: "Taxes",
-        title: "The tax on a sale. Before you sell.",
-        text: "With the Italian rules: 26% on gains, 12.5% on government bonds, past losses that lower the bill, stamp duty. It's an estimate: your broker does the final sum.",
-        figure: { value: "€146", small: ".93", caption: "in tax if you sold all of the sample ETF today · you'd keep €19,625.25" },
-        shot: "tasse",
-        more: { href: CONTENT_PATHS.zainetto, label: "Try the calculator, no account needed (in Italian)" },
-      },
-      {
         id: "mutuo",
         tab: "Mortgage",
         title: "Is it worth paying off the mortgage early?",
@@ -154,8 +147,19 @@ export const HOME_EN: HomeContent = {
     all: "All screens",
     allHref: EN_PATHS.screens,
   },
+  tax: {
+    title: "The net, before you sell.",
+    text: "With the Italian rules: 26% on gains, 12.5% on government bonds, past losses that lower the bill, stamp duty. The app estimates it before you sell; your broker does the final sum.",
+    specimens: [
+      { caption: "You receive if you sell the sample ETF today", value: "€19,772", small: ".18" },
+      { caption: "You keep, after €146.93 of tax", value: "€19,625", small: ".25" },
+    ],
+    more: { href: CONTENT_PATHS.zainetto, label: "Try the calculator, no account needed (in Italian)" },
+  },
   trust: {
-    title: "It only reads. It never moves money.",
+    title: ["It only reads.", "It never moves money."],
+    groups: { facts: "Your data", limits: "Limits, said plainly", code: "The code" },
+    columns: { group: "Group", what: "What", how: "How", source: "Source" },
     facts: [
       {
         icon: "key",
@@ -190,7 +194,7 @@ export const HOME_EN: HomeContent = {
     moreHref: EN_PATHS.security,
   },
   hood: {
-    title: "The code is open. Read it, or run it yourself.",
+    title: "The code is open.",
     text: "The whole app is public, under the AGPL-3.0 license. You can read how it handles your data, report a problem or run it on your own server with Docker.",
     fallback: `The code is licensed under ${SOURCE_LICENSE} and runs on your own server with Docker.`,
     cta: "See the code on GitHub",
@@ -218,8 +222,8 @@ export const HOME_EN: HomeContent = {
   faq: { title: "Before you sign up.", items: FAQ_EN },
   close: {
     title: "Your number, from tomorrow morning.",
+    note: "Want to look first? The demo is Giulia's account, no sign-up needed.",
     cta: "Get started free",
     demo: "Try the demo",
   },
-  login: "Sign in",
 };

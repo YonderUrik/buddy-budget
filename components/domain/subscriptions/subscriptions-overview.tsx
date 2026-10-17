@@ -50,7 +50,7 @@ function Hero({ data }: { data: SubscriptionsResponse }) {
       <p className="mt-3 text-sm text-text-2">
         {totals.count > 0 ? (
           <>
-            <span className="font-mono font-semibold tabular-nums text-foreground">{formatCurrency(totals.yearly, currency, { maximumFractionDigits: 0 })}</span>{" "}{tr("all'anno, in")}{" "}{totals.count}{" "}
+            <span className="font-semibold tabular-nums text-foreground">{formatCurrency(totals.yearly, currency, { maximumFractionDigits: 0 })}</span>{" "}{tr("all'anno, in")}{" "}{totals.count}{" "}
             {plural(totals.count, tr("abbonamento confermato"), tr("abbonamenti confermati"))}{"."}</>
         ) : (
           tr("Conferma quelli che riconosci qui sotto e li sommiamo.")
@@ -58,7 +58,7 @@ function Hero({ data }: { data: SubscriptionsResponse }) {
         {totals.pendingCount > 0 ? (
           <>
             {" "}{tr("Altri")}{" "}{totals.pendingCount}{" "}{tr("da confermare valgono circa")}{" "}
-            <span className="font-mono font-semibold tabular-nums text-foreground">{formatCurrency(totals.pendingMonthly, currency, { maximumFractionDigits: 0 })}</span>{" "}{tr("al mese.")}</>
+            <span className="font-semibold tabular-nums text-foreground">{formatCurrency(totals.pendingMonthly, currency, { maximumFractionDigits: 0 })}</span>{" "}{tr("al mese.")}</>
         ) : null}
       </p>
       {next && next.nextDate ? (
@@ -205,7 +205,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
                 key={item.key}
                 title={item.name}
                 hint={tr("Da {0} a {1} {2}", {0: formatCurrency(item.priceChange!.from, currency), 1: formatCurrency(item.priceChange!.to, currency), 2: fromDate(item.priceChange!.since)})}
-                end={<span className="font-mono text-sm font-semibold tabular-nums text-neg">{"+"}{formatCurrency(item.priceChange!.to - item.priceChange!.from, currency)}</span>}
+                end={<span className="text-sm font-semibold tabular-nums text-neg">{"+"}{formatCurrency(item.priceChange!.to - item.priceChange!.from, currency)}</span>}
               />
             ))}
           </div>

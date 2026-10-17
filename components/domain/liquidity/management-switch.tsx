@@ -29,7 +29,7 @@ export function ManagementSwitch({ options, activeHref, ariaLabel = "Categorie o
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex min-h-11 items-center rounded-full px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-ring",
-              active ? "bg-card text-foreground shadow-xs" : "text-text-2 hover:text-foreground",
+              active ? "bg-card text-foreground" : "text-text-2 hover:text-foreground",
             )}
           >
             {tr(option.label)}

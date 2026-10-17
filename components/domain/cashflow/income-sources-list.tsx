@@ -23,7 +23,7 @@ export function IncomeSourcesList({ sources, currency }: IncomeSourcesListProps)
   return (
     <Card className="p-0">
       <CardHeader className="pt-4">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr("Fonti di entrata")}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{tr("Fonti di entrata")}</CardTitle>
       </CardHeader>
       <CardContent className="divide-y divide-border p-0">
         {sources.length === 0 ? (

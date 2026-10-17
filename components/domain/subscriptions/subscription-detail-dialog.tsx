@@ -83,7 +83,7 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <p className="font-mono text-3xl font-medium tabular-nums">{item.amount !== null ? formatCurrency(item.amount, currency) : "—"}</p>
+        <p className="text-3xl font-medium tabular-nums">{item.amount !== null ? formatCurrency(item.amount, currency) : "—"}</p>
         <p className="mt-1 text-sm text-text-2">{itemHint(item, today)}</p>
         {item.monthly !== null && item.cadence !== "mensile" ? <p className="text-sm text-text-2">{tr("Pesa")}{" "}{formatCurrency(item.monthly, currency)}{" "}{tr("al mese")}</p> : null}
       </div>
@@ -107,7 +107,7 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
               {history.map((charge) => (
                 <li key={charge.id} className="flex min-h-9 items-center justify-between gap-3">
                   <span className="text-text-2">{formatDateWithYear(charge.date)}</span>
-                  <span className="font-mono tabular-nums">{formatCurrency(charge.amount, currency)}</span>
+                  <span className="tabular-nums">{formatCurrency(charge.amount, currency)}</span>
                 </li>
               ))}
             </ul>

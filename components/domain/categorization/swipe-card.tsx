@@ -121,7 +121,7 @@ export function SwipeCard({
         if (leaves) navigator.vibrate?.(HAPTIC_TICK_MS);
         else { animate(x, 0, SNAP_BACK_SPRING); animate(y, 0, SNAP_BACK_SPRING); }
       }}
-      className={cn("relative flex touch-none flex-col gap-4 rounded-2xl border-2 bg-card transition-colors p-5 shadow-lg select-none max-md:flex-1 max-md:justify-between", zone === "conferma" ? "border-pos" : zone === "cambia" ? "border-neg" : zone === "salta" ? "border-muted-foreground" : "border-border")}
+      className={cn("relative flex touch-none flex-col gap-4 rounded-2xl border-2 bg-card transition-colors p-5 select-none max-md:flex-1 max-md:justify-between", zone === "conferma" ? "border-pos" : zone === "cambia" ? "border-neg" : zone === "salta" ? "border-muted-foreground" : "border-border")}
     >
       <motion.span style={{ opacity: confirmOpacity }} className={cn("pointer-events-none absolute top-4 left-4 rounded-md border-2 border-pos px-2 py-0.5 text-sm font-semibold text-pos", zone === "conferma" && "bg-pos text-background")}>
         {zone === "conferma" ? tr("Lascia: è questa") : tr("È questa")}
@@ -153,7 +153,7 @@ export function SwipeCard({
             amounts={group.transactionAmounts}
             descriptions={group.transactionDescriptions}
             currency={currency}
-            className="rounded-xl border border-border px-3 py-2 max-md:hidden"
+            className="rounded-xl bg-muted/50 px-3 py-2 max-md:hidden"
           />
           <MovementsPreview
             label={group.label}
@@ -162,7 +162,7 @@ export function SwipeCard({
             descriptions={group.transactionDescriptions}
             currency={currency}
             limit={MOBILE_PREVIEW_LIMIT}
-            className="rounded-xl border border-border px-3 py-2 md:hidden"
+            className="rounded-xl bg-muted/50 px-3 py-2 md:hidden"
           />
         </>
       ) : null}

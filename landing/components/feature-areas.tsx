@@ -4,7 +4,6 @@ import { FEATURE_AREAS, featuresByArea, featureText, type FeatureStatus } from "
 import { areaMeta } from "@/content/feature-areas";
 import type { Locale } from "@/lib/i18n";
 import { AreaJump } from "./area-jump";
-import { HomeIcon } from "./home-icon";
 import { Reveal } from "./reveal";
 import { AppShot } from "./app-shot";
 
@@ -34,7 +33,6 @@ export function FeatureAreas({ locale = "it" }: { locale?: Locale }) {
           <section key={area} id={meta.slug} className="fa" aria-labelledby={`${meta.slug}-t`}>
             <div className={`fa-head${meta.shot ? "" : " no-shot"}`}>
               <div>
-                <span className="fa-ic" aria-hidden="true"><HomeIcon name={meta.icon} size={20} /></span>
                 <h2 id={`${meta.slug}-t`}>{meta.name} <small>{features.length}</small></h2>
                 <p>{meta.intro}</p>
                 {meta.more ? (

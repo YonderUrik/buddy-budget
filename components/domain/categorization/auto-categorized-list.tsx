@@ -50,7 +50,7 @@ export function AutoCategorizedList({
 
   if (groups.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-1 rounded-2xl border border-border p-8 text-center">
+      <div className="flex flex-col items-center gap-1 rounded-2xl bg-muted/50 p-8 text-center">
         <p className="font-heading text-lg font-medium text-foreground">{tr("Niente da controllare")}</p>
         <p className="max-w-sm text-sm text-muted-foreground">
           {autoApplyEnabled
@@ -80,7 +80,7 @@ export function AutoCategorizedList({
         ))}
       </ul>
       <LogoCredit visible={logosShown} />
-      <div className="sticky bottom-0 z-10 -mx-4 -mb-4 flex items-center justify-between gap-3 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:-mx-6 sm:-mb-6 sm:px-6">
+      <div className="sticky bottom-0 z-10 -mx-4 -mb-4 flex items-center justify-between gap-3 border-t border-border bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:-mb-6 sm:px-6">
         <p className="text-sm text-muted-foreground">{tr("Le hai guardate? Toglile dalla lista.")}</p>
         <Button type="button" onClick={onAllGood} disabled={allGoodPending} className="h-10 shrink-0 px-5 sm:h-9">
           <CheckIcon />{" "}{tr("Va tutto bene")}</Button>

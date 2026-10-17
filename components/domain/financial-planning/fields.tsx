@@ -19,12 +19,12 @@ export function Choice({ label, value, options, onChange }: ChoiceProps) {
 /** Group related inputs and results in the same visual section. */
 export function Panel({ title, children, literalTitle = false }: { title: string; children: ReactNode; literalTitle?: boolean }) {
   const { t } = useLocalization();
-  return <section className="space-y-4 rounded-2xl border p-5"><h2 className={SECTION_TITLE}>{literalTitle ? title : t(title)}</h2>{children}</section>;
+  return <section className="space-y-4 rounded-2xl bg-card p-5"><h2 className={SECTION_TITLE}>{literalTitle ? title : t(title)}</h2>{children}</section>;
 }
 /** Locale-aware EUR amount; unavailable estimates are explicit. */
 export function Amount({ value }: { value: number | null }) {
   const { locale, t } = useLocalization();
-  return <span className="font-mono tabular-nums">{value === null ? t("More information needed") : new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(value)}</span>;
+  return <span className="tabular-nums">{value === null ? t("More information needed") : new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(value)}</span>;
 }
 /** Label and amount for a scenario result. */
 export function Result({ label, value }: { label: string; value: number | null }) {

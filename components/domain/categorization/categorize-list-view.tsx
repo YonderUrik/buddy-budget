@@ -234,7 +234,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
           </Card>
           <LogoCredit visible={logosShown} className="-mt-3" />
 
-          <div className="sticky bottom-0 z-10 -mx-4 -mb-4 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:-mx-6 sm:-mb-6 sm:px-6">
+          <div className="sticky bottom-0 z-10 -mx-4 -mb-4 border-t border-border bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:-mb-6 sm:px-6">
             {applyMutation.isPending && applyProgress ? (
               <div className="flex flex-col gap-1">
                 <ProgressBar

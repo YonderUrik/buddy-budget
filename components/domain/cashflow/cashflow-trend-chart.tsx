@@ -29,7 +29,7 @@ export function CashflowTrendChart({ monthlySeries, currency }: CashflowTrendCha
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr("Entrate vs uscite")}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{tr("Entrate vs uscite")}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={CHART_CONFIG} className="max-h-64 w-full">
@@ -47,7 +47,7 @@ export function CashflowTrendChart({ monthlySeries, currency }: CashflowTrendCha
                   formatter={(value, name) => (
                     <div className="flex w-full items-center justify-between gap-3">
                       <span className="text-muted-foreground">{name === "entrate" ? tr("Entrate") : tr("Uscite")}</span>
-                      <span className="font-mono font-medium tabular-nums text-foreground">
+                      <span className="font-medium tabular-nums text-foreground">
                         {formatCurrency(Number(value), currency)}
                       </span>
                     </div>

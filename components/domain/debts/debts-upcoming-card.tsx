@@ -57,7 +57,7 @@ export function DebtsUpcomingCard({ items, debts, currency }: DebtsUpcomingCardP
             const row = debt ? findDueRow(debt, item.date) : undefined;
             return (
               <li key={`${item.debtId}-${item.date}`} className="flex items-center gap-3 border-b py-3 last:border-b-0">
-                <span className={cn("flex size-11 shrink-0 flex-col items-center justify-center rounded-xl border leading-tight text-muted-foreground", index === 0 && !item.overdue && "border-transparent bg-primary/10 text-primary", item.overdue && "border-transparent bg-neg-soft text-neg")}>
+                <span className={cn("flex size-11 shrink-0 flex-col items-center justify-center rounded-xl bg-muted leading-tight text-muted-foreground", index === 0 && !item.overdue && "border-transparent bg-primary/10 text-primary", item.overdue && "border-transparent bg-neg-soft text-neg")}>
                   <span className="font-heading text-base font-medium">{day}</span>
                   <span className="text-[11px] font-semibold">{MONTH_ABBR[month - 1]}</span>
                 </span>

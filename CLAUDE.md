@@ -179,7 +179,7 @@ Finance-specific tokens (in addition to the standard shadcn ones):
 - `--neg` / `--neg-soft`: negative amounts, expenses
 - `--text-2` / `--text-3`: secondary/tertiary text levels
 
-Fonts: `font-heading` (Space Grotesk) for titles and highlighted figures, `font-sans` (Hanken Grotesk) for the rest of the text.
+Fonts: two typefaces only. `font-display` (Sofia Sans Extra Condensed) for page and section titles; Hanken Grotesk for everything else (`font-sans`, and `font-heading`, kept as an alias for highlighted figures, which sets `tabular-nums`). No monospace outside literal code (`<pre>`/`<code>`, system mono stack): figures that must align use the sans with `tabular-nums`.
 
 ## Component conventions
 
@@ -204,6 +204,7 @@ A new screen or feature is not "complete" until the catalog is updated, together
 
 ## Project status
 
+**taste-skill across the product (2026-10-17)**: `impeccable` replaced by taste-skill (`.claude/skills/taste-skill/`, MIT). Landing rebuilt on its «Type and nothing else» direction: colour fields instead of rules and boxes, the four places as a live list visitors can type over, the net before selling as two giant figures on yellow, trust as a table, sticky bar that takes the chapter colours; two faces only (Space Grotesk and Geist Mono dropped), no mono labels, no device or browser frames, pill buttons. Sign-in and app follow the house rules (no gradients, no resting shadows, no tiny capitals, filled cards). Entry in `docs/decisioni/2026-10-17-taste-skill.md`. Branch `claude/project-thread-yzxjw4` (on top of the launch PR). Deferred: section dividers inside app panels, a video loop on the landing.
 **Screenshots in every language (2026-10-17)**: landing screenshots captured in Italian, English and German (demo texts per language, German with German rules; Pension and Analytics fall back to English) and shown in the visitor's browser language (`?lang=` to force); the daily bot captures all three. The app now proposes the browser language when no choice is saved (signed out, onboarding). Entry in `docs/decisioni/2026-10-17-screenshot-in-ogni-lingua.md`, guide `docs/landing-screens.md`. Branch `claude/project-thread-34w044`. Hardcoded `it-IT` number and date formats replaced by the user's locale in the same PR. Deferred: landing texts in English/German, a few Italian words inside formatted values, emails.
 **Public demo and launch blockers (2026-10-17)**: `/demo?lang=it|en|de` opens a shared read-only sample account without signing up (writes refused in the proxy and in a better-auth hook, strip with «Crea il tuo account», «Prova la demo» on the login page), rebuilt every night by `/api/cron/public-demo`, off unless `PUBLIC_DEMO_ENABLED=true`; every release now publishes the `latest` images. Entry in `docs/decisioni/2026-10-17-demo-pubblica.md`. Branch `claude/project-thread-bxot8d` (and in the infra repo), built on PR #409. Deferred: per-visitor sandboxes, arm64 images by default.
 **Period selector (2026-10-17)**: one `PeriodSelector` for every period choice, presets on one line with 44 px targets on the phone, «Personalizzato» as a calendar icon opening a sheet with a real day calendar (month grid in Analitiche). Entry in `docs/decisioni/2026-10-17-selettore-del-periodo.md`. Branch `claude/project-thread-r3gnnf`. Deferred: two months side by side on desktop, typed dates.

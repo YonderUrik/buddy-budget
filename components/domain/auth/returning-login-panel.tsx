@@ -39,13 +39,13 @@ export function ReturningLoginPanel({ maskedEmail, method, loading, googleLoadin
   const googleFirst = method === "google";
 
   const linkButton = (primary: boolean) => (
-    <Button type="button" variant={primary ? "default" : "outline"} className={cn("h-11 w-full text-base", primary && AUTH_PRIMARY_BUTTON)} onClick={onSendLink} disabled={busy}>
+    <Button type="button" variant={primary ? "default" : "outline"} className={cn("h-11 w-full rounded-full rounded-full text-base", primary && AUTH_PRIMARY_BUTTON)} onClick={onSendLink} disabled={busy}>
       {loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
       {loading ? tr("Invio in corso…") : primary ? tr("Mandami il link") : tr("Mandami il link via email")}
     </Button>
   );
   const googleButton = (primary: boolean) => (
-    <Button type="button" variant={primary ? "default" : "outline"} className={cn("h-11 w-full text-base", primary && AUTH_PRIMARY_BUTTON)} onClick={onGoogle} disabled={busy}>
+    <Button type="button" variant={primary ? "default" : "outline"} className={cn("h-11 w-full rounded-full rounded-full text-base", primary && AUTH_PRIMARY_BUTTON)} onClick={onGoogle} disabled={busy}>
       {googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
       {googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
     </Button>
@@ -77,13 +77,11 @@ export function ReturningLoginPanel({ maskedEmail, method, loading, googleLoadin
         )}
       </div>
 
-      <div className="flex items-center gap-3 text-sm text-text-3">
-        <span className="h-px flex-1 bg-border" />{tr("oppure")}<span className="h-px flex-1 bg-border" />
-      </div>
+      <p className="text-center text-sm text-text-3">{tr("oppure")}</p>
 
       <div className="flex flex-col gap-2">
         {googleFirst ? linkButton(false) : googleButton(false)}
-        <Button type="button" variant="ghost" className="h-11 w-full" onClick={onForget} disabled={busy}>{tr("Non sei tu? Usa un altro account")}</Button>
+        <Button type="button" variant="ghost" className="h-11 w-full rounded-full" onClick={onForget} disabled={busy}>{tr("Non sei tu? Usa un altro account")}</Button>
       </div>
 
       <LegalLinksNote />

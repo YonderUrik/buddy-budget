@@ -79,7 +79,7 @@ function InstrumentRow({
             {identity.count}{" "}{identity.count === 1 ? "operazione" : tr("operazioni")}
           </span>
         </div>
-        {identity.name ? <p className="-mt-1.5 truncate font-mono text-xs text-muted-foreground">{[identity.symbol, identity.isin].filter(Boolean).join(" · ")}</p> : null}
+        {identity.name ? <p className="-mt-1.5 truncate tabular-nums text-xs text-muted-foreground">{[identity.symbol, identity.isin].filter(Boolean).join(" · ")}</p> : null}
         <p className="flex items-start gap-2 text-sm">
           <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full" style={{ color, backgroundColor: `color-mix(in oklab, ${color} 16%, transparent)` }} aria-hidden="true">
             <Icon className="size-3" />

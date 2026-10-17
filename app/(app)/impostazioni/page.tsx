@@ -21,7 +21,7 @@ import {
   useRecentLogin,
   type SettingsGroupId,
 } from "@/components/domain/settings";
-import { LoadError } from "@/components/domain/shared";
+import { BackLink, LoadError } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import { useUserSettingsQuery } from "@/lib/queries/user-settings";
 
@@ -72,6 +72,7 @@ function ImpostazioniContent() {
     <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       {/* Su telefono, dentro un gruppo, in cima c'è «‹ Impostazioni»: il titolo della pagina lo ripeterebbe. */}
       <div className={selected ? "max-md:hidden" : undefined}>
+        <BackLink href="/panoramica" label="Panoramica" />
         <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Impostazioni")}</h1>
         <p className="text-sm text-muted-foreground">{tr("Il tuo profilo, le preferenze e il controllo sui tuoi dati.")}</p>
       </div>

@@ -25,6 +25,8 @@ export interface LandingEvents {
   /** Pagina /sicurezza: passaggio aperto nel diagramma del percorso dei dati. */
   security_node_selected: { node: "tu" | "banca" | "gocardless" | "buddybudget" };
   source_link_click: { location: "footer" | "sezione" };
+  /** «‹» back link above the title of an internal page. */
+  back_link_click: { to: "home" | "strumenti" | "funzioni" | "altro" };
 }
 
 export type LandingEventName = keyof LandingEvents;

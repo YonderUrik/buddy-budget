@@ -6,13 +6,14 @@ import { ObiettivoCalculator } from "@/components/tools/obiettivo-calculator";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 import { OBIETTIVO_PAGE } from "@/content/tools";
+import { pageMetadata } from "@/lib/page-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
   title: OBIETTIVO_PAGE.title,
   description: OBIETTIVO_PAGE.description,
   alternates: { canonical: CONTENT_PATHS.obiettivo },
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
-};
+});
 
 export default function Page() {
   return (

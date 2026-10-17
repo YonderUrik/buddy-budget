@@ -24,7 +24,7 @@ export interface PublicDemoBannerProps {
  * leave the demo and create a real account (signs out first, so the sign-in page opens clean).
  */
 export function PublicDemoBanner({ signupHref = DEFAULT_SIGNUP_HREF, className }: PublicDemoBannerProps) {
-  const { t, language } = useLocalization();
+  const { t, language, productCountry } = useLocalization();
   const [leaving, setLeaving] = React.useState(false);
 
   React.useEffect(() => {
@@ -34,12 +34,12 @@ export function PublicDemoBanner({ signupHref = DEFAULT_SIGNUP_HREF, className }
     } catch {
       // Blocked storage: the event may be sent more than once, which is harmless.
     }
-    track("public_demo_viewed", { language });
-  }, [language]);
+    track("public_demo_viewed", { language, country: productCountry });
+  }, [language, productCountry]);
 
   async function leaveDemo() {
     setLeaving(true);
-    track("public_demo_signup_clicked", { language });
+    track("public_demo_signup_clicked", { language, country: productCountry });
     await authClient.signOut().catch(() => undefined);
     // Full reload: no cached demo data stays in memory for the account that comes next.
     window.location.assign(signupHref);

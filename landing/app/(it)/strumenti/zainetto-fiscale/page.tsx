@@ -6,16 +6,17 @@ import { ZainettoCalculator } from "@/components/tools/zainetto-calculator";
 import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
+import { pageMetadata } from "@/lib/page-metadata";
 
 const TITLE = "Calcolatore zainetto fiscale: minusvalenze e imposta sulle plusvalenze";
 const DESCRIPTION = "Calcola quanto puoi compensare con le minusvalenze degli ultimi 4 anni e quanta imposta paghi su una plusvalenza di azioni, ETF o titoli di Stato. Gratis, senza registrazione.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: CONTENT_PATHS.zainetto },
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
-};
+});
 
 export default function Page() {
   return (

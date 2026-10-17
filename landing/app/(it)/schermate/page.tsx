@@ -5,16 +5,17 @@ import { ScreenGallery } from "@/components/screen-gallery";
 import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
+import { pageMetadata } from "@/lib/page-metadata";
 
 const TITLE = "Le schermate di BuddyBudget: conti, investimenti, pensione e debiti";
 const DESCRIPTION = "Tutte le schermate dell'app, area per area. Sono screenshot dell'app vera con dati di esempio inventati.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
   description: DESCRIPTION,
   alternates: languageAlternates(CONTENT_PATHS.schermate, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
-};
+});
 
 export default function Page() {
   return (

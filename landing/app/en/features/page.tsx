@@ -5,15 +5,16 @@ import { JsonLd } from "@/components/json-ld";
 import { FEATURE_AREAS, featureCounts } from "@/content/catalog.generated";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { SITE_URL } from "@/content/site";
+import { pageMetadata } from "@/lib/page-metadata";
 
 const TITLE = "All BuddyBudget features: accounts, investments, pension and debts";
 const DESCRIPTION = "Everything BuddyBudget does, area by area: accounts, transactions, investments with Italian taxes, debts and net worth.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("en", {
   title: TITLE,
   description: DESCRIPTION,
   alternates: languageAlternates(EN_PATHS.features, "en"),
-};
+});
 
 /** English features page: the shared catalog with its English texts (`en` of each entry in `lib/features/catalog.ts`). */
 export default function Page() {

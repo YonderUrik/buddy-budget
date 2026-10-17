@@ -3,13 +3,14 @@ import { SecurityPage } from "@/components/security-page";
 import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SECURITY_IT } from "@/content/security";
+import { pageMetadata } from "@/lib/page-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
   title: SECURITY_IT.page.title,
   description: SECURITY_IT.page.description,
   alternates: languageAlternates(CONTENT_PATHS.sicurezza, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
-};
+});
 
 /** «Sicurezza e privacy» page; texts in `content/security.ts`, layout in `SecurityPage`. */
 export default function Page() {

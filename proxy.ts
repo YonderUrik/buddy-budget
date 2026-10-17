@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { needsLegalAcceptance } from "@/lib/legal";
 import { recordPublicDemoEvent } from "@/lib/observability";
-import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemoUserId, isReadOnlyMethod, publicDemoSessionLanguage } from "@/lib/public-demo/config";
+import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemoUserId, isReadOnlyMethod, publicDemoSessionProfile } from "@/lib/public-demo/config";
 
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
 // /demo opens the read-only public demo (it decides itself whether a session exists).
@@ -59,8 +59,8 @@ export async function proxy(request: NextRequest) {
 
   // Public demo: a shared sample account, so its sessions can read everything and write nothing.
   if (isPublicDemoUserId(session.user.id) && pathname.startsWith("/api/") && !isReadOnlyMethod(request.method)) {
-    const language = publicDemoSessionLanguage(session.user.language);
-    recordPublicDemoEvent("write_blocked", language);
+    const { language, productCountry } = publicDemoSessionProfile(session.user);
+    recordPublicDemoEvent("write_blocked", language, productCountry);
     return NextResponse.json({ code: PUBLIC_DEMO_READ_ONLY_CODE, error: translate(language, PUBLIC_DEMO_READ_ONLY_MESSAGE) }, { status: 403 });
   }
 

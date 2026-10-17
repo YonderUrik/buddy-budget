@@ -47,7 +47,7 @@ export interface Feature {
 const FEATURES_EN: Readonly<Record<string, FeatureText>> = {
   "csv-personali-ai": { name: "Personal CSVs with AI", description: "Upload the CSV of a bank or broker we don't know: we read it in the background and remember the institution and the columns of its format. If the saved reader fails, we try again with the AI you have authorized and send a technical report to support. You get an email when the import is done." },
   "primi-passi-e-dati-d-esempio": { name: "First steps and sample data", description: "Starting without a bank? The Overview shows four steps that tick themselves off (account, transactions, investment, goal), and you can try the app with sample data that resets with one tap." },
-  "demo-senza-account": { name: "Demo without an account", description: "Open the app with the data of a sample account, in Italian, English or German, without signing up: look at everything, nothing is saved." },
+  "demo-senza-account": { name: "Demo without an account", description: "Open the app with the data of a sample account, for Italy or Germany, in Italian, English or German, without signing up: look at everything, nothing is saved." },
   "collegamento-alla-banca": { name: "Bank connection", description: "Imports balances and transactions from a bank through Open Banking, read-only, every 12 hours or whenever you like. Limited spots during the beta." },
   "conti-manuali": { name: "Manual accounts", description: "For cash or for banks that don't connect. Tap the account to change its balance, name and icon." },
   "categorizza-con-ai": { name: "Categorize with AI", description: "If you turn it on, the assistant suggests a category for each merchant. Suggestions that are at least 90% sure apply themselves and you review them in “Set by the app”; you confirm the others with a swipe, one card at a time. It uses only the cleaned-up merchant name and your personal instructions, which you can change in Settings." },
@@ -98,7 +98,7 @@ const f = (
 export const FEATURES: readonly Feature[] = [
   f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background e ricordiamo istituzione e colonne del formato. Se il lettore salvato fallisce, riproviamo con l’AI autorizzata e inviamo un report tecnico al supporto. Ti avvisiamo per email a import finito.", "new"),
   f("primi-passi-e-dati-d-esempio", "Account", "Primi passi e dati d'esempio", "Chi parte senza banca trova in Panoramica quattro passi che si spuntano da soli (conto, movimenti, investimento, obiettivo) e può provare l'app con dati d'esempio, azzerabili con un tocco.", "new"),
-  f("demo-senza-account", "Account", "Demo senza account", "Apri l'app con i dati di un account d'esempio, in italiano, inglese o tedesco, senza registrarti: guardi tutto, non si salva niente.", "new"),
+  f("demo-senza-account", "Account", "Demo senza account", "Apri l'app con i dati di un account d'esempio, per l'Italia o la Germania, in italiano, inglese o tedesco, senza registrarti: guardi tutto, non si salva niente.", "new"),
   f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti di una banca con l'Open Banking, in sola lettura, ogni 12 ore o quando vuoi. Posti limitati durante la beta.", "live"),
   f("conti-manuali", "Liquidità", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
 

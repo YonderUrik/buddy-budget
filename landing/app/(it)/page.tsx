@@ -4,10 +4,14 @@ import { LangHint } from "@/components/lang-hint";
 import { CLOSE, HOME_IT } from "@/content/home";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { CONTENT_PATHS } from "@/content/seo-pages";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/content/site";
+import { pageMetadata } from "@/lib/page-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   alternates: languageAlternates("/", "it"),
-};
+});
 
 /** Texts of the «also available in English» line: in English, for whoever does not read Italian. */
 const LANG_HINT = { text: "This page is also available in English", dismiss: "Dismiss" } as const;

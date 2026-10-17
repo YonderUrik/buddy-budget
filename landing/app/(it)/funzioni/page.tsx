@@ -6,16 +6,17 @@ import { FEATURE_AREAS, featureCounts } from "@/content/catalog.generated";
 import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
+import { pageMetadata } from "@/lib/page-metadata";
 
 const TITLE = "Tutte le funzioni di BuddyBudget: conti, investimenti, pensione e debiti";
 const DESCRIPTION = "L'elenco completo di ciò che fa BuddyBudget, area per area: conti, movimenti, investimenti con le tasse italiane, debiti e patrimonio netto.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
   description: DESCRIPTION,
   alternates: languageAlternates(CONTENT_PATHS.funzioni, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
-};
+});
 
 export default function Page() {
   const { total } = featureCounts();

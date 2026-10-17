@@ -5,13 +5,14 @@ import { JsonLd } from "@/components/json-ld";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 import { TOOLS, TOOLS_PAGE } from "@/content/tools";
+import { pageMetadata } from "@/lib/page-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
   title: TOOLS_PAGE.title,
   description: TOOLS_PAGE.description,
   alternates: { canonical: CONTENT_PATHS.strumenti },
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
-};
+});
 
 /** Elenco dei calcolatori gratuiti: una scheda per strumento, nello stesso stile dei rimandi delle altre pagine. */
 export default function Page() {

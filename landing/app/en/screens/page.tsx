@@ -4,15 +4,16 @@ import { JsonLd } from "@/components/json-ld";
 import { ScreenGallery } from "@/components/screen-gallery";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { SITE_URL } from "@/content/site";
+import { pageMetadata } from "@/lib/page-metadata";
 
 const TITLE = "BuddyBudget screens: accounts, investments, pension and debts";
 const DESCRIPTION = "Every screen of the app, area by area. They are screenshots of the real app with made-up sample data.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("en", {
   title: TITLE,
   description: DESCRIPTION,
   alternates: languageAlternates(EN_PATHS.screens, "en"),
-};
+});
 
 /** English screen gallery; labels and captions from `content/screen-text.ts`. */
 export default function Page() {

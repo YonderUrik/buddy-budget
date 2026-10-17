@@ -6,16 +6,17 @@ import { AmmortamentoCalculator } from "@/components/tools/ammortamento-calculat
 import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
+import { pageMetadata } from "@/lib/page-metadata";
 
 const TITLE = "Calcolatore piano di ammortamento ed estinzione anticipata";
 const DESCRIPTION = "Calcola rata, interessi totali e piano di ammortamento alla francese di un mutuo o di un finanziamento, e simula quanto risparmi estinguendo una parte in anticipo. Gratis.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: CONTENT_PATHS.ammortamento },
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
-};
+});
 
 export default function Page() {
   return (

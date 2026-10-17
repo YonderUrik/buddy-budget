@@ -20,6 +20,7 @@ import { DEFAULT_CURRENCY, type SupportedCurrency } from "@/lib/validation/curre
 import { track } from "@/lib/analytics";
 import { summarizeCategorySetup } from "@/lib/categories/setup";
 import { NOTIFICATION_DEFAULTS, type NotificationPreferences } from "@/lib/notifications";
+import { loadAttribution } from "@/lib/analytics/attribution";
 
 type OnboardingStep = "valuta" | "categorie" | "assistente" | "notifiche" | "conferme";
 
@@ -67,7 +68,7 @@ export default function OnboardingPage() {
       });
 
       if (response.ok) {
-        track("onboarding_completed", { currency, language, languageKept: language === proposedLanguage });
+        track("onboarding_completed", { currency, language, languageKept: language === proposedLanguage, ...loadAttribution() });
         if (assistant?.available) track("ai_categorization_toggled", { enabled: assistantEnabled });
         track("terms_accepted", { context: "onboarding" });
         track("onboarding_categories_chosen", {

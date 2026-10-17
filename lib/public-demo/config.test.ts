@@ -4,24 +4,23 @@ import {
   isPublicDemoEnabled,
   isPublicDemoUserId,
   isReadOnlyMethod,
-  pickPublicDemoLanguage,
-  publicDemoProfile,
+  PUBLIC_DEMO_PROFILES,
+  pickPublicDemoProfile,
+  publicDemoSessionProfile,
   publicDemoUserId,
 } from "./config";
 
 describe("public demo config", () => {
   it("recognises demo ids only by their prefix", () => {
-    expect(publicDemoUserId("en")).toBe("public-demo-en");
-    expect(isPublicDemoUserId("public-demo-it")).toBe(true);
+    expect(publicDemoUserId({ productCountry: "DE", language: "en" })).toBe("public-demo-de-en");
+    expect(isPublicDemoUserId("public-demo-it-it")).toBe(true);
     expect(isPublicDemoUserId("demo-user")).toBe(false);
     expect(isPublicDemoUserId("Xk2l9")).toBe(false);
     expect(isPublicDemoUserId(undefined)).toBe(false);
   });
 
-  it("shows the Italian rules in English and the German rules in German", () => {
-    expect(publicDemoProfile("en")).toEqual({ productCountry: "IT", language: "en" });
-    expect(publicDemoProfile("it")).toEqual({ productCountry: "IT", language: "it" });
-    expect(publicDemoProfile("de")).toEqual({ productCountry: "DE", language: "de" });
+  it("has one demo per country and language the app supports", () => {
+    expect(PUBLIC_DEMO_PROFILES.map(publicDemoUserId)).toEqual(["public-demo-it-it", "public-demo-it-en", "public-demo-de-en", "public-demo-de-de"]);
   });
 
   it("is off unless explicitly enabled", () => {
@@ -30,13 +29,21 @@ describe("public demo config", () => {
     expect(isPublicDemoEnabled({ PUBLIC_DEMO_ENABLED: "true" })).toBe(true);
   });
 
-  it("picks the language from the query, then the browser's language", () => {
-    expect(pickPublicDemoLanguage("de", "it-IT")).toBe("de");
-    expect(pickPublicDemoLanguage("fr", "it-IT,it;q=0.9")).toBe("it");
-    expect(pickPublicDemoLanguage(null, "fr-FR,de;q=0.8,en;q=0.9")).toBe("en");
-    expect(pickPublicDemoLanguage(null, "fr-FR,de;q=0.8")).toBe("de");
-    expect(pickPublicDemoLanguage(null, "fr-FR")).toBe("en");
-    expect(pickPublicDemoLanguage(null, null)).toBe("it");
+  it("picks the demo from the query, then the browser's language", () => {
+    expect(pickPublicDemoProfile(null, "de", "it-IT")).toEqual({ productCountry: "DE", language: "de" });
+    expect(pickPublicDemoProfile(null, "en", null)).toEqual({ productCountry: "IT", language: "en" });
+    expect(pickPublicDemoProfile("DE", "en", null)).toEqual({ productCountry: "DE", language: "en" });
+    expect(pickPublicDemoProfile("IT", "de", null)).toEqual({ productCountry: "IT", language: "it" });
+    expect(pickPublicDemoProfile("DE", null, "it-IT")).toEqual({ productCountry: "DE", language: "de" });
+    expect(pickPublicDemoProfile("DE", null, "en-US")).toEqual({ productCountry: "DE", language: "en" });
+    expect(pickPublicDemoProfile(null, "fr", "it-IT,it;q=0.9")).toEqual({ productCountry: "IT", language: "it" });
+    expect(pickPublicDemoProfile("XX", null, "fr-FR,de;q=0.8")).toEqual({ productCountry: "DE", language: "de" });
+    expect(pickPublicDemoProfile(null, null, null)).toEqual({ productCountry: "IT", language: "it" });
+  });
+
+  it("reads the profile of a demo session, English for Italy when it is missing", () => {
+    expect(publicDemoSessionProfile({ language: "en", productCountry: "DE" })).toEqual({ productCountry: "DE", language: "en" });
+    expect(publicDemoSessionProfile({ language: null, productCountry: null })).toEqual({ productCountry: "IT", language: "en" });
   });
 
   it("allows reads and blocks account changes", () => {

@@ -27,6 +27,7 @@ export { FormDialogContent } from "./form-dialog";
 export type { FormDialogContentProps, FormDialogSize } from "./form-dialog";
 export { InlineOrSheet } from "./inline-or-sheet";
 export type { InlineOrSheetLayout, InlineOrSheetProps } from "./inline-or-sheet";
+export { PAGE_TITLE, PAGE_TITLE_FACE } from "./page-title";
 export { BackLink } from "./back-link";
 export { BackHistoryRecorder } from "./back-history-recorder";
 export { PageBackBar, TopBarBack } from "./page-back";

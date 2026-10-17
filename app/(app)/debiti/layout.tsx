@@ -12,6 +12,7 @@ import { Plus } from "lucide-react";
 import { AddDebtDialog, DebtsActionsProvider } from "@/components/domain/debts";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
+import { PAGE_TITLE } from "@/components/domain/shared";
 
 /** Pagine di dettaglio dei singoli finanziamenti. */
 const DETAIL_PAGES_BASE = "/debiti/finanziamenti";
@@ -29,10 +30,10 @@ export default function DebitiLayout({ children }: { children: React.ReactNode }
         <div className={isDetail ? "hidden" : "flex flex-col gap-3"}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Debiti")}</h1>
+              <h1 className={PAGE_TITLE}>{tr("Debiti")}</h1>
               <p className="text-sm text-muted-foreground">{tr("Cosa pagare, cosa pesa, come uscirne")}</p>
             </div>
-            <Button className="gap-1.5 shadow-xs" onClick={actions.openAdd}>
+            <Button variant="sun" className="gap-1.5 shadow-xs" onClick={actions.openAdd}>
               <Plus size={15} aria-hidden="true" />{" "}{tr("Aggiungi")}</Button>
           </div>
         </div>

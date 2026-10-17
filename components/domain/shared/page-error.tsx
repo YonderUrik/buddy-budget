@@ -10,6 +10,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { ReportErrorLink } from "@/components/domain/support";
 import { reportClientError, type ClientErrorKind } from "@/lib/client-errors";
+import { PAGE_TITLE } from "./page-title";
 
 const DEFAULT_TITLE = "Questa pagina non si è caricata";
 const DEFAULT_DESCRIPTION = "Qualcosa è andato storto da parte nostra. I tuoi dati non sono stati toccati: riprova, e se succede ancora segnalacelo.";
@@ -43,7 +44,7 @@ export function PageError({
   const reference = error.digest ? tr("Codice errore: {0}", { 0: error.digest }) : null;
   return (
     <div role="alert" className="mx-auto flex max-w-xl flex-col items-start gap-4 p-4 py-16 sm:p-6 sm:py-24">
-      <h1 className="font-heading text-2xl font-semibold text-foreground">{tr(title)}</h1>
+      <h1 className={PAGE_TITLE}>{tr(title)}</h1>
       <p className="text-sm text-text-2">{tr(description)}</p>
       {reference ? <p className="font-mono text-xs text-text-3">{reference}</p> : null}
       <div className="flex flex-wrap items-center gap-4">

@@ -13,7 +13,7 @@ import { KEPT_GOAL_KINDS } from "@/lib/goals/constants";
 import type { GoalView } from "@/lib/goals/view";
 import { AMOUNT_MASK } from "@/lib/format";
 import { useLocalization } from "@/lib/localization/provider";
-import { LogoCredit } from "@/components/domain/shared";
+import { LogoCredit, PAGE_TITLE } from "@/components/domain/shared";
 import { GOAL_KIND_INFO } from "./goal-kinds";
 import { fireShiftText, statusLabel, statusSentence, type GoalFormatters } from "./goal-format";
 import { GoalIcon } from "./goal-icon";
@@ -55,7 +55,7 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <GoalIcon icon={info.icon} color={info.color} size="lg" />
-          <h1 className="font-heading text-3xl font-medium tracking-tight text-foreground">{goal.name}</h1>
+          <h1 className={PAGE_TITLE}>{goal.name}</h1>
         </div>
         <p className="font-heading text-5xl font-medium tabular-nums text-foreground">
           {hidden ? AMOUNT_MASK : <AnimatedNumber value={goal.current} format={{ style: "currency", currency }} locales={locale} mutedTail />}

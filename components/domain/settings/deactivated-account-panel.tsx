@@ -17,6 +17,7 @@ import { signOutThisDevice } from "@/lib/auth/sign-out";
 import { track } from "@/lib/analytics";
 
 import { useReactivateAccountMutation } from "@/lib/queries/user-settings";
+import { PAGE_TITLE } from "@/components/domain/shared";
 
 export interface DeactivatedAccountPanelProps {
   /** Data (ISO) dell'eliminazione definitiva. */
@@ -42,7 +43,7 @@ export function DeactivatedAccountPanel({ deletionScheduledAt, afterReactivate =
   return (
     <div className="flex flex-col gap-8 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
       <div className="flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-medium tracking-tight">{tr("Il tuo account è disattivato")}</h1>
+        <h1 className={PAGE_TITLE}>{tr("Il tuo account è disattivato")}</h1>
         <p className="text-text-2">
           {tr("Il {0} l'account e tutti i tuoi dati verranno eliminati per sempre. ", {0: formatLongDate(new Date(deletionScheduledAt))})}{tr("Fino ad allora puoi riattivarlo e ritrovare tutto com'era.")}</p>
       </div>

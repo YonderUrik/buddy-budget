@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.73.0](https://github.com/YonderUrik/buddy-budget/compare/v0.72.0...v0.73.0) (2026-10-17)
+
+
+### Novità
+
+* **landing:** home «Un numero solo» and phone-first navigation ([#403](https://github.com/YonderUrik/buddy-budget/issues/403)) ([bc39408](https://github.com/YonderUrik/buddy-budget/commit/bc394080c9aa2cfc88c29546d604af7090845340))
+
+
+### Correzioni
+
+* goal target month as month and year selects, no crash on Safari and Firefox ([#401](https://github.com/YonderUrik/buddy-budget/issues/401)) ([9953b52](https://github.com/YonderUrik/buddy-budget/commit/9953b523b7afd6cd517c3492099971c327bb8acf))
+
 ## [0.72.0](https://github.com/YonderUrik/buddy-budget/compare/v0.71.0...v0.72.0) (2026-10-17)
 
 

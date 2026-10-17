@@ -169,21 +169,22 @@ function NavLink({
         collapsed && "justify-center px-2"
       )}
     >
-      {/* Sfondo della voce attiva: uno solo per lista, scivola da una voce all'altra (`layoutId`). */}
+      {/* Active item background with the brand-yellow marker: one per list, it slides between items (`layoutId`). */}
       {active ? (
         <motion.span
           layoutId="sidebar-active-pill"
           transition={SPRING_SNAPPY}
           className="absolute inset-0 rounded-lg bg-sidebar-accent"
           aria-hidden="true"
-        />
+        >
+          <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-sun" />
+        </motion.span>
       ) : null}
       <span className="relative z-10 flex shrink-0">
         <Icon
           className={cn(
             "shrink-0 transition-transform duration-150",
-            collapsed ? "size-5" : "size-4",
-            active && "text-sidebar-primary"
+            collapsed ? "size-5" : "size-4"
           )}
           aria-hidden="true"
         />

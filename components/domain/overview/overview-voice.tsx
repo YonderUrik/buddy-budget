@@ -5,6 +5,8 @@ import { useLocalization } from "@/lib/localization/provider";
 import type { ReactNode } from "react";
 import { BlurText } from "@/components/motion";
 import { buildVoiceLines, greetingFor, type VoiceInput } from "@/lib/overview/voice";
+import { PAGE_TITLE_FACE } from "@/components/domain/shared";
+import { cn } from "@/lib/utils";
 
 export interface OverviewVoiceProps extends VoiceInput {
   /** Nome di battesimo per il saluto (assente: solo il saluto). */
@@ -22,7 +24,7 @@ export function OverviewVoice({ firstName, dateLabel, dateAside, ...input }: Ove
   return (
     <header className="flex flex-col gap-3">
       <div>
-        <BlurText as="h1" className="font-heading text-3xl font-medium text-foreground sm:text-4xl">
+        <BlurText as="h1" className={cn(PAGE_TITLE_FACE, "text-[2.75rem] sm:text-[3.5rem]")}>
           {`${greeting}${firstName ? `, ${firstName}` : ""}`}
         </BlurText>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

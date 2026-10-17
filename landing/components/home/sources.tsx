@@ -1,5 +1,4 @@
 import { PLACES } from "@/content/home";
-import { HomeIcon } from "../home-icon";
 import { TrackedSection } from "../tracked-section";
 import { BrokerLogo } from "./broker-logo";
 import { SectionHead } from "./section-head";
@@ -30,19 +29,18 @@ function Brokers() {
   );
 }
 
-/** «Da quattro posti, un numero»: how each place gets in, as four ledger rows closed by the sum line. */
+/** «Da quattro posti, un numero»: how each place gets in, four numbered entries (two columns on desktop) */
 export function Sources() {
   return (
     <TrackedSection id="come" section="come" className="sec" aria-labelledby="come-t">
       <div className="wrap">
         <SectionHead id="come-t" title={PLACES.title} intro={PLACES.intro} />
         <ol className="places">
-          {PLACES.items.map((item) => (
+          {PLACES.items.map((item, i) => (
             <li key={item.name} className="place">
-              <div className="place-n">
-                <span className="place-ic" aria-hidden="true"><HomeIcon name={item.icon} size={18} /></span>
-                {item.name}
-              </div>
+              <p className="idx place-n">
+                {String(i + 1).padStart(2, "0")} · {item.name}
+              </p>
               <div>
                 <h3>{item.hook}</h3>
                 <p>{item.text}</p>
@@ -53,10 +51,6 @@ export function Sources() {
             </li>
           ))}
         </ol>
-        <p className="places-eq">
-          <span aria-hidden="true">=</span>
-          {PLACES.result}
-        </p>
       </div>
     </TrackedSection>
   );

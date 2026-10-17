@@ -99,8 +99,8 @@ export default function OnboardingPage() {
           {step === "valuta" ? (
             <>
               <StepHeading title={tr("In che valuta vuoi vedere i tuoi soldi?")} description={tr("Vale per saldi, transazioni e investimenti.")} />
-              <LocaleFields value={{ productCountry, language }} onChange={setProfile} disabled={loading} />
               <CurrencyPicker value={currency} onChange={setCurrency} disabled={loading} />
+              <LocaleFields value={{ productCountry, language }} currency={currency} onChange={setProfile} disabled={loading} divided />
             </>
           ) : step === "categorie" ? (
             <CategorySetupStep setup={categorySetup} disabled={loading} />

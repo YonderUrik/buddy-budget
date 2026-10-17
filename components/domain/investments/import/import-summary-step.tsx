@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import Link from "next/link";
 import { CheckCircle2Icon, CheckIcon } from "lucide-react";
-import { explainRowMessage } from "@/lib/investments/import/messages";
+import { explainRowMessage, translateImportMessage } from "@/lib/investments/import/messages";
 import type { ImportRow } from "@/lib/investments/import/normalize";
 import type { ImportResult } from "@/lib/investments/import/types";
 import { DialogSection, DialogSections } from "../dialog-parts";
@@ -49,7 +49,7 @@ function Fact({ children }: { children: React.ReactNode }) {
 }
 
 export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashMovements = false, keepsOriginal = false, onNavigate }: ImportSummaryStepProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const { openImportManagement } = useInvestmentsActions();
   if (done) {
     return (
@@ -116,8 +116,8 @@ export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashM
         <DialogSection title={errors.length === 1 ? tr("1 riga da correggere") : tr("{0} righe da correggere", {0: errors.length})} description={tr("Finché ci sono errori non importo nulla, così non resta un import a metà.")}>
           <div className="flex flex-col gap-3">
             {errors.slice(0, MAX_LISTED_ERRORS).map((row) => {
-              const e = explainRowMessage(row.message ?? "Riga non valida");
-              return <ImportNotice key={row.line} tone="error" title={tr("Riga {0}: {1}", {0: row.line, 1: e.text})} hint={tr(e.hint)} detail={row.message ?? undefined} />;
+              const e = explainRowMessage(row.message ?? "Riga non valida", language);
+              return <ImportNotice key={row.line} tone="error" title={tr("Riga {0}: {1}", {0: row.line, 1: e.text})} hint={e.hint} detail={row.message ? translateImportMessage(language, row.message) : undefined} />;
             })}
             {errors.length > MAX_LISTED_ERRORS ? <p className="text-sm text-muted-foreground">{tr("…e altre")}{" "}{errors.length - MAX_LISTED_ERRORS}{" "}{tr("righe.")}</p> : null}
           </div>

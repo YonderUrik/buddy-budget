@@ -1,35 +1,6 @@
 import "server-only";
 import { getLocaleProfile } from "./server";
-import type { Language } from "./config";
-import { messages, translate } from "./messages";
-
-let patterns: { regex: RegExp; source: string; keys: string[] }[] | null = null;
-
-/** Catalog keys with `{0}`-style values as regular expressions, built once on the first error. */
-function placeholderPatterns() {
-  patterns ??= Object.keys(messages).filter((source) => /\{\w+\}/.test(source)).map((source) => {
-    const keys: string[] = [];
-    const body = source.split(/(\{\w+\})/).map((part) => {
-      const key = /^\{(\w+)\}$/.exec(part)?.[1];
-      if (key === undefined) return part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      keys.push(key);
-      return "(.+?)";
-    }).join("");
-    return { regex: new RegExp(`^${body}$`), source, keys };
-  });
-  return patterns;
-}
-
-/** A server message in `language`: exact catalog match first, then a key whose `{0}` values fill the message. */
-export function translateServerMessage(language: Language, message: string): string {
-  const exact = translate(language, message);
-  if (exact !== message || language === "it") return exact;
-  for (const { regex, source, keys } of placeholderPatterns()) {
-    const match = regex.exec(message);
-    if (match) return translate(language, source, Object.fromEntries(keys.map((key, index) => [key, match[index + 1]])));
-  }
-  return message;
-}
+import { translateServerMessage } from "./messages";
 
 /**
  * Translates the `error` message of a JSON error response (status >= 400) into the language of the request, so every

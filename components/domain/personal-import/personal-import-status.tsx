@@ -2,6 +2,7 @@
 
 
 import { useLocalization } from "@/lib/localization/provider";
+import { translateServerMessage } from "@/lib/localization/messages";
 
 /** Avanzamento di un'importazione personale (analisi → salvataggio → fatto) e elenco dei file caricati. */
 
@@ -100,7 +101,7 @@ export function PersonalImportList({ listing, selectedId, onSelect, onRetry }: P
   return date.toLocaleDateString(formattingLocale, { day: "numeric", month: "short" });
 }
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const jobs = listing.data?.jobs ?? [];
   const formats = listing.data?.formats ?? [];
   return (
@@ -119,7 +120,7 @@ export function PersonalImportList({ listing, selectedId, onSelect, onRetry }: P
           {jobs.map((job) => {
             const state = islandState(job);
             const { message: source, values, action } = describeImportJob(job);
-            const message = tr(source, values);
+            const message = values ? tr(source, values) : translateServerMessage(language, source);
             const name = formats.find((f) => f.id === job.formatId)?.name ?? tr("File");
             const retry = action === "Riprova";
             const body = (

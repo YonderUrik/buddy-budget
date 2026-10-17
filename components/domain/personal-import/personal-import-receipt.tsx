@@ -2,6 +2,7 @@
 
 
 import { useLocalization } from "@/lib/localization/provider";
+import { translateServerMessage } from "@/lib/localization/messages";
 
 /**
  * Schermata «File ricevuto» dopo l'invio di un CSV personale: conferma che il file è in lista, mostra in che fase è
@@ -85,7 +86,7 @@ function Stages({ stage, failed }: { stage: number; failed: boolean }) {
 export function PersonalImportReceipt({ file, job, listId, onAnother }: PersonalImportReceiptProps) {
   const { locale: formattingLocale } = useLocalization();
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const headingRef = React.useRef<HTMLHeadingElement>(null);
   React.useEffect(() => {
     headingRef.current?.focus();
@@ -107,7 +108,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
             {imported
               ? tr("I dati sono già nel tuo conto.")
               : failed
-                ? job?.error ?? tr("Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista.")
+                ? (job?.error ? translateServerMessage(language, job.error) : null) ?? tr("Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista.")
                 : tr("L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando.")}
           </p>
           {failed ? <ReportErrorLink area="import_movimenti" error={job?.error ?? title} /> : null}

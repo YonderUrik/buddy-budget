@@ -34,7 +34,7 @@ const TONE_STYLE: Record<ChoiceTone, { icon: LucideIcon; color: string }> = {
   missing: { icon: CircleAlertIcon, color: "var(--destructive)" },
 };
 
-/** Cosa si importerebbe di questo titolo: nome da mostrare e dettaglio dello strumento scelto. */
+/** What would be imported for this security: name to show and detail of the chosen instrument (parts translated when shown). */
 function chosenName(choice: InstrumentChoice | undefined): { name: string; detail: string | null } | null {
   if (!choice || choice.kind === "skip") return null;
   if (choice.kind === "known") return { name: choice.instrument.name, detail: choice.instrument.isin ?? null };
@@ -92,7 +92,7 @@ function InstrumentRow({
         {chosen ? (
           <p className="pl-7 text-sm text-foreground">
             {chosen.name}
-            {chosen.detail ? <span className="text-muted-foreground"> {"·"}{chosen.detail}</span> : null}
+            {chosen.detail ? <span className="text-muted-foreground"> {"·"}{chosen.detail.split(" · ").map((part) => tr(part)).join(" · ")}</span> : null}
           </p>
         ) : null}
         <div className="pl-7">

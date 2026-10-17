@@ -30,10 +30,26 @@ describe("translateErrorResponse", () => {
 
 describe("translateServerMessage", () => {
   it("fills catalog keys with values taken from the message", async () => {
-    const { translateServerMessage } = await import("./route-errors");
+    const { translateServerMessage } = await import("./messages");
     expect(translateServerMessage("en", "Puoi avere al massimo 20 obiettivi")).toBe("You can have at most 20 goals");
     expect(translateServerMessage("de", "Massimo 80 caratteri")).toBe("Höchstens 80 Zeichen");
     expect(translateServerMessage("en", "Messaggio sconosciuto")).toBe("Messaggio sconosciuto");
     expect(translateServerMessage("it", "Massimo 80 caratteri")).toBe("Massimo 80 caratteri");
+  });
+
+  it("translates nested import row messages and their interpolated fragments", async () => {
+    const { translateServerMessage } = await import("./messages");
+    expect(translateServerMessage("en", "Riga 4: data mancante")).toBe("Row 4: date missing");
+    expect(translateServerMessage("de", "Riga 3: classe di investimento non supportata: BOND")).toBe("Zeile 3: nicht unterstützte Anlageklasse: BOND");
+    expect(translateServerMessage("en", "3 righe su 10 non sono state riconosciute. Puoi importare le altre 7, rianalizzare il file o caricarne uno corretto."))
+      .toBe("3 rows out of 10 were not recognised. You can import the other 7, re-analyse the file or upload a corrected one.");
+    expect(translateServerMessage("de", "Saltata: Data non valida")).toBe("Übersprungen: Ungültiges Datum");
+  });
+});
+
+describe("generic keys", () => {
+  it("are not used to match messages", async () => {
+    const { translateServerMessage } = await import("./messages");
+    expect(translateServerMessage("en", "pippo su pluto")).toBe("pippo su pluto");
   });
 });

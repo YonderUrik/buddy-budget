@@ -35,3 +35,12 @@ describe("explainFileError", () => {
     expect(explainFileError("Il file non sembra un CSV con intestazioni e almeno una riga").hint).toMatch(/PDF/);
   });
 });
+
+describe("localized explanations", () => {
+  it("translates text and hint, keeping a leading file name", () => {
+    const e = explainRowMessage("Riga 225: amount non valido", "en");
+    expect(e.text).toBe("In row 225, the “amount” field does not contain a valid value.");
+    expect(e.hint).not.toMatch(/controlla/);
+    expect(explainFileError("IBKR 2024.csv: serve un rendiconto completo.", "de").text).toBe("IBKR 2024.csv: Ein vollständiger Auszug ist erforderlich.");
+  });
+});

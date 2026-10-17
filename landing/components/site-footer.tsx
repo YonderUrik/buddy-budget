@@ -1,9 +1,9 @@
 import "./site-footer.css";
 import Link from "next/link";
-import { HOME_PATH } from "@/content/locales";
+import { languageHrefs } from "@/content/locales";
 import { SOURCE_LICENSE, SOURCE_URL, STATUS_URL, SUPPORT_EMAIL } from "@/content/site";
 import { UI } from "@/content/ui";
-import { otherLocale, type Locale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 import { GithubMark } from "./github-mark";
 import { LangSwitch } from "./lang-switch";
 import { SourceLink } from "./source-link";
@@ -13,7 +13,7 @@ const WORDMARK = "BuddyBudget";
 
 export interface SiteFooterProps {
   locale?: Locale;
-  /** Target of the «IT / EN» switch: the same page in the other language; default, that language's home. */
+  /** Target of the language menu for the other language: the same page there; default, that language's home. */
   alternate?: string;
 }
 
@@ -34,7 +34,7 @@ export function SiteFooter({ locale = "it", alternate }: SiteFooterProps) {
           ))}
         </nav>
         <nav aria-label={t.footer.other}>
-          <LangSwitch locale={locale} href={alternate ?? HOME_PATH[otherLocale(locale)]} location="footer" label={t.language} />
+          <LangSwitch locale={locale} hrefs={languageHrefs(locale, undefined, alternate)} location="footer" label={t.language} />
           {SOURCE_URL ? (
             <SourceLink className="gh" href={SOURCE_URL}>
               <GithubMark />

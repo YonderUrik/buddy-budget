@@ -19,7 +19,7 @@ export interface LandingEvents {
   };
   /** «Prova la demo» / "Try the demo": the button towards the app's public read-only demo. */
   demo_click: { location: LandingEvents["cta_click"]["location"]; lang: Locale };
-  /** The «IT / EN» switch, or the "also available in English" bar of the Italian home. */
+  /** The language menu, or the "also available in English" bar of the Italian home. */
   language_switch_click: { from: Locale; to: Locale; location: "nav" | "menu" | "footer" | "hint" };
   /** The "also available in English" bar closed without following it. */
   language_hint_dismissed: undefined;

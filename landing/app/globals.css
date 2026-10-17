@@ -198,7 +198,7 @@ img { max-width: 100%; }
 /* ---------- entrances: blocks marked `data-rise` rise into place when they come into view (`RiseObserver`),
    staggered by `--i` (`rise(i)`), only when motion is allowed: without script or motion everything is visible ---------- */
 .js-motion [data-rise] { transition: opacity 0.6s var(--ease), translate 0.6s var(--ease); transition-delay: calc(var(--i, 0) * 75ms); }
-.js-motion [data-rise]:not(.in) { opacity: 0; translate: 0 24px; }
+.js-motion [data-rise]:not([data-in]) { opacity: 0; translate: 0 24px; }
 
 @media (max-width: 600px) { .wrap { padding-inline: 20px; } }
 /* reduced motion: no scrolling effects, no loops; the short fades that signal a state change stay */

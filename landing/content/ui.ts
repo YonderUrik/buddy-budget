@@ -35,7 +35,7 @@ export interface UiText {
     other: string;
     status: string;
   };
-  /** `aria-label` of the «IT / EN» switch. */
+  /** `aria-label` of the language menu. */
   language: string;
   content: {
     /** Main button of the closing of every content page (the same as the home). */

@@ -12,6 +12,28 @@ export const LANGUAGE_LOCALES: Record<Language, string> = { it: "it-IT", en: "en
 export const LANGUAGE_COOKIE = "bb-language";
 export const DEFAULT_PROFILE: LocaleProfile = { productCountry: "IT", language: "it" };
 
+/**
+ * Interface language from the browser's `Accept-Language` header, for visitors who have not chosen one: the most
+ * preferred supported language wins (`de-AT` counts as `de`). A browser that asks only for unsupported languages gets
+ * English; no header at all (bots, scripts) keeps the Italian default.
+ */
+export function detectLanguage(acceptLanguage: string | null | undefined): Language {
+  const ranked = (acceptLanguage ?? "")
+    .split(",")
+    .map((part, index) => {
+      const [tag, ...params] = part.trim().toLowerCase().split(";");
+      const q = Number(params.map((param) => param.trim()).find((param) => param.startsWith("q="))?.slice(2) ?? 1);
+      return { primary: tag.split("-")[0], q: Number.isFinite(q) ? q : 0, index };
+    })
+    .filter((entry) => entry.primary && entry.primary !== "*" && entry.q > 0)
+    .sort((a, b) => b.q - a.q || a.index - b.index);
+  if (ranked.length === 0) return DEFAULT_PROFILE.language;
+  return (ranked.find((entry) => LANGUAGES.includes(entry.primary as Language))?.primary as Language | undefined) ?? "en";
+}
+/** Profile proposed for a language before the user picks a country: German implies the German product rules. */
+export function profileForLanguage(language: Language): LocaleProfile {
+  return { productCountry: language === "de" ? "DE" : "IT", language };
+}
 /** Validate a complete country/language pair before persisting it. */
 export function isSupportedProfile(country: unknown, language: unknown): boolean {
   return PRODUCT_COUNTRIES.includes(country as ProductCountry) && COUNTRY_LANGUAGES[country as ProductCountry].includes(language as Language);

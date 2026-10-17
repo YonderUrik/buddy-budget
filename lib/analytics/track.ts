@@ -52,7 +52,8 @@ export interface ProductEvents {
   demo_started: undefined;
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
   demo_cleared: { from: "banner" | "panoramica" };
-  onboarding_completed: { currency: SupportedCurrency };
+  /** `languageKept`: the language proposed on arrival (picked on the sign-in page or detected from the browser) was not changed. */
+  onboarding_completed: { currency: SupportedCurrency; language: "it" | "en" | "de"; languageKept: boolean };
   /** Foglio «Personalizza» aperto nel passo «Categorie» dell'onboarding. */
   onboarding_categories_opened: undefined;
   /**

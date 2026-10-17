@@ -1,0 +1,6 @@
+# Screenshots in every language and browser language detection (2026-10-17)
+
+- **Decision**: the landing screenshots are captured in every app language (Italian, English, German) and the landing shows the ones in the visitor's browser language; the app proposes the browser language to whoever has not chosen one.
+- **Why**: the app is multilingual but the screenshots were Italian only, and the language was never detected (signed out it was always Italian unless picked by hand).
+- **How**: `DEMO_LANGUAGE` seeds the demo in a language (`scripts/demo-seed-texts.ts`, German with German product rules), `CAPTURE_LANGUAGE` captures into `public/screens/<language>/` at the Italian sizes, the daily bot loops over the three languages. The landing renders every version and a pre-paint script picks one (`<html data-screens>`, `?lang=` to force); screens hidden by German rules fall back to English. App: `detectLanguage` reads `Accept-Language` when there is no saved choice (signed out, or onboarding not finished); unsupported languages get English, no header keeps Italian; German proposes the German product.
+- **Deferred**: landing texts in English/German; hardcoded `it-IT` date and number formats still visible in some English/German screens (backlog); per-language OG image.

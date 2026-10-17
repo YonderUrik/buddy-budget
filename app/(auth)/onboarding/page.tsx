@@ -26,6 +26,8 @@ type OnboardingStep = "valuta" | "categorie" | "assistente" | "notifiche" | "con
 export default function OnboardingPage() {
   const { t: tr } = useLocalization();
   const { productCountry, language, setProfile } = useLocalization();
+  // Language proposed on arrival (sign-in choice or browser language): the completion event says whether it was kept.
+  const [proposedLanguage] = useState(language);
   const [currency, setCurrency] = useState<SupportedCurrency>(DEFAULT_CURRENCY);
   const { consent, setConsent, complete, payload } = useLegalConsent();
   // Consenso al trattamento con AI: spento finché l'utente non lo accende (art. 7 GDPR, nessuna casella pre-selezionata).
@@ -65,7 +67,7 @@ export default function OnboardingPage() {
       });
 
       if (response.ok) {
-        track("onboarding_completed", { currency });
+        track("onboarding_completed", { currency, language, languageKept: language === proposedLanguage });
         if (assistant?.available) track("ai_categorization_toggled", { enabled: assistantEnabled });
         track("terms_accepted", { context: "onboarding" });
         track("onboarding_categories_chosen", {

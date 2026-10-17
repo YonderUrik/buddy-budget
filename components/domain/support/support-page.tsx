@@ -12,6 +12,7 @@ import { ReportForm } from "./report-form";
 import { useReportContext } from "./use-report-context";
 import { track } from "@/lib/analytics";
 import { REPORT_KINDS, STATUS_URL, type ReportKind } from "@/lib/support";
+import { useShowDonationLink } from "@/lib/support/donation";
 import { PAGE_TITLE } from "@/components/domain/shared";
 
 function Section({ id, icon: Icon, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
@@ -42,6 +43,7 @@ export interface SupportPageProps {
 export function SupportPage({ from = null, kind = null }: SupportPageProps) {
   const { t: tr } = useLocalization();
   const context = useReportContext(from);
+  const showDonation = useShowDonationLink();
   const initialKind = (REPORT_KINDS as readonly string[]).includes(kind ?? "") ? (kind as ReportKind) : undefined;
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8 p-4 sm:gap-10 sm:p-6">
@@ -70,9 +72,11 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
       <Section id="aiuto-github" icon={GithubIcon} title={tr("Su GitHub")} description={tr("BuddyBudget è open source: puoi seguire e segnalare anche da lì.")}>
         <GithubLinks context={context} />
       </Section>
+      {showDonation && (
       <Section id="aiuto-sostieni" icon={Coffee} title={tr("Sostieni BuddyBudget")} description={tr("È un progetto personale: un caffè aiuta a tenerlo vivo.")}>
         <DonationLink />
       </Section>
+      )}
     </div>
   );
 }

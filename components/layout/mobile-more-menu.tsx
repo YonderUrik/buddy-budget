@@ -30,6 +30,7 @@ import { authClient } from "@/lib/auth/client";
 import { LEGAL_LINKS } from "@/lib/legal";
 import { track } from "@/lib/analytics";
 import { DONATION_URL } from "@/lib/support/constants";
+import { useShowDonationLink } from "@/lib/support/donation";
 import { cn } from "@/lib/utils";
 
 /** Cosa ha toccato l'utente nel menu (tipo chiuso, per le statistiche d'uso). */
@@ -127,6 +128,7 @@ export function MobileMoreMenu({
   const user = mounted ? sessionData?.user : undefined;
   const userName = user?.name ?? tr("Il tuo account");
   const sections = items.filter((i) => !i.comingSoon);
+  const showDonation = useShowDonationLink();
 
   async function signOut() {
     markNavigating();
@@ -260,7 +262,7 @@ export function MobileMoreMenu({
                   <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
                 </Link>
               </li>
-              <li>
+              {showDonation && <li>
                 <a
                   href={DONATION_URL}
                   target="_blank"
@@ -278,7 +280,7 @@ export function MobileMoreMenu({
                   <ExternalLink className="size-4 shrink-0 text-text-3" aria-hidden="true" />
                   <span className="sr-only">{tr("(si apre in una nuova scheda)")}</span>
                 </a>
-              </li>
+              </li>}
             </ul>
 
             {/* Nascondi importi: l'unico interruttore veloce */}

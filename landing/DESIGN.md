@@ -47,5 +47,6 @@ The landing is the app's own interface language used to persuade: the same token
 - `SiteNav`: navy bar on every page (links in spaced capitals, yellow «Inizia gratis»), links in a full-screen sheet under 1000 px, «Entra» and «Inizia gratis».
 - `SiteFooter`: navy, the «BuddyBudget» wordmark across the whole width, then the links.
 - `CopyCommand`: terminal block with the self-hosting commands and a copy button (`self_host_command_copied`).
+- Calculators (`.tool`): card titles and content h2 in `--f-d`; the key answer (`.res .key b`) big in `--f-h` and ink, like the app's `SimulationResult`. Legal section titles in `--f-d` too.
 - `ContentPage`: a navy head (back link, yellow mono kicker, tall h1, lead), then body, tax notice, the navy `Closing`. `LegalPage` has the same navy head with the version line.
 - No filler lines: no trust lists, «free during the beta», schedules («ogni mattina»), section intros or captions that only restate the title. If a line doesn't change what a visitor understands, it goes.

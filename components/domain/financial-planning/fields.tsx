@@ -2,6 +2,7 @@
 import { useId, type ReactNode } from "react";
 import { useLocalization } from "@/lib/localization/provider";
 import { Input } from "@/components/ui/input";
+import { SECTION_TITLE } from "@/components/domain/shared";
 
 export interface NumberFieldProps { label: string; value: number; onChange: (value: number) => void; min?: number; max?: number; step?: number }
 /** Labelled numeric input for explicit financial assumptions. */
@@ -18,7 +19,7 @@ export function Choice({ label, value, options, onChange }: ChoiceProps) {
 /** Group related inputs and results in the same visual section. */
 export function Panel({ title, children, literalTitle = false }: { title: string; children: ReactNode; literalTitle?: boolean }) {
   const { t } = useLocalization();
-  return <section className="space-y-4 rounded-2xl border p-5"><h2 className="font-heading text-lg font-medium">{literalTitle ? title : t(title)}</h2>{children}</section>;
+  return <section className="space-y-4 rounded-2xl border p-5"><h2 className={SECTION_TITLE}>{literalTitle ? title : t(title)}</h2>{children}</section>;
 }
 /** Locale-aware EUR amount; unavailable estimates are explicit. */
 export function Amount({ value }: { value: number | null }) {

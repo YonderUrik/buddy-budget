@@ -9,6 +9,8 @@ import type { GoalsView } from "@/lib/goals/view";
 import { useLocalization } from "@/lib/localization/provider";
 import { FIRE_GOAL_INFO, GAP_COLOR, GOAL_KIND_INFO } from "./goal-kinds";
 import type { GoalFormatters } from "./goal-format";
+import { PAGE_TITLE_FACE } from "@/components/domain/shared";
+import { cn } from "@/lib/utils";
 
 export interface GoalsCapacityProps {
   view: GoalsView;
@@ -31,7 +33,7 @@ export function GoalsCapacity({ view, fmt }: GoalsCapacityProps) {
   if (capacity === null) {
     return (
       <div className="flex flex-col gap-2">
-        <h2 className="font-heading text-2xl font-medium tracking-tight text-foreground sm:text-3xl">{tr("Non sappiamo ancora quanto risparmi al mese.")}</h2>
+        <h2 className={cn(PAGE_TITLE_FACE, "text-[2rem] sm:text-[2.5rem]")}>{tr("Non sappiamo ancora quanto risparmi al mese.")}</h2>
         <p className="text-sm text-text-2">{tr("Servono almeno tre mesi di movimenti, oppure scrivi il tuo risparmio nelle ipotesi delle Risposte. Intanto gli obiettivi tengono il conto di quanto hai già messo da parte.")}</p>
       </div>
     );
@@ -49,7 +51,7 @@ export function GoalsCapacity({ view, fmt }: GoalsCapacityProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="font-heading text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+      <h2 className={cn(PAGE_TITLE_FACE, "text-[2rem] sm:text-[2.5rem]")}>
         {capacity <= 0 ? tr("In questo periodo hai speso più di quanto hai incassato.") : tr("Metti da parte {0} al mese.", { 0: fmt.money(capacity) })}
         {requested > 0 ? (
           <>

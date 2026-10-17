@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-17T15:19:36.791Z",
+  "capturedAt": "2026-10-17T15:42:56.187Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -105,7 +105,7 @@
       "theme": "light",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2012,
+      "height": 2094,
       "phone": true
     },
     {
@@ -241,7 +241,7 @@
       "theme": "dark",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2012,
+      "height": 2094,
       "phone": true
     },
     {

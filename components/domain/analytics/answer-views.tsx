@@ -60,7 +60,6 @@ export function AnswerViews({ views, selected, onSelect, panelId }: AnswerViewsP
             )}
           >
             <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <v.icon className="size-4" aria-hidden="true" />
               {tr(v.label)}
             </span>
             <span className="font-heading text-2xl font-medium tabular-nums text-foreground sm:text-3xl">{v.value}</span>

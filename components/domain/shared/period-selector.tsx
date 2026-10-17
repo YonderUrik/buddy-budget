@@ -53,7 +53,7 @@ export interface PeriodSelectorProps<T extends string> {
   className?: string;
 }
 
-const SEGMENT = "relative flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-md px-2.5 text-sm font-medium whitespace-nowrap outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:min-h-8 sm:min-w-9";
+const SEGMENT = "relative flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-sm font-medium whitespace-nowrap outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:min-h-8 sm:min-w-9";
 
 export function PeriodSelector<T extends string>({ options, value, onChange, ariaLabel, custom, stretch = false, className }: PeriodSelectorProps<T>) {
   const { t: tr, locale } = useLocalization();
@@ -65,7 +65,7 @@ export function PeriodSelector<T extends string>({ options, value, onChange, ari
     : null;
 
   const pill = (active: boolean) => active ? (
-    <motion.span layoutId={pillId} transition={SPRING_BOUNCY} aria-hidden="true" className="absolute inset-0 rounded-md bg-background" />
+    <motion.span layoutId={pillId} transition={SPRING_BOUNCY} aria-hidden="true" className="absolute inset-0 rounded-full bg-background" />
   ) : null;
   const tone = (active: boolean) => active ? "text-foreground" : "text-muted-foreground hover:text-foreground";
 
@@ -85,7 +85,7 @@ export function PeriodSelector<T extends string>({ options, value, onChange, ari
     <Popover open={open} onOpenChange={openChange}>
       <div className={cn("min-w-0 flex-col gap-1.5", stretch ? "flex w-full" : "inline-flex max-w-full")}>
         <div role="group" aria-label={tr(ariaLabel)} className={cn(
-          "scrollbar-hidden flex max-w-full items-center gap-1 overflow-x-auto rounded-lg bg-muted p-1",
+          "scrollbar-hidden flex max-w-full items-center gap-1 overflow-x-auto rounded-full bg-muted p-1",
           stretch ? "w-full" : "w-fit",
           className
         )}>
@@ -108,7 +108,7 @@ export function PeriodSelector<T extends string>({ options, value, onChange, ari
         </div>
         {caption ? (
           <button type="button" onClick={() => openChange(true)}
-            className="self-center rounded-md px-1.5 py-0.5 text-xs text-muted-foreground tabular-nums underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring">
+            className="self-center rounded-full px-1.5 py-0.5 text-xs text-muted-foreground tabular-nums underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring">
             {caption}
           </button>
         ) : null}

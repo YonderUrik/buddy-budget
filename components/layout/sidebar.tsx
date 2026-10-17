@@ -312,6 +312,7 @@ export function AppSidebar({
 
   return (
     <aside
+      data-slot="sidebar"
       className={cn(
         "flex h-full flex-col bg-sidebar border-r border-sidebar-border",
         "transition-[width] duration-300 ease-in-out overflow-hidden",

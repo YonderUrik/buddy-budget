@@ -6,10 +6,17 @@ import { SOURCE_LICENSE, SOURCE_URL, STATUS_URL, SUPPORT_EMAIL } from "@/content
 import { GithubMark } from "./github-mark";
 import { SourceLink } from "./source-link";
 
-/** Footer, the same on every page: navy like the app's sidebar, the main pages, the code, status and support. */
+/** Name drawn across the footer, decorative (the brand is already in the bar). */
+const WORDMARK = "BuddyBudget";
+
+/**
+ * Footer, the same on every page: navy like the app's sidebar, the name drawn across its whole width (after Hermes
+ * Agent), then the main pages, the code, status and support.
+ */
 export function SiteFooter() {
   return (
     <footer className="sf">
+      <p className="sf-word" aria-hidden="true">{WORDMARK}</p>
       <div className="wrap">
         <span>© BuddyBudget</span>
         <nav aria-label="Pagine del sito">

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function Page() {
   const { total } = featureCounts();
   return (
-    <ContentPage current={CONTENT_PATHS.funzioni}
+    <ContentPage title="Tutte le funzioni" lead={<>{total} funzioni in {FEATURE_AREAS.length} aree. L&apos;elenco è lo stesso che usa l&apos;app: quando ne aggiungiamo una, compare anche qui.</>} current={CONTENT_PATHS.funzioni}
       wide
       disclaimer={false}
       crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Funzioni" }]}
@@ -28,8 +28,6 @@ export default function Page() {
       ctaLocation="funzioni"
     >
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.funzioni}`, inLanguage: "it-IT" }} />
-      <h1>Tutte le funzioni</h1>
-      <p className="lead">{total} funzioni in {FEATURE_AREAS.length} aree. L&apos;elenco è lo stesso che usa l&apos;app: quando ne aggiungiamo una, compare anche qui.</p>
       <FeatureAreas />
     </ContentPage>
   );

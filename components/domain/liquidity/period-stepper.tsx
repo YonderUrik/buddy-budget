@@ -4,7 +4,7 @@ import { useLocalization } from "@/lib/localization/provider";
 /** Scelta del periodo da analizzare: frecce per il periodo prima/dopo, etichetta e selettore Mese · 3 mesi · Anno. */
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { SegmentedControl } from "@/components/domain/shared";
+import { PeriodSelector } from "@/components/domain/shared";
 import { formatPeriodLabel, getPeriodRange, shiftReferenceDate, type ExpensePeriod } from "@/lib/calc/expenses";
 
 const PERIOD_OPTIONS = [
@@ -40,7 +40,7 @@ export function PeriodStepper({ period, onPeriodChange, referenceDate, onReferen
           <ChevronRightIcon className="size-5" aria-hidden="true" />
         </button>
       </div>
-      <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Ampiezza del periodo")} />
+      <PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Ampiezza del periodo")} />
     </div>
   );
 }

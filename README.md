@@ -11,6 +11,7 @@
 [![Latest release](https://img.shields.io/github/v/release/YonderUrik/buddy-budget?label=release)](https://github.com/YonderUrik/buddy-budget/releases/latest)
 [![License: AGPL-3.0](https://img.shields.io/badge/licenza-AGPL--3.0-blue)](LICENSE)
 [![Node.js 24](https://img.shields.io/badge/node-24-339933?logo=nodedotjs&logoColor=white)](.github/workflows/ci.yml)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/yonder)
 
 [Website](https://buddybudget.io) · [Self-hosting](docs/self-hosting.md) · [Local development](#local-development) · [Contributing](CONTRIBUTING.md)
 
@@ -146,6 +147,7 @@ BuddyBudget is in beta and is developed by a single person, with the help of an 
 
 - **Contributing**: read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md); for a large change, open an issue first. Accessibility status is in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
 - **Vulnerabilities**: do not open a public issue, follow [`SECURITY.md`](SECURITY.md).
+- **Support the project**: BuddyBudget is free and built in spare time. If it helps you, you can [buy me a coffee](https://buymeacoffee.com/yonder).
 - **Help and reports** about the hosted service: support@buddybudget.io. **Privacy**: privacy@buddybudget.io.
 
 ## License

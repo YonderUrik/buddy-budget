@@ -54,7 +54,7 @@ function ActivePill() {
     <motion.span
       layoutId="bottom-nav-pill"
       transition={SPRING_SNAPPY}
-      className="absolute inset-0 rounded-full bg-sidebar-primary/15"
+      className="absolute inset-0 rounded-full bg-sun"
       aria-hidden="true"
     />
   );
@@ -95,7 +95,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
             <span
               className={cn(
                 "relative flex h-7 w-14 items-center justify-center rounded-full transition-colors duration-200",
-                active && "text-sidebar-primary"
+                active && "text-on-sun"
               )}
             >
               {active ? <ActivePill /> : null}
@@ -125,7 +125,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
         <span
           className={cn(
             "relative flex h-7 w-14 items-center justify-center rounded-full transition-colors duration-200",
-            !inPrimary && "text-sidebar-primary"
+            !inPrimary && "text-on-sun"
           )}
         >
           {!inPrimary ? <ActivePill /> : null}

@@ -4207,5 +4207,20 @@
   "Crea il tuo account": "Eigenes Konto erstellen",
   "Nella demo non si salvano modifiche. Crea un account per usare l'app con i tuoi dati.": "In der Demo werden keine Änderungen gespeichert. Erstelle ein Konto, um die App mit deinen eigenen Daten zu nutzen.",
   "Vuoi solo dare un'occhiata?": "Willst du dich nur umsehen?",
-  "Prova la demo": "Demo ausprobieren"
+  "Prova la demo": "Demo ausprobieren",
+  "Finisci prima di": "Du bist früher fertig um",
+  "{0} invece di {1}, e risparmi {2} di interessi.": "{0} statt {1}, und du sparst {2} an Zinsen.",
+  "Conviene: risparmi": "Lohnt sich: du sparst",
+  "Non conviene: spenderesti in più": "Lohnt sich nicht: du würdest mehr ausgeben",
+  "Al netto delle spese, che rientrano in {0} mesi.": "Nach Kosten, die sich in {0} Monaten amortisieren.",
+  "Al netto delle spese.": "Nach Kosten.",
+  "Tra interessi e spese.": "Zwischen Zinsen und Kosten.",
+  "Scegli le date": "Daten wählen",
+  "Tocca l'ultimo giorno": "Letzten Tag antippen",
+  "Tocca l'ultimo mese": "Letzten Monat antippen",
+  "Date scelte: {0}. Cambia le date": "Gewählte Daten: {0}. Daten ändern",
+  "Mese precedente": "Vorheriger Monat",
+  "Mese successivo": "Nächster Monat",
+  "scegli il mese": "Monat wählen",
+  "Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.": "Bewege den Zeiger über ein Datum, um die Zahlen oben zu aktualisieren. Klicke und ziehe für einen Zeitraum oder wähle Daten im Kalender neben den Zeiträumen."
 }

@@ -24,6 +24,8 @@ import { LoginSentPanel } from "./login-sent-panel";
 import { ReturningLoginPanel } from "./returning-login-panel";
 import { useLoginActions } from "./use-login-actions";
 import { useReturningUser } from "./use-returning-user";
+import { AUTH_PRIMARY_BUTTON, AUTH_TITLE } from "./auth-styles";
+import { cn } from "@/lib/utils";
 
 const EMAIL_PLACEHOLDER = "nome@esempio.it";
 
@@ -98,7 +100,7 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
         </p>
       )}
       <div className="flex flex-col gap-3">
-        <h1 className="font-heading text-[2.1rem] font-semibold leading-tight tracking-tight text-balance">{tr("Entra in")}{" "}{tr("BuddyBudget")}</h1>
+        <h1 className={AUTH_TITLE}>{tr("Entra in")}{" "}{tr("BuddyBudget")}</h1>
         <p className="text-text-2">{tr("Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo.")}</p>
       </div>
 
@@ -132,7 +134,7 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
         ) : (
           <p id="login-hint" className="text-sm text-text-3">{tr("Il link vale {0} minuti e si usa una volta sola.", {0: MAGIC_LINK_EXPIRES_MINUTES})}</p>
         )}
-        <Button type="submit" className="mt-3 h-11 w-full text-base" disabled={busy}>
+        <Button type="submit" className={cn("mt-3 h-11 w-full text-base", AUTH_PRIMARY_BUTTON)} disabled={busy}>
           {actions.loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
           {actions.loading ? tr("Invio in corso…") : tr("Mandami il link")}
         </Button>

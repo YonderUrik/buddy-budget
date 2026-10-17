@@ -15,6 +15,8 @@ import {
   PersonalImportUpload,
 } from "@/components/domain/personal-import";
 import { usePersonalImportsQuery } from "@/lib/queries/personal-imports";
+import { PAGE_TITLE as PAGE_TITLE_CLASS } from "@/components/domain/shared";
+import { cn } from "@/lib/utils";
 
 const LIST_ID = "le-tue-importazioni";
 const PAGE_TITLE = "Importa da CSV o Excel";
@@ -38,7 +40,7 @@ function PersonalImports() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 sm:p-6">
       <header className="flex flex-col gap-2">
-        <h1 className="flex items-center gap-2 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
+        <h1 className={cn("flex items-center gap-2", PAGE_TITLE_CLASS)}>
           <FileSpreadsheet className="size-7 text-muted-foreground" aria-hidden="true" />
           {tr(PAGE_TITLE)}
         </h1>

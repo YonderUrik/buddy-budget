@@ -3,9 +3,9 @@
 /**
  * AuthFrame
  *
- * Scena delle pagine di accesso e onboarding, nello stesso mondo della landing «Sei domande»: a sinistra un pannello
- * (marchio, il form della pagina, i link al sito), a destra l'anteprima della Panoramica (`AuthPreview`, solo da `lg`).
- * Dove l'anteprima non serve (`asideHiddenOn`, es. l'onboarding) il pannello occupa tutta la larghezza, centrato.
+ * Scene of the sign-in and onboarding pages, in the same world as the landing: on the left a panel (brand, the page's
+ * form, links to the site), on the right the Panoramica preview (`AuthPreview`, only from `lg`) on the landing's navy
+ * ground. Where the preview is not needed (`asideHiddenOn`, e.g. onboarding) the panel takes the whole width, centred.
  */
 
 import * as React from "react";
@@ -27,7 +27,7 @@ export interface AuthFrameProps {
   className?: string;
 }
 
-/** Pannello del form a sinistra e anteprima dell'app a destra; senza anteprima, il pannello si allarga e si centra. */
+/** Form panel on the left and the app preview on navy on the right; without the preview, the panel widens and centres. */
 export function AuthFrame({ brand, foot, aside, asideHiddenOn = [], children, className }: AuthFrameProps) {
   const pathname = usePathname();
   const showAside = !asideHiddenOn.some((path) => pathname === path || pathname.startsWith(`${path}/`));
@@ -40,7 +40,7 @@ export function AuthFrame({ brand, foot, aside, asideHiddenOn = [], children, cl
         {foot && <div className={cn("w-full", !showAside && "mx-auto max-w-2xl")}>{foot}</div>}
       </section>
       {showAside && (
-        <aside className="hidden place-items-center overflow-hidden p-12 lg:grid" aria-label="Anteprima dell'app">
+        <aside className="hidden place-items-center overflow-hidden bg-brand-navy p-12 lg:grid" aria-label="Anteprima dell'app">
           {aside ?? <AuthPreview />}
         </aside>
       )}

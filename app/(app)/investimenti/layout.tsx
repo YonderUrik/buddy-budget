@@ -67,7 +67,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
                 <Button variant="outline" className="size-11 gap-1.5 sm:size-auto" onClick={() => setImportOpen(true)} aria-label={tr("Importa")}>
                   <Upload size={15} aria-hidden="true" />{" "}<span className="hidden sm:inline">{tr("Importa")}</span>
                 </Button>
-                <Button className="size-11 gap-1.5 shadow-xs sm:size-auto" onClick={() => setRegisterInitial({ instrument: null })} aria-label={tr("Registra operazione")}>
+                <Button variant="sun" className="size-11 gap-1.5 shadow-xs sm:size-auto" onClick={() => setRegisterInitial({ instrument: null })} aria-label={tr("Registra operazione")}>
                   <Plus size={15} aria-hidden="true" />{" "}<span className="hidden sm:inline">{tr("Registra")}</span>
                 </Button>
               </div>

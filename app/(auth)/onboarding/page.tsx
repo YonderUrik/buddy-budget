@@ -9,7 +9,7 @@
 import { useState } from "react";
 import { LocaleFields } from "@/components/domain/settings/locale-fields";
 import { useLocalization } from "@/lib/localization/provider";
-import { CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
+import { AUTH_TITLE, CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
 import { CategorySetupStep, useCategorySetup } from "@/components/domain/categories";
 import { InboxPreview, NotificationChoices, ONBOARDING_NOTIFICATION_INFO } from "@/components/domain/notifications";
 import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
@@ -92,7 +92,7 @@ export default function OnboardingPage() {
   return (
     <div className="flex flex-col gap-8 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
       <div className="flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-medium tracking-tight">{tr("Ti diamo il benvenuto")}</h1>
+        <h1 className={AUTH_TITLE}>{tr("Ti diamo il benvenuto")}</h1>
         <StepProgress index={flow.index} count={flow.count} label={tr("Passi dell'onboarding")} className="mt-3" />
       </div>
 

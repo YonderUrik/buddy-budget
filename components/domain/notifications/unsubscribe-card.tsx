@@ -7,6 +7,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { NOTIFICATION_KIND_INFO, type UnsubscribeScope } from "@/lib/notifications";
+import { PAGE_TITLE } from "@/components/domain/shared";
 
 export interface UnsubscribeCardProps {
   token: string;
@@ -41,12 +42,12 @@ export function UnsubscribeCard({ token, scope, preferencesHref, privacyEmail }:
     <div className="flex flex-col gap-4">
       {status === "done" ? (
         <>
-          <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Fatto, non ti scriviamo più")}</h1>
+          <h1 className={PAGE_TITLE}>{tr("Fatto, non ti scriviamo più")}</h1>
           <p className="text-sm text-muted-foreground">{tr("Abbiamo disattivato")}{" "}{scopeLabel(scope)}{tr(". Se è stato un errore, puoi riattivarle quando vuoi da Impostazioni → Notifiche. Le email di servizio (per esempio il link di accesso) restano attive: servono a usare l'account.")}</p>
         </>
       ) : (
         <>
-          <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Vuoi smettere di riceverle?")}</h1>
+          <h1 className={PAGE_TITLE}>{tr("Vuoi smettere di riceverle?")}</h1>
           <p className="text-sm text-muted-foreground">{tr("Disattiviamo")}{" "}{scopeLabel(scope)}{tr(". Basta un clic, non serve accedere. Le email di servizio (come il link di accesso) non si possono disattivare.")}</p>
           <div className="flex flex-wrap items-center gap-3">
             <Button onClick={unsubscribe} disabled={status === "working"}>

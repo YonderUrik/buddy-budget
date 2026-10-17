@@ -4207,5 +4207,20 @@
   "Crea il tuo account": "Create your account",
   "Nella demo non si salvano modifiche. Crea un account per usare l'app con i tuoi dati.": "Changes aren't saved in the demo. Create an account to use the app with your own data.",
   "Vuoi solo dare un'occhiata?": "Just want a look around?",
-  "Prova la demo": "Try the demo"
+  "Prova la demo": "Try the demo",
+  "Finisci prima di": "You finish earlier by",
+  "{0} invece di {1}, e risparmi {2} di interessi.": "{0} instead of {1}, and you save {2} in interest.",
+  "Conviene: risparmi": "Worth it: you save",
+  "Non conviene: spenderesti in più": "Not worth it: you would spend more",
+  "Al netto delle spese, che rientrano in {0} mesi.": "Net of costs, which pay back in {0} months.",
+  "Al netto delle spese.": "Net of costs.",
+  "Tra interessi e spese.": "Between interest and costs.",
+  "Scegli le date": "Choose dates",
+  "Tocca l'ultimo giorno": "Tap the last day",
+  "Tocca l'ultimo mese": "Tap the last month",
+  "Date scelte: {0}. Cambia le date": "Chosen dates: {0}. Change dates",
+  "Mese precedente": "Previous month",
+  "Mese successivo": "Next month",
+  "scegli il mese": "choose the month",
+  "Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.": "Hover over a date to update the figures above. Click and drag to select a range, or choose dates from the calendar next to the periods."
 }

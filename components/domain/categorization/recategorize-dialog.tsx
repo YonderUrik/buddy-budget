@@ -15,7 +15,7 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/componen
 import { FormDialogContent, LoadError } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import type { Category } from "@/lib/db/schema/categories";
-import { formatShortDate } from "@/lib/format";
+import { localizedFormats } from "@/lib/localization/format";
 import type { RecategorizePreviewGroup } from "@/lib/categorization/recategorize-plan";
 import { useRecategorizePreviewQuery } from "@/lib/queries/categorization";
 import { LogoCredit } from "@/components/domain/shared";
@@ -44,7 +44,8 @@ function checkedByDefault(group: RecategorizePreviewGroup): boolean {
 }
 
 function RecategorizeBody({ categories, currency, onDone }: { categories: Category[]; currency: string; onDone: () => void }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
+  const { formatShortDate } = localizedFormats(locale);
   // Scelte dell'utente sopra il default di ogni gruppo.
   const [choices, setChoices] = React.useState<ReadonlyMap<string, boolean>>(new Map());
   const [logosShown, setLogosShown] = React.useState(false);

@@ -55,11 +55,11 @@ export function GoalDialog({ open, onOpenChange, ...rest }: GoalDialogProps) {
 function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSaved, onClose }: Omit<GoalDialogProps, "open" | "onOpenChange"> & { onClose: () => void }) {
   const { money } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const dataSpending = plan.spendingSource === "dati" ? plan.spending : null;
-  const [text, setText] = React.useState(plan.spending !== null ? Math.round(plan.spending).toLocaleString("it-IT") : "");
+  const [text, setText] = React.useState(plan.spending !== null ? Math.round(plan.spending).toLocaleString(locale) : "");
   const [localError, setLocalError] = React.useState<string | null>(null);
-  const value = parseNumber(text);
+  const value = parseNumber(text, locale);
   const valid = value !== null && value > 0 && value <= ASSUMPTION_LIMITS.amount.max;
   // Se la cifra è quella dei movimenti, resta legata ai movimenti e si aggiorna da sola.
   const followsData = dataSpending !== null && value !== null && Math.round(value) === Math.round(dataSpending);

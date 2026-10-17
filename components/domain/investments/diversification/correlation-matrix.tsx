@@ -5,6 +5,7 @@
 
 import type { CorrelationMatrix as Matrix } from "@/lib/calc/risk";
 import type { Instrument } from "@/lib/db/schema/investments";
+import { formatDecimal } from "../percent";
 
 /** Colore di una correlazione: rosso per le coppie che si muovono insieme (meno diversificazione), verde per le opposte. */
 export function correlationColor(value: number | null): string {
@@ -13,16 +14,18 @@ export function correlationColor(value: number | null): string {
   return `color-mix(in oklab, ${value >= 0 ? "var(--neg)" : "var(--pos)"} ${strength}%, var(--muted))`;
 }
 
-function format(value: number | null): string {
-  return value === null ? "—" : value.toFixed(2).replace(".", ",");
+function format(value: number | null, locale: string): string {
+  return value === null ? "—" : formatDecimal(value, 2, locale);
 }
 
 export interface CorrelationMatrixProps {
   matrix: Matrix;
   instrumentsById: Map<string, Instrument>;
+  /** Number locale of the user (e.g. "it-IT", "en-GB"). */
+  locale?: string;
 }
 
-export function CorrelationMatrix({ matrix, instrumentsById }: CorrelationMatrixProps) {
+export function CorrelationMatrix({ matrix, instrumentsById, locale = "it-IT" }: CorrelationMatrixProps) {
   const names = matrix.instrumentIds.map((id) => instrumentsById.get(id)?.name ?? "—");
   return (
     <div className="flex flex-col gap-3">
@@ -49,9 +52,9 @@ export function CorrelationMatrix({ matrix, instrumentsById }: CorrelationMatrix
                     key={matrix.instrumentIds[j]}
                     className="h-9 w-11 rounded text-center text-foreground"
                     style={{ backgroundColor: i === j ? "transparent" : correlationColor(value) }}
-                    aria-label={`${names[i]} e ${names[j]}: ${format(value)}`}
+                    aria-label={`${names[i]} e ${names[j]}: ${format(value, locale)}`}
                   >
-                    {i === j ? "" : format(value)}
+                    {i === j ? "" : format(value, locale)}
                   </td>
                 ))}
               </tr>

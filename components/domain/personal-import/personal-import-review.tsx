@@ -83,7 +83,7 @@ function ReasonGroup({ group, hidden }: { group: ErrorReasonGroup; hidden: boole
 }
 
 export function PersonalImportReview({ job, file, listId, onUploadCorrected, onReanalyzed }: PersonalImportReviewProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const { hidden } = usePrivacy();
   const client = useQueryClient();
   const headingRef = React.useRef<HTMLHeadingElement>(null);
@@ -137,7 +137,7 @@ export function PersonalImportReview({ job, file, listId, onUploadCorrected, onR
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-background text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium text-foreground">{file.name}</span>
-          <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size) : null, total ? tr("{0} righe lette", { 0: total }) : null].filter(Boolean).join(" · ")}</span>
+          <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size, locale) : null, total ? tr("{0} righe lette", { 0: total }) : null].filter(Boolean).join(" · ")}</span>
         </span>
       </div>
 

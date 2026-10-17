@@ -29,17 +29,15 @@ export interface ImportHistoryGroup {
   items: ImportHistoryItem[];
 }
 
-const DATE = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
-
-/** `2025-01-31` → `31 gen 2025`; un valore che non è una data resta com'è. */
-export function formatImportDate(value: string): string {
+/** `2025-01-31` → `31 gen 2025` (it-IT) / `31 Jan 2025` (en-GB); a value that is not a date stays as it is. */
+export function formatImportDate(value: string, locale = "it-IT"): string {
   const date = new Date(value.length === 10 ? `${value}T12:00:00` : value);
-  return Number.isNaN(date.getTime()) ? value : DATE.format(date);
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
-/** Periodo leggibile; un solo giorno si scrive una volta. */
-export function formatImportPeriod(from: string, to: string): string {
-  return from === to ? formatImportDate(from) : `${formatImportDate(from)} – ${formatImportDate(to)}`;
+/** Readable period in the user's locale; a single day is written once. */
+export function formatImportPeriod(from: string, to: string, locale = "it-IT"): string {
+  return from === to ? formatImportDate(from, locale) : `${formatImportDate(from, locale)} – ${formatImportDate(to, locale)}`;
 }
 
 function plural(n: number, one: string, many: string): string {
@@ -64,6 +62,7 @@ function personalStatus(status: string): ImportHistoryItem["status"] {
 export function buildImportHistory(
   statements: { id: string; createdAt: string; statement: BrokerStatement }[],
   personal: PersonalImportListing | undefined,
+  locale = "it-IT",
 ): ImportHistoryItem[] {
   const formatNames = new Map(personal?.formats.map((f) => [f.id, f.name]) ?? []);
   const broker = statements.map<ImportHistoryItem>(({ id, createdAt, statement }) => {
@@ -73,7 +72,7 @@ export function buildImportHistory(
       kind: "broker",
       id,
       source: brokerSource(statement),
-      period: formatImportPeriod(statement.from, statement.to),
+      period: formatImportPeriod(statement.from, statement.to, locale),
       createdAt,
       details: [
         ...(statement.positions.length > 0 ? [plural(statement.positions.length, "posizione", "posizioni")] : []),

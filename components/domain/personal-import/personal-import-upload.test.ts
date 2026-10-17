@@ -7,6 +7,12 @@ describe("formatFileSize", () => {
     expect(formatFileSize(2048)).toBe("2 KB");
     expect(formatFileSize(5 * 1024 * 1024)).toBe("5 MB");
   });
+
+  it("uses the decimal separator of the locale", () => {
+    expect(formatFileSize(1.5 * 1024 * 1024)).toBe("1,5 MB");
+    expect(formatFileSize(1.5 * 1024 * 1024, "en-GB")).toBe("1.5 MB");
+    expect(formatFileSize(1.5 * 1024 * 1024, "de-DE")).toBe("1,5 MB");
+  });
 });
 
 describe("readPersonalImportFile", () => {

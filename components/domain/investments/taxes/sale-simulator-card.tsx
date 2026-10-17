@@ -1,6 +1,6 @@
 "use client";
 
-import { localizedFormats } from "@/lib/localization/format";
+import { localizedFormats, numberSeparators } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
@@ -110,7 +110,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
             <Input
               id={`${id}-qty`}
               inputMode="decimal"
-              value={quantityText ?? String(position.quantity).replace(".", ",")}
+              value={quantityText ?? String(position.quantity).replace(".", numberSeparators(formattingLocale).decimal)}
               onChange={(e) => setQuantityText(e.target.value)}
             />
           </Field>

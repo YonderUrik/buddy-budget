@@ -169,5 +169,7 @@ describe("groupOperationsByMonth", () => {
 
   it("formatta il nome del mese con l'anno", () => {
     expect(formatMonthLabel("2026-09")).toBe("Settembre 2026");
+    expect(formatMonthLabel("2026-09", "en-GB")).toBe("September 2026");
+    expect(formatMonthLabel("2026-09", "de-DE")).toBe("September 2026");
   });
 });

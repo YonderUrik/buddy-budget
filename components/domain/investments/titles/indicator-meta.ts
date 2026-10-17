@@ -4,7 +4,8 @@
  */
 
 import type { MarginKey, Operand, PerShareKey, ProfitabilityKey, SolidityKey, ValuationKey } from "@/lib/investments/title-fundamentals";
-import { formatCompactAmount, formatRatio } from "./title-format";
+import { localizedFormats } from "@/lib/localization/format";
+import { formatPct } from "../percent";
 
 /** Come si scrive il valore di un indicatore. */
 export type IndicatorFormat = "multiple" | "pct" | "years" | "times";
@@ -48,11 +49,12 @@ export const PER_SHARE_LABELS: Record<PerShareKey, string> = {
   dividend: "Dividendo",
 };
 
-/** Valore di un indicatore nel suo formato ("14,2", "16,2%", "2,6 anni", "5,8×"). */
-export function formatIndicator(value: number, format: IndicatorFormat): string {
+/** Indicator value in its format ("14,2", "16,2%", "2,6 anni", "5,8×" in it-IT), with numbers in the user's locale. */
+export function formatIndicator(value: number, format: IndicatorFormat, locale = "it-IT"): string {
+  const { formatRatio } = localizedFormats(locale);
   switch (format) {
     case "pct":
-      return `${formatRatio(value * 100)}%`;
+      return formatPct(value, 1, locale);
     case "years":
       return `${formatRatio(value)} anni`;
     case "times":
@@ -62,19 +64,20 @@ export function formatIndicator(value: number, format: IndicatorFormat): string 
   }
 }
 
-/** Importo per azione: due decimali (quattro sotto 0,1). */
-export function formatPerShare(value: number, currency: string): string {
+/** Per-share amount: two decimals (four below 0.1), in the user's locale. */
+export function formatPerShare(value: number, currency: string, locale = "it-IT"): string {
   const digits = Math.abs(value) < 0.1 ? 4 : 2;
-  return `${new Intl.NumberFormat("it-IT", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value)} ${currency}`;
+  return `${new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value)} ${currency}`;
 }
 
-/** Un termine della formula, nell'unità giusta. */
-export function formatOperand(operand: Operand, currency: string, priceCurrency: string): string {
+/** One term of the formula, in the right unit and in the user's locale. */
+export function formatOperand(operand: Operand, currency: string, priceCurrency: string, locale = "it-IT"): string {
+  const { formatCompactAmount } = localizedFormats(locale);
   switch (operand.unit) {
     case "price":
-      return formatPerShare(operand.value, priceCurrency);
+      return formatPerShare(operand.value, priceCurrency, locale);
     case "perShare":
-      return formatPerShare(operand.value, currency);
+      return formatPerShare(operand.value, currency, locale);
     case "shares":
       return `${formatCompactAmount(operand.value)} azioni`;
     default:

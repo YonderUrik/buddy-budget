@@ -6,6 +6,7 @@ import { filterInvestmentBrokers } from "@/lib/investments/broker-filter";
 import { startOfDay } from "@/lib/calc/expenses";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { buildInvestmentsView } from "@/lib/investments/view";
+import { useLocalization } from "@/lib/localization/provider";
 import { useInvestmentsOverviewQuery } from "./investments";
 
 /**
@@ -13,11 +14,12 @@ import { useInvestmentsOverviewQuery } from "./investments";
  * Performance, Diversificazione, Operazioni). fullHistory carica tutti i prezzi per simulazioni dalla prima operazione.
  */
 export function useInvestmentsView(period: NetWorthPeriod, fullHistory = false, chartRange?: { from: string; to: string }) {
+  const { locale } = useLocalization();
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const overview = useFilteredInvestmentsOverview(fullHistory || chartRange ? "max" : period);
   const view = React.useMemo(
-    () => (overview.data ? buildInvestmentsView(overview.data, period, today, chartRange) : null),
-    [overview.data, period, today, chartRange]
+    () => (overview.data ? buildInvestmentsView(overview.data, period, today, chartRange, locale) : null),
+    [overview.data, period, today, chartRange, locale]
   );
   return { overview, view, today };
 }

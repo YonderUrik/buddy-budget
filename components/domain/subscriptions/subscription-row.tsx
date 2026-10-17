@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { TrendingUpIcon } from "lucide-react";
 import { MerchantLogo } from "@/components/domain/categorization";
-import { formatCurrency } from "@/lib/format";
+import { localizedFormats } from "@/lib/localization/format";
 import type { SubscriptionItem } from "@/lib/subscriptions/view";
 import { cn } from "@/lib/utils";
 import { localizedSubscriptionFormats } from "./subscriptions-format";
@@ -38,7 +38,8 @@ export interface SubscriptionRowProps {
 export function SubscriptionRow({ item, currency, today, onOpen, actions, onRemoteLogo, className }: SubscriptionRowProps) {
   const { initialOf, itemHint } = localizedSubscriptionFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
+  const { formatCurrency } = localizedFormats(locale);
   const color = avatarColor(item.key);
   const showMonthly = item.cadence !== null && item.cadence !== "mensile" && item.monthly !== null;
   const rise = item.priceChange && item.priceChange.to > item.priceChange.from ? item.priceChange : null;

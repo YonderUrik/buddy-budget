@@ -206,6 +206,8 @@ export function computePortfolioRisk(params: {
   benchmark?: InstrumentInput | null;
   riskFreeRates?: RateInput[] | null;
   range?: PerformanceRange;
+  /** Locale of the X-axis labels. */
+  locale?: string;
 }): PortfolioRisk | null {
   const { transactions, priceIndex, fx, userCurrency, period, today, benchmark, riskFreeRates } = params;
   const bounds = resolvePerformanceRange(transactions, period, today, params.range);
@@ -223,7 +225,7 @@ export function computePortfolioRisk(params: {
 
   const drawdown = computeDrawdown(baseKey, daily.filter((d) => d.ret !== null));
   const shortPeriod = !!params.range || period === "1mese" || period === "3mesi";
-  const drawdownSeries = samplePeriodSeries(shortPeriod ? drawdown.series : monthlyMinimum(drawdown.series), params.range ? "3mesi" : period);
+  const drawdownSeries = samplePeriodSeries(shortPeriod ? drawdown.series : monthlyMinimum(drawdown.series), params.range ? "3mesi" : period, params.locale);
 
   const relations = observations.length >= MIN_RELATION_OBSERVATIONS && perYear !== null;
   const riskFreeRate = riskFreeRates ? averageRate(riskFreeRates, observations.map((o) => o.date)) : null;

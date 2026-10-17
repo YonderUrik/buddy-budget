@@ -220,6 +220,9 @@ describe("buildNetWorthSeries", () => {
       ["2026-08-31", 200],
       ["2026-09-13", 250],
     ]);
+    expect(series.map((p) => p.label)).toEqual(["lug 26", "ago 26", "set 26"]);
+    expect(buildNetWorthSeries(snapshots, { liquidita: 250 }, "1anno", TODAY, "en-GB").map((p) => p.label)).toEqual(["Jul 26", "Aug 26", "Sept 26"]);
+    expect(buildNetWorthSeries(snapshots, { liquidita: 250 }, "1anno", TODAY, "de-DE").map((p) => p.label)).toEqual(["Juli 26", "Aug. 26", "Sept. 26"]);
     expect(buildNetWorthSeries(snapshots, { liquidita: 250 }, "max", TODAY).map((p) => p.date)).toEqual([
       "2026-07-31",
       "2026-08-31",

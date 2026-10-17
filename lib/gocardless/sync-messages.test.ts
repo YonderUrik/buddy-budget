@@ -82,6 +82,13 @@ describe("buildSyncErrorMessage", () => {
     expect(message).toContain("Prossimo disponibile alle");
   });
 
+  it("not-eligible formats the time in the given locale", () => {
+    const nextEligibleAt = new Date(2026, 6, 26, 15, 30).toISOString();
+    expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt, syncsRemainingToday: 0 })).toContain("alle 15:30");
+    expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt, syncsRemainingToday: 0 }, "en-GB")).toContain("alle 15:30");
+    expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt, syncsRemainingToday: 0 }, "en-US")).toContain("alle 03:30 PM");
+  });
+
   it("not-eligible senza orario", () => {
     expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt: null, syncsRemainingToday: 0 })).toBe(
       "Sync non disponibile al momento. Riprova più tardi."

@@ -68,9 +68,9 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
   const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
 
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatRatio } = localizedFormats(formattingLocale);
   function formatCalculated(key: LoanInputKey, value: number, currency: string): string {
-  if (key === "annualRate") return `${value.toFixed(2).replace(".", ",")}%`;
+  if (key === "annualRate") return `${formatRatio(value, 2)}%`;
   if (key === "installments") return String(value);
   return formatCurrency(value, currency);
 }

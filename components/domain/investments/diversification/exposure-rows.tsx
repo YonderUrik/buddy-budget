@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import type { CompositionSlice } from "@/lib/calc/investments";
 
 import { cn } from "@/lib/utils";
+import { formatPct } from "../percent";
 
 /** Righe mostrate prima di "Mostra tutti". */
 export const EXPOSURE_ROWS_VISIBLE = 6;
@@ -31,8 +32,9 @@ export interface ExposureRowsProps {
   label: string;
 }
 
-function formatShare(share: number): string {
-  return `${(share * 100).toFixed(share < 0.1 ? 1 : 0).replace(".", ",")}%`;
+/** Share of the total, one decimal below 10% ("4,5%" / "56%" in it-IT). */
+function formatShare(share: number, locale: string): string {
+  return formatPct(share, share < 0.1 ? 1 : 0, locale);
 }
 
 export function ExposureRows({ slices, currency, labelFor, colorFor, iconFor, activeKey = null, onActiveChange, label }: ExposureRowsProps) {
@@ -76,7 +78,7 @@ export function ExposureRows({ slices, currency, labelFor, colorFor, iconFor, ac
                         maximumFractionDigits: 0,
                       })}
                     </span>
-                    <span className="ml-3 inline-block w-12 text-right font-medium text-foreground">{formatShare(slice.share)}</span>
+                    <span className="ml-3 inline-block w-12 text-right font-medium text-foreground">{formatShare(slice.share, formattingLocale)}</span>
                   </span>
                 </span>
                 <span className="block h-1.5 w-full rounded-full bg-muted" aria-hidden="true">

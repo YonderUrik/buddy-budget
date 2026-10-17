@@ -18,7 +18,7 @@ import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { WITHDRAWAL_RULES, type WithdrawalRule } from "@/lib/calc/monte-carlo";
 import { localizedAnalyticsFormats } from "./analytics-format";
 import { localizedReturnSource } from "./return-source";
-import { limitsOf, parseNumber, PERCENT_FIELDS, toFieldText, toPercentDraft, type PercentDraft, type PercentField } from "./assumptions-fields";
+import { limitsOf, localizedNumberFields, PERCENT_FIELDS, toPercentDraft, type PercentDraft, type PercentField } from "./assumptions-fields";
 
 export const RULE_LABELS: Record<WithdrawalRule, string> = {
   fissa: "Fissa (stessa spesa ogni anno)",
@@ -57,8 +57,9 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
 
   const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
-  const initialPercents = React.useMemo(() => toPercentDraft(assumptions), [assumptions]);
+  const { t: tr, locale } = useLocalization();
+  const { parseNumber, toFieldText } = localizedNumberFields(locale);
+  const initialPercents = React.useMemo(() => toPercentDraft(assumptions, locale), [assumptions, locale]);
   const [percents, setPercents] = React.useState<PercentDraft>(initialPercents);
   /** Vero = al salvataggio il rendimento torna a calcolarsi dallo storico. */
   const [returnAuto, setReturnAuto] = React.useState(false);
@@ -75,7 +76,7 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
 
   const reset = (next: AnalyticsAssumptions) => {
     const manual = returnInfo.source === "manuale";
-    setPercents({ ...toPercentDraft(next), expectedReturn: manual ? toFieldText(offer ?? next.expectedReturn, true) : initialPercents.expectedReturn });
+    setPercents({ ...toPercentDraft(next, locale), expectedReturn: manual ? toFieldText(offer ?? next.expectedReturn, true) : initialPercents.expectedReturn });
     setReturnAuto(manual);
     setYears(String(next.retirementYears));
     setSpending(toFieldText(next.annualSpending, false));

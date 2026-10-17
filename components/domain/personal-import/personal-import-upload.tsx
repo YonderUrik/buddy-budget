@@ -35,9 +35,9 @@ interface LoadedFile {
   csv: string;
 }
 
-/** Peso di un file in forma leggibile (KB o MB). */
-export function formatFileSize(bytes: number): string {
-  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toLocaleString("it-IT", { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+/** Human-readable file size (KB or MB), with the decimal separator of `locale`. */
+export function formatFileSize(bytes: number, locale = "it-IT"): string {
+  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toLocaleString(locale, { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
 /** Legge un file scelto dall'utente e lo restituisce come testo CSV; lancia con un messaggio comprensibile se non va. */

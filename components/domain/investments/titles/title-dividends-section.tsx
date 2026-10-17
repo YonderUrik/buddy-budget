@@ -45,12 +45,12 @@ export function TitleDividendsSection({ dividends, currency }: TitleDividendsSec
               label: String(y.year),
               value: y.amount,
               muted: y.partial,
-              title: `${y.year}${y.partial ? " (finora)" : ""}: ${formatPerShare(y.amount, currency)}`,
+              title: `${y.year}${y.partial ? " (finora)" : ""}: ${formatPerShare(y.amount, currency, formattingLocale)}`,
             }))}
           />
           {current?.partial ? (
             <p className="text-xs text-muted-foreground">
-              {current.year}{" "}{tr("finora:")}{" "}{formatPerShare(current.amount, currency)}{" "}{tr("per quota.")}</p>
+              {current.year}{" "}{tr("finora:")}{" "}{formatPerShare(current.amount, currency, formattingLocale)}{" "}{tr("per quota.")}</p>
           ) : null}
         </div>
         <dl className="grid grid-cols-2 gap-x-6 gap-y-5">
@@ -59,7 +59,7 @@ export function TitleDividendsSection({ dividends, currency }: TitleDividendsSec
               label={tr("Rendimento oggi")}
               value={formatPct(dividends.yieldToday, 2)}
               hint={tr("Dividendi degli ultimi 12 mesi ÷ prezzo.")}
-              help={{ id: "dividend_yield", title: "Rendimento da dividendo", formula: `Dividendi per quota staccati negli ultimi 12 mesi (${formatPerShare(dividends.trailing, currency)}) ÷ ultima chiusura.`, source: SOURCE }}
+              help={{ id: "dividend_yield", title: "Rendimento da dividendo", formula: `Dividendi per quota staccati negli ultimi 12 mesi (${formatPerShare(dividends.trailing, currency, formattingLocale)}) ÷ ultima chiusura.`, source: SOURCE }}
             />
           ) : null}
           {dividends.yieldOnCost !== null ? (

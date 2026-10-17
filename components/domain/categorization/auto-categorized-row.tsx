@@ -14,7 +14,7 @@ import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { AutoCategorizedGroup } from "@/lib/categorization/auto-review";
 import { localizedCategorizationText } from "@/lib/categorization/origin";
 import type { Category } from "@/lib/db/schema/categories";
-import { formatCurrency } from "@/lib/format";
+import { localizedFormats } from "@/lib/localization/format";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { cn } from "@/lib/utils";
 import { MerchantLogo } from "./merchant-logo";
@@ -36,7 +36,8 @@ export interface AutoCategorizedRowProps {
 export function AutoCategorizedRow({ group, categories, currency, categoryUsage, busy = false, onCorrect, onRemoteLogo }: AutoCategorizedRowProps) {
   const { dateRangeLabel } = localizedCategorizationText(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
+  const { formatCurrency } = localizedFormats(locale);
   const [picking, setPicking] = React.useState(false);
   // Una correzione di solito vale anche per i prossimi movimenti: senza, una regola sbagliata li rimetterebbe lì.
   const [remember, setRemember] = React.useState(true);

@@ -7,6 +7,7 @@ import type { SyncErrorInfo } from "@/lib/gocardless/sync-messages";
 import { SYNC_JOBS_QUERY_KEY } from "@/lib/queries/sync-jobs";
 import { track } from "@/lib/analytics";
 import { errorToast } from "@/lib/support/request-report";
+import { useLocalization } from "@/lib/localization/provider";
 import type { CapacityBlockReason } from "@/lib/gocardless/capacity";
 
 /** Risposta di `GET /api/gocardless/capacity`. */
@@ -154,6 +155,7 @@ export class SyncNotAvailableError extends Error {
 /** Avvia un sync manuale come job in background; l'avanzamento compare nel pannello globale. Gli errori immediati vanno in un toast. */
 export function useSyncAccountMutation() {
   const queryClient = useQueryClient();
+  const { locale } = useLocalization();
   return useMutation({
     mutationFn: async (accountId: string): Promise<{ jobId: string }> => {
       const response = await fetch(`/api/gocardless/accounts/${accountId}/sync`, { method: "POST" });
@@ -167,7 +169,7 @@ export function useSyncAccountMutation() {
     },
     onError: (error: unknown) => {
       const info: SyncErrorInfo = error instanceof SyncNotAvailableError ? error.info : { status: "unknown" };
-      errorToast(buildSyncErrorMessage(info), "sync_banca");
+      errorToast(buildSyncErrorMessage(info, locale), "sync_banca");
       // Un 409 "già in sincronizzazione" segnala un job in corso avviato altrove: aggiorna il pannello.
       queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
     },

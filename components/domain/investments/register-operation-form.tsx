@@ -96,14 +96,14 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const [instrument, setInstrument] = React.useState<Instrument | null>(initial?.instrument ?? null);
   const [type, setType] = React.useState<InvestmentTransactionType>(initial?.type ?? "acquisto");
   const [date, setDate] = React.useState(initial?.date ?? localTodayKey());
-  const [quantity, setQuantity] = React.useState(numberText(initial?.quantity));
+  const [quantity, setQuantity] = React.useState(numberText(initial?.quantity, formattingLocale));
   // null = il campo segue il prezzo proposto; una stringa = valore scritto dall'utente.
   // In modifica parte dal prezzo salvato, non da quello di mercato della data.
-  const [priceInput, setPriceInput] = React.useState<string | null>(editing ? numberText(initial?.price) : null);
-  const [gross, setGross] = React.useState(numberText(roundCents(initial?.grossAmount)));
-  const [fees, setFees] = React.useState(numberText(initial?.fees));
-  const [taxes, setTaxes] = React.useState(numberText(roundCents(initial?.taxes)));
-  const [fxRate, setFxRate] = React.useState(numberText(initial?.fxRate));
+  const [priceInput, setPriceInput] = React.useState<string | null>(editing ? numberText(initial?.price, formattingLocale) : null);
+  const [gross, setGross] = React.useState(numberText(roundCents(initial?.grossAmount), formattingLocale));
+  const [fees, setFees] = React.useState(numberText(initial?.fees, formattingLocale));
+  const [taxes, setTaxes] = React.useState(numberText(roundCents(initial?.taxes), formattingLocale));
+  const [fxRate, setFxRate] = React.useState(numberText(initial?.fxRate, formattingLocale));
   const [error, setError] = React.useState<string | null>(null);
 
   const fields = fieldsFor(type);
@@ -112,9 +112,9 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const needsFx = fields.costs && instrument !== null && instrument.currency !== currency;
   const suggestPrice = fields.price && suggestsMarketPrice(type);
   const priceOnDate = useInstrumentPriceOnDateQuery(suggestPrice ? (instrument?.id ?? null) : null, date);
-  const suggested = suggestPrice && priceOnDate.data?.price ? priceText(priceOnDate.data.price.close) : null;
+  const suggested = suggestPrice && priceOnDate.data?.price ? priceText(priceOnDate.data.price.close, formattingLocale) : null;
   // Senza prezzo alla data resta quello di partenza (es. l'ultimo prezzo stimato).
-  const price = priceInput ?? suggested ?? numberText(initial?.price);
+  const price = priceInput ?? suggested ?? numberText(initial?.price, formattingLocale);
   const priceHint = suggestPrice && instrument ? priceSuggestionHint(date, priceOnDate.data, priceOnDate.isFetching, language) : null;
   const grossValue = computeGrossValue(type, parseAmount(quantity), parseAmount(price), parseAmount(gross), instrument?.priceUnit);
 

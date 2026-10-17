@@ -14,7 +14,7 @@ import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { costDrag, summarizeCosts } from "@/lib/calc/costs";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
 import { localizedAnalyticsFormats } from "./analytics-format";
-import { parseNumber, toFieldText } from "./assumptions-fields";
+import { localizedNumberFields } from "./assumptions-fields";
 import { GuidedReading } from "./guided-reading";
 import { localizedGuidedSteps } from "./guided-steps";
 
@@ -38,7 +38,8 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
 
   const { money } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr, productCountry } = useLocalization();
+  const { t: tr, productCountry, locale } = useLocalization();
+  const { parseNumber, toFieldText } = localizedNumberFields(locale);
   const { currency } = base;
   const [drafts, setDrafts] = React.useState<Record<string, string>>(() =>
     Object.fromEntries(Object.entries(assumptions.terByInstrument).map(([id, ter]) => [id, toFieldText(ter, true)]))

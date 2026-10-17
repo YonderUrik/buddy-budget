@@ -9,6 +9,7 @@ import {
   computePositions,
   findOversoldTransaction,
   resolvePrice,
+  samplePeriodSeries,
   type InstrumentInput,
   type InvestmentTransactionInput,
 } from "./investments";
@@ -337,5 +338,16 @@ describe("serie e composizione", () => {
       { key: "azione", value: 100, share: 0.25 },
     ]);
     expect(computeComposition(summary.rows, "currency").map((s) => s.key)).toEqual(["EUR", "USD"]);
+  });
+});
+
+describe("samplePeriodSeries", () => {
+  const daily = [{ date: "2026-10-14" }, { date: "2026-10-15" }];
+
+  it("labels the X axis in the given locale", () => {
+    expect(samplePeriodSeries(daily, "1mese").map((p) => p.label)).toEqual(["14 ott", "15 ott"]);
+    expect(samplePeriodSeries(daily, "1mese", "en-GB").map((p) => p.label)).toEqual(["14 Oct", "15 Oct"]);
+    expect(samplePeriodSeries(daily, "1mese", "de-DE").map((p) => p.label)).toEqual(["14. Okt.", "15. Okt."]);
+    expect(samplePeriodSeries(daily, "1anno", "en-GB").map((p) => p.label)).toEqual(["Oct 26"]);
   });
 });

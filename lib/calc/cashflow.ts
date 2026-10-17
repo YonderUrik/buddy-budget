@@ -84,12 +84,12 @@ export function shiftCashflowReferenceDate(period: CashflowPeriod, referenceDate
   return addWholeMonths(referenceDate, months * direction);
 }
 
-/** Etichetta leggibile del periodo Cash flow, es. "Gen – Mar 2026" o "Gen 2025 – Dic 2026". */
-export function formatCashflowPeriodLabel(range: DateRange): string {
+/** Readable Cash flow period label in `locale`, e.g. "Gen – Mar 2026" or "Gen 2025 – Dic 2026" in Italian. */
+export function formatCashflowPeriodLabel(range: DateRange, locale = "it-IT"): string {
   const sameYear = range.from.getFullYear() === range.to.getFullYear();
-  const monthYearFormat = new Intl.DateTimeFormat("it-IT", { month: "short", year: "numeric" });
+  const monthYearFormat = new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" });
   if (sameYear) {
-    const monthOnly = new Intl.DateTimeFormat("it-IT", { month: "short" }).format(range.from);
+    const monthOnly = new Intl.DateTimeFormat(locale, { month: "short" }).format(range.from);
     return `${capitalize(monthOnly)} – ${capitalize(monthYearFormat.format(range.to))}`;
   }
   return `${capitalize(monthYearFormat.format(range.from))} – ${capitalize(monthYearFormat.format(range.to))}`;

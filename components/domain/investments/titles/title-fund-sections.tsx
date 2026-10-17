@@ -35,9 +35,9 @@ export function TitleFundSections({ fundamentals: f, positionValue, currency }: 
 
   const { t: tr } = useLocalization();
   const basket = [
-    f.holdingsPE !== null ? { id: "holdings_pe", label: tr("P/E medio"), value: formatIndicator(f.holdingsPE, "multiple"), hint: tr("Prezzo ÷ utili delle aziende nel fondo.") } : null,
-    f.holdingsPB !== null ? { id: "holdings_pb", label: tr("P/B medio"), value: formatIndicator(f.holdingsPB, "multiple"), hint: tr("Prezzo ÷ patrimonio contabile.") } : null,
-    f.holdingsPS !== null ? { id: "holdings_ps", label: tr("P/S medio"), value: formatIndicator(f.holdingsPS, "multiple"), hint: tr("Prezzo ÷ ricavi.") } : null,
+    f.holdingsPE !== null ? { id: "holdings_pe", label: tr("P/E medio"), value: formatIndicator(f.holdingsPE, "multiple", formattingLocale), hint: tr("Prezzo ÷ utili delle aziende nel fondo.") } : null,
+    f.holdingsPB !== null ? { id: "holdings_pb", label: tr("P/B medio"), value: formatIndicator(f.holdingsPB, "multiple", formattingLocale), hint: tr("Prezzo ÷ patrimonio contabile.") } : null,
+    f.holdingsPS !== null ? { id: "holdings_ps", label: tr("P/S medio"), value: formatIndicator(f.holdingsPS, "multiple", formattingLocale), hint: tr("Prezzo ÷ ricavi.") } : null,
     f.fundYield !== null && f.fundYield > 0 ? { id: "fund_yield", label: tr("Rendimento da dividendo"), value: formatPct(f.fundYield, 2), hint: tr("Proventi dei titoli contenuti ÷ prezzo, anche se il fondo li reinveste.") } : null,
   ].filter((x) => x !== null);
   const ter = f.expenseRatio;

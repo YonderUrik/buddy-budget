@@ -7,10 +7,9 @@ import type { InstrumentType } from "@/lib/db/schema/investments";
 import type { DividendFacts, StockFundamentals } from "@/lib/investments/title-fundamentals";
 import type { TitleStats } from "@/lib/investments/title-stats";
 import type { TitleFundamentals } from "@/lib/market-data/fundamentals";
-import { formatSignedPct } from "../gain-text";
-import { formatPct } from "../percent";
+import { localizedFormats } from "@/lib/localization/format";
+import { formatPct, formatSignedPct } from "../percent";
 import { formatIndicator, formatPerShare } from "./indicator-meta";
-import { formatCompactAmount } from "./title-format";
 
 export interface KeyFact {
   label: string;
@@ -25,10 +24,13 @@ export interface KeyFactsInput {
   fundamentals: TitleFundamentals | null;
   stock: StockFundamentals | null;
   dividends: DividendFacts | null;
+  /** Number and date locale of the user (e.g. "it-IT", "en-GB"). */
+  locale: string;
 }
 
 /** Numeri della riga «in breve», al massimo sei. */
-export function keyFacts({ type, currency, stats, fundamentals: f, stock, dividends }: KeyFactsInput): KeyFact[] {
+export function keyFacts({ type, currency, stats, fundamentals: f, stock, dividends, locale }: KeyFactsInput): KeyFact[] {
+  const { formatCompactAmount } = localizedFormats(locale);
   const facts: (KeyFact | null)[] = [];
   if (type === "azione") {
     const pe = stock?.valuation.pe?.value ?? f?.trailingPE ?? null;
@@ -36,31 +38,31 @@ export function keyFacts({ type, currency, stats, fundamentals: f, stock, divide
     const yieldToday = dividends?.yieldToday ?? f?.dividendYield ?? null;
     facts.push(
       f?.marketCap != null ? { label: "Capitalizzazione", value: `${formatCompactAmount(f.marketCap)} ${currency}` } : null,
-      pe !== null ? { label: "P/E", value: formatIndicator(pe, "multiple"), note: "utili ultimi 12 mesi" } : null,
+      pe !== null ? { label: "P/E", value: formatIndicator(pe, "multiple", locale), note: "utili ultimi 12 mesi" } : null,
       revenuePs !== null && stock
-        ? { label: "Ricavi per azione", value: formatPerShare(revenuePs, stock.currency), note: "ultimi 12 mesi" }
+        ? { label: "Ricavi per azione", value: formatPerShare(revenuePs, stock.currency, locale), note: "ultimi 12 mesi" }
         : f?.revenuePerShare != null
-          ? { label: "Ricavi per azione", value: formatPerShare(f.revenuePerShare, f.financialCurrency ?? currency), note: "ultimi 12 mesi" }
+          ? { label: "Ricavi per azione", value: formatPerShare(f.revenuePerShare, f.financialCurrency ?? currency, locale), note: "ultimi 12 mesi" }
           : null,
       yieldToday !== null && yieldToday > 0
-        ? { label: "Dividendo", value: formatPct(yieldToday, 1), note: dividends && dividends.trailing > 0 ? `${formatPerShare(dividends.trailing, currency)} in 12 mesi` : undefined }
+        ? { label: "Dividendo", value: formatPct(yieldToday, 1, locale), note: dividends && dividends.trailing > 0 ? `${formatPerShare(dividends.trailing, currency, locale)} in 12 mesi` : undefined }
         : null
     );
   } else if (type === "etf" || type === "fondo") {
     const yieldValue = f?.fundYield ?? dividends?.yieldToday ?? null;
     facts.push(
-      f?.expenseRatio != null ? { label: "Costo annuo (TER)", value: formatPct(f.expenseRatio, 2), note: `${formatCompactAmount(f.expenseRatio * 10_000)} ${currency} ogni 10.000` } : null,
+      f?.expenseRatio != null ? { label: "Costo annuo (TER)", value: formatPct(f.expenseRatio, 2, locale), note: `${formatCompactAmount(f.expenseRatio * 10_000)} ${currency} ogni 10.000` } : null,
       f?.totalAssets != null ? { label: "Patrimonio", value: `${formatCompactAmount(f.totalAssets)} ${currency}` } : null,
       f?.fundCategory ? { label: "Categoria", value: f.fundCategory } : null,
-      yieldValue !== null && yieldValue > 0 ? { label: "Rendimento da dividendo", value: formatPct(yieldValue, 1) } : null
+      yieldValue !== null && yieldValue > 0 ? { label: "Rendimento da dividendo", value: formatPct(yieldValue, 1, locale) } : null
     );
   } else if (stats) {
     facts.push(
-      stats.returns["1A"] !== undefined ? { label: "1 anno", value: formatSignedPct(stats.returns["1A"]) } : null,
-      stats.returns.YTD !== undefined ? { label: "Da inizio anno", value: formatSignedPct(stats.returns.YTD) } : null
+      stats.returns["1A"] !== undefined ? { label: "1 anno", value: formatSignedPct(stats.returns["1A"], locale) } : null,
+      stats.returns.YTD !== undefined ? { label: "Da inizio anno", value: formatSignedPct(stats.returns.YTD, locale) } : null
     );
   }
-  if (stats?.volatility != null) facts.push({ label: "Volatilità", value: formatPct(stats.volatility, 0), note: "ultimo anno" });
-  if (stats?.fromHigh != null) facts.push({ label: "Dal massimo", value: stats.fromHigh < -0.005 ? formatSignedPct(stats.fromHigh) : "sui massimi", note: "52 settimane" });
+  if (stats?.volatility != null) facts.push({ label: "Volatilità", value: formatPct(stats.volatility, 0, locale), note: "ultimo anno" });
+  if (stats?.fromHigh != null) facts.push({ label: "Dal massimo", value: stats.fromHigh < -0.005 ? formatSignedPct(stats.fromHigh, locale) : "sui massimi", note: "52 settimane" });
   return facts.filter((f): f is KeyFact => f !== null).slice(0, 6);
 }

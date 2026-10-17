@@ -118,7 +118,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-background text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium text-foreground">{file.name}</span>
-          <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size) : null, file.rows !== undefined ? plural(file.rows, "riga", tr("righe")) : null].filter(Boolean).join(" · ")}</span>
+          <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size, formattingLocale) : null, file.rows !== undefined ? plural(file.rows, "riga", tr("righe")) : null].filter(Boolean).join(" · ")}</span>
         </span>
       </div>
 

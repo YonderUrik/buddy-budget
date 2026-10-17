@@ -34,12 +34,12 @@ export function buildSyncSummaryMessage(result: SyncSuccessResult): string {
   return `${result.newTransactionsCount} ${label}${detail}. Saldo aggiornato.`;
 }
 
-/** Messaggio d'errore mostrato nel toast quando il sync manuale non va a buon fine. */
-export function buildSyncErrorMessage(error: SyncErrorInfo): string {
+/** Error message shown in the toast when a manual sync fails; the time is formatted in `locale`. */
+export function buildSyncErrorMessage(error: SyncErrorInfo, locale = "it-IT"): string {
   switch (error.status) {
     case "not-eligible": {
       if (!error.nextEligibleAt) return "Sync non disponibile al momento. Riprova più tardi.";
-      const time = new Intl.DateTimeFormat("it-IT", { hour: "2-digit", minute: "2-digit" }).format(
+      const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(
         new Date(error.nextEligibleAt)
       );
       return `Hai raggiunto il limite giornaliero di sync. Prossimo disponibile alle ${time}.`;

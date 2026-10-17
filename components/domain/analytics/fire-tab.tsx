@@ -9,7 +9,7 @@ import type { AnalyticsBase } from "@/lib/analitiche/base";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { cn } from "@/lib/utils";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { localizedAnalyticsFormats, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { GuidedReading } from "./guided-reading";
 import { localizedGuidedSteps } from "./guided-steps";
 
@@ -24,12 +24,13 @@ const RETURN_STEPS = [-0.02, -0.01, 0, 0.01, 0.02];
 const SPENDING_CHANGES = [-0.2, -0.1, 0, 0.1, 0.2];
 const SAVING_CHANGES = [-0.2, -0.1, 0, 0.1, 0.2];
 
-function signed(value: number): string {
+function signed(value: number, pct: (value: number, digits?: number) => string): string {
   return `${value > 0 ? "+" : value < 0 ? "−" : ""}${pct(Math.abs(value), 0)}`;
 }
 
 function SensitivityTable({ cells, rowLabel, columnLabel, rows, columns }: { cells: SensitivityCell[][]; rowLabel: string; columnLabel: string; rows: string[]; columns: string[] }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
+  const { num } = localizedAnalyticsFormats(language);
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[420px] text-sm tabular-nums">
@@ -53,7 +54,7 @@ function SensitivityTable({ cells, rowLabel, columnLabel, rows, columns }: { cel
               </th>
               {row.map((cell, j) => (
                 <td key={columns[j]} className={cn("p-1.5 text-right", i === 2 && j === 2 && "rounded bg-primary/10 font-medium")}>
-                  {cell.years === null ? "—" : cell.years === 0 ? tr("ok") : tr("{0} a", { 0: cell.years.toFixed(1).replace(".", ",") })}
+                  {cell.years === null ? "—" : cell.years === 0 ? tr("ok") : tr("{0} a", { 0: num(cell.years, 1) })}
                 </td>
               ))}
             </tr>
@@ -126,7 +127,7 @@ export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
           rows={rateRows.map((r) => pct(Math.max(r, 0.01)))}
           columns={returnCols.map((r) => pct(r))}
         />
-        <SensitivityTable cells={spendCells} rowLabel="spesa" columnLabel="risparmio" rows={SPENDING_CHANGES.map(signed)} columns={SAVING_CHANGES.map(signed)} />
+        <SensitivityTable cells={spendCells} rowLabel="spesa" columnLabel="risparmio" rows={SPENDING_CHANGES.map((change) => signed(change, pct))} columns={SAVING_CHANGES.map((change) => signed(change, pct))} />
         <p className="text-xs text-muted-foreground">{tr("Anni al numero FIRE. «—» = oltre 80 anni o mai; «ok» = già raggiunto. La cella evidenziata è la tua ipotesi.")}</p>
       </AnalyticsCard>
     </div>

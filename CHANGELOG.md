@@ -2,6 +2,22 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.72.0](https://github.com/YonderUrik/buddy-budget/compare/v0.71.0...v0.72.0) (2026-10-17)
+
+
+### Novità
+
+* language chooser with flags and date/amount preview ([#397](https://github.com/YonderUrik/buddy-budget/issues/397)) ([f9c9861](https://github.com/YonderUrik/buddy-budget/commit/f9c98612a059135e7265d58e77cf8186df33b5bd))
+* real back button in the phone top bar and above the page ([#395](https://github.com/YonderUrik/buddy-budget/issues/395)) ([f7ce233](https://github.com/YonderUrik/buddy-budget/commit/f7ce2339553508f454cbf2a0dae1bd654c9a6351))
+* sign back in with one tap after signing out ([#398](https://github.com/YonderUrik/buddy-budget/issues/398)) ([d336477](https://github.com/YonderUrik/buddy-budget/commit/d336477b9f6017baf625351360782bc9a79211f3))
+
+
+### Correzioni
+
+* center «Primi passi» for new users and mark AI settings ([#394](https://github.com/YonderUrik/buddy-budget/issues/394)) ([9cfd4ed](https://github.com/YonderUrik/buddy-budget/commit/9cfd4ed32924311f3629f5b05a024bfabdc71cb1))
+* smooth rolling numbers, without the pause on decimals ([#400](https://github.com/YonderUrik/buddy-budget/issues/400)) ([ae7eaf7](https://github.com/YonderUrik/buddy-budget/commit/ae7eaf777194c116f75c27a207fc128398d589ec))
+* write the example data in the user's language ([#393](https://github.com/YonderUrik/buddy-budget/issues/393)) ([9e8552b](https://github.com/YonderUrik/buddy-budget/commit/9e8552bcef49208d6d007e0d23e741c84558cd03))
+
 ## [0.71.0](https://github.com/YonderUrik/buddy-budget/compare/v0.70.0...v0.71.0) (2026-10-16)
 
 

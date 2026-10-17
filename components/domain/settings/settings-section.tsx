@@ -21,19 +21,15 @@ export interface SettingsSectionProps {
   children: React.ReactNode;
 }
 
-export function SettingsSection({ title, description, id, icon: Icon, preview, tone = "default", children }: SettingsSectionProps) {
+/** taste-skill: the section stands on its title, no icon tile (`icon` is kept for callers). */
+export function SettingsSection({ title, description, id, preview, tone = "default", children }: SettingsSectionProps) {
   const { t: tr } = useLocalization();
   const danger = tone === "danger";
   return (
     <section aria-labelledby={id} className="flex flex-col gap-4">
-      <header className="flex items-start gap-3">
-        {Icon ? (
-          <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-xl", danger ? "bg-neg-soft text-neg" : "bg-primary/10 text-primary")}>
-            <Icon className="size-[18px]" aria-hidden="true" />
-          </span>
-        ) : null}
+      <header>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h3 id={id} className={cn("font-heading text-base font-medium", danger ? "text-neg" : "text-foreground")}>
+          <h3 id={id} className={cn("font-heading text-lg font-semibold", danger ? "text-neg" : "text-foreground")}>
             {tr(title)}
           </h3>
           {description && <p className="text-sm text-muted-foreground">{tr(description)}</p>}

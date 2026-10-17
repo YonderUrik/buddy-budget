@@ -43,7 +43,7 @@ export function CollapsibleSection({
   const [open, setOpen] = usePersistedFlag(`${COLLAPSIBLE_STORAGE_PREFIX}${id}`, defaultOpen);
   const panelId = React.useId();
   return (
-    <section className={cn("border-t border-sidebar-border pt-2", className)} aria-label={tr(title)}>
+    <section className={cn("pt-3", className)} aria-label={tr(title)}>
       <div className="flex items-center gap-1">
         <button
           type="button"
@@ -51,19 +51,19 @@ export function CollapsibleSection({
           aria-expanded={open}
           aria-controls={panelId}
           className={cn(
-            "flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1.5 text-left",
-            "text-xs font-medium text-sidebar-foreground/60",
-            "transition-colors hover:text-sidebar-foreground"
+            "flex min-w-0 flex-1 items-center gap-1.5 rounded-full px-1.5 py-1.5 text-left",
+            "font-display text-[1.375rem] font-light leading-none text-sidebar-foreground",
+            "transition-colors hover:text-sidebar-foreground/80"
           )}
         >
           <ChevronRight
-            className={cn("size-3 shrink-0 transition-transform duration-150", open && "rotate-90")}
+            className={cn("size-3.5 shrink-0 text-sidebar-foreground/50 transition-transform duration-150", open && "rotate-90")}
             aria-hidden="true"
           />
           <span className="truncate">{tr(title)}</span>
           {badge}
           {!open && summary ? (
-            <span className="ml-auto truncate pl-2 text-xs font-medium normal-case tracking-normal text-sidebar-foreground">
+            <span className="ml-auto truncate pl-2 font-sans text-xs font-medium normal-case tracking-normal text-sidebar-foreground">
               {summary}
             </span>
           ) : null}

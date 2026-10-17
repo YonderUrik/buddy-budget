@@ -15,7 +15,7 @@ import {
 } from "@/components/domain/net-worth";
 import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
 import { GoalsPanoramicaSection, useGoalFormatters } from "@/components/domain/goals";
-import { EmptyState, HeroField, LoadError } from "@/components/domain/shared";
+import { EmptyState, LoadError } from "@/components/domain/shared";
 import { DemoOfferSection, StartChecklistSection } from "@/components/domain/start";
 import { WhatsNewSection } from "@/components/domain/whats-new";
 import { track } from "@/lib/analytics";
@@ -138,7 +138,7 @@ export default function PanoramicaPage() {
     ...(debts ? { debiti: -debts.total } : {}),
   };
   const [pensionIncluded, setPensionIncluded] = usePensionInNetWorth();
-  const fullSeries = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today, formattingLocale);
+  const fullSeries = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today);
   // Escludere la previdenza toglie solo il totale: l'area resta nel grafico (in grigio).
   const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
@@ -152,33 +152,18 @@ export default function PanoramicaPage() {
   const debtsFootnote = debtsData ? tr("Residuo dei debiti: {0}{1}", { 0: formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 }), 1: debtsData.debtFreeDate ? tr(", ultima rata il {0}", {0: formatDateWithYear(debtsData.debtFreeDate)}) : "" }) : undefined;
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
-  const showNetWorth = !isLoading && !isError && !(accounts.length === 0 && !investments && !pension);
-
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      <HeroField flush className="flex flex-col gap-8 sm:gap-10">
-        <OverviewVoice
-          firstName={hydrated ? session?.user.name?.split(" ")[0] : undefined}
-          dateLabel={headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}
-          pace={pace}
-          monthLabel={monthLabel}
-          currency={currency}
-          nextDue={dues[0] ? { name: dues[0].name, date: dues[0].date, amount: dues[0].amount } : null}
-          today={today}
-          dateAside={<WhatsNewSection />}
-        />
-        {showNetWorth ? (
-          <NetWorthChartCard
-            series={series}
-            change={change}
-            period={period}
-            onPeriodChange={setPeriod}
-            currency={currency}
-            pensionIncluded={pensionIncluded}
-            onPensionIncludedChange={setPensionIncluded}
-          />
-        ) : null}
-      </HeroField>
+      <OverviewVoice
+        firstName={hydrated ? session?.user.name?.split(" ")[0] : undefined}
+        dateLabel={headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}
+        pace={pace}
+        monthLabel={monthLabel}
+        currency={currency}
+        nextDue={dues[0] ? { name: dues[0].name, date: dues[0].date, amount: dues[0].amount } : null}
+        today={today}
+        dateAside={<WhatsNewSection />}
+      />
 
       <RenewalBanner alerts={renewalAlerts} renewHref={`${RENEW_PATH}panoramica`} />
 
@@ -191,20 +176,28 @@ export default function PanoramicaPage() {
       ) : isError ? (
         <LoadError message={tr("Impossibile caricare i dati della panoramica.")} onRetry={retry} />
       ) : accounts.length === 0 && !investments && !pension ? (
-        // A new user sees «Primi passi» in a single centred column, with the sample-data offer right under it.
-        <div className="mx-auto flex w-full max-w-2xl flex-col gap-10 sm:pt-4">
-          <div>
+        <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+          <div className="lg:col-span-3">
             {startStatus ? (
               <StartChecklistSection status={startStatus} forceVisible />
             ) : (
               <EmptyState icon={WalletIcon} title={tr("Nessun conto ancora")} description={tr("Aggiungi un conto per vedere il tuo patrimonio netto.")} primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
             )}
           </div>
-          <DemoOfferSection />
+          <DemoOfferSection className="lg:col-span-2" />
         </div>
       ) : (
         <>
           {startStatus ? <StartChecklistSection status={startStatus} /> : null}
+          <NetWorthChartCard
+            series={series}
+            change={change}
+            period={period}
+            onPeriodChange={setPeriod}
+            currency={currency}
+            pensionIncluded={pensionIncluded}
+            onPensionIncludedChange={setPensionIncluded}
+          />
           <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
             <div className="flex flex-col gap-10 lg:col-span-3">
               <NetWorthCompositionRow items={compositionItems} currency={currency} title={tr("Dove sta il patrimonio")}

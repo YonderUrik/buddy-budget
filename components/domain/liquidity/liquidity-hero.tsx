@@ -7,7 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { MoneyHero } from "@/components/domain/net-worth";
-import { PeriodSelector, HeroField } from "@/components/domain/shared";
+import { SegmentedControl } from "@/components/domain/shared";
 
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { cn } from "@/lib/utils";
@@ -53,14 +53,13 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
     ? tr("{0}: da {1} a {2} {3}.", { 0: label, 1: formatCurrency(first.value, currency, { maximumFractionDigits: 0 }), 2: formatCurrency(value, currency, { maximumFractionDigits: 0 }), 3: tr(PERIOD_PHRASES[period]) })
     : `${label}: ${formatCurrency(value, currency, { maximumFractionDigits: 0 })}.`;
   return (
-    <HeroField>
     <section aria-label={tr(label)} className={className}>
       <p className="text-base text-text-2">{tr(label)}</p>
       <MoneyHero value={value} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
       <div className="mt-3 min-h-5">
         {delta !== null && (
           <p className="flex flex-wrap items-center gap-x-2 text-sm">
-            <span className={cn("inline-flex items-center gap-1.5 font-semibold tabular-nums", up ? "text-pos" : "text-neg")}>
+            <span className={cn("inline-flex items-center gap-1.5 font-mono font-semibold tabular-nums", up ? "text-pos" : "text-neg")}>
               <Icon className="size-4" aria-hidden="true" />
               {up ? "+" : "−"}
               {formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 0 })}
@@ -73,9 +72,8 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
         <TrendChart points={points} description={tr(description)} height={260} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
       </div>
       <div className="mt-3 flex justify-center">
-        <PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} />
+        <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} />
       </div>
     </section>
-    </HeroField>
   );
 }

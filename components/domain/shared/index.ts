@@ -43,5 +43,3 @@ export { SectionViewsSheet } from "./section-views-sheet";
 export type { SectionViewsSheetProps } from "./section-views-sheet";
 export { LogoCredit } from "./logo-credit";
 export type { LogoCreditProps } from "./logo-credit";
-export { HeroField } from "./hero-field";
-export type { HeroFieldProps } from "./hero-field";

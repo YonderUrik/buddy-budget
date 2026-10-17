@@ -11,20 +11,16 @@ import { ReportForm } from "./report-form";
 import { useReportContext } from "./use-report-context";
 import { track } from "@/lib/analytics";
 import { REPORT_KINDS, STATUS_URL, type ReportKind } from "@/lib/support";
-import { PAGE_TITLE } from "@/components/domain/shared";
+import { PAGE_TITLE, SECTION_TITLE } from "@/components/domain/shared";
 
-function Section({ id, icon: Icon, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
+/** A help section: condensed title and one line of description, no icon tile (`icon` is kept for callers). */
+function Section({ id, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
   const { t: tr } = useLocalization();
   return (
     <section aria-labelledby={id} className="flex flex-col gap-4">
-      <header className="flex items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
-          <Icon className="size-4" />
-        </span>
-        <div>
-          <h2 id={id} className="font-heading text-lg font-medium text-foreground">{tr(title)}</h2>
-          <p className="text-sm text-muted-foreground">{tr(description)}</p>
-        </div>
+      <header className="flex flex-col gap-1">
+        <h2 id={id} className={SECTION_TITLE}>{tr(title)}</h2>
+        <p className="text-sm text-muted-foreground">{tr(description)}</p>
       </header>
       {children}
     </section>

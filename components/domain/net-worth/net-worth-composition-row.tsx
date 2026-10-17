@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 
 import { cn } from "@/lib/utils";
+import { SECTION_TITLE } from "@/components/domain/shared";
 import { assetClassColor } from "./asset-classes";
 import { computeInvestedShare, type NetWorthCompositionItem } from "./net-worth-composition-row.utils";
 
@@ -70,7 +71,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
   return (
     <Card className={className}>
       <CardHeader className="gap-1">
-        <CardTitle className="font-heading text-lg font-medium text-foreground">{tr(title)}</CardTitle>
+        <CardTitle className={SECTION_TITLE}>{tr(title)}</CardTitle>
         {investedShare !== null && !showPie ? <p className="text-sm text-foreground">{investedSentence(investedShare, formattingLocale, tr)}</p> : null}
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">

@@ -28,7 +28,7 @@ export default function Page() {
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.schermate}`, inLanguage: "it-IT" }} />
       <h1>Le schermate dell&apos;app</h1>
       <p className="lead">Screenshot dell&apos;app vera, con i dati di una persona inventata. Scegli un&apos;area e una schermata.</p>
-      <ScreenGallery />
+      <ScreenGallery phoneOnMobile />
     </ContentPage>
   );
 }

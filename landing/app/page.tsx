@@ -1,18 +1,19 @@
-import "@/components/tail/tail.css";
+import "@/components/home/home.css";
+import { Closing } from "@/components/home/closing";
+import { Faq } from "@/components/home/faq";
+import { Hero } from "@/components/home/hero";
+import { MobileCta } from "@/components/home/mobile-cta";
+import { Showcase } from "@/components/home/showcase";
+import { Sources } from "@/components/home/sources";
+import { Trust } from "@/components/home/trust";
 import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
-import { Story } from "@/components/story/story";
-import { Closing } from "@/components/tail/closing";
-import { FaqHome } from "@/components/tail/faq-home";
-import { RulesHome } from "@/components/tail/rules-home";
-import { ScreensHome } from "@/components/tail/screens-home";
-import { SecurityHome } from "@/components/tail/security-home";
-import { ToolsHome } from "@/components/tail/tools-home";
-import { WorksWith } from "@/components/tail/works-with";
+import { CLOSE } from "@/content/home";
+import { CONTENT_PATHS } from "@/content/seo-pages";
 import { FAQ, SITE_URL } from "@/content/site";
 
-/** Dati strutturati FAQ: le stesse domande della sezione visibile, solo in questa pagina. */
+/** Structured FAQ data: the same questions as the visible section, only on this page. */
 const FAQ_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -20,27 +21,28 @@ const FAQ_JSON_LD = {
   mainEntity: FAQ.map((q) => ({ "@type": "Question", name: q.question, acceptedAnswer: { "@type": "Answer", text: q.answer } })),
 };
 
+/** Label of the sign-in button in the phone bar. */
+const LOGIN_LABEL = "Entra";
+
 /**
- * Home «Sei domande» (2026-10-14): la finestra dell'app resta ferma e risponde a sei domande mentre si scorre; poi
- * tutte le schermate, con cosa funziona, la sicurezza in chiaro con il codice aperto, le regole italiane, i calcolatori, le domande e la chiusura.
+ * «Un numero solo» home (2026-10-17): the sum in the opening, the four places money comes from, what the number
+ * tells you every day (five real screens), why to trust it (facts, limits, open code), the questions, the closing.
+ * On the phone a fixed bar carries the button between the opening and the closing.
  */
 export default function HomePage() {
   return (
     <>
       <JsonLd data={FAQ_JSON_LD} />
       <SiteNav />
-      <main>
-        <Story />
-        <div className="tail">
-          <ScreensHome />
-          <WorksWith />
-          <SecurityHome />
-          <RulesHome />
-          <ToolsHome />
-          <FaqHome />
-        </div>
-        <Closing />
+      <main className="home">
+        <Hero />
+        <Sources />
+        <Showcase />
+        <Trust />
+        <Faq />
+        <Closing title={CLOSE.title} note={CLOSE.note} cta={CLOSE.cta} ctaLocation="closing" secondary={{ href: CONTENT_PATHS.strumenti, label: CLOSE.tools, target: "calculator" }} />
       </main>
+      <MobileCta label={CLOSE.cta} login={LOGIN_LABEL} />
       <SiteFooter />
     </>
   );

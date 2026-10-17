@@ -1,4 +1,4 @@
-/* Barra in alto come la topbar dell'app: chiara, una riga sotto, scorre via con la pagina. */
+/* Top bar like the app's: light, a rule below, it scrolls away with the page. */
 .nav { position: relative; z-index: 50; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
 .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--f-h); text-decoration: none; letter-spacing: -0.02em; }
@@ -8,22 +8,29 @@
 .links .gh, .menu .gh { display: inline-flex; align-items: center; gap: 6px; }
 .links .gh svg { width: 15px; height: 15px; }
 .nr { display: flex; align-items: center; gap: 10px; }
-.nr .btn { height: 38px; padding: 0 14px; font-size: 14px; }
-/* Menu da telefono: pulsante nella barra e pannello che si apre sotto. */
-.menu-btn { display: none; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: inherit; cursor: pointer; place-items: center; }
-.menu { position: absolute; left: 0; right: 0; top: 100%; border-top: 1px solid var(--line); background: var(--surface); box-shadow: 0 24px 40px -28px var(--shadow-win); }
-.menu[hidden] { display: none; }
-.menu .wrap { display: grid; grid-template-columns: 1fr; justify-content: stretch; height: auto; gap: 0; padding-block: 8px 20px; }
-.menu a { padding: 14px 0; border-bottom: 1px solid var(--line); font: 600 18px var(--f-h); color: var(--ink); text-decoration: none; }
-.menu a[aria-current="page"] { color: var(--accent); }
-.menu .gh svg { width: 16px; height: 16px; }
-.menu-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 6px; }
-.menu .menu-login { border-bottom: 0; color: var(--ink2); font: 500 16px var(--f-b); }
-.menu .tg { display: grid; }
-@media (max-width: 1000px) { .links { display: none; } .menu-btn { display: grid; } }
-@media (min-width: 1001px) { .menu { display: none; } }
-@media (max-width: 600px) { .nr .btn.ghost { display: none; } }
-/* telefoni: il pulsante principale non si comprime mai; si riducono padding e corpo, e sotto i 380px sparisce il cambio tema */
-@media (max-width: 480px) { .nav .btn.main { height: 38px; padding: 0 12px; font-size: 14px; } .nav .nr { gap: 8px; } }
-@media (max-width: 480px) { .nr > .tg { display: none; } }
+.nr .btn { height: 40px; padding: 0 14px; font-size: 14.5px; }
+.menu-btn { display: none; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: inherit; cursor: pointer; place-items: center; }
+.menu { display: none; }
+
+/* phone: the links fold into a full-screen sheet under the bar, with big rows and the two buttons */
+@media (max-width: 1000px) {
+  .links { display: none; }
+  .menu-btn { display: grid; }
+  .nr .btn.ghost { display: none; }
+  .menu { position: fixed; inset: calc(64px + env(safe-area-inset-top, 0px)) 0 0 0; z-index: 49; display: block; background: var(--bg); overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .menu[hidden] { display: none; }
+  .menu .wrap { display: grid; grid-template-columns: minmax(0, 1fr); justify-content: stretch; align-content: start; height: auto; gap: 0; padding-block: 8px 28px; }
+  .menu a:not(.btn) { display: flex; align-items: center; gap: 10px; min-height: 58px; border-bottom: 1px solid var(--line); font: 600 22px var(--f-h); letter-spacing: -0.02em; color: var(--ink); text-decoration: none; }
+  .menu a[aria-current="page"] { color: var(--accent); }
+  .menu .gh svg { width: 18px; height: 18px; }
+  .menu-acts { display: grid; gap: 10px; margin-top: 22px; }
+  .menu-acts .btn { height: 50px; justify-content: center; font-size: 16px; }
+  .menu-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; color: var(--ink3); font-size: 14.5px; }
+}
+/* phones: the main button never shrinks; padding and size go down, and under 480px the theme toggle moves into the menu */
+@media (max-width: 480px) {
+  .nav .btn.main { height: 38px; padding: 0 12px; font-size: 14px; }
+  .nav .nr { gap: 8px; }
+  .nr > .tg { display: none; }
+}
 @media (max-width: 360px) { .nav .brand { font-size: 0; gap: 0; } }

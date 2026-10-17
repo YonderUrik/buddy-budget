@@ -1,28 +1,33 @@
-/* Pagine di contenuto nello stesso stile della home: la barra in alto scorre via, il corpo parte poco sotto. */
-.cp { position: relative; padding-block: 48px 96px; background: var(--bg); color: var(--ink); }
+/* Content pages in the same system as the home: the bar scrolls away, the body starts a little below, the navy closing ends it. */
+.cp { position: relative; padding-block: 40px 0; background: var(--bg); color: var(--ink); }
 .cp-wrap { max-width: 920px; }
 .cp-wide { max-width: 1200px; }
-.cp .kicker { display: block; margin-bottom: 14px; }
-.cp h1 { font: 600 clamp(30px, 4.6vw, 48px) / 1.08 var(--f-h); letter-spacing: -0.035em; margin: 0; max-width: 18em; }
-.cp .lead { color: var(--ink2); font-size: 19px; line-height: 1.6; margin: 20px 0 0; max-width: 62ch; }
-.cp h2 { font: 600 clamp(22px, 2.6vw, 28px) / 1.2 var(--f-h); letter-spacing: -0.025em; margin: 56px 0 14px; }
+.cp .kicker { display: inline-flex; margin-bottom: 16px; }
+.cp h1 { font: 600 clamp(32px, 4.6vw, 52px) / 1.05 var(--f-h); letter-spacing: -0.035em; margin: 0; max-width: 18em; }
+.cp .lead { color: var(--ink2); font-size: clamp(17px, 1.5vw, 19px); line-height: 1.55; margin: 18px 0 0; max-width: 58ch; }
+.cp h2 { font: 600 clamp(22px, 2.6vw, 30px) / 1.15 var(--f-h); letter-spacing: -0.025em; margin: 56px 0 14px; }
 .cp h3 { font: 600 18px / 1.3 var(--f-h); margin: 28px 0 8px; }
-.cp p, .cp li { color: var(--ink2); font-size: 17px; line-height: 1.7; }
-.cp p { margin: 0 0 14px; max-width: 68ch; }
-.cp ul { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.cp p, .cp li { color: var(--ink2); font-size: 17px; line-height: 1.65; }
+.cp p { margin: 0 0 14px; max-width: 66ch; }
+.cp ul { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 6px; max-width: 66ch; }
 .cp a { color: var(--accent); }
+/* the body ends before the closing; the last block keeps its distance from it */
+.cp-wrap > :last-child { margin-bottom: 72px; }
+
+/* Calculator fields: 44 px tall, like the app's controls, so they work with a thumb. */
 .field { display: grid; gap: 6px; margin-bottom: 14px; }
 .field label, .field .lab { font-size: 14px; color: var(--ink2); }
-.field input, .field select { font: 500 16px var(--f-b); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px 12px; width: 100%; box-sizing: border-box; }
+.field input, .field select { font: 500 16px var(--f-b); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px 12px; min-height: 44px; width: 100%; box-sizing: border-box; }
 .field input:focus-visible, .field select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-/* Selettore a pillola come le schede dell'app: fondo grigio, scelta in rilievo su superficie. */
-.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r); background: var(--head); }
-.seg button { font: 500 14px var(--f-b); border: 0; background: transparent; color: var(--ink2); padding: 7px 14px; border-radius: var(--r-sm); cursor: pointer; transition: color 0.2s, background 0.2s; }
+/* Pill selector like the app's tabs: grey ground, the choice raised on a surface. */
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r); background: var(--head); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.seg::-webkit-scrollbar { display: none; }
+.seg button { flex: none; font: 500 14.5px var(--f-b); border: 0; background: transparent; color: var(--ink2); padding: 0 14px; min-height: 38px; border-radius: var(--r-sm); cursor: pointer; transition: color 0.2s, background 0.2s; }
 .seg button:hover { color: var(--ink); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px var(--shadow-win2); }
-.loss-row { display: grid; grid-template-columns: 90px 1fr 36px; gap: 8px; margin-bottom: 8px; }
-.loss-row input { font: 500 16px var(--f-b); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 9px 10px; min-width: 0; }
-.loss-row button, .link-btn { font: 600 14px var(--f-b); background: transparent; border: 1px solid var(--line); color: var(--ink2); border-radius: var(--r-sm); cursor: pointer; }
+.loss-row { display: grid; grid-template-columns: 90px minmax(0, 1fr) 44px; gap: 8px; margin-bottom: 8px; }
+.loss-row input { font: 500 16px var(--f-b); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 9px 10px; min-width: 0; min-height: 44px; }
+.loss-row button, .link-btn { font: 600 14px var(--f-b); background: transparent; border: 1px solid var(--line); color: var(--ink2); border-radius: var(--r-sm); cursor: pointer; min-height: 44px; }
 .link-btn { padding: 8px 12px; }
 .res { display: grid; gap: 10px; }
 .res .row { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; color: var(--ink2); padding-bottom: 10px; border-bottom: 1px solid var(--line); }
@@ -41,14 +46,14 @@
 .sources ul { font-size: 15px; }
 .sources .note { font-size: 14px; }
 
-/* Avvisi: testo semplice con una piccola icona, nessun riquadro (leggibili anche da telefono). */
+/* Notices: plain text with a small mark, no box (readable on the phone too). */
 .cp .cp-disclaimer, .cp .note { position: relative; padding: 0 0 0 30px; margin: 0 0 28px; font-size: 14px; line-height: 1.6; color: var(--ink2); max-width: 68ch; background: none; border: 0; }
 .cp .note { margin: 24px 0; }
 .cp .cp-disclaimer strong { color: var(--ink); }
 .cp .cp-disclaimer::before, .cp .note::before { content: "i"; position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); font: 700 12px/20px var(--f-h); text-align: center; }
 .cp .note::before { content: "!"; }
 
-/* Calcolatori: una scheda come quelle della home; a destra il risultato su un pannello più chiaro. */
+/* Calculators: one card like those of the home; on the right the result on a lighter panel. */
 .tool { margin: 32px 0 0; padding: 12px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: stretch; }
 .tool-card { padding: 20px 20px 8px; }
 .tool-card[aria-live] { border-radius: var(--r-card); background: var(--bg); padding: 20px; }
@@ -57,7 +62,7 @@
 .res .key b { font-size: clamp(32px, 5vw, 44px); letter-spacing: -0.03em; color: var(--accent); }
 @media (max-width: 760px) { .tool { grid-template-columns: 1fr; } .tool-card { padding: 16px 12px 4px; } .tool-card[aria-live] { padding: 16px; } }
 
-/* Funzioni: schede con icona su fondo tinto, come le regole italiane della home. */
+/* Features: cards with a tinted icon. */
 .fn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 32px; }
 .fn-card { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 4px 16px; padding: 22px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); }
 .fn-ic { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: var(--r); display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
@@ -65,32 +70,26 @@
 .fn-card p { margin: 0; font-size: 15px; }
 @media (max-width: 760px) { .fn-grid { grid-template-columns: 1fr; } }
 
-/* Consigli numerati: schede con il numero su fondo tinto, come i passi della home. */
+/* Numbered tips: cards with the number on a tinted ground. */
 .tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
 .tips > div { padding: 20px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); }
 .tips b { display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--r-sm); font: 600 15px / 1 var(--f-h); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); margin-bottom: 12px; }
 .tips p { margin: 0; font-size: 15px; }
 @media (max-width: 760px) { .tips { grid-template-columns: 1fr; } }
 
-/* Rimandi: schede con freccia, due per riga. */
+/* Related pages: cards with an arrow, two per row; 56 px tall at least, for the thumb. */
 .related { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
-.related a { display: grid; gap: 4px; position: relative; padding: 18px 48px 18px 20px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); text-decoration: none; color: var(--ink); font: 600 17px var(--f-h); transition: background 0.2s; }
+.related a { display: grid; gap: 4px; position: relative; min-height: 56px; padding: 18px 48px 18px 20px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); text-decoration: none; color: var(--ink); font: 600 17px var(--f-h); transition: background 0.2s; }
 .related a:hover { background: var(--head); }
 .related a::after { content: "→"; position: absolute; right: 20px; top: 50%; translate: 0 -50%; color: var(--accent); transition: right 0.25s var(--ease); }
 .related a:hover::after { right: 16px; }
 .related a span { color: var(--ink2); font: 400 14px/1.5 var(--f-b); }
 @media (max-width: 760px) { .related { grid-template-columns: 1fr; } }
 
-/* Fonti: riga richiudibile, senza riquadro. */
+/* Sources: a collapsible row, no box. */
 .sources-box { margin-top: 24px; border-block: 1px solid var(--line); }
 .sources-box summary { cursor: pointer; padding: 16px 0; font: 600 16px var(--f-h); }
 .sources-box summary::marker { color: var(--accent); }
 .sources-box .note { margin-bottom: 18px; }
 
-/* Invito finale: una card con il pulsante accanto al testo, prima del piè di pagina navy. */
-.cp { padding-bottom: 0; }
-.cp-cta { margin-top: 96px; }
-.cp-cta-panel { padding: 40px; display: flex; gap: 24px 32px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-radius: var(--r-lg); box-shadow: 0 24px 60px -32px var(--shadow-win2); }
-.cp .cp-cta h2 { margin: 0 0 10px; font-size: clamp(24px, 3vw, 34px); max-width: 18em; }
-.cp .cp-cta p { margin: 0; }
-@media (max-width: 760px) { .cp { padding-top: 28px; } .cp-cta { margin-top: 64px; } .cp-cta-panel { padding: 28px; } }
+@media (max-width: 760px) { .cp { padding-top: 24px; } .cp-wrap > :last-child { margin-bottom: 56px; } }

@@ -1,28 +1,26 @@
 import type { FeatureArea } from "@/content/catalog.generated";
+import type { ShowcaseId } from "@/content/home";
 import type { ScreenId } from "@/content/screens";
-import type { StoryStepId } from "@/content/story";
 
-/** Sezioni misurate con `section_view`: la storia e le sezioni in coda della home, più la galleria delle schermate. */
-export type SectionId = "storia" | "con" | "sicurezza" | "codice" | "regole" | "strumenti" | "domande" | "fine" | "schermate";
+/** Sections measured with `section_view`: the home sections, the closing (home and content pages) and the screen gallery. */
+export type SectionId = "come" | "dentro" | "sicurezza" | "codice" | "domande" | "fine" | "schermate";
 
 /**
- * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).
- * Props solo categoriche: mai dati personali. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
+ * Product events of the landing sent to Umami (the landing's own Umami site, not the app's).
+ * Categorical props only: never personal data. Add an event here before using it (the type is closed on purpose).
  */
 export interface LandingEvents {
   cta_click: {
-    location: "nav" | "hero" | "story" | "closing" | "funzioni" | "schermate" | "strumenti" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "calcolatore_obiettivo" | "guida_zainetto" | "funzione_investimenti" | "sicurezza";
-    target: "signup" | "login" | "calculator";
+    location: "nav" | "hero" | "mobile_bar" | "dentro" | "closing" | "funzioni" | "schermate" | "strumenti" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "calcolatore_obiettivo" | "guida_zainetto" | "funzione_investimenti" | "sicurezza";
+    target: "signup" | "login" | "calculator" | "how";
   };
   section_view: { section: SectionId };
-  /** Home: un passo della storia è entrato in vista per la prima volta (fin dove arriva chi legge). */
-  story_step_viewed: { step: StoryStepId };
-  /** Home: «Vedi la schermata vera» acceso o spento su un passo con il pannello vivo. */
-  story_real_toggled: { step: StoryStepId; real: boolean };
+  /** Home: a tab of «Cosa ti dice» chosen (by tap or by swipe). */
+  showcase_tab_selected: { tab: ShowcaseId };
   screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
   theme_toggled: { theme: "light" | "dark" };
-  /** Pagina /sicurezza: passaggio aperto nel diagramma del percorso dei dati. */
+  /** /sicurezza page: step opened in the data path diagram. */
   security_node_selected: { node: "tu" | "banca" | "gocardless" | "buddybudget" };
   source_link_click: { location: "footer" | "sezione" };
   /** «‹» back link above the title of an internal page. */
@@ -38,7 +36,7 @@ function getUmami(): UmamiTracker | undefined {
   return (window as unknown as { umami?: UmamiTracker }).umami;
 }
 
-/** Invia un evento a Umami. No-op senza tracker (dev, adblock) e non lancia mai: la landing non dipende dalla misura. */
+/** Sends an event to Umami. No-op without the tracker (dev, adblock) and never throws: the landing does not depend on the measure. */
 export function track<E extends LandingEventName>(
   name: E,
   ...args: LandingEvents[E] extends undefined ? [] : [props: LandingEvents[E]]
@@ -50,6 +48,6 @@ export function track<E extends LandingEventName>(
     if (props) umami.track(name, props);
     else umami.track(name);
   } catch {
-    // il tracker può essere bloccato dal browser: ignorare
+    // the tracker can be blocked by the browser: ignore
   }
 }

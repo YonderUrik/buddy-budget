@@ -4,20 +4,20 @@ import { track } from "./analytics";
 describe("track", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("è no-op senza Umami", () => {
+  it("is a no-op without Umami", () => {
     expect(() => track("theme_toggled", { theme: "dark" })).not.toThrow();
     vi.stubGlobal("window", {});
-    expect(() => track("section_view", { section: "storia" })).not.toThrow();
+    expect(() => track("section_view", { section: "come" })).not.toThrow();
   });
 
-  it("inoltra nome e props a Umami", () => {
+  it("forwards name and props to Umami", () => {
     const umamiTrack = vi.fn();
     vi.stubGlobal("window", { umami: { track: umamiTrack } });
     track("cta_click", { location: "hero", target: "signup" });
     expect(umamiTrack).toHaveBeenCalledWith("cta_click", { location: "hero", target: "signup" });
   });
 
-  it("ingoia gli errori del tracker", () => {
+  it("swallows tracker errors", () => {
     vi.stubGlobal("window", {
       umami: {
         track: () => {
@@ -25,6 +25,6 @@ describe("track", () => {
         },
       },
     });
-    expect(() => track("story_real_toggled", { step: "soldi", real: true })).not.toThrow();
+    expect(() => track("showcase_tab_selected", { tab: "tasse" })).not.toThrow();
   });
 });

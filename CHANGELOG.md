@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.76.1](https://github.com/YonderUrik/buddy-budget/compare/v0.76.0...v0.76.1) (2026-10-17)
+
+
+### Correzioni
+
+* proxy redirects use the public app address ([#425](https://github.com/YonderUrik/buddy-budget/issues/425)) ([7fc1c7e](https://github.com/YonderUrik/buddy-budget/commit/7fc1c7e85616054b0f1936dcfedcce39882941e2))
+
 ## [0.76.0](https://github.com/YonderUrik/buddy-budget/compare/v0.75.0...v0.76.0) (2026-10-17)
 
 

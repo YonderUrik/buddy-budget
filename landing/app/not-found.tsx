@@ -9,7 +9,7 @@ export default function NotFound() {
       <h1>Questa pagina non esiste</h1>
       <p className="lead">L&apos;indirizzo potrebbe essere sbagliato o la pagina è stata spostata. Da qui puoi andare in questi posti.</p>
       <div className="related">
-        <Link href="/">Home<span>Le sei domande a cui risponde BuddyBudget.</span></Link>
+        <Link href="/">Home<span>Tutti i tuoi soldi, in un numero solo.</span></Link>
         <Link href={CONTENT_PATHS.funzioni}>Funzioni<span>L&apos;elenco completo, area per area.</span></Link>
         <Link href={CONTENT_PATHS.strumenti}>Calcolatori<span>Zainetto fiscale, ammortamento, obiettivo di risparmio: senza account.</span></Link>
         <Link href={CONTENT_PATHS.sicurezza}>Sicurezza<span>Come funziona il collegamento alla banca e cosa salviamo.</span></Link>

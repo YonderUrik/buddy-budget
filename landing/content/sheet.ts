@@ -1,8 +1,8 @@
 /**
- * Fonti supportate e giro dell'app area per area. Nati con la home «Il foglio» (2026-10-11); dalla home «Sei domande»
- * (2026-10-14) `SUPPORTED` alimenta bandiere e loghi della storia e `TOUR` resta la scheda tecnica per `llms.txt`.
- * Solo fatti verificabili nel codice (paesi della banca in `connect-bank-flow.tsx`, file dei broker in
- * `lib/investments/import/providers.ts`, soglie del rischio in `lib/investments/risk-insights.ts`).
+ * Supported sources and the app tour, area by area. Born with the «Il foglio» home (2026-10-11); since the «Un numero
+ * solo» home (2026-10-17) `SUPPORTED` feeds the flags and broker logos of «Da quattro posti» and `TOUR` stays the
+ * technical sheet for `llms.txt`. Only facts verifiable in the code (bank countries in `connect-bank-flow.tsx`,
+ * broker files in `lib/investments/import/providers.ts`, risk thresholds in `lib/investments/risk-insights.ts`).
  */
 import type { HomeIcon } from "./home";
 import type { ScreenId } from "./screens";

@@ -3,9 +3,10 @@
 /**
  * AuthPreview
  *
- * Anteprima accanto al form di accesso: la Panoramica in una finestra dell'app, con il patrimonio netto che si compone
- * voce per voce (liquidità, investimenti, previdenza, debiti) fino al totale, come l'ultima delle «sei domande» della
- * landing. Dati di una persona inventata, gli stessi della landing. Con «riduci movimento» mostra subito il risultato.
+ * Preview beside the sign-in form: the Panoramica in an app window, with the net worth adding up place by place
+ * (bank accounts, investments, pension fund, mortgage and loans) to the total, the same sum as the landing's opening
+ * («Tutti i tuoi soldi, in un numero solo»). Data of a made-up person, the same figures as the landing. With
+ * «reduce motion» it shows the result at once.
  */
 
 import * as React from "react";
@@ -14,16 +15,17 @@ import { AnimatedNumber } from "@/components/motion";
 import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
 
-/** Le quattro voci del patrimonio della persona inventata (stesse cifre della landing). */
+/** The four places of the made-up person (the rounded figures of the landing's sum card and of the demo Panoramica). */
 const PREVIEW_ROWS = [
-  { label: "Liquidità", detail: "3 conti", value: 22706.19 },
-  { label: "Investimenti", detail: "3 posizioni", value: 35431.71 },
-  { label: "Previdenza", detail: "1 fondo", value: 11082.07 },
-  { label: "Debiti", detail: "3 debiti", value: -39937.23 },
+  { label: "Conti in banca", detail: "3 conti", value: 22595 },
+  { label: "Investimenti", detail: "3 titoli", value: 35389 },
+  { label: "Fondo pensione", detail: "1 fondo", value: 11082 },
+  { label: "Mutuo e prestiti", detail: "3 debiti", value: -39937 },
 ] as const;
 const PREVIEW_URL = "app.buddybudget.io/panoramica";
-const CURRENCY_FORMAT = { style: "currency", currency: "EUR" } as const;
-/** Attesa prima della prima voce e tra una voce e la successiva (ms): un solo giro, poi il totale resta. */
+/** Whole euros: the rows are rounded, so the total is too. */
+const CURRENCY_FORMAT = { style: "currency", currency: "EUR", maximumFractionDigits: 0 } as const;
+/** Wait before the first row and between rows (ms): one round, then the total stays. */
 const START_MS = 600;
 const STEP_MS = 650;
 
@@ -31,7 +33,7 @@ export interface AuthPreviewProps {
   className?: string;
 }
 
-/** Finestra con la Panoramica che si compone da sola, voce per voce, fino al patrimonio netto. */
+/** Window with the Panoramica adding itself up, place by place, to the net worth. */
 export function AuthPreview({ className }: AuthPreviewProps) {
   const { t: tr, locale } = useLocalization();
   const reduced = useReducedMotion() ?? false;
@@ -67,6 +69,7 @@ export function AuthPreview({ className }: AuthPreviewProps) {
                 key={row.label}
                 className={cn(
                   "flex items-baseline justify-between gap-4 py-2.5 transition-[opacity,transform] duration-500 motion-reduce:transition-none",
+                  i === PREVIEW_ROWS.length - 1 && "border-b-2 border-b-foreground",
                   i < done ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
                 )}
               >
@@ -80,8 +83,8 @@ export function AuthPreview({ className }: AuthPreviewProps) {
         </div>
       </div>
       <figcaption className="mt-5">
-        <span className="block text-xs font-medium text-text-3">{tr("6 di 6 · con i dati di una persona inventata")}</span>
-        <span className="mt-1 block font-heading text-xl font-semibold tracking-tight">{tr("E in tutto, quanto ho?")}</span>
+        <span className="block text-xs font-medium text-text-3">{tr("Dati di una persona inventata")}</span>
+        <span className="mt-1 block font-heading text-xl font-semibold tracking-tight">{tr("Tutti i tuoi soldi, in un numero solo.")}</span>
       </figcaption>
     </figure>
   );

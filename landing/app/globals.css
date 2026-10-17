@@ -1,7 +1,7 @@
 /*
- * Token e base della landing «Sei domande» (2026-10-14): neutri, raggi, caratteri e pulsanti sono quelli dell'app, così
- * sito, accesso e app sembrano una cosa sola. I token --a-* sono quelli dell'app, usati dentro la finestra del prodotto
- * (pannelli «vivi» e schermate). Niente colori esadecimali nei componenti, niente gradienti: solo token.
+ * Tokens and base of the landing (2026-10-17, «Un numero solo» home): neutrals, radii, faces and buttons are the
+ * app's, so site, sign-in and app look like one thing. The --a-* tokens are the app's, used inside the product
+ * window (screenshots and phone frame). No hex colors in components, no gradients: tokens only.
  */
 :root {
   --bg: #f7f7f8;
@@ -23,7 +23,7 @@
   --shadow-win: rgba(0, 0, 0, 0.35);
   --shadow-win2: rgba(0, 0, 0, 0.22);
 
-  /* token dell'app (finestra del prodotto) */
+  /* app tokens (product window) */
   --a-bg: #f7f7f8;
   --a-card: #fff;
   --a-fg: #18181b;
@@ -43,36 +43,29 @@
   --a-sal: #2563eb;
   --a-none: #94a3b8;
 
-  /* spotlight dell'apertura e sfumatura dei titoli grandi */
+  /* tinted ground of the guide's year strip */
   --glow: rgba(33, 158, 188, 0.22);
-  --grad-a: #0b0b0d;
-  --grad-b: #5b5b66;
-
-  /* foglio di calcolo: righe della griglia, intestazioni, cella selezionata, errori di formula, fondo dei loghi */
-  --grid: #e9e9ec;
+  /* grey ground of the segmented controls and of hovered secondary buttons; light plate behind the brokers' logos */
   --head: #f0f0f2;
-  --sel: #ffb703;
-  --sel-soft: #fff3cf;
-  --err: #b42318;
   --logo-bg: #ffffff;
 
-  /* home page phone (`phone-frame.css`): body, glossy edge, black bezel around the screen, keys, island; the same in both themes */
+  /* phone frame (`phone-frame.css`): body, glossy edge, black bezel around the screen, keys, island; the same in both themes */
   --phone-body: #1d2833;
   --phone-edge: rgba(255, 255, 255, 0.22);
   --phone-bezel: #090c10;
   --phone-key: #2c3947;
   --phone-island: #090c10;
 
-  /* pulsante principale e anelli di focus: il --primary dell'app */
+  /* main button and focus rings: the app's --primary */
   --primary: #15738b;
   --on-primary: #ffffff;
-  /* raggi dell'app: controlli (rounded-lg), schede (rounded-xl), pannelli grandi */
+  /* the app's radii: controls (rounded-lg), cards (rounded-xl), large panels */
   --r-sm: 8px;
   --r: 11px;
   --r-card: 16px;
   --r-lg: 20px;
 
-  /* gli stessi caratteri dell'app: Space Grotesk per titoli e cifre, Hanken Grotesk per il testo, Geist Mono per le celle */
+  /* the same faces as the app: Space Grotesk for titles and figures, Hanken Grotesk for text, Geist Mono for code */
   --f-h: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
   --f-b: "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, sans-serif;
   --f-m: "Geist Mono Variable", "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -92,8 +85,6 @@
     --navy: #0b1b27;
     --mk2: #8b8fd6;
     --glow: rgba(33, 158, 188, 0.38);
-    --grad-a: #ffffff;
-    --grad-b: #8e8e99;
     --a-bg: #111113;
     --a-card: #18181b;
     --a-fg: #ececef;
@@ -110,12 +101,9 @@
     --a-fut: #4ade80;
     --a-sal: #60a5fa;
     --a-none: #71717a;
-    --grid: #1f1f23;
     --head: #232327;
-    --sel-soft: #3a2f12;
     --primary: #219ebc;
     --on-primary: #0b0b0f;
-    --err: #f97066;
     color-scheme: dark;
   }
 }
@@ -132,8 +120,6 @@
   --navy: #0b1b27;
   --mk2: #8b8fd6;
   --glow: rgba(33, 158, 188, 0.38);
-  --grad-a: #ffffff;
-  --grad-b: #8e8e99;
   --a-bg: #111113;
   --a-card: #18181b;
   --a-fg: #ececef;
@@ -150,18 +136,13 @@
   --a-fut: #4ade80;
   --a-sal: #60a5fa;
   --a-none: #71717a;
-  --grid: #1f1f23;
   --head: #232327;
-  --sel-soft: #3a2f12;
   --primary: #219ebc;
   --on-primary: #0b0b0f;
-  --err: #f97066;
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
 body {
   margin: 0;
   background: var(--bg);
@@ -175,23 +156,13 @@ p { margin: 0; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+img { max-width: 100%; }
 
 .wrap { max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
-.kicker { font: 600 12px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
-/* riferimento di cella sopra i titoli delle sezioni della home («Spese!A1») */
-.ref { display: block; font: 600 12px var(--f-b); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
-h2.t { font-size: clamp(30px, 4.2vw, 50px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.04; max-width: 20em; }
-.mono { font-family: var(--f-m); }
-/* carta a quadretti: righe da 32px e colonne da 120px, come le celle di un foglio */
-.paper { background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 100% 32px, 120px 100%; }
-/* scheda come le card dell'app: fondo bianco, bordo sottile, angoli arrotondati */
+/* small label above a page title («Calcolatore gratuito, senza account»): a tinted pill, like the app's badges */
+.kicker { display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); font: 600 13px var(--f-b); }
+/* card like the app's: white ground, thin border, rounded corners */
 .cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
-.lede { font-size: clamp(17px, 1.5vw, 19px); color: var(--ink2); max-width: 38em; margin-top: 16px; }
-.sec { padding-block: 104px; }
-/* fascia alternata: stacca le sezioni senza bordi né ombre */
-.band { background: var(--bg-alt); }
-/* denaro che cresce o si risparmia: il verde dell'app, solo accanto a cifre vere */
-.pos { color: var(--a-pos); }
 .mark { height: 26px; aspect-ratio: 378 / 464; display: block; }
 .mark .mk2 { fill: var(--mk2); }
 
@@ -201,7 +172,7 @@ h2.t { font-size: clamp(30px, 4.2vw, 50px); font-weight: 600; letter-spacing: -0
   font: 600 15px var(--f-b); text-decoration: none; border: 1px solid transparent; cursor: pointer;
   transition: background 0.2s, border-color 0.2s, transform 0.1s;
 }
-/* come il Button dell'app: principale pieno nel colore primario, secondario con il bordo */
+/* like the app's Button: main filled in the primary color, secondary with the border */
 .btn.main { background: var(--primary); color: var(--on-primary); }
 .btn.main:hover { background: color-mix(in srgb, var(--primary) 85%, var(--ink)); }
 .btn.ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
@@ -211,14 +182,12 @@ h2.t { font-size: clamp(30px, 4.2vw, 50px); font-weight: 600; letter-spacing: -0
 .btn:hover svg { transform: translateX(3px); }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; }
 
-
-@media (max-width: 1000px) { .sec { padding-block: 72px; } }
 @media (max-width: 600px) { .wrap { padding-inline: 20px; } }
-/* movimento ridotto: niente scorrimenti, parallasse né animazioni in loop; restano le dissolvenze brevi che segnalano il cambio di stato */
+/* reduced motion: no scrolling effects, no loops; the short fades that signal a state change stay */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
-  .btn, .btn svg, .tools-card, .gal-tab, .areas button { transition-property: color, background-color, box-shadow, opacity !important; transition-duration: 0.15s !important; }
+  .btn, .btn svg, .gal-tab, .tab { transition-property: color, background-color, box-shadow, opacity !important; transition-duration: 0.15s !important; }
 }
-/* testo solo per lettori di schermo */
+/* text for screen readers only */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-section[id], [id^="storia-"] { scroll-margin-top: 16px; }
+section[id], div[id] { scroll-margin-top: 16px; }

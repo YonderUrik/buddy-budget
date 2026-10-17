@@ -12,30 +12,35 @@ import { GithubMark } from "./github-mark";
 import { SourceLink } from "./source-link";
 import { ThemeToggle } from "./theme-toggle";
 
-/** Larghezza (px) da cui le voci stanno nella barra; sotto si aprono dal pulsante menu (allineata a `site-nav.css`). */
+/** Width (px) from which the links fit in the bar; below, they open from the menu button (aligned with `site-nav.css`). */
 const NAV_MOBILE_BREAKPOINT = 1000;
+
+/** Labels of the two buttons, the same on every page and in the phone bar of the home. */
+const SIGNUP_LABEL = "Inizia gratis";
+const LOGIN_LABEL = "Entra";
 
 export interface NavLink {
   href: string;
   label: string;
 }
 
-/** Un solo menu per tutto il sito: indirizzi assoluti, così funziona uguale dalla home e dalle pagine interne. */
+/** One menu for the whole site: absolute paths, so it works the same from the home and from the inner pages. */
 export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
-  { href: "/#storia", label: "Le sei domande" },
   { href: CONTENT_PATHS.funzioni, label: "Funzioni" },
+  { href: CONTENT_PATHS.schermate, label: "Schermate" },
   { href: CONTENT_PATHS.strumenti, label: "Calcolatori" },
   { href: CONTENT_PATHS.sicurezza, label: "Sicurezza" },
 ];
 
 /**
- * Barra in alto, la stessa in ogni pagina e come la topbar dell'app: chiara, con una riga sotto, scorre via con la
- * pagina (niente barre appiccicose). Con il repository pubblico mostra anche «Open source». `current` evidenzia la voce della pagina aperta.
+ * Top bar, the same on every page and like the app's top bar: light, a rule below, it scrolls away with the page.
+ * On the phone the links live in a full-screen sheet with big rows and the two buttons. With the public repository
+ * it also shows «Codice aperto». `current` highlights the entry of the open page.
  */
 export function SiteNav({ links = DEFAULT_NAV_LINKS, current }: { links?: readonly NavLink[]; current?: string }) {
   const [open, setOpen] = useState(false);
 
-  // Menu da telefono: si chiude con Esc e quando la finestra torna larga.
+  // Phone menu: closes with Esc and when the window grows wide; while open the page behind does not scroll.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -43,18 +48,21 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS, current }: { links?: readon
     const onWide = () => wide.matches && setOpen(false);
     window.addEventListener("keydown", onKey);
     wide.addEventListener("change", onWide);
+    document.documentElement.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
       wide.removeEventListener("change", onWide);
+      document.documentElement.style.overflow = "";
     };
   }, [open]);
 
-  const sourceLink = SOURCE_URL ? (
-    <SourceLink className="gh" href={SOURCE_URL} location="sezione">
-      <GithubMark />
-      Open source
-    </SourceLink>
-  ) : null;
+  const sourceLink = (location: "sezione" | "footer") =>
+    SOURCE_URL ? (
+      <SourceLink className="gh" href={SOURCE_URL} location={location}>
+        <GithubMark />
+        Codice aperto
+      </SourceLink>
+    ) : null;
 
   return (
     <header className={`nav${open ? " open" : ""}`}>
@@ -67,12 +75,12 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS, current }: { links?: readon
           {links.map((l) => (
             <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined}>{l.label}</Link>
           ))}
-          {sourceLink}
+          {sourceLink("sezione")}
         </nav>
         <div className="nr">
           <ThemeToggle />
-          <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">Accedi</CtaLink>
-          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">Crea un account</CtaLink>
+          <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">{LOGIN_LABEL}</CtaLink>
+          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">{SIGNUP_LABEL}</CtaLink>
           <button type="button" className="menu-btn" aria-expanded={open} aria-controls="nav-menu" aria-label={open ? "Chiudi il menu" : "Apri il menu"} onClick={() => setOpen((v) => !v)}>
             {open ? <X size={20} strokeWidth={1.75} aria-hidden="true" /> : <Menu size={20} strokeWidth={1.75} aria-hidden="true" />}
           </button>
@@ -83,9 +91,13 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS, current }: { links?: readon
           {links.map((l) => (
             <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined} onClick={() => setOpen(false)}>{l.label}</Link>
           ))}
-          {sourceLink}
+          {sourceLink("sezione")}
+          <div className="menu-acts">
+            <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup" arrow>{SIGNUP_LABEL}</CtaLink>
+            <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">{LOGIN_LABEL}</CtaLink>
+          </div>
           <div className="menu-foot">
-            <CtaLink className="menu-login" href={APP_LINKS.login} location="nav" target="login">Accedi</CtaLink>
+            <span>Tema chiaro o scuro</span>
             <ThemeToggle />
           </div>
         </div>

@@ -31,14 +31,12 @@ export default function Page() {
       <p className="lead">{SECURITY_PAGE.lead}</p>
 
       <section className="sp-sec" aria-labelledby="sp-flow">
-        <span className="ref">{FLOW.kicker}</span>
         <h2 id="sp-flow">{FLOW.title}</h2>
         <p>{FLOW.lede}</p>
         <DataFlow />
       </section>
 
       <section className="sp-sec" aria-labelledby="sp-stored">
-        <span className="ref">{STORED.kicker}</span>
         <h2 id="sp-stored">{STORED.title}</h2>
         <div className="sp-table cell">
           <table>
@@ -63,7 +61,6 @@ export default function Page() {
       </section>
 
       <section className="sp-sec" aria-labelledby="sp-more">
-        <span className="ref">Le altre domande</span>
         <h2 id="sp-more">Le altre domande.</h2>
         <div className="faq-list sp-questions">
           <details className="faq-item">

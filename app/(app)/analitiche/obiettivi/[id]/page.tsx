@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { GOALS_BASE_PATH } from "@/components/domain/analytics";
 import { GoalDetail, useGoalActions, useGoalFormatters } from "@/components/domain/goals";
-import { BackLink, EmptyState, LoadError } from "@/components/domain/shared";
+import { EmptyState, LoadError } from "@/components/domain/shared";
 import { TargetIcon } from "lucide-react";
 import { useLocalization } from "@/lib/localization/provider";
 import { useGoalsQuery } from "@/lib/queries/goals";
@@ -24,14 +24,12 @@ export default function ObiettivoPage() {
   if (!goal) {
     return (
       <div className="flex flex-col gap-4">
-        <BackLink href={GOALS_BASE_PATH} label={tr("Obiettivi")} />
         <EmptyState icon={TargetIcon} title={tr("Obiettivo non trovato")} description={tr("Forse è stato eliminato.")} primary={{ label: tr("Torna agli obiettivi"), href: GOALS_BASE_PATH }} />
       </div>
     );
   }
   return (
     <div className="flex flex-col gap-4">
-      <BackLink href={GOALS_BASE_PATH} label={tr("Obiettivi")} />
       <GoalDetail
         goal={goal}
         currency={view.currency}

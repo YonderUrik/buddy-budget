@@ -28,6 +28,8 @@ export type { FormDialogContentProps, FormDialogSize } from "./form-dialog";
 export { InlineOrSheet } from "./inline-or-sheet";
 export type { InlineOrSheetLayout, InlineOrSheetProps } from "./inline-or-sheet";
 export { BackLink } from "./back-link";
+export { BackHistoryRecorder } from "./back-history-recorder";
+export { PageBackBar, TopBarBack } from "./page-back";
 export type { BackLinkProps } from "./back-link";
 export { SectionHeading } from "./section-heading";
 export type { SectionHeadingProps } from "./section-heading";

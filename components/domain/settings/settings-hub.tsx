@@ -8,7 +8,6 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import * as React from "react";
-import { BackLink } from "@/components/domain/shared";
 import { ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -92,7 +91,6 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
 
       {/* Contenuto del gruppo */}
       <div className={cn("min-w-0 flex-1", selected === null && "max-md:hidden")}>
-        <BackLink onClick={() => onSelect(null)} label={tr("Impostazioni")} className="mb-3 md:hidden" />
         <h2 className={cn("mb-1 font-heading text-xl font-medium", currentGroup.danger ? "text-neg" : "text-foreground")}>{tr(currentGroup.label)}</h2>
         <p className="mb-5 text-sm text-muted-foreground">{tr(currentGroup.summary)}</p>
         <div className="flex flex-col gap-8">{content[current]}</div>

@@ -5,7 +5,6 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { BackLink } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -81,7 +80,6 @@ export default function CollegaBancaPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4 p-4 sm:p-6">
-      <BackLink href="/liquidita/conti" label={tr("Conti")} className="-mb-3" />
       <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Conti trovati")}</h1>
       <p className="text-sm text-muted-foreground">{tr("Seleziona quali conti importare. Puoi crearne di nuovi o ricollegarli a un conto già esistente.")}</p>
 

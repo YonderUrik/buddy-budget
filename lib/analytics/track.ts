@@ -257,6 +257,8 @@ export interface ProductEvents {
   onboarding_notifications_chosen: { digest: "settimanale" | "mensile" | "off"; budget: boolean; deadlines: boolean; goals?: boolean };
   /** Disiscrizione dalla pagina aperta dal link dell'email; `kind`: tipo disattivato o tutti. */
   notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "goals" | "all" };
+  /** «‹» back button; `section`/`to`: first segment of the current and destination address, `target`: previous screen or logical parent, `place`: phone top bar or above the page on desktop. */
+  back_link_clicked: { section: string; target: "precedente" | "madre"; to: string; place: "barra" | "pagina" };
   /** «Rientra in BuddyBudget» on the login page: the one-tap way back in was used (link sent or Google opened). */
   returning_login_used: { method: "email" | "google" };
   /** «Non sei tu?» on the login page: the remembered account was forgotten on this device. */

@@ -28,7 +28,7 @@ const BLOCKS = [
 
 export default function Page() {
   return (
-    <ContentPage kicker="Funzioni" current={CONTENT_PATHS.funzioni} crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Funzioni" }, { label: "Investimenti" }]} ctaTitle="Prova gli investimenti con i tuoi dati." ctaText="Collega la banca, aggiungi le operazioni o importa un CSV, e vedi il quadro completo con le tasse già dentro." ctaLocation="funzione_investimenti">
+    <ContentPage kicker="Funzioni" current={CONTENT_PATHS.funzioni} crumbs={[{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.funzioni, label: "Funzioni" }, { label: "Investimenti" }]} ctaTitle="Prova gli investimenti con i tuoi dati." ctaText="Collega la banca, aggiungi le operazioni o importa un CSV, e vedi il quadro completo con le tasse già dentro." ctaLocation="funzione_investimenti">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.funzioneInvestimenti}`, inLanguage: "it-IT" }} />
       <h1>Investimenti, con le tasse italiane</h1>
       <p className="lead">ETF, azioni, BTP, fondi e crypto in un solo posto, accanto ai tuoi conti e ai tuoi debiti. Il rendimento è calcolato dalle tue operazioni e le tasse seguono le regole italiane.</p>

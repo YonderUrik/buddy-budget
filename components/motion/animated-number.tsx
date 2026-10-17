@@ -1,28 +1,44 @@
 "use client";
 
 /**
- * Numero che scorre: quando `value` cambia, ruotano solo le cifre cambiate, nella direzione del cambio. Basato su
- * NumberFlow (MIT); formatta con `Intl.NumberFormat`, quindi valute, percentuali e anni usano le stesse opzioni di
- * sempre. Con il movimento ridotto il numero cambia senza animazione; il lettore di schermo legge il valore intero.
+ * Rolling number: when `value` changes, only the changed digits roll, in the direction of the change. Built on
+ * NumberFlow (MIT); formats with `Intl.NumberFormat`, so currencies, percentages and years keep their usual options.
+ * The roll starts once the page has finished rendering the new data and lasts as long as `SPRING_SOFT`, so it does
+ * not stop halfway. With reduced motion the number changes without animation; screen readers read the whole value.
  */
 
 import { useLocalization } from "@/lib/localization/provider";
+import { SPRING_SOFT, springEasing } from "@/lib/motion/springs";
 import NumberFlow, { type Format } from "@number-flow/react";
 import { cn } from "@/lib/utils";
+import { useSettledValue } from "./use-settled-value";
 
 export interface AnimatedNumberProps {
   value: number;
-  /** Opzioni di `Intl.NumberFormat` (es. `{ style: "currency", currency: "EUR" }`). */
+  /** `Intl.NumberFormat` options (e.g. `{ style: "currency", currency: "EUR" }`). */
   format?: Format;
   locales?: Intl.LocalesArgument;
-  /** Decimali e simbolo finale più piccoli e tenui, come negli importi in evidenza. */
+  /** Smaller, muted decimals and trailing symbol, as in highlighted amounts. */
   mutedTail?: boolean;
   className?: string;
 }
 
-/** Classi che rimpiccioliscono e attenuano decimali e valuta (parti `fraction`, `decimal` e `right` di NumberFlow). */
-const MUTED_TAIL_CLASS =
-  "[&::part(fraction)]:text-[0.55em] [&::part(fraction)]:text-muted-foreground [&::part(decimal)]:text-[0.55em] [&::part(decimal)]:text-muted-foreground [&::part(right)]:text-[0.55em] [&::part(right)]:text-muted-foreground";
+/**
+ * Classes that shrink and mute decimals and currency (NumberFlow's `fraction`, `decimal` and `right` parts). NumberFlow
+ * fades rolling digits at the edges of the whole number, sized for the big digits: each small decimal gets its own fade,
+ * otherwise the digits above and below it stay visible in the empty space next to the integer part while it rolls.
+ */
+const MUTED_TAIL_CLASS = [
+  "[&::part(fraction)]:text-[0.55em] [&::part(fraction)]:text-muted-foreground",
+  "[&::part(decimal)]:text-[0.55em] [&::part(decimal)]:text-muted-foreground",
+  "[&::part(right)]:text-[0.55em] [&::part(right)]:text-muted-foreground",
+  "[&::part(fraction-digit)]:[mask-image:linear-gradient(to_bottom,transparent,black_0.2em,black_calc(100%_-_0.2em),transparent)]",
+].join(" ");
+
+/** Roll and width timing: the app's soft spring (about 530 ms) instead of NumberFlow's 900 ms with a long, slow tail. */
+const ROLL_TIMING = springEasing(SPRING_SOFT.stiffness, SPRING_SOFT.damping);
+/** Fade of digits that appear or disappear (NumberFlow's default is 450 ms). */
+const FADE_TIMING = { duration: 250, easing: "ease-out" } as const;
 
 export function AnimatedNumber({
   value,
@@ -32,13 +48,17 @@ export function AnimatedNumber({
   className,
 }: AnimatedNumberProps) {
   const { locale } = useLocalization();
+  const shown = useSettledValue(value);
   return (
     <NumberFlow
-      value={value}
+      value={shown}
       format={format}
       locales={locales ?? locale}
       animated
       respectMotionPreference
+      transformTiming={ROLL_TIMING}
+      spinTiming={ROLL_TIMING}
+      opacityTiming={FADE_TIMING}
       className={cn("tabular-nums", mutedTail && MUTED_TAIL_CLASS, className)}
     />
   );

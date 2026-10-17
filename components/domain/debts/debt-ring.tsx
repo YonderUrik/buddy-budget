@@ -21,7 +21,7 @@ export function DebtRing({ fraction, label, caption, size = DEFAULT_RING_SIZE }:
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.min(1, Math.max(0, fraction));
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${label} ${caption}`} className="shrink-0">
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${tr(label)} ${tr(caption)}`} className="shrink-0">
       <circle cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={RING_STROKE} className="stroke-muted" />
       <circle
         cx={size / 2}
@@ -38,7 +38,7 @@ export function DebtRing({ fraction, label, caption, size = DEFAULT_RING_SIZE }:
         {tr(label)}
       </text>
       <text x="50%" y="63%" textAnchor="middle" className="fill-muted-foreground" fontSize={size * 0.105}>
-        {caption}
+        {tr(caption)}
       </text>
     </svg>
   );

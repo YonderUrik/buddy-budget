@@ -78,7 +78,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
         onMarkAll={(upTo) =>
           bulk.mutate(
             { debtId: debt.id, upToInstallment: upTo },
-            { onSuccess: ({ count }) => toast.success(count === 1 ? "Una rata segnata come pagata" : `${count} rate segnate come pagate`), onError: (e) => errorToast(e.message, "debito") }
+            { onSuccess: ({ count }) => toast.success(count === 1 ? tr("Una rata segnata come pagata") : tr("{0} rate segnate come pagate", {0: count})), onError: (e) => errorToast(e.message, "debito") }
           )
         }
       />

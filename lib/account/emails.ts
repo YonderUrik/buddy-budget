@@ -1,82 +1,99 @@
 import "server-only";
 import { Resend } from "resend";
-import { renderEmail } from "@/lib/email";
+import { emailLocale, renderEmail } from "@/lib/email";
+import type { Language } from "@/lib/localization/config";
 import { getAppUrl } from "@/lib/env";
 import { hashUserId, logger } from "@/lib/observability";
 import { BACKUP_RETENTION_DAYS, DEACTIVATION_GRACE_DAYS, INACTIVITY_DELETE_AFTER_DAYS, INACTIVITY_WARNING_LEAD_DAYS } from "./constants";
 
 export type AccountEmailKind = "deactivated" | "deleted" | "inactivity_warning" | "inactivity_deleted";
 
-const DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" });
-
-/** Oggetto, testo e HTML delle email sul ciclo di vita dell'account. Pura, per poterla testare. */
-export function accountEmailContent(kind: AccountEmailKind, params: { deletionAt?: Date; lastActiveAt?: Date; appUrl: string }): { subject: string; text: string; html: string } {
+/**
+ * Subject, text and HTML of the emails on the account lifecycle, in `params.language` (Italian by default) with dates in
+ * its locale. Pure, so it can be tested.
+ */
+export function accountEmailContent(
+  kind: AccountEmailKind,
+  params: { deletionAt?: Date; lastActiveAt?: Date; appUrl: string; language?: Language },
+): { subject: string; text: string; html: string } {
+  const { t, locale, language } = emailLocale(params.language);
+  const date = (value: Date) => new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" }).format(value);
+  const options = { appUrl: params.appUrl, language };
   if (kind === "deactivated") {
-    const when = params.deletionAt ? DATE_FORMAT.format(params.deletionAt) : `tra ${DEACTIVATION_GRACE_DAYS} giorni`;
+    const lead = params.deletionAt
+      ? t("L'account e tutti i tuoi dati verranno eliminati definitivamente il **{0}**. Se cambi idea, accedi prima di quella data e scegli «Riattiva account».", date(params.deletionAt))
+      : t("L'account e tutti i tuoi dati verranno eliminati definitivamente il **tra {0} giorni**. Se cambi idea, accedi prima di quella data e scegli «Riattiva account».", DEACTIVATION_GRACE_DAYS);
     return {
-      subject: "Il tuo account BuddyBudget è stato disattivato",
+      subject: t("Il tuo account BuddyBudget è stato disattivato"),
       ...renderEmail(
         {
-          title: "Account disattivato",
-          lead: `L'account e tutti i tuoi dati verranno eliminati definitivamente il **${when}**. Se cambi idea, accedi prima di quella data e scegli «Riattiva account».`,
-          cta: { label: "Riattiva account", url: `${params.appUrl}/login` },
-          footnote: "Se non sei stato tu, accedi subito e riattiva l'account.",
+          title: t("Account disattivato"),
+          lead,
+          cta: { label: t("Riattiva account"), url: `${params.appUrl}/login` },
+          footnote: t("Se non sei stato tu, accedi subito e riattiva l'account."),
         },
-        { appUrl: params.appUrl },
+        options,
       ),
     };
   }
   if (kind === "inactivity_warning") {
-    const when = params.deletionAt ? DATE_FORMAT.format(params.deletionAt) : `tra ${INACTIVITY_WARNING_LEAD_DAYS} giorni`;
-    const since = params.lastActiveAt ? ` dal ${DATE_FORMAT.format(params.lastActiveAt)}` : "";
+    const when = params.deletionAt ? date(params.deletionAt) : null;
+    const since = params.lastActiveAt ? date(params.lastActiveAt) : null;
+    const opening = since ? t("Non accedi a BuddyBudget dal {0}", since) : t("Non accedi a BuddyBudget");
+    const lead = when
+      ? t("{0}: gli account senza accessi da {1} giorni vengono eliminati. Se non accedi entro il **{2}**, l'account e tutti i tuoi dati verranno eliminati definitivamente.", opening, INACTIVITY_DELETE_AFTER_DAYS, when)
+      : t("{0}: gli account senza accessi da {1} giorni vengono eliminati. Se non accedi entro il **tra {2} giorni**, l'account e tutti i tuoi dati verranno eliminati definitivamente.", opening, INACTIVITY_DELETE_AFTER_DAYS, INACTIVITY_WARNING_LEAD_DAYS);
     return {
-      subject: "Il tuo account BuddyBudget sta per essere eliminato",
+      subject: t("Il tuo account BuddyBudget sta per essere eliminato"),
       ...renderEmail(
         {
-          title: "Account inattivo",
-          lead: `Non accedi a BuddyBudget${since}: gli account senza accessi da ${INACTIVITY_DELETE_AFTER_DAYS} giorni vengono eliminati. Se non accedi entro il **${when}**, l'account e tutti i tuoi dati verranno eliminati definitivamente.`,
-          preheader: `Accedi entro il ${when} per tenere il tuo account.`,
-          cta: { label: "Accedi a BuddyBudget", url: `${params.appUrl}/login` },
-          footnote: `Si eliminano conti, transazioni, investimenti, categorie, regole, debiti e collegamenti con le banche. Per tenerli basta accedere; per conservarne una copia puoi esportarli da Impostazioni. Se non vuoi più usare BuddyBudget non devi fare nulla.`,
+          title: t("Account inattivo"),
+          lead,
+          preheader: when ? t("Accedi entro il {0} per tenere il tuo account.", when) : t("Accedi entro il tra {0} giorni per tenere il tuo account.", INACTIVITY_WARNING_LEAD_DAYS),
+          cta: { label: t("Accedi a BuddyBudget"), url: `${params.appUrl}/login` },
+          footnote: t("Si eliminano conti, transazioni, investimenti, categorie, regole, debiti e collegamenti con le banche. Per tenerli basta accedere; per conservarne una copia puoi esportarli da Impostazioni. Se non vuoi più usare BuddyBudget non devi fare nulla."),
         },
-        { appUrl: params.appUrl },
+        options,
       ),
     };
   }
   if (kind === "inactivity_deleted") {
     return {
-      subject: "Il tuo account BuddyBudget è stato eliminato",
+      subject: t("Il tuo account BuddyBudget è stato eliminato"),
       ...renderEmail(
         {
-          title: "Account eliminato",
-          lead: `Non accedevi da oltre ${INACTIVITY_DELETE_AFTER_DAYS} giorni e non hai effettuato l'accesso dopo il nostro avviso: l'account e i dati sono stati eliminati definitivamente e i collegamenti con le banche sono stati revocati.`,
-          footnote: `Le copie di sicurezza vengono sovrascritte entro ${BACKUP_RETENTION_DAYS} giorni. Se vuoi tornare, puoi creare un nuovo account quando vuoi. Questa è l'ultima email che ricevi da noi.`,
+          title: t("Account eliminato"),
+          lead: t("Non accedevi da oltre {0} giorni e non hai effettuato l'accesso dopo il nostro avviso: l'account e i dati sono stati eliminati definitivamente e i collegamenti con le banche sono stati revocati.", INACTIVITY_DELETE_AFTER_DAYS),
+          footnote: t("Le copie di sicurezza vengono sovrascritte entro {0} giorni. Se vuoi tornare, puoi creare un nuovo account quando vuoi. Questa è l'ultima email che ricevi da noi.", BACKUP_RETENTION_DAYS),
         },
-        { appUrl: params.appUrl },
+        options,
       ),
     };
   }
   return {
-    subject: "Il tuo account BuddyBudget è stato eliminato",
+    subject: t("Il tuo account BuddyBudget è stato eliminato"),
     ...renderEmail(
       {
-        title: "Account eliminato",
-        lead: "Conti, transazioni, investimenti, categorie e regole sono stati eliminati definitivamente e i collegamenti con le banche sono stati revocati. Grazie per aver usato BuddyBudget.",
-        footnote: "Questa è l'ultima email che ricevi da noi.",
+        title: t("Account eliminato"),
+        lead: t("Conti, transazioni, investimenti, categorie e regole sono stati eliminati definitivamente e i collegamenti con le banche sono stati revocati. Grazie per aver usato BuddyBudget."),
+        footnote: t("Questa è l'ultima email che ricevi da noi."),
       },
-      { appUrl: params.appUrl },
+      options,
     ),
   };
 }
 
-/** Invia un'email sul ciclo di vita dell'account. Best effort: un errore viene loggato ma non annulla l'azione già fatta; restituisce true se Resend ha accettato il messaggio. */
+/**
+ * Sends an email on the account lifecycle, in the account's `language` (Italian when absent). Best effort: an error is
+ * logged but does not undo the action already done; returns true if Resend accepted the message.
+ */
 export async function sendAccountEmail(
   to: string,
   kind: AccountEmailKind,
-  context: { userId: string; deletionAt?: Date; lastActiveAt?: Date }
+  context: { userId: string; deletionAt?: Date; lastActiveAt?: Date; language?: Language }
 ): Promise<boolean> {
   try {
-    const { subject, text, html } = accountEmailContent(kind, { deletionAt: context.deletionAt, lastActiveAt: context.lastActiveAt, appUrl: getAppUrl() });
+    const { subject, text, html } = accountEmailContent(kind, { deletionAt: context.deletionAt, lastActiveAt: context.lastActiveAt, appUrl: getAppUrl(), language: context.language });
     const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM!, to, subject, text, html });
     if (error) {
       // Solo il tipo d'errore: il messaggio di Resend può contenere l'indirizzo.

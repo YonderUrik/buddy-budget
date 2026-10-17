@@ -18,8 +18,8 @@ const WORKING_PHASES = new Set<SyncJobAccount["phase"]>(["balance", "fetching", 
  * Pensata per lo sfondo scuro dell'isola: usa i colori invertiti del tema.
  */
 export function SyncAccountProgressRow({ account, interrupted }: SyncAccountProgressRowProps) {
-  const { t: tr } = useLocalization();
-  const description = describeAccountProgress(account, interrupted);
+  const { t: tr, locale } = useLocalization();
+  const description = describeAccountProgress(account, interrupted, locale);
   const working = WORKING_PHASES.has(account.phase) && !interrupted;
   const bar = description.bar;
   const percent = bar.kind === "determinate" ? Math.min(100, Math.round((bar.value / bar.max) * 100)) : 0;

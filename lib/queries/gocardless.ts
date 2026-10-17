@@ -9,6 +9,7 @@ import { track } from "@/lib/analytics";
 import { errorToast } from "@/lib/support/request-report";
 import { useLocalization } from "@/lib/localization/provider";
 import type { CapacityBlockReason } from "@/lib/gocardless/capacity";
+import { pageText } from "@/lib/localization/page-text";
 
 /** Risposta di `GET /api/gocardless/capacity`. */
 export interface CapacityStatus {
@@ -57,7 +58,7 @@ export function useBankCapacityQuery(enabled = true) {
     queryKey: BANK_CAPACITY_QUERY_KEY,
     queryFn: async (): Promise<CapacityStatus> => {
       const response = await fetch("/api/gocardless/capacity");
-      if (!response.ok) throw new Error("Impossibile verificare i collegamenti disponibili");
+      if (!response.ok) throw new Error(pageText("Impossibile verificare i collegamenti disponibili"));
       return response.json();
     },
     enabled,
@@ -70,7 +71,7 @@ export function useInstitutionsQuery(country: string) {
     queryKey: ["gocardless", "institutions", country],
     queryFn: async (): Promise<Institution[]> => {
       const response = await fetch(`/api/gocardless/institutions?country=${country}`);
-      if (!response.ok) throw new Error("Impossibile caricare gli istituti");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare gli istituti"));
       return response.json();
     },
     enabled: country.length > 0,
@@ -83,7 +84,7 @@ export function useBankConnectionsStatusQuery() {
     queryKey: ["gocardless", "connections", "status"],
     queryFn: async (): Promise<BankConnectionStatus[]> => {
       const response = await fetch("/api/gocardless/connections");
-      if (!response.ok) throw new Error("Impossibile caricare lo stato delle connessioni");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare lo stato delle connessioni"));
       return response.json();
     },
   });
@@ -100,7 +101,7 @@ export function useCreateConnectionMutation() {
       });
       if (!response.ok) {
         const errorBody = await response.json().catch(() => null);
-        throw new Error(errorBody?.error ?? "Impossibile avviare il collegamento");
+        throw new Error(errorBody?.error ?? pageText("Impossibile avviare il collegamento"));
       }
       return response.json();
     },
@@ -114,7 +115,7 @@ export function useConnectionAccountsQuery(connectionId: string) {
     queryKey: ["gocardless", "connections", connectionId, "accounts"],
     queryFn: async (): Promise<ConnectionAccountsResponse> => {
       const response = await fetch(`/api/gocardless/connections/${connectionId}/accounts`);
-      if (!response.ok) throw new Error("Impossibile caricare i conti trovati");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare i conti trovati"));
       return response.json();
     },
   });
@@ -132,7 +133,7 @@ export function useFinalizeConnectionMutation(connectionId: string) {
       });
       if (!response.ok) {
         const errorBody = await response.json().catch(() => null);
-        throw new Error(errorBody?.error ?? "Impossibile completare il collegamento");
+        throw new Error(errorBody?.error ?? pageText("Impossibile completare il collegamento"));
       }
       return response.json();
     },
@@ -148,7 +149,7 @@ export function useFinalizeConnectionMutation(connectionId: string) {
 
 export class SyncNotAvailableError extends Error {
   constructor(public readonly info: SyncErrorInfo) {
-    super("Sync non disponibile");
+    super(pageText("Sync non disponibile"));
   }
 }
 

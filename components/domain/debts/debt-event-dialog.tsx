@@ -55,7 +55,7 @@ export interface DebtEventDialogProps {
 }
 
 function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDialogKind; onDone: () => void }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const mutation = useCreateDebtEventMutation();
   const [date, setDate] = React.useState(todayIso());
   const [value, setValue] = React.useState("");
@@ -65,7 +65,7 @@ function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDi
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    const number = parseAmount(value);
+    const number = parseAmount(value, locale);
     if (number === undefined || number < 0 || (number === 0 && kind !== "rate_change")) return setError(tr("Inserisci un valore valido"));
     setError(null);
     const input = kind === "rate_change" ? ({ type: "rate_change", date, rate: number } as const) : ({ type: kind, date, amount: number } as const);

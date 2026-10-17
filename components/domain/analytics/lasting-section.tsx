@@ -29,9 +29,9 @@ export interface LastingSectionProps extends QuestionSectionData {
 export function LastingSection({ question, base, assumptions, plan, results }: LastingSectionProps) {
   const { pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const { currency } = base;
-  const answer = results ? lastingAnswer(results, assumptions.rule, assumptions.retirementYears) : null;
+  const answer = results ? lastingAnswer(results, assumptions.rule, assumptions.retirementYears, language) : null;
   const expert = () => (
     <div className="flex flex-col gap-6">
       <SimulationTab assumptions={assumptions} plan={plan} currency={currency} />
@@ -51,7 +51,7 @@ export function LastingSection({ question, base, assumptions, plan, results }: L
             </p>
             <p>{answer.verdict.text}{"."}</p>
             {answer.better ? (
-              <p>{tr("Cambiando il modo di prelevare la situazione cambia: con la regola «")}{tr(answer.better.label)}{tr("» il patrimonio regge nel")}{" "}{pct(answer.better.success, 0)}{" "}{tr("dei casi.")}</p>
+              <p>{tr("Cambiando il modo di prelevare la situazione cambia: con la regola «{0}» il patrimonio regge nel {1} dei casi.", {0: tr(answer.better.label), 1: pct(answer.better.success, 0)})}</p>
             ) : null}
           </div>
           <ul className="flex flex-wrap gap-2" aria-label={tr("Probabilità di successo per regola di prelievo")}>

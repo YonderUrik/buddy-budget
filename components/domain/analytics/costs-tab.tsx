@@ -36,7 +36,7 @@ const CONFIG: ChartConfig = {
 export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: CostsTabProps) {
   const { costsSteps } = localizedGuidedSteps(useLocalization().language);
 
-  const { money } = localizedAnalyticsFormats(useLocalization().language);
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
   const { t: tr, productCountry, locale } = useLocalization();
   const { parseNumber, toFieldText } = localizedNumberFields(locale);
@@ -74,7 +74,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
       <GuidedReading tab="costi" steps={costsSteps(summary, drag, liquidation, currency, DRAG_YEARS)} />
       <AnalyticsCard title={tr("Costi del portafoglio")} explainer="costs">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Metric label={tr("Costo annuo")} value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? "{0} del portafoglio" : undefined} />
+          <Metric label={tr("Costo annuo")} value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? tr("{0} del portafoglio", {0: pct(summary.annualPct, 2)}) : undefined} />
           <Metric label={tr("Persi in {0} anni", {0: DRAG_YEARS})} value={last ? money(last.lost, currency) : "—"} tone="neg" sub="rispetto allo stesso portafoglio senza costi" />
           <Metric label={tr("Senza costo inserito")} value={money(summary.missingTerValue, currency)} sub="valore delle posizioni senza costo inserito" />
         </div>
@@ -148,7 +148,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
       <AnalyticsCard title={tr("Se vendessi tutto oggi")} explainer="liquidation">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Metric label={tr("Valore di mercato")} value={money(liquidation.grossValue, currency)} />
-          <Metric label={tr("Imposta sulle plusvalenze")} value={money(liquidation.latentTax, currency)} tone="neg" sub={liquidation.taxRatio !== null ? "{0} del valore" : undefined} />
+          <Metric label={tr("Imposta sulle plusvalenze")} value={money(liquidation.latentTax, currency)} tone="neg" sub={liquidation.taxRatio !== null ? tr("{0} del valore", {0: pct(liquidation.taxRatio)}) : undefined} />
           <Metric label={tr("Netto dopo le imposte")} value={money(liquidation.netValue, currency)} />
         </div>
         {liquidation.byPosition.length > 0 ? (

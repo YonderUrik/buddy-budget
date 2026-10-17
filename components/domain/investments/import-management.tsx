@@ -106,10 +106,10 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
         open={personalSelection !== null}
         title={tr("Eliminare l'importazione «{0}»?", {0: personalSelection?.preview.name ?? ""})}
         intro="I dati caricati con questo formato personale vengono tolti dal tuo patrimonio."
-        items={personalSelection?.preview.uploads.map((u) => `Caricamento del ${formatImportDate(u.createdAt, locale)}`) ?? []}
+        items={personalSelection?.preview.uploads.map((u) => tr("Caricamento del {0}", {0: formatImportDate(u.createdAt, locale)})) ?? []}
         removes={[
-          `${personalSelection?.preview.cashCount ?? 0} movimenti di cassa (inclusi i regolamenti degli investimenti)`,
-          `${personalSelection?.preview.investmentCount ?? 0} operazioni di investimento`,
+          tr("{0} movimenti di cassa (inclusi i regolamenti degli investimenti)", {0: personalSelection?.preview.cashCount ?? 0}),
+          tr("{0} operazioni di investimento", {0: personalSelection?.preview.investmentCount ?? 0}),
         ]}
         keeps={["Il formato personale, i conti e gli strumenti", "Puoi reimportare il CSV quando vuoi: i saldi si aggiornano di nuovo"]}
         pending={personalDeletion.isPending}
@@ -120,7 +120,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
       />
       <ImportDeleteDialog
         open={selection !== null}
-        title={selection && selection.ids.length > 1 ? tr("Eliminare {0} importazioni di {1}?", {0: selection.ids.length, 1: brokerSource ?? "questo conto"}) : tr("Eliminare l'importazione di {0}?", {0: brokerSource ?? "questo conto"})}
+        title={selection && selection.ids.length > 1 ? tr("Eliminare {0} importazioni di {1}?", {0: selection.ids.length, 1: brokerSource ?? tr("questo conto")}) : tr("Eliminare l'importazione di {0}?", {0: brokerSource ?? tr("questo conto")})}
         intro={selection && selection.ids.length > 1 ? "Insieme a quella scelta vanno tolti i caricamenti successivi dello stesso conto, perché i loro saldi partono da questo." : "Il rendiconto e le sue operazioni vengono tolti dal portafoglio."}
         items={selection?.items ?? []}
         removes={[brokerSource?.startsWith("Trade Republic") ? "Le operazioni di questi rendiconti e i movimenti del conto importati con loro" : "Le operazioni di questi rendiconti", "La liquidità torna all'ultima chiusura conservata, o a zero"]}

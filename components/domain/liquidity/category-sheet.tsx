@@ -82,7 +82,7 @@ export function CategorySheet({ categories, value, usage = {}, trigger, onSelect
         <div className="max-h-80 space-y-3 overflow-y-auto">
           {sections.length === 0 && <p className="py-6 text-center text-sm text-text-2">{tr("Nessuna categoria trovata")}</p>}
           {sections.map((section) => (
-            <div key={section.key} role="group" aria-label={section.label ?? "Categorie"}>
+            <div key={section.key} role="group" aria-label={tr(section.label ?? "Categorie")}>
               {section.label && <p className="mb-1.5 text-sm font-semibold text-text-2">{tr(section.label)}</p>}
               <div className="grid grid-cols-2 gap-1.5">
                 {section.categories.map((category) => (

@@ -53,11 +53,11 @@ export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
   const money = (value: number) => formatCurrency(value, currency);
 
   const result = React.useMemo(() => {
-    const annualRate = rate.trim() === "" ? undefined : parseAmount(rate);
-    const count = parseAmount(installments);
+    const annualRate = rate.trim() === "" ? undefined : parseAmount(rate, formattingLocale);
+    const count = parseAmount(installments, formattingLocale);
     if (annualRate === undefined || !count || count < 1 || !Number.isInteger(count) || annualRate < 0) return null;
-    return compareRefinance(debt.plan.totals, todayIso(), { annualRate, installments: count, upfrontCosts: parseAmount(costs) ?? 0, penalty: parseAmount(penalty) ?? 0 });
-  }, [debt, rate, installments, costs, penalty]);
+    return compareRefinance(debt.plan.totals, todayIso(), { annualRate, installments: count, upfrontCosts: parseAmount(costs, formattingLocale) ?? 0, penalty: parseAmount(penalty, formattingLocale) ?? 0 });
+  }, [debt, rate, installments, costs, penalty, formattingLocale]);
 
   const saving = result?.netSaving ?? 0;
   return (

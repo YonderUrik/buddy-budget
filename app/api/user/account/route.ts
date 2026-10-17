@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { sendAccountEmail } from "@/lib/account/emails";
+import { resolveProfile } from "@/lib/localization/config";
 import { deleteUserAccount, hasActiveSync } from "@/lib/account/lifecycle";
 import { readJson, recentLoginRequired, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { requestLogger, withRoute } from "@/lib/observability";
@@ -26,9 +27,11 @@ async function handleDelete(request: NextRequest) {
   }
 
   const { email } = session.user;
+  // Read before the deletion: the farewell email is written in the account's language.
+  const { language } = resolveProfile(session.user);
   await deleteUserAccount(session.user.id);
   requestLogger().info("account.deletion.completed", { trigger: "manual" });
-  await sendAccountEmail(email, "deleted", { userId: session.user.id });
+  await sendAccountEmail(email, "deleted", { userId: session.user.id, language });
   return new Response(null, { status: 204 });
 }
 

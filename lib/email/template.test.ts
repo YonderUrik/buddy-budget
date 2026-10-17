@@ -69,6 +69,18 @@ describe("renderEmail: piè di pagina", () => {
   });
 });
 
+describe("renderEmail: lingua", () => {
+  it("piè di pagina e attributo lang nella lingua di chi riceve", () => {
+    const footer = { kind: "optional" as const, reason: "the regular summary", unsubscribeUrl: "https://a.test/u", preferencesUrl: "https://a.test/p" };
+    const en = renderEmail({ title: "T", lead: "L", footer }, { ...OPTIONS, language: "en" });
+    expect(en.html).toContain('<html lang="en">');
+    expect(en.text).toContain("You're receiving this email because you signed up for the regular summary.\nUnsubscribe from these emails: https://a.test/u\nManage preferences: https://a.test/p");
+    const de = renderEmail({ title: "T", lead: "L" }, { ...OPTIONS, language: "de" });
+    expect(de.text).toContain("Service-E-Mail zu deinem Konto");
+    expect(renderEmail({ title: "T", lead: "L" }, OPTIONS).html).toContain('<html lang="it">');
+  });
+});
+
 describe("escapeHtml", () => {
   it("converte i cinque caratteri speciali", () => {
     expect(escapeHtml(`&<>"'`)).toBe("&amp;&lt;&gt;&quot;&#39;");

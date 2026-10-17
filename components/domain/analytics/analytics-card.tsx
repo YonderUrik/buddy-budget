@@ -25,6 +25,7 @@ export function AnalyticsCard({ title, explainer, children }: AnalyticsCardProps
 }
 
 export interface MetricProps {
+  /** Label and note: Italian sources (translated here) or text already in the user's language. */
   label: string;
   value: string;
   sub?: string;
@@ -39,9 +40,9 @@ export function Metric({ label, value, sub, tone = "default", term }: MetricProp
   const color = tone === "pos" ? "text-pos" : tone === "neg" ? "text-neg" : "text-foreground";
   return (
     <div className="border-t pt-3">
-      <p className="text-sm text-muted-foreground">{term ? <Term id={term}>{tr(label)}</Term> : label}</p>
+      <p className="text-sm text-muted-foreground">{term ? <Term id={term}>{tr(label)}</Term> : tr(label)}</p>
       <p className={`font-heading text-2xl font-medium tabular-nums ${color}`}>{value}</p>
-      {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
+      {sub ? <p className="text-xs text-muted-foreground">{tr(sub)}</p> : null}
     </div>
   );
 }

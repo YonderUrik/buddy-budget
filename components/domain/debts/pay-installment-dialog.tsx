@@ -38,7 +38,7 @@ function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanP
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    const value = parseAmount(amount);
+    const value = parseAmount(amount, locale);
     if (!value || value <= 0) return setError(tr("Inserisci l'importo pagato"));
     setError(null);
     mutation.mutate(

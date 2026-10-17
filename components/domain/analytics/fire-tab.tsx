@@ -97,9 +97,9 @@ export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
       <GuidedReading tab="fire" steps={fireSteps(plan, a, currency, lean)} />
       <AnalyticsCard title={tr("Il tuo numero FIRE")} explainer="fire-number">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Metric label={tr("Numero FIRE")} value={money(plan.target, currency)} sub={plan.taxShare > 0 ? "{0} prima delle imposte" : "spesa {0} ÷ {1}"} />
-          <Metric label={tr("Il tuo patrimonio")} value={money(plan.wealth, currency)} sub={"{0} del traguardo"} />
-          <Metric label={tr("Anni al traguardo")} value={formatYears(plan.yearsToFire)} sub={finishYear ? "intorno al {0}" : savings <= 0 ? "con risparmio nullo non ci arrivi" : undefined} />
+          <Metric label={tr("Numero FIRE")} value={money(plan.target, currency)} sub={plan.taxShare > 0 ? tr("{0} prima delle imposte", {0: money(plan.fireNumberGross ?? 0, currency)}) : tr("spesa {0} ÷ {1}", {0: money(plan.spending, currency), 1: pct(a.withdrawalRate)})} />
+          <Metric label={tr("Il tuo patrimonio")} value={money(plan.wealth, currency)} sub={tr("{0} del traguardo", {0: pct(plan.progress ?? 0, 0)})} />
+          <Metric label={tr("Anni al traguardo")} value={formatYears(plan.yearsToFire)} sub={finishYear ? tr("intorno al {0}", {0: finishYear}) : savings <= 0 ? "con risparmio nullo non ci arrivi" : undefined} />
         </div>
         <div role="progressbar" aria-label={tr("Avanzamento verso il numero FIRE")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} className="h-2 overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-primary" style={{ width: `${progress * 100}%` }} />

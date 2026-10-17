@@ -9,7 +9,8 @@ import { authUser, authSession, authAccount, authVerification } from "@/lib/db/s
 import { categories } from "@/lib/db/schema/categories";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { recordAuthEvent, requestLogger } from "@/lib/observability";
-import { magicLinkEmailContent } from "./emails";
+import { eq } from "drizzle-orm";
+import { magicLinkEmailContent, magicLinkLanguage } from "./emails";
 import { logMagicLink } from "./magic-link-log";
 import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE_DAYS } from "./constants";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
@@ -40,7 +41,7 @@ export const auth = betterAuth({
   plugins: [
     magicLink({
       expiresIn: MAGIC_LINK_EXPIRES_MINUTES * 60,
-      sendMagicLink: async ({ email, url }) => {
+      sendMagicLink: async ({ email, url }, ctx) => {
         const resend = getResend();
         if (!resend) {
           // Self-hosting senza email: il link compare nei log del container (`docker compose logs app`).
@@ -50,10 +51,19 @@ export const auth = betterAuth({
         }
         // Resend non lancia in caso di errore: restituisce `{ error }`. Lo trasformiamo in eccezione
         // così better-auth risponde con errore e la UI non mostra "controlla la tua email" a vuoto.
+        // Written in the account's saved language, or in the language of the sign-in page for a new address.
+        // A failed lookup only costs the saved language: the link still goes out.
+        const [user] = await db
+          .select({ productCountry: authUser.productCountry, language: authUser.language })
+          .from(authUser)
+          .where(eq(authUser.email, email.toLowerCase()))
+          .limit(1)
+          .catch(() => []);
+        const language = magicLinkLanguage({ user, headers: ctx?.headers ?? ctx?.request?.headers });
         const { error } = await resend.emails.send({
           from: process.env.RESEND_FROM!,
           to: email,
-          ...magicLinkEmailContent({ url, expiresInMinutes: MAGIC_LINK_EXPIRES_MINUTES, appUrl: new URL(url).origin }),
+          ...magicLinkEmailContent({ url, expiresInMinutes: MAGIC_LINK_EXPIRES_MINUTES, appUrl: new URL(url).origin, language }),
         });
         if (error) {
           recordAuthEvent("magic_link_failed");

@@ -29,7 +29,7 @@ export interface LossCarryforwardCardProps {
 }
 
 function AddCarryforwardForm({ currency, currentYear, onDone }: { currency: string; currentYear: number; onDone: () => void }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const id = React.useId();
   const create = useCreateTaxCarryforwardMutation();
   const [year, setYear] = React.useState(String(currentYear - 1));
@@ -38,7 +38,7 @@ function AddCarryforwardForm({ currency, currentYear, onDone }: { currency: stri
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    const value = parseAmount(amount);
+    const value = parseAmount(amount, locale);
     if (!value || value <= 0) return;
     create.mutate({ year: Number(year), amount: value, note: note.trim() || null }, { onSuccess: onDone });
   }

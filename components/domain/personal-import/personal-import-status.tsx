@@ -65,13 +65,15 @@ export interface PersonalImportListProps {
   onRetry?: () => void;
 }
 
-/** Cosa dice una riga, in parole semplici, dallo stato del lavoro. */
-export function describeImportJob(job: Job): { message: string; action: string | null } {
+/** What a row says, in plain words, from the job state: Italian source texts with their `{0}` values, translated by the list. */
+export function describeImportJob(job: Job): { message: string; values?: Record<string, number>; action: string | null } {
   switch (job.status) {
     case "queued":
     case "processing": return { message: "Analisi in corso", action: null };
     case "ready": return { message: "Salvataggio in corso", action: null };
-    case "imported": return { message: job.results ? `${job.results.cash} movimenti · ${job.results.investments} operazioni` : "Importato", action: "Dettaglio" };
+    case "imported": return job.results
+      ? { message: "{0} movimenti · {1} operazioni", values: { 0: job.results.cash, 1: job.results.investments }, action: "Dettaglio" }
+      : { message: "Importato", action: "Dettaglio" };
     case "review_failed": return { message: job.error ?? "Qualche riga da correggere", action: "Controlla" };
     case "failed": return { message: job.error ?? "Formato non riconosciuto", action: "Riprova" };
     case "expired": return { message: "File scaduto: caricalo di nuovo", action: "Riprova" };
@@ -94,7 +96,7 @@ export function PersonalImportList({ listing, selectedId, onSelect, onRetry }: P
   const date = new Date(iso);
   const days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86_400_000);
   if (days <= 0) return tr("oggi {0}", { 0: date.toLocaleTimeString(formattingLocale, { hour: "2-digit", minute: "2-digit" }) });
-  if (days === 1) return "ieri";
+  if (days === 1) return tr("ieri");
   return date.toLocaleDateString(formattingLocale, { day: "numeric", month: "short" });
 }
 
@@ -116,17 +118,18 @@ export function PersonalImportList({ listing, selectedId, onSelect, onRetry }: P
         <ul className="flex flex-col divide-y">
           {jobs.map((job) => {
             const state = islandState(job);
-            const { message, action } = describeImportJob(job);
-            const name = formats.find((f) => f.id === job.formatId)?.name ?? "File";
+            const { message: source, values, action } = describeImportJob(job);
+            const message = tr(source, values);
+            const name = formats.find((f) => f.id === job.formatId)?.name ?? tr("File");
             const retry = action === "Riprova";
             const body = (
               <>
                 <StatusIcon state={state} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="flex items-baseline gap-2"><span className="truncate text-sm font-medium text-foreground">{name}</span><span className="shrink-0 text-xs text-muted-foreground">{dayLabel(job.createdAt)}</span></span>
-                  <span className={cn("truncate text-sm", state === "failed" ? "text-neg" : "text-muted-foreground")}>{state === "running" ? <TextShimmer>{tr(message)}</TextShimmer> : message}</span>
+                  <span className={cn("truncate text-sm", state === "failed" ? "text-neg" : "text-muted-foreground")}>{state === "running" ? <TextShimmer>{message}</TextShimmer> : message}</span>
                 </span>
-                {action ? <span className="hidden shrink-0 text-sm font-medium text-primary sm:inline">{action}</span> : null}
+                {action ? <span className="hidden shrink-0 text-sm font-medium text-primary sm:inline">{tr(action)}</span> : null}
                 <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground sm:hidden" aria-hidden="true" />
               </>
             );

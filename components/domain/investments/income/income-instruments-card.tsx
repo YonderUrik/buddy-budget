@@ -83,7 +83,7 @@ export function IncomeInstrumentsCard({ rows, payments, instrumentsById, currenc
                   <dl className="grid grid-cols-3 gap-2 text-sm">
                     <Metric label={tr("Sul costo")} value={row.yieldOnCost !== null && row.trailingNet > 0 ? formatPct(row.yieldOnCost) : "—"} />
                     <Metric label={tr("Attuale")} value={row.currentYield !== null && row.forecastGross > 0 ? formatPct(row.currentYield) : "—"} />
-                    <Metric label={tr("Crescita")} value={row.growth ? `${formatSignedPct(row.growth.rate)}/anno` : "—"} />
+                    <Metric label={tr("Crescita")} value={row.growth ? tr("{0}/anno", {0: formatSignedPct(row.growth.rate)}) : "—"} />
                   </dl>
                   {isBond ? <Button variant="outline" size="sm" onClick={() => onEditCoupons(instrument)}>{row.hasCouponTerms ? tr("Cedole") : tr("Inserisci cedole")}</Button> : null}
                   <IncomePayments payments={instrumentPayments} currency={currency} />

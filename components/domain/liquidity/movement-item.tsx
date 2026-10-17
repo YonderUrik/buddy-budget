@@ -50,9 +50,9 @@ export interface MovementItemProps {
 
 type Panel = "none" | "split" | "edit";
 
-/** Messaggio dopo «Ricordala» quando la regola ha già sistemato altri movimenti da categorizzare. */
-function rememberedMessage(applied: number, categoryName: string): string {
-  return applied === 1 ? `Messo in ${categoryName} anche un altro movimento` : `Messi in ${categoryName} anche altri ${applied} movimenti`;
+/** Message after «Ricordala» when the rule already sorted other transactions to categorise, in the user's language. */
+function rememberedMessage(applied: number, categoryName: string, tr: (source: string, values?: Record<string, string | number>) => string): string {
+  return applied === 1 ? tr("Messo in {0} anche un altro movimento", { 0: categoryName }) : tr("Messi in {0} anche altri {1} movimenti", { 0: categoryName, 1: applied });
 }
 
 /** Icona della categoria alla misura richiesta. */
@@ -99,7 +99,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
           if (remember) {
             createRule.mutate(
               { matchType: "merchant", pattern: merchantKey(transaction.description), categoryId, replaceExisting: true },
-              { onSuccess: (rule) => notifyRuleSaved(rule, rule.applied > 0 ? rememberedMessage(rule.applied, name) : undefined) }
+              { onSuccess: (rule) => notifyRuleSaved(rule, rule.applied > 0 ? rememberedMessage(rule.applied, name, tr) : undefined) }
             );
           }
           toast.success(tr("Spostata in {0}", { 0: name }), {
@@ -131,7 +131,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
       trigger={
         <button
           type="button"
-          aria-label={`Categoria: ${category.name}. Tocca per cambiarla`}
+          aria-label={tr("Categoria: {0}. Tocca per cambiarla", {0: category.name})}
           className="relative size-11 shrink-0 rounded-full transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           {transaction.logoPath ? (

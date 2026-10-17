@@ -6,6 +6,7 @@ import { GithubMark } from "../github-mark";
 import { HomeIcon } from "../home-icon";
 import { SourceLink } from "../source-link";
 import { TrackedSection } from "../tracked-section";
+import { CopyCommand } from "./copy-command";
 import { SectionHead } from "./section-head";
 
 /** «Legge soltanto. Non sposta soldi.»: four facts with their sources, two limits said plainly, then the code. */
@@ -13,7 +14,7 @@ export function Trust() {
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec" aria-labelledby="sicurezza-t">
       <div className="wrap">
-        <SectionHead id="sicurezza-t" title={TRUST.title} intro={TRUST.intro} />
+        <SectionHead id="sicurezza-t" index={TRUST.index} title={TRUST.title} intro={TRUST.intro} />
         <ul className="facts">
           {TRUST.facts.map((fact) => (
             <li key={fact.title}>
@@ -43,7 +44,7 @@ export function Trust() {
   );
 }
 
-/** «Sotto il cofano»: license, stack and the facts a tinkerer checks; with the public repository, the links to read or install it. */
+/** «Sotto il cofano»: license, stack and the facts a tinkerer checks; with the public repository, the links to read it and the commands to install it. */
 function UnderHood() {
   const o = UNDER_HOOD;
   return (
@@ -60,6 +61,9 @@ function UnderHood() {
             </SourceLink>
             <a className="btn plain" href={`${SOURCE_URL}${o.selfHostPath}`} target="_blank" rel="noopener noreferrer">{o.selfHost}</a>
           </div>
+        ) : null}
+        {SOURCE_URL ? (
+          <CopyCommand label={o.command.label} lines={[`git clone ${SOURCE_URL}.git`, ...o.command.lines]} copy={o.command.copy} copied={o.command.copied} />
         ) : null}
         <p className="who">
           {o.who} <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> {o.whoTail}

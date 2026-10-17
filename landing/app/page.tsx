@@ -33,7 +33,7 @@ export default function HomePage() {
   return (
     <>
       <JsonLd data={FAQ_JSON_LD} />
-      <SiteNav />
+      <SiteNav tone="navy" />
       <main className="home">
         <Hero />
         <Sources />

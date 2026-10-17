@@ -69,6 +69,9 @@
   --f-h: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
   --f-b: "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, sans-serif;
   --f-m: "Geist Mono Variable", "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* display face (2026-10-17, after Hermes Agent): tall, condensed and light, only for the big titles of the home,
+     the content pages and the footer wordmark; small labels use the mono face in spaced capitals (`.idx`) */
+  --f-d: "Sofia Sans Extra Condensed Variable", "Sofia Sans Extra Condensed", "Arial Narrow", system-ui, sans-serif;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -161,6 +164,8 @@ img { max-width: 100%; }
 .wrap { max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
 /* small label above a page title («Calcolatore gratuito, senza account»): a tinted pill, like the app's badges */
 .kicker { display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); font: 600 13px var(--f-b); }
+/* numbered label above a title («#1 · Da dove»): mono face in spaced capitals, like a ledger index */
+.idx { margin: 0 0 14px; font: 500 12px / 1.4 var(--f-m); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
 /* card like the app's: white ground, thin border, rounded corners */
 .cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
 .mark { height: 26px; aspect-ratio: 378 / 464; display: block; }

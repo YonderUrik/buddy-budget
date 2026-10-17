@@ -34,3 +34,21 @@
   .nr > .tg { display: none; }
 }
 @media (max-width: 360px) { .nav .brand { font-size: 0; gap: 0; } }
+
+/* navy bar (the home, which opens on navy): spaced capitals like the labels, the white button of the opening */
+.nav.navy { background: var(--navy); color: var(--on-navy); border-bottom-color: color-mix(in srgb, var(--on-navy) 12%, transparent); }
+.nav.navy .brand { --mk2: var(--on-navy); }
+.nav.navy .links { font: 500 13px var(--f-b); letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-navy2); }
+.nav.navy .links a:hover, .nav.navy .links a[aria-current="page"] { color: var(--on-navy); }
+.nav.navy .tg, .nav.navy .menu-btn { background: transparent; border-color: color-mix(in srgb, var(--on-navy) 24%, transparent); color: var(--on-navy); }
+.nav.navy .btn.ghost { background: transparent; color: var(--on-navy); border-color: color-mix(in srgb, var(--on-navy) 30%, transparent); }
+.nav.navy .btn.ghost:hover { border-color: var(--on-navy); }
+.nav.navy .btn.main { background: var(--on-navy); color: var(--navy); }
+.nav.navy .btn.main:hover { background: color-mix(in srgb, var(--on-navy) 88%, var(--navy)); }
+@media (max-width: 1000px) {
+  .nav.navy .menu { background: var(--navy); }
+  .nav.navy .menu a:not(.btn) { color: var(--on-navy); border-bottom-color: color-mix(in srgb, var(--on-navy) 12%, transparent); }
+  .nav.navy .menu a[aria-current="page"] { color: var(--on-navy2); }
+  .nav.navy .menu-foot { color: var(--on-navy2); }
+  .nav.navy .menu-acts .btn.ghost { display: inline-flex; }
+}

@@ -9,7 +9,7 @@ export function Faq() {
   return (
     <TrackedSection id="domande" section="domande" className="sec faq" aria-labelledby="domande-t">
       <div className="wrap">
-        <SectionHead id="domande-t" title={FAQ_HOME.title} intro={FAQ_HOME.intro} />
+        <SectionHead id="domande-t" index={FAQ_HOME.index} title={FAQ_HOME.title} intro={FAQ_HOME.intro} />
         <div className="faq-list">
           {FAQ.map((item, i) => (
             <details key={item.question} className="faq-item" open={i === 0}>

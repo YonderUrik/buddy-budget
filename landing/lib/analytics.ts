@@ -23,6 +23,8 @@ export interface LandingEvents {
   /** /sicurezza page: step opened in the data path diagram. */
   security_node_selected: { node: "tu" | "banca" | "gocardless" | "buddybudget" };
   source_link_click: { location: "footer" | "sezione" };
+  /** Home, «Sotto il cofano»: the self-hosting commands copied. */
+  self_host_command_copied: undefined;
   /** «‹» back link above the title of an internal page. */
   back_link_click: { to: "home" | "strumenti" | "funzioni" | "altro" };
 }

@@ -21,6 +21,8 @@ export type HomeIcon =
 
 /** The opening: one promise, one sentence, one button. */
 export const HERO = {
+  /** Small label above the title, in the mono face. */
+  index: "Patrimonio netto · ogni mattina",
   title: "Tutti i tuoi soldi, in un numero solo.",
   lede: "Conto, investimenti, pensione e mutuo insieme. Aggiornato ogni giorno, tasse comprese.",
   cta: "Inizia gratis",
@@ -28,6 +30,8 @@ export const HERO = {
   how: "Come funziona",
   /** Short facts next to the button, the ones people check before trusting an app with their bank. */
   trust: ["Legge soltanto, non sposta soldi", "Dati in Germania", "Codice aperto", "Gratis durante la beta"],
+  /** Caption under the big Panoramica window that follows the opening. */
+  shot: "Panoramica · la prima schermata dell'app",
 } as const;
 
 export type SumTone = "neg";
@@ -57,7 +61,6 @@ export const SUM = {
 } as const;
 
 export interface SourceItem {
-  icon: HomeIcon;
   name: string;
   /** The hook: what happens, in one line. */
   hook: string;
@@ -71,11 +74,11 @@ export interface SourceItem {
 
 /** «Da quattro posti, un numero»: how each place gets in, once. */
 export const PLACES = {
+  index: "#1 · Da dove",
   title: "Da quattro posti, un numero.",
   intro: "Ogni cosa entra una volta. Poi l'app la tiene aggiornata da sola.",
   items: [
     {
-      icon: "landmark",
       name: "La banca",
       hook: "Si collega e legge. Non può muovere soldi.",
       text: "I movimenti arrivano da soli, con la categoria già messa. La password la scrivi solo sul sito della banca. Oppure carichi un file.",
@@ -83,7 +86,6 @@ export const PLACES = {
       art: "banks",
     },
     {
-      icon: "spreadsheet",
       name: "Il broker",
       hook: "Carichi il file. L'app legge le operazioni.",
       text: "Quanto hai comprato, a quanto, e quanto vale oggi. Più broker nello stesso portafoglio.",
@@ -91,14 +93,12 @@ export const PLACES = {
       art: "brokers",
     },
     {
-      icon: "umbrella",
       name: "Il fondo pensione",
       hook: "Due numeri dal rendiconto. Quando vuoi.",
       text: "Quanto hai versato e quanto vale. Il resto lo calcola l'app, confronto con il TFR compreso.",
       spec: "Fotografie a mano o da CSV ed Excel · rendimento annuo e sui contributi · stima netta se prelevi oggi",
     },
     {
-      icon: "house",
       name: "Mutuo e prestiti",
       hook: "Importo, tasso e durata. Una volta sola.",
       text: "Il piano rata per rata, le prossime scadenze e cosa cambia se paghi di più.",
@@ -128,6 +128,7 @@ export interface ShowcaseTab {
 
 /** «Cosa ti dice, ogni giorno»: five things the number knows, each with the real screen and its figure. */
 export const SHOWCASE = {
+  index: "#2 · Cosa ti dice",
   title: "Cosa ti dice, ogni giorno.",
   intro: "Cinque schermate vere, con i dati della stessa persona inventata.",
   tabs: [
@@ -188,6 +189,7 @@ export interface TrustFact {
 
 /** «Legge soltanto. Non sposta soldi.»: four facts for everyone, two limits said plainly. Every sentence is verified in `security.ts`. */
 export const TRUST = {
+  index: "#3 · Fiducia",
   title: "Legge soltanto. Non sposta soldi.",
   intro: "È la prima domanda di tutti. Risposte corte, con le fonti.",
   facts: [
@@ -237,6 +239,17 @@ export const UNDER_HOOD = {
   cta: "Vedi il codice su GitHub",
   selfHost: "Guida al self-hosting",
   selfHostPath: "/blob/main/docs/self-hosting.md",
+  /** The commands of the self-hosting guide (`docs/self-hosting.md`) after `git clone <SOURCE_URL>.git`, shown to copy. */
+  command: {
+    label: "Installalo a casa tua",
+    lines: [
+      "cd buddy-budget",
+      "./scripts/selfhost-init.sh",
+      "docker compose up -d",
+    ],
+    copy: "Copia",
+    copied: "Copiato",
+  },
   who: "Dietro c'è una persona, a Torino. Scrivi a",
   whoTail: "e ti risponde lei.",
   facts: [
@@ -251,7 +264,7 @@ export const UNDER_HOOD = {
   ] satisfies readonly HoodFact[],
 } as const;
 
-export const FAQ_HOME = { title: "Prima di iscriverti.", intro: "Le domande che arrivano più spesso. Tocca per leggere." } as const;
+export const FAQ_HOME = { index: "#4 · Domande", title: "Prima di iscriverti.", intro: "Le domande che arrivano più spesso. Tocca per leggere." } as const;
 
 export const CLOSE = {
   title: "Il tuo numero, da domani mattina.",

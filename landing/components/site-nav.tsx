@@ -19,6 +19,8 @@ const NAV_MOBILE_BREAKPOINT = 1000;
 const SIGNUP_LABEL = "Inizia gratis";
 const LOGIN_LABEL = "Entra";
 
+export type NavTone = "light" | "navy";
+
 export interface NavLink {
   href: string;
   label: string;
@@ -35,9 +37,10 @@ export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
 /**
  * Top bar, the same on every page and like the app's top bar: light, a rule below, it scrolls away with the page.
  * On the phone the links live in a full-screen sheet with big rows and the two buttons. With the public repository
- * it also shows «Codice aperto». `current` highlights the entry of the open page.
+ * it also shows «Codice aperto». `current` highlights the entry of the open page. `tone="navy"` puts the bar (and the
+ * phone menu) on the navy ground, for a page that opens on navy like the home.
  */
-export function SiteNav({ links = DEFAULT_NAV_LINKS, current }: { links?: readonly NavLink[]; current?: string }) {
+export function SiteNav({ links = DEFAULT_NAV_LINKS, current, tone = "light" }: { links?: readonly NavLink[]; current?: string; tone?: NavTone }) {
   const [open, setOpen] = useState(false);
 
   // Phone menu: closes with Esc and when the window grows wide; while open the page behind does not scroll.
@@ -65,7 +68,7 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS, current }: { links?: readon
     ) : null;
 
   return (
-    <header className={`nav${open ? " open" : ""}`}>
+    <header className={`nav${tone === "navy" ? " navy" : ""}${open ? " open" : ""}`}>
       <div className="wrap">
         <Link className="brand" href="/" aria-label="BuddyBudget, home">
           <Mark />

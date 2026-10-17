@@ -9,11 +9,11 @@
 
 [![CI](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/YonderUrik/buddy-budget?label=release)](https://github.com/YonderUrik/buddy-budget/releases/latest)
-[![License: AGPL-3.0](https://img.shields.io/badge/licenza-AGPL--3.0-blue)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 [![Node.js 24](https://img.shields.io/badge/node-24-339933?logo=nodedotjs&logoColor=white)](.github/workflows/ci.yml)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/yonder)
 
-[Website](https://buddybudget.io) · [Self-hosting](docs/self-hosting.md) · [Local development](#local-development) · [Contributing](CONTRIBUTING.md)
+[Website](https://buddybudget.io) · [Live demo, no sign-up](https://app.buddybudget.io/demo?lang=en) · [Self-hosting](docs/self-hosting.md) · [Local development](#local-development) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -77,7 +77,7 @@ cd buddy-budget
 docker compose up -d         # then open http://localhost:3000
 ```
 
-Until the images are published on ghcr.io, build them from source: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
+The images are public on ghcr.io (`ghcr.io/yonderurik/buddy-budget`, `latest` follows the latest release; set `BUDDYBUDGET_VERSION` in `.env` to pin one). On an arm64 machine, or to run your own changes, build them from source: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
 
 Email (Resend), Google sign-in and bank connection (GoCardless) are optional: without Resend the sign-in link appears in the logs. The guide [`docs/self-hosting.md`](docs/self-hosting.md) explains what works without external services, how to put the app behind HTTPS, how to update it and how to make backups.
 

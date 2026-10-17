@@ -1,5 +1,5 @@
 /**
- * Texts of the landing demo data (`demo-seed.ts`) in every interface language. The seed is written in Italian and
+ * Texts of the demo data (`seed.ts`, used by the landing screenshots and the public demo) in every interface language. The seed is written in Italian and
  * passes every user-facing string through `demoText`, so each language gets plausible names: account and merchant
  * names, raw bank descriptions, securities, goals and debts. Amounts and dates are the same in every language.
  */

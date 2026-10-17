@@ -14,7 +14,7 @@ on:
     branches: [main]
     paths:
       - "scripts/demo-seed.ts"
-      - "scripts/demo-seed-texts.ts"
+      - "lib/public-demo/**"
       - "landing/content/screens.ts"
       - "landing/scripts/capture-screens.mjs"
   workflow_dispatch:

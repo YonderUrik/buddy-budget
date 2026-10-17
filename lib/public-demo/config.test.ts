@@ -30,14 +30,13 @@ describe("public demo config", () => {
     expect(isPublicDemoEnabled({ PUBLIC_DEMO_ENABLED: "true" })).toBe(true);
   });
 
-  it("picks the language from the query, then Accept-Language, then English", () => {
+  it("picks the language from the query, then the browser's language", () => {
     expect(pickPublicDemoLanguage("de", "it-IT")).toBe("de");
     expect(pickPublicDemoLanguage("fr", "it-IT,it;q=0.9")).toBe("it");
     expect(pickPublicDemoLanguage(null, "fr-FR,de;q=0.8,en;q=0.9")).toBe("en");
     expect(pickPublicDemoLanguage(null, "fr-FR,de;q=0.8")).toBe("de");
     expect(pickPublicDemoLanguage(null, "fr-FR")).toBe("en");
-    expect(pickPublicDemoLanguage(null, null)).toBe("en");
-    expect(pickPublicDemoLanguage(null, "it;q=0")).toBe("en");
+    expect(pickPublicDemoLanguage(null, null)).toBe("it");
   });
 
   it("allows reads and blocks account changes", () => {

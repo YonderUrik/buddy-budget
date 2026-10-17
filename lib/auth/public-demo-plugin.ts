@@ -7,11 +7,14 @@ import { recordPublicDemoEvent, requestLogger } from "@/lib/observability";
 import {
   PUBLIC_DEMO_BLOCKED_AUTH_PATHS,
   PUBLIC_DEMO_READ_ONLY_CODE,
+  PUBLIC_DEMO_READ_ONLY_MESSAGE,
   PUBLIC_DEMO_SESSION_HOURS,
   isPublicDemoEnabled,
   isPublicDemoUserId,
+  publicDemoSessionLanguage,
   publicDemoUserId,
 } from "@/lib/public-demo/config";
+import { translate } from "@/lib/localization/messages";
 
 /**
  * better-auth plugin of the public demo: `POST /public-demo/sign-in` opens a short session on the demo account of a
@@ -59,7 +62,9 @@ export function publicDemo() {
           handler: createAuthMiddleware(async (ctx) => {
             const session = await getSessionFromCtx(ctx);
             if (session && isPublicDemoUserId(session.user.id)) {
-              throw new APIError("FORBIDDEN", { message: PUBLIC_DEMO_READ_ONLY_CODE });
+              const language = publicDemoSessionLanguage(session.user.language as string | undefined);
+              recordPublicDemoEvent("write_blocked", language);
+              throw new APIError("FORBIDDEN", { code: PUBLIC_DEMO_READ_ONLY_CODE, message: translate(language, PUBLIC_DEMO_READ_ONLY_MESSAGE) });
             }
           }),
         },

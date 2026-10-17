@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countryFeatures, isCountryPathAvailable, isSupportedProfile, resolveProfile } from "./config";
+import { countryFeatures, detectLanguage, isCountryPathAvailable, isSupportedProfile, profileForLanguage, resolveProfile } from "./config";
 import { translate, messages } from "./messages";
 import { localizedFormats } from "./format";
 import { localizedCategoryProposal } from "./categories";
@@ -44,5 +44,27 @@ describe("independent product countries and languages", () => {
     expect(german.find(c => c.key === "rimborsi")?.description).not.toContain("730");
     const englishItaly = localizedCategoryProposal({ productCountry: "IT", language: "en" });
     expect(englishItaly.find(c => c.key === "tasse")?.description).toContain("F24");
+  });
+});
+
+describe("browser language detection", () => {
+  it("picks the most preferred supported language, region and weights included", () => {
+    expect(detectLanguage("de-AT,de;q=0.9,en;q=0.8")).toBe("de");
+    expect(detectLanguage("en-US,en;q=0.9,it;q=0.8")).toBe("en");
+    expect(detectLanguage("fr-FR,fr;q=0.9,it;q=0.8,en;q=0.7")).toBe("it");
+    expect(detectLanguage("en;q=0.5, de;q=0.9")).toBe("de");
+    expect(detectLanguage("IT")).toBe("it");
+  });
+  it("falls back to English for unsupported languages and to Italian without a header", () => {
+    expect(detectLanguage("fr-FR,es;q=0.5")).toBe("en");
+    expect(detectLanguage("de;q=0, fr")).toBe("en");
+    expect(detectLanguage(null)).toBe("it");
+    expect(detectLanguage("")).toBe("it");
+    expect(detectLanguage("*")).toBe("it");
+  });
+  it("proposes the German product rules only with German", () => {
+    for (const language of ["it", "en", "de"] as const) expect(isSupportedProfile(profileForLanguage(language).productCountry, language)).toBe(true);
+    expect(profileForLanguage("de").productCountry).toBe("DE");
+    expect(profileForLanguage("en").productCountry).toBe("IT");
   });
 });

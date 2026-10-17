@@ -31,7 +31,7 @@ export function buildTrendPoints(values: number[]): string[] {
 }
 
 export function AccountsTrend({ values, currency, className }: AccountsTrendProps) {
-  const { locale: formattingLocale } = useLocalization();
+  const { locale: formattingLocale, t: tr } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
   if (values.length < 2) return null;
@@ -41,8 +41,8 @@ export function AccountsTrend({ values, currency, className }: AccountsTrendProp
   const [lastX, lastY] = last.split(",");
   const summary =
     delta === 0
-      ? "Invariata negli ultimi 30 giorni"
-      : `${delta > 0 ? "+" : "−"}${formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 0 })} negli ultimi 30 giorni`;
+      ? tr("Invariata negli ultimi 30 giorni")
+      : tr("{0} negli ultimi 30 giorni", { 0: `${delta > 0 ? "+" : "−"}${formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 0 })}` });
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>

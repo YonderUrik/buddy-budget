@@ -146,7 +146,7 @@ function NavLink({
         {!collapsed && (
           <>
             <span className="truncate leading-none">{tr(item.label)}</span>
-            <span className="ml-auto rounded-full border border-sidebar-border px-1.5 py-0.5 text-[10px] leading-none text-sidebar-foreground/60">
+            <span className="ml-auto rounded-full bg-sidebar-accent px-1.5 py-0.5 text-[10px] leading-none text-sidebar-foreground/60">
               {tr(COMING_SOON_LABEL)}
             </span>
           </>

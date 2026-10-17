@@ -1,5 +1,6 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
+import { translateServerMessage } from "@/lib/localization/messages";
 
 /** Secondo passo dell'import: quale colonna è la data, i contributi e il controvalore, con anteprima delle righe lette. */
 
@@ -65,7 +66,7 @@ function LabeledSelect<T extends string>(props: { label: string; value: T; optio
 export function PensionImportMappingStep({ fileName, table, mapping, rows, missing, currency, onChange }: PensionImportMappingStepProps) {
   const { formatShortDateKey, money } = localizedPensionFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const options = [NONE, ...table.headers.map((_, i) => String(i))];
   const sample = (column: number) => table.rows.find((r) => (r[column] ?? "").trim() !== "")?.[column] ?? "";
   const columnLabel = (value: string) => {
@@ -128,8 +129,8 @@ export function PensionImportMappingStep({ fileName, table, mapping, rows, missi
                       <tr key={s.line} className="border-b border-border/60 last:border-b-0">
                         <td className="py-2 pr-2 tabular-nums text-text-2">{s.line}</td>
                         <td className="whitespace-nowrap px-2 py-2 font-semibold">{formatShortDateKey(s.date)}</td>
-                        <td className="px-2 py-2 text-right font-mono tabular-nums">{money(s.netContributions, currency)}</td>
-                        <td className="py-2 pl-2 text-right font-mono tabular-nums">{money(s.value, currency)}</td>
+                        <td className="px-2 py-2 text-right tabular-nums">{money(s.netContributions, currency)}</td>
+                        <td className="py-2 pl-2 text-right tabular-nums">{money(s.value, currency)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -140,7 +141,7 @@ export function PensionImportMappingStep({ fileName, table, mapping, rows, missi
               <ul className="flex flex-col gap-1 text-sm text-text-2">
                 {problems.slice(0, MAX_LISTED_PROBLEMS).map((row) => (
                   <li key={row.line} className="flex items-start gap-1.5">
-                    <AlertTriangleIcon className="mt-0.5 size-3.5 shrink-0 text-neg" aria-hidden="true" />{tr("Riga")}{" "}{row.line}{":"}{row.status === "error" ? row.message : ""}
+                    <AlertTriangleIcon className="mt-0.5 size-3.5 shrink-0 text-neg" aria-hidden="true" />{tr("Riga")}{" "}{row.line}{":"}{row.status === "error" ? translateServerMessage(language, row.message) : ""}
                   </li>
                 ))}
                 {problems.length > MAX_LISTED_PROBLEMS ? <li>{tr("…e altre")}{" "}{problems.length - MAX_LISTED_PROBLEMS}</li> : null}

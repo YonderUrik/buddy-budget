@@ -3,7 +3,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 /** Selettore periodo Settimana/Mese/3 mesi/Anno per la schermata Transazioni. */
 
-import { SegmentedControl } from "@/components/domain/shared";
+import { PeriodSelector } from "@/components/domain/shared";
 import type { ExpensePeriod } from "@/lib/calc/expenses";
 
 /** Opzioni di periodo, esportate per chi le mostra in un layout diverso (es. popover su mobile). */
@@ -24,5 +24,5 @@ export interface ExpensesPeriodSelectorProps {
 
 export function ExpensesPeriodSelector({ value, onChange, stretch, className }: ExpensesPeriodSelectorProps) {
   const { t: tr } = useLocalization();
-  return <SegmentedControl options={PERIOD_OPTIONS} value={value} onChange={onChange} stretch={stretch} className={className} ariaLabel={tr("Periodo")} />;
+  return <PeriodSelector options={PERIOD_OPTIONS} value={value} onChange={onChange} stretch={stretch} className={className} ariaLabel={tr("Periodo")} />;
 }

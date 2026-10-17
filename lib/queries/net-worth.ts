@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { NetWorthSnapshot } from "@/lib/db/schema/net-worth-snapshots";
+import { pageText } from "@/lib/localization/page-text";
 
 /** Gli snapshot li scrive il cron e li ricalcola il server: pochi minuti di cache evitano di riscaricare lo storico (centinaia di KB) a ogni cambio pagina. */
 const SNAPSHOTS_STALE_TIME_MS = 2 * 60_000;
@@ -9,7 +10,7 @@ const SNAPSHOTS_STALE_TIME_MS = 2 * 60_000;
 async function fetchNetWorthSnapshots(from: string, to: string, compact: boolean): Promise<NetWorthSnapshot[]> {
   const response = await fetch(`/api/net-worth/snapshots?from=${from}&to=${to}${compact ? "&compact=1" : ""}`);
   if (!response.ok) {
-    throw new Error("Impossibile caricare lo storico del patrimonio");
+    throw new Error(pageText("Impossibile caricare lo storico del patrimonio"));
   }
   return response.json();
 }

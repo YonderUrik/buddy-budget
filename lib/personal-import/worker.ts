@@ -17,6 +17,7 @@ import { resolveFxRates } from "@/lib/investments/import/execute";
 import { updateFxRates } from "@/lib/market-data/update";
 import { marketDataDeps } from "@/lib/market-data/runtime";
 import { personalImportEmailContent } from "./emails";
+import { resolveProfile } from "@/lib/localization/config";
 import { generateParser, ModelInputError } from "./generate";
 import { analyzeWithFallback } from "./analysis";
 import { saveFormatMetadata } from "@/lib/imports/store";
@@ -117,10 +118,10 @@ export async function maintainJobs() {
   if (!pending) return;
   try {
     if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM || !process.env.APP_URL) throw new Error("Email non configurata");
-    const [user] = await db.select({ email: authUser.email }).from(authUser).where(eq(authUser.id, pending.userId));
+    const [user] = await db.select({ email: authUser.email, productCountry: authUser.productCountry, language: authUser.language }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
-    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL });
+    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL, language: resolveProfile(user).language });
     const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject, text, html }, { idempotencyKey: `personal-csv-${pending.id}` });
     if (result.error) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));

@@ -2,6 +2,8 @@
  * Scelta delle categorie nell'onboarding: proposta (categorie di default accese + facoltative spente) e piano che porta
  * le categorie appena create alla registrazione a quelle confermate dall'utente. Modulo puro, senza DB né React.
  */
+import type { Language } from "@/lib/localization/config";
+import { translate } from "@/lib/localization/messages";
 import { DEFAULT_CATEGORIES, OPTIONAL_DEFAULT_CATEGORIES, type DefaultCategory } from "./defaults";
 import { SWATCH_BASE_COLORS } from "@/lib/validation/shared-colors";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
@@ -81,15 +83,16 @@ export function summarizeCategorySetup(items: CategorySetupItem[]) {
   return { active: items.filter((item) => item.enabled).length, removed, renamed, optionalAdded, custom };
 }
 
-/** Motivo per cui le scelte non sono valide, in parole dell'utente; null se vanno bene. */
-export function validateCategorySetup(items: CategorySetupItem[], reservedNames: string[] = []): string | null {
+/** Why the choices are not valid, in the user's words and `language`; null if they are fine. */
+export function validateCategorySetup(items: CategorySetupItem[], reservedNames: string[] = [], language: Language = "it"): string | null {
+  const t = (source: string, values?: Record<string, string>) => translate(language, source, values);
   const seen = new Set(reservedNames.map((name) => name.trim().toLocaleLowerCase("it")));
   for (const item of items.filter((entry) => entry.enabled)) {
     const name = item.name.trim();
-    if (!name) return "Ogni categoria accesa deve avere un nome.";
-    if (name.length > CATEGORY_NAME_MAX_LENGTH) return `«${name.slice(0, 20)}…» è troppo lungo.`;
+    if (!name) return t("Ogni categoria accesa deve avere un nome.");
+    if (name.length > CATEGORY_NAME_MAX_LENGTH) return t("«{0}…» è troppo lungo.", { 0: name.slice(0, 20) });
     const normalized = name.toLocaleLowerCase("it");
-    if (seen.has(normalized)) return `«${name}» c'è già.`;
+    if (seen.has(normalized)) return t("«{0}» c'è già.", { 0: name });
     seen.add(normalized);
   }
   return null;

@@ -96,14 +96,14 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const [instrument, setInstrument] = React.useState<Instrument | null>(initial?.instrument ?? null);
   const [type, setType] = React.useState<InvestmentTransactionType>(initial?.type ?? "acquisto");
   const [date, setDate] = React.useState(initial?.date ?? localTodayKey());
-  const [quantity, setQuantity] = React.useState(numberText(initial?.quantity));
+  const [quantity, setQuantity] = React.useState(numberText(initial?.quantity, formattingLocale));
   // null = il campo segue il prezzo proposto; una stringa = valore scritto dall'utente.
   // In modifica parte dal prezzo salvato, non da quello di mercato della data.
-  const [priceInput, setPriceInput] = React.useState<string | null>(editing ? numberText(initial?.price) : null);
-  const [gross, setGross] = React.useState(numberText(roundCents(initial?.grossAmount)));
-  const [fees, setFees] = React.useState(numberText(initial?.fees));
-  const [taxes, setTaxes] = React.useState(numberText(roundCents(initial?.taxes)));
-  const [fxRate, setFxRate] = React.useState(numberText(initial?.fxRate));
+  const [priceInput, setPriceInput] = React.useState<string | null>(editing ? numberText(initial?.price, formattingLocale) : null);
+  const [gross, setGross] = React.useState(numberText(roundCents(initial?.grossAmount), formattingLocale));
+  const [fees, setFees] = React.useState(numberText(initial?.fees, formattingLocale));
+  const [taxes, setTaxes] = React.useState(numberText(roundCents(initial?.taxes), formattingLocale));
+  const [fxRate, setFxRate] = React.useState(numberText(initial?.fxRate, formattingLocale));
   const [error, setError] = React.useState<string | null>(null);
 
   const fields = fieldsFor(type);
@@ -112,11 +112,11 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const needsFx = fields.costs && instrument !== null && instrument.currency !== currency;
   const suggestPrice = fields.price && suggestsMarketPrice(type);
   const priceOnDate = useInstrumentPriceOnDateQuery(suggestPrice ? (instrument?.id ?? null) : null, date);
-  const suggested = suggestPrice && priceOnDate.data?.price ? priceText(priceOnDate.data.price.close) : null;
+  const suggested = suggestPrice && priceOnDate.data?.price ? priceText(priceOnDate.data.price.close, formattingLocale) : null;
   // Senza prezzo alla data resta quello di partenza (es. l'ultimo prezzo stimato).
-  const price = priceInput ?? suggested ?? numberText(initial?.price);
+  const price = priceInput ?? suggested ?? numberText(initial?.price, formattingLocale);
   const priceHint = suggestPrice && instrument ? priceSuggestionHint(date, priceOnDate.data, priceOnDate.isFetching, language) : null;
-  const grossValue = computeGrossValue(type, parseAmount(quantity), parseAmount(price), parseAmount(gross), instrument?.priceUnit);
+  const grossValue = computeGrossValue(type, parseAmount(quantity, formattingLocale), parseAmount(price, formattingLocale), parseAmount(gross, formattingLocale), instrument?.priceUnit);
 
   function chooseInstrument(next: Instrument) {
     setInstrument(next);
@@ -129,7 +129,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
     setError(null);
     if (!instrument) return setError(tr("Scegli uno strumento"));
     if (!flow.isLast) {
-      if (flow.index === 1 && fields.quantity && !(parseAmount(quantity) ?? 0)) return setError(type === "split" ? tr("Scrivi il rapporto dello split.") : tr("Scrivi la quantità."));
+      if (flow.index === 1 && fields.quantity && !(parseAmount(quantity, formattingLocale) ?? 0)) return setError(type === "split" ? tr("Scrivi il rapporto dello split.") : tr("Scrivi la quantità."));
       track("form_step_completed", { flow: "operation", step: flow.index + 1 });
       flow.next();
       return;
@@ -137,12 +137,12 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
     const input = {
       type,
       date,
-      quantity: fields.quantity ? (parseAmount(quantity) ?? 0) : 0,
-      price: fields.price ? (parseAmount(price) ?? 0) : 0,
-      grossAmount: fields.grossAmount ? parseAmount(gross) : null,
-      fees: fields.costs ? (parseAmount(fees) ?? 0) : 0,
-      taxes: fields.costs ? (parseAmount(taxes) ?? 0) : 0,
-      ...(needsFx && parseAmount(fxRate) ? { fxRate: parseAmount(fxRate)! } : {}),
+      quantity: fields.quantity ? (parseAmount(quantity, formattingLocale) ?? 0) : 0,
+      price: fields.price ? (parseAmount(price, formattingLocale) ?? 0) : 0,
+      grossAmount: fields.grossAmount ? parseAmount(gross, formattingLocale) : null,
+      fees: fields.costs ? (parseAmount(fees, formattingLocale) ?? 0) : 0,
+      taxes: fields.costs ? (parseAmount(taxes, formattingLocale) ?? 0) : 0,
+      ...(needsFx && parseAmount(fxRate, formattingLocale) ? { fxRate: parseAmount(fxRate, formattingLocale)! } : {}),
     };
     const callbacks = { onSuccess: () => onSuccess?.(), onError: (e: Error) => setError(e.message) };
     if (editing) update.mutate({ id: editing.id, input: { ...input, note: editing.note } }, callbacks);
@@ -173,7 +173,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const instrumentField = (
     <Field label={tr("Strumento")}>
       {editing ? (
-        <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{instrument?.name ?? tr("Strumento")}</p>
+        <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-foreground">{instrument?.name ?? tr("Strumento")}</p>
       ) : (
         <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
       )}
@@ -193,7 +193,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
           value={price}
           onChange={setPriceInput}
           hint={priceHint}
-          restoreValue={priceInput !== null && suggested !== null && parseAmount(priceInput) !== parseAmount(suggested) ? suggested : null}
+          restoreValue={priceInput !== null && suggested !== null && parseAmount(priceInput, formattingLocale) !== parseAmount(suggested, formattingLocale) ? suggested : null}
           onRestore={() => setPriceInput(null)}
         />
       ) : null}

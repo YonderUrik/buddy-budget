@@ -14,7 +14,8 @@ import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
 import type { DataPeriod } from "@/lib/analitiche/period";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { hasScenario, scenarioSlider, yearsToFireWith, type ScenarioField, type ScenarioOverrides } from "@/lib/analitiche/scenario";
-import { localizedAnalyticsFormats, formatYears } from "./analytics-format";
+import type { MessageValues } from "@/lib/localization/messages";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { CashflowSourceNote } from "./cashflow-source-note";
 import { ReturnSourceNote } from "./return-source-note";
 import { HIGH_RETURN_WARNING } from "./return-source";
@@ -60,16 +61,16 @@ interface Row {
   missingHint: string;
 }
 
-/** Differenza di anni rispetto a oggi in parole, o null se trascurabile. */
-function deltaText(base: number | null, next: number | null): string | null {
-  if (base === null || next === null) return next === null && base !== null ? "il traguardo supera gli 80 anni" : null;
+/** Difference in years from today in words, in the user's language, or null if negligible. */
+function deltaText(base: number | null, next: number | null, formatYears: (years: number | null) => string, tr: (source: string, values?: MessageValues) => string): string | null {
+  if (base === null || next === null) return next === null && base !== null ? tr("il traguardo supera gli 80 anni") : null;
   const diff = base - next;
   if (Math.abs(diff) < 0.05) return null;
-  return `${formatYears(Math.abs(diff))} ${diff > 0 ? "prima" : "dopo"}`;
+  return tr(diff > 0 ? "{0} prima" : "{0} dopo", { 0: formatYears(Math.abs(diff)) });
 }
 
 export function ScenarioControls(props: ScenarioControlsProps) {
-  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
+  const { money, pct, formatYears } = localizedAnalyticsFormats(useLocalization().language);
 
   const { t: tr } = useLocalization();
   const { assumptions, plan, returnInfo, currency, overrides, onChange, onCommit, onReset, onSave, onOpenAllAssumptions, onUseHistoryReturn, saving } = props;
@@ -87,12 +88,12 @@ export function ScenarioControls(props: ScenarioControlsProps) {
           const spec = scenarioSlider(row.field, row.baseline);
           const value = overrides[row.field] ?? row.baseline;
           const labelId = `scenario-${row.field}`;
-          const delta = overrides[row.field] !== undefined ? deltaText(plan.yearsToFire, yearsToFireWith(plan, assumptions, { [row.field]: overrides[row.field] })) : null;
+          const delta = overrides[row.field] !== undefined ? deltaText(plan.yearsToFire, yearsToFireWith(plan, assumptions, { [row.field]: overrides[row.field] }), formatYears, tr) : null;
           return (
             <div key={row.field} className="flex min-w-0 flex-col gap-2">
               <div className="flex items-baseline justify-between gap-2">
                 <span id={labelId} className="text-sm text-muted-foreground">
-                  {row.term ? <Term id={row.term}>{tr(row.label)}</Term> : row.label}
+                  {row.term ? <Term id={row.term}>{row.label}</Term> : row.label}
                 </span>
                 <span className="font-heading text-base font-medium tabular-nums text-foreground">{value !== null ? row.format(value) : "—"}</span>
               </div>
@@ -111,7 +112,7 @@ export function ScenarioControls(props: ScenarioControlsProps) {
                 />
               ) : (
                 <p className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                  {tr("Non nota")}<InfoHint label={tr("Perché manca")}>{tr("Per calcolarla")}{row.missingHint}{tr(". Puoi scriverla in «Tutte le ipotesi».")}</InfoHint>
+                  {tr("Non nota")}<InfoHint label={tr("Perché manca")}>{tr("Per calcolarla {0}. Puoi scriverla in «Tutte le ipotesi».", {0: row.missingHint})}</InfoHint>
                 </p>
               )}
               {overrides[row.field] !== undefined ? (
@@ -140,8 +141,7 @@ export function ScenarioControls(props: ScenarioControlsProps) {
         })}
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-        <span>{tr("Altre ipotesi: volatilità")}{" "}{pct(assumptions.volatility, 0)}{tr(", inflazione")}{" "}{pct(assumptions.inflation, 0)}{tr(", imposte")}{" "}{assumptions.includeLatentTax ? tr("contate") : tr("non contate")}
-        </span>
+        <span>{tr("Altre ipotesi: volatilità {0}, inflazione {1}, imposte {2}", {0: pct(assumptions.volatility, 0), 1: pct(assumptions.inflation, 0), 2: assumptions.includeLatentTax ? tr("contate") : tr("non contate")})}</span>
         <Button type="button" variant="ghost" size="sm" onClick={onOpenAllAssumptions}>
           <SlidersHorizontal className="size-4" aria-hidden="true" />{tr("Tutte le ipotesi")}</Button>
         {active ? (

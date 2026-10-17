@@ -2,24 +2,24 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { SHOWCASE, type ShowcaseId } from "@/content/home";
-import { CONTENT_PATHS } from "@/content/seo-pages";
+import type { ShowcaseId, ShowcaseText } from "@/content/home";
 import { track } from "@/lib/analytics";
+import type { Locale } from "@/lib/i18n";
 import { MOTION_OK } from "@/lib/motion/motion-ok";
+import { rise } from "@/lib/motion/rise";
 import { PhoneShot } from "../phone-shot";
 import { TrackedSection } from "../tracked-section";
 import { ScreenCrop } from "./screen-crop";
-import { SectionHead } from "./section-head";
 
 /** How long a programmatic scroll (tab tap) is allowed to move the track before swipes count as the reader's again (ms). */
 const SETTLE_MS = 700;
 
 /**
- * «Cosa ti dice, ogni giorno»: five tabs like the app's segmented control, each with the real screen (window on
- * desktop, phone on the phone), the figure and the hook. The panels sit in a native scroll-snap track: a tap on a
+ * «Cosa ti dice, ogni giorno»: four tabs set as plain words, each with the real screen (the desktop capture on
+ * desktop, the phone capture on the phone, no frames), the figure and the hook. The panels sit in a native scroll-snap track: a tap on a
  * tab scrolls to the panel, a swipe on the phone moves the tabs along. Every choice sends `showcase_tab_selected`.
  */
-export function Showcase() {
+export function Showcase({ text, locale }: { text: ShowcaseText; locale: Locale }) {
   const [active, setActive] = useState(0);
   const activeRef = useRef(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -30,7 +30,7 @@ export function Showcase() {
     if (index === activeRef.current) return;
     activeRef.current = index;
     setActive(index);
-    track("showcase_tab_selected", { tab: SHOWCASE.tabs[index].id });
+    track("showcase_tab_selected", { tab: text.tabs[index].id });
     if (reason === "tab") {
       const panel = trackRef.current?.children[index] as HTMLElement | undefined;
       if (panel && trackRef.current) {
@@ -66,7 +66,7 @@ export function Showcase() {
         if (best !== activeRef.current) {
           activeRef.current = best;
           setActive(best);
-          track("showcase_tab_selected", { tab: SHOWCASE.tabs[best].id });
+          track("showcase_tab_selected", { tab: text.tabs[best].id });
           tabRefs.current[best]?.scrollIntoView({ inline: "center", block: "nearest" });
         }
       });
@@ -76,10 +76,10 @@ export function Showcase() {
       el.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [text.tabs]);
 
   const onKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    const last = SHOWCASE.tabs.length - 1;
+    const last = text.tabs.length - 1;
     const next = e.key === "ArrowRight" ? Math.min(last, active + 1) : e.key === "ArrowLeft" ? Math.max(0, active - 1) : e.key === "Home" ? 0 : e.key === "End" ? last : null;
     if (next === null) return;
     e.preventDefault();
@@ -90,11 +90,11 @@ export function Showcase() {
   const panelId = (id: ShowcaseId) => `dentro-${id}`;
 
   return (
-    <TrackedSection id="dentro" section="dentro" className="sec show" aria-labelledby="dentro-t">
+    <TrackedSection id="dentro" section="dentro" className="sec show" field="alt" aria-labelledby="dentro-t">
       <div className="wrap">
-        <SectionHead id="dentro-t" title={SHOWCASE.title} />
-        <div className="tabs" role="tablist" aria-label="Schermate">
-          {SHOWCASE.tabs.map((tab, i) => (
+        <h2 id="dentro-t" data-rise>{text.title}</h2>
+        <div className="tabs" data-rise style={rise(1)} role="tablist" aria-label={text.tabsLabel}>
+          {text.tabs.map((tab, i) => (
             <button
               key={tab.id}
               ref={(el) => {
@@ -115,7 +115,7 @@ export function Showcase() {
           ))}
         </div>
         <div className="track" ref={trackRef}>
-          {SHOWCASE.tabs.map((tab) => (
+          {text.tabs.map((tab) => (
             <article key={tab.id} id={panelId(tab.id)} className="panel" role="tabpanel" aria-labelledby={`${panelId(tab.id)}-tab`}>
               <div>
                 <h3>{tab.title}</h3>
@@ -128,13 +128,13 @@ export function Showcase() {
                 {tab.more ? <Link className="more" href={tab.more.href}>{tab.more.label}</Link> : null}
               </div>
               <div>
-                <ScreenCrop id={tab.shot} ratio="16 / 11" />
-                <PhoneShot id={tab.shot} />
+                <ScreenCrop id={tab.shot} ratio="16 / 11" locale={locale} sizes="(max-width: 1000px) 100vw, 760px" />
+                <PhoneShot id={tab.shot} locale={locale} />
               </div>
             </article>
           ))}
         </div>
-        <Link className="more all" href={CONTENT_PATHS.schermate}>{SHOWCASE.all}</Link>
+        <Link className="more all" href={text.allHref}>{text.all}</Link>
       </div>
     </TrackedSection>
   );

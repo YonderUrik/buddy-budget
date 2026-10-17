@@ -20,6 +20,7 @@ import { AnimatedNumber } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
 import { InstrumentIcon } from "../instrument-icon";
+import { PAGE_TITLE } from "@/components/domain/shared";
 
 /** Decimali del prezzo: quattro sotto 10 (come gli avvisi), altrimenti due. */
 function priceFormat(value: number, currency: string) {
@@ -52,7 +53,7 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
         <div className="flex min-w-0 items-start gap-3">
           <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} className="mt-0.5" />
           <div className="min-w-0">
-            <h2 className="font-heading text-xl font-medium text-foreground">{instrument.name}</h2>
+            <h2 className={PAGE_TITLE}>{instrument.name}</h2>
             <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span>{INSTRUMENT_TYPE_SINGULAR[instrument.type]}</span>
               {instrument.isin ? <span className="tabular-nums">{instrument.isin}</span> : null}
@@ -71,7 +72,7 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
             {watching ? <EyeOffIcon size={15} aria-hidden="true" /> : <EyeIcon size={15} aria-hidden="true" />}
             {watching ? tr("Non seguire più") : tr("Segui")}
           </Button>
-          <Button className="gap-1.5 shadow-xs" onClick={onRegister}>
+          <Button className="gap-1.5" onClick={onRegister}>
             <PlusIcon size={15} aria-hidden="true" />{" "}{tr("Registra")}</Button>
         </div>
       </div>

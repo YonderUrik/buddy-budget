@@ -5,7 +5,9 @@ import type { InvestmentHistoryStateStore } from "./history-state";
 /** Scadenza dell'impronta: oltre, lo storico si ricalcola una volta anche se nulla è cambiato. */
 const FINGERPRINT_TTL_SECONDS = 7 * 24 * 60 * 60;
 
-const key = (userId: string) => `net-worth:investments:fingerprint:${userId}`;
+/** Redis key of a user's fingerprint (also cleared by the demo seed when it re-creates the demo user). */
+export const investmentHistoryFingerprintKey = (userId: string) => `net-worth:investments:fingerprint:${userId}`;
+const key = investmentHistoryFingerprintKey;
 
 /** Impronta dello storico investimenti su Redis, condivisa tra i pod. */
 export const redisHistoryStateStore: InvestmentHistoryStateStore = {

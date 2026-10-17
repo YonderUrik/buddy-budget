@@ -1,43 +1,49 @@
-import { renderEmail } from "@/lib/email";
+import { emailLocale, renderEmail } from "@/lib/email";
+import type { Language } from "@/lib/localization/config";
 
-/** Oggetto, testo e HTML dell'email sull'esito dell'import CSV personale. Pura, per poterla testare. */
 export type PersonalImportEmailOutcome = "imported" | "review" | "failed";
-export function personalImportEmailContent(outcome: PersonalImportEmailOutcome, params: { jobUrl: string; appUrl: string }): { subject: string; text: string; html: string } {
+/** Subject, text and HTML of the email on the outcome of the personal CSV import, in `params.language` (Italian by default). Pure, so it can be tested. */
+export function personalImportEmailContent(
+  outcome: PersonalImportEmailOutcome,
+  params: { jobUrl: string; appUrl: string; language?: Language },
+): { subject: string; text: string; html: string } {
+  const { t, language } = emailLocale(params.language);
+  const options = { appUrl: params.appUrl, language };
   if (outcome === "imported") {
     return {
-      subject: "Il tuo CSV è stato importato",
+      subject: t("Il tuo CSV è stato importato"),
       ...renderEmail(
         {
-          title: "Importazione completata",
-          lead: "Il tuo CSV è stato importato. Trovi i dati in **Liquidità** e **Investimenti**.",
-          cta: { label: "Apri BuddyBudget", url: params.jobUrl },
+          title: t("Importazione completata"),
+          lead: t("Il tuo CSV è stato importato. Trovi i dati in **Liquidità** e **Investimenti**."),
+          cta: { label: t("Apri BuddyBudget"), url: params.jobUrl },
         },
-        { appUrl: params.appUrl },
+        options,
       ),
     };
   }
   if (outcome === "review") {
     return {
-      subject: "Il tuo CSV ha righe da controllare",
+      subject: t("Il tuo CSV ha righe da controllare"),
       ...renderEmail(
         {
-          title: "Alcune righe da controllare",
-          lead: "Alcune righe del tuo CSV non sono state riconosciute e nessun movimento è stato salvato. In BuddyBudget vedi quali righe e perché, e scegli se importare le altre, rianalizzare il file o caricarne uno corretto.",
-          cta: { label: "Vedi le righe", url: params.jobUrl },
+          title: t("Alcune righe da controllare"),
+          lead: t("Alcune righe del tuo CSV non sono state riconosciute e nessun movimento è stato salvato. In BuddyBudget vedi quali righe e perché, e scegli se importare le altre, rianalizzare il file o caricarne uno corretto."),
+          cta: { label: t("Vedi le righe"), url: params.jobUrl },
         },
-        { appUrl: params.appUrl },
+        options,
       ),
     };
   }
   return {
-    subject: "Non è stato possibile importare il tuo CSV",
+    subject: t("Non è stato possibile importare il tuo CSV"),
     ...renderEmail(
       {
-        title: "Importazione non riuscita",
-        lead: "Non è stato possibile importare il tuo CSV: nessun movimento è stato salvato. Apri BuddyBudget per vedere il motivo.",
-        cta: { label: "Vedi il motivo", url: params.jobUrl },
+        title: t("Importazione non riuscita"),
+        lead: t("Non è stato possibile importare il tuo CSV: nessun movimento è stato salvato. Apri BuddyBudget per vedere il motivo."),
+        cta: { label: t("Vedi il motivo"), url: params.jobUrl },
       },
-      { appUrl: params.appUrl },
+      options,
     ),
   };
 }

@@ -2,26 +2,31 @@
 
 import { useRef, type ReactNode } from "react";
 import { track, type LandingEvents } from "@/lib/analytics";
+import type { Locale } from "@/lib/i18n";
 import { gsap, MOTION_OK, useGSAP } from "@/lib/motion/gsap";
 
-/** Quanto (0-1) il pulsante segue il cursore, e raggio di attrazione in px. */
+/** How much (0-1) the button follows the cursor. */
 const MAGNET_PULL = 0.28;
 
-export interface CtaLinkProps {
+interface CtaLinkBase {
   href: string;
   className?: string;
   location: LandingEvents["cta_click"]["location"];
-  target: LandingEvents["cta_click"]["target"];
-  /** Aggiunge la freccia dopo il testo (pulsanti principali). */
+  /** Language of the page, sent with the event. */
+  lang?: Locale;
+  /** Adds the arrow after the text (main buttons). */
   arrow?: boolean;
   children: ReactNode;
 }
 
-/** Link che invia `cta_click` a Umami al click (posizione e destinazione categoriche). */
-export function CtaLink({ href, className, location, target, arrow = false, children }: CtaLinkProps) {
+/** A button towards the app (`cta_click` with its destination) or towards the public demo (`demo_click`). */
+export type CtaLinkProps = CtaLinkBase & ({ target: LandingEvents["cta_click"]["target"]; demo?: never } | { demo: true; target?: never });
+
+/** Link that sends `cta_click` (or `demo_click` with `demo`) to Umami on click: categorical position, destination and language only. */
+export function CtaLink({ href, className, location, target, demo, lang = "it", arrow = false, children }: CtaLinkProps) {
   const ref = useRef<HTMLAnchorElement>(null);
 
-  // I pulsanti principali sono leggermente magnetici: seguono il cursore da vicino e tornano a posto all'uscita.
+  // The main buttons are slightly magnetic: they follow the cursor up close and go back in place on leave.
   useGSAP(
     () => {
       const el = ref.current;
@@ -52,14 +57,14 @@ export function CtaLink({ href, className, location, target, arrow = false, chil
   );
 
   return (
-    <a ref={ref} href={href} className={className} onClick={() => track("cta_click", { location, target })}>
+    <a ref={ref} href={href} className={className} onClick={() => (demo ? track("demo_click", { location, lang }) : track("cta_click", { location, target: target!, lang }))}>
       {children}
       {arrow && <ArrowIcon />}
     </a>
   );
 }
 
-/** Freccia a destra dei pulsanti principali. */
+/** Arrow on the right of the main buttons. */
 function ArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -4,9 +4,12 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
 import type { SidebarModuleId } from "@/lib/sidebar/modules";
 import type { ReportErrorArea, ReportSource } from "@/lib/support/constants";
 import type { GoalKind } from "@/lib/goals/constants";
+import type { Attribution } from "./attribution";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import" | "goal";
+/** Screens whose period selector offers a custom range, for the calendar events. */
+export type PeriodSurface = "investimenti" | "performance" | "analitiche";
 /** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
 export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
@@ -52,7 +55,15 @@ export interface ProductEvents {
   demo_started: undefined;
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
   demo_cleared: { from: "banner" | "panoramica" };
-  onboarding_completed: { currency: SupportedCurrency };
+  /** Public demo (`/demo`) opened, once per browser session; `language` and `country` are the demo's. */
+  public_demo_viewed: { language: "it" | "en" | "de"; country: "IT" | "DE" };
+  /** «Crea il tuo account» pressed in the public demo's strip. */
+  public_demo_signup_clicked: { language: "it" | "en" | "de"; country: "IT" | "DE" };
+  /** Country or language changed in the public demo's footer (`changed`); `language` and `country` are the new ones. */
+  public_demo_profile_changed: { changed: "country" | "language"; language: "it" | "en" | "de"; country: "IT" | "DE" };
+  /** `languageKept`: the language proposed on arrival (picked on the sign-in page or detected from the browser) was not changed. */
+  /** `source`/`medium`/`campaign`/`content`: the campaign the visitor arrived from (slugs from `utm_*`), when the link carried one. */
+  onboarding_completed: { currency: SupportedCurrency; language: "it" | "en" | "de"; languageKept: boolean } & Attribution;
   /** Foglio «Personalizza» aperto nel passo «Categorie» dell'onboarding. */
   onboarding_categories_opened: undefined;
   /**
@@ -195,6 +206,10 @@ export interface ProductEvents {
   analytics_return_source_changed: { source: "storico" | "manuale" };
   /** Origine del rendimento atteso mostrato all'apertura di Analitiche (una volta per visita): storico (con il periodo scelto), valore prudente o scelto a mano. */
   analytics_return_source_shown: { source: "storico-24" | "storico-12" | "storico-personalizzato" | "prudente" | "manuale" };
+  /** Calendar of the shared period selector opened; `surface`: which screen. */
+  period_calendar_opened: { surface: PeriodSurface };
+  /** Custom range applied from that calendar; `span`: its length in days or months (a count, never the dates). */
+  period_range_applied: { surface: PeriodSurface; granularity: "day" | "month"; span: number };
   /** Periodo dei dati di Analitiche cambiato; `period`: quello nuovo. */
   analytics_period_changed: { period: "ultimi-12" | "ultimi-24" | "personalizzato" };
   /** Spesa o risparmio scritti a mano riportati al dato dei movimenti; `field`: quale. */
@@ -276,6 +291,13 @@ export interface ProductEvents {
   notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "goals" | "all" };
   /** «‹» back button; `section`/`to`: first segment of the current and destination address, `target`: previous screen or logical parent, `place`: phone top bar or above the page on desktop. */
   back_link_clicked: { section: string; target: "precedente" | "madre"; to: string; place: "barra" | "pagina" };
+  /**
+   * Magic link requested from the sign-in form. `entry`: the page was opened from a «sign up» button (`signup`) or from
+   * «Entra» (`login`); `source`/`medium`/`campaign`/`content`: the campaign of the arrival, when the link carried one.
+   */
+  login_link_requested: { entry: "signup" | "login" } & Attribution;
+  /** «Continua con Google» on the sign-in page; same props as `login_link_requested`. */
+  google_login_started: { entry: "signup" | "login" } & Attribution;
   /** «Rientra in BuddyBudget» on the login page: the one-tap way back in was used (link sent or Google opened). */
   returning_login_used: { method: "email" | "google" | "apple" };
   /** «Non sei tu?» on the login page: the remembered account was forgotten on this device. */

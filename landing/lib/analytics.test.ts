@@ -13,8 +13,8 @@ describe("track", () => {
   it("forwards name and props to Umami", () => {
     const umamiTrack = vi.fn();
     vi.stubGlobal("window", { umami: { track: umamiTrack } });
-    track("cta_click", { location: "hero", target: "signup" });
-    expect(umamiTrack).toHaveBeenCalledWith("cta_click", { location: "hero", target: "signup" });
+    track("cta_click", { location: "hero", target: "signup", lang: "en" });
+    expect(umamiTrack).toHaveBeenCalledWith("cta_click", { location: "hero", target: "signup", lang: "en" });
   });
 
   it("swallows tracker errors", () => {

@@ -16,7 +16,7 @@ export interface TitlePerShareSectionProps {
 }
 
 export function TitlePerShareSection({ stock, lastClose, priceCurrency }: TitlePerShareSectionProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const rows = PER_SHARE_KEYS.filter((key) => stock.perShare[key].some((v) => v !== null));
   if (rows.length === 0) return null;
   const last = stock.columns.length - 1;
@@ -27,7 +27,7 @@ export function TitlePerShareSection({ stock, lastClose, priceCurrency }: TitleP
       color="var(--swatch-teal)"
       description={
         lastClose !== null && stock.priceComparable
-          ? tr("Ricavi, utili e cassa divisi per il numero di azioni: si confrontano con il prezzo di {0}.", {0: formatPerShare(lastClose, priceCurrency)})
+          ? tr("Ricavi, utili e cassa divisi per il numero di azioni: si confrontano con il prezzo di {0}.", {0: formatPerShare(lastClose, priceCurrency, locale)})
           : tr("Ricavi, utili e cassa divisi per il numero di azioni.")
       }
     >
@@ -52,7 +52,7 @@ export function TitlePerShareSection({ stock, lastClose, priceCurrency }: TitleP
                   <td className="py-2 pr-2 text-foreground">{tr(PER_SHARE_LABELS[key])}</td>
                   {values.map((v, i) => (
                     <td key={stock.columns[i].end} className={i === last ? "px-2 py-2 text-right font-medium text-foreground" : "px-2 py-2 text-right text-muted-foreground"}>
-                      {v === null ? "—" : formatPerShare(v, stock.currency)}
+                      {v === null ? "—" : formatPerShare(v, stock.currency, locale)}
                     </td>
                   ))}
                   <td className="hidden py-2 pl-2 sm:table-cell">

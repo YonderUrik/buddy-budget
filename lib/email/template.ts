@@ -1,3 +1,6 @@
+import type { Language } from "@/lib/localization/config";
+import { emailLocale } from "./locale";
+
 /**
  * Template unico delle email transazionali: HTML a tabelle con CSS inline (quello che i client email leggono),
  * stile "frase" della Panoramica, tema scuro via `prefers-color-scheme` e versione testo equivalente.
@@ -94,9 +97,14 @@ function detailRows(rows: { label: string; value: string }[]): string {
     .join("")}</table>`;
 }
 
-/** HTML + testo di un'email. `appUrl` serve per logo e font, che vivono nei file pubblici dell'app. */
-export function renderEmail(content: EmailContent, options: { appUrl: string }): RenderedEmail {
+/**
+ * HTML and text of an email. `appUrl` serves the logo and fonts, which live in the app's public files; `language`
+ * (default Italian) sets the footer texts and the `lang` attribute, while the content arrives already translated.
+ */
+export function renderEmail(content: EmailContent, options: { appUrl: string; language?: Language }): RenderedEmail {
   const { light } = EMAIL_COLORS;
+  const { language, t } = emailLocale(options.language);
+  const serviceFooter = t(SERVICE_FOOTER_TEXT);
   const assetsUrl = `${options.appUrl}${EMAIL_ASSETS_PATH}`;
   const preheader = escapeHtml(content.preheader ?? content.lead.replace(/\*\*/g, ""));
   const cta = content.cta
@@ -127,13 +135,13 @@ export function renderEmail(content: EmailContent, options: { appUrl: string }):
   const footer = content.footer ?? { kind: "service" };
   const footerHtml =
     footer.kind === "optional"
-      ? `Ricevi questa email perché hai attivato ${escapeHtml(footer.reason)}. <a href="${escapeHtml(footer.unsubscribeUrl)}" class="t3" style="color:${light.text3};text-decoration:underline">Disattiva queste email</a> · <a href="${escapeHtml(footer.preferencesUrl)}" class="t3" style="color:${light.text3};text-decoration:underline">Gestisci le preferenze</a>`
-      : escapeHtml(SERVICE_FOOTER_TEXT);
+      ? `${escapeHtml(t("Ricevi questa email perché hai attivato {0}.", footer.reason))} <a href="${escapeHtml(footer.unsubscribeUrl)}" class="t3" style="color:${light.text3};text-decoration:underline">${escapeHtml(t("Disattiva queste email"))}</a> · <a href="${escapeHtml(footer.preferencesUrl)}" class="t3" style="color:${light.text3};text-decoration:underline">${escapeHtml(t("Gestisci le preferenze"))}</a>`
+      : escapeHtml(serviceFooter);
   const footerText =
     footer.kind === "optional"
-      ? `Ricevi questa email perché hai attivato ${footer.reason}.\nDisattiva queste email: ${footer.unsubscribeUrl}\nGestisci le preferenze: ${footer.preferencesUrl}`
-      : SERVICE_FOOTER_TEXT;
-  const html = `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><title>${escapeHtml(content.title)}</title><style>${fontFaces(assetsUrl)}${darkStyles()}</style></head>
+      ? `${t("Ricevi questa email perché hai attivato {0}.", footer.reason)}\n${t("Disattiva queste email")}: ${footer.unsubscribeUrl}\n${t("Gestisci le preferenze")}: ${footer.preferencesUrl}`
+      : serviceFooter;
+  const html = `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><title>${escapeHtml(content.title)}</title><style>${fontFaces(assetsUrl)}${darkStyles()}</style></head>
 <body class="bg" style="margin:0;background:${light.page};font-family:${SANS}"><div style="display:none;max-height:0;overflow:hidden;opacity:0">${preheader}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="bg" style="background:${light.page}"><tr><td align="center" style="padding:36px 16px"><table role="presentation" width="${EMAIL_WIDTH_PX}" cellpadding="0" cellspacing="0" style="max-width:${EMAIL_WIDTH_PX}px;width:100%">
 <tr><td style="padding:0 4px 40px"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="padding-right:10px"><img src="${assetsUrl}/logo-mark.png" width="${LOGO_WIDTH_PX}" height="${LOGO_HEIGHT_PX}" alt="" style="display:block;border:0"></td><td class="brand" style="font-family:${HEADING};font-size:15px;font-weight:700;color:${light.brand}">BuddyBudget</td></tr></table></td></tr>

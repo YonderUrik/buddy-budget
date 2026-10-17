@@ -69,12 +69,10 @@ export interface OperationMonthGroup<T extends InvestmentTransactionInput = Inve
 const BUY_TYPES = new Set(["acquisto"]);
 const SELL_TYPES = new Set(["vendita", "rimborso"]);
 
-const MONTH_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric" });
-
-/** "settembre 2026" → "Settembre 2026". */
-export function formatMonthLabel(key: string): string {
+/** Capitalised month and year in `locale`: "settembre 2026" → "Settembre 2026". */
+export function formatMonthLabel(key: string, locale = "it-IT"): string {
   const [year, month] = key.split("-").map(Number);
-  const label = MONTH_FORMAT.format(new Date(year, month - 1, 1));
+  const label = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(new Date(year, month - 1, 1));
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
@@ -209,7 +207,8 @@ export function sumOperationTotals(insights: OperationInsight[]): OperationTotal
 
 /** Raggruppa per mese, dal più recente; dentro il mese le operazioni vanno dalla più recente. */
 export function groupOperationsByMonth<T extends InvestmentTransactionInput>(
-  insights: OperationInsight<T>[]
+  insights: OperationInsight<T>[],
+  locale = "it-IT"
 ): OperationMonthGroup<T>[] {
   const byMonth = new Map<string, OperationInsight<T>[]>();
   for (const insight of insights) {
@@ -221,7 +220,7 @@ export function groupOperationsByMonth<T extends InvestmentTransactionInput>(
     .map(([key, operations]) => ({
       key,
       year: Number(key.slice(0, 4)),
-      label: formatMonthLabel(key),
+      label: formatMonthLabel(key, locale),
       // Le operazioni arrivano in ordine cronologico: invertirle mantiene l'ordine nello stesso giorno.
       operations: [...operations].reverse(),
       totals: sumOperationTotals(operations),

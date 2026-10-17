@@ -67,7 +67,7 @@ export default function InvestimentiPage() {
               onPeriodChange={(value) => { setPeriod(value); track("investment_chart_period_changed", { period: value }); }}
               range={customRange}
               today={todayKey}
-              onRangeChange={(range) => { setCustomRange(range); track("investment_chart_period_changed", { period: "custom" }); }}
+              onRangeChange={setCustomRange}
               currency={currency}
             />
             <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">

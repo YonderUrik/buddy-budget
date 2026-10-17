@@ -14,12 +14,14 @@ import { Input } from "@/components/ui/input";
 import type { ExposureRow } from "@/lib/investments/analysis-view";
 import { EXPOSURE_SOURCE_LABELS } from "@/lib/investments/exposure";
 import { AREA_LABELS, MANUAL_AREA_KEYS, MANUAL_SECTOR_KEYS, SECTOR_LABELS } from "@/lib/investments/exposure-keys";
+import { numberSeparators } from "@/lib/localization/format";
 import { useUpdateBreakdownMutation } from "@/lib/queries/investments";
 import { cn } from "@/lib/utils";
 import { GlobeIcon } from "lucide-react";
 import { PanelDialogHeader } from "../dialog-parts";
 import { PercentIcon } from "lucide-react";
 import { DialogActions, DialogSection, DialogSections } from "../dialog-parts";
+import { formatDecimal } from "../percent";
 
 type Dimension = "areas" | "sectors";
 
@@ -40,11 +42,13 @@ interface DimensionState {
   reset: boolean;
 }
 
-function toText(weights: Partial<Record<string, number>>, keys: readonly string[]): Record<string, string> {
+/** Field texts prefilled with the locale's decimal separator; `parsePercent` accepts both "," and ".". */
+function toText(weights: Partial<Record<string, number>>, keys: readonly string[], locale: string): Record<string, string> {
   const text: Record<string, string> = {};
+  const { decimal } = numberSeparators(locale);
   for (const key of keys) {
     const weight = weights[key] ?? 0;
-    text[key] = weight > 0 ? String(Math.round(weight * 1000) / 10).replace(".", ",") : "";
+    text[key] = weight > 0 ? String(Math.round(weight * 1000) / 10).replace(".", decimal) : "";
   }
   return text;
 }
@@ -54,10 +58,10 @@ function parsePercent(text: string): number {
   return Number.isFinite(value) ? value : NaN;
 }
 
-function initialState(row: ExposureRow): Record<Dimension, DimensionState> {
+function initialState(row: ExposureRow, locale: string): Record<Dimension, DimensionState> {
   return {
-    areas: { text: toText(row.exposure.areas, KEYS.areas), dirty: false, reset: false },
-    sectors: { text: toText(row.exposure.sectors, KEYS.sectors), dirty: false, reset: false },
+    areas: { text: toText(row.exposure.areas, KEYS.areas, locale), dirty: false, reset: false },
+    sectors: { text: toText(row.exposure.sectors, KEYS.sectors, locale), dirty: false, reset: false },
   };
 }
 
@@ -76,10 +80,10 @@ export function BreakdownDialog({ row, onClose }: BreakdownDialogProps) {
 }
 
 function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const update = useUpdateBreakdownMutation();
   const [dimension, setDimension] = React.useState<Dimension>("areas");
-  const [state, setState] = React.useState(() => initialState(row));
+  const [state, setState] = React.useState(() => initialState(row, locale));
   const current = state[dimension];
   const source = dimension === "areas" ? row.exposure.areaSource : row.exposure.sectorSource;
   const sum = KEYS[dimension].reduce((s, key) => s + (parsePercent(current.text[key] ?? "") || 0), 0);
@@ -150,7 +154,7 @@ function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void
           </label>
         ))}
       </div>
-      <p className={cn("text-sm tabular-nums", sum > 100 + SUM_TOLERANCE_PERCENT ? "text-destructive" : "text-muted-foreground")}>{tr("Totale")}{" "}{sum.toFixed(1).replace(".", ",")}{"%"}{sum < 100 - SUM_TOLERANCE_PERCENT ? tr(" · non classificato {0}%", {0: (100 - sum).toFixed(1).replace(".", ",")}) : ""}
+      <p className={cn("text-sm tabular-nums", sum > 100 + SUM_TOLERANCE_PERCENT ? "text-destructive" : "text-muted-foreground")}>{tr("Totale")}{" "}{formatDecimal(sum, 1, locale)}{"%"}{sum < 100 - SUM_TOLERANCE_PERCENT ? tr(" · non classificato {0}%", {0: formatDecimal(100 - sum, 1, locale)}) : ""}
       </p>
       </DialogSection>
       </DialogSections>

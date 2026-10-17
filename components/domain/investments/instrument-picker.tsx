@@ -35,7 +35,7 @@ export interface InstrumentPickerProps {
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <p className="px-2 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">{children}</p>;
+  return <p className="px-2 pt-3 text-sm font-medium text-muted-foreground">{children}</p>;
 }
 
 /** Input di creazione per un risultato di mercato; l'ISIN digitato si allega ai risultati Yahoo. */

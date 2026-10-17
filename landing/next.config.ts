@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   output: "export",
   images: { unoptimized: true },
   reactStrictMode: true,
+  // Two root layouts (`app/(it)`, `app/en`): the 404 for unmatched addresses renders its own <html> in `app/global-not-found.tsx`.
+  experimental: { globalNotFound: true },
   // La cartella vive dentro la repo dell'app: senza questo Turbopack risale al lockfile della radice e ne prende config e proxy.
   turbopack: { root: path.resolve(process.cwd()) },
 };

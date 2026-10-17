@@ -20,7 +20,7 @@ export function LoadError({ message, onRetry, reportArea = "caricamento" }: Load
   return (
     <div
       role="alert"
-      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-destructive/10 p-4 text-sm text-destructive"
     >
       <span>{tr(message)}</span>
       <div className="flex items-center gap-3">

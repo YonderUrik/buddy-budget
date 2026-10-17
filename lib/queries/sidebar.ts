@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { SidebarDeadlines, SidebarFire, SidebarSummary } from "@/lib/sidebar/types";
+import { pageText } from "@/lib/localization/page-text";
 
 /** I prezzi sono di chiusura: rileggere il riepilogo più spesso non porta dati nuovi. */
 const SIDEBAR_SUMMARY_STALE_MS = 5 * 60 * 1000;
@@ -15,7 +16,7 @@ export function useSidebarSummaryQuery(enabled = true) {
     retry: false,
     queryFn: async (): Promise<SidebarSummary> => {
       const response = await fetch("/api/sidebar/summary");
-      if (!response.ok) throw new Error("Impossibile caricare il riepilogo");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare il riepilogo"));
       return response.json();
     },
   });
@@ -35,7 +36,7 @@ export function useSidebarDeadlinesQuery(enabled = true) {
     retry: false,
     queryFn: async (): Promise<SidebarDeadlines> => {
       const response = await fetch("/api/sidebar/deadlines");
-      if (!response.ok) throw new Error("Impossibile caricare le scadenze");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare le scadenze"));
       return response.json();
     },
   });
@@ -50,7 +51,7 @@ export function useSidebarFireQuery(enabled = true) {
     retry: false,
     queryFn: async (): Promise<SidebarFire> => {
       const response = await fetch("/api/sidebar/fire");
-      if (!response.ok) throw new Error("Impossibile caricare l'obiettivo FIRE");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare l'obiettivo FIRE"));
       return response.json();
     },
   });

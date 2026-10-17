@@ -3,6 +3,8 @@
  * in una fonte ufficiale citata in `SECURITY_SOURCES` (controllo del 2026-10-12). Prima di aggiungere una promessa,
  * cercarne la prova: quello che non si può dimostrare (cifratura del disco, audit, certificazioni) non va scritto.
  */
+import type { Locale } from "@/lib/i18n";
+import { LEGAL_OWNER, LEGAL_PATHS } from "./legal";
 import type { Source } from "./seo-pages";
 
 /** Giorni di validità del consenso alla banca (`access_valid_for_days` in `lib/gocardless/connection-health.ts`). */
@@ -57,6 +59,20 @@ export interface FlowNode {
   never: readonly string[];
 }
 
+/** Texts of the data path diagram (`DataFlow`), in one language. */
+export interface FlowContent {
+  kicker?: string;
+  title: string;
+  lede: string;
+  /** What travels on each link, in the order of the nodes. */
+  links: readonly string[];
+  nodes: readonly FlowNode[];
+  /** `aria-label` of the steps. */
+  label: string;
+  /** Title of the «never» column. */
+  neverTitle: string;
+}
+
 /** Il percorso dei dati quando colleghi una banca, nodo per nodo (diagramma interattivo). */
 export const FLOW = {
   kicker: "Il percorso dei tuoi dati",
@@ -64,6 +80,8 @@ export const FLOW = {
   lede: "Le credenziali restano alla banca. Verso BuddyBudget viaggiano solo saldi e movimenti, in sola lettura. Tocca un passaggio per vedere cosa riceve.",
   /** Cosa viaggia su ogni collegamento, nell'ordine dei nodi. */
   links: ["Credenziali e conferma", "Consenso in sola lettura", "Saldi e movimenti"],
+  label: "Passaggi dei dati",
+  neverTitle: "Cosa non succede mai",
   nodes: [
     {
       id: "tu",
@@ -100,7 +118,7 @@ export const FLOW = {
       never: ["Non vende i dati, non fa pubblicità e non li usa per profilarti."],
     },
   ] satisfies readonly FlowNode[],
-} as const;
+} as const satisfies FlowContent;
 
 export interface StoredRow {
   what: string;
@@ -202,3 +220,72 @@ export const SECURITY_PAGE = {
   description: "Come funziona il collegamento alla banca in sola lettura (PSD2), cosa salviamo e cosa no, dove sono i server e come cancelli tutto. Con le fonti ufficiali.",
   lead: "Collegare la banca a un'app chiede fiducia. Qui trovi cosa succede ai tuoi dati, passo per passo, con le fonti per controllarlo da solo.",
 } as const;
+
+/** A sentence with links: plain strings and link pieces (`/…` internal, `mailto:` or `https:` outside). */
+export type RichPart = string | { text: string; href: string };
+
+export interface SecurityContent {
+  locale: Locale;
+  page: {
+    h1: string;
+    title: string;
+    description: string;
+    lead: string;
+    kicker: string;
+    /** Last crumb (the page name). */
+    crumb: string;
+    ctaTitle: string;
+    ctaText: string;
+    /** Title of the folded questions. */
+    more: string;
+    sourcesSummary: string;
+    /** Last note: privacy policy and security contact. */
+    legalNote: readonly RichPart[];
+  };
+  flow: FlowContent;
+  stored: { title: string; headers: { what: string; kept: string; detail: string }; rows: readonly StoredRow[] };
+  gocardless: { question: string; lede: string; rows: readonly FactRow[]; note: readonly RichPart[] };
+  analytics: { question: string; lede: string; rows: readonly FactRow[]; note: readonly RichPart[] };
+  controls: { question: string; items: readonly Pillar[] };
+  limits: { question: string; items: readonly Pillar[] };
+  sources: Record<keyof typeof SECURITY_SOURCES, Source>;
+  sourcesChecked: string;
+}
+
+/** The Italian page, assembled from the texts above. */
+export const SECURITY_IT: SecurityContent = {
+  locale: "it",
+  page: {
+    ...SECURITY_PAGE,
+    kicker: "Sicurezza e privacy",
+    crumb: "Sicurezza e privacy",
+    ctaTitle: "Prova senza collegare niente.",
+    ctaText: "Puoi iniziare con un conto manuale o con i dati d'esempio, e collegare la banca solo quando ti senti pronto.",
+    more: "Le altre domande.",
+    sourcesSummary: "Fonti ufficiali",
+    legalNote: [
+      "Per i dettagli legali (basi giuridiche, fornitori, tempi di conservazione) leggi l'",
+      { text: "informativa privacy", href: LEGAL_PATHS.privacy },
+      ". Per segnalare un problema di sicurezza scrivi a ",
+      { text: LEGAL_OWNER.email, href: `mailto:${LEGAL_OWNER.email}` },
+      ".",
+    ],
+  },
+  flow: FLOW,
+  stored: { title: STORED.title, headers: { what: "Dato", kept: "Lo conserviamo?", detail: "Dettagli" }, rows: STORED.rows },
+  gocardless: {
+    ...GOCARDLESS_DATA,
+    note: [
+      "Riassunto delle ",
+      { text: "condizioni UE di GoCardless", href: SECURITY_SOURCES.gocardlessTerms.href },
+      " e della sua ",
+      { text: "informativa privacy", href: SECURITY_SOURCES.gocardlessPrivacy.href },
+      ", dove trovi i contatti per esercitare i tuoi diritti.",
+    ],
+  },
+  analytics: { ...ANALYTICS_DATA, note: ["Tutti i dettagli nella ", { text: "pagina sui cookie", href: LEGAL_PATHS.cookie }, "."] },
+  controls: CONTROLS,
+  limits: LIMITS,
+  sources: SECURITY_SOURCES,
+  sourcesChecked: SECURITY_SOURCES_CHECKED,
+};

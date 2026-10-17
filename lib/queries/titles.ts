@@ -7,6 +7,7 @@ import type { TitleAnalysis } from "@/lib/investments/title-view";
 import type { TitleListItem } from "@/lib/investments/titles-list";
 import type { TitleChartPeriod } from "@/lib/investments/title-stats";
 import type { CreatePriceAlertInput } from "@/lib/validation/investments";
+import { pageText } from "@/lib/localization/page-text";
 
 const TITLES_KEY = ["investments", "titles"] as const;
 /** Intervallo di polling mentre lo storico di un titolo si sta scaricando. */
@@ -14,7 +15,7 @@ export const TITLE_BACKFILL_POLL_MS = 2500;
 
 async function readError(response: Response, fallback: string): Promise<Error> {
   const body = await response.json().catch(() => null);
-  return new Error(body?.error ?? fallback);
+  return new Error(body?.error ?? pageText(fallback));
 }
 
 /** Elenco dei titoli dell'utente (watchlist e posseduti). */
@@ -23,7 +24,7 @@ export function useTitleListQuery() {
     queryKey: [...TITLES_KEY, "list"],
     queryFn: async (): Promise<{ items: TitleListItem[] }> => {
       const response = await fetch("/api/investments/titles");
-      if (!response.ok) throw new Error("Impossibile caricare i titoli");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare i titoli"));
       return response.json();
     },
   });

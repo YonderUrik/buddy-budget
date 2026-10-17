@@ -35,12 +35,7 @@ const CHART_CONFIG = {
 /** Margini del dominio verticale: la linea riempie l'altezza invece di partire da zero (come in Panoramica). */
 const CHART_DOMAIN_LOW = 0.9;
 const CHART_DOMAIN_HIGH = 1.01;
-const AREA_FILL_ID = "portfolio-hero-fill";
 
-
-function pctText(ratio: number): string {
-  return `${ratio < 0 ? "−" : "+"}${Math.abs(ratio * 100).toFixed(1).replace(".", ",")}%`;
-}
 
 function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { payload: PortfolioSeriesPoint }[]; currency: string }) {
   const { locale: formattingLocale } = useLocalization();
@@ -83,7 +78,7 @@ export interface PortfolioHeroCardProps extends Omit<PortfolioPeriodSelectorProp
 
 export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, range, today, onRangeChange, currency }: PortfolioHeroCardProps) {
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatSignedPct } = localizedFormats(formattingLocale);
 
   const { t: tr } = useLocalization();
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
@@ -103,10 +98,10 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
           <h2 id="portfolio-hero-title" className="text-base font-medium text-muted-foreground">{tr("Il tuo portafoglio")}</h2>
           <MoneyHero value={displayedValue} currency={currency} className="text-5xl sm:text-6xl" />
           {!simulation.active && summary.dayChange !== null && summary.dayChangePct !== null ? (
-            <p className={cn("font-mono text-sm tabular-nums", summary.dayChange < 0 ? "text-neg" : "text-pos")}>
+            <p className={cn("text-sm tabular-nums", summary.dayChange < 0 ? "text-neg" : "text-pos")}>
               {summary.dayChange < 0 ? <TrendingDownIcon className="mr-1 inline size-4" aria-hidden="true" /> : <TrendingUpIcon className="mr-1 inline size-4" aria-hidden="true" />}
               {summary.dayChange < 0 ? "−" : "+"}
-              {format(Math.abs(summary.dayChange))} {"("}{pctText(summary.dayChangePct)}{")"}<span className="font-sans text-muted-foreground">{" "}{tr("dall'ultima chiusura")}</span>
+              {format(Math.abs(summary.dayChange))} {"("}{formatSignedPct(summary.dayChangePct)}{")"}<span className="font-sans text-muted-foreground">{" "}{tr("dall'ultima chiusura")}</span>
             </p>
           ) : null}
           {cash.length > 0 ? (
@@ -123,7 +118,7 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
             <span className={cn("font-semibold tabular-nums", gaining ? "text-pos" : "text-neg")}>
               {gaining ? "+" : "−"}
               {format(Math.abs(breakdown.market))}
-              {marketPct !== null ? ` (${pctText(marketPct)})` : ""}
+              {marketPct !== null ? ` (${formatSignedPct(marketPct)})` : ""}
             </span>
             {"."}{breakdown.cashedIn !== 0 ? (
               <span className="text-muted-foreground">
@@ -144,16 +139,10 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
           <div className="-mx-4 sm:-mx-6">
             <ChartContainer config={CHART_CONFIG} className="aspect-auto h-60 w-full sm:h-80">
               <AreaChart data={chartData} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
-                <defs>
-                  <linearGradient id={AREA_FILL_ID} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-value)" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="var(--color-value)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
                 <XAxis dataKey="label" hide />
                 <YAxis hide domain={[(min: number) => min * CHART_DOMAIN_LOW, (max: number) => max * CHART_DOMAIN_HIGH]} />
                 <ChartTooltip cursor={{ stroke: "var(--border)" }} content={<Tooltip currency={currency} />} />
-                <Area type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={series.length === 1} fill={`url(#${AREA_FILL_ID})`} activeDot={{ r: 4 }} />
+                <Area type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={series.length === 1} fill="var(--color-value)" fillOpacity={0.12} activeDot={{ r: 4 }} />
                 {simulation.active ? <Line type="monotone" dataKey="registered" stroke="var(--color-registered)" strokeWidth={1.5} dot={false} isAnimationActive={false} /> : null}
                 <Line type="stepAfter" dataKey="invested" stroke="var(--color-invested)" strokeWidth={1.5} strokeDasharray="4 4" dot={false} isAnimationActive={false} />
               </AreaChart>

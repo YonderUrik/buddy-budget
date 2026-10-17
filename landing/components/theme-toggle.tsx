@@ -11,8 +11,8 @@ function currentTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-/** Pulsante chiaro/scuro: parte dal tema del sistema, la scelta si ricorda nel browser. */
-export function ThemeToggle() {
+/** Light/dark button: starts from the system theme, the choice is remembered in the browser. `label` is its accessible name. */
+export function ThemeToggle({ label = "Cambia tema" }: { label?: string }) {
   const toggle = () => {
     const next = currentTheme() === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
@@ -25,7 +25,7 @@ export function ThemeToggle() {
   };
 
   return (
-    <button className="tg" type="button" onClick={toggle} aria-label="Cambia tema">
+    <button className="tg" type="button" onClick={toggle} aria-label={label}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
         <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
       </svg>

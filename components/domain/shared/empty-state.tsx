@@ -9,6 +9,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SECTION_TITLE } from "./page-title";
 
 export interface EmptyStateAction {
   label: string;
@@ -62,7 +63,7 @@ export function EmptyState({ icon: Icon, title, description, primary, secondary,
         <Icon className="size-5" />
       </span>
       <div className="flex max-w-md flex-col gap-1">
-        <h2 className="font-heading text-xl font-medium text-foreground">{tr(title)}</h2>
+        <h2 className={SECTION_TITLE}>{tr(title)}</h2>
         <p className="text-sm text-text-2">{tr(description)}</p>
       </div>
       {primary || secondary ? (

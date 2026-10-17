@@ -13,6 +13,7 @@ import { correlationLabel, correlationPairs } from "@/lib/investments/plain-labe
 import { cn } from "@/lib/utils";
 import { Disclosure } from "../disclosure";
 import { InstrumentLabel } from "../instrument-label";
+import { formatDecimal } from "../percent";
 import { CorrelationMatrix } from "./correlation-matrix";
 
 /** Coppie mostrate prima di "Mostra tutte". */
@@ -23,16 +24,12 @@ export interface CorrelationPairsProps {
   instrumentsById: Map<string, Instrument>;
 }
 
-function decimal(value: number): string {
-  return value.toFixed(2).replace(".", ",");
-}
-
 function PairName({ instrument }: { instrument: Instrument | undefined }) {
   return instrument ? <InstrumentLabel instrument={instrument} className="max-w-full" /> : <span>—</span>;
 }
 
 export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const [showAll, setShowAll] = React.useState(false);
   const pairs = correlationPairs(matrix);
   const visible = showAll ? pairs : pairs.slice(0, PAIRS_VISIBLE);
@@ -42,13 +39,13 @@ export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsPr
         {visible.map((pair) => {
           const verdict = correlationLabel(pair.value);
           return (
-            <li key={`${pair.aId}-${pair.bId}`} className="flex flex-col gap-1.5 rounded-xl border p-3">
+            <li key={`${pair.aId}-${pair.bId}`} className="flex flex-col gap-1.5 rounded-xl bg-muted/50 p-3">
               <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-foreground">
                 <PairName instrument={instrumentsById.get(pair.aId)} />{" "}<span className="text-muted-foreground">{tr("e")}</span>{" "}
                 <PairName instrument={instrumentsById.get(pair.bId)} />
               </p>
               <p className="text-xs text-muted-foreground">
-                {tr(verdict.label)}{" "}<span className="tabular-nums">{"("}{decimal(pair.value)}{")"}</span>
+                {tr(verdict.label)}{" "}<span className="tabular-nums">{"("}{formatDecimal(pair.value, 2, locale)}{")"}</span>
               </p>
               <div className="h-1.5 w-full rounded-full bg-muted" aria-hidden="true">
                 <div
@@ -71,7 +68,7 @@ export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsPr
         </Button>
       ) : null}
       <Disclosure bare title={tr("Tabella completa")} summary="Per chi vuole tutti i numeri">
-        <CorrelationMatrix matrix={matrix} instrumentsById={instrumentsById} />
+        <CorrelationMatrix matrix={matrix} instrumentsById={instrumentsById} locale={locale} />
       </Disclosure>
     </div>
   );

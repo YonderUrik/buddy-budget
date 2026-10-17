@@ -173,7 +173,7 @@ function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, rem
         {remaining === 1 ? tr("Ultima carta") : tr("{0} esercenti da categorizzare", {0: remaining})}
       </p>
       <div className="relative flex flex-col max-md:flex-1">
-        {remaining > 2 && <div className="absolute inset-x-5 -bottom-4 h-10 rounded-2xl border border-border bg-card/60" aria-hidden />}
+        {remaining > 2 && <div className="absolute inset-x-5 -bottom-4 h-10 rounded-2xl bg-muted" aria-hidden />}
         {nextGroup && (
           <div key={nextGroup.groupKey} inert aria-hidden className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl" style={{ transform: `translateY(${WAITING_CARD.y}px) scale(${WAITING_CARD.scale})` }}>
             <WaitingCard group={nextGroup} categories={categories} currency={currency} />
@@ -261,7 +261,7 @@ export function CategorizeSwipeDeck({ groups, categories, currency, categoryUsag
   const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
   if (!deck.top) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-border p-8 text-center">
+      <div className="flex flex-col items-center gap-3 rounded-2xl bg-muted/50 p-8 text-center">
         <p className="font-heading text-lg font-medium text-foreground">{tr("Fatto, non c'è altro da categorizzare")}</p>
         {deck.canUndo && (
           <Button type="button" variant="ghost" size="sm" onClick={deck.undo}>

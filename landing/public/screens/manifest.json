@@ -1,6 +1,7 @@
 {
-  "capturedAt": "2026-10-17T15:19:36.791Z",
+  "capturedAt": "2026-10-17T18:49:16.497Z",
   "app": "http://localhost:3300",
+  "language": "it",
   "viewport": {
     "width": 1280,
     "height": 800
@@ -57,7 +58,7 @@
       "theme": "light",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1809,
+      "height": 1800,
       "phone": true
     },
     {
@@ -65,7 +66,7 @@
       "theme": "light",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1488,
+      "height": 1485,
       "phone": true
     },
     {
@@ -81,7 +82,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1937,
+      "height": 1934,
       "phone": true
     },
     {
@@ -105,7 +106,7 @@
       "theme": "light",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2012,
+      "height": 2094,
       "phone": true
     },
     {
@@ -129,7 +130,7 @@
       "theme": "light",
       "route": "/debiti",
       "width": 1920,
-      "height": 1715,
+      "height": 1721,
       "phone": true
     },
     {
@@ -193,7 +194,7 @@
       "theme": "dark",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1809,
+      "height": 1800,
       "phone": true
     },
     {
@@ -201,7 +202,7 @@
       "theme": "dark",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1488,
+      "height": 1485,
       "phone": true
     },
     {
@@ -217,7 +218,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1937,
+      "height": 1934,
       "phone": true
     },
     {
@@ -241,7 +242,7 @@
       "theme": "dark",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2012,
+      "height": 2094,
       "phone": true
     },
     {
@@ -265,7 +266,7 @@
       "theme": "dark",
       "route": "/debiti",
       "width": 1920,
-      "height": 1715,
+      "height": 1721,
       "phone": true
     },
     {

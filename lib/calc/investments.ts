@@ -453,23 +453,23 @@ export interface PortfolioSeriesPoint extends PortfolioDailyPoint {
   label: string;
 }
 
-const DAY_LABEL_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
-const MONTH_LABEL_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "short", year: "2-digit" });
-
 /**
  * Campiona una serie giornaliera con la granularità del patrimonio netto: tutti i giorni per 1mese/3mesi, l'ultimo
- * giorno di ogni mese per 1anno/max. `label` è l'etichetta dell'asse X.
+ * giorno di ogni mese per 1anno/max. `label` è l'etichetta dell'asse X, formattata in `locale`.
  */
 export function samplePeriodSeries<T extends { date: string }>(
   daily: T[],
-  period: NetWorthPeriod
+  period: NetWorthPeriod,
+  locale = "it-IT"
 ): (T & { label: string })[] {
+  const dayLabelFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
+  const monthLabelFormat = new Intl.DateTimeFormat(locale, { month: "short", year: "2-digit" });
   if (period === "1mese" || period === "3mesi") {
-    return daily.map((p) => ({ ...p, label: DAY_LABEL_FORMAT.format(parseDateOnly(p.date)) }));
+    return daily.map((p) => ({ ...p, label: dayLabelFormat.format(parseDateOnly(p.date)) }));
   }
   const monthly: (T & { label: string })[] = [];
   for (const p of daily) {
-    const point = { ...p, label: MONTH_LABEL_FORMAT.format(parseDateOnly(p.date)) };
+    const point = { ...p, label: monthLabelFormat.format(parseDateOnly(p.date)) };
     const previous = monthly[monthly.length - 1];
     if (previous && previous.date.slice(0, 7) === p.date.slice(0, 7)) {
       monthly[monthly.length - 1] = point;
@@ -501,6 +501,8 @@ export function buildPortfolioSeries(params: {
   period: NetWorthPeriod;
   today: Date;
   range?: { from: string; to: string };
+  /** Locale of the X-axis labels. */
+  locale?: string;
 }): PortfolioSeriesPoint[] {
   const { transactions, period, today } = params;
   const fromKey = params.range?.from ?? periodStartKey(transactions, period, today);
@@ -508,7 +510,7 @@ export function buildPortfolioSeries(params: {
   const todayKey = toDateKey(startOfDay(today));
   const toKey = params.range ? (params.range.to < todayKey ? params.range.to : todayKey) : todayKey;
   if (fromKey > toKey) return [];
-  return samplePeriodSeries(computeDailyPortfolioValues({ ...params, fromKey, toKey }), params.range ? "3mesi" : period);
+  return samplePeriodSeries(computeDailyPortfolioValues({ ...params, fromKey, toKey }), params.range ? "3mesi" : period, params.locale);
 }
 
 /** Fetta della composizione del portafoglio. */

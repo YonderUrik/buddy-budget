@@ -4,6 +4,8 @@
  * è proprio ciò che serve per capire se l'app in esecuzione è aggiornata.
  */
 
+import { languageOfLocale } from "@/lib/localization/config";
+import { translate } from "@/lib/localization/messages";
 import type { BuildInfo } from "./resolve";
 
 export type { BuildInfo } from "./resolve";
@@ -24,9 +26,9 @@ export function formatVersionLabel(info: BuildInfo): string {
   return info.commit ? `${base} · ${info.commit.slice(0, SHORT_SHA_LENGTH)}` : base;
 }
 
-/** Testo esteso per tooltip: versione, commit e data/ora di build. */
+/** Tooltip text: version, commit and build date/time, in the language and format of `locale`. */
 export function formatVersionDetails(info: BuildInfo, locale = "it-IT"): string {
-  const lines = [`Versione ${info.version}`];
+  const lines = [translate(languageOfLocale(locale), "Versione {0}", { 0: info.version })];
   if (info.commit) lines.push(`Commit ${info.commit.slice(0, SHORT_SHA_LENGTH)}`);
   const built = info.builtAt ? new Date(info.builtAt) : null;
   if (built && !Number.isNaN(built.getTime())) {

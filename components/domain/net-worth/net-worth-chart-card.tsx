@@ -26,7 +26,6 @@ import { MoneyHero } from "./money-hero";
 import { NetWorthPeriodSelector } from "./net-worth-period-selector";
 
 const STACK_ID = "net-worth";
-const AREA_FILL_ID_PREFIX = "net-worth-area-fill-";
 /** Classe mostrata quando la serie è tutta a zero (nessuna classe con valori). */
 const DEFAULT_CLASS = "liquidita";
 /** Classe in negativo: non si impila (le aree sono i beni), si mostra nel tooltip e nella linea del netto. */
@@ -148,7 +147,7 @@ export function NetWorthChartCard({
             </p>
           ) : null}
           {hasHistory ? (
-            <p className={cn("font-mono text-sm tabular-nums", isNegative ? "text-neg" : "text-pos")}>
+            <p className={cn("text-sm tabular-nums", isNegative ? "text-neg" : "text-pos")}>
               {isNegative ? <TrendingDownIcon className="mr-1 inline size-4" aria-hidden="true" /> : <TrendingUpIcon className="mr-1 inline size-4" aria-hidden="true" />}
               {sign}
               {formatCurrency(Math.abs(shownChange.delta), currency, { maximumFractionDigits: 0 })}
@@ -177,27 +176,13 @@ export function NetWorthChartCard({
             <ChartContainer config={buildChartConfig(allClasses)} className="aspect-auto h-60 w-full sm:h-80">
               {isTotalView ? (
                 <ComposedChart data={series} accessibilityLayer margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
-                  <defs>
-                    <linearGradient id="net-worth-total-fill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
                   <XAxis dataKey="label" hide />
                   <YAxis hide domain={[(min: number) => min * TOTAL_DOMAIN_LOW, (max: number) => max * TOTAL_DOMAIN_HIGH]} />
                   <ChartTooltip cursor={{ stroke: "var(--border)" }} content={<NetWorthChartTooltip currency={currency} classes={totalTooltipClasses} totalLabel={pensionExcluded ? PENSION_EXCLUDED_TOTAL_LABEL : undefined} />} />
-                  <Area isAnimationActive={false} type="monotone" dataKey="value" name="netto" stroke="var(--primary)" strokeWidth={2} fill="url(#net-worth-total-fill)" activeDot={{ r: 4 }} />
+                  <Area isAnimationActive={false} type="monotone" dataKey="value" name="netto" stroke="var(--primary)" strokeWidth={2} fill="var(--primary)" fillOpacity={0.12} activeDot={{ r: 4 }} />
                 </ComposedChart>
               ) : (
                 <ComposedChart data={shownSeries} accessibilityLayer>
-                  <defs>
-                    {allClasses.map((key) => (
-                      <linearGradient key={key} id={`${AREA_FILL_ID_PREFIX}${key}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.22 : 0.4} />
-                        <stop offset="100%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.05 : 0.08} />
-                      </linearGradient>
-                    ))}
-                  </defs>
                   <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="2 4" />
                   <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={32} tickMargin={8} tick={{ fontSize: 13 }} />
                   <YAxis hide />
@@ -212,7 +197,8 @@ export function NetWorthChartCard({
                       stroke={`var(--color-${key})`}
                       strokeWidth={1.5}
                       strokeDasharray={key === PENSION_CLASS && pensionExcluded ? "2 3" : undefined}
-                      fill={`url(#${AREA_FILL_ID_PREFIX}${key})`}
+                      fill={`var(--color-${key})`}
+                      fillOpacity={key === PENSION_CLASS && pensionExcluded ? 0.1 : 0.22}
                     />
                   ))}
                   {showNetLine ? <Line isAnimationActive={false} type="monotone" dataKey="value" name="netto" stroke="var(--foreground)" strokeWidth={2.5} dot={false} /> : null}

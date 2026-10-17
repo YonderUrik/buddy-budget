@@ -3,12 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { StartStatus } from "@/lib/start";
+import { pageText } from "@/lib/localization/page-text";
 
 const START_QUERY_KEY = ["start"] as const;
 
 async function fetchStart(): Promise<StartStatus> {
   const response = await fetch("/api/start");
-  if (!response.ok) throw new Error("Impossibile caricare i primi passi");
+  if (!response.ok) throw new Error(pageText("Impossibile caricare i primi passi"));
   const status = (await response.json()) as StartStatus;
   if (status.justCompleted) track("start_checklist_completed");
   return status;
@@ -29,7 +30,7 @@ export function useStartDismissMutation() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dismissed }),
       });
-      if (!response.ok) throw new Error("Impossibile aggiornare i primi passi");
+      if (!response.ok) throw new Error(pageText("Impossibile aggiornare i primi passi"));
     },
     onSuccess: (_data, { dismissed, done }) => {
       track(dismissed ? "start_checklist_dismissed" : "start_checklist_reopened", dismissed ? { done } : undefined);
@@ -46,7 +47,7 @@ export function useStartDemoMutation() {
       const response = await fetch("/api/start/demo", { method: "POST" });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile avviare i dati d'esempio");
+        throw new Error(body?.error ?? pageText("Impossibile avviare i dati d'esempio"));
       }
     },
     onSuccess: () => {
@@ -63,7 +64,7 @@ export function useClearDemoMutation() {
     mutationFn: async (from: "banner" | "panoramica") => {
       void from;
       const response = await fetch("/api/start/demo", { method: "DELETE" });
-      if (!response.ok) throw new Error("Impossibile azzerare i dati d'esempio");
+      if (!response.ok) throw new Error(pageText("Impossibile azzerare i dati d'esempio"));
     },
     onSuccess: (_data, from) => {
       track("demo_cleared", { from });

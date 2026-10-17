@@ -1,4 +1,6 @@
+"use client";
 import { APP_BUILD_INFO, formatVersionDetails, formatVersionLabel, type BuildInfo } from "@/lib/app-version";
+import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
 
 interface AppVersionLabelProps {
@@ -14,10 +16,11 @@ interface AppVersionLabelProps {
  * data di build nel tooltip. Serve a capire a colpo d'occhio se l'app si è aggiornata.
  */
 export function AppVersionLabel({ info = APP_BUILD_INFO, compact = false, className }: AppVersionLabelProps) {
-  const details = formatVersionDetails(info);
+  const { locale } = useLocalization();
+  const details = formatVersionDetails(info, locale);
   return (
     <p
-      className={cn("truncate font-mono text-[11px] leading-none tabular-nums", className)}
+      className={cn("truncate text-[11px] leading-none tabular-nums", className)}
       title={details}
       aria-label={details.replaceAll("\n", ", ")}
     >

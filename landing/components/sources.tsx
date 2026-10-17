@@ -1,16 +1,27 @@
 import { SOURCES_CHECKED, type Source } from "@/content/seo-pages";
+import { UI } from "@/content/ui";
+import type { Locale } from "@/lib/i18n";
 
-/** Fonti normative citate in una pagina, in un riquadro richiudibile (aperto da tastiera/clic) con la data dell'ultimo controllo. */
-export function Sources({ items, checked = SOURCES_CHECKED, summary = "Fonti e riferimenti normativi" }: { items: readonly Source[]; checked?: string; summary?: string }) {
+export interface SourcesProps {
+  items: readonly Source[];
+  /** Date of the last check, written in the page language. */
+  checked?: string;
+  summary?: string;
+  locale?: Locale;
+}
+
+/** Legal sources cited on a page, in a folding box (opens with keyboard or click) with the date of the last check. */
+export function Sources({ items, checked = SOURCES_CHECKED, summary, locale = "it" }: SourcesProps) {
+  const t = UI[locale].sources;
   return (
     <details className="sources sources-box">
-      <summary>{summary} ({items.length})</summary>
+      <summary>{summary ?? t.summary} ({items.length})</summary>
       <ul>
         {items.map((s) => (
           <li key={s.href}><a href={s.href} target="_blank" rel="noopener noreferrer">{s.label}</a></li>
         ))}
       </ul>
-      <p className="note">Fonti controllate il {checked}. Le norme cambiano: verifica sempre la versione in vigore o chiedi a un consulente.</p>
+      <p className="note">{t.checked} {checked}. {t.note}</p>
     </details>
   );
 }

@@ -102,7 +102,7 @@ export default function LiquiditaAnalisiPage() {
   const sentence =
     spent === 0
       ? tr("In questo periodo non ci sono ancora spese.")
-      : `${isCurrentMonth ? tr("Finora hai speso") : tr("Hai speso")} ${money(spent)}${spentBefore > 0 ? tr(", {0} {1} del periodo prima", { 0: money(Math.abs(delta)), 1: delta > 0 ? "in più" : "in meno" }) : ""}.${heaviest ? tr(" La voce che pesa di più è «{0}», il {1}%.", { 0: heaviest.name, 1: Math.round((heaviest.amount / spent) * 100) }) : ""}`;
+      : `${isCurrentMonth ? tr("Finora hai speso") : tr("Hai speso")} ${money(spent)}${spentBefore > 0 ? tr(", {0} {1} del periodo prima", { 0: money(Math.abs(delta)), 1: delta > 0 ? tr("in più") : tr("in meno") }) : ""}.${heaviest ? tr(" La voce che pesa di più è «{0}», il {1}.", { 0: heaviest.name, 1: new Intl.NumberFormat(formattingLocale, { style: "percent", maximumFractionDigits: 0 }).format(heaviest.amount / spent) }) : ""}`;
 
   if (isError) return <LoadError message={tr("Impossibile caricare i dati dell'analisi.")} onRetry={() => refetch()} />;
   return (
@@ -113,7 +113,7 @@ export default function LiquiditaAnalisiPage() {
         <p className="mt-6 text-base text-text-2">{tr("Spese del periodo")}</p>
         <MoneyHero value={spent} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
         {spentBefore > 0 && (
-          <p className="mt-3 font-mono text-sm font-semibold tabular-nums" style={{ color: delta > 0 ? "var(--neg)" : "var(--pos)" }}>
+          <p className="mt-3 text-sm font-semibold tabular-nums" style={{ color: delta > 0 ? "var(--neg)" : "var(--pos)" }}>
             {delta > 0 ? "▲ +" : "▼ −"}
             {money(Math.abs(delta))}{" "}<span className="font-sans font-normal text-text-2">{tr("rispetto al periodo prima")}</span>
           </p>

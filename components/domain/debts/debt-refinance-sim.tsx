@@ -6,13 +6,13 @@ import { useLocalization } from "@/lib/localization/provider";
 /** Surroga o nuova offerta su un finanziamento: l'offerta contro le condizioni attuali, spese e penale comprese. */
 
 import * as React from "react";
+import { SimulationResult } from "@/components/domain/shared";
 import { Input } from "@/components/ui/input";
 import { compareRefinance } from "@/lib/calc/debt-simulator";
 import { parseAmount } from "@/lib/debts/add-form";
 import { todayIso } from "@/lib/debts/dates";
 import type { DebtView } from "@/lib/debts/view";
 
-import { cn } from "@/lib/utils";
 import { localizedDebtFormats } from "./debts-format";
 import { DebtFormField } from "./debt-form-field";
 
@@ -53,11 +53,11 @@ export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
   const money = (value: number) => formatCurrency(value, currency);
 
   const result = React.useMemo(() => {
-    const annualRate = rate.trim() === "" ? undefined : parseAmount(rate);
-    const count = parseAmount(installments);
+    const annualRate = rate.trim() === "" ? undefined : parseAmount(rate, formattingLocale);
+    const count = parseAmount(installments, formattingLocale);
     if (annualRate === undefined || !count || count < 1 || !Number.isInteger(count) || annualRate < 0) return null;
-    return compareRefinance(debt.plan.totals, todayIso(), { annualRate, installments: count, upfrontCosts: parseAmount(costs) ?? 0, penalty: parseAmount(penalty) ?? 0 });
-  }, [debt, rate, installments, costs, penalty]);
+    return compareRefinance(debt.plan.totals, todayIso(), { annualRate, installments: count, upfrontCosts: parseAmount(costs, formattingLocale) ?? 0, penalty: parseAmount(penalty, formattingLocale) ?? 0 });
+  }, [debt, rate, installments, costs, penalty, formattingLocale]);
 
   const saving = result?.netSaving ?? 0;
   return (
@@ -90,11 +90,15 @@ export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
             { label: "Interessi", value: money(result.newInterest) },
             { label: "Spese e penale", value: money(result.switchCosts) },
           ]} />
-          <p className={cn("text-sm sm:col-span-2", saving > 0 ? "text-pos" : "text-neg")}>
-            {saving > 0
-              ? tr("Conviene: risparmi {0} al netto delle spese{1}.", {0: money(saving), 1: result.breakEvenMonths ? `, e le spese rientrano in ${result.breakEvenMonths} mesi` : ""})
-              : tr("Non conviene: spenderesti {0} in più tra interessi e spese.", {0: money(Math.abs(saving))})}
-          </p>
+          <SimulationResult
+            className="sm:col-span-2"
+            label={saving > 0 ? tr("Conviene: risparmi") : tr("Non conviene: spenderesti in più")}
+            value={money(Math.abs(saving))}
+            tone={saving > 0 ? "pos" : "neg"}
+            caption={saving > 0
+              ? (result.breakEvenMonths ? tr("Al netto delle spese, che rientrano in {0} mesi.", {0: result.breakEvenMonths}) : tr("Al netto delle spese."))
+              : tr("Tra interessi e spese.")}
+          />
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">{tr("Inserisci almeno il nuovo tasso e il numero di rate per vedere il confronto.")}</p>

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SPRING_SNAPPY } from "@/lib/motion/springs";
 import { initialStepFlow, stepFlowReducer, type StepDirection, type StepFlowState } from "./step-flow.state";
+import { SECTION_TITLE } from "./page-title";
 
 /** Spostamento orizzontale (px) dei passi che entrano e escono: abbastanza per dare il verso, non per distrarre. */
 const STEP_SHIFT_PX = 14;
@@ -58,15 +59,14 @@ export function StepProgress({ index, count, label, className }: StepProgressPro
   const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <p className="text-xs font-medium text-muted-foreground" aria-live="polite">{tr("Passo")}{" "}{index + 1}{" "}{tr("di")}{" "}{count}
-      </p>
+      <p className="text-xs font-medium text-muted-foreground" aria-live="polite">{tr("Passo {0} di {1}", {0: index + 1, 1: count})}</p>
       <div
         role="progressbar"
         aria-label={tr(label)}
         aria-valuemin={1}
         aria-valuemax={count}
         aria-valuenow={index + 1}
-        aria-valuetext={`Passo ${index + 1} di ${count}`}
+        aria-valuetext={tr("Passo {0} di {1}", {0: index + 1, 1: count})}
         className="flex gap-1.5"
       >
         {Array.from({ length: count }, (_, i) => (
@@ -143,7 +143,7 @@ export function StepHeading({ title, description, className }: StepHeadingProps)
   const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      <h2 className="font-heading text-xl font-medium tracking-tight text-foreground">{tr(title)}</h2>
+      <h2 className={SECTION_TITLE}>{tr(title)}</h2>
       {description ? <p className="text-sm text-muted-foreground">{tr(description)}</p> : null}
     </div>
   );

@@ -27,7 +27,7 @@ export function OverlapPairRow({ overlap, instrumentOf }: OverlapPairRowProps) {
   const { t: tr } = useLocalization();
   const verdict = overlapLabel(overlap.share);
   return (
-    <li className="flex items-start gap-3 rounded-xl border p-3">
+    <li className="flex items-start gap-3 rounded-xl bg-muted/50 p-3">
       <OverlapVenn share={overlap.share} severity={verdict.severity} />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-foreground">

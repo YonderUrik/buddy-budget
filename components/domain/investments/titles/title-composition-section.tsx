@@ -35,12 +35,13 @@ function WeightRows({ rows, colorClass }: { rows: { key: string; label: string; 
   );
 }
 
-function sharedText(shared: { holding: ProfileHolding; elsewhere: HoldingElsewhere[] }[]): string {
+/** "A, B e C (e altri 2) li hai anche in: …", in the user's language. */
+function sharedText(shared: { holding: ProfileHolding; elsewhere: HoldingElsewhere[] }[], tr: (source: string, values?: Record<string, string | number>) => string): string {
   const names = shared.slice(0, 3).map((s) => s.holding.name);
-  const places = [...new Set(shared.flatMap((s) => s.elsewhere.map((e) => (e.weight === null ? "direttamente" : e.name))))];
-  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} e ${names[names.length - 1]}` : names[0];
-  const more = shared.length > 3 ? ` (e altri ${shared.length - 3})` : "";
-  return `${list}${more} li hai anche in: ${places.join(", ")}.`;
+  const places = [...new Set(shared.flatMap((s) => s.elsewhere.map((e) => (e.weight === null ? tr("direttamente") : e.name))))];
+  const list = names.length > 1 ? tr("{0} e {1}", { 0: names.slice(0, -1).join(", "), 1: names[names.length - 1] }) : names[0];
+  const more = shared.length > 3 ? tr(" (e altri {0})", { 0: shared.length - 3 }) : "";
+  return tr("{0}{1} li hai anche in: {2}.", { 0: list, 1: more, 2: places.join(", ") });
 }
 
 export interface TitleCompositionSectionProps {
@@ -65,7 +66,7 @@ export function TitleCompositionSection({ holdings, sectors, shared }: TitleComp
       {top.length > 0 ? (
         <PanelSection icon={LayersIcon} title={tr("Cosa c'è dentro")} color="var(--swatch-emerald)" description={tr("Primi {0} titoli: {1} del fondo.", {0: top.length, 1: formatPct(topShare)})}>
           <WeightRows rows={top.map((h, i) => ({ key: `${h.symbol ?? h.name}-${i}`, label: h.name, weight: h.weight }))} colorClass="bg-[var(--swatch-emerald)]" />
-          {shared.length > 0 ? <p className="text-sm text-muted-foreground">{sharedText(shared)}</p> : null}
+          {shared.length > 0 ? <p className="text-sm text-muted-foreground">{sharedText(shared, tr)}</p> : null}
         </PanelSection>
       ) : null}
       {sectorRows.length > 0 ? (

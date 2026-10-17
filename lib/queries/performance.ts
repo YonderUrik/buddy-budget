@@ -40,8 +40,9 @@ export function usePerformanceView() {
       period: calculationPeriod,
       range: { from: view.returns.fromKey, to: view.returns.toKey },
       asOf: inspectedDate,
+      locale,
     });
-  }, [inspectedDate, view, overview.data, inputs, today, calculationPeriod]);
+  }, [inspectedDate, view, overview.data, inputs, today, calculationPeriod, locale]);
   const periodLabel = view?.returns
     ? `${formatDateWithYear(view.returns.fromKey)} – ${formatDateWithYear(view.returns.toKey)}`
     : t("Nessuna operazione nell’intervallo");

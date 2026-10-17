@@ -12,6 +12,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { parseAmount } from "@/lib/debts/add-form";
+import { numberSeparators } from "@/lib/localization/format";
 import { todayIso } from "@/lib/debts/dates";
 import { useCreateDebtEventMutation } from "@/lib/queries/debts";
 import { DebtFormField } from "./debt-form-field";
@@ -26,18 +27,18 @@ export interface PayInstallmentDialogProps {
 }
 
 function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanPlanRow; currency: string; onDone: () => void }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const mutation = useCreateDebtEventMutation();
   // Una rata non ancora scaduta si segna con la data di oggi, non con una scadenza futura.
   const [date, setDate] = React.useState(row.dueDate < todayIso() ? row.dueDate : todayIso());
-  const [amount, setAmount] = React.useState(String(row.installment).replace(".", ","));
+  const [amount, setAmount] = React.useState(String(row.installment).replace(".", numberSeparators(locale).decimal));
   const [transactionId, setTransactionId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const id = React.useId();
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    const value = parseAmount(amount);
+    const value = parseAmount(amount, locale);
     if (!value || value <= 0) return setError(tr("Inserisci l'importo pagato"));
     setError(null);
     mutation.mutate(
@@ -59,7 +60,7 @@ function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanP
             </DebtFormField>
           </div>
         </DialogSection>
-        <details className="group rounded-xl border p-3" open={transactionId !== null}>
+        <details className="group rounded-xl bg-muted/50 p-3" open={transactionId !== null}>
           <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 text-sm font-medium text-foreground">
             <LinkIcon className="size-4 text-muted-foreground" aria-hidden="true" />{" "}{tr("Collega una transazione")}{" "}<span className="font-normal text-muted-foreground">{tr("(facoltativo)")}</span>
           </summary>

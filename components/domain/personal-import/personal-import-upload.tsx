@@ -35,9 +35,9 @@ interface LoadedFile {
   csv: string;
 }
 
-/** Peso di un file in forma leggibile (KB o MB). */
-export function formatFileSize(bytes: number): string {
-  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toLocaleString("it-IT", { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+/** Human-readable file size (KB or MB), with the decimal separator of `locale`. */
+export function formatFileSize(bytes: number, locale = "it-IT"): string {
+  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toLocaleString(locale, { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
 /** Legge un file scelto dall'utente e lo restituisce come testo CSV; lancia con un messaggio comprensibile se non va. */
@@ -185,7 +185,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
         <>
           <StepHeading title={tr("Carica il file")} description={tr("CSV o Excel (.xlsx), fino a {0} e {1} righe.", {0: formatFileSize(PERSONAL_IMPORT_MAX_BYTES), 1: PERSONAL_IMPORT_MAX_ROWS.toLocaleString(formattingLocale)})} />
           {file ? (
-            <div className="flex items-center gap-3 rounded-xl border p-3">
+            <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-medium text-foreground">{file.name}</span>

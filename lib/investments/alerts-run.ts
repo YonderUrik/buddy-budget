@@ -4,6 +4,7 @@ import { Resend } from "resend";
 import { db } from "@/lib/db/client";
 import { getAppUrl } from "@/lib/env";
 import { authUser } from "@/lib/db/schema/auth";
+import { resolveProfile } from "@/lib/localization/config";
 import { instrumentPrices, instruments, userPriceAlerts } from "@/lib/db/schema/investments";
 import { hashUserId, logger, type Logger } from "@/lib/observability";
 import { alertEmailContent, isAlertTriggered } from "./alerts";
@@ -56,6 +57,8 @@ export async function evaluatePriceAlerts(options: { log?: Logger; send?: typeof
         instrumentName: instruments.name,
         currency: instruments.currency,
         email: authUser.email,
+        productCountry: authUser.productCountry,
+        language: authUser.language,
       })
       .from(userPriceAlerts)
       .innerJoin(instruments, eq(instruments.id, userPriceAlerts.instrumentId))
@@ -89,6 +92,7 @@ export async function evaluatePriceAlerts(options: { log?: Logger; send?: typeof
             closeDate: close.date,
             appUrl: getAppUrl(),
             instrumentId: row.alert.instrumentId,
+            language: resolveProfile(row).language,
           })
         );
         if (!ok) throw new Error("email non inviata");

@@ -27,7 +27,7 @@ export function ExposureSourcesList({ rows, onEdit }: ExposureSourcesListProps) 
   const visible = showAll ? rows : rows.slice(0, EXPOSURE_ROWS_LIMIT);
   return (
     <div className="flex flex-col gap-2">
-      <ul className="flex flex-col divide-y rounded-lg border" aria-label={tr("Fonte dei dati di ogni posizione")}>
+      <ul className="flex flex-col divide-y rounded-lg bg-muted/40" aria-label={tr("Fonte dei dati di ogni posizione")}>
         {visible.map((row) => (
           <li key={row.instrument.id} className="flex items-center gap-3 px-3 py-2">
             <InstrumentIcon type={row.instrument.type} name={row.instrument.name} instrumentId={row.instrument.id} size="sm" />

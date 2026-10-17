@@ -11,7 +11,7 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import { Area, AreaChart, CartesianGrid, ReferenceDot, ReferenceLine, XAxis, YAxis } from "recharts";
-import { SegmentedControl } from "@/components/domain/shared";
+import { PeriodSelector } from "@/components/domain/shared";
 import { ChartSplineIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
@@ -80,7 +80,7 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
       icon={ChartSplineIcon}
       title={tr("Andamento")}
       color={color}
-      action={<SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} stretch className="sm:w-auto" />}
+      action={<PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} stretch className="sm:w-auto" />}
     >
       <div>
         {series.length < 2 ? (
@@ -91,12 +91,6 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
           <>
             <ChartContainer config={config} className="-mx-4 h-56 w-[calc(100%+2rem)] sm:-mx-6 sm:h-72 sm:w-[calc(100%+3rem)] lg:mx-0 lg:w-full">
               <AreaChart data={series} margin={{ left: 4, right: 8 }}>
-                <defs>
-                  <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={color} stopOpacity={0.25} />
-                    <stop offset="100%" stopColor={color} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis
                   dataKey="date"
@@ -107,7 +101,7 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
                 />
                 <YAxis tickLine={false} axisLine={false} width={48} domain={["auto", "auto"]} tickFormatter={(v: number) => String(Math.round(v * 100) / 100)} />
                 <ChartTooltip cursor={false} content={<Tooltip currency={currency} />} />
-                <Area type="monotone" dataKey="close" stroke={color} strokeWidth={2} fill="url(#title-fill)" dot={false} isAnimationActive={false} />
+                <Area type="monotone" dataKey="close" stroke={color} strokeWidth={2} fill={color} fillOpacity={0.1} dot={false} isAnimationActive={false} />
                 {averagePrice !== null ? (
                   <ReferenceLine y={averagePrice} stroke="var(--primary)" strokeDasharray="5 4" ifOverflow="extendDomain" />
                 ) : null}

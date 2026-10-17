@@ -81,7 +81,7 @@ export function PensionImportFileStep({ onFile, onText }: PensionImportFileStepP
           value={pasted}
           onChange={(e) => setPasted(e.target.value)}
           placeholder={tr("Data;Contributi netti;Controvalore\n31/03/2026;10880,00;11250,40")}
-          className="font-mono text-xs"
+          className="tabular-nums text-xs"
         />
         <Button variant="outline" size="sm" className="mt-2 ml-auto flex" disabled={!pasted.trim()} onClick={() => onText(pasted)}>{tr("Leggi")}</Button>
       </section>

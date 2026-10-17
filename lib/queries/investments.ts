@@ -30,6 +30,7 @@ import type {
   DismissDividendInput,
   UpdateInstrumentSettingsInput,
 } from "@/lib/validation/investments";
+import { pageText } from "@/lib/localization/page-text";
 
 const INVESTMENTS_QUERY_KEY = ["investments"] as const;
 /** Query da aggiornare quando cambia il portafoglio: anche il patrimonio netto della Panoramica. */
@@ -41,7 +42,7 @@ export const BACKFILL_POLL_INTERVAL_MS = 2000;
 
 async function readError(response: Response, fallback: string): Promise<Error> {
   const body = await response.json().catch(() => null);
-  return new Error(body?.error ?? fallback);
+  return new Error(body?.error ?? pageText(fallback));
 }
 
 function useInvalidateInvestments() {
@@ -58,7 +59,7 @@ export function useInvestmentsOverviewQuery(period: NetWorthPeriod) {
     queryKey: [...INVESTMENTS_QUERY_KEY, "overview", period, productCountry],
     queryFn: async (): Promise<InvestmentData> => {
       const response = await fetch(`/api/investments/overview?period=${period}`);
-      if (!response.ok) throw new Error("Impossibile caricare gli investimenti");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare gli investimenti"));
       return response.json();
     },
   });
@@ -96,7 +97,7 @@ export function useInstrumentSearchQuery(query: string) {
     staleTime: 60_000,
     queryFn: async (): Promise<InstrumentSearchResult> => {
       const response = await fetch(`/api/instruments/search?q=${encodeURIComponent(debounced)}`);
-      if (!response.ok) throw new Error("Ricerca non riuscita");
+      if (!response.ok) throw new Error(pageText("Ricerca non riuscita"));
       return response.json();
     },
   });
@@ -134,7 +135,7 @@ export function useBackfillStatusQuery(instrumentIds: string[]) {
     enabled: ids.length > 0,
     queryFn: async (): Promise<BackfillStateView[]> => {
       const response = await fetch(`/api/instruments/backfill?ids=${ids}`);
-      if (!response.ok) throw new Error("Impossibile leggere lo stato dei prezzi");
+      if (!response.ok) throw new Error(pageText("Impossibile leggere lo stato dei prezzi"));
       return response.json();
     },
     refetchInterval: (q) =>
@@ -292,7 +293,7 @@ export function useRunImportMutation() {
       });
       const body = await response.json().catch(() => null);
       if (body && Array.isArray(body.rows)) return body;
-      throw new Error(body?.error ?? "Import non riuscito");
+      throw new Error(body?.error ?? pageText("Import non riuscito"));
     },
     onSuccess: (result, input) => {
       if (input.dryRun || result.inserted === 0) return;

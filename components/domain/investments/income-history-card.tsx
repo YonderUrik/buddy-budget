@@ -16,10 +16,6 @@ import type { IncomeHistory } from "@/lib/investments/income";
 import { HandCoinsIcon } from "lucide-react";
 import { PanelSection } from "./panel-section";
 
-function pct(ratio: number): string {
-  return `${(ratio * 100).toFixed(1).replace(".", ",")}%`;
-}
-
 export interface IncomeHistoryCardProps {
   income: IncomeHistory;
   instrumentsById: Map<string, Instrument>;
@@ -28,7 +24,7 @@ export interface IncomeHistoryCardProps {
 
 export function IncomeHistoryCard({ income, instrumentsById, currency }: IncomeHistoryCardProps) {
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatPct } = localizedFormats(formattingLocale);
 
   const { t: tr } = useLocalization();
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
@@ -38,7 +34,7 @@ export function IncomeHistoryCard({ income, instrumentsById, currency }: IncomeH
     <PanelSection icon={HandCoinsIcon} title={tr("Dividendi e cedole")} color="var(--swatch-amber)">
       <div className="flex flex-col gap-5">
         <p className="max-w-prose text-base text-foreground">{tr("Negli ultimi 12 mesi hai incassato")}{" "}<span className="font-semibold tabular-nums text-pos">{format(income.trailing)}</span>{" "}{tr("netti")}{income.yieldOnCost !== null && income.trailing > 0 ? (
-            <span className="text-muted-foreground">{tr(", il")}{" "}<span className="tabular-nums">{pct(income.yieldOnCost)}</span>{" "}{tr("di quanto hai pagato per quello che possiedi")}</span>
+            <span className="text-muted-foreground">{tr(", il")}{" "}<span className="tabular-nums">{formatPct(income.yieldOnCost)}</span>{" "}{tr("di quanto hai pagato per quello che possiedi")}</span>
           ) : null}
           {"."}<span className="text-muted-foreground">{" "}{tr("Da sempre:")}{" "}{format(income.total)}{"."}</span>
         </p>

@@ -32,7 +32,7 @@ async function personalRequest(id: string, token?: string): Promise<DeletionPrev
 
 /** Importazioni fatte e loro gestione; per i rendiconti dei broker l'eliminazione include i caricamenti successivi che ne dipendono. */
 export function ImportManagement({ embedded = false }: { embedded?: boolean } = {}) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const query = useBrokerStatementsQuery();
   const personal = usePersonalImportsQuery();
   const client = useQueryClient();
@@ -46,7 +46,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
   const [selection, setSelection] = useState<{ id: string; ids: string[]; items: string[] } | null>(null);
   const [showAll, setShowAll] = useState(false);
   const documents = query.data?.statements ?? [];
-  const history = buildImportHistory(documents, personal.data);
+  const history = buildImportHistory(documents, personal.data, locale);
   const loading = query.isLoading || personal.isPending;
   const failed = query.isError || personal.isError;
 
@@ -54,7 +54,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
     deletion.reset();
     const selected = documents.find((d) => d.id === id)!;
     const affected = documents.filter((d) => d.accountKey === selected.accountKey && d.statement.from >= selected.statement.from);
-    setSelection({ id, ids: affected.map((d) => d.id), items: affected.map((d) => formatImportPeriod(d.statement.from, d.statement.to)) });
+    setSelection({ id, ids: affected.map((d) => d.id), items: affected.map((d) => formatImportPeriod(d.statement.from, d.statement.to, locale)) });
   }
   async function confirm() {
     if (!selection) return;
@@ -69,7 +69,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
   const groups = groupImports(showAll ? history : history.slice(0, VISIBLE_IMPORTS));
   const brokerSource = selection ? history.find((h) => h.id === selection.id)?.source : null;
   const sourceCount = new Set(history.map((h) => h.source)).size;
-  const summary = history.length > 0 ? tr("{0} da {1} · ultimo il {2}", { 0: plural(history.length, "file caricato", "file caricati"), 1: plural(sourceCount, "origine", "origini"), 2: formatImportDate(history[0].createdAt) }) : undefined;
+  const summary = history.length > 0 ? tr("{0} da {1} · ultimo il {2}", { 0: plural(history.length, "file caricato", "file caricati"), 1: plural(sourceCount, "origine", "origini"), 2: formatImportDate(history[0].createdAt, locale) }) : undefined;
 
   const Shell = embedded ? EmbeddedShell : PanelShell;
   return (
@@ -106,10 +106,10 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
         open={personalSelection !== null}
         title={tr("Eliminare l'importazione «{0}»?", {0: personalSelection?.preview.name ?? ""})}
         intro="I dati caricati con questo formato personale vengono tolti dal tuo patrimonio."
-        items={personalSelection?.preview.uploads.map((u) => `Caricamento del ${formatImportDate(u.createdAt)}`) ?? []}
+        items={personalSelection?.preview.uploads.map((u) => tr("Caricamento del {0}", {0: formatImportDate(u.createdAt, locale)})) ?? []}
         removes={[
-          `${personalSelection?.preview.cashCount ?? 0} movimenti di cassa (inclusi i regolamenti degli investimenti)`,
-          `${personalSelection?.preview.investmentCount ?? 0} operazioni di investimento`,
+          tr("{0} movimenti di cassa (inclusi i regolamenti degli investimenti)", {0: personalSelection?.preview.cashCount ?? 0}),
+          tr("{0} operazioni di investimento", {0: personalSelection?.preview.investmentCount ?? 0}),
         ]}
         keeps={["Il formato personale, i conti e gli strumenti", "Puoi reimportare il CSV quando vuoi: i saldi si aggiornano di nuovo"]}
         pending={personalDeletion.isPending}
@@ -120,7 +120,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
       />
       <ImportDeleteDialog
         open={selection !== null}
-        title={selection && selection.ids.length > 1 ? tr("Eliminare {0} importazioni di {1}?", {0: selection.ids.length, 1: brokerSource ?? "questo conto"}) : tr("Eliminare l'importazione di {0}?", {0: brokerSource ?? "questo conto"})}
+        title={selection && selection.ids.length > 1 ? tr("Eliminare {0} importazioni di {1}?", {0: selection.ids.length, 1: brokerSource ?? tr("questo conto")}) : tr("Eliminare l'importazione di {0}?", {0: brokerSource ?? tr("questo conto")})}
         intro={selection && selection.ids.length > 1 ? "Insieme a quella scelta vanno tolti i caricamenti successivi dello stesso conto, perché i loro saldi partono da questo." : "Il rendiconto e le sue operazioni vengono tolti dal portafoglio."}
         items={selection?.items ?? []}
         removes={[brokerSource?.startsWith("Trade Republic") ? "Le operazioni di questi rendiconti e i movimenti del conto importati con loro" : "Le operazioni di questi rendiconti", "La liquidità torna all'ultima chiusura conservata, o a zero"]}

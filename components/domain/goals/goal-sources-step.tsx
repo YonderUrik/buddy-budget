@@ -51,7 +51,7 @@ export function GoalSourcesStep({ draft, sources, currency, fmt, onChange }: Goa
         if (items.length === 0) return null;
         return (
           <div key={group.kind} className="flex flex-col">
-            <p className="border-b pb-1.5 text-xs font-semibold uppercase tracking-wide text-text-3">{tr(group.title)}</p>
+            <p className="pb-1 text-sm font-medium text-text-3">{tr(group.title)}</p>
             <ul>
               {items.map((source) => {
                 const key = sourceKey(source.kind, source.id);

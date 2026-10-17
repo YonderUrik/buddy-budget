@@ -1,5 +1,6 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
+import { translateServerMessage } from "@/lib/localization/messages";
 
 /** Ultimo passo dell'import: cosa cambierà (nuove, aggiornate, già presenti), errori che bloccano e, a fine import, l'esito. */
 
@@ -33,7 +34,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 export function PensionImportSummaryStep({ plan, currency, discarded, done }: PensionImportSummaryStepProps) {
   const { formatShortDateKey, money } = localizedPensionFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   if (done) {
     return (
       <div className="flex flex-col items-center gap-2 py-6 text-center">
@@ -77,7 +78,7 @@ export function PensionImportSummaryStep({ plan, currency, discarded, done }: Pe
                 {updates.slice(0, MAX_LISTED).map((row) => (
                   <tr key={row.line} className="border-b border-border/60 last:border-b-0">
                     <td className="whitespace-nowrap py-2 pr-2 font-semibold">{formatShortDateKey(row.date)}</td>
-                    <td className="py-2 pl-2 text-right font-mono tabular-nums">{row.previous ? money(row.previous.value, currency) : "—"}</td>
+                    <td className="py-2 pl-2 text-right tabular-nums">{row.previous ? money(row.previous.value, currency) : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -91,9 +92,9 @@ export function PensionImportSummaryStep({ plan, currency, discarded, done }: Pe
           <p className="flex items-center gap-1.5 font-semibold text-neg">
             <AlertTriangleIcon className="size-4" aria-hidden="true" />{tr("Finché ci sono errori non si importa nulla")}</p>
           <ul className="flex flex-col gap-0.5 text-sm text-foreground">
-            {plan.error ? <li>{tr(plan.error)}</li> : null}
+            {plan.error ? <li>{translateServerMessage(language, plan.error)}</li> : null}
             {errors.slice(0, MAX_LISTED).map((row) => (
-              <li key={row.line}>{tr("Riga")}{" "}{row.line}{":"}{tr(row.message)}
+              <li key={row.line}>{tr("Riga")}{" "}{row.line}{":"}{row.message ? translateServerMessage(language, row.message) : null}
               </li>
             ))}
             {errors.length > MAX_LISTED ? <li>{tr("…e altre")}{" "}{errors.length - MAX_LISTED}</li> : null}

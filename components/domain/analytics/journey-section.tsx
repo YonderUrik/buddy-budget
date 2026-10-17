@@ -13,12 +13,12 @@ import { QuestionSection } from "./question-section";
 import type { QuestionSectionData } from "./section-props";
 
 export function JourneySection({ question, base, assumptions, plan }: QuestionSectionData) {
-  const { money } = localizedAnalyticsFormats(useLocalization().language);
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const { currency } = base;
   const split = splitGrowth(base.growthPoints);
-  const sentences = journeySentences(plan, split.rows.length >= 2 ? split : null, currency, assumptions.withdrawalRate);
+  const sentences = journeySentences(plan, split.rows.length >= 2 ? split : null, currency, assumptions.withdrawalRate, language);
   const progress = Math.min(plan.progress ?? 0, 1);
   return (
     <QuestionSection question={question} expertHint="da dove arriva la crescita, mese per mese" renderExpert={() => <GrowthTab base={base} />}>
@@ -42,12 +42,12 @@ export function JourneySection({ question, base, assumptions, plan }: QuestionSe
       ) : null}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Metric label={tr("Il tuo patrimonio")} value={money(plan.wealth, currency)} />
-        <Metric term="numero-fire" label={tr("Numero FIRE")} value={plan.target !== null ? money(plan.target, currency) : "—"} sub={plan.taxShare > 0 && plan.fireNumberGross ? "{0} prima delle imposte" : undefined} />
+        <Metric term="numero-fire" label={tr("Numero FIRE")} value={plan.target !== null ? money(plan.target, currency) : "—"} sub={plan.taxShare > 0 && plan.fireNumberGross ? tr("{0} prima delle imposte", {0: money(plan.fireNumberGross, currency)}) : undefined} />
         <Metric
           label={tr("Ti mancano")}
           value={plan.target !== null ? money(Math.max(plan.target - plan.wealth, 0), currency) : "—"}
           tone={plan.target !== null && plan.wealth >= plan.target ? "pos" : "default"}
-          sub={plan.progress !== null ? "hai fatto il {0}" : undefined}
+          sub={plan.progress !== null ? tr("hai fatto il {0}", {0: pct(plan.progress, 0)}) : undefined}
         />
       </div>
     </QuestionSection>

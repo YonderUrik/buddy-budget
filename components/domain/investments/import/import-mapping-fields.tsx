@@ -118,7 +118,7 @@ export function ImportMappingFields({ table, mapping, onChange }: ImportMappingF
           onChange={(defaultType: InvestmentTransactionType) => onChange({ defaultType })}
         />
       ) : typeValues.length > 0 ? (
-        <fieldset className="flex flex-col gap-2 rounded-lg border p-3">
+        <fieldset className="flex flex-col gap-2 rounded-lg bg-muted/50 p-3">
           <legend className="px-1 text-xs text-muted-foreground">{tr("Cosa significano i valori della colonna tipo")}</legend>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {typeValues.map((value) => (

@@ -7,3 +7,6 @@ export const PAGE_TITLE_FACE = "font-display font-light leading-[0.95] text-fore
 
 /** Default page title: face plus size, for a plain `<h1>` at the top of a screen. */
 export const PAGE_TITLE = `${PAGE_TITLE_FACE} text-[2.5rem] sm:text-[2.75rem]`;
+
+/** Section title inside a screen (the heading next to a section's icon, a simulator, a step): same face, smaller. */
+export const SECTION_TITLE = `${PAGE_TITLE_FACE} text-[1.75rem]`;

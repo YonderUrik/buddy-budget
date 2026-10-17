@@ -73,7 +73,7 @@ export function StatCard({
   return (
     <Card className={cn(className)}>
       <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           {tr(label)}
         </CardTitle>
       </CardHeader>

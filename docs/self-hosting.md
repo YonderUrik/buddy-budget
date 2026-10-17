@@ -2,7 +2,7 @@
 
 BuddyBudget runs with a single command on any machine with Docker (Linux, macOS, Windows with WSL2; amd64 or arm64, even a Raspberry Pi 4/5). The compose file starts the app, Postgres, Redis and a scheduler that runs the periodic jobs.
 
-> **Image status**: until the maintainers enable publishing on ghcr.io (section «For those who publish the images» at the bottom), `docker compose up` will not find `latest`: build from source (section «Building from source»; internet access is needed to download the fonts).
+> **Image status**: every release publishes public images on ghcr.io for amd64, with the version tag and `latest`. arm64 images (Raspberry Pi, Apple silicon servers) are published only when the maintainers enable them (section «For those who publish the images» at the bottom); until then, on arm64 build from source (section «Building from source»; internet access is needed to download the fonts).
 
 ## Up and running in 5 minutes
 
@@ -95,10 +95,10 @@ docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 
 The images are on **GitHub Container Registry** (`ghcr.io/yonderurik/buddy-budget` and `buddy-budget-migrate`), not Docker Hub: free and without pull limits for public packages, same login and permissions as the repo, already used by the production deploy. The reason for the choice is in the decision `docs/decisioni/2026-10-10-self-hosting-docker.md`.
 
-The release workflow already publishes the images for amd64. To also publish arm64 and the `latest` tag, it must be enabled once:
+Every release publishes the images for amd64 with the version tag and `latest`, and the packages are public. To also publish arm64, it must be enabled once:
 
-1. Repo → Settings → Secrets and variables → Actions → **Variables** → create `SELFHOST_IMAGES` = `true`. From the next release the images are multi-architecture (amd64 + arm64, arm64 build with QEMU: CI takes longer), with the `latest` tag and SBOM.
-2. After the first publication: profile/organization → Packages → each package (`buddy-budget`, `buddy-budget-migrate`) → Package settings → *Change visibility* → **Public**. Without this, other people's `docker compose pull` asks for a login.
+1. Repo → Settings → Secrets and variables → Actions → **Variables** → create `SELFHOST_IMAGES` = `true`. From the next release the images are multi-architecture (amd64 + arm64, arm64 build with QEMU: CI takes longer), with SBOM.
+2. Packages stay public (profile/organization → Packages → each package → Package settings → *Change visibility* → **Public**); a new package starts private, so check it after adding one. Without this, other people's `docker compose pull` asks for a login.
 3. Test: `docker pull ghcr.io/yonderurik/buddy-budget:latest` from a logged-out account and `docker buildx imagetools inspect` to see both architectures.
 
-To go back to the previous behavior, just delete the variable.
+To go back to amd64 only, just delete the variable.

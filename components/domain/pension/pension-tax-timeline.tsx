@@ -84,7 +84,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
       <div ref={trackRef} className="relative pt-6">
         <div className="flex h-3 w-full overflow-hidden rounded-full bg-foreground/10">
           <span className="h-full bg-neg/70" style={{ width: `${flatShare}%` }} />
-          <span className="h-full bg-gradient-to-r from-neg/70 to-pos" style={{ width: `${100 - flatShare}%` }} />
+          <span className="h-full bg-pos/70" style={{ width: `${100 - flatShare}%` }} />
         </div>
         {interactive && shownYears !== realYears ? (
           <span className="absolute bottom-0 h-3 w-0.5 -translate-x-1/2 rounded-full bg-foreground/40" style={{ left: `${realPosition}%` }} title={tr("Oggi")} aria-hidden="true" />
@@ -99,7 +99,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
                 aria-valuemin={0}
                 aria-valuemax={EXIT_TAX_TIMELINE_YEARS}
                 aria-valuenow={shownYears}
-                aria-valuetext={`${shownYears} anni di partecipazione, aliquota ${rateLabel}`}
+                aria-valuetext={tr("{0} anni di partecipazione, aliquota {1}", {0: shownYears, 1: rateLabel})}
                 className={`${chipClass} relative cursor-grab touch-none select-none outline-none before:absolute before:-inset-2 before:content-[''] focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing`}
                 onPointerDown={(event) => {
                   event.currentTarget.setPointerCapture(event.pointerId);

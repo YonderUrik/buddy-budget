@@ -1,41 +1,53 @@
-import { ArrowDown } from "lucide-react";
-import { HERO } from "@/content/home";
-import { APP_LINKS } from "@/content/site";
+import type { HeroText } from "@/content/home";
+import { LOCALE_APP_LINKS } from "@/content/site";
+import type { Locale } from "@/lib/i18n";
+import { rise } from "@/lib/motion/rise";
 import { CtaLink } from "../cta-link";
+import { PhoneShot } from "../phone-shot";
 import { ScreenCrop } from "./screen-crop";
-import { SumCard } from "./sum-card";
 
-/** Anchor of the section the «Come funziona» link scrolls to. */
-const HOW_ANCHOR = "#come";
+export interface HeroProps {
+  text: HeroText;
+  locale: Locale;
+}
 
 /**
- * The opening on the navy ground: the promise in the tall display face, one sentence and the button, with the sum card
- * beside them. Right after it the Panoramica, big and full width, half on the navy and half
- * on the page (the product shown at once, as Hermes Agent does with its desktop app).
+ * The opening («Type and nothing else», taste-skill direction): a navy field holding only the statement, set across
+ * the width in two lines of the tall display face, one sentence at the bottom left and the two buttons at the bottom
+ * right. The first picture, the real Panoramica (the phone capture on the phone), follows as its own band on the next field.
  */
-export function Hero() {
+export function Hero({ text, locale }: HeroProps) {
+  const links = LOCALE_APP_LINKS[locale];
   return (
     <>
-      <section className="hero" aria-labelledby="hero-t">
+      <section className="hero" aria-labelledby="hero-t" data-field="navy">
         <div className="wrap">
-          <div className="hero-copy">
-            <h1 id="hero-t">{HERO.title}</h1>
-            <p className="lede">{HERO.lede}</p>
-            <div className="cta" id="hero-cta">
-              <CtaLink className="btn sun" href={APP_LINKS.signup} location="hero" target="signup" arrow>
-                {HERO.cta}
+          <h1 id="hero-t">
+            <span>
+              <span>{text.title[0]}</span>
+            </span>{" "}
+            <span>
+              <span>{text.title[1]}</span>
+            </span>
+          </h1>
+          <div className="hero-foot">
+            <p className="lede" data-rise style={rise(1)}>{text.lede}</p>
+            <div className="cta" id="hero-cta" data-rise style={rise(2)}>
+              <CtaLink className="btn sun" href={links.signup} location="hero" target="signup" lang={locale} arrow>
+                {text.cta}
               </CtaLink>
-              <CtaLink className="how" href={HOW_ANCHOR} location="hero" target="how">
-                {HERO.how}
-                <ArrowDown aria-hidden="true" strokeWidth={2} />
+              <CtaLink className="btn line" href={links.demo} location="hero" demo lang={locale}>
+                {text.demo}
               </CtaLink>
             </div>
           </div>
-          <SumCard />
         </div>
       </section>
-      <div className="wrap hero-shot">
-        <ScreenCrop id="panoramica" top priority sizes="(max-width: 1000px) 100vw, 1152px" />
+      <div className="hero-shot" data-field="alt">
+        <div className="wrap">
+          <ScreenCrop id="panoramica" top priority locale={locale} sizes="(max-width: 1000px) 100vw, 1152px" className="drift hs-desk" />
+          <PhoneShot id="panoramica" locale={locale} className="drift hs-phone" />
+        </div>
       </div>
     </>
   );

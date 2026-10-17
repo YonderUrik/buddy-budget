@@ -22,11 +22,11 @@ export interface ManualPriceDialogProps {
 }
 
 export function ManualPriceDialog({ instrument, onClose }: ManualPriceDialogProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const save = useSaveManualPriceMutation();
   const [date, setDate] = React.useState(localTodayKey());
   const [close, setClose] = React.useState("");
-  const value = parseAmount(close);
+  const value = parseAmount(close, locale);
 
   function submit(event: React.FormEvent) {
     event.preventDefault();

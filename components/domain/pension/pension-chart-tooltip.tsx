@@ -21,7 +21,7 @@ export function PensionTooltipRow({ color, label, value, valueClassName }: Pensi
     <div className="flex w-full items-center gap-2">
       <span className="size-2.5 shrink-0 rounded-[2px]" style={{ backgroundColor: color }} aria-hidden="true" />
       <span className="flex-1 text-muted-foreground">{tr(label)}</span>
-      <span className={`font-mono font-medium tabular-nums ${valueClassName ?? "text-foreground"}`}>{value}</span>
+      <span className={`font-medium tabular-nums ${valueClassName ?? "text-foreground"}`}>{value}</span>
     </div>
   );
 }

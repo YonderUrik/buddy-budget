@@ -1,0 +1,11 @@
+/* «Also available in English»: a line on the yellow above the bar, shown only with `html[data-lang-hint]` (set before paint). */
+.lang-hint { display: none; background: var(--sun); color: var(--on-sun); padding-top: env(safe-area-inset-top, 0px); }
+html[data-lang-hint] .lang-hint { display: block; }
+/* the bar below already pads for the notch when the line is not there */
+html[data-lang-hint] .lang-hint + .nav { padding-top: 0; }
+.lang-hint .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+.lang-hint a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font: 600 14px var(--f-b); color: var(--on-sun); text-decoration: none; }
+.lang-hint a span { transition: transform 0.2s var(--ease); }
+.lang-hint a:hover span { transform: translateX(3px); }
+.lang-hint button { display: grid; place-items: center; width: 44px; height: 44px; margin-right: -12px; border: 0; background: transparent; color: var(--on-sun); cursor: pointer; border-radius: 999px; }
+.lang-hint button:hover { background: color-mix(in srgb, var(--on-sun) 10%, transparent); }

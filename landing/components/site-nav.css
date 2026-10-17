@@ -1,52 +1,51 @@
-/* Top bar like the app's: light, a rule below, it scrolls away with the page. */
-.nav { position: relative; z-index: 50; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+/*
+ * Top bar: sticky, no rule below; it takes the field under it (`data-on`, see `useFieldUnderBar`) with a 300 ms
+ * colour change. Links in sentence case; on the phone they fold into a full-screen navy sheet.
+ */
+.nav { position: sticky; top: 0; z-index: 50; padding-top: env(safe-area-inset-top, 0px); background: var(--bg); color: var(--ink); transition: background-color 0.3s var(--ease), color 0.3s var(--ease); --nav-dim: var(--ink2); }
+.nav[data-on="alt"] { background: var(--bg-alt); }
+.nav[data-on="navy"] { background: var(--navy); color: var(--on-navy); --mk2: var(--on-navy); --nav-dim: var(--on-navy2); }
+.nav[data-on="sun"] { background: var(--sun); color: var(--on-sun); --mk2: var(--on-sun); --nav-dim: color-mix(in srgb, var(--on-sun) 72%, var(--sun)); }
+/* on the yellow field the yellow button would vanish: it turns ink */
+.nav[data-on="sun"] .nr .btn.sun { background: var(--on-sun); color: var(--sun); }
 .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
-.brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--f-h); text-decoration: none; letter-spacing: -0.02em; }
-.links { display: flex; align-items: center; gap: 24px; font: 500 15px var(--f-b); color: var(--ink2); }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--f-b); text-decoration: none; letter-spacing: -0.02em; }
+.brand .mark { transition: none; }
+.links { display: flex; align-items: center; gap: 26px; font: 500 15px var(--f-b); color: var(--nav-dim); }
 .links a { text-decoration: none; transition: color 0.2s; }
-.links a:hover, .links a[aria-current="page"] { color: var(--ink); }
+.nav .links a:hover, .nav .links a[aria-current="page"] { color: var(--ink); }
+.nav[data-on="navy"] .links a:hover, .nav[data-on="navy"] .links a[aria-current="page"] { color: var(--on-navy); }
+.nav[data-on="sun"] .links a:hover, .nav[data-on="sun"] .links a[aria-current="page"] { color: var(--on-sun); }
 .links .gh, .menu .gh { display: inline-flex; align-items: center; gap: 6px; }
 .links .gh svg { width: 15px; height: 15px; }
 .nr { display: flex; align-items: center; gap: 10px; }
-.nr .btn { height: 40px; padding: 0 14px; font-size: 14.5px; }
-.menu-btn { display: none; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: inherit; cursor: pointer; place-items: center; }
+.nr .btn { height: 40px; padding: 0 16px; font-size: 15px; }
+.nav .tg, .menu-btn { background: transparent; color: inherit; }
+.menu-btn { display: none; width: 44px; height: 44px; border: 0; border-radius: 999px; cursor: pointer; place-items: center; transition: background-color 0.18s var(--ease); }
+.menu-btn:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
 .menu { display: none; }
 
-/* phone: the links fold into a full-screen sheet under the bar, with big rows and the two buttons */
+/* phone: the links fold into a full-screen navy sheet under the bar, with big rows and the two buttons */
 @media (max-width: 1000px) {
-  .links { display: none; }
+  .links, .nr .nav-lang { display: none; }
   .menu-btn { display: grid; }
-  .nr .btn.ghost { display: none; }
-  .menu { position: fixed; inset: calc(64px + env(safe-area-inset-top, 0px)) 0 0 0; z-index: 49; display: block; background: var(--bg); overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .nr .btn.line { display: none; }
+  .menu { position: fixed; inset: calc(64px + env(safe-area-inset-top, 0px)) 0 0 0; z-index: 49; display: block; background: var(--navy); color: var(--on-navy); overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .menu[hidden] { display: none; }
   .menu .wrap { display: grid; grid-template-columns: minmax(0, 1fr); justify-content: stretch; align-content: start; height: auto; gap: 0; padding-block: 8px 28px; }
-  .menu a:not(.btn) { display: flex; align-items: center; gap: 10px; min-height: 58px; border-bottom: 1px solid var(--line); font: 600 22px var(--f-h); letter-spacing: -0.02em; color: var(--ink); text-decoration: none; }
-  .menu a[aria-current="page"] { color: var(--accent); }
-  .menu .gh svg { width: 18px; height: 18px; }
-  .menu-acts { display: grid; gap: 10px; margin-top: 22px; }
-  .menu-acts .btn { height: 50px; justify-content: center; font-size: 16px; }
-  .menu-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; color: var(--ink3); font-size: 14.5px; }
+  .menu a:not(.btn) { display: flex; align-items: center; gap: 10px; min-height: 64px; font: 400 40px / 1 var(--f-d); color: var(--on-navy); text-decoration: none; }
+  .menu a[aria-current="page"] { color: var(--sun); }
+  .menu .gh svg { width: 22px; height: 22px; }
+  .menu-acts { display: grid; gap: 10px; margin-top: 28px; }
+  .menu-acts .btn { height: 52px; font-size: 17px; }
+  .menu-acts .btn.line { display: inline-flex; }
+  .menu-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; color: var(--on-navy2); font-size: 15px; }
+  .menu-foot + .menu-foot { margin-top: 8px; }
 }
-/* phones: the main button never shrinks; padding and size go down, and under 480px the theme toggle moves into the menu */
+/* phones: the main button never shrinks; under 480px the theme toggle moves into the menu */
 @media (max-width: 480px) {
-  .nav .btn.main { height: 38px; padding: 0 12px; font-size: 14px; }
-  .nav .nr { gap: 8px; }
+  .nav .nr .btn { height: 40px; padding: 0 14px; font-size: 14.5px; }
+  .nav .nr { gap: 6px; }
   .nr > .tg { display: none; }
 }
 @media (max-width: 360px) { .nav .brand { font-size: 0; gap: 0; } }
-
-/* navy bar (every page opens on navy): links in spaced capitals, «Inizia gratis» in the brand yellow (`.btn.sun`) */
-.nav.navy { background: var(--navy); color: var(--on-navy); border-bottom-color: color-mix(in srgb, var(--on-navy) 12%, transparent); }
-.nav.navy .brand { --mk2: var(--on-navy); }
-.nav.navy .links { font: 500 13px var(--f-b); letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-navy2); }
-.nav.navy .links a:hover, .nav.navy .links a[aria-current="page"] { color: var(--on-navy); }
-.nav.navy .tg, .nav.navy .menu-btn { background: transparent; border-color: color-mix(in srgb, var(--on-navy) 24%, transparent); color: var(--on-navy); }
-.nav.navy .btn.ghost { background: transparent; color: var(--on-navy); border-color: color-mix(in srgb, var(--on-navy) 30%, transparent); }
-.nav.navy .btn.ghost:hover { border-color: var(--on-navy); }
-@media (max-width: 1000px) {
-  .nav.navy .menu { background: var(--navy); }
-  .nav.navy .menu a:not(.btn) { color: var(--on-navy); border-bottom-color: color-mix(in srgb, var(--on-navy) 12%, transparent); }
-  .nav.navy .menu a[aria-current="page"] { color: var(--on-navy2); }
-  .nav.navy .menu-foot { color: var(--on-navy2); }
-  .nav.navy .menu-acts .btn.ghost { display: inline-flex; }
-}

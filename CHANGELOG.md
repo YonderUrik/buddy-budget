@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.76.2](https://github.com/YonderUrik/buddy-budget/compare/v0.76.1...v0.76.2) (2026-10-17)
+
+
+### Correzioni
+
+* one clear chooser for the public demo's country and language ([#428](https://github.com/YonderUrik/buddy-budget/issues/428)) ([640f4de](https://github.com/YonderUrik/buddy-budget/commit/640f4dee9502bf5ab199dea411a9f77477877127))
+
 ## [0.76.1](https://github.com/YonderUrik/buddy-budget/compare/v0.76.0...v0.76.1) (2026-10-17)
 
 

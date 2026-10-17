@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
@@ -16,6 +16,14 @@ describe("isPublicPath", () => {
   it.each(["/api/transactions", "/api/healthz", "/api/cronjobs", "/api/metricsx", "/api/emails", "/disiscrizionex", "/api/user/notifications", "/conti", "/"])("%s richiede sessione", (path) => {
     expect(isPublicPath(path)).toBe(false);
   });
+});
+
+// .env.local may define APP_URL: without it the proxy falls back to the request URL, which these tests assert.
+beforeEach(() => {
+  vi.stubEnv("APP_URL", "");
+});
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("proxy con account disattivato", async () => {
@@ -123,5 +131,26 @@ describe("proxy con la demo pubblica", async () => {
   it("un utente vero scrive come sempre", async () => {
     sessionAs("Xk2l9ZqP");
     expect((await call("/api/transactions", "POST")).status).toBe(200);
+  });
+});
+
+describe("proxy behind the ingress", async () => {
+  const { NextRequest } = await import("next/server");
+  const { auth } = await import("@/lib/auth");
+  const { proxy } = await import("./proxy");
+  const mockedGetSession = vi.mocked(auth.api.getSession);
+
+  it("redirects to the public APP_URL, never to the container bind address", async () => {
+    vi.stubEnv("APP_URL", "https://app.example.test/");
+    mockedGetSession.mockResolvedValue(null as never);
+    const signedOut = await proxy(new NextRequest("http://0.0.0.0:3000/panoramica"));
+    expect(signedOut.headers.get("location")).toBe("https://app.example.test/login?redirect=%2Fpanoramica");
+
+    mockedGetSession.mockResolvedValue({ user: { onboardingCompleted: false, deletionScheduledAt: null, legalAcceptedVersion: LEGAL_VERSION }, session: {} } as never);
+    const notOnboarded = await proxy(new NextRequest("http://0.0.0.0:3000/panoramica"));
+    expect(notOnboarded.headers.get("location")).toBe("https://app.example.test/onboarding");
+
+    const loggedIn = await proxy(new NextRequest("http://0.0.0.0:3000/login?redirect=/liquidita"));
+    expect(loggedIn.headers.get("location")).toBe("https://app.example.test/liquidita");
   });
 });

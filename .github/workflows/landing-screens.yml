@@ -1,6 +1,7 @@
 name: Screenshot landing
 
-# Regenerates the app screenshots for the landing (see docs/landing-screens.md) and opens a PR with the new images.
+# Regenerates the app screenshots for the landing in every interface language (see docs/landing-screens.md) and opens a
+# PR with the new images.
 # Does not run on every merge: with many PRs close together it was redone each time (~3 minutes, plus CI for the bot's PR).
 # Runs once a day, when the screen definition changes (list, scripts, demo data), and manually.
 # Whoever visibly changes a screen still regenerates the screenshots in their own PR (CLAUDE.md).
@@ -13,6 +14,7 @@ on:
     branches: [main]
     paths:
       - "scripts/demo-seed.ts"
+      - "scripts/demo-seed-texts.ts"
       - "landing/content/screens.ts"
       - "landing/scripts/capture-screens.mjs"
   workflow_dispatch:
@@ -77,13 +79,17 @@ jobs:
         run: |
           npm install --no-save --prefix "$RUNNER_TEMP/pw" playwright
           "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
-      - name: Attendi l'app e cattura
-        working-directory: landing
+      # Italian first: the other languages reuse its sizes. Each language re-seeds the demo user with its own texts
+      # (German also with the German product rules) while the app keeps running.
+      - name: Attendi l'app e cattura in ogni lingua
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/pw/node_modules/playwright
         run: |
           npx --yes wait-on http://localhost:3300/login --timeout 60000
-          node --experimental-strip-types scripts/capture-screens.mjs
+          for language in it en de; do
+            DEMO_LANGUAGE=$language pnpm demo:seed
+            (cd landing && CAPTURE_LANGUAGE=$language node --experimental-strip-types scripts/capture-screens.mjs)
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: landing-screens

@@ -1,5 +1,6 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
+import { translateServerMessage } from "@/lib/localization/messages";
 
 /**
  * Dialog di import delle fotografie di un fondo da file CSV o Excel, in tre passi: file, colonne, riepilogo.
@@ -47,7 +48,7 @@ function Stepper({ current }: { current: PensionImportStep }) {
 }
 
 function Wizard({ onClose, fundId, existing, currency, today }: Omit<PensionImportDialogProps, "open" | "onOpenChange" | "fundName"> & { onClose: () => void }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const s = usePensionImport(fundId, existing, today);
   const discarded = s.rows.filter((r) => r.status === "error").length;
   const nothingToWrite = s.plan.counts.new + s.plan.counts.update === 0;
@@ -63,7 +64,7 @@ function Wizard({ onClose, fundId, existing, currency, today }: Omit<PensionImpo
         ) : null}
         {s.step === "summary" ? <PensionImportSummaryStep plan={s.plan} currency={currency} discarded={discarded} done={s.done} /> : null}
       </div>
-      {s.error ? <p className="text-sm text-neg">{tr(s.error)}</p> : null}
+      {s.error ? <p className="text-sm text-neg">{translateServerMessage(language, s.error)}</p> : null}
       <div className="flex justify-between gap-2">
         {s.done ? (
           <Button className="ml-auto" onClick={onClose}>{tr("Chiudi")}</Button>

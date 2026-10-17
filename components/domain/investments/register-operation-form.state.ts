@@ -1,6 +1,7 @@
 import type { ResolvedPrice } from "@/lib/calc/investments";
 import type { Instrument, InvestmentTransaction, InvestmentTransactionType, PriceUnit } from "@/lib/db/schema/investments";
 import { formatDateWithYear } from "@/lib/format";
+import { numberSeparators } from "@/lib/localization/format";
 import { translate } from "@/lib/localization/messages";
 import { LANGUAGE_LOCALES, type Language } from "@/lib/localization/config";
 
@@ -66,14 +67,14 @@ export function localTodayKey(now: Date = new Date()): string {
 /** Decimali massimi di un prezzo precompilato (le chiusure salvate ne hanno fino a 8). */
 export const PREFILL_PRICE_DECIMALS = 6;
 
-/** Numero nel formato del campo (virgola decimale), vuoto se assente. */
-export function numberText(value: number | null | undefined): string {
-  return value === null || value === undefined ? "" : String(value).replace(".", ",");
+/** Number in the field format (the locale's decimal separator, no grouping; `parseAmount` reads both), empty if missing. */
+export function numberText(value: number | null | undefined, locale = "it-IT"): string {
+  return value === null || value === undefined ? "" : String(value).replace(".", numberSeparators(locale).decimal);
 }
 
-/** Prezzo precompilato nel formato del campo, senza la coda di decimali delle chiusure salvate. */
-export function priceText(close: number): string {
-  return numberText(Number(close.toFixed(PREFILL_PRICE_DECIMALS)));
+/** Prefilled price in the field format, without the tail of decimals of the saved closes. */
+export function priceText(close: number, locale = "it-IT"): string {
+  return numberText(Number(close.toFixed(PREFILL_PRICE_DECIMALS)), locale);
 }
 
 /**

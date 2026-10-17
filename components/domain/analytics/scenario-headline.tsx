@@ -5,7 +5,8 @@ import { useLocalization } from "@/lib/localization/provider";
 import { AnimatedNumber, TextMorph } from "@/components/motion";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { cn } from "@/lib/utils";
-import { localizedAnalyticsFormats, formatYears } from "./analytics-format";
+import type { MessageValues } from "@/lib/localization/messages";
+import { localizedAnalyticsFormats } from "./analytics-format";
 
 export interface ScenarioHeadlineProps {
   /** Piano con i valori dei cursori. */
@@ -15,16 +16,16 @@ export interface ScenarioHeadlineProps {
   today: Date;
 }
 
-/** Cosa dire del cambio di anni rispetto alle ipotesi salvate; null se invariato o non confrontabile. */
-function comparison(plan: AnalyticsPlan, baseline: AnalyticsPlan): { text: string; positive: boolean } | null {
+/** What to say about the change in years from the saved assumptions, in the user's language; null if unchanged or not comparable. */
+function comparison(plan: AnalyticsPlan, baseline: AnalyticsPlan, formatYears: (years: number | null) => string, tr: (source: string, values?: MessageValues) => string): { text: string; positive: boolean } | null {
   if (plan.yearsToFire === null || baseline.yearsToFire === null) return null;
   const diff = baseline.yearsToFire - plan.yearsToFire;
   if (Math.abs(diff) < 0.05) return null;
-  return { text: `${formatYears(Math.abs(diff))} ${diff > 0 ? "prima" : "dopo"} delle ipotesi salvate`, positive: diff > 0 };
+  return { text: tr(diff > 0 ? "{0} prima delle ipotesi salvate" : "{0} dopo delle ipotesi salvate", { 0: formatYears(Math.abs(diff)) }), positive: diff > 0 };
 }
 
 export function ScenarioHeadline({ plan, baseline, today }: ScenarioHeadlineProps) {
-  const { formatYears } = localizedAnalyticsFormats(useLocalization().language);
+  const { formatYears, formatYearsFromNow } = localizedAnalyticsFormats(useLocalization().language);
 
   const { t: tr } = useLocalization();
   if (plan.target === null) {
@@ -37,7 +38,7 @@ export function ScenarioHeadline({ plan, baseline, today }: ScenarioHeadlineProp
     );
   }
   const years = plan.yearsToFire;
-  const cmp = comparison(plan, baseline);
+  const cmp = comparison(plan, baseline, formatYears, tr);
   const year = years === null || years === 0 ? null : today.getFullYear() + Math.ceil(years);
   const big =
     years === null ? tr("Oltre 80 anni") : year === null ? tr("Già oggi") : <AnimatedNumber value={year} format={{ useGrouping: false }} />;
@@ -46,7 +47,7 @@ export function ScenarioHeadline({ plan, baseline, today }: ScenarioHeadlineProp
       <p className="text-muted-foreground">{years === 0 ? tr("Hai già raggiunto il numero FIRE") : tr("Puoi smettere di lavorare intorno al")}</p>
       <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <span className="font-heading text-5xl leading-none font-medium tracking-tight text-foreground tabular-nums sm:text-7xl">{big}</span>
-        {years !== null && years > 0 ? <TextMorph className="text-lg text-muted-foreground">{tr("tra {0}", {0: formatYears(years)})}</TextMorph> : null}
+        {years !== null && years > 0 ? <TextMorph className="text-lg text-muted-foreground">{formatYearsFromNow(years)}</TextMorph> : null}
         {cmp ? <TextMorph className={cn("text-lg font-semibold", cmp.positive ? "text-pos" : "text-neg")}>{cmp.text}</TextMorph> : null}
       </p>
     </div>

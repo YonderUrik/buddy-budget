@@ -82,6 +82,13 @@ describe("buildSyncErrorMessage", () => {
     expect(message).toContain("Prossimo disponibile alle");
   });
 
+  it("not-eligible formats the time in the given locale", () => {
+    const nextEligibleAt = new Date(2026, 6, 26, 15, 30).toISOString();
+    expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt, syncsRemainingToday: 0 })).toContain("alle 15:30");
+    expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt, syncsRemainingToday: 0 }, "en-GB")).toContain("available at 15:30");
+    expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt, syncsRemainingToday: 0 }, "en-US")).toContain("available at 03:30 PM");
+  });
+
   it("not-eligible senza orario", () => {
     expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt: null, syncsRemainingToday: 0 })).toBe(
       "Sync non disponibile al momento. Riprova più tardi."
@@ -101,5 +108,14 @@ describe("buildSyncErrorMessage", () => {
     expect(buildSyncErrorMessage({ status: "unavailable" })).toBe(
       "Servizio di sincronizzazione temporaneamente non disponibile. Riprova tra poco."
     );
+  });
+});
+
+describe("messages in the user's language", () => {
+  it("writes the summary and errors in English and German", () => {
+    const result = { status: "synced" as const, newTransactionsCount: 5, categorizedCount: 3, uncategorizedCount: 2, balanceUpdated: true as const };
+    expect(buildSyncSummaryMessage(result, "en-GB")).toBe("5 new transactions (3 categorised automatically, 2 to decide). Balance updated.");
+    expect(buildSyncSummaryMessage({ ...result, newTransactionsCount: 0 }, "de-DE")).toBe("Keine neuen Umsätze gefunden. Saldo aktualisiert.");
+    expect(buildSyncErrorMessage({ status: "expired" }, "en-GB")).toBe("Your bank session has expired. Reconnect the account to sync.");
   });
 });

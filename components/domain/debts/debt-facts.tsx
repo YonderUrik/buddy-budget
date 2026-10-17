@@ -15,8 +15,6 @@ export interface DebtFactsProps {
   currency: string;
 }
 
-const percent = (value: number) => `${value.toFixed(2).replace(".", ",")}%`;
-
 /** Quota del capitale già restituita (0-1), dal piano. */
 export function repaidShare(debt: DebtView): number {
   const first = debt.plan.rows[0];
@@ -29,7 +27,8 @@ export function DebtFacts({ debt, currency }: DebtFactsProps) {
   const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
 
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatRatio } = localizedFormats(formattingLocale);
+  const percent = (value: number) => `${formatRatio(value, 2)}%`;
 
   const { t: tr } = useLocalization();
   const t = debt.plan.totals;

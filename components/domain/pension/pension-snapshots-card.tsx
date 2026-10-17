@@ -11,6 +11,7 @@ import { DatabaseIcon, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { sortSnapshots, type PensionSnapshot } from "@/lib/calc/pension";
+import { parseLocaleNumber } from "@/lib/localization/format";
 import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 
@@ -28,23 +29,24 @@ export interface PensionSnapshotsCardProps {
 
 const LIST_VISIBLE_ROWS = 6;
 
-const parseAmount = (raw: string): number | null => {
-  const value = Number(raw.replace(",", "."));
-  return raw.trim() !== "" && Number.isFinite(value) && value >= 0 ? value : null;
+/** Non-negative amount typed in the user's locale, or null. */
+const parseAmount = (raw: string, locale: string): number | null => {
+  const value = parseLocaleNumber(raw, locale);
+  return value !== null && value >= 0 ? value : null;
 };
 
 export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemove, onImport }: PensionSnapshotsCardProps) {
   const { formatLongDateKey, formatShortDateKey, money } = localizedPensionFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const [date, setDate] = React.useState(today);
   const [contributions, setContributions] = React.useState("");
   const [value, setValue] = React.useState("");
   const [showAll, setShowAll] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const parsedContributions = parseAmount(contributions);
-  const parsedValue = parseAmount(value);
+  const parsedContributions = parseAmount(contributions, locale);
+  const parsedValue = parseAmount(value, locale);
   const canSave = parsedContributions !== null && parsedValue !== null && date !== "";
   const sorted = sortSnapshots(snapshots);
   const rows = [...sorted].reverse();

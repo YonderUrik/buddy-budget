@@ -58,7 +58,7 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
 
   const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr, productCountry } = useLocalization();
+  const { t: tr, productCountry, language } = useLocalization();
   const [overrides, setOverrides] = React.useState<ScenarioOverrides>({});
   const [selected, setSelected] = React.useState<AnswerView["id"]>("quando");
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -72,7 +72,7 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
     const input = buildSimulationInput(deferred.plan, deferred.assumptions, "oggi");
     return input ? compareRules(input) : null;
   }, [deferred]);
-  const lasting = results ? lastingAnswer(results, deferred.assumptions.rule, deferred.assumptions.retirementYears) : null;
+  const lasting = results ? lastingAnswer(results, deferred.assumptions.rule, deferred.assumptions.retirementYears, language) : null;
   const costs = React.useMemo(() => summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })), productCountry), [base.positions, assumptions.terByInstrument, productCountry]);
 
   const views: AnswerView[] = ANALYTICS_QUESTIONS.map((q) => {
@@ -81,7 +81,7 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
       case "dove-sono":
         return { ...common, value: scenarioPlan.progress !== null ? pct(Math.min(scenarioPlan.progress, 9.99), 0) : "—", note: scenarioPlan.target !== null ? tr("{0} su {1}", { 0: money(scenarioPlan.wealth, currency), 1: money(scenarioPlan.target, currency) }) : money(scenarioPlan.wealth, currency) };
       case "quando":
-        return { ...common, value: scenarioPlan.yearsToFire === null ? "—" : scenarioPlan.yearsToFire === 0 ? "Già qui" : String(today.getFullYear() + Math.ceil(scenarioPlan.yearsToFire)), note: hasScenario(overrides) ? tr("con i valori dei cursori") : tr("ai ritmi attuali") };
+        return { ...common, value: scenarioPlan.yearsToFire === null ? "—" : scenarioPlan.yearsToFire === 0 ? tr("Già qui") : String(today.getFullYear() + Math.ceil(scenarioPlan.yearsToFire)), note: hasScenario(overrides) ? tr("con i valori dei cursori") : tr("ai ritmi attuali") };
       case "reggera":
         return { ...common, value: lasting ? pct(lasting.success, 0) : "—", note: lasting ? tr("su {0} anni, smettendo oggi", { 0: assumptions.retirementYears }) : tr("serve la spesa annua") };
       case "costi":

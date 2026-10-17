@@ -2,7 +2,7 @@
 import { useLocalization } from "@/lib/localization/provider";
 /** I movimenti di un esercente in breve: data, importo e, se diversa dal nome, la descrizione della banca. */
 
-import { formatCurrency, formatShortDate } from "@/lib/format";
+import { localizedFormats } from "@/lib/localization/format";
 import { cn } from "@/lib/utils";
 
 /** Quanti movimenti mostrare prima di «e altri N». */
@@ -20,7 +20,8 @@ export interface MovementsPreviewProps {
 }
 
 export function MovementsPreview({ label, dates, amounts, descriptions, currency, limit = MOVEMENTS_PREVIEW_LIMIT, className }: MovementsPreviewProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
+  const { formatCurrency, formatShortDate } = localizedFormats(locale);
   const order = dates.map((_, index) => index).sort((a, b) => dates[b].localeCompare(dates[a]));
   const shown = order.slice(0, limit);
   const hidden = order.length - shown.length;

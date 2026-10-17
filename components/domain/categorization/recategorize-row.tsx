@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { localizedCategorizationText } from "@/lib/categorization/origin";
 import type { RecategorizePreviewGroup } from "@/lib/categorization/recategorize-plan";
 import type { Category } from "@/lib/db/schema/categories";
-import { formatCurrency } from "@/lib/format";
+import { localizedFormats } from "@/lib/localization/format";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { cn } from "@/lib/utils";
 import { MerchantLogo } from "./merchant-logo";
@@ -47,7 +47,8 @@ function maybeMineText(legacyCount: number, count: number): string {
 export function RecategorizeRow({ group, categoryById, currency, checked, onCheckedChange, onRemoteLogo }: RecategorizeRowProps) {
   const { dateRangeLabel } = localizedCategorizationText(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
+  const { formatCurrency } = localizedFormats(locale);
   const checkboxId = React.useId();
   const isIncome = group.totalAmount > 0;
   return (

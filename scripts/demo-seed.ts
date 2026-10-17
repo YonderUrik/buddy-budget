@@ -5,6 +5,8 @@
  * Gira su un database VUOTO e migrato (mai su quello di produzione né di sviluppo con dati veri): rifiuta di
  * partire se l'utente demo non esiste e il database contiene già altri utenti.
  * Uso: `pnpm demo:seed` con `DATABASE_URL` che punta al database demo. Vedi `docs/landing-screens.md`.
+ * `DEMO_LANGUAGE=en|de` seeds the same data with texts in that language (German also gets the German product rules),
+ * so the landing screenshots can be captured in every interface language; it re-creates the demo user each time.
  */
 import { eq, like } from "drizzle-orm";
 import { client, db } from "@/lib/db/client";
@@ -18,6 +20,7 @@ import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { categorizationSuggestions } from "@/lib/db/schema/categorization-suggestions";
 import { merchantKey } from "@/lib/categorization/merchant-key";
+import { subscriptionKey } from "@/lib/calc/subscriptions";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
 import { goalSources, goals } from "@/lib/db/schema/goals";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
@@ -30,11 +33,18 @@ import {
 import { transactions } from "@/lib/db/schema/transactions";
 import { LEGAL_VERSION } from "@/lib/legal";
 import { snapshotUser } from "@/lib/net-worth/scheduler";
+import { LANGUAGES, profileForLanguage, type Language } from "@/lib/localization/config";
+import { demoText } from "./demo-seed-texts";
 
 export const DEMO_USER_ID = "demo-user";
 export const DEMO_SESSION_TOKEN = "demo-session-token-0000000000000000";
 
 const MONTHS_OF_HISTORY = 12;
+const LANGUAGE = (process.env.DEMO_LANGUAGE ?? "it") as Language;
+if (!LANGUAGES.includes(LANGUAGE)) throw new Error(`DEMO_LANGUAGE must be one of ${LANGUAGES.join(", ")}`);
+const PROFILE = profileForLanguage(LANGUAGE);
+/** User-facing demo text in the seeded language. */
+const t = (source: string) => demoText(source, LANGUAGE);
 const SEED = 20261001;
 
 /** Generatore pseudo-casuale mulberry32: stessi numeri a ogni esecuzione. */
@@ -94,13 +104,20 @@ async function main() {
   await db.delete(authUser).where(eq(authUser.id, DEMO_USER_ID));
   // Gli strumenti demo sopravvivono all'utente (created_by si azzera): si rimuovono per ISIN fittizio prima di ricrearli.
   await db.delete(instruments).where(like(instruments.isin, "__00DEMO%"));
+  // Re-seeding (e.g. in another language) creates new ids: the cached fingerprint of the old investment history must go.
+  if (process.env.REDIS_URL) {
+    const [{ redis }, { investmentHistoryFingerprintKey }] = await Promise.all([import("@/lib/redis/client"), import("@/lib/net-worth/redis-history-state")]);
+    await redis.del(investmentHistoryFingerprintKey(DEMO_USER_ID));
+  }
 
   await db.insert(authUser).values({
     id: DEMO_USER_ID,
-    name: "Giulia Demo",
+    name: t("Giulia Demo"),
     email: "giulia.demo@example.com",
     emailVerified: true,
     currency: "EUR",
+    productCountry: PROFILE.productCountry,
+    language: PROFILE.language,
     onboardingCompleted: true,
     // Termini già accettati, sempre nella versione in vigore al momento del seed: così il gate di proxy.ts non rimanda a /accetta-termini.
     legalAcceptedAt: new Date(),
@@ -129,9 +146,9 @@ async function main() {
   const [checking, savings, cash] = await db
     .insert(accounts)
     .values([
-      { userId: DEMO_USER_ID, name: "Conto corrente", type: "Conto corrente", balance: "0", color: "blue", icon: "landmark", source: "auto" },
-      { userId: DEMO_USER_ID, name: "Conto deposito", type: "Conto deposito", balance: "17400.00", color: "emerald", icon: "piggy-bank" },
-      { userId: DEMO_USER_ID, name: "Contanti", type: "Contanti", balance: "145.00", color: "amber", icon: "wallet" },
+      { userId: DEMO_USER_ID, name: t("Conto corrente"), type: "Conto corrente", balance: "0", color: "blue", icon: "landmark", source: "auto" },
+      { userId: DEMO_USER_ID, name: t("Conto deposito"), type: "Conto deposito", balance: "17400.00", color: "emerald", icon: "piggy-bank" },
+      { userId: DEMO_USER_ID, name: t("Contanti"), type: "Contanti", balance: "145.00", color: "amber", icon: "wallet" },
     ])
     .returning();
 
@@ -146,8 +163,8 @@ async function main() {
         userId: DEMO_USER_ID,
         accountId,
         categoryId: cat(categoryName),
-        description,
-        rawDescription: raw,
+        description: t(description),
+        rawDescription: raw === null ? null : t(raw),
         amount: amount.toFixed(2),
         date: iso(date),
         source: "auto",
@@ -175,7 +192,7 @@ async function main() {
   // alcuni incerti o senza proposta («Da decidere»).
   const recentCutoff = iso(daysAgo(14));
   rows.forEach((row, index) => {
-    if (row.description === "Rata mutuo" && row.date >= recentCutoff) {
+    if (row.description === t("Rata mutuo") && row.date >= recentCutoff) {
       Object.assign(row, { categorySource: "regola", categorizedAt: new Date(Date.now() - (index % 5) * 3600000) });
     }
   });
@@ -186,8 +203,8 @@ async function main() {
       userId: DEMO_USER_ID,
       accountId: checking.id,
       categoryId: cat("Ristoranti & Bar"),
-      description: "Bar Centrale",
-      rawDescription: "PAGAMENTO POS BAR CENTRALE",
+      description: t("Bar Centrale"),
+      rawDescription: t("PAGAMENTO POS BAR CENTRALE"),
       amount: "-3.80",
       date: iso(dayOfMonth(back, 10)),
       source: "auto",
@@ -210,8 +227,8 @@ async function main() {
         userId: DEMO_USER_ID,
         accountId: checking.id,
         categoryId: cat(categoryName),
-        description,
-        rawDescription: raw,
+        description: t(description),
+        rawDescription: t(raw),
         amount: amount.toFixed(2),
         date: iso(daysAgo(i + 1)),
         source: "auto",
@@ -235,8 +252,8 @@ async function main() {
         userId: DEMO_USER_ID,
         accountId: checking.id,
         categoryId: fallback.id,
-        description,
-        rawDescription: raw,
+        description: t(description),
+        rawDescription: t(raw),
         amount: amount.toFixed(2),
         date: iso(daysAgo(i + 2)),
         source: "auto",
@@ -244,14 +261,14 @@ async function main() {
       });
     });
     await db.insert(categorizationSuggestions).values([
-      { userId: DEMO_USER_ID, merchantKey: merchantKey("Ferramenta Rossi"), direction: "uscita", categoryId: cat("Casa & Arredamento"), confidence: "0.7800", model: "demo", promptVersion: 1 },
-      { userId: DEMO_USER_ID, merchantKey: merchantKey("Ottica Vista"), direction: "uscita", categoryId: cat("Salute"), confidence: "0.7100", model: "demo", promptVersion: 1 },
+      { userId: DEMO_USER_ID, merchantKey: merchantKey(t("Ferramenta Rossi")), direction: "uscita", categoryId: cat("Casa & Arredamento"), confidence: "0.7800", model: "demo", promptVersion: 1 },
+      { userId: DEMO_USER_ID, merchantKey: merchantKey(t("Ottica Vista")), direction: "uscita", categoryId: cat("Salute"), confidence: "0.7100", model: "demo", promptVersion: 1 },
     ]);
-    await db.insert(categorizationRules).values({ userId: DEMO_USER_ID, matchType: "merchant", pattern: merchantKey("Rata mutuo"), categoryId: cat("Affitto & Mutuo"), source: "appresa" });
+    await db.insert(categorizationRules).values({ userId: DEMO_USER_ID, matchType: "merchant", pattern: merchantKey(t("Rata mutuo")), categoryId: cat("Affitto & Mutuo"), source: "appresa" });
   }
   for (const [accountId, amount] of [[checking.id, -250], [savings.id, 250]] as const) {
     rows.push({ userId: DEMO_USER_ID, accountId, categoryId: cat("Trasferimenti tra i miei conti"),
-      description: "Giroconto al conto deposito", amount: amount.toFixed(2), excludedAmount: amount.toFixed(2),
+      description: t("Giroconto al conto deposito"), amount: amount.toFixed(2), excludedAmount: amount.toFixed(2),
       date: iso(today), source: "auto", externalId: `demo-transfer-${accountId}` });
   }
   for (let i = 0; i < rows.length; i += 200) await db.insert(transactions).values(rows.slice(i, i + 200));
@@ -269,26 +286,26 @@ async function main() {
 
   // Abbonamenti: Giulia ha già confermato i suoi e scartato il mutuo; restano da decidere l'assicurazione e il giornale (fermo).
   await db.insert(subscriptions).values([
-    { userId: DEMO_USER_ID, key: "streaming video", status: "confermato", origin: "rilevato", name: "Streaming video", amount: "13.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
-    { userId: DEMO_USER_ID, key: "musica", status: "confermato", origin: "rilevato", name: "Musica", amount: "10.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
-    { userId: DEMO_USER_ID, key: "archivio cloud", status: "confermato", origin: "rilevato", name: "Archivio cloud", amount: "2.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
-    { userId: DEMO_USER_ID, key: "palestra", status: "confermato", origin: "rilevato", name: "Palestra", amount: "39.00", cadence: "mensile", categoryId: cat("Sport & Benessere") },
-    { userId: DEMO_USER_ID, key: "fibra e mobile", status: "confermato", origin: "rilevato", name: "Fibra e mobile", amount: "34.90", cadence: "mensile", categoryId: cat("Bollette & Telefono") },
-    { userId: DEMO_USER_ID, key: "rata mutuo", status: "escluso", origin: "rilevato", name: "Rata mutuo", amount: "742.18", cadence: "mensile", categoryId: cat("Affitto & Mutuo") },
+    { userId: DEMO_USER_ID, key: subscriptionKey(t("Streaming video")), status: "confermato", origin: "rilevato", name: t("Streaming video"), amount: "13.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
+    { userId: DEMO_USER_ID, key: subscriptionKey(t("Musica")), status: "confermato", origin: "rilevato", name: t("Musica"), amount: "10.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
+    { userId: DEMO_USER_ID, key: subscriptionKey(t("Archivio cloud")), status: "confermato", origin: "rilevato", name: t("Archivio cloud"), amount: "2.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
+    { userId: DEMO_USER_ID, key: subscriptionKey(t("Palestra")), status: "confermato", origin: "rilevato", name: t("Palestra"), amount: "39.00", cadence: "mensile", categoryId: cat("Sport & Benessere") },
+    { userId: DEMO_USER_ID, key: subscriptionKey(t("Fibra e mobile")), status: "confermato", origin: "rilevato", name: t("Fibra e mobile"), amount: "34.90", cadence: "mensile", categoryId: cat("Bollette & Telefono") },
+    { userId: DEMO_USER_ID, key: subscriptionKey(t("Rata mutuo")), status: "escluso", origin: "rilevato", name: t("Rata mutuo"), amount: "742.18", cadence: "mensile", categoryId: cat("Affitto & Mutuo") },
   ]);
 
   // Investimenti: un ETF globale, un'azione e un BTP, con prezzi giornalieri finti (passeggiata aleatoria).
   const [portfolio] = await db
     .insert(investmentPortfolios)
-    .values({ userId: DEMO_USER_ID, name: "Portafoglio principale", broker: "Broker Demo", taxRegime: "amministrato" })
+    .values({ userId: DEMO_USER_ID, name: t("Portafoglio principale"), broker: "Broker Demo", taxRegime: "amministrato" })
     .returning();
   const [etf, stock, bond, tech] = await db
     .insert(instruments)
     .values([
-      { isin: "IE00DEMO0001", name: "ETF Azionario Globale Demo", type: "etf", currency: "EUR", exchange: "XETRA", taxHarmonized: true, createdByUserId: DEMO_USER_ID },
-      { isin: "IT00DEMO0002", name: "Energia Italia S.p.A.", type: "azione", currency: "EUR", exchange: "MIL", createdByUserId: DEMO_USER_ID },
-      { isin: "IT00DEMO0003", name: "BTP Valore 2030", type: "obbligazione", currency: "EUR", priceUnit: "percentuale_nominale", taxRate: "0.1250", createdByUserId: DEMO_USER_ID },
-      { isin: "IT00DEMO0004", name: "Tecnologia Futura S.p.A.", type: "azione", currency: "EUR", exchange: "MIL", createdByUserId: DEMO_USER_ID },
+      { isin: "IE00DEMO0001", name: t("ETF Azionario Globale Demo"), type: "etf", currency: "EUR", exchange: "XETRA", taxHarmonized: true, createdByUserId: DEMO_USER_ID },
+      { isin: "IT00DEMO0002", name: t("Energia Italia S.p.A."), type: "azione", currency: "EUR", exchange: "MIL", createdByUserId: DEMO_USER_ID },
+      { isin: "IT00DEMO0003", name: t("BTP Valore 2030"), type: "obbligazione", currency: "EUR", priceUnit: "percentuale_nominale", taxRate: "0.1250", createdByUserId: DEMO_USER_ID },
+      { isin: "IT00DEMO0004", name: t("Tecnologia Futura S.p.A."), type: "azione", currency: "EUR", exchange: "MIL", createdByUserId: DEMO_USER_ID },
     ])
     .returning();
   const priceDays = 430;
@@ -351,9 +368,9 @@ async function main() {
   const [emergency, trip, home] = await db
     .insert(goals)
     .values([
-      { userId: DEMO_USER_ID, name: "Fondo di emergenza", kind: "emergenza", targetAmount: "9000.00", monthlyAmount: "150.00", priority: 0 },
-      { userId: DEMO_USER_ID, name: "Viaggio in Giappone", kind: "viaggio", targetAmount: "4500.00", targetDate: monthStart(10), monthlyAmount: "200.00", priority: 1 },
-      { userId: DEMO_USER_ID, name: "Anticipo casa", kind: "casa", targetAmount: "40000.00", targetDate: monthStart(60), monthlyAmount: "250.00", priority: 2 },
+      { userId: DEMO_USER_ID, name: t("Fondo di emergenza"), kind: "emergenza", targetAmount: "9000.00", monthlyAmount: "150.00", priority: 0 },
+      { userId: DEMO_USER_ID, name: t("Viaggio in Giappone"), kind: "viaggio", targetAmount: "4500.00", targetDate: monthStart(10), monthlyAmount: "200.00", priority: 1 },
+      { userId: DEMO_USER_ID, name: t("Anticipo casa"), kind: "casa", targetAmount: "40000.00", targetDate: monthStart(60), monthlyAmount: "250.00", priority: 2 },
     ])
     .returning();
   await db.insert(goalSources).values([
@@ -369,7 +386,7 @@ async function main() {
     .values({
       userId: DEMO_USER_ID,
       kind: "loan",
-      name: "Mutuo casa",
+      name: t("Mutuo casa"),
       startMode: "origine",
       principal: "38000.00",
       annualRate: "2.9000",
@@ -386,8 +403,8 @@ async function main() {
   );
   // Altri due finanziamenti più piccoli e più cari, perché la panoramica confronti i debiti (rate già pagate fino al mese scorso).
   const smallLoans = [
-    { name: "Prestito auto", principal: "14000.00", annualRate: "6.9000", installments: 60, paid: 14, day: 12 },
-    { name: "Cucina e lavatrice", principal: "2400.00", annualRate: "11.9000", installments: 24, paid: 9, day: 20 },
+    { name: t("Prestito auto"), principal: "14000.00", annualRate: "6.9000", installments: 60, paid: 14, day: 12 },
+    { name: t("Cucina e lavatrice"), principal: "2400.00", annualRate: "11.9000", installments: 24, paid: 9, day: 20 },
   ];
   for (const loan of smallLoans) {
     const start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - loan.paid, loan.day));
@@ -409,7 +426,7 @@ async function main() {
   // Previdenza: un fondo aperto da 4 anni, con solo TFR versato ogni trimestre (valori inventati).
   const [pensionFund] = await db
     .insert(pensionFunds)
-    .values({ userId: DEMO_USER_ID, name: "Piano pensione", adhesionDate: iso(new Date(Date.UTC(today.getUTCFullYear() - 4, today.getUTCMonth(), 15))) })
+    .values({ userId: DEMO_USER_ID, name: t("Piano pensione"), adhesionDate: iso(new Date(Date.UTC(today.getUTCFullYear() - 4, today.getUTCMonth(), 15))) })
     .returning();
   const pensionQuarters = 16;
   const quarterlyTfr = 620;

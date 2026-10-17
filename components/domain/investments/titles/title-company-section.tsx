@@ -68,7 +68,7 @@ export function TitleCompanySection({ stock, priceCurrency }: TitleCompanySectio
             <IndicatorItem
               label={tr("Crescita dei ricavi")}
               value={<span className={growth.lastYear < 0 ? "text-neg" : "text-pos"}>{formatSignedPct(growth.lastYear)}</span>}
-              aside={growth.average !== null ? `media ${growth.averageYears} anni ${formatSignedPct(growth.average)}` : undefined}
+              aside={growth.average !== null ? tr("media {0} anni {1}", {0: growth.averageYears, 1: formatSignedPct(growth.average)}) : undefined}
               hint={tr("Ultimo esercizio rispetto al precedente.")}
             />
           </dl>

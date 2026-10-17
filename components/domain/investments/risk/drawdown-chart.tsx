@@ -12,6 +12,7 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { parseDateOnly } from "@/lib/calc/expenses";
 import type { DrawdownPoint } from "@/lib/calc/risk";
+import { formatMinusPct } from "../percent";
 
 
 const CHART_CONFIG = { drawdown: { label: "Sotto il massimo", color: "var(--neg)" } } satisfies ChartConfig;
@@ -22,9 +23,9 @@ type Point = DrawdownPoint & { label: string };
 /** Etichette dell'asse: un decimale quando la caduta è piccola, così non compaiono tacche tutte uguali ("-1%, -1%"). */
 const AXIS_DECIMALS_BELOW = 0.05;
 
-function makeAxisPct(minDepth: number) {
+function makeAxisPct(minDepth: number, locale: string) {
   const decimals = Math.abs(minDepth) < AXIS_DECIMALS_BELOW ? 1 : 0;
-  return (value: number) => `${(value * 100).toFixed(decimals).replace(".", ",").replace(/^-/, "−")}%`;
+  return (value: number) => formatMinusPct(value, decimals, locale);
 }
 
 function Tooltip({ active, payload }: { active?: boolean; payload?: { payload: Point }[] }) {
@@ -50,8 +51,8 @@ export interface DrawdownChartProps {
 }
 
 export function DrawdownChart({ series }: DrawdownChartProps) {
-  const { t: tr } = useLocalization();
-  const axisPct = React.useMemo(() => makeAxisPct(Math.min(...series.map((p) => p.drawdown))), [series]);
+  const { t: tr, locale } = useLocalization();
+  const axisPct = React.useMemo(() => makeAxisPct(Math.min(...series.map((p) => p.drawdown)), locale), [series, locale]);
   return (
     <ChartContainer config={CHART_CONFIG} className="max-h-40 w-full" aria-label={tr("Perdita dal massimo nel tempo")}>
       <AreaChart data={series} margin={{ left: 4, right: 8 }}>

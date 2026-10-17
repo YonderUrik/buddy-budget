@@ -38,10 +38,6 @@ const CHART_DOMAIN_HIGH = 1.01;
 const AREA_FILL_ID = "portfolio-hero-fill";
 
 
-function pctText(ratio: number): string {
-  return `${ratio < 0 ? "−" : "+"}${Math.abs(ratio * 100).toFixed(1).replace(".", ",")}%`;
-}
-
 function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { payload: PortfolioSeriesPoint }[]; currency: string }) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
@@ -83,7 +79,7 @@ export interface PortfolioHeroCardProps extends Omit<PortfolioPeriodSelectorProp
 
 export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, range, today, onRangeChange, currency }: PortfolioHeroCardProps) {
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatSignedPct } = localizedFormats(formattingLocale);
 
   const { t: tr } = useLocalization();
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
@@ -106,7 +102,7 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
             <p className={cn("font-mono text-sm tabular-nums", summary.dayChange < 0 ? "text-neg" : "text-pos")}>
               {summary.dayChange < 0 ? <TrendingDownIcon className="mr-1 inline size-4" aria-hidden="true" /> : <TrendingUpIcon className="mr-1 inline size-4" aria-hidden="true" />}
               {summary.dayChange < 0 ? "−" : "+"}
-              {format(Math.abs(summary.dayChange))} {"("}{pctText(summary.dayChangePct)}{")"}<span className="font-sans text-muted-foreground">{" "}{tr("dall'ultima chiusura")}</span>
+              {format(Math.abs(summary.dayChange))} {"("}{formatSignedPct(summary.dayChangePct)}{")"}<span className="font-sans text-muted-foreground">{" "}{tr("dall'ultima chiusura")}</span>
             </p>
           ) : null}
           {cash.length > 0 ? (
@@ -123,7 +119,7 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
             <span className={cn("font-semibold tabular-nums", gaining ? "text-pos" : "text-neg")}>
               {gaining ? "+" : "−"}
               {format(Math.abs(breakdown.market))}
-              {marketPct !== null ? ` (${pctText(marketPct)})` : ""}
+              {marketPct !== null ? ` (${formatSignedPct(marketPct)})` : ""}
             </span>
             {"."}{breakdown.cashedIn !== 0 ? (
               <span className="text-muted-foreground">

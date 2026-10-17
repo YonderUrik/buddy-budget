@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { GoalKind } from "@/lib/goals/constants";
 import type { GoalsView } from "@/lib/goals/view";
+import { pageText } from "@/lib/localization/page-text";
 
 /** Chiave della vista degli obiettivi: la leggono la vista Obiettivi e la Panoramica. */
 export const GOALS_QUERY_KEY = ["goals"] as const;
@@ -30,7 +31,7 @@ export interface GoalPayload {
 
 async function readError(response: Response, fallback: string): Promise<Error> {
   const body = await response.json().catch(() => null);
-  return new Error(body?.error ?? fallback);
+  return new Error(body?.error ?? pageText(fallback));
 }
 
 async function send(url: string, method: string, body: unknown, fallback: string) {
@@ -47,7 +48,7 @@ export function useGoalsQuery(enabled = true) {
     staleTime: GOALS_STALE_MS,
     queryFn: async (): Promise<GoalsView> => {
       const response = await fetch("/api/goals");
-      if (!response.ok) throw new Error("Impossibile caricare gli obiettivi");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare gli obiettivi"));
       return response.json();
     },
   });

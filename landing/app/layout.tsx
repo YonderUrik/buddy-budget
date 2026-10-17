@@ -8,6 +8,7 @@ import "./globals.css";
 import { BrandSprite } from "@/components/brand";
 import { APP_URL, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/content/site";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
+import { SCREEN_LANGUAGE_SCRIPT } from "@/lib/screen-variants";
 
 const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 // Lo script passa dal proxy `/stats` dell'app (già esistente, evita i blocchi dei tracker); `data-domains` limita il conteggio al dominio vero.
@@ -53,9 +54,10 @@ const JSON_LD = {
   ],
 };
 
-/** Imposta tema salvato e `js-motion` prima del primo paint: gli stati iniziali nascosti esistono solo se le animazioni possono partire. */
+/** Sets the saved theme, `js-motion` and the screenshots' language before the first paint: hidden initial states exist only if animations can run. */
 const BOOT_SCRIPT = `try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}
-if(window.matchMedia("(prefers-reduced-motion: no-preference)").matches)document.documentElement.classList.add("js-motion")`;
+if(window.matchMedia("(prefers-reduced-motion: no-preference)").matches)document.documentElement.classList.add("js-motion")
+${SCREEN_LANGUAGE_SCRIPT}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

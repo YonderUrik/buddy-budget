@@ -122,8 +122,6 @@ interface ClassValue {
   isEstimated: boolean;
 }
 
-const DAY_LABEL_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
-const MONTH_LABEL_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "short", year: "2-digit" });
 
 function subtractMonthsClamped(date: Date, months: number): Date {
   const firstOfTarget = new Date(date.getFullYear(), date.getMonth() - months, 1);
@@ -149,8 +147,11 @@ export function buildNetWorthSeries(
   snapshots: NetWorthSnapshotInput[],
   todayByClass: NetWorthByClass,
   period: NetWorthPeriod,
-  today: Date
+  today: Date,
+  locale = "it-IT"
 ): NetWorthSeriesPoint[] {
+  const dayLabelFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
+  const monthLabelFormat = new Intl.DateTimeFormat(locale, { month: "short", year: "2-digit" });
   const todayKey = toDateKey(startOfDay(today));
   const byDate = new Map<string, Map<string, ClassValue>>();
   for (const row of snapshots) {
@@ -190,13 +191,13 @@ export function buildNetWorthSeries(
         value += entry.value;
         isEstimated ||= entry.isEstimated;
       }
-      daily.push({ date: key, label: DAY_LABEL_FORMAT.format(cursor), value: round2(value), byClass, isEstimated });
+      daily.push({ date: key, label: dayLabelFormat.format(cursor), value: round2(value), byClass, isEstimated });
     }
   }
   const todayValue = Object.values(todayByClass).reduce((sum, v) => sum + v, 0);
   daily.push({
     date: todayKey,
-    label: DAY_LABEL_FORMAT.format(startOfDay(today)),
+    label: dayLabelFormat.format(startOfDay(today)),
     value: round2(todayValue),
     byClass: { ...todayByClass },
     isEstimated: false,
@@ -206,7 +207,7 @@ export function buildNetWorthSeries(
 
   const monthly: NetWorthSeriesPoint[] = [];
   for (const p of daily) {
-    const relabeled = { ...p, label: MONTH_LABEL_FORMAT.format(parseDateOnly(p.date)) };
+    const relabeled = { ...p, label: monthLabelFormat.format(parseDateOnly(p.date)) };
     const previous = monthly[monthly.length - 1];
     if (previous && previous.date.slice(0, 7) === p.date.slice(0, 7)) {
       monthly[monthly.length - 1] = relabeled;

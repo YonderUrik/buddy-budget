@@ -68,19 +68,19 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
   const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
 
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatRatio } = localizedFormats(formattingLocale);
   function formatCalculated(key: LoanInputKey, value: number, currency: string): string {
-  if (key === "annualRate") return `${value.toFixed(2).replace(".", ",")}%`;
+  if (key === "annualRate") return `${formatRatio(value, 2)}%`;
   if (key === "installments") return String(value);
   return formatCurrency(value, currency);
 }
 
-  const { t: tr, locale } = useLocalization();
+  const { t: tr, locale, language } = useLocalization();
   const mutation = useCreateDebtMutation();
   const [error, setError] = React.useState<string | null>(null);
   const id = React.useId();
   const copy = FIELD_COPY[state.startMode];
-  const resolution = resolveAddForm(state);
+  const resolution = resolveAddForm(state, locale);
   const resolved = resolution.ok ? resolution.value : null;
   const preview = resolved ? previewAddForm(state, resolved) : null;
   const set = (patch: Partial<AddDebtFormState>) => onChange({ ...state, ...patch });
@@ -101,7 +101,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
     if (basics) return setError(basics);
     if (!resolved) return setError(resolution.ok ? null : (resolution.message ?? "Servono almeno tre dati su quattro tra capitale, rata, numero di rate e tasso"));
     setError(null);
-    mutation.mutate(buildCreateDebtInput(state, resolved, todayIso()), { onSuccess: onCreated, onError: (e) => setError(e.message) });
+    mutation.mutate(buildCreateDebtInput(state, resolved, todayIso(), locale), { onSuccess: onCreated, onError: (e) => setError(e.message) });
   }
 
   const calc = resolved?.calculated;
@@ -110,7 +110,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
     <form onSubmit={submit} className="flex flex-col gap-5">
       {part === 0 ? (
         <>
-          <StepHeading title={tr("Come si chiama il finanziamento?")} description={tr("Il nome serve a riconoscerlo nell'elenco; poi la data della {0}.", {0: copy.firstDate.toLowerCase()})} />
+          <StepHeading title={tr("Come si chiama il finanziamento?")} description={tr("Il nome serve a riconoscerlo nell'elenco; poi la data della {0}.", {0: language === "de" ? tr(copy.firstDate) : tr(copy.firstDate).toLowerCase()})} />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <DebtFormField label={tr("Nome")} htmlFor={`${id}-name`}>
               <Input id={`${id}-name`} placeholder={tr("Es. Prestito auto")} value={state.name} onChange={(e) => set({ name: e.target.value })} />
@@ -141,7 +141,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
           {resolved && calc ? (
             <p className="flex items-start gap-2 text-sm text-foreground" role="status">
               <InfoIcon size={16} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
-              <span>{tr("Abbiamo calcolato")}{" "}{tr(CALCULATED_LABELS[calc])}{":"}<strong className="font-medium">{formatCalculated(calc, resolved.inputs[calc], currency)}</strong>{tr(". Può differire di poco da quello della banca, per gli arrotondamenti.")}</span>
+              <span>{tr("Abbiamo calcolato")}{" "}{tr(CALCULATED_LABELS[calc])}{": "}<strong className="font-medium">{formatCalculated(calc, resolved.inputs[calc], currency)}</strong>{tr(". Può differire di poco da quello della banca, per gli arrotondamenti.")}</span>
             </p>
           ) : null}
           {!resolution.ok && resolution.message ? <p className="text-sm text-neg" role="alert">{tr(resolution.message)}</p> : null}

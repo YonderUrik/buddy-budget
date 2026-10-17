@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseLocaleNumber } from "@/lib/localization/format";
 import { SWATCH_COLORS, type SwatchColor } from "./shared-colors";
 
 /** Opzioni proposte per il tipo di conto nella select; l'utente può comunque digitarne uno libero. */
@@ -21,12 +22,9 @@ export const ACCOUNT_ICONS = [
 ] as const;
 export type AccountIcon = (typeof ACCOUNT_ICONS)[number];
 
-/** Converte una stringa importo (virgola o punto come separatore decimale) in numero, o null se non valida. */
-export function parseAmount(raw: string): number | null {
-  const normalized = raw.trim().replace(",", ".");
-  if (normalized === "") return null;
-  const value = Number(normalized);
-  return Number.isFinite(value) ? value : null;
+/** Amount typed in the user's locale ("1.234,56" or "1234.56" in Italian, "1,234.56" in English) as a number, or null if invalid. */
+export function parseAmount(raw: string, locale = "it-IT"): number | null {
+  return parseLocaleNumber(raw, locale);
 }
 
 export const createAccountSchema = z.object({

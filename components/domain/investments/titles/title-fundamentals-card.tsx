@@ -8,8 +8,6 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import type { TitleFundamentals } from "@/lib/market-data/fundamentals";
-import { formatPct } from "../percent";
-import { formatCompactAmount, formatRatio } from "./title-format";
 import { GaugeIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
 
@@ -19,8 +17,9 @@ interface Row {
   hint: string;
 }
 
-/** Voci disponibili, nell'ordine di lettura. Pura, per poterla testare. */
-export function fundamentalsRows(f: TitleFundamentals, currency: string): Row[] {
+/** Available rows, in reading order, with numbers in `locale`. Pure, so it can be tested. */
+export function fundamentalsRows(f: TitleFundamentals, currency: string, locale = "it-IT"): Row[] {
+  const { formatPct, formatCompactAmount, formatRatio } = localizedFormats(locale);
   const rows: (Row | null)[] = [
     f.expenseRatio !== null ? { label: "Costo annuo (TER)", value: formatPct(f.expenseRatio, 2), hint: "Quanto costa tenerlo ogni anno, già scalato dal prezzo." } : null,
     f.totalAssets !== null ? { label: "Patrimonio gestito", value: `${formatCompactAmount(f.totalAssets)} ${currency}`, hint: "Più è grande, di solito più è facile comprarlo e venderlo." } : null,

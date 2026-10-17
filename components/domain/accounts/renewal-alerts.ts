@@ -1,3 +1,5 @@
+import type { Language } from "@/lib/localization/config";
+import { translate, type MessageValues } from "@/lib/localization/messages";
 import { computeConnectionHealth, needsRenewal, type ConnectionHealthState } from "@/lib/gocardless/connection-health";
 
 /** Minimo dei dati di una connessione necessario a decidere cosa mostrare (compatibile con `BankConnectionStatus`). */
@@ -34,12 +36,14 @@ export function buildRenewalAlerts(sources: RenewalSource[], now: Date): Renewal
   return [...byConnection.values()].sort((a, b) => urgency(a) - urgency(b));
 }
 
-/** Frase mostrata nel banner per una connessione da rinnovare. */
-export function describeRenewalAlert(alert: RenewalAlert): string {
+/** Sentence shown in the banner for a connection to renew, in `language`. */
+export function describeRenewalAlert(alert: RenewalAlert, language: Language = "it"): string {
+  const t = (source: string, values?: MessageValues) => translate(language, source, values);
   if (alert.state === "expiring") {
-    const when = alert.daysLeft === 1 ? "domani" : `tra ${alert.daysLeft} giorni`;
-    return `Il collegamento con ${alert.institutionName} scade ${when}.`;
+    return alert.daysLeft === 1
+      ? t("Il collegamento con {0} scade domani.", { 0: alert.institutionName })
+      : t("Il collegamento con {0} scade tra {1} giorni.", { 0: alert.institutionName, 1: alert.daysLeft });
   }
-  if (alert.state === "error") return `Il collegamento con ${alert.institutionName} non è andato a buon fine.`;
-  return `Il collegamento con ${alert.institutionName} è scaduto: i conti non si aggiornano.`;
+  if (alert.state === "error") return t("Il collegamento con {0} non è andato a buon fine.", { 0: alert.institutionName });
+  return t("Il collegamento con {0} è scaduto: i conti non si aggiornano.", { 0: alert.institutionName });
 }

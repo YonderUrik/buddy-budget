@@ -8,25 +8,11 @@ import { useLocalization } from "@/lib/localization/provider";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DebtEventView } from "@/lib/debts/view";
-import { formatCurrency } from "@/lib/format";
 
 export interface DebtEventsListProps {
   events: DebtEventView[];
   currency: string;
   onDelete: (eventId: string) => void;
-}
-
-export function describeEvent(event: DebtEventView, currency: string): string {
-  // Una rata segnata senza importo è quella del piano: niente «0,00 €».
-  if (event.type === "payment")
-    return `Rata ${event.installmentNumber} pagata${event.amount ? ` · ${formatCurrency(event.amount, currency)}` : ""}`;
-  if (event.type === "rate_change") return `Tasso portato al ${String(event.rate).replace(".", ",")}%`;
-  if (event.type === "early_repayment") {
-    const how = event.effect === "reduce_installment" ? "rata ridotta" : "durata ridotta";
-    const penalty = event.penalty ? ` · penale ${formatCurrency(event.penalty, currency)}` : "";
-    return `Estinzione anticipata di ${formatCurrency(event.amount ?? 0, currency)} · ${how}${penalty}`;
-  }
-  return `Residuo corretto a ${formatCurrency(event.amount ?? 0, currency)}`;
 }
 
 export function DebtEventsList({ events, currency, onDelete }: DebtEventsListProps) {
@@ -36,7 +22,7 @@ export function DebtEventsList({ events, currency, onDelete }: DebtEventsListPro
   // Una rata segnata senza importo è quella del piano: niente «0,00 €».
   if (event.type === "payment")
     return tr("Rata {0} pagata{1}", { 0: event.installmentNumber, 1: event.amount ? ` · ${formatCurrency(event.amount, currency)}` : "" });
-  if (event.type === "rate_change") return tr("Tasso portato al {0}%", { 0: String(event.rate).replace(".", ",") });
+  if (event.type === "rate_change") return tr("Tasso portato al {0}%", { 0: event.rate === null ? String(event.rate) : new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 10, useGrouping: false }).format(event.rate) });
   if (event.type === "early_repayment") {
     const how = event.effect === "reduce_installment" ? tr("rata ridotta") : tr("durata ridotta");
     const penalty = event.penalty ? tr(" · penale {0}", { 0: formatCurrency(event.penalty, currency) }) : "";

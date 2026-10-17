@@ -11,7 +11,7 @@ import * as React from "react";
 import { ChevronDownIcon, UploadIcon } from "lucide-react";
 import { ImportExportGuide } from "./import-export-guide";
 import { ImportNotice } from "./import-notice";
-import { explainFileError } from "@/lib/investments/import/messages";
+import { explainFileError, translateImportMessage } from "@/lib/investments/import/messages";
 import { getImportProvider, type ImportProviderId } from "@/lib/investments/import/providers";
 import { validateImportFiles } from "@/lib/investments/import/batch";
 import { gridToCsv } from "@/lib/investments/import/fineco";
@@ -31,7 +31,7 @@ export interface ImportFileStepProps {
 }
 
 export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, reading = false, aiFallbackEnabled = false, onAiFallbackChange }: ImportFileStepProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const id = React.useId();
   const [dragging, setDragging] = React.useState(false);
   const [showGuide, setShowGuide] = React.useState(provider !== null);
@@ -54,7 +54,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
     finally { setLoading(false); }
   }
   const busy = reading || loading;
-  const explained = fileError ? explainFileError(fileError) : null;
+  const explained = fileError ? explainFileError(fileError, language) : null;
   const chosen = provider ? getImportProvider(provider) : null;
 
   return (
@@ -90,7 +90,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
           onChange={(e) => { void readFiles(e.target.files); e.target.value = ""; }}
         />
       </label>
-      {explained ? <ImportNotice tone="error" title={explained.text} hint={tr(explained.hint)} detail={fileError ?? undefined} action={<ReportErrorLink area="import_investimenti" error={fileError ?? explained.text} />} /> : null}
+      {explained ? <ImportNotice tone="error" title={explained.text} hint={explained.hint} detail={fileError ? translateImportMessage(language, fileError) : undefined} action={<ReportErrorLink area="import_investimenti" error={fileError ?? explained.text} />} /> : null}
       {onFiles ? <p className="text-center text-sm text-muted-foreground">{tr("Più rendiconti? Selezionali insieme (fino a 20): IBKR, DEGIRO e Trade Republic.")}</p> : null}
 
       <div className="flex flex-col gap-3 border-t pt-3">

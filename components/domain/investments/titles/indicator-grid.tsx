@@ -21,7 +21,7 @@ export interface IndicatorGridProps<K extends IndicatorKey> {
 }
 
 export function IndicatorGrid<K extends IndicatorKey>({ keys, values, currency, priceCurrency, withRange = false, className }: IndicatorGridProps<K>) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const present = keys.filter((k) => values[k] !== undefined);
   if (present.length === 0) return null;
   return (
@@ -33,7 +33,7 @@ export function IndicatorGrid<K extends IndicatorKey>({ keys, values, currency, 
           <IndicatorItem
             key={key}
             label={tr(meta.label)}
-            value={formatIndicator(indicator.value, meta.format)}
+            value={formatIndicator(indicator.value, meta.format, locale)}
             hint={tr(meta.hint)}
             range={withRange && indicator.history ? { range: indicator.history, value: indicator.value, format: meta.format } : null}
             help={{ id: key, title: meta.label, formula: meta.formula, indicator, format: meta.format, currency, priceCurrency, source: CALCULATED_SOURCE }}

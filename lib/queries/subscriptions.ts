@@ -4,12 +4,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { SubscriptionsResponse } from "@/lib/subscriptions/data";
 import type { CreateSubscriptionInput, UpdateSubscriptionInput } from "@/lib/validation/subscriptions";
+import { pageText } from "@/lib/localization/page-text";
 
 const SUBSCRIPTIONS_QUERY_KEY = ["subscriptions"] as const;
 
 async function readError(response: Response, fallback: string): Promise<Error> {
   const body = await response.json().catch(() => null);
-  return new Error(body?.error ?? fallback);
+  return new Error(body?.error ?? pageText(fallback));
 }
 
 /** Abbonamenti rilevati e scelti dall'utente, con i totali (il rilevamento gira sul server a ogni richiesta). */
@@ -18,7 +19,7 @@ export function useSubscriptionsQuery() {
     queryKey: SUBSCRIPTIONS_QUERY_KEY,
     queryFn: async (): Promise<SubscriptionsResponse> => {
       const response = await fetch("/api/subscriptions");
-      if (!response.ok) throw new Error("Impossibile caricare gli abbonamenti");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare gli abbonamenti"));
       return response.json();
     },
   });

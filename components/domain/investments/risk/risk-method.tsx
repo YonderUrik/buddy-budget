@@ -5,18 +5,22 @@ import { useLocalization } from "@/lib/localization/provider";
 import { MIN_RELATION_OBSERVATIONS, MIN_VOLATILITY_OBSERVATIONS } from "@/lib/calc/risk";
 import { RISK_LEVEL_HIGH, RISK_LEVEL_LOW, RISK_LEVEL_MEDIUM } from "@/lib/investments/risk-insights";
 
-const pctRound = (value: number) => `${Math.round(value * 100)}%`;
+/** Whole percentage in the user's locale ("15%" in Italian, "15 %" in German). */
+const pctRound = (value: number, locale: string) => new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(value);
 
 interface Step {
   title: string;
+  /** Italian source text; `{0}`… are filled with `values` in the user's locale. */
   body: string;
+  values?: (locale: string) => Record<string, string | number>;
 }
 
 /** Passaggi del calcolo, nell'ordine in cui compaiono nella scheda. */
 const STEPS: Step[] = [
   {
     title: "1. Rendimento di ogni giorno",
-    body: `Si parte dal rendimento giornaliero del portafoglio senza l'effetto dei versamenti e dei prelievi (il TWR, lo stesso dei rendimenti). Si scartano i giorni senza nulla di investito e i weekend fermi: con i mercati chiusi non c'è movimento e abbasserebbero il rischio. Servono almeno ${MIN_VOLATILITY_OBSERVATIONS} giorni.`,
+    body: "Si parte dal rendimento giornaliero del portafoglio senza l'effetto dei versamenti e dei prelievi (il TWR, lo stesso dei rendimenti). Si scartano i giorni senza nulla di investito e i weekend fermi: con i mercati chiusi non c'è movimento e abbasserebbero il rischio. Servono almeno {0} giorni.",
+    values: () => ({ 0: MIN_VOLATILITY_OBSERVATIONS }),
   },
   {
     title: "2. Quanto oscilla",
@@ -24,7 +28,8 @@ const STEPS: Step[] = [
   },
   {
     title: "3. Il livello",
-    body: `Si legge l'oscillazione annua: sotto ${pctRound(RISK_LEVEL_LOW)} basso (per esempio obbligazioni), fino a ${pctRound(RISK_LEVEL_MEDIUM)} medio, fino a ${pctRound(RISK_LEVEL_HIGH)} alto (l'azionario mondiale sta intorno al 15%), oltre molto alto. Sono soglie di lettura scelte da noi, non una classificazione ufficiale.`,
+    body: "Si legge l'oscillazione annua: sotto {0} basso (per esempio obbligazioni), fino a {1} medio, fino a {2} alto (l'azionario mondiale sta intorno al {3}), oltre molto alto. Sono soglie di lettura scelte da noi, non una classificazione ufficiale.",
+    values: (locale) => ({ 0: pctRound(RISK_LEVEL_LOW, locale), 1: pctRound(RISK_LEVEL_MEDIUM, locale), 2: pctRound(RISK_LEVEL_HIGH, locale), 3: pctRound(0.15, locale) }),
   },
   {
     title: "4. Perdita peggiore",
@@ -32,7 +37,8 @@ const STEPS: Step[] = [
   },
   {
     title: "5. Rischio ripagato (Sharpe)",
-    body: `Rendimento medio giornaliero meno quello di un conto senza rischio (il tasso €STR, solo per l'euro), diviso per la deviazione standard e portato a un anno. Sotto 0 hai reso meno di un conto deposito, tra 0 e 0,5 poco, tra 0,5 e 1 discreto, sopra 1 bene. Serve almeno ${MIN_RELATION_OBSERVATIONS} giorni di dati.`,
+    body: "Rendimento medio giornaliero meno quello di un conto senza rischio (il tasso €STR, solo per l'euro), diviso per la deviazione standard e portato a un anno. Sotto 0 hai reso meno di un conto deposito, tra 0 e 0,5 poco, tra 0,5 e 1 discreto, sopra 1 bene. Serve almeno {0} giorni di dati.",
+    values: () => ({ 0: MIN_RELATION_OBSERVATIONS }),
   },
   {
     title: "6. Quanto segue l'indice",
@@ -41,13 +47,13 @@ const STEPS: Step[] = [
 ];
 
 export function RiskMethod() {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   return (
     <dl className="flex flex-col gap-3">
       {STEPS.map((step) => (
         <div key={step.title} className="flex flex-col gap-0.5">
           <dt className="text-sm font-medium text-foreground">{tr(step.title)}</dt>
-          <dd className="text-sm leading-snug text-muted-foreground">{tr(step.body)}</dd>
+          <dd className="text-sm leading-snug text-muted-foreground">{tr(step.body, step.values?.(locale))}</dd>
         </div>
       ))}
       <p className="text-xs text-muted-foreground">{tr("Il passato non dice come andrà in futuro: con meno di un anno di dati i numeri sono solo indicativi.")}</p>

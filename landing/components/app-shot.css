@@ -12,4 +12,8 @@
 }
 :root[data-theme="dark"] .shot-light { display: none; }
 :root[data-theme="dark"] .shot-dark { display: block; }
+/* Language of the screenshots: `data-screens` is set before paint to the visitor's language (absent = Italian). */
+:root:not([data-screens]) .shot-img:not(.shot-lang-it),
+:root[data-screens="en"] .shot-img:not(.shot-lang-en),
+:root[data-screens="de"] .shot-img:not(.shot-lang-de) { display: none !important; }
 @media (max-width: 600px) { .shot { border-radius: var(--r); } .shot-bar { height: 26px; padding: 0 10px; } .shot-bar span { display: none; } }

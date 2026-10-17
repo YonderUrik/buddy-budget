@@ -37,4 +37,10 @@ describe("formatImportDate", () => {
   it("lascia com'è ciò che non è una data", () => {
     expect(formatImportDate("boh")).toBe("boh");
   });
+
+  it("formats dates in the user's locale", () => {
+    expect(formatImportDate("2025-01-31")).toBe("31 gen 2025");
+    expect(formatImportDate("2025-01-31", "en-GB")).toBe("31 Jan 2025");
+    expect(formatImportDate("2025-01-31", "de-DE")).toBe("31. Jan. 2025");
+  });
 });

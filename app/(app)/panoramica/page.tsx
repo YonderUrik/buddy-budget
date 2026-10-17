@@ -138,7 +138,7 @@ export default function PanoramicaPage() {
     ...(debts ? { debiti: -debts.total } : {}),
   };
   const [pensionIncluded, setPensionIncluded] = usePensionInNetWorth();
-  const fullSeries = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today);
+  const fullSeries = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today, formattingLocale);
   // Escludere la previdenza toglie solo il totale: l'area resta nel grafico (in grigio).
   const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);

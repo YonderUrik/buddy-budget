@@ -84,7 +84,7 @@ export function usedInstruments(
 }
 
 /** Calcola tutto ciò che mostra la pagina Investimenti a partire dai dati grezzi dell'API. */
-export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date, chartRange?: { from: string; to: string }): InvestmentsView {
+export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date, chartRange?: { from: string; to: string }, locale = "it-IT"): InvestmentsView {
   const transactions = toTransactionInputs(data);
   const instruments: InstrumentInput[] = data.instruments;
   const priceIndex = buildPriceIndex(data.prices, data.manualPrices, transactions);
@@ -93,7 +93,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
   const todayKey = toDateKey(startOfDay(today));
   const summary = computePortfolioSummary({ ...common, todayKey });
   const insights = computeOperationInsights({ ...common, transactions: data.transactions, todayKey });
-  const operationMonths = groupOperationsByMonth(insights);
+  const operationMonths = groupOperationsByMonth(insights, locale);
   const instrumentsById = new Map(data.instruments.map((i) => [i.id, i]));
   const analysis = buildInvestmentsAnalysis({
     ...common,
@@ -107,6 +107,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     period,
     today,
     range: chartRange,
+    locale,
   });
   const returns = computePortfolioReturns({
     ...common,
@@ -116,11 +117,12 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     range: chartRange,
     dailySeries: true,
     inflation: data.inflation.length > 0 ? data.inflation : null,
+    locale,
   });
   return {
     currency: data.currency,
     summary,
-    series: buildPortfolioSeries({ ...common, period, today, range: chartRange }),
+    series: buildPortfolioSeries({ ...common, period, today, range: chartRange, locale }),
     byType: computeComposition(summary.rows, "type"),
     byCurrency: computeComposition(summary.rows, "currency"),
     instruments: data.instruments,

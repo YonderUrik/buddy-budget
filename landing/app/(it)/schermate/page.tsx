@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
 import { ScreenGallery } from "@/components/screen-gallery";
+import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 
@@ -11,7 +12,7 @@ const DESCRIPTION = "Tutte le schermate dell'app, area per area. Sono screenshot
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: CONTENT_PATHS.schermate },
+  alternates: languageAlternates(CONTENT_PATHS.schermate, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
 };
 

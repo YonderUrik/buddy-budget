@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { APP_LINKS } from "@/content/site";
+import { LOCALE_APP_LINKS } from "@/content/site";
+import type { Locale } from "@/lib/i18n";
 import { CtaLink } from "../cta-link";
 
 /** The two anchors that decide when the bar shows: after the opening's button has scrolled away, until the closing is in view. */
@@ -12,9 +13,10 @@ const CLOSING_ID = "fine";
  * Phone-only bar fixed at the bottom with the main button: it appears once the opening's button has scrolled past
  * and goes away when the closing (which has the same button) comes into view. Hidden above 1000px by CSS.
  */
-export function MobileCta({ label, login }: { label: string; login: string }) {
+export function MobileCta({ label, login, locale = "it" }: { label: string; login: string; locale?: Locale }) {
   const [pastHero, setPastHero] = useState(false);
   const [atClosing, setAtClosing] = useState(false);
+  const links = LOCALE_APP_LINKS[locale];
 
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") return;
@@ -33,8 +35,8 @@ export function MobileCta({ label, login }: { label: string; login: string }) {
   const on = pastHero && !atClosing;
   return (
     <div className={`mcta${on ? "" : " off"}`} aria-hidden={!on}>
-      <CtaLink className="btn ghost" href={APP_LINKS.login} location="mobile_bar" target="login">{login}</CtaLink>
-      <CtaLink className="btn main sun" href={APP_LINKS.signup} location="mobile_bar" target="signup" arrow>{label}</CtaLink>
+      <CtaLink className="btn ghost" href={links.login} location="mobile_bar" target="login" lang={locale}>{login}</CtaLink>
+      <CtaLink className="btn main sun" href={links.signup} location="mobile_bar" target="signup" lang={locale} arrow>{label}</CtaLink>
     </div>
   );
 }

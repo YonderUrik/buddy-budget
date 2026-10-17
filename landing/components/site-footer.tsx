@@ -1,42 +1,48 @@
 import "./site-footer.css";
 import Link from "next/link";
-import { LEGAL_PATHS } from "@/content/legal";
-import { CONTENT_PATHS } from "@/content/seo-pages";
+import { HOME_PATH } from "@/content/locales";
 import { SOURCE_LICENSE, SOURCE_URL, STATUS_URL, SUPPORT_EMAIL } from "@/content/site";
+import { UI } from "@/content/ui";
+import { otherLocale, type Locale } from "@/lib/i18n";
 import { GithubMark } from "./github-mark";
+import { LangSwitch } from "./lang-switch";
 import { SourceLink } from "./source-link";
 
 /** Name drawn across the footer, decorative (the brand is already in the bar). */
 const WORDMARK = "BuddyBudget";
 
+export interface SiteFooterProps {
+  locale?: Locale;
+  /** Target of the «IT / EN» switch: the same page in the other language; default, that language's home. */
+  alternate?: string;
+}
+
 /**
  * Footer, the same on every page: navy like the app's sidebar, the name drawn across its whole width (after Hermes
- * Agent), then the main pages, the code, status and support.
+ * Agent), then the main pages, the language switch, the code, status and support. Texts from `UI[locale]`.
  */
-export function SiteFooter() {
+export function SiteFooter({ locale = "it", alternate }: SiteFooterProps) {
+  const t = UI[locale];
   return (
     <footer className="sf">
       <p className="sf-word" aria-hidden="true">{WORDMARK}</p>
       <div className="wrap">
         <span>© BuddyBudget</span>
-        <nav aria-label="Pagine del sito">
-          <Link href={CONTENT_PATHS.funzioni}>Funzioni</Link>
-          <Link href={CONTENT_PATHS.schermate}>Schermate</Link>
-          <Link href={CONTENT_PATHS.strumenti}>Calcolatori</Link>
-          <Link href={CONTENT_PATHS.sicurezza}>Sicurezza</Link>
-          <Link href={LEGAL_PATHS.privacy}>Privacy</Link>
-          <Link href={LEGAL_PATHS.termini}>Termini</Link>
-          <Link href={LEGAL_PATHS.cookie}>Cookie</Link>
+        <nav aria-label={t.footer.pages}>
+          {t.footer.links.map((l) => (
+            <Link key={l.href} href={l.href}>{l.label}</Link>
+          ))}
         </nav>
         <span className="sp" />
-        <nav aria-label="Codice, stato e supporto">
+        <nav aria-label={t.footer.other}>
+          <LangSwitch locale={locale} href={alternate ?? HOME_PATH[otherLocale(locale)]} location="footer" label={t.language} />
           {SOURCE_URL ? (
             <SourceLink className="gh" href={SOURCE_URL}>
               <GithubMark />
               GitHub · {SOURCE_LICENSE}
             </SourceLink>
           ) : null}
-          <a href={STATUS_URL} target="_blank" rel="noopener noreferrer">Stato del servizio</a>
+          <a href={STATUS_URL} target="_blank" rel="noopener noreferrer">{t.footer.status}</a>
           <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
         </nav>
       </div>

@@ -3,6 +3,7 @@ import { ContentPage } from "@/components/content-page";
 import { FeatureAreas } from "@/components/feature-areas";
 import { JsonLd } from "@/components/json-ld";
 import { FEATURE_AREAS, featureCounts } from "@/content/catalog.generated";
+import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 
@@ -12,7 +13,7 @@ const DESCRIPTION = "L'elenco completo di ciò che fa BuddyBudget, area per area
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: CONTENT_PATHS.funzioni },
+  alternates: languageAlternates(CONTENT_PATHS.funzioni, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
 };
 

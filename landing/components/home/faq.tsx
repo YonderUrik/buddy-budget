@@ -1,17 +1,16 @@
 import "../faq.css";
-import { FAQ_HOME } from "@/content/home";
-import { FAQ } from "@/content/site";
+import type { HomeContent } from "@/content/home";
 import { TrackedSection } from "../tracked-section";
 import { SectionHead } from "./section-head";
 
 /** «Prima di iscriverti»: the questions as rows that open on tap (the first one already open), the same text as the FAQPage structured data. */
-export function Faq() {
+export function Faq({ text }: { text: HomeContent["faq"] }) {
   return (
     <TrackedSection id="domande" section="domande" className="sec faq" aria-labelledby="domande-t">
       <div className="wrap">
-        <SectionHead id="domande-t" title={FAQ_HOME.title} />
+        <SectionHead id="domande-t" title={text.title} />
         <div className="faq-list">
-          {FAQ.map((item, i) => (
+          {text.items.map((item, i) => (
             <details key={item.question} className="faq-item" open={i === 0}>
               <summary>{item.question}</summary>
               <p>{item.answer}</p>

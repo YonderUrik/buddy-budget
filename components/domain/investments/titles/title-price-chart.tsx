@@ -11,7 +11,7 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import { Area, AreaChart, CartesianGrid, ReferenceDot, ReferenceLine, XAxis, YAxis } from "recharts";
-import { SegmentedControl } from "@/components/domain/shared";
+import { PeriodSelector } from "@/components/domain/shared";
 import { ChartSplineIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
@@ -80,7 +80,7 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
       icon={ChartSplineIcon}
       title={tr("Andamento")}
       color={color}
-      action={<SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} stretch className="sm:w-auto" />}
+      action={<PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} stretch className="sm:w-auto" />}
     >
       <div>
         {series.length < 2 ? (

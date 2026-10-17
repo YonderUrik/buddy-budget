@@ -40,7 +40,7 @@ export default function HomePage() {
         <Showcase />
         <Trust />
         <Faq />
-        <Closing title={CLOSE.title} note={CLOSE.note} cta={CLOSE.cta} ctaLocation="closing" secondary={{ href: CONTENT_PATHS.strumenti, label: CLOSE.tools, target: "calculator" }} />
+        <Closing title={CLOSE.title} cta={CLOSE.cta} ctaLocation="closing" secondary={{ href: CONTENT_PATHS.strumenti, label: CLOSE.tools, target: "calculator" }} />
       </main>
       <MobileCta label={CLOSE.cta} login={LOGIN_LABEL} />
       <SiteFooter />

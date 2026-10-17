@@ -1,5 +1,5 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
+import { localizedFormats, numberSeparators } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
@@ -37,7 +37,7 @@ export function CurrencyInput({
   const { getCurrencySymbol } = localizedFormats(formattingLocale);
 
   const { t: tr } = useLocalization();
-  const separators = new Intl.NumberFormat(formattingLocale).formatToParts(1234.5);
+  const separators = numberSeparators(formattingLocale);
   const symbol = getCurrencySymbol(currency);
 
   return (
@@ -50,8 +50,8 @@ export function CurrencyInput({
         value={value ?? ""}
         onValueChange={({ floatValue }) => onChange(floatValue ?? null)}
         onBlur={onBlur}
-        thousandSeparator={separators.find(part => part.type === "group")?.value ?? ","}
-        decimalSeparator={separators.find(part => part.type === "decimal")?.value ?? "."}
+        thousandSeparator={separators.thousand}
+        decimalSeparator={separators.decimal}
         decimalScale={2}
         allowNegative
         className={cn(

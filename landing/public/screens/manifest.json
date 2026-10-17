@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-17T09:37:58.480Z",
+  "capturedAt": "2026-10-17T15:19:36.791Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -41,7 +41,7 @@
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1835,
+      "height": 1862,
       "phone": true
     },
     {
@@ -57,7 +57,7 @@
       "theme": "light",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1716,
+      "height": 1809,
       "phone": true
     },
     {
@@ -65,7 +65,7 @@
       "theme": "light",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1473,
+      "height": 1488,
       "phone": true
     },
     {
@@ -73,7 +73,7 @@
       "theme": "light",
       "route": "/investimenti",
       "width": 1920,
-      "height": 2087,
+      "height": 2186,
       "phone": true
     },
     {
@@ -81,7 +81,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1862,
+      "height": 1937,
       "phone": true
     },
     {
@@ -89,7 +89,7 @@
       "theme": "light",
       "route": "/investimenti/diversificazione",
       "width": 1920,
-      "height": 1313,
+      "height": 1412,
       "phone": true
     },
     {
@@ -105,7 +105,7 @@
       "theme": "light",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 1913,
+      "height": 2012,
       "phone": true
     },
     {
@@ -113,7 +113,7 @@
       "theme": "light",
       "route": "/pensione",
       "width": 1920,
-      "height": 1475,
+      "height": 1580,
       "phone": true
     },
     {
@@ -121,7 +121,7 @@
       "theme": "light",
       "route": "/pensione/scenari",
       "width": 1920,
-      "height": 1875,
+      "height": 1980,
       "phone": true
     },
     {
@@ -129,7 +129,7 @@
       "theme": "light",
       "route": "/debiti",
       "width": 1920,
-      "height": 1647,
+      "height": 1715,
       "phone": true
     },
     {
@@ -145,7 +145,7 @@
       "theme": "light",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1652,
+      "height": 1757,
       "phone": true
     },
     {
@@ -177,7 +177,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1835,
+      "height": 1862,
       "phone": true
     },
     {
@@ -193,7 +193,7 @@
       "theme": "dark",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1716,
+      "height": 1809,
       "phone": true
     },
     {
@@ -201,7 +201,7 @@
       "theme": "dark",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1473,
+      "height": 1488,
       "phone": true
     },
     {
@@ -209,7 +209,7 @@
       "theme": "dark",
       "route": "/investimenti",
       "width": 1920,
-      "height": 2087,
+      "height": 2186,
       "phone": true
     },
     {
@@ -217,7 +217,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1862,
+      "height": 1937,
       "phone": true
     },
     {
@@ -225,7 +225,7 @@
       "theme": "dark",
       "route": "/investimenti/diversificazione",
       "width": 1920,
-      "height": 1313,
+      "height": 1412,
       "phone": true
     },
     {
@@ -241,7 +241,7 @@
       "theme": "dark",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 1913,
+      "height": 2012,
       "phone": true
     },
     {
@@ -249,7 +249,7 @@
       "theme": "dark",
       "route": "/pensione",
       "width": 1920,
-      "height": 1475,
+      "height": 1580,
       "phone": true
     },
     {
@@ -257,7 +257,7 @@
       "theme": "dark",
       "route": "/pensione/scenari",
       "width": 1920,
-      "height": 1875,
+      "height": 1980,
       "phone": true
     },
     {
@@ -265,7 +265,7 @@
       "theme": "dark",
       "route": "/debiti",
       "width": 1920,
-      "height": 1647,
+      "height": 1715,
       "phone": true
     },
     {
@@ -281,7 +281,7 @@
       "theme": "dark",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1652,
+      "height": 1757,
       "phone": true
     }
   ]

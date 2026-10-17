@@ -4,11 +4,11 @@ import { useLocalization } from "@/lib/localization/provider";
 /**
  * BottomNav
  *
- * Barra di navigazione in basso, solo su mobile (< 768px). Mostra le voci principali con icona ed etichetta, il badge
- * dei movimenti da sistemare dove serve e un'ultima scheda «Altro» che apre il menu completo (le altre sezioni, il
- * riepilogo, le scadenze e il profilo). «Altro» risulta attiva quando la pagina corrente non è tra le voci mostrate.
+ * Bottom tab bar, phone only (< 768px): a floating rounded capsule inset from the screen edges, like the iOS 26 tab bar,
+ * with icon and label per section, the "to sort" badge where needed and a last «Altro» tab that opens the full menu.
+ * «Altro» is active when the current page is not one of the tabs.
  *
- * Riusabilità: voci, badge e voce attiva arrivano da fuori; `primaryHrefs` sceglie quali voci stanno nella barra.
+ * Reusability: items, badges and active item come from outside; `primaryHrefs` picks which items sit in the bar.
  */
 
 import * as React from "react";
@@ -22,14 +22,18 @@ import { usePendingNavHref } from "@/components/layout/use-pending-nav";
 import { SPRING_SNAPPY } from "@/lib/motion/springs";
 import { cn } from "@/lib/utils";
 
-/** Voci che stanno nella barra: le quattro sezioni più usate, il resto è sotto «Altro». */
+/** Items shown in the bar: the four most used sections, the rest is under «Altro». */
 export const BOTTOM_NAV_HREFS = ["/panoramica", "/liquidita", "/investimenti", "/debiti"] as const;
 
-/** Etichetta della scheda che apre il menu completo. */
+/** Label of the tab that opens the full menu. */
 const MORE_LABEL = "Altro";
 
-/** Altezza della barra (rem): serve al contenuto per non finirle sotto. */
-export const BOTTOM_NAV_HEIGHT_REM = 4.75;
+/** Height of the floating capsule (rem). */
+const BOTTOM_NAV_BAR_REM = 4;
+/** Gap between the capsule and the bottom edge (rem), above the home indicator in the app. */
+const BOTTOM_NAV_GAP_REM = 0.75;
+/** Space the bar takes at the bottom (rem): the content leaves this much room so it never ends up under it. */
+export const BOTTOM_NAV_HEIGHT_REM = BOTTOM_NAV_BAR_REM + BOTTOM_NAV_GAP_REM * 2;
 
 export interface BottomNavProps {
   items: NavItem[];
@@ -48,19 +52,19 @@ function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Pillola della voce attiva: una sola, che scivola da una scheda all'altra (`layoutId`). */
+/** Pill behind the active tab: a single one that slides between tabs (`layoutId`). */
 function ActivePill() {
   return (
     <motion.span
       layoutId="bottom-nav-pill"
       transition={SPRING_SNAPPY}
-      className="absolute inset-0 rounded-full bg-sun"
+      className="absolute inset-x-0 inset-y-1 rounded-full bg-sun"
       aria-hidden="true"
     />
   );
 }
 
-const TAB_CLASS = "relative flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors";
+const TAB_CLASS = "relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition-colors";
 
 export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, badges, onOpenMore, onTabClick }: BottomNavProps) {
   const { t: tr } = useLocalization();
@@ -73,8 +77,8 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
   return (
     <nav
       aria-label={tr("Navigazione principale")}
-      className="fixed inset-x-0 bottom-0 z-30 flex border-t border-sidebar-border bg-sidebar pb-[env(safe-area-inset-bottom)] md:hidden"
-      style={{ height: `calc(${BOTTOM_NAV_HEIGHT_REM}rem + env(safe-area-inset-bottom))` }}
+      className="fixed inset-x-3 z-30 flex rounded-full border border-sidebar-border bg-sidebar/90 px-1 shadow-lg shadow-black/10 supports-backdrop-filter:backdrop-blur-xl md:hidden"
+      style={{ height: `${BOTTOM_NAV_BAR_REM}rem`, bottom: `calc(${BOTTOM_NAV_GAP_REM}rem + env(safe-area-inset-bottom))` }}
     >
       {primary.map((item) => {
         const active = isActivePath(current, item.href);
@@ -90,26 +94,21 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
               startNav(item.href);
               onTabClick?.(item.href);
             }}
-            className={cn(TAB_CLASS, active ? "text-sidebar-foreground" : "text-sidebar-foreground/60")}
+            className={cn(TAB_CLASS, active ? "text-on-sun" : "text-sidebar-foreground/60")}
           >
-            <span
-              className={cn(
-                "relative flex h-8 w-16 items-center justify-center rounded-full transition-colors duration-200",
-                active && "text-on-sun"
-              )}
-            >
-              {active ? <ActivePill /> : null}
+            {active ? <ActivePill /> : null}
+            <span className="relative flex h-7 w-10 items-center justify-center">
               <Icon className="relative z-10 size-6" aria-hidden="true" />
               {showBadge ? (
                 <span
                   aria-label={tr(badge.ariaLabel)}
-                  className="absolute -top-1 right-2 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sidebar-primary px-1 text-[10px] font-bold leading-none text-sidebar-primary-foreground tabular-nums ring-2 ring-sidebar"
+                  className="absolute -top-0.5 -right-1.5 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sidebar-primary px-1 text-[10px] font-bold leading-none text-sidebar-primary-foreground tabular-nums ring-2 ring-sidebar"
                 >
                   {badge.countLabel ?? badge.count}
                 </span>
               ) : null}
             </span>
-            <span className="leading-none">{tr(item.label)}</span>
+            <span className="relative z-10 max-w-full truncate px-0.5 leading-none tracking-tight">{tr(item.label)}</span>
           </Link>
         );
       })}
@@ -120,18 +119,13 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
           onOpenMore();
         }}
         aria-haspopup="dialog"
-        className={cn(TAB_CLASS, !inPrimary ? "text-sidebar-foreground" : "text-sidebar-foreground/60")}
+        className={cn(TAB_CLASS, !inPrimary ? "text-on-sun" : "text-sidebar-foreground/60")}
       >
-        <span
-          className={cn(
-            "relative flex h-8 w-16 items-center justify-center rounded-full transition-colors duration-200",
-            !inPrimary && "text-on-sun"
-          )}
-        >
-          {!inPrimary ? <ActivePill /> : null}
+        {!inPrimary ? <ActivePill /> : null}
+        <span className="relative flex h-7 w-10 items-center justify-center">
           <MoreHorizontal className="relative z-10 size-6" aria-hidden="true" />
         </span>
-        <span className="leading-none">{tr(MORE_LABEL)}</span>
+        <span className="relative z-10 leading-none">{tr(MORE_LABEL)}</span>
       </button>
     </nav>
   );

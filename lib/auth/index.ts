@@ -2,7 +2,7 @@ import 'server-only';
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { magicLink } from "better-auth/plugins";
+import { lastLoginMethod, magicLink } from "better-auth/plugins";
 import { Resend } from "resend";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
@@ -64,6 +64,8 @@ export const auth = betterAuth({
         recordAuthEvent("magic_link_sent");
       },
     }),
+    // Cookie readable by the page (no database field): lets the login page offer the method used last time.
+    lastLoginMethod(),
   ],
   socialProviders: googleProvider,
   // Espliciti (sono anche i default di better-auth) perché la pagina Impostazioni li mostra all'utente.

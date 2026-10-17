@@ -4184,5 +4184,12 @@
   "Stai esplorando i dati d'esempio: azzerali per aggiungere i tuoi.": "You're exploring the example data: clear it to add your own.",
   "Hai già dei conti: i dati d'esempio sono per chi parte da zero.": "You already have accounts: the example data is for starting from scratch.",
   "I dati d'esempio sono già attivi.": "The example data is already active.",
-  "Completa prima la configurazione iniziale.": "Finish the initial setup first."
+  "Completa prima la configurazione iniziale.": "Finish the initial setup first.",
+  "Rientra in BuddyBudget": "Sign back in to BuddyBudget",
+  "Su questo dispositivo ricordiamo il tuo account, così non devi riscrivere l'email.": "We remember your account on this device, so you don't have to type your email again.",
+  "Ultimo accesso con Google": "Last signed in with Google",
+  "Ultimo accesso con il link via email": "Last signed in with the email link",
+  "Il link arriva a questo indirizzo e vale {0} minuti.": "The link goes to this address and is valid for {0} minutes.",
+  "Mandami il link via email": "Email me the link",
+  "Non sei tu? Usa un altro account": "Not you? Use another account"
 }

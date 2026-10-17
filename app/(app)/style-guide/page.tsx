@@ -59,9 +59,9 @@ export default function StyleGuidePage() {
                 style={{ background: swatch.token }}
               />
               <p className="text-sm font-medium">{swatch.name}</p>
-              <p className="font-mono text-xs text-muted-foreground">
+              <code className="block font-mono text-xs text-muted-foreground">
                 {swatch.token}
-              </p>
+              </code>
             </div>
           ))}
         </div>
@@ -73,11 +73,11 @@ export default function StyleGuidePage() {
           <CardContent className="space-y-4">
             <div>
               <p className="font-heading text-4xl font-medium">{tr("Patrimonio netto")}</p>
-              <p className="text-xs text-muted-foreground">{tr("font-heading (Space Grotesk) — 4xl / medium")}</p>
+              <p className="text-xs text-muted-foreground">{tr("font-heading (Hanken Grotesk, tabular-nums) — 4xl / medium")}</p>
             </div>
             <div>
               <p className="font-heading text-2xl font-medium">{tr("Saldo disponibile")}</p>
-              <p className="text-xs text-muted-foreground">{tr("font-heading (Space Grotesk) — 2xl / medium")}</p>
+              <p className="text-xs text-muted-foreground">{tr("font-heading (Hanken Grotesk, tabular-nums) — 2xl / medium")}</p>
             </div>
             <div>
               <p className="text-base">{tr("Testo corpo standard per etichette e descrizioni.")}</p>

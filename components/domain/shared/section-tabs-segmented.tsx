@@ -42,7 +42,7 @@ export function SectionTabsSegmented({ tabs, activeIndex, ariaLabel }: SectionTa
                     layoutId={thumbId}
                     transition={SPRING_BOUNCY}
                     aria-hidden="true"
-                    className="absolute inset-0 rounded-md bg-background shadow-sm"
+                    className="absolute inset-0 rounded-md bg-background"
                   />
                 ) : null}
                 {Icon ? (

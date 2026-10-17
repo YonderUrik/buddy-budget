@@ -220,7 +220,7 @@ function AccountDetailsBody({
         )}
 
         {isAuto && (
-          <div className="flex flex-col gap-2 rounded-lg border border-border p-3">
+          <div className="flex flex-col gap-2 rounded-lg bg-muted/50 p-3">
             <p className="text-sm text-text-2" aria-live="polite">
               {describeSyncAvailability({ needsReconnect, syncing, syncInfo })}
             </p>

@@ -180,7 +180,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
                 aria-label={tr("Saldo di oggi")}
               />
             </Field>
-            <div className="flex items-center gap-3 rounded-xl border p-3">
+            <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
               <AccountIconColorPicker
                 value={{ color, icon }}
                 onChange={({ color: c, icon: i }) => {
@@ -189,7 +189,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
                 }}
               >
                 <div className="transition-transform hover:scale-105">
-                  <AccountAvatar color={color} icon={icon} size={20} className="size-10 shadow-sm" />
+                  <AccountAvatar color={color} icon={icon} size={20} className="size-10" />
                 </div>
               </AccountIconColorPicker>
               <div className="space-y-0.5">

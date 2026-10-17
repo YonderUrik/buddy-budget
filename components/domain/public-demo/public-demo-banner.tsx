@@ -48,7 +48,7 @@ export function PublicDemoBanner({ signupHref = DEFAULT_SIGNUP_HREF, className }
   return (
     <div
       role="status"
-      className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-3", className)}
+      className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-primary/10 px-4 py-3", className)}
     >
       <EyeIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
       <p className="min-w-0 flex-1 basis-60 text-sm text-foreground">

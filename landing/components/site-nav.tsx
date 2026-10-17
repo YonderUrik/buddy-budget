@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./site-nav.css";
 import { HOME_PATH, counterpart } from "@/content/locales";
 import { LOCALE_APP_LINKS, SOURCE_URL } from "@/content/site";
 import { UI, type NavLink } from "@/content/ui";
 import { otherLocale, type Locale } from "@/lib/i18n";
+import { useFieldUnderBar } from "@/lib/use-field-under-bar";
 import { Mark } from "./brand";
 import { CtaLink } from "./cta-link";
 import { GithubMark } from "./github-mark";
@@ -37,13 +38,16 @@ export interface SiteNavProps {
 }
 
 /**
- * Top bar, the same on every page and like the app's top bar: it scrolls away with the page. On the phone the links
- * live in a full-screen sheet with big rows, the two buttons and the language switch. With the public repository it
- * also shows the open-source link. `current` highlights the entry of the open page. `tone` picks the ground: navy
- * (default, every page opens on navy) or light. Texts come from `UI[locale]`.
+ * Top bar, the same on every page: it stays at the top and takes the colours of the field under it (taste-skill
+ * «Colour by chapter»: navy on the opening, yellow on the tax section, light on the rest), with a 300 ms change.
+ * On the phone the links live in a full-screen sheet with big rows, the two buttons and the language switch. With
+ * the public repository it also shows the open-source link. `current` highlights the entry of the open page. `tone`
+ * is the field before the page is measured (every page opens on navy). Texts come from `UI[locale]`.
  */
 export function SiteNav({ links, current, tone = "navy", locale = "it", alternate }: SiteNavProps) {
   const [open, setOpen] = useState(false);
+  const bar = useRef<HTMLElement>(null);
+  const field = useFieldUnderBar(bar, tone === "navy" ? "navy" : "light");
   const t = UI[locale];
   const items = links ?? t.nav.links;
   const app = LOCALE_APP_LINKS[locale];
@@ -75,7 +79,7 @@ export function SiteNav({ links, current, tone = "navy", locale = "it", alternat
     ) : null;
 
   return (
-    <header className={`nav${tone === "navy" ? " navy" : ""}${open ? " open" : ""}`}>
+    <header ref={bar} className={`nav${open ? " open" : ""}`} data-on={open ? "navy" : field}>
       <div className="wrap">
         <Link className="brand" href={HOME_PATH[locale]} aria-label={t.nav.home}>
           <Mark />
@@ -90,8 +94,8 @@ export function SiteNav({ links, current, tone = "navy", locale = "it", alternat
         <div className="nr">
           <LangSwitch className="nav-lang" locale={locale} href={switchHref} location="nav" label={t.language} />
           <ThemeToggle label={t.themeToggle} />
-          <CtaLink className="btn ghost" href={app.login} location="nav" target="login" lang={locale}>{t.nav.login}</CtaLink>
-          <CtaLink className="btn main sun" href={app.signup} location="nav" target="signup" lang={locale}>{t.nav.signup}</CtaLink>
+          <CtaLink className="btn line" href={app.login} location="nav" target="login" lang={locale}>{t.nav.login}</CtaLink>
+          <CtaLink className="btn sun" href={app.signup} location="nav" target="signup" lang={locale}>{t.nav.signup}</CtaLink>
           <button type="button" className="menu-btn" aria-expanded={open} aria-controls="nav-menu" aria-label={open ? t.nav.menuClose : t.nav.menuOpen} onClick={() => setOpen((v) => !v)}>
             {open ? <X size={20} strokeWidth={1.75} aria-hidden="true" /> : <Menu size={20} strokeWidth={1.75} aria-hidden="true" />}
           </button>
@@ -104,8 +108,8 @@ export function SiteNav({ links, current, tone = "navy", locale = "it", alternat
           ))}
           {sourceLink("sezione")}
           <div className="menu-acts">
-            <CtaLink className="btn main sun" href={app.signup} location="nav" target="signup" lang={locale} arrow>{t.nav.signup}</CtaLink>
-            <CtaLink className="btn ghost" href={app.login} location="nav" target="login" lang={locale}>{t.nav.login}</CtaLink>
+            <CtaLink className="btn sun" href={app.signup} location="nav" target="signup" lang={locale} arrow>{t.nav.signup}</CtaLink>
+            <CtaLink className="btn line" href={app.login} location="nav" target="login" lang={locale}>{t.nav.login}</CtaLink>
           </div>
           <div className="menu-foot">
             <span>{t.language}</span>

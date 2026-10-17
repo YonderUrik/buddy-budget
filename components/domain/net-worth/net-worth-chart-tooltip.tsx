@@ -49,7 +49,7 @@ export function NetWorthChartTooltip({ active, payload, currency, classes, total
                 <span className="size-2 rounded-full" style={{ backgroundColor: assetClassColor(key) }} aria-hidden="true" />
                 {LABEL_OVERRIDES[key] ?? assetClassLabel(key)}
               </span>
-              <span className="font-mono tabular-nums text-foreground">
+              <span className="tabular-nums text-foreground">
                 {formatCurrency(point.byClass[key] ?? 0, currency)}
               </span>
             </li>
@@ -59,8 +59,8 @@ export function NetWorthChartTooltip({ active, payload, currency, classes, total
       <p
         className={
           showBreakdown
-            ? "mt-1.5 flex justify-between gap-4 border-t pt-1.5 font-mono font-medium tabular-nums text-foreground"
-            : "font-mono font-medium tabular-nums text-foreground"
+            ? "mt-1.5 flex justify-between gap-4 border-t pt-1.5 font-medium tabular-nums text-foreground"
+            : "font-medium tabular-nums text-foreground"
         }
       >
         {showBreakdown ? <span className="font-sans text-muted-foreground">{totalLabel}</span> : null}

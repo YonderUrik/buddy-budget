@@ -6,13 +6,11 @@ import { screenSize } from "@/lib/screen-size";
 import { screenVariants } from "@/lib/screen-variants";
 
 export interface AppShotProps {
-  /** Id di una schermata di `content/screens.ts`. */
+  /** Id of a screen in `content/screens.ts`. */
   id: ScreenId;
-  /** Indirizzo mostrato nella barra del finto browser (default: dominio dell'app + route reale). */
-  url?: string;
-  /** Larghezza a cui viene mostrata (attributo `sizes`): aiuta il browser a scegliere la versione leggera. */
+  /** Width it is shown at (`sizes` attribute): helps the browser pick the light version. */
   sizes?: string;
-  /** Immagine sopra la piega: caricata subito invece che in lazy. */
+  /** Above-the-fold image: loaded eagerly instead of lazily. */
   priority?: boolean;
   /** Language of the alt text. */
   locale?: Locale;
@@ -20,24 +18,18 @@ export interface AppShotProps {
 }
 
 /**
- * Real app screenshot in a browser frame. Renders every version (light and dark, in each language) and the CSS shows
+ * Real app screenshot, shown as it is (no browser frame, taste-skill: pictures need no frame). Renders every version (light and dark, in each language) and the CSS shows
  * the one of the landing's theme and the visitor's language, so switching theme reloads nothing.
  */
-export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", priority = false, locale = "it", className }: AppShotProps) {
+export function AppShot({ id, sizes = "(max-width: 860px) 100vw, 900px", priority = false, locale = "it", className }: AppShotProps) {
   const screen = SCREENS.find((s) => s.id === id);
   if (!screen) throw new Error(`Schermata sconosciuta: ${id}`);
   const size = screenSize(screen.id);
   return (
     <figure className={`shot${className ? ` ${className}` : ""}`}>
-      <div className="shot-bar" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <span>{url ?? `app.buddybudget.io${screen.route}`}</span>
-      </div>
       <div className="shot-imgs" style={{ aspectRatio: `${size.width} / ${size.height}` }}>
         {screenVariants(priority).map(({ language, theme, className, eager }) => (
-          // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
+          // eslint-disable-next-line @next/next/no-img-element -- static export: no image optimizer
           <img
             key={`${language}-${theme}`}
             className={className}

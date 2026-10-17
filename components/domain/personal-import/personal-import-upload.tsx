@@ -185,7 +185,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
         <>
           <StepHeading title={tr("Carica il file")} description={tr("CSV o Excel (.xlsx), fino a {0} e {1} righe.", {0: formatFileSize(PERSONAL_IMPORT_MAX_BYTES), 1: PERSONAL_IMPORT_MAX_ROWS.toLocaleString(formattingLocale)})} />
           {file ? (
-            <div className="flex items-center gap-3 rounded-xl border p-3">
+            <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-medium text-foreground">{file.name}</span>

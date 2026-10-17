@@ -88,7 +88,7 @@ export default function CollegaBancaPage() {
         {data.externalAccounts.map((account) => (
           <div
             key={account.externalAccountId}
-            className="flex flex-col gap-3 rounded-xl border border-border p-3 sm:flex-row sm:items-center"
+            className="flex flex-col gap-3 rounded-xl bg-muted/50 p-3 sm:flex-row sm:items-center"
           >
             <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
               <Checkbox

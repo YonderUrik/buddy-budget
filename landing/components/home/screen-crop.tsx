@@ -25,7 +25,7 @@ export interface ScreenCropProps {
 }
 
 /**
- * Real screenshot of the app in a browser-like window of fixed proportions: the image is anchored to the top and
+ * Real screenshot of the app at fixed proportions, with no browser chrome around it: the image is anchored to the top and
  * cropped at the bottom, so the part that matters (title, figure, first chart) always shows and the layout never
  * jumps. Every theme and language is rendered and the CSS shows the current one (like `AppShot`).
  */
@@ -37,12 +37,6 @@ export function ScreenCrop({ id, top = false, ratio = "16 / 10", priority = fals
   const size = top ? TOP_SIZE : { width: SCREEN_SMALL_WIDTH, height: Math.round((full.height * SCREEN_SMALL_WIDTH) / full.width) };
   return (
     <figure className={`win${className ? ` ${className}` : ""}`}>
-      <div className="win-bar" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <span>app.buddybudget.io{screen.route}</span>
-      </div>
       <div className="win-img" style={{ aspectRatio: ratio }}>
         {screenVariants(priority).map(({ language, theme, className, eager }) => (
           // eslint-disable-next-line @next/next/no-img-element -- static export: no image optimizer

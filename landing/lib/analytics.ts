@@ -24,6 +24,9 @@ export interface LandingEvents {
   /** The "also available in English" bar closed without following it. */
   language_hint_dismissed: undefined;
   section_view: { section: SectionId };
+  /** Home, «Da quattro posti»: the visitor typed an amount of their own (once per page view), or put the sample back. */
+  sum_edited: undefined;
+  sum_reset: undefined;
   /** Home: a tab of «Cosa ti dice» chosen (by tap or by swipe). */
   showcase_tab_selected: { tab: ShowcaseId };
   screen_selected: { screen: ScreenId };

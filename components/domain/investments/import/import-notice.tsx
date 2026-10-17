@@ -55,7 +55,7 @@ export function ImportNotice({ tone, title, children, hint, detail, action, clas
         {detail ? (
           <details className="text-xs text-muted-foreground">
             <summary className="cursor-pointer">{tr("Dettaglio tecnico")}</summary>
-            <p className="mt-1 break-words font-mono">{detail}</p>
+            <code className="mt-1 block break-words font-mono">{detail}</code>
           </details>
         ) : null}
         {action}

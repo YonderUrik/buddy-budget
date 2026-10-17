@@ -72,7 +72,7 @@ function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) 
 
   return (
     <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-xl bg-muted/50">
-      <motion.div animate={keyframes} transition={loop} className="relative flex w-44 flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-md">
+      <motion.div animate={keyframes} transition={loop} className="relative flex w-44 flex-col items-center gap-2 rounded-xl bg-card p-4">
         {stamp && (
           <motion.span
             animate={{ opacity: reduced ? 1 : [0, 1, 1, 0] }}
@@ -172,7 +172,7 @@ export function SwipeTour() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5" aria-label={tr("Passo {0} di {1}", {0: index + 1, 1: STEPS.length})}>
                   {STEPS.map((candidate, i) => (
-                    <span key={candidate.gesture} className={cn("h-1.5 rounded-full transition-all", i === index ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30")} />
+                    <span key={candidate.gesture} className={cn("h-1.5 rounded-full transition-[width,background-color]", i === index ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30")} />
                   ))}
                 </div>
                 <div className="flex items-center gap-2">

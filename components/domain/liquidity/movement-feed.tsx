@@ -44,7 +44,7 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
         <section key={group.date} aria-label={tr(group.label)}>
           <div className="flex items-baseline justify-between px-1.5 pt-5 pb-1 text-sm font-semibold text-text-2">
             <h3 className="capitalize">{tr(group.label)}</h3>
-            <span className="font-mono tabular-nums">
+            <span className="tabular-nums">
               {group.total >= 0 ? "+" : "−"}
               {formatCurrency(Math.abs(group.total), currency)}
             </span>

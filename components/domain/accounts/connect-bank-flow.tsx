@@ -143,7 +143,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
           ))}
         </div>
       ) : isError ? (
-        <div role="alert" className="flex flex-col items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+        <div role="alert" className="flex flex-col items-start gap-2 rounded-xl bg-destructive/10 p-4 text-sm">
           <p className="font-medium text-foreground">{tr("Non riesco a caricare l'elenco delle banche.")}</p>
           <p className="text-muted-foreground">{tr("Succede se la connessione cade o il servizio è occupato. Non hai perso nulla.")}</p>
           <div className="flex flex-wrap items-center gap-x-4">
@@ -152,7 +152,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
           </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-start gap-1 rounded-xl border border-dashed p-4 text-sm">
+        <div className="flex flex-col items-start gap-1 rounded-xl bg-muted/50 p-4 text-sm">
           <p className="font-medium text-foreground">{search.trim() ? tr("Nessuna banca trovata per «{0}».", {0: search.trim()}) : tr("Nessuna banca disponibile in questo paese.")}</p>
           <p className="text-muted-foreground">{tr("Controlla il nome o cambia paese.")}{onChooseManual ? tr(" Se non c'è, puoi tenere il conto a mano e importare i movimenti da un file.") : ""}</p>
           {onChooseManual ? <button type="button" onClick={onChooseManual} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">{tr("Aggiungi un conto manuale")}</button> : null}

@@ -32,7 +32,7 @@ const MUTED_TAIL_CLASS = [
   "[&::part(fraction)]:text-[0.55em] [&::part(fraction)]:text-muted-foreground",
   "[&::part(decimal)]:text-[0.55em] [&::part(decimal)]:text-muted-foreground",
   "[&::part(right)]:text-[0.55em] [&::part(right)]:text-muted-foreground",
-  "[&::part(fraction-digit)]:[mask-image:linear-gradient(to_bottom,transparent,black_0.2em,black_calc(100%_-_0.2em),transparent)]",
+  "[&::part(fraction-digit)]:[mask-image:linear-gradient(to_bottom,transparent,black_0.2em,black_calc(100%_-_0.2em),transparent)]", // taste-skill-ignore: an alpha mask that clips rolling digits, not a visible gradient
 ].join(" ");
 
 /** Roll and width timing: the app's soft spring (about 530 ms) instead of NumberFlow's 900 ms with a long, slow tail. */

@@ -60,7 +60,7 @@ function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanP
             </DebtFormField>
           </div>
         </DialogSection>
-        <details className="group rounded-xl border p-3" open={transactionId !== null}>
+        <details className="group rounded-xl bg-muted/50 p-3" open={transactionId !== null}>
           <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 text-sm font-medium text-foreground">
             <LinkIcon className="size-4 text-muted-foreground" aria-hidden="true" />{" "}{tr("Collega una transazione")}{" "}<span className="font-normal text-muted-foreground">{tr("(facoltativo)")}</span>
           </summary>

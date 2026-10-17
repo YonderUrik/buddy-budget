@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-17T19:18:57.084Z",
+  "capturedAt": "2026-10-17T18:56:46.250Z",
   "app": "http://localhost:3300",
   "language": "de",
   "viewport": {
@@ -42,7 +42,7 @@
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1928,
+      "height": 1862,
       "phone": true
     },
     {
@@ -58,7 +58,7 @@
       "theme": "light",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1809,
+      "height": 1800,
       "phone": true
     },
     {
@@ -66,7 +66,7 @@
       "theme": "light",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1488,
+      "height": 1485,
       "phone": true
     },
     {
@@ -82,7 +82,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1961,
+      "height": 1934,
       "phone": true
     },
     {
@@ -114,7 +114,7 @@
       "theme": "light",
       "route": "/debiti",
       "width": 1920,
-      "height": 1715,
+      "height": 1721,
       "phone": true
     },
     {
@@ -154,7 +154,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1928,
+      "height": 1862,
       "phone": true
     },
     {
@@ -170,7 +170,7 @@
       "theme": "dark",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1809,
+      "height": 1800,
       "phone": true
     },
     {
@@ -178,7 +178,7 @@
       "theme": "dark",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1488,
+      "height": 1485,
       "phone": true
     },
     {
@@ -194,7 +194,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1961,
+      "height": 1934,
       "phone": true
     },
     {
@@ -226,7 +226,7 @@
       "theme": "dark",
       "route": "/debiti",
       "width": 1920,
-      "height": 1715,
+      "height": 1721,
       "phone": true
     },
     {

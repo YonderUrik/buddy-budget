@@ -76,7 +76,7 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
           if (items.length === 0) return null;
           return (
             <div key={group.kind} className="flex flex-col">
-              <p className="border-b pb-1.5 text-xs font-semibold uppercase tracking-wide text-text-3">{tr(group.title)}</p>
+              <p className="pb-1 text-sm font-medium text-text-3">{tr(group.title)}</p>
               <ul>
                 {items.map((s) => (
                   <li key={s.id} className="flex items-center gap-3 border-b py-3 last:border-b-0">

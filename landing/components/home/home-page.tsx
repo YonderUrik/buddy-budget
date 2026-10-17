@@ -10,23 +10,25 @@ import { SiteNav } from "../site-nav";
 import { Closing } from "./closing";
 import { Faq } from "./faq";
 import { Hero } from "./hero";
-import { MobileCta } from "./mobile-cta";
 import { Showcase } from "./showcase";
-import { Sources } from "./sources";
+import { SumList } from "./sum-list";
+import { TaxCompare } from "./tax-compare";
 import { Trust } from "./trust";
 
 export interface HomePageProps {
   content: HomeContent;
-  /** Optional last button of the closing (the Italian home: the calculators). */
+  /** Optional last link of the closing (the Italian home: the calculators). */
   secondary?: { href: string; label: string };
   /** Shown above the bar (the Italian home: the «also in English» line). */
   before?: ReactNode;
 }
 
 /**
- * «Un numero solo» home (2026-10-17) in one language: the sum in the opening, the four places money comes from,
- * what the number tells you every day (five real screens), why to trust it (facts, limits, open code), the
- * questions, the closing. On the phone a fixed bar carries the button between the opening and the closing.
+ * The home in one language, after the taste-skill direction «Type and nothing else» (2026-10-17): the statement alone
+ * on the navy field, the real Panoramica as the first picture, the four places as a live sum the visitor can rewrite,
+ * what the number tells you (four real screens), the net after tax on the yellow field, why to trust it as a table
+ * with the code under it, the questions, the close on the navy field. The bar is sticky and takes the colours of the
+ * field under it (`data-field`).
  */
 export function HomePage({ content, secondary, before }: HomePageProps) {
   const { locale } = content;
@@ -45,21 +47,23 @@ export function HomePage({ content, secondary, before }: HomePageProps) {
       {before}
       <SiteNav locale={locale} alternate={alternate} />
       <main className="home">
-        <Hero text={content.hero} sum={content.sum} locale={locale} />
-        <Sources text={content.places} />
+        <Hero text={content.hero} locale={locale} />
+        <SumList places={content.places} sum={content.sum} locale={locale} />
         <Showcase text={content.showcase} locale={locale} />
+        <TaxCompare text={content.tax} />
         <Trust text={content.trust} hood={content.hood} />
         <Faq text={content.faq} />
         <Closing
           title={content.close.title}
+          note={content.close.note}
           cta={content.close.cta}
           demo={content.close.demo}
           ctaLocation="closing"
           locale={locale}
+          full
           secondary={secondary ? { ...secondary, target: "calculator" } : undefined}
         />
       </main>
-      <MobileCta label={content.close.cta} login={content.login} locale={locale} />
       <SiteFooter locale={locale} alternate={alternate} />
     </>
   );

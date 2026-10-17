@@ -22,22 +22,20 @@ export type HomeIcon =
   | "candles" | "layers" | "bitcoin" | "car" | "spreadsheet";
 
 export interface HeroText {
-  title: string;
+  /** The statement, as two lines (each line is set on its own row, never a third). */
+  title: readonly [string, string];
   lede: string;
   cta: string;
   /** Secondary button towards the public demo of the app. */
   demo: string;
-  /** Secondary action: scrolls to «Da quattro posti». */
-  how: string;
 }
 
-/** The opening: one promise, one sentence, the button and the demo. */
+/** The opening: one promise in two lines, one sentence, the button and the demo. */
 export const HERO = {
-  title: "Tutti i tuoi soldi, in un numero solo.",
+  title: ["Tutti i tuoi soldi,", "in un numero solo."],
   lede: "Conto, investimenti, pensione e mutuo insieme. Aggiornato ogni giorno, tasse comprese.",
   cta: "Inizia gratis",
   demo: "Prova la demo",
-  how: "Come funziona",
 } as const satisfies HeroText;
 
 export type SumTone = "neg";
@@ -59,7 +57,15 @@ export interface SumText {
   prefix?: string;
   /** Decimals of the total, as in the screenshot (the rows are rounded). */
   cents: string;
+  /** Currency written after a row's figure (Italian); English writes it before with `prefix`. */
+  suffix?: string;
   caption: string;
+  /** Under the list: what the visitor can do with the amounts. */
+  hint: string;
+  /** Button that puts the sample figures back. */
+  reset: string;
+  /** `aria-label` of each amount field, `{place}` replaced by the row label. */
+  fieldLabel: string;
 }
 
 /** The sum in the opening: the four places add up to the net worth of the Panoramica screenshot beside it. */
@@ -72,7 +78,11 @@ export const SUM = {
     { label: "Mutuo e prestiti", detail: "3 debiti", value: -39937, tone: "neg" },
   ] satisfies readonly SumRow[],
   cents: ",53 €",
-  caption: "Dati d'esempio.",
+  suffix: " €",
+  caption: "Dati d'esempio: Giulia, una persona inventata.",
+  hint: "Scrivi i tuoi importi: il conto si rifà da solo e niente esce da questa pagina.",
+  reset: "Rimetti i dati d'esempio",
+  fieldLabel: "Importo di {place}",
 } as const satisfies SumText;
 
 export interface SourceItem {
@@ -100,7 +110,7 @@ export interface PlacesText {
   banksLabel: string;
 }
 
-/** «Da quattro posti, un numero»: how each place gets in, once. */
+/** «Da quattro posti, un numero»: how each place gets in, once; the rows carry the amounts of `SUM`, in the same order. */
 export const PLACES = {
   title: "Da quattro posti, un numero.",
   intro: "Ogni cosa entra una volta. Poi l'app la tiene aggiornata da sola.",
@@ -185,15 +195,6 @@ export const SHOWCASE = {
       more: { href: CONTENT_PATHS.funzioneInvestimenti, label: "Tutto sugli investimenti" },
     },
     {
-      id: "tasse",
-      tab: "Tasse",
-      title: "Quante tasse paghi se vendi. Prima di vendere.",
-      text: "26% sui guadagni, 12,5% sui titoli di Stato, le perdite degli anni scorsi che abbassano il conto, il bollo. È una stima: il conto finale lo fa il broker.",
-      figure: { value: "146", small: ",93 €", caption: "di tasse se vendi tutto l'ETF d'esempio oggi · ti restano 19.625,25 €" },
-      shot: "tasse",
-      more: { href: CONTENT_PATHS.zainetto, label: "Prova il calcolatore, senza account" },
-    },
-    {
       id: "mutuo",
       tab: "Mutuo",
       title: "Conviene chiudere il mutuo prima?",
@@ -216,6 +217,32 @@ export const SHOWCASE = {
   allHref: CONTENT_PATHS.schermate,
 } as const satisfies ShowcaseText;
 
+export interface TaxSpecimen {
+  /** The figure, set huge; `small` follows it at body size. */
+  value: string;
+  small: string;
+  /** What the figure is, above it. */
+  caption: string;
+}
+
+export interface TaxText {
+  title: string;
+  text: string;
+  specimens: readonly [TaxSpecimen, TaxSpecimen];
+  more: { href: string; label: string };
+}
+
+/** «Il netto, prima di vendere»: the sample ETF today and what is left after the tax on a sale (the Tasse screenshot). */
+export const TAX = {
+  title: "Il netto, prima di vendere.",
+  text: "26% sui guadagni, 12,5% sui titoli di Stato, le perdite degli anni scorsi che abbassano il conto, il bollo. L'app fa la stima prima che tu venda; il conto finale lo fa il broker.",
+  specimens: [
+    { caption: "Incassi se vendi oggi l'ETF d'esempio", value: "19.772", small: ",18 €" },
+    { caption: "Ti resta, dopo 146,93 € di tasse", value: "19.625", small: ",25 €" },
+  ],
+  more: { href: CONTENT_PATHS.zainetto, label: "Prova il calcolatore, senza account" },
+} as const satisfies TaxText;
+
 export interface TrustFact {
   icon: HomeIcon;
   title: string;
@@ -224,7 +251,12 @@ export interface TrustFact {
 }
 
 export interface TrustText {
-  title: string;
+  /** The heading, stepped over two lines (the second indented). */
+  title: readonly [string, string];
+  /** Names of the row groups of the table: what happens to the data, the limits, the code. */
+  groups: { facts: string; limits: string; code: string };
+  /** Column headers of the table (read by screen readers, hidden on the phone). */
+  columns: { group: string; what: string; how: string; source: string };
   facts: readonly TrustFact[];
   limits: readonly { title: string; text: string }[];
   more: string;
@@ -233,7 +265,9 @@ export interface TrustText {
 
 /** «Legge soltanto. Non sposta soldi.»: four facts for everyone, two limits said plainly. Every sentence is verified in `security.ts`. */
 export const TRUST = {
-  title: "Legge soltanto. Non sposta soldi.",
+  title: ["Legge soltanto.", "Non sposta soldi."],
+  groups: { facts: "I tuoi dati", limits: "Limiti, detti chiari", code: "Il codice" },
+  columns: { group: "Gruppo", what: "Cosa", how: "Come", source: "Fonte" },
   facts: [
     {
       icon: "key",
@@ -291,7 +325,7 @@ export interface HoodText {
 
 /** «Sotto il cofano»: the technical facts, for whoever wants to read the code or run it at home. */
 export const UNDER_HOOD = {
-  title: "Il codice è aperto. Leggilo, o installalo a casa tua.",
+  title: "Il codice è aperto.",
   text: "Tutta l'app è pubblica, con licenza AGPL-3.0. Puoi leggere come tratta i dati, segnalare un problema o farla girare su un server tuo con Docker.",
   fallback: `Il codice ha licenza ${SOURCE_LICENSE} e si installa su un server tuo con Docker.`,
   cta: "Vedi il codice su GitHub",
@@ -326,6 +360,8 @@ export const FAQ_HOME = { title: "Prima di iscriverti." } as const;
 
 export interface CloseText {
   title: string;
+  /** One sentence on the closing's bottom row, before the demo link. */
+  note: string;
   cta: string;
   demo: string;
   /** Optional plain button towards the calculators (Italian only). */
@@ -334,6 +370,7 @@ export interface CloseText {
 
 export const CLOSE = {
   title: "Il tuo numero, da domani mattina.",
+  note: "Vuoi guardare prima? La demo è l'account di Giulia, senza iscriverti.",
   cta: "Inizia gratis",
   demo: "Prova la demo",
   tools: "Prova un calcolatore",
@@ -346,12 +383,11 @@ export interface HomeContent {
   sum: SumText;
   places: PlacesText;
   showcase: ShowcaseText;
+  tax: TaxText;
   trust: TrustText;
   hood: HoodText;
   faq: { title: string; items: readonly FaqItem[] };
   close: CloseText;
-  /** Sign-in label in the phone bar. */
-  login: string;
 }
 
 export const HOME_IT: HomeContent = {
@@ -360,11 +396,11 @@ export const HOME_IT: HomeContent = {
   sum: SUM,
   places: PLACES,
   showcase: SHOWCASE,
+  tax: TAX,
   trust: TRUST,
   hood: UNDER_HOOD,
   faq: { title: FAQ_HOME.title, items: FAQ },
   close: CLOSE,
-  login: "Entra",
 };
 
 export interface ItalyRule {

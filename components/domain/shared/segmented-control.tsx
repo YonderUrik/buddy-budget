@@ -60,7 +60,7 @@ export function SegmentedControl<T extends string>({
               layoutId={pillId}
               transition={SPRING_BOUNCY}
               aria-hidden="true"
-              className="absolute inset-0 rounded-md bg-background shadow-sm"
+              className="absolute inset-0 rounded-md bg-background"
             />
           ) : null}
           <span className="relative">{tr(option.label)}</span>

@@ -72,7 +72,7 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
   const { t: tr } = useLocalization();
   if (status === "none") {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/50 p-3">
         <p className="text-sm text-muted-foreground">{tr("Avresti fatto meglio con un indice? Confronta gli stessi versamenti con un ETF.")}</p>
         <Button variant="outline" size="sm" onClick={onChoose}>{tr("Scegli un confronto")}</Button>
       </div>

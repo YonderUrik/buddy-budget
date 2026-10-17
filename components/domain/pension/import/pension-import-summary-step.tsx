@@ -78,7 +78,7 @@ export function PensionImportSummaryStep({ plan, currency, discarded, done }: Pe
                 {updates.slice(0, MAX_LISTED).map((row) => (
                   <tr key={row.line} className="border-b border-border/60 last:border-b-0">
                     <td className="whitespace-nowrap py-2 pr-2 font-semibold">{formatShortDateKey(row.date)}</td>
-                    <td className="py-2 pl-2 text-right font-mono tabular-nums">{row.previous ? money(row.previous.value, currency) : "—"}</td>
+                    <td className="py-2 pl-2 text-right tabular-nums">{row.previous ? money(row.previous.value, currency) : "—"}</td>
                   </tr>
                 ))}
               </tbody>

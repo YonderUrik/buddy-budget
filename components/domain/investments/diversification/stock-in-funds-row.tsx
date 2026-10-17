@@ -31,7 +31,7 @@ export function StockInFundsRow({ item, nameOf, instrumentOf, currency }: StockI
   const via = item.totalValue - item.directValue;
   const directShare = item.totalValue > 0 ? item.directValue / item.totalValue : 1;
   return (
-    <li className="flex flex-col gap-2 rounded-xl border p-3">
+    <li className="flex flex-col gap-2 rounded-xl bg-muted/50 p-3">
       <p className="text-sm text-foreground">
         <span className="font-medium">{stock ? <InstrumentLabel instrument={stock} className="max-w-full" /> : "—"}</span>{" "}{tr("pesa in tutto")}{" "}
         <span className="font-medium tabular-nums">{money(item.totalValue, currency)}</span>{tr(", perché la hai anche dentro")}{" "}

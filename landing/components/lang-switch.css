@@ -1,13 +1,9 @@
-/* «IT / EN»: small spaced capitals, the current language in full ink, the other a link with a 44 px tap area. */
-.lang { display: inline-flex; align-items: center; gap: 2px; font: 500 13px var(--f-b); letter-spacing: 0.08em; color: var(--ink3); }
-.lang b { font-weight: 600; color: var(--ink); padding: 0 4px; }
-.lang a { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; min-height: 44px; padding: 0 4px; color: var(--ink2); text-decoration: none; }
-.lang a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-/* on the navy (bar, menu, footer) */
-.nav.navy .lang, .sf .lang { color: var(--on-navy2); }
-.nav.navy .lang b, .sf .lang b { color: var(--on-navy); }
-.nav.navy .lang a, .sf .lang a { color: var(--on-navy2); }
-.nav.navy .lang a:hover, .sf .lang a:hover { color: var(--on-navy); }
+/* «IT / EN»: the current language in full ink, the other a link with a 44 px tap area; colours follow the field. */
+.lang { display: inline-flex; align-items: center; gap: 2px; font: 500 14px var(--f-b); color: color-mix(in srgb, currentColor 60%, transparent); }
+.lang b { font-weight: 700; color: currentColor; padding: 0 4px; }
+.nav .lang b, .sf .lang b, .menu .lang b { color: inherit; }
+.lang a { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; min-height: 44px; padding: 0 4px; color: inherit; text-decoration: none; }
+.lang a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .sf .lang a { min-height: 32px; }
 /* flush with the column's left edge: the first item has no inner padding */
 .lang > :first-child { padding-left: 0; min-width: 0; }

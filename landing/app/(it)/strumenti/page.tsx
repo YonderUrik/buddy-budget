@@ -17,7 +17,7 @@ export const metadata: Metadata = pageMetadata("it", {
 /** Elenco dei calcolatori gratuiti: una scheda per strumento, nello stesso stile dei rimandi delle altre pagine. */
 export default function Page() {
   return (
-    <ContentPage title={TOOLS_PAGE.h1} lead={TOOLS_PAGE.lead} kicker="Senza account" current={CONTENT_PATHS.strumenti} crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Calcolatori" }]} ctaTitle="Nell'app i numeri sono i tuoi." ctaText="Zainetto, rate e risparmio si calcolano dalle tue operazioni e dai tuoi movimenti, senza riscrivere niente." ctaLocation="strumenti">
+    <ContentPage title={TOOLS_PAGE.h1} lead={TOOLS_PAGE.lead} current={CONTENT_PATHS.strumenti} crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Calcolatori" }]} ctaTitle="Nell'app i numeri sono i tuoi." ctaText="Zainetto, rate e risparmio si calcolano dalle tue operazioni e dai tuoi movimenti, senza riscrivere niente." ctaLocation="strumenti">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: TOOLS_PAGE.h1, url: `${SITE_URL}${CONTENT_PATHS.strumenti}`, inLanguage: "it-IT", description: TOOLS_PAGE.description, isPartOf: { "@id": `${SITE_URL}/#website` }, hasPart: TOOLS.map((t) => ({ "@type": "WebPage", name: t.name, url: `${SITE_URL}${t.href}` })) }} />
       <div className="related">
         {TOOLS.map((t) => (

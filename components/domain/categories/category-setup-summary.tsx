@@ -31,7 +31,7 @@ export function CategorySetupSummary({ items, className }: CategorySetupSummaryP
               {active.map((item) => (
                 <li
                   key={item.key ?? `nuova-${item.name}`}
-                  className="flex items-center gap-1.5 rounded-full border border-border bg-card py-1 pr-3 pl-1 text-sm"
+                  className="flex items-center gap-1.5 rounded-full bg-card py-1 pr-3 pl-1 text-sm"
                 >
                   <CategoryAvatar color={item.color} icon={item.icon} size={13} className="size-6" />
                   {item.name.trim()}

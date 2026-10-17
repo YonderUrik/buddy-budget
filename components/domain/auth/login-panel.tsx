@@ -1,127 +1,92 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * LoginPanel
  *
- * Accesso via magic link o Google. Gestisce gli errori di invio (niente "controlla la tua email" se l'invio
- * è fallito), il reinvio con attesa minima e il cambio email. `redirectTo` è la pagina dove atterrare dopo
- * l'accesso (già validata dal chiamante).
+ * Sign-in via magic link or Google. With an account remembered on this device it opens on «Rientra in BuddyBudget»
+ * (one tap to the method used last time); otherwise, or after «Non sei tu?», on the full form. Send errors never
+ * show "check your email", the link can be resent after a cooldown. `redirectTo` is where to land after sign-in
+ * (already validated by the caller).
  */
 
 import * as React from "react";
-import { Loader2, MailCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth/client";
-import { MAGIC_LINK_EXPIRES_MINUTES, MAGIC_LINK_RESEND_COOLDOWN_SECONDS } from "@/lib/auth/constants";
+import { track } from "@/lib/analytics";
+import { MAGIC_LINK_EXPIRES_MINUTES } from "@/lib/auth/constants";
+import { maskEmail } from "@/lib/auth/returning-user";
+import { useLocalization } from "@/lib/localization/provider";
 import { GoogleIcon } from "./google-icon";
 import { LegalLinksNote } from "./legal-links-note";
+import { LoginSentPanel } from "./login-sent-panel";
+import { ReturningLoginPanel } from "./returning-login-panel";
+import { useLoginActions } from "./use-login-actions";
+import { useReturningUser } from "./use-returning-user";
 
-const RATE_LIMIT_STATUS = 429;
 const EMAIL_PLACEHOLDER = "nome@esempio.it";
-
-/** Messaggio leggibile per un errore di better-auth (status HTTP opzionale). */
-function describeAuthError(error: { status?: number; message?: string } | null | undefined): string {
-  if (error?.status === RATE_LIMIT_STATUS) return "Troppi tentativi ravvicinati. Riprova tra qualche minuto.";
-  return "Non siamo riusciti a inviare il link. Controlla l'indirizzo e riprova.";
-}
 
 export interface LoginPanelProps {
   redirectTo: string;
-  /** Avviso informativo sopra il form (es. account appena eliminato). */
+  /** Informational notice above the form (e.g. account just deleted). */
   notice?: string;
+  /** Forget the account remembered on this device (e.g. it has just been deleted). */
+  forgetRemembered?: boolean;
 }
 
-/** Form di accesso: titolo, email con la nota sulla durata del link, pulsante, Google e i link legali. */
-export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
+/** Login page content: «Rientra in BuddyBudget», the full form, or «Controlla la tua email» once a link went out. */
+export function LoginPanel({ redirectTo, notice, forgetRemembered = false }: LoginPanelProps) {
   const { t: tr } = useLocalization();
+  const actions = useLoginActions(redirectTo);
+  const { user: remembered, forget } = useReturningUser();
   const [email, setEmail] = React.useState("");
-  const [sent, setSent] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [googleLoading, setGoogleLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [cooldown, setCooldown] = React.useState(0);
 
   React.useEffect(() => {
-    if (cooldown <= 0) return;
-    const id = window.setTimeout(() => setCooldown((s) => s - 1), 1000);
-    return () => window.clearTimeout(id);
-  }, [cooldown]);
+    if (forgetRemembered) forget();
+  }, [forgetRemembered, forget]);
 
-  async function sendLink() {
-    setLoading(true);
-    setError(null);
-    try {
-      const { error: authError } = await authClient.signIn.magicLink({ email, callbackURL: redirectTo });
-      if (authError) {
-        setError(describeAuthError(authError));
-        return;
-      }
-      setSent(true);
-      setCooldown(MAGIC_LINK_RESEND_COOLDOWN_SECONDS);
-    } catch {
-      setError(tr("Connessione non riuscita. Controlla la rete e riprova."));
-    } finally {
-      setLoading(false);
-    }
-  }
+  const returning = forgetRemembered ? null : remembered;
+  const busy = actions.loading || actions.googleLoading;
 
-  async function handleGoogle() {
-    setGoogleLoading(true);
-    setError(null);
-    try {
-      const { error: authError } = await authClient.signIn.social({ provider: "google", callbackURL: redirectTo });
-      // Se va a buon fine il browser viene reindirizzato a Google: qui arriviamo solo in caso di errore.
-      if (authError) {
-        setError(tr("Accesso con Google non riuscito. Riprova o usa l'email."));
-        setGoogleLoading(false);
-      }
-    } catch {
-      setError(tr("Connessione non riuscita. Controlla la rete e riprova."));
-      setGoogleLoading(false);
-    }
-  }
-
-  if (sent) {
+  if (actions.sentTo) {
+    const fromRemembered = returning?.email === actions.sentTo;
     return (
-      <div className="flex flex-col items-center text-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
-        <div className="mb-6 flex size-14 items-center justify-center rounded-full bg-pos-soft text-pos">
-          <MailCheck className="size-7" aria-hidden="true" />
-        </div>
-        <h1 className="font-heading text-3xl font-medium tracking-tight">{tr("Controlla la tua email")}</h1>
-        <p className="mt-3 text-text-2" role="status">{tr("Abbiamo inviato un link di accesso a")}{" "}<strong className="font-medium text-foreground">{email}</strong>{tr(". Resta valido per")}{" "}{MAGIC_LINK_EXPIRES_MINUTES}{" "}{tr("minuti.")}</p>
-        <p className="mt-2 text-sm text-text-3">{tr("Non lo trovi? Guarda anche nella cartella spam.")}</p>
-
-        {error && <p className="mt-4 text-sm text-destructive" role="alert">{tr(error)}</p>}
-
-        <div className="mt-8 flex w-full flex-col gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 w-full"
-            onClick={sendLink}
-            disabled={loading || cooldown > 0}
-          >
-            {loading && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-            {cooldown > 0 ? tr("Invia di nuovo tra {0}s", {0: cooldown}) : tr("Invia di nuovo il link")}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="h-11 w-full"
-            onClick={() => {
-              setSent(false);
-              setError(null);
-            }}
-          >{tr("Usa un'altra email")}</Button>
-        </div>
-      </div>
+      <LoginSentPanel
+        email={fromRemembered ? maskEmail(actions.sentTo) : actions.sentTo}
+        loading={actions.loading}
+        cooldown={actions.cooldown}
+        error={actions.error}
+        onResend={() => void actions.sendLink(actions.sentTo!)}
+        onBack={actions.reset}
+        backLabel={fromRemembered ? tr("Indietro") : tr("Usa un'altra email")}
+      />
     );
   }
 
-  const busy = loading || googleLoading;
+  if (returning) {
+    return (
+      <ReturningLoginPanel
+        maskedEmail={maskEmail(returning.email)}
+        method={returning.method}
+        loading={actions.loading}
+        googleLoading={actions.googleLoading}
+        error={actions.error}
+        onSendLink={async () => {
+          if (await actions.sendLink(returning.email)) track("returning_login_used", { method: "email" });
+        }}
+        onGoogle={() => {
+          // Tracked before the redirect: once Google opens, this page is gone.
+          track("returning_login_used", { method: "google" });
+          void actions.signInWithGoogle();
+        }}
+        onForget={() => {
+          forget();
+          track("returning_login_forgotten");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-7">
@@ -138,7 +103,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          void sendLink();
+          void actions.sendLink(email);
         }}
         className="flex flex-col gap-2"
       >
@@ -155,19 +120,19 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
           autoFocus
           className="h-11 bg-card px-3.5 text-base"
           disabled={busy}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? "login-error" : "login-hint"}
+          aria-invalid={actions.error ? true : undefined}
+          aria-describedby={actions.error ? "login-error" : "login-hint"}
         />
-        {error ? (
+        {actions.error ? (
           <p id="login-error" className="text-sm text-destructive" role="alert">
-            {tr(error)}
+            {tr(actions.error)}
           </p>
         ) : (
           <p id="login-hint" className="text-sm text-text-3">{tr("Il link vale {0} minuti e si usa una volta sola.", {0: MAGIC_LINK_EXPIRES_MINUTES})}</p>
         )}
         <Button type="submit" className="mt-3 h-11 w-full text-base" disabled={busy}>
-          {loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
-          {loading ? tr("Invio in corso…") : tr("Mandami il link")}
+          {actions.loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
+          {actions.loading ? tr("Invio in corso…") : tr("Mandami il link")}
         </Button>
       </form>
 
@@ -175,9 +140,9 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         <span className="h-px flex-1 bg-border" />{tr("oppure")}<span className="h-px flex-1 bg-border" />
       </div>
 
-      <Button variant="outline" className="h-11 w-full text-base" type="button" onClick={handleGoogle} disabled={busy}>
-        {googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
-        {googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
+      <Button variant="outline" className="h-11 w-full text-base" type="button" onClick={() => void actions.signInWithGoogle()} disabled={busy}>
+        {actions.googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
+        {actions.googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
       </Button>
 
       <LegalLinksNote />

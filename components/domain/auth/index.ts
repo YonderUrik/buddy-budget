@@ -13,6 +13,8 @@ export { BrandLink } from "./brand-link";
 export type { BrandLinkProps } from "./brand-link";
 export { LoginPanel } from "./login-panel";
 export type { LoginPanelProps } from "./login-panel";
+export { RememberReturningUser } from "./remember-returning-user";
+export type { RememberReturningUserProps } from "./remember-returning-user";
 export { CurrencyPicker } from "./currency-picker";
 export type { CurrencyPickerProps } from "./currency-picker";
 export { GoogleIcon } from "./google-icon";

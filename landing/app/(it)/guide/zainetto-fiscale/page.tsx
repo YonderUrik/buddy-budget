@@ -7,18 +7,19 @@ import { YearsStrip } from "@/components/viz/viz";
 import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
+import { pageMetadata } from "@/lib/page-metadata";
 
 const H1 = "Zainetto fiscale: cos'è e come recuperare le minusvalenze";
 /** Diverso dall'h1 di proposito: un title identico all'h1 spreca la seconda occasione di descrivere la pagina. */
 const TITLE = "Zainetto fiscale: guida alle minusvalenze, con esempi";
 const DESCRIPTION = "Che cos'è lo zainetto fiscale, come funzionano i 4 anni per compensare le minusvalenze di azioni e ETF, con esempi numerici e un calcolatore gratuito.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: CONTENT_PATHS.guidaZainetto },
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
-};
+});
 
 export default function Page() {
   return (

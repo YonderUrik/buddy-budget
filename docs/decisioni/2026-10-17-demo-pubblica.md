@@ -13,3 +13,9 @@
 **Deferred**: per-visitor sandboxes where writes work, arm64 images by default (QEMU builds slow the deploy; native arm runners would need a split build).
 
 **Signals**: `buddybudget_public_demo_events_total{event,language}` (session_started, unavailable, write_blocked, reset), cron heartbeat `public_demo`, logs `demo.session.*` and `demo.reset.*`, Umami `public_demo_viewed` and `public_demo_signup_clicked`.
+
+## Landing conversion fixes (same PR)
+
+- The landing's «sign up» buttons open the sign-in page with `signup=1`: it reads «Crea il tuo account» with a new-user line; «Entra» keeps the old wording.
+- Every landing page has its own `og:title`, `og:url` and Twitter card (`landing/lib/page-metadata.ts`); the root layouts no longer set a canonical.
+- Campaign parameters (`utm_*`) arriving on the landing are carried onto every link to the app (`UtmPassthrough`), kept as slugs in localStorage on the sign-in page and sent with `login_link_requested`, `google_login_started` and `onboarding_completed`.

@@ -11,6 +11,7 @@ import { HTML_LANG, LOCALES, OG_LOCALE, SCHEMA_LANGUAGE, type Locale } from "@/l
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import { LANG_HINT_STORAGE_KEY } from "@/lib/lang-hint";
 import { SCREEN_LANGUAGE_SCRIPT } from "@/lib/screen-variants";
+import { UtmPassthrough } from "@/components/utm-passthrough";
 
 const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 // The script goes through the app's `/stats` proxy (avoids tracker blocks); `data-domains` limits counting to the real domain.
@@ -101,6 +102,7 @@ export function RootDocument({ locale, children }: { locale: Locale; children: R
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }} />
         <BrandSprite />
         {children}
+        <UtmPassthrough appUrl={APP_URL} />
         {UMAMI_ID ? <Script src={UMAMI_SRC} data-website-id={UMAMI_ID} data-domains={UMAMI_DOMAINS} strategy="afterInteractive" /> : null}
       </body>
     </html>

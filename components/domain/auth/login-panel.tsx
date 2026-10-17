@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { track } from "@/lib/analytics";
+import type { Attribution } from "@/lib/analytics/attribution";
 import { MAGIC_LINK_EXPIRES_MINUTES } from "@/lib/auth/constants";
 import { maskEmail } from "@/lib/auth/returning-user";
 import { useLocalization } from "@/lib/localization/provider";
@@ -37,10 +38,14 @@ export interface LoginPanelProps {
   forgetRemembered?: boolean;
   /** Link to the public demo, shown under the sign-in buttons; omitted where the demo is off. */
   demoHref?: string;
+  /** Opened from a «sign up» button: title and line speak to a new user instead of «Entra». */
+  signup?: boolean;
+  /** Campaign the visitor arrived from, sent with the sign-in events. */
+  attribution?: Attribution;
 }
 
 /** Login page content: «Rientra in BuddyBudget», the full form, or «Controlla la tua email» once a link went out. */
-export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoHref }: LoginPanelProps) {
+export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoHref, signup = false, attribution = {} }: LoginPanelProps) {
   const { t: tr } = useLocalization();
   const actions = useLoginActions(redirectTo);
   const { user: remembered, forget } = useReturningUser();
@@ -52,6 +57,7 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
 
   const returning = forgetRemembered ? null : remembered;
   const busy = actions.loading || actions.googleLoading;
+  const entry = signup ? "signup" : "login";
 
   if (actions.sentTo) {
     const fromRemembered = returning?.email === actions.sentTo;
@@ -100,14 +106,25 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
         </p>
       )}
       <div className="flex flex-col gap-3">
-        <h1 className={AUTH_TITLE}>{tr("Entra in")}{" "}{tr("BuddyBudget")}</h1>
-        <p className="text-text-2">{tr("Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo.")}</p>
+        {signup ? (
+          <>
+            <h1 className={AUTH_TITLE}>{tr("Crea il tuo account")}</h1>
+            <p className="text-text-2">{tr("Ti mandiamo un link via email. Non serve una password.")}</p>
+          </>
+        ) : (
+          <>
+            <h1 className={AUTH_TITLE}>{tr("Entra in")}{" "}{tr("BuddyBudget")}</h1>
+            <p className="text-text-2">{tr("Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo.")}</p>
+          </>
+        )}
       </div>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          void actions.sendLink(email);
+          void actions.sendLink(email).then((sent) => {
+            if (sent) track("login_link_requested", { entry, ...attribution });
+          });
         }}
         className="flex flex-col gap-2"
       >
@@ -144,7 +161,11 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
         <span className="h-px flex-1 bg-border" />{tr("oppure")}<span className="h-px flex-1 bg-border" />
       </div>
 
-      <Button variant="outline" className="h-11 w-full text-base" type="button" onClick={() => void actions.signInWithGoogle()} disabled={busy}>
+      <Button variant="outline" className="h-11 w-full text-base" type="button" onClick={() => {
+          // Tracked before the redirect: once Google opens, this page is gone.
+          track("google_login_started", { entry, ...attribution });
+          void actions.signInWithGoogle();
+        }} disabled={busy}>
         {actions.googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
         {actions.googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
       </Button>

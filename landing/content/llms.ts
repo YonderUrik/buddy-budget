@@ -4,7 +4,9 @@
  * italiane, catalogo funzioni), così non può dire cose diverse dal sito. Si rigenera a ogni build.
  */
 import { FEATURE_AREAS, featuresByArea } from "./catalog.generated";
+import { FAQ_EN, SITE_DESCRIPTION_EN } from "./en/home";
 import { ITALY } from "./home";
+import { EN_PATHS } from "./locales";
 import { LEGAL_PATHS } from "./legal";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "./seo-pages";
 import { SUPPORTED, TOUR } from "./sheet";
@@ -23,7 +25,16 @@ const PAGES: readonly { path: string; title: string; text: string }[] = [
   { path: CONTENT_PATHS.schermate, title: "Schermate", text: "Screenshot dell'app vera con dati di esempio." },
 ];
 
-/** Costruisce il testo di `/llms.txt`. */
+/** English pages, for assistants answering in English (the Italian-only pages are listed above, in Italian). */
+const PAGES_EN: readonly { path: string; title: string; text: string }[] = [
+  { path: EN_PATHS.home, title: "BuddyBudget in English", text: "The product in one page: one net worth from bank accounts, investments, pension and debts, how each gets in, what it tells you, security and the open code." },
+  { path: EN_PATHS.features, title: "All the features", text: "The full list by area, with the status of each." },
+  { path: EN_PATHS.featureInvestments, title: "Investments with Italian taxes", text: "Real returns, risk, tax-loss carryforward (zainetto fiscale) and stamp duty (bollo) worked out from your trades." },
+  { path: EN_PATHS.security, title: "Security and privacy", text: "Read-only bank connection (PSD2) via GoCardless, what is stored and what is not, servers in Germany, export and deletion, stated limits." },
+  { path: EN_PATHS.screens, title: "Screens", text: "Screenshots of the real app with sample data." },
+];
+
+/** Builds the text of `/llms.txt`. */
 export function buildLlmsTxt(): string {
   const lines: string[] = [];
   lines.push(`# ${SITE_NAME}`, "", `> ${SITE_DESCRIPTION}`, "");
@@ -38,6 +49,21 @@ export function buildLlmsTxt(): string {
     `- Sito: ${SITE_URL} · App: ${APP_URL}`,
     "",
   );
+  lines.push(
+    "## In English",
+    "",
+    SITE_DESCRIPTION_EN,
+    "",
+    "- Open-source (AGPL-3.0), self-hostable personal finance web app. Two products: Italy (Italian and English, every feature) and Germany (German and English, essentials only: accounts, portfolio, dividends and partial 2026 tax estimates; pension and advanced simulators hidden until review).",
+    "- It is not a bank or a broker and gives no investment advice. It never moves money: the bank connection is read-only.",
+    "- The calculators, guides and legal pages are in Italian only.",
+    "",
+  );
+  if (!CONTENT_DRAFT) {
+    for (const p of PAGES_EN) lines.push(`- [${p.title}](${SITE_URL}${p.path}): ${p.text}`);
+    lines.push("");
+  }
+  for (const q of FAQ_EN) lines.push(`### ${q.question}`, "", q.answer, "");
   lines.push("## Regole italiane già calcolate", "");
   for (const r of ITALY.rules) lines.push(`- ${r.rule} ${r.app}${r.source ? ` Fonte: ${r.source.href}` : ""}`);
   lines.push("", "## Fonti supportate", "");

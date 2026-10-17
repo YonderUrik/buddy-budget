@@ -2,28 +2,32 @@
 
 import { useRef, useState } from "react";
 import "./screen-gallery.css";
+import { SCREEN_AREAS, screenAreaName, screenText } from "@/content/screen-text";
 import { SCREENS, type ScreenId } from "@/content/screens";
 import { track } from "@/lib/analytics";
+import type { Locale } from "@/lib/i18n";
 import { EASE_OUT, gsap, MOTION_OK, useGSAP } from "@/lib/motion/gsap";
 import { AppShot } from "./app-shot";
 import { PhoneShot } from "./phone-shot";
 import { TrackedSection } from "./tracked-section";
 
-/** Ordine e titoli dei gruppi, come la sidebar dell'app. */
-const AREAS = ["Panoramica", "Liquidità", "Investimenti", "Pensione", "Debiti", "Analitiche"] as const;
-
 export interface ScreenGalleryProps {
   /** On the phone, shows the phone-size version inside the phone frame (for the screens that have one) instead of the shrunken full screenshot. */
   phoneOnMobile?: boolean;
+  /** Language of the tabs, captions and alt texts. */
+  locale?: Locale;
+  /** `aria-label` of the screen picker. */
+  label?: string;
 }
 
 /**
  * Galleria di tutte le schermate dell'app: sono screenshot veri (vedi `docs/landing-screens.md`), non disegni, sempre
  * interi. Si sceglie la schermata dalle schede raggruppate per area, sopra l'immagine; la didascalia dice cosa mostra.
  */
-export function ScreenGallery({ phoneOnMobile = false }: ScreenGalleryProps) {
+export function ScreenGallery({ phoneOnMobile = false, locale = "it", label = "Schermate dell'app" }: ScreenGalleryProps) {
   const [selected, setSelected] = useState<ScreenId>("panoramica");
   const current = SCREENS.find((s) => s.id === selected) ?? SCREENS[0];
+  const currentText = screenText(current.id, locale);
   const hasPhone = phoneOnMobile && "phone" in current && current.phone;
   const view = useRef<HTMLDivElement>(null);
   const first = useRef(true);
@@ -52,14 +56,14 @@ export function ScreenGallery({ phoneOnMobile = false }: ScreenGalleryProps) {
 
   return (
     <TrackedSection id="schermate" section="schermate" className={`gal${phoneOnMobile ? " gal-pm" : ""}`}>
-      <nav className="gal-nav" aria-label="Schermate dell'app">
-        {AREAS.map((area) => (
-          <div key={area} className="gal-area" role="group" aria-label={area}>
-            <span className="gal-area-t">{area}</span>
+      <nav className="gal-nav" aria-label={label}>
+        {SCREEN_AREAS.map((area) => (
+          <div key={area} className="gal-area" role="group" aria-label={screenAreaName(area, locale)}>
+            <span className="gal-area-t">{screenAreaName(area, locale)}</span>
             <div className="gal-area-b">
               {SCREENS.filter((s) => s.area === area).map((s) => (
                 <button key={s.id} type="button" className="gal-tab" aria-pressed={s.id === selected} onClick={() => select(s.id)}>
-                  {s.label}
+                  {screenText(s.id, locale).label}
                 </button>
               ))}
             </div>
@@ -67,9 +71,9 @@ export function ScreenGallery({ phoneOnMobile = false }: ScreenGalleryProps) {
         ))}
       </nav>
       <div className="gal-view" ref={view}>
-        <p className="gal-cap" aria-live="polite"><b>{current.label}</b>{current.caption}</p>
-        <AppShot id={current.id} className={hasPhone ? "gal-desk" : undefined} />
-        {hasPhone ? <PhoneShot id={current.id} className="gal-phone" /> : null}
+        <p className="gal-cap" aria-live="polite"><b>{currentText.label}</b>{currentText.caption}</p>
+        <AppShot id={current.id} locale={locale} className={hasPhone ? "gal-desk" : undefined} />
+        {hasPhone ? <PhoneShot id={current.id} locale={locale} className="gal-phone" /> : null}
       </div>
     </TrackedSection>
   );

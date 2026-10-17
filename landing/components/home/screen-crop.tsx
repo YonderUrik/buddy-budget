@@ -1,5 +1,7 @@
 import "../app-shot.css";
 import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, type ScreenId } from "@/content/screens";
+import { screenText } from "@/content/screen-text";
+import type { Locale } from "@/lib/i18n";
 import { screenSize } from "@/lib/screen-size";
 import { screenVariants } from "@/lib/screen-variants";
 
@@ -17,6 +19,8 @@ export interface ScreenCropProps {
   priority?: boolean;
   /** `sizes` attribute, so the browser picks the light version on phones. */
   sizes?: string;
+  /** Language of the alt text. */
+  locale?: Locale;
   className?: string;
 }
 
@@ -25,7 +29,7 @@ export interface ScreenCropProps {
  * cropped at the bottom, so the part that matters (title, figure, first chart) always shows and the layout never
  * jumps. Every theme and language is rendered and the CSS shows the current one (like `AppShot`).
  */
-export function ScreenCrop({ id, top = false, ratio = "16 / 10", priority = false, sizes = "(max-width: 1000px) 100vw, 640px", className }: ScreenCropProps) {
+export function ScreenCrop({ id, top = false, ratio = "16 / 10", priority = false, sizes = "(max-width: 1000px) 100vw, 640px", locale = "it", className }: ScreenCropProps) {
   const screen = SCREENS.find((s) => s.id === id);
   if (!screen) throw new Error(`Schermata sconosciuta: ${id}`);
   if (top && !("topCrop" in screen && screen.topCrop)) throw new Error(`Schermata senza versione alta: ${id}`);
@@ -48,7 +52,7 @@ export function ScreenCrop({ id, top = false, ratio = "16 / 10", priority = fals
             src={top ? screenSrc(screen.id, theme, true, language) : screenSmallSrc(screen.id, theme, language)}
             srcSet={top ? undefined : `${screenSmallSrc(screen.id, theme, language)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme, false, language)} ${full.width}w`}
             sizes={top ? undefined : sizes}
-            alt={screen.alt}
+            alt={screenText(screen.id, locale).alt}
             width={size.width}
             height={size.height}
             loading={eager ? "eager" : "lazy"}

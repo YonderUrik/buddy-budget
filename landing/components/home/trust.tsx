@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { TRUST, UNDER_HOOD } from "@/content/home";
-import { CONTENT_PATHS } from "@/content/seo-pages";
-import { SOURCE_LICENSE, SOURCE_URL, SUPPORT_EMAIL } from "@/content/site";
+import type { HoodText, TrustText } from "@/content/home";
+import { SOURCE_URL, SUPPORT_EMAIL } from "@/content/site";
 import { GithubMark } from "../github-mark";
 import { HomeIcon } from "../home-icon";
 import { SourceLink } from "../source-link";
@@ -10,13 +9,13 @@ import { CopyCommand } from "./copy-command";
 import { SectionHead } from "./section-head";
 
 /** «Legge soltanto. Non sposta soldi.»: four facts with their sources, two limits said plainly, then the code. */
-export function Trust() {
+export function Trust({ text, hood }: { text: TrustText; hood: HoodText }) {
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec" aria-labelledby="sicurezza-t">
       <div className="wrap">
-        <SectionHead id="sicurezza-t" title={TRUST.title} />
+        <SectionHead id="sicurezza-t" title={text.title} />
         <ul className="facts">
-          {TRUST.facts.map((fact) => (
+          {text.facts.map((fact) => (
             <li key={fact.title}>
               <span className="ic" aria-hidden="true"><HomeIcon name={fact.icon} size={18} /></span>
               <h3>{fact.title}</h3>
@@ -30,29 +29,28 @@ export function Trust() {
           ))}
         </ul>
         <ul className="limits">
-          {TRUST.limits.map((limit) => (
+          {text.limits.map((limit) => (
             <li key={limit.title}>
               <h3>{limit.title}</h3>
               <p>{limit.text}</p>
             </li>
           ))}
         </ul>
-        <Link className="more" href={CONTENT_PATHS.sicurezza}>{TRUST.more}</Link>
-        <UnderHood />
+        <Link className="more" href={text.moreHref}>{text.more}</Link>
+        <UnderHood text={hood} />
       </div>
     </TrackedSection>
   );
 }
 
 /** «Sotto il cofano»: license, stack and the facts a tinkerer checks; with the public repository, the links to read it and the commands to install it. */
-function UnderHood() {
-  const o = UNDER_HOOD;
+function UnderHood({ text: o }: { text: HoodText }) {
   return (
     <TrackedSection id="codice" section="codice" as="div" className="hood" aria-labelledby="codice-t">
       <div>
         <GithubMark className="ghm" />
         <h2 id="codice-t">{o.title}</h2>
-        <p>{SOURCE_URL ? o.text : `Il codice ha licenza ${SOURCE_LICENSE} e si installa su un server tuo con Docker.`}</p>
+        <p>{SOURCE_URL ? o.text : o.fallback}</p>
         {SOURCE_URL ? (
           <div className="cta">
             <SourceLink className="btn ghost" href={SOURCE_URL} location="sezione">

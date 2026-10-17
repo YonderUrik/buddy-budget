@@ -14,7 +14,7 @@
 
 /* phone: the links fold into a full-screen sheet under the bar, with big rows and the two buttons */
 @media (max-width: 1000px) {
-  .links { display: none; }
+  .links, .nr .nav-lang { display: none; }
   .menu-btn { display: grid; }
   .nr .btn.ghost { display: none; }
   .menu { position: fixed; inset: calc(64px + env(safe-area-inset-top, 0px)) 0 0 0; z-index: 49; display: block; background: var(--bg); overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -26,6 +26,7 @@
   .menu-acts { display: grid; gap: 10px; margin-top: 22px; }
   .menu-acts .btn { height: 50px; justify-content: center; font-size: 16px; }
   .menu-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; color: var(--ink3); font-size: 14.5px; }
+  .menu-foot + .menu-foot { margin-top: 8px; }
 }
 /* phones: the main button never shrinks; padding and size go down, and under 480px the theme toggle moves into the menu */
 @media (max-width: 480px) {

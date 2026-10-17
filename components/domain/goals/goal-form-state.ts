@@ -1,5 +1,5 @@
 import { DEFAULT_EMERGENCY_MONTHS, MAX_GOAL_SOURCES, type GoalKind } from "@/lib/goals/constants";
-import { monthsBetween } from "@/lib/goals/plan";
+import { isMonthKey, monthsBetween } from "@/lib/goals/plan";
 import type { FreeSource, GoalView, GoalsView } from "@/lib/goals/view";
 import type { GoalPayload } from "@/lib/queries/goals";
 import { GOAL_KIND_INFO } from "./goal-kinds";
@@ -82,7 +82,7 @@ export function isCovered(draft: GoalDraft): boolean {
 
 /** Quota al mese che serve per arrivare in tempo partendo da quanto è già assegnato; null senza data. */
 export function requiredMonthly(draft: GoalDraft, todayKey: string): number | null {
-  if (!draft.targetMonth || draft.target === null) return null;
+  if (!draft.targetMonth || !isMonthKey(draft.targetMonth) || draft.target === null) return null;
   const left = Math.max(0, draft.target - assignedTotal(draft));
   return Math.ceil(left / Math.max(1, monthsBetween(todayKey, draft.targetMonth)));
 }
@@ -93,7 +93,7 @@ export function canAdvance(step: GoalFormStep, draft: GoalDraft, todayKey: strin
     case "tipo":
       return draft.kind !== null && draft.name.trim().length > 0 && draft.name.trim().length <= 80;
     case "quanto":
-      return draft.target !== null && draft.target > 0 && (draft.targetMonth === null || draft.targetMonth > todayKey.slice(0, 7));
+      return draft.target !== null && draft.target > 0 && (draft.targetMonth === null || (isMonthKey(draft.targetMonth) && draft.targetMonth > todayKey.slice(0, 7)));
     case "fonti":
       return Object.keys(draft.sources).length <= MAX_GOAL_SOURCES && Object.values(draft.sources).every((v) => v > 0);
     case "ritmo":

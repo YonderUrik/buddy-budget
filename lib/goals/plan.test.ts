@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addMonthsKey, buildGoalsPlan, monthsBetween, monthsToFire, type GoalPlanInput } from "./plan";
+import { addMonthsKey, buildGoalsPlan, isMonthKey, monthKeyAtLeast, monthsBetween, monthsToFire, type GoalPlanInput } from "./plan";
 
 const TODAY = "2026-10-15";
 const goal = (over: Partial<GoalPlanInput>): GoalPlanInput => ({ id: "g", kind: "viaggio", target: 4000, targetDate: null, monthly: 200, current: 0, achieved: false, ...over });
@@ -9,6 +9,17 @@ describe("date dei mesi", () => {
     expect(monthsBetween("2026-10-15", "2027-06-01")).toBe(8);
     expect(addMonthsKey("2026-10-15", 3)).toBe("2027-01");
     expect(addMonthsKey("2026-12-01", 1)).toBe("2027-01");
+  });
+
+  it("recognises only complete month keys", () => {
+    expect(isMonthKey("2027-05")).toBe(true);
+    // What a browser without a month picker (Safari on Mac) passes while the user is still typing.
+    for (const partial of ["", "2", "ott", "2027", "2027-", "2027-5", "2027-13", "2027-00", "2027-05-01"]) expect(isMonthKey(partial)).toBe(false);
+  });
+
+  it("builds a month key never before the minimum", () => {
+    expect(monthKeyAtLeast(2028, 3, "2026-11")).toBe("2028-03");
+    expect(monthKeyAtLeast(2026, 4, "2026-11")).toBe("2026-11");
   });
 });
 

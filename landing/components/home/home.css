@@ -19,6 +19,9 @@
 .hero .lede { margin-top: 28px; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.5; color: var(--on-navy2); max-width: 38ch; }
 .hero .cta { margin-top: 32px; align-items: center; }
 .hero .btn { height: 50px; padding: 0 22px; font-size: 16px; }
+/* «Prova la demo»: outlined on the navy, second after the yellow sign-up button */
+.hero .btn.plain { background: transparent; color: var(--on-navy); border-color: color-mix(in srgb, var(--on-navy) 30%, transparent); }
+.hero .btn.plain:hover { border-color: var(--on-navy); }
 /* «Come funziona»: a quiet link with an arrow that points down the page */
 .hero .how { display: inline-flex; align-items: center; gap: 6px; height: 50px; padding: 0 8px; font: 600 15px var(--f-b); color: var(--on-navy); text-decoration: none; border-radius: var(--r); }
 .hero .how svg { width: 16px; height: 16px; transition: transform 0.3s var(--ease); }

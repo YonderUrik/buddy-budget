@@ -976,6 +976,7 @@
   "Partono tutte spente. Ognuna ha il link per disattivarla e le ritrovi in Impostazioni.": "Alle sind zunächst deaktiviert. Jede E-Mail enthält einen Abmeldelink; verwalten kannst du sie unter Einstellungen.",
   "Passa al tema chiaro": "Zum hellen Design wechseln",
   "Passa al tema scuro": "Zum dunklen Design wechseln",
+  "Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure usa le date in «Personalizzato».": "Bewege den Zeiger über ein Datum, um die Zahlen oben zu aktualisieren. Klicke und ziehe für einen Zeitraum oder gib Daten unter „Benutzerdefiniert“ ein.",
   "Passi del nuovo conto": "Schritte zum neuen Konto",
   "Passi del nuovo fondo": "Schritte zum neuen Fonds",
   "Passi del nuovo movimento": "Schritte zum neuen Umsatz",
@@ -4201,6 +4202,12 @@
   "Mutuo e prestiti": "Hypothek und Kredite",
   "Dati di una persona inventata": "Daten einer erfundenen Person",
   "Tutti i tuoi soldi, in un numero solo.": "Dein ganzes Geld, in einer einzigen Zahl.",
+  "Stai guardando la demo.": "Du siehst die Demo.",
+  "I dati sono inventati e le modifiche non si salvano.": "Die Daten sind erfunden und Änderungen werden nicht gespeichert.",
+  "Crea il tuo account": "Eigenes Konto erstellen",
+  "Nella demo non si salvano modifiche. Crea un account per usare l'app con i tuoi dati.": "In der Demo werden keine Änderungen gespeichert. Erstelle ein Konto, um die App mit deinen eigenen Daten zu nutzen.",
+  "Vuoi solo dare un'occhiata?": "Willst du dich nur umsehen?",
+  "Prova la demo": "Demo ausprobieren",
   "Finisci prima di": "Du bist früher fertig um",
   "{0} invece di {1}, e risparmi {2} di interessi.": "{0} statt {1}, und du sparst {2} an Zinsen.",
   "Conviene: risparmi": "Lohnt sich: du sparst",
@@ -5038,5 +5045,6 @@
   "Giroconto": "Umbuchung",
   "Movimento": "Umsatz",
   "Riga {0}: {1} non valido": "Zeile {0}: {1} ungültig",
-  "data mancante": "Datum fehlt"
+  "data mancante": "Datum fehlt",
+  "Ti mandiamo un link via email. Non serve una password.": "Wir senden dir einen Link per E-Mail. Ein Passwort brauchst du nicht."
 }

@@ -1,5 +1,7 @@
 import "./app-shot.css";
 import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, type ScreenId } from "@/content/screens";
+import { screenText } from "@/content/screen-text";
+import type { Locale } from "@/lib/i18n";
 import { screenSize } from "@/lib/screen-size";
 import { screenVariants } from "@/lib/screen-variants";
 
@@ -12,6 +14,8 @@ export interface AppShotProps {
   sizes?: string;
   /** Immagine sopra la piega: caricata subito invece che in lazy. */
   priority?: boolean;
+  /** Language of the alt text. */
+  locale?: Locale;
   className?: string;
 }
 
@@ -19,7 +23,7 @@ export interface AppShotProps {
  * Real app screenshot in a browser frame. Renders every version (light and dark, in each language) and the CSS shows
  * the one of the landing's theme and the visitor's language, so switching theme reloads nothing.
  */
-export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", priority = false, className }: AppShotProps) {
+export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", priority = false, locale = "it", className }: AppShotProps) {
   const screen = SCREENS.find((s) => s.id === id);
   if (!screen) throw new Error(`Schermata sconosciuta: ${id}`);
   const size = screenSize(screen.id);
@@ -41,7 +45,7 @@ export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", pr
             // Phones download and decode the 1x version; the 1.5x only where it pays off (wide, dense screens).
             srcSet={size.width > SCREEN_SMALL_WIDTH ? `${screenSmallSrc(screen.id, theme, language)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme, false, language)} ${size.width}w` : undefined}
             sizes={sizes}
-            alt={screen.alt}
+            alt={screenText(screen.id, locale).alt}
             width={size.width}
             height={size.height}
             loading={eager ? "eager" : "lazy"}

@@ -1,4 +1,5 @@
 /** Addresses and site-wide texts of the landing. URLs come from the environment, with production defaults. */
+import type { Locale } from "@/lib/i18n";
 import { FIELD_ENCRYPTION_LIVE } from "./security";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
@@ -49,6 +50,23 @@ export const FAQ: readonly FaqItem[] = [
     : []),
 ];
 
+export interface AppLinks {
+  signup: string;
+  login: string;
+  /** Public read-only demo (`/demo` in the app): signs the visitor into a sample account, no signup. */
+  demo: string;
+}
+
 /** Destinations of the buttons towards the app, with UTM to tell landing arrivals apart in Umami. */
 const LOGIN_URL = `${APP_URL}/login?utm_source=landing&utm_medium=cta`;
-export const APP_LINKS = { signup: LOGIN_URL, login: LOGIN_URL } as const;
+/** Query flag that makes the sign-in page speak to a new user («Crea il tuo account») instead of «Entra». */
+export const SIGNUP_FLAG = "signup=1";
+const SIGNUP_URL = `${LOGIN_URL}&${SIGNUP_FLAG}`;
+export const DEMO_URL = `${APP_URL}/demo`;
+export const APP_LINKS = { signup: SIGNUP_URL, login: LOGIN_URL, demo: DEMO_URL } as const satisfies AppLinks;
+
+/** The same destinations per language: the English pages ask the app for English with `lang=en`. */
+export const LOCALE_APP_LINKS: Record<Locale, AppLinks> = {
+  it: APP_LINKS,
+  en: { signup: `${SIGNUP_URL}&lang=en`, login: `${LOGIN_URL}&lang=en`, demo: `${DEMO_URL}?lang=en` },
+};

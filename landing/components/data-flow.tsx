@@ -3,7 +3,7 @@
 import { Building2, Check, Lock, Server, ShieldCheck, UserRound, X } from "lucide-react";
 import { Fragment, useState, type ComponentType } from "react";
 import "./data-flow.css";
-import { FLOW, type FlowNodeId } from "@/content/security";
+import { FLOW, type FlowContent, type FlowNodeId } from "@/content/security";
 import { track } from "@/lib/analytics";
 
 const NODE_ICONS: Record<FlowNodeId, ComponentType<{ size?: number }>> = {
@@ -21,7 +21,7 @@ const DEFAULT_NODE: FlowNodeId = "banca";
  * un punto (fermo con `prefers-reduced-motion`). Toccando un passaggio si legge cosa riceve e cosa non vede mai;
  * ogni scelta invia `security_node_selected` a Umami.
  */
-export function DataFlow({ content = FLOW, initial = DEFAULT_NODE }: { content?: typeof FLOW; initial?: FlowNodeId }) {
+export function DataFlow({ content = FLOW, initial = DEFAULT_NODE }: { content?: FlowContent; initial?: FlowNodeId }) {
   const [selected, setSelected] = useState<FlowNodeId>(initial);
   const node = content.nodes.find((n) => n.id === selected) ?? content.nodes[0];
 
@@ -33,7 +33,7 @@ export function DataFlow({ content = FLOW, initial = DEFAULT_NODE }: { content?:
 
   return (
     <div className="df cell">
-      <div className="df-track" role="tablist" aria-label="Passaggi dei dati">
+      <div className="df-track" role="tablist" aria-label={content.label}>
         {content.nodes.map((n, i) => {
           const Icon = NODE_ICONS[n.id];
           const active = n.id === selected;
@@ -62,7 +62,7 @@ export function DataFlow({ content = FLOW, initial = DEFAULT_NODE }: { content?:
           </ul>
         </div>
         <div>
-          <h3>Cosa non succede mai</h3>
+          <h3>{content.neverTitle}</h3>
           <ul className="df-list df-never">
             {node.never.map((s) => <li key={s}><X size={16} aria-hidden="true" />{s}</li>)}
           </ul>

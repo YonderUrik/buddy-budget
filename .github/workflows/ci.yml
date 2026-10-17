@@ -162,6 +162,7 @@ jobs:
 
   image:
     name: Immagine ${{ matrix.image }}
+    # Every release also moves `latest`, the default of docker-compose.yml for self-hosters.
     # With SELFHOST_IMAGES=true (repo variable, see docs/self-hosting.md) the image is multi-architecture and slower to build.
     timeout-minutes: 60
     needs: [release]
@@ -199,7 +200,7 @@ jobs:
             type=sha,prefix=sha-
             type=raw,value=main
             type=raw,value=${{ needs.release.outputs.version }},enable=${{ needs.release.outputs.is_release == 'true' }}
-            type=raw,value=latest,enable=${{ vars.SELFHOST_IMAGES == 'true' && needs.release.outputs.is_release == 'true' }}
+            type=raw,value=latest,enable=${{ needs.release.outputs.is_release == 'true' }}
       - uses: docker/build-push-action@v6
         with:
           context: .

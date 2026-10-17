@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DEFAULT_SCREEN_LANGUAGE, SCREENS, SCREEN_LANGUAGES, SCREEN_THEMES, screenDir } from "../content/screens.ts";
-import { findDemoText } from "../../scripts/demo-seed-texts.ts";
+import { findDemoText } from "../../lib/public-demo/texts.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const APP = process.env.DEMO_APP_URL ?? "http://localhost:3300";

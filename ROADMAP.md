@@ -58,6 +58,7 @@ The detailed, always up-to-date backlog is private (Slack). This file lists the 
 
 - [x] Interface in Italian, English and German; Germany as a second product country with partial 2026 tax estimates ([decision](docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md))
 - [x] Self-hosting with Docker ([guide](docs/self-hosting.md))
+- [x] Public read-only demo without an account, English landing and `latest` Docker images ([decision](docs/decisioni/2026-10-17-demo-pubblica.md))
 - [ ] Native iOS and Android app (Capacitor), push notifications and biometric unlock
 - [ ] German pension and simulators after the product review
 

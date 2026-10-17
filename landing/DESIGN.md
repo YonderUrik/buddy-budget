@@ -50,3 +50,11 @@ The landing is the app's own interface language used to persuade: the same token
 - Calculators (`.tool`): card titles and content h2 in `--f-d`; the key answer (`.res .key b`) big in `--f-h` and ink, like the app's `SimulationResult`. Legal section titles in `--f-d` too.
 - `ContentPage`: a navy head (back link, yellow mono kicker, tall h1, lead), then body, tax notice, the navy `Closing`. `LegalPage` has the same navy head with the version line.
 - No filler lines: no trust lists, «free during the beta», schedules («ogni mattina»), section intros or captions that only restate the title. If a line doesn't change what a visitor understands, it goes.
+
+## Languages
+
+- Italian at the root (`app/(it)/`, `<html lang="it">`), English under `/en` (`app/en/`, `<html lang="en" data-screens="en">`): two root layouts, so switching language is a full page load. English pages: home, `/en/security`, `/en/features`, `/en/features/investments`, `/en/screens` (pairs in `content/locales.ts`, which also builds hreflang it/en/x-default).
+- Copy lives per language: `content/en/*`, `content/ui.ts` (nav, footer, shared strings), `content/screen-text.ts`, and the `en` text of each catalog entry in `lib/features/catalog.ts`. Components take the content and a `locale` prop; they never hardcode a language.
+- English copy is plain American English written for the page, not translated line by line; Italian tax terms keep their name with a short explanation (zainetto fiscale, bollo). Calculators, guides and legal pages stay Italian-only and are always labelled «(Italian)» from English pages.
+- «IT / EN» switch in the nav (from 1000 px), the phone menu and the footer; it goes to the same page in the other language, or to that language's home. The Italian home shows a navy bar «This page is also available in English» only to browsers that don't prefer Italian (set before paint, dismissible, remembered in localStorage). Never an automatic redirect.
+- «Prova la demo» / «Try the demo» sits next to the main button in the opening and the closing and opens the app's public demo (`/demo`, `?lang=en` from English pages).

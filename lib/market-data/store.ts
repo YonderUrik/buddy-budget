@@ -1,6 +1,7 @@
-import { and, desc, eq, inArray, isNotNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, notLike, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
+import { PUBLIC_DEMO_USER_PREFIX } from "@/lib/public-demo/config";
 import {
   fxRates,
   instrumentPrices,
@@ -50,6 +51,8 @@ export async function findHeldAutoInstruments(): Promise<Instrument[]> {
     .where(
       and(
         eq(instruments.priceMode, "auto"),
+        // The public demo's invented securities carry their own price history: no source knows them.
+        or(isNull(instruments.createdByUserId), notLike(instruments.createdByUserId, `${PUBLIC_DEMO_USER_PREFIX}%`)),
         or(
           inArray(instruments.id, held),
           inArray(instruments.id, benchmarks),

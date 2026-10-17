@@ -304,7 +304,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 72000;
+				CURRENT_PROJECT_VERSION = 73000;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				GOOGLE_IOS_REVERSED_CLIENT_ID = "com.googleusercontent.apps.REPLACE-WITH-IOS-CLIENT-ID";
 				INFOPLIST_FILE = App/Info.plist;
@@ -313,7 +313,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.72.0;
+				MARKETING_VERSION = 0.73.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = io.buddybudget.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -328,7 +328,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 72000;
+				CURRENT_PROJECT_VERSION = 73000;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				GOOGLE_IOS_REVERSED_CLIENT_ID = "com.googleusercontent.apps.REPLACE-WITH-IOS-CLIENT-ID";
 				INFOPLIST_FILE = App/Info.plist;
@@ -337,7 +337,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.72.0;
+				MARKETING_VERSION = 0.73.0;
 				PRODUCT_BUNDLE_IDENTIFIER = io.buddybudget.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";

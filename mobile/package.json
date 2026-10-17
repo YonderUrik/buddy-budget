@@ -1,6 +1,6 @@
 {
   "name": "buddy-budget-mobile",
-  "version": "0.72.0",
+  "version": "0.73.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "description": "Native iOS/Android shell of BuddyBudget (Capacitor): loads app.buddybudget.io and adds what the web cannot do.",

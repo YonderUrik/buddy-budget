@@ -6,8 +6,8 @@ import { TrackedSection } from "../tracked-section";
 
 export interface ClosingProps {
   title: string;
-  /** One sentence under the title (how you get in). */
-  note: string;
+  /** One sentence under the title; the home leaves it out. */
+  note?: string;
   /** Label of the main button; it always goes to the app. */
   cta: string;
   /** Where the click is counted (`cta_click`). */
@@ -22,9 +22,9 @@ export function Closing({ title, note, cta, ctaLocation, secondary }: ClosingPro
     <TrackedSection id="fine" section="fine" className="close">
       <div className="wrap">
         <h2>{title}</h2>
-        <p>{note}</p>
+        {note ? <p>{note}</p> : null}
         <div className="cta">
-          <CtaLink className="btn ghost" href={APP_LINKS.signup} location={ctaLocation} target="signup" arrow>
+          <CtaLink className="btn sun" href={APP_LINKS.signup} location={ctaLocation} target="signup" arrow>
             {cta}
           </CtaLink>
           {secondary ? (

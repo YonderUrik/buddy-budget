@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ContentPage current={CONTENT_PATHS.schermate}
+    <ContentPage title={<>Le schermate dell&apos;app</>} lead={<>Screenshot dell&apos;app vera, con i dati di una persona inventata. Scegli un&apos;area e una schermata.</>} current={CONTENT_PATHS.schermate}
       wide
       disclaimer={false}
       crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Schermate" }]}
@@ -26,8 +26,6 @@ export default function Page() {
       ctaLocation="schermate"
     >
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.schermate}`, inLanguage: "it-IT" }} />
-      <h1>Le schermate dell&apos;app</h1>
-      <p className="lead">Screenshot dell&apos;app vera, con i dati di una persona inventata. Scegli un&apos;area e una schermata.</p>
       <ScreenGallery phoneOnMobile />
     </ContentPage>
   );

@@ -25,16 +25,20 @@ function RichText({ text }: { text: string }) {
   );
 }
 
-/** Pagina di un documento legale: intestazione con marchio, indice e sezioni numerate. */
+/** Page of a legal document: navy head with title and version, then the intro, the index and the numbered sections. */
 export function LegalPage({ doc }: { doc: LegalDocument }) {
   return (
     <>
       <SiteNav />
       <main className="legal">
+        <header className="legal-head">
+          <div className="wrap legal-wrap">
+            <BackLink href="/" label="Home" />
+            <h1>{doc.title}</h1>
+            <p className="legal-meta">Versione del {LEGAL_VERSION}</p>
+          </div>
+        </header>
         <div className="wrap legal-wrap">
-          <BackLink href="/" label="Home" />
-          <h1>{doc.title}</h1>
-          <p className="legal-meta">Versione del {LEGAL_VERSION}</p>
           <p className="legal-intro">{doc.intro}</p>
           <nav className="legal-toc" aria-label="Indice">
             <ol>

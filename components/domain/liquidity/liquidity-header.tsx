@@ -30,11 +30,10 @@ export function LiquidityHeader({ subtitle, tabs, activeHref, onAddTransaction, 
           tabs={tabs}
           activeHref={activeHref}
           analyticsKey="liquidita"
-          titleClassName="text-3xl sm:text-4xl"
           subtitleClassName="text-text-2"
         />
         <DropdownMenu>
-          <DropdownMenuTrigger className={cn(buttonVariants(), "h-11 shrink-0 cursor-pointer gap-1.5 px-4 text-sm shadow-xs")} aria-label={tr("Aggiungi")}>
+          <DropdownMenuTrigger className={cn(buttonVariants({ variant: "sun" }), "h-11 shrink-0 cursor-pointer gap-1.5 px-4 text-sm shadow-xs")} aria-label={tr("Aggiungi")}>
             <PlusIcon className="size-4" aria-hidden="true" />
             <span className="hidden sm:inline">{tr("Aggiungi")}</span>
           </DropdownMenuTrigger>

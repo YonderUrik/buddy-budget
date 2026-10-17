@@ -15,6 +15,8 @@ import type { ReturningMethod } from "@/lib/auth/returning-user";
 import { useLocalization } from "@/lib/localization/provider";
 import { GoogleIcon } from "./google-icon";
 import { LegalLinksNote } from "./legal-links-note";
+import { AUTH_PRIMARY_BUTTON, AUTH_TITLE } from "./auth-styles";
+import { cn } from "@/lib/utils";
 
 export interface ReturningLoginPanelProps {
   /** Remembered email, already masked for display. */
@@ -37,13 +39,13 @@ export function ReturningLoginPanel({ maskedEmail, method, loading, googleLoadin
   const googleFirst = method === "google";
 
   const linkButton = (primary: boolean) => (
-    <Button type="button" variant={primary ? "default" : "outline"} className="h-11 w-full text-base" onClick={onSendLink} disabled={busy}>
+    <Button type="button" variant={primary ? "default" : "outline"} className={cn("h-11 w-full text-base", primary && AUTH_PRIMARY_BUTTON)} onClick={onSendLink} disabled={busy}>
       {loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
       {loading ? tr("Invio in corso…") : primary ? tr("Mandami il link") : tr("Mandami il link via email")}
     </Button>
   );
   const googleButton = (primary: boolean) => (
-    <Button type="button" variant={primary ? "default" : "outline"} className="h-11 w-full text-base" onClick={onGoogle} disabled={busy}>
+    <Button type="button" variant={primary ? "default" : "outline"} className={cn("h-11 w-full text-base", primary && AUTH_PRIMARY_BUTTON)} onClick={onGoogle} disabled={busy}>
       {googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
       {googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
     </Button>
@@ -52,7 +54,7 @@ export function ReturningLoginPanel({ maskedEmail, method, loading, googleLoadin
   return (
     <div className="flex flex-col gap-7">
       <div className="flex flex-col gap-3">
-        <h1 className="font-heading text-[2.1rem] font-semibold leading-tight tracking-tight text-balance">{tr("Rientra in BuddyBudget")}</h1>
+        <h1 className={AUTH_TITLE}>{tr("Rientra in BuddyBudget")}</h1>
         <p className="text-text-2">{tr("Su questo dispositivo ricordiamo il tuo account, così non devi riscrivere l'email.")}</p>
       </div>
 

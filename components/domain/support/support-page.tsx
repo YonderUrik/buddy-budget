@@ -11,6 +11,7 @@ import { ReportForm } from "./report-form";
 import { useReportContext } from "./use-report-context";
 import { track } from "@/lib/analytics";
 import { REPORT_KINDS, STATUS_URL, type ReportKind } from "@/lib/support";
+import { PAGE_TITLE } from "@/components/domain/shared";
 
 function Section({ id, icon: Icon, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
   const { t: tr } = useLocalization();
@@ -44,7 +45,7 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8 p-4 sm:gap-10 sm:p-6">
       <div>
-        <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Aiuto e segnalazioni")}</h1>
+        <h1 className={PAGE_TITLE}>{tr("Aiuto e segnalazioni")}</h1>
         <p className="text-sm text-muted-foreground">{tr("Puoi scriverci anche da qualsiasi pagina, con l'icona del fumetto, e dai messaggi d'errore.")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
           {tr("L'app è lenta o non risponde? Guarda prima lo")}{" "}

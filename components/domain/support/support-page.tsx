@@ -3,10 +3,11 @@ import { useLocalization } from "@/lib/localization/provider";
 
 /** Pagina «Aiuto e segnalazioni»: risposte rapide, form per scriverci e collegamenti a GitHub. Stile Panoramica: sezioni aperte con icona. */
 
-import { HelpCircle, MessageSquare } from "lucide-react";
+import { Coffee, HelpCircle, MessageSquare } from "lucide-react";
 import { GithubIcon } from "./github-icon";
 import { FaqList } from "./faq-list";
 import { GithubLinks } from "./github-links";
+import { DonationLink } from "./donation-link";
 import { ReportForm } from "./report-form";
 import { useReportContext } from "./use-report-context";
 import { track } from "@/lib/analytics";
@@ -68,6 +69,9 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
       </Section>
       <Section id="aiuto-github" icon={GithubIcon} title={tr("Su GitHub")} description={tr("BuddyBudget è open source: puoi seguire e segnalare anche da lì.")}>
         <GithubLinks context={context} />
+      </Section>
+      <Section id="aiuto-sostieni" icon={Coffee} title={tr("Sostieni BuddyBudget")} description={tr("È un progetto personale: un caffè aiuta a tenerlo vivo.")}>
+        <DonationLink />
       </Section>
     </div>
   );

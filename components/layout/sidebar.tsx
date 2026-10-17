@@ -38,6 +38,7 @@ import {
   LogOut,
   Settings,
   LifeBuoy,
+  Coffee,
   Eye,
   MessageCircleQuestion,
 } from "lucide-react";
@@ -60,6 +61,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DONATION_URL } from "@/lib/support/constants";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -452,6 +454,15 @@ export function AppSidebar({
               className="cursor-pointer"
             >
               <LifeBuoy className="mr-2 size-4" aria-hidden="true" />{tr("Aiuto e segnalazioni")}</DropdownMenuItem>
+            <DropdownMenuItem
+              render={<a href={DONATION_URL} target="_blank" rel="noopener noreferrer" />}
+              onClick={() => {
+                track("donation_link_opened", { source: "menu_utente" });
+                onClose?.();
+              }}
+              className="cursor-pointer"
+            >
+              <Coffee className="mr-2 size-4" aria-hidden="true" />{tr("Offrimi un caffè")}<span className="sr-only"> {tr("(si apre in una nuova scheda)")}</span></DropdownMenuItem>
             <DropdownMenuCheckboxItem
               checked={hidden}
               onCheckedChange={(checked) => {

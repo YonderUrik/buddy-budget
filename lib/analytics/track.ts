@@ -23,6 +23,8 @@ export interface ProductEvents {
   support_sheet_opened: { source: Exclude<ReportSource, "pagina">; area?: ReportErrorArea };
   /** Clic su un collegamento esterno di «Aiuto» (GitHub, novità, sicurezza). */
   support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" | "stato" };
+  /** Click on «Offrimi un caffè» (Buy Me a Coffee); `source`: Aiuto page, avatar menu (desktop) or «Altro» menu (phone). */
+  donation_link_opened: { source: "aiuto" | "menu_utente" | "menu_altro" };
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
   support_faq_opened: { id: string };
   personal_csv_requested: { reuse: boolean };

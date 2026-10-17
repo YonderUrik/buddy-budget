@@ -21,7 +21,7 @@ export function BiometricLockScreen() {
         <div className="flex w-full max-w-xs flex-col items-center gap-3 text-center">
           <p className="font-heading text-xl font-semibold">{tr("BuddyBudget è bloccata")}</p>
           <p className="text-sm text-text-2">{tr("Usa Face ID o l'impronta per vedere i tuoi conti.")}</p>
-          <Button type="button" className="mt-3 h-11 w-full text-base" onClick={unlock} disabled={verifying}>
+          <Button type="button" className="mt-3 h-11 w-full rounded-full text-base" onClick={unlock} disabled={verifying}>
             {verifying ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <ScanFace className="size-5" aria-hidden="true" />}
             {tr("Sblocca")}
           </Button>

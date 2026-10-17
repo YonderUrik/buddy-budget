@@ -4,6 +4,7 @@ import { useLocalization } from "@/lib/localization/provider";
 /** Sezione Preferenze: valuta, pagina iniziale, tema, statistiche d'uso anonime e paese del prodotto e lingua. */
 
 import { LocaleFields } from "./locale-fields";
+import { track } from "@/lib/analytics";
 import * as React from "react";
 import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -94,7 +95,16 @@ export function PreferencesSection({ settings }: PreferencesSectionProps) {
       </SettingsRow>
 
 
-      <LocaleFields value={{ productCountry: settings.productCountry, language: settings.language }} disabled={update.isPending} onChange={profile => update.mutate(profile)} />
+      <LocaleFields
+        value={{ productCountry: settings.productCountry, language: settings.language }}
+        currency={settings.currency}
+        divided
+        disabled={update.isPending}
+        onChange={profile => {
+          if (profile.language !== settings.language) track("language_changed", { from: "settings", language: profile.language });
+          update.mutate(profile);
+        }}
+      />
 
       {update.isError && (
         <p className="text-sm text-neg" role="alert">

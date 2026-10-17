@@ -52,17 +52,19 @@ export function SettingsRow({
   children,
   htmlFor,
   ai,
+  className,
 }: {
   label: string;
   hint?: React.ReactNode;
   htmlFor?: string;
   /** The setting sends data to an AI model when on. */
   ai?: boolean;
+  className?: string;
   children: React.ReactNode;
 }) {
   const { t: tr } = useLocalization();
   return (
-    <div className="flex flex-col gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+    <div className={cn("flex flex-col gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6", className)}>
       <div className="flex min-w-0 flex-col gap-0.5 sm:max-w-[55%]">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">

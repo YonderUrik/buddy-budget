@@ -10,12 +10,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <AuthFrame
       brand={
-        <>
-          <BrandLink name={BRAND_NAME} className="text-lg" />
-          <LanguagePicker />
-        </>
+        <BrandLink name={BRAND_NAME} className="text-lg" />
       }
-      foot={<AuthFootLinks />}
+      foot={<AuthFootLinks><LanguagePicker /></AuthFootLinks>}
       asideHiddenOn={ASIDE_HIDDEN_ON}
     >
       {children}

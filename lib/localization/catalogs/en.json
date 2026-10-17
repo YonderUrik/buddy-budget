@@ -4184,5 +4184,8 @@
   "Stai esplorando i dati d'esempio: azzerali per aggiungere i tuoi.": "You're exploring the example data: clear it to add your own.",
   "Hai già dei conti: i dati d'esempio sono per chi parte da zero.": "You already have accounts: the example data is for starting from scratch.",
   "I dati d'esempio sono già attivi.": "The example data is already active.",
-  "Completa prima la configurazione iniziale.": "Finish the initial setup first."
+  "Completa prima la configurazione iniziale.": "Finish the initial setup first.",
+  "Decide tasse e funzioni disponibili.": "Decides taxes and available features.",
+  "Cambia solo testi, date e numeri.": "Only changes text, dates and numbers.",
+  "Disponibile col paese {0}": "Available with country {0}"
 }

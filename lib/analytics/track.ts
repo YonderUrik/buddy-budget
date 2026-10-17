@@ -215,6 +215,8 @@ export interface ProductEvents {
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */
   amounts_hidden_toggled: { enabled: boolean; source: "menu_utente" };
   theme_changed: { choice: "chiaro" | "scuro" | "sistema"; source: "menu_utente" };
+  /** Interface language chosen from the sign-in footer (cookie) or from Impostazioni (account). Onboarding is counted by `onboarding_completed`. */
+  language_changed: { from: "login" | "settings"; language: "it" | "en" | "de" };
   settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
   more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */

@@ -27,6 +27,7 @@ import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
 import type { NavBadge, NavItem } from "@/components/layout/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth/client";
+import { signOutThisDevice } from "@/lib/auth/sign-out";
 import { LEGAL_LINKS } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
@@ -130,7 +131,7 @@ export function MobileMoreMenu({
     markNavigating();
     onAction?.("esci");
     onClose();
-    await authClient.signOut();
+    await signOutThisDevice();
     // Ricarica completa: svuota la cache in memoria, così il prossimo utente della scheda non vede dati altrui.
     window.location.replace("/login");
   }

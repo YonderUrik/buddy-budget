@@ -146,6 +146,19 @@ describe("planRemoteSweep", () => {
     expect(sweep.staleRequisitionIds).toEqual([]);
   });
 
+  it("recognises the phone-app return URL as ours too", () => {
+    const appReturn = "https://app.buddybudget.io/api/gocardless/app-return";
+    const sweep = planRemoteSweep(
+      {
+        ...base,
+        requisitions: [{ id: "own-app", created: daysAgo(4).toISOString(), status: "CR", redirect: appReturn }],
+        ownRedirect: [OWN, appReturn],
+      },
+      NOW
+    );
+    expect(sweep.staleRequisitionIds).toEqual(["own-app"]);
+  });
+
   it("propone solo agreement non citati da nessuna requisition e vecchi", () => {
     expect(planRemoteSweep(base, NOW).agreementIds).toEqual(["ag-orphan-old"]);
   });

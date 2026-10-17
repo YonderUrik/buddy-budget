@@ -25,8 +25,16 @@ export function resolveDeepLink(rawUrl: string, appOrigin: string): string | nul
   return safeAppPath(`${url.pathname}${url.search}${url.hash}`);
 }
 
-/** Path on the app's own origin: starts with a single "/" (no `//host`, no backslash tricks). */
-function safeAppPath(candidate: string | null): string | null {
+/**
+ * API endpoints a deep link may open: they finish a flow that left the app (magic link, bank consent). Any other
+ * `/api/…` path is refused, so a link on a web page cannot make the app call an endpoint on the person's behalf.
+ */
+export const DEEP_LINK_API_PATHS = ["/api/auth/magic-link/verify", "/api/gocardless/callback"] as const;
+
+/** Path on the app's own origin: starts with a single "/" (no `//host`, no backslash tricks), API paths only from the list above. */
+export function safeAppPath(candidate: string | null): string | null {
   if (!candidate || !candidate.startsWith("/") || candidate.startsWith("//") || candidate.includes("\\")) return null;
+  const pathname = candidate.split(/[?#]/, 1)[0];
+  if ((pathname === "/api" || pathname.startsWith("/api/")) && !DEEP_LINK_API_PATHS.some((allowed) => pathname === allowed)) return null;
   return candidate;
 }

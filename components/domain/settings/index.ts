@@ -15,6 +15,7 @@ export { AiBadge } from "./ai-badge";
 export { AiUsageSummary, AI_USAGES } from "./ai-usage-summary";
 export type { AiUsageItem } from "./ai-usage-summary";
 export { NotificationsSection } from "./notifications-section";
+export { ThisPhoneSection } from "./this-phone-section";
 export { SessionsSection } from "./sessions-section";
 export { DataSection } from "./data-section";
 export type { DataSectionProps } from "./data-section";

@@ -109,13 +109,28 @@ export interface ProductEvents {
   goal_achieved: { kind: GoalKind; achieved: boolean };
   goal_reordered: { count: number };
   /** Da dove si è aperta la vista Obiettivi: Panoramica, novità, email o Analitiche. */
-  goals_opened: { from: "panoramica" | "novita" | "email" | "analitiche" };
+  goals_opened: { from: "panoramica" | "novita" | "email" | "notifica" | "analitiche" };
   /** Dettaglio di un abbonamento aperto dalla lista; `decision`: lo stato in cui era. */
   subscription_details_opened: { decision: "da-confermare" | "confermato" | "escluso" | "terminato" };
   category_created: { group: CategoryType };
   pwa_installed: undefined;
   /** The native app (Capacitor shell) was opened from a link; `kind`: magic link or another app page, `platform`: ios/android. */
   native_link_opened: { kind: "accesso" | "pagina"; platform: string };
+  /** A push notification was tapped and opened the app. */
+  native_notification_opened: { platform: string };
+  /** Phone notifications turned on or off in Impostazioni → Notifiche (`result` when turning on: what the phone allowed). */
+  push_notifications_toggled: { enabled: boolean; result?: "enabled" | "denied" | "failed" };
+  /** Email channel of the notifications turned on or off. */
+  email_notifications_toggled: { enabled: boolean };
+  push_test_sent: undefined;
+  /** «Sblocca con Face ID / impronta» turned on or off on this phone. */
+  biometric_lock_toggled: { enabled: boolean };
+  /** The app was unlocked with Face ID / fingerprint (or the passcode) after the lock appeared. */
+  biometric_unlocked: undefined;
+  /** Sign-in with the native Google or Apple sheet inside the app. */
+  native_sign_in: { provider: "google" | "apple"; outcome: "success" | "cancelled" | "failed" };
+  /** A bank consent was opened in the in-app browser of the native app. */
+  native_bank_consent_opened: { platform: string };
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
   investment_operation_updated: { type: InvestmentTransactionType };
@@ -262,7 +277,7 @@ export interface ProductEvents {
   /** «‹» back button; `section`/`to`: first segment of the current and destination address, `target`: previous screen or logical parent, `place`: phone top bar or above the page on desktop. */
   back_link_clicked: { section: string; target: "precedente" | "madre"; to: string; place: "barra" | "pagina" };
   /** «Rientra in BuddyBudget» on the login page: the one-tap way back in was used (link sent or Google opened). */
-  returning_login_used: { method: "email" | "google" };
+  returning_login_used: { method: "email" | "google" | "apple" };
   /** «Non sei tu?» on the login page: the remembered account was forgotten on this device. */
   returning_login_forgotten: undefined;
   account_data_exported: undefined;

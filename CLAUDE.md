@@ -106,6 +106,19 @@ Standard decided on 2026-10-11 after the performance review (`docs/decisioni/202
 5. **Animations**: short duration (under 300 ms for transitions, under 600 ms for numbers), never on first appearance of data or on long lists; use `components/motion/` and `lib/motion/springs`, respect `prefers-reduced-motion` (`MotionConfig reducedMotion="user"`), no light effects. Animated numbers only for key figures that change because of a user choice or new data.
 6. **How to verify**: production build with demo data (`pnpm demo:seed`), Chromium with slow network and throttled CPU; look at JS loaded, time to first data call and CLS before and after, and the numbers go in the PR.
 
+### Mobile app (Capacitor) (standard)
+
+Standard decided on 2026-10-17 (`docs/decisioni/2026-10-17-app-nativa-capacitor.md`, spec `docs/superpowers/specs/2026-10-17-native-app-capacitor-design.md`, guide `mobile/README.md`). BuddyBudget also ships as an iOS and Android app: a Capacitor shell in `mobile/` whose WebView loads `app.buddybudget.io`. Every screen and API is therefore also a phone app screen, and every change must work there too:
+
+1. **It works in the shell**: a feature is not complete until it works inside the app (WebView, phone width, safe areas, no hover). The PR says so in one line ("tried in the app" or "no impact on the app"). Detect the app only with `nativePlatform()`/`useNativePlatform()` from `lib/native` (never by sniffing the user agent on the client); the server can tell it from the `BuddyBudgetApp` user agent suffix.
+2. **Flows that leave the app come back into it**: the WebView has its own cookies, so a session created in Safari/Chrome is lost. External pages (banks, OAuth, payments) open with `openExternalPage()` (in-app browser) and return through a deep link (`buddybudget://open?path=…`, or a Universal/App Link listed in `NATIVE_APP_LINK_PATHS`) handled by `NativeAppBridge`; a new API path reachable by deep link must be added to `DEEP_LINK_API_PATHS` (others are refused on purpose). Never `window.open`/`target="_blank"` for a flow that must end signed in. Google blocks its sign-in page in WebViews: social sign-in in the app goes through `nativeSocialSignIn()` with an ID token.
+3. **Native code only through `lib/native/`**: every plugin call lives there, loaded with a dynamic `import()` behind `nativePlatform()`, so the web bundle does not grow and the browser never touches native APIs. Components use those helpers, not the plugins directly.
+4. **New plugin = native release**: add it with the **same exact version** to `package.json` and `mobile/package.json` (`lib/native/plugin-versions.test.ts`), run `pnpm sync` in `mobile/`, commit the regenerated `ios/`/`android/` files (CI checks they are in sync), note any hand edit (entitlements, Info.plist, manifest) in `mobile/README.md`, and remember it needs a store release: until people update, the old binary lacks it, so the web code must cope with a missing plugin (try/catch, feature hidden).
+5. **Notifications**: a new notification kind gets an email and a push text in `lib/notifications/push-messages.ts` (title and body **without amounts or names of counterparties**: they show on the lock screen) with the screen it opens; it respects the `emailEnabled`/`pushEnabled` channels. Push is sent only by `lib/push` (`sendPushToDevices`), never from a request without a user action.
+6. **Layout**: the app is edge to edge. Fixed bars and full-screen layers pad with `env(safe-area-inset-top|bottom)` (0 in a browser); a navy bar at the top carries `data-status-bar="on-dark"` so the status bar icons turn light. Dialogs, sheets and menus must close with Escape and keep `role="dialog|alertdialog|menu|listbox"` with `data-open`: the Android back button closes the topmost one (`closeTopLayer`) before going back.
+7. **Device-only preferences** (Face ID lock, things that belong to this phone) stay in localStorage like the theme; anything that must follow the account goes on the server.
+8. **Versions and stores**: `mobile/package.json` follows the app version (release-please extra file); a store release is needed only when the native side changes (plugin, entitlement, icon, shell config): web releases reach phones with the normal deploy. Store builds are signed by hand (`mobile/README.md`).
+
 ## Stack
 
 - Next.js (App Router) + TypeScript
@@ -116,7 +129,8 @@ Standard decided on 2026-10-11 after the performance review (`docs/decisioni/202
 Application layer (decided in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`, implemented):
 
 - **Database**: self-hosted Postgres (in-cluster container) + **Drizzle ORM**
-- **Authentication**: better-auth (magic link + Google OAuth), transactional emails via Resend
+- **Authentication**: better-auth (magic link + Google OAuth; in the phone app Google and Apple via native ID tokens), transactional emails via Resend
+- **Mobile app**: Capacitor 8 shell in `mobile/` (own package.json and lockfile) loading `app.buddybudget.io`; native glue in `lib/native/` and `components/domain/native/`, push sending in `lib/push/` (FCM HTTP v1 + APNs, no SDK). See "Mobile app (Capacitor)" above
 - **API**: Next.js Route Handlers, consumed client-side with **TanStack Query**
 - **State management**: React Context for local UI state, TanStack Query for server state; Zustand only if a concrete need emerges
 - **Cache**: Redis (auth rate limiting + cache of expensive derived calculations)
@@ -136,6 +150,7 @@ pnpm db:generate        # generates a migration from the TypeScript schema (afte
 pnpm db:migrate         # applies pending migrations (DATABASE_URL from env or .env.local)
 pnpm db:mark-baseline   # one-off: records the baseline on an existing, already aligned DB
 docker build -t buddy-budget:local .   # app image (migrator target: --target migrator)
+cd mobile && pnpm sync                 # phone app: version + config + plugins into ios/ and android/ (then pnpm ios / pnpm android)
 ```
 
 ## Structure
@@ -156,6 +171,7 @@ lib/
   calc/                      pure, tested calculation engines (spending, cashflow, returns, taxes, amortisation, debts...)
   observability/ analytics/  logs, metrics, product events
   <feature>/                 domain logic per area (gocardless, categorization, investments, market-data, net-worth, debts, account...)
+mobile/                      native iOS/Android shell (Capacitor): own package.json, generated ios/ and android/ projects, icons, offline page (mobile/README.md)
 landing/                     static marketing site (buddybudget.io), a separate Next.js project with its own package.json, CI and nginx image in the k3s cluster (not Cloudflare Pages); content in landing/content/
 docs/
   product-vision.md          product vision (summary)
@@ -201,7 +217,7 @@ A new screen or feature is not "complete" until the catalog is updated, together
 
 ## Project status
 
-**Native app with Capacitor (2026-10-17)**: sketch of a Capacitor shell in `mobile/` (own package.json, generated iOS/Android projects) that loads `app.buddybudget.io`; magic link opens the app (Universal/App Links, `/.well-known/*` served only with the `NATIVE_*` env vars), `NativeAppBridge` for deep links and the Android back button, offline page. Entry in `docs/decisioni/2026-10-17-app-nativa-capacitor.md`, spec `docs/superpowers/specs/2026-10-17-native-app-capacitor-design.md`. Draft PR on branch `claude/project-thread-o7c3qu`. Deferred: Google sign-in and bank return in the app (phase 2), push, Face ID, icons, store accounts and review (phase 3).
+**Native app with Capacitor (2026-10-17)**: iOS and Android app in `mobile/` (Capacitor shell over `app.buddybudget.io`), done fully: magic link, Google and Apple sign-in and the bank consent come back into the app, push notifications (table `push_devices`, migration 0041 to recheck at merge, «Via email» / «Sul telefono» channels in Notifiche), Face ID / fingerprint lock («Questo telefono» in Impostazioni), Android back closes sheets, edge to edge with safe areas, icons, splash, privacy manifest, CI builds. Rules for future work in "Mobile app (Capacitor)" above. Entry in `docs/decisioni/2026-10-17-app-nativa-capacitor.md`. Draft PR #404 on branch `claude/project-thread-o7c3qu` (and in the infra repo). To do by Daniele: store accounts and credentials (`mobile/README.md`), first TestFlight/Play internal build. Deferred: push for price alerts, widget, signed store builds in CI, localised push texts.
 **Landing «Un numero solo» (2026-10-17)**: home rebuilt around one promise, «Tutti i tuoi soldi, in un numero solo» (direction A chosen by Daniele among three): opening with the real Panoramica and a sum card (bank + investments + pension fund − loans = net worth, one animated moment), «Da quattro posti, un numero» (four ledger rows with flags and broker logos), «Cosa ti dice, ogni giorno» (five swipeable tabs with real screens and their figures), «Legge soltanto. Non sposta soldi.» with the navy «Sotto il cofano» panel for tinkerers, questions as tap-to-open rows, navy closing. Two registers (plain headline, technical line right after), phone-first navigation (full-screen menu, fixed bottom button, swipe track), content pages ending with the same closing, sign-in preview with the same sum. Removed: the pinned story, gallery, «Funziona con», rules and calculators as home sections. Entry in `docs/decisioni/2026-10-17-landing-un-numero-solo.md`, rules in `landing/DESIGN.md`. Branch `claude/buddy-budget-landing-redesign-homm8q`. Deferred: Safari/iPhone check, Lighthouse, OG image to check on the social networks.
 **Real back button (2026-10-17)**: one «‹ Back» for the whole app, in the phone top bar (in place of the brand) and above the page on desktop. It goes back to the screen the user came from, also between sections (sessionStorage history, `lib/navigation`), or to the logical parent of a second-level page. Per-page back links were removed. The landing's internal and legal pages show «‹ Calcolatori/Funzioni/Home». Entry in `docs/decisioni/2026-10-17-back-link-in-first-view.md`. PR #395. Deferred: the phone back gesture closing sheets, scroll restore.
 **«Rientra in BuddyBudget» (2026-10-17)**: after signing out or an expired session, `/login` opens on the remembered account (masked email, one button for the last method, «Non sei tu?» to forget it); email in localStorage and last method in a better-auth cookie, nothing new on the server. Entry in `docs/decisioni/2026-10-17-rientra-in-buddybudget.md`. Draft PR on branch `claude/project-thread-zyljue`. Deferred: emailed code for the installed app, passkeys.

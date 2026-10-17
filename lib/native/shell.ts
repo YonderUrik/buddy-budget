@@ -1,28 +1,28 @@
-/** Listener handle returned by Capacitor plugins. */
-interface PluginListenerHandle {
-  remove: () => Promise<void>;
-}
-
-/** The subset of the Capacitor `App` plugin the web app uses (no npm dependency: the native shell injects it). */
-export interface NativeAppPlugin {
-  addListener(event: "appUrlOpen", listener: (event: { url: string }) => void): Promise<PluginListenerHandle>;
-  addListener(event: "backButton", listener: (event: { canGoBack: boolean }) => void): Promise<PluginListenerHandle>;
-  exitApp(): Promise<void>;
-}
+/** Platform of the native shell (Capacitor, `mobile/`). */
+export type NativePlatform = "ios" | "android";
 
 interface CapacitorGlobal {
   isNativePlatform?: () => boolean;
   getPlatform?: () => string;
-  Plugins?: { App?: NativeAppPlugin };
 }
 
 /**
- * The Capacitor runtime when the page runs inside the native app (`mobile/`), else null.
- * Read from `window.Capacitor`, which the shell injects before the page scripts: the web bundle carries no Capacitor code.
+ * Platform of the native app when the page runs inside it (`mobile/`), else null (browser, server).
+ * Read from `window.Capacitor`, which the shell injects before the page scripts, so the check costs no import: the
+ * plugins themselves are loaded with dynamic `import()` only inside the app.
  */
-export function nativeShell(): { platform: string; app: NativeAppPlugin | null } | null {
+export function nativePlatform(): NativePlatform | null {
   if (typeof window === "undefined") return null;
   const capacitor = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
   if (!capacitor?.isNativePlatform?.()) return null;
-  return { platform: capacitor.getPlatform?.() ?? "unknown", app: capacitor.Plugins?.App ?? null };
+  const platform = capacitor.getPlatform?.();
+  return platform === "ios" || platform === "android" ? platform : null;
+}
+
+/** User-Agent suffix the shell appends (`appendUserAgent` in `mobile/capacitor.config.ts`): lets the server tell the app apart. */
+export const NATIVE_USER_AGENT_MARKER = "BuddyBudgetApp";
+
+/** True when a request comes from the native app (User-Agent marker). Only for presentation choices, never for security. */
+export function isNativeUserAgent(userAgent: string | null | undefined): boolean {
+  return Boolean(userAgent?.includes(NATIVE_USER_AGENT_MARKER));
 }

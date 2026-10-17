@@ -118,6 +118,9 @@ export type NotificationEmailOutcome = "sent" | "failed" | "dry_run" | "capped" 
 /** Sezione facoltativa del riepilogo e come è andata: `included` = c'è, `absent` = l'utente non ne ha i dati, `failed` = calcolo fallito (il riepilogo parte senza). */
 export type NotificationDigestSection = "investments" | "goals";
 export type NotificationDigestSectionOutcome = "included" | "absent" | "failed";
+/** Push notification to a phone of the native app: `kind` as for emails, `platform` of the device, `outcome`: `invalid_token` = the provider says the device is gone (row deleted), `not_configured` = no FCM/APNs credentials. */
+export type PushNotificationPlatform = "ios" | "android";
+export type PushNotificationOutcome = "sent" | "failed" | "invalid_token" | "dry_run" | "not_configured";
 /** Da dove arriva una disiscrizione: link nell'email, one-click del client di posta (RFC 8058) o preferenze in app. */
 export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
 
@@ -168,6 +171,7 @@ interface MetricsState {
   consentNotices: Counter<"kind" | "outcome">;
   startEvents: Counter<"event">;
   notificationEmails: Counter<"kind" | "outcome">;
+  pushNotifications: Counter<"kind" | "platform" | "outcome">;
   notificationDigestSections: Counter<"section" | "outcome">;
   notificationUnsubscribes: Counter<"kind" | "source">;
 }
@@ -371,6 +375,12 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}notification_emails_total`,
     help: "Email di riepilogo e avvisi (budget, scadenze) per tipo ed esito dell'invio.",
     labelNames: ["kind", "outcome"],
+    registers: r,
+  });
+  state.pushNotifications = new Counter({
+    name: `${METRIC_PREFIX}push_notifications_total`,
+    help: "Push notifications to the native app by kind, platform and outcome (sent, failed, invalid token, dry run, not configured).",
+    labelNames: ["kind", "platform", "outcome"],
     registers: r,
   });
   state.notificationDigestSections = new Counter({
@@ -707,6 +717,11 @@ export function recordInactiveAccounts(action: InactivityAction, mode: Inactivit
 /** Registra l'esito di una email di riepilogo o di avviso. */
 export function recordNotificationEmail(kind: NotificationEmailKind, outcome: NotificationEmailOutcome): void {
   metrics().notificationEmails.inc({ kind, outcome });
+}
+
+/** Records the outcome of one push notification to one device. */
+export function recordPushNotification(kind: NotificationEmailKind, platform: PushNotificationPlatform, outcome: PushNotificationOutcome): void {
+  metrics().pushNotifications.inc({ kind, platform, outcome });
 }
 
 /** Registra se una sezione facoltativa del riepilogo è entrata nell'email. */

@@ -1,5 +1,20 @@
 apply plugin: 'com.android.application'
 
+import groovy.json.JsonSlurper
+
+// Version of the store build: the app release (`mobile/package.json`, bumped by release-please with the web app).
+// versionCode = major * 1_000_000 + minor * 1_000 + patch, so every release is higher than the one before.
+def appVersion = new JsonSlurper().parse(file('../../package.json')).version as String
+def versionParts = appVersion.tokenize('.').collect { it.replaceAll(/[^0-9].*$/, '') as int }
+def appVersionCode = versionParts[0] * 1_000_000 + versionParts[1] * 1_000 + versionParts[2]
+
+// Release signing from `android/keystore.properties` (never committed, see mobile/README.md), or from the
+// ANDROID_KEYSTORE_* environment variables in CI. Without either, release builds are left unsigned.
+def keystoreProperties = new Properties()
+def keystoreFile = rootProject.file('keystore.properties')
+if (keystoreFile.exists()) keystoreFile.withInputStream { keystoreProperties.load(it) }
+def signingValue = { String key, String env -> keystoreProperties.getProperty(key) ?: System.getenv(env) }
+
 android {
     namespace = "io.buddybudget.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +22,8 @@ android {
         applicationId "io.buddybudget.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersionCode
+        versionName appVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +31,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            def storePath = signingValue('storeFile', 'ANDROID_KEYSTORE_PATH')
+            if (storePath) {
+                storeFile file(storePath)
+                storePassword signingValue('storePassword', 'ANDROID_KEYSTORE_PASSWORD')
+                keyAlias signingValue('keyAlias', 'ANDROID_KEY_ALIAS')
+                keyPassword signingValue('keyPassword', 'ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (signingConfigs.release.storeFile) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

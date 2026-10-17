@@ -129,8 +129,8 @@ export interface RemoteSweepInput {
   knownRequisitionIds: Set<string>;
   /** Id delle connessioni a DB: la `reference` di ogni requisition creata dall'app è l'id della sua connessione. */
   knownConnectionIds?: Set<string>;
-  /** URL di ritorno che l'app passa a GoCardless (`<APP_URL>/api/gocardless/callback`): distingue le nostre da quelle di altri ambienti. */
-  ownRedirect?: string;
+  /** Return URLs the app gives GoCardless (web callback and phone-app return page): tell ours from other environments'. */
+  ownRedirect?: string | string[];
 }
 
 /** Di chi è una requisition che a DB non risulta. */
@@ -174,10 +174,11 @@ function redirectHost(redirect: string | undefined): string | null {
 export function unknownRequisitionOrigin(
   requisition: { reference?: string; redirect?: string },
   knownConnectionIds: Set<string>,
-  ownRedirect: string | undefined
+  ownRedirect: string | string[] | undefined
 ): UnknownRequisitionOrigin {
   if (requisition.reference && knownConnectionIds.has(requisition.reference)) return "own_superseded";
-  if (ownRedirect && requisition.redirect === ownRedirect) return "own_row_gone";
+  const own = ownRedirect === undefined ? [] : [ownRedirect].flat();
+  if (requisition.redirect && own.includes(requisition.redirect)) return "own_row_gone";
   return "foreign";
 }
 

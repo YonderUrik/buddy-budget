@@ -1,0 +1,2 @@
+# Own workspace root: the native shell is independent from the app (separate lockfile and dependencies).
+allowBuilds: {}

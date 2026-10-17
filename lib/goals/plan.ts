@@ -75,6 +75,17 @@ export function monthsBetween(from: string, to: string): number {
   return ty * 12 + tm - (fy * 12 + fm);
 }
 
+/** True for a well-formed month key (YYYY-MM, month 01-12): what a goal's target month must look like. */
+export function isMonthKey(value: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
+
+/** Month key (YYYY-MM) for a year and a month (1-12), moved forward to `min` when it falls before it. */
+export function monthKeyAtLeast(year: number, month: number, min: string): string {
+  const key = `${year}-${String(month).padStart(2, "0")}`;
+  return key < min ? min : key;
+}
+
 /** Mese (AAAA-MM) che cade `months` mesi dopo quello di `from`. */
 export function addMonthsKey(from: string, months: number): string {
   const [y, m] = from.split("-").map(Number);

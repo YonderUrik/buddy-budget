@@ -1,3 +1,4 @@
+import { isMonthKey } from "@/lib/goals/plan";
 import type { GoalView } from "@/lib/goals/view";
 import type { MessageValues } from "@/lib/localization/messages";
 
@@ -16,7 +17,8 @@ export function goalFormatters(locale: string, formatCurrency: (value: number, c
   const monthFormat = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "UTC" });
   return {
     money: (value) => formatCurrency(value, currency, { maximumFractionDigits: 0 }),
-    month: (key) => monthFormat.format(new Date(`${key.slice(0, 7)}-01T12:00:00Z`)),
+    // An incomplete key would be an Invalid Date, and formatting it throws: show it as it is instead.
+    month: (key) => (isMonthKey(key.slice(0, 7)) ? monthFormat.format(new Date(`${key.slice(0, 7)}-01T12:00:00Z`)) : key),
   };
 }
 

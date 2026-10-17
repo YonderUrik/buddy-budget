@@ -10,6 +10,7 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import * as React from "react";
+import { SimulationResult } from "@/components/domain/shared";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { InvestmentTransactionInput } from "@/lib/calc/investments";
@@ -119,6 +120,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
           {position.instrument.priceUnit === "percentuale_nominale" ? tr(" ogni 100 di nominale") : ""}{tr("), senza commissioni.")}</p>
         {result ? (
           <>
+            <SimulationResult label={tr("Ti resta")} value={format(result.net)} />
             <dl className="divide-y divide-border">
               <Line label={tr("Incasso")} value={format(result.proceeds)} />
               <Line label={tr("Costo fiscale (prezzo medio)")} value={format(result.cost)} />
@@ -129,7 +131,6 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
                 label={result.taxDelta < 0 ? tr("Imposte in meno quest'anno") : regime === "amministrato" ? tr("Imposte trattenute") : tr("Imposte in più in dichiarazione")}
                 value={format(Math.abs(result.taxDelta))}
               />
-              <Line label={tr("Ti resta")} value={format(result.net)} strong />
             </dl>
             <p className="text-sm text-muted-foreground">
               {tr(CATEGORY_TEXT[result.category])}

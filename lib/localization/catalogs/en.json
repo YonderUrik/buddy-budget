@@ -4167,5 +4167,9 @@
   "La lettura standard non è riuscita. L'analisi AI è stata avviata automaticamente; il supporto riceverà il report dell'errore.": "Standard reading failed. AI analysis started automatically; support will receive an error report.",
   "Segui l'analisi": "View analysis progress",
   "Analisi AI avviata": "AI analysis started",
-  "Impossibile avviare l'analisi AI": "Unable to start AI analysis"
+  "Impossibile avviare l'analisi AI": "Unable to start AI analysis",
+  "Finanziamenti": "Loans",
+  "Indietro: {0}": "Back: {0}",
+  "Obiettivo": "Goal",
+  "Titolo": "Security"
 }

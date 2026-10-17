@@ -4167,5 +4167,9 @@
   "La lettura standard non è riuscita. L'analisi AI è stata avviata automaticamente; il supporto riceverà il report dell'errore.": "Das reguläre Einlesen ist fehlgeschlagen. Die KI-Analyse wurde automatisch gestartet; der Support erhält einen Fehlerbericht.",
   "Segui l'analisi": "Analyse verfolgen",
   "Analisi AI avviata": "KI-Analyse gestartet",
-  "Impossibile avviare l'analisi AI": "KI-Analyse konnte nicht gestartet werden"
+  "Impossibile avviare l'analisi AI": "KI-Analyse konnte nicht gestartet werden",
+  "Finanziamenti": "Finanzierungen",
+  "Indietro: {0}": "Zurück: {0}",
+  "Obiettivo": "Ziel",
+  "Titolo": "Wertpapier"
 }

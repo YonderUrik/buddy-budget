@@ -1,17 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { pageName, parseStoredStack, recordVisit, resolveBackTarget } from "./back-history";
-
-const PARENT = { href: "/investimenti", label: "Portafoglio" };
+import { pageName, parentOf, parseStoredStack, recordVisit, resolveBackTarget, screenKey } from "./back-history";
 
 describe("recordVisit", () => {
-  it("pushes new pages and replaces the same page with a different query", () => {
+  it("pushes new screens and replaces the same screen with other filters", () => {
     let stack = recordVisit([], "/liquidita");
-    stack = recordVisit(stack, "/debiti/finanziamenti?id=a");
-    stack = recordVisit(stack, "/debiti/finanziamenti?id=b");
-    expect(stack).toEqual(["/liquidita", "/debiti/finanziamenti?id=b"]);
+    stack = recordVisit(stack, "/liquidita?conto=a");
+    stack = recordVisit(stack, "/investimenti");
+    expect(stack).toEqual(["/liquidita?conto=a", "/investimenti"]);
   });
 
-  it("pops when going back to the page before the last one", () => {
+  it("keeps Settings groups and loans as separate screens", () => {
+    let stack = recordVisit([], "/impostazioni");
+    stack = recordVisit(stack, "/impostazioni?sezione=notifiche");
+    expect(stack).toEqual(["/impostazioni", "/impostazioni?sezione=notifiche"]);
+  });
+
+  it("pops when going back to the screen before the last one", () => {
     const stack = recordVisit(["/panoramica", "/categorizza", "/importazioni"], "/categorizza?vista=auto");
     expect(stack).toEqual(["/panoramica", "/categorizza?vista=auto"]);
   });
@@ -23,27 +27,45 @@ describe("recordVisit", () => {
 });
 
 describe("resolveBackTarget", () => {
-  it("leads to the previous known page, before and after the current visit is recorded", () => {
-    const before = ["/panoramica", "/investimenti/operazioni?tipo=acquisto"];
-    const after = recordVisit(before, "/investimenti/titoli/abc");
-    const expected = { href: "/investimenti/operazioni?tipo=acquisto", label: "Operazioni", source: "previous" };
-    expect(resolveBackTarget(before, "/investimenti/titoli/abc", PARENT)).toEqual(expected);
-    expect(resolveBackTarget(after, "/investimenti/titoli/abc", PARENT)).toEqual(expected);
+  it("goes back between main sections, before and after the visit is recorded", () => {
+    const before = ["/panoramica", "/liquidita?conto=a"];
+    const after = recordVisit(before, "/investimenti");
+    const expected = { href: "/liquidita?conto=a", label: "Liquidità", source: "previous" };
+    expect(resolveBackTarget(before, "/investimenti")).toEqual(expected);
+    expect(resolveBackTarget(after, "/investimenti")).toEqual(expected);
   });
 
-  it("does not bounce between two detail pages after going back", () => {
+  it("goes back from a Settings group to the list", () => {
+    const stack = ["/liquidita/conti", "/impostazioni", "/impostazioni?sezione=notifiche"];
+    expect(resolveBackTarget(stack, "/impostazioni?sezione=notifiche")).toEqual({ href: "/impostazioni", label: "Impostazioni", source: "previous" });
+  });
+
+  it("does not bounce between two pages after going back", () => {
     const stack = ["/panoramica", "/categorizza", "/importazioni"];
-    const target = resolveBackTarget(stack, "/categorizza", { href: "/liquidita", label: "Movimenti" });
-    expect(target).toEqual({ href: "/panoramica", label: "Panoramica", source: "previous" });
+    expect(resolveBackTarget(stack, "/categorizza")).toEqual({ href: "/panoramica", label: "Panoramica", source: "previous" });
   });
 
-  it("falls back to the parent on a first visit or after an unknown page", () => {
-    expect(resolveBackTarget([], "/investimenti/titoli/abc", PARENT)).toEqual({ ...PARENT, source: "parent" });
-    expect(resolveBackTarget(["/conti/collega/x"], "/liquidita/conti", PARENT)).toEqual({ ...PARENT, source: "parent" });
+  it("falls back to the parent of a second-level page, and to nothing on a main section", () => {
+    expect(resolveBackTarget([], "/investimenti/titoli/abc")).toEqual({ href: "/investimenti", label: "Portafoglio", source: "parent" });
+    expect(resolveBackTarget(["/conti/collega/x"], "/debiti/finanziamenti?id=1")).toEqual({ href: "/debiti", label: "Debiti", source: "parent" });
+    expect(resolveBackTarget([], "/liquidita")).toBeNull();
   });
 });
 
-describe("pageName", () => {
+describe("parentOf", () => {
+  it("uses the page Help was opened from, when known", () => {
+    expect(parentOf("/aiuto?da=/liquidita/conti")).toEqual({ href: "/liquidita/conti", label: "Conti" });
+    expect(parentOf("/aiuto?da=//evil.example")).toEqual({ href: "/panoramica", label: "Panoramica" });
+    expect(parentOf("/impostazioni?sezione=account")).toEqual({ href: "/impostazioni", label: "Impostazioni" });
+  });
+});
+
+describe("screenKey and pageName", () => {
+  it("keeps only the parameters that make a different screen", () => {
+    expect(screenKey("/liquidita?conto=a&periodo=3")).toBe("/liquidita");
+    expect(screenKey("/debiti/finanziamenti?id=7&x=1")).toBe("/debiti/finanziamenti?id=7");
+  });
+
   it("names tabs and detail pages, not deeper or unknown paths", () => {
     expect(pageName("/liquidita/conti")).toBe("Conti");
     expect(pageName("/analitiche/obiettivi/123")).toBe("Obiettivo");

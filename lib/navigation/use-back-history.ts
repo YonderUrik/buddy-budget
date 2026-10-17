@@ -37,10 +37,10 @@ export function recordBackHistoryVisit(href: string): void {
 }
 
 /**
- * Where the «‹» link of the current page leads: the page the user came from if it is a known app page, otherwise
- * `parent`. On the server and before hydration it is always `parent`.
+ * Where the «‹» button of the current screen leads, or `null` for no button. On the server and before hydration only
+ * the logical parent is known (main sections: no button).
  */
-export function useBackTarget(currentPath: string, parent: { href: string; label: string }): BackTarget {
+export function useBackTarget(currentHref: string): BackTarget | null {
   const history = React.useSyncExternalStore(subscribe, current, () => EMPTY);
-  return resolveBackTarget(history, currentPath, parent);
+  return resolveBackTarget(history, currentHref);
 }

@@ -255,8 +255,8 @@ export interface ProductEvents {
   onboarding_notifications_chosen: { digest: "settimanale" | "mensile" | "off"; budget: boolean; deadlines: boolean; goals?: boolean };
   /** Disiscrizione dalla pagina aperta dal link dell'email; `kind`: tipo disattivato o tutti. */
   notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "goals" | "all" };
-  /** «‹» back link above a page title; `section`/`to`: first segment of the current and destination address, `target`: previous page or logical parent. */
-  back_link_clicked: { section: string; target: "precedente" | "madre"; to: string };
+  /** «‹» back button; `section`/`to`: first segment of the current and destination address, `target`: previous screen or logical parent, `place`: phone top bar or above the page on desktop. */
+  back_link_clicked: { section: string; target: "precedente" | "madre"; to: string; place: "barra" | "pagina" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

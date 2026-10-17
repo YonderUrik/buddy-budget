@@ -12,7 +12,6 @@ import { useLocalization } from "@/lib/localization/provider";
 import { EyeIcon, EyeOffIcon, PlusIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BackLink } from "@/components/domain/shared";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
 import type { TitleStats } from "@/lib/investments/title-stats";
@@ -35,12 +34,11 @@ export interface TitleHeaderProps {
   watchPending: boolean;
   onToggleWatch: () => void;
   onRegister: () => void;
-  backHref?: string;
   /** Etichette in più accanto al tipo (es. categoria del fondo). */
   tags?: string[];
 }
 
-export function TitleHeader({ instrument, stats, watching, held, watchPending, onToggleWatch, onRegister, backHref = "/investimenti", tags = [] }: TitleHeaderProps) {
+export function TitleHeader({ instrument, stats, watching, held, watchPending, onToggleWatch, onRegister, tags = [] }: TitleHeaderProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedPct } = localizedFormats(formattingLocale);
 
@@ -50,7 +48,6 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
   const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-3">
-      <BackLink href={backHref} label={tr("Portafoglio")} className="-mb-2" />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} className="mt-0.5" />

@@ -10,8 +10,6 @@ import { GithubLinks } from "./github-links";
 import { ReportForm } from "./report-form";
 import { useReportContext } from "./use-report-context";
 import { track } from "@/lib/analytics";
-import { BackLink } from "@/components/domain/shared";
-import { pageName, pathOf } from "@/lib/navigation";
 import { REPORT_KINDS, STATUS_URL, type ReportKind } from "@/lib/support";
 
 function Section({ id, icon: Icon, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
@@ -39,12 +37,6 @@ export interface SupportPageProps {
   kind?: string | null;
 }
 
-/** Parent page of Help: the page in `?da=` when it is a known app page, otherwise Panoramica. */
-function backParent(from: string | null): { href: string; label: string } {
-  const label = from?.startsWith("/") && !from.startsWith("//") ? pageName(pathOf(from)) : null;
-  return from && label ? { href: from, label } : { href: "/panoramica", label: "Panoramica" };
-}
-
 export function SupportPage({ from = null, kind = null }: SupportPageProps) {
   const { t: tr } = useLocalization();
   const context = useReportContext(from);
@@ -52,7 +44,6 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8 p-4 sm:gap-10 sm:p-6">
       <div>
-        <BackLink {...backParent(from)} />
         <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Aiuto e segnalazioni")}</h1>
         <p className="text-sm text-muted-foreground">{tr("Puoi scriverci anche da qualsiasi pagina, con l'icona del fumetto, e dai messaggi d'errore.")}</p>
         <p className="mt-1 text-sm text-muted-foreground">

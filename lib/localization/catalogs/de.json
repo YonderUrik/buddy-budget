@@ -4180,5 +4180,9 @@
   "Senza il tuo sì non parte niente. I dati vanno al servizio OpenRouter, a cui chiediamo di non conservarli. Tutto il resto dell'app (calcoli, regole, sincronizzazione con la banca, avvisi) non usa l'AI.": "Ohne dein Ja wird nichts gesendet. Die Daten gehen an den Dienst OpenRouter, den wir bitten, sie nicht zu speichern. Alles andere in der App (Berechnungen, Regeln, Bank-Synchronisierung, Hinweise) nutzt keine KI.",
   "Proponi le categorie con l'AI": "Kategorien mit KI vorschlagen",
   "Notifiche e AI": "Benachrichtigungen und KI",
-  "Email di riepilogo e avvisi, assistente per le categorie e dove l'app usa l'AI": "Zusammenfassungen und Hinweise, Kategorien-Assistent und wo die App KI nutzt"
+  "Email di riepilogo e avvisi, assistente per le categorie e dove l'app usa l'AI": "Zusammenfassungen und Hinweise, Kategorien-Assistent und wo die App KI nutzt",
+  "Stai esplorando i dati d'esempio: azzerali per aggiungere i tuoi.": "Du siehst dir gerade die Beispieldaten an: Setze sie zurück, um deine eigenen hinzuzufügen.",
+  "Hai già dei conti: i dati d'esempio sono per chi parte da zero.": "Du hast bereits Konten: Die Beispieldaten sind für einen Start bei null gedacht.",
+  "I dati d'esempio sono già attivi.": "Die Beispieldaten sind bereits aktiv.",
+  "Completa prima la configurazione iniziale.": "Schließe zuerst die Ersteinrichtung ab."
 }

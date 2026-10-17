@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { sessionOrUnauthorized } from "@/lib/account/route-session";
 import { bindRequestUser, recordStartEvent, requestLogger, withRoute } from "@/lib/observability";
+import { resolveProfile } from "@/lib/localization/config";
+import { translate } from "@/lib/localization/messages";
 import { clearDemo, startDemo } from "@/lib/start/demo";
 
 export const maxDuration = 30;
@@ -11,16 +13,17 @@ const START_ERRORS = {
   no_categories: { error: "Completa prima la configurazione iniziale.", status: 409 },
 } as const;
 
-/** Crea i dati d'esempio (solo se l'utente non ha ancora conti). */
+/** Creates the example data (only for users without accounts), with texts and errors in the user's interface language. */
 async function handlePost(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);
   if (session instanceof Response) return session;
   bindRequestUser(session.user.id);
-  const result = await startDemo(session.user.id);
+  const { language } = resolveProfile(session.user);
+  const result = await startDemo(session.user.id, new Date(), language);
   if (!result.ok) {
     requestLogger().info("onboarding.demo.rejected", { reason: result.reason });
     const { error, status } = START_ERRORS[result.reason];
-    return Response.json({ error }, { status });
+    return Response.json({ error: translate(language, error) }, { status });
   }
   recordStartEvent("demo_started");
   requestLogger().info("onboarding.demo.started", { count: result.transactions });

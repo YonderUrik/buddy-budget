@@ -59,7 +59,7 @@ export interface SumListProps {
 
 /**
  * «Da quattro posti, un numero», the page's live thing: the four places set as a list at display size, each with its
- * amount, closed by a thick bar and the net worth. The amounts are fields prefilled with Giulia's sample figures: a
+ * amount, closed by a thick bar and the net worth. The amounts are fields prefilled with sample figures: a
  * visitor types their own and the total redoes itself on the spot (nothing is sent anywhere; `sum_edited` counts the
  * first edit). A tap on a place opens how it gets into the app. Without script the list reads as the sample sum.
  */
@@ -142,7 +142,7 @@ export function SumList({ places, sum, locale }: SumListProps) {
           </p>
         </div>
         <p className="sum-foot">
-          {isSample ? sum.caption : null} {sum.hint}{" "}
+          {sum.hint}{" "}
           {isSample ? null : (
             <button type="button" className="text-btn" onClick={reset}>
               {sum.reset}

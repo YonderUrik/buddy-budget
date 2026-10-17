@@ -1,10 +1,10 @@
 /**
- * Page pairs between the Italian and the English site: the single list behind hreflang, the sitemap, the «IT / EN»
- * switch and the tests. Pages without an English version (calculators, guides, legal pages) are not here: from them
+ * Page pairs between the Italian and the English site: the single list behind hreflang, the sitemap, the language
+ * menu and the tests. Pages without an English version (calculators, guides, legal pages) are not here: from them
  * the switch goes to the English home.
  */
 import type { Metadata } from "next";
-import { HTML_LANG, type Locale } from "@/lib/i18n";
+import { HTML_LANG, LOCALES, otherLocale, type Locale } from "@/lib/i18n";
 import { CONTENT_PATHS } from "./seo-pages";
 
 /** Paths of the English pages. */
@@ -49,4 +49,18 @@ export function languageAlternates(path: string, locale: Locale): NonNullable<Me
     canonical: pair[locale],
     languages: { [HTML_LANG.it]: pair.it, [HTML_LANG.en]: pair.en, "x-default": pair.en },
   };
+}
+
+/**
+ * Targets of the language menu: for each language the same page (`counterpart`), or that language's home. `alternate`
+ * overrides the target of the other language when a page knows its pair better than `PAGE_PAIRS` (a path with a hash).
+ */
+export function languageHrefs(locale: Locale, current?: string, alternate?: string): Record<Locale, string> {
+  return Object.fromEntries(
+    LOCALES.map((l) => {
+      if (l === locale) return [l, current ?? HOME_PATH[l]];
+      if (alternate && l === otherLocale(locale)) return [l, alternate];
+      return [l, current ? counterpart(current, l) : HOME_PATH[l]];
+    }),
+  ) as Record<Locale, string>;
 }

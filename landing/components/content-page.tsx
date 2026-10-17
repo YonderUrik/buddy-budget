@@ -30,7 +30,7 @@ export interface ContentPageProps {
   disclaimer?: boolean;
   wide?: boolean;
   locale?: Locale;
-  /** The same page in the other language, for the «IT / EN» switch (default: that language's home, or the counterpart of `current`). */
+  /** The same page in the other language, for the language menu (default: that language's home, or the counterpart of `current`). */
   alternate?: string;
 }
 

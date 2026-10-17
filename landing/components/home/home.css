@@ -116,23 +116,23 @@
 .tax-sp + .tax-sp p { font-weight: 600; }
 .tax-more { margin-top: 56px; }
 
-/* ---------- trust: a heading on two steps, then one table without lines, rows on alternate tones ---------- */
-.trust h2.stepped > span { display: block; }
-.trust h2.stepped > span + span { padding-left: 1.4em; }
-.tt { margin-top: 64px; overflow-x: auto; }
-.tt table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 16px; line-height: 1.5; }
-.tt th, .tt td { text-align: left; vertical-align: top; padding: 18px 20px; }
-.tt tbody tr:nth-child(odd):not(.tg-gap) > * { background: color-mix(in srgb, var(--ink) 4%, transparent); }
-.tt tbody tr > :first-child { border-radius: 14px 0 0 14px; }
-.tt tbody tr > :last-child { border-radius: 0 14px 14px 0; }
-.tt .tg-name { width: 14%; font-weight: 700; }
-.tt .tg-what { width: 24%; font-weight: 600; }
-.tt .tg-how { color: var(--ink); }
-.tt .tg-src { width: 14%; white-space: nowrap; }
-.tt .tg-src a { font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
-.tt .tg-src a:hover { text-decoration-color: currentColor; }
-.tt .tg-gap td { padding: 0; height: 28px; background: none; }
-/* the code itself: the links to read it, the commands to run it */
+/* ---------- trust: statement cell + dark rows (taste-skill «Statement cell, dark rows»), halves butted, no lines ---------- */
+.sec.trust { padding-top: 0; }
+.tr-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 90svh; }
+.tr-cell { display: flex; flex-direction: column; justify-content: space-between; gap: 48px; padding: 96px max(32px, calc((100vw - 1280px) / 2 + 32px)) 64px; padding-right: 48px; background: var(--bg); position: sticky; top: 64px; align-self: start; min-height: calc(100svh - 64px); }
+.trust .tr-title { font-size: clamp(52px, 5.4vw, 96px); max-width: none; }
+.tr-title { display: flex; flex-direction: column; }
+.tr-title > span:nth-child(2) { align-self: flex-end; }
+.tr-foot p { max-width: 32ch; font: 400 clamp(19px, 1.5vw, 22px) / 1.4 var(--f-b); color: var(--ink); }
+.tr-rows { display: grid; grid-auto-rows: 1fr; margin: 0; padding: 0; list-style: none; background: var(--navy); color: var(--on-navy); }
+.tr-row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 10px 28px; align-content: start; padding: 32px max(32px, calc((100vw - 1280px) / 2 + 32px)) 32px 40px; }
+.tr-row:nth-child(even) { background: color-mix(in srgb, var(--on-navy) 5%, var(--navy)); }
+.tr-row h3 { grid-row: 1 / 3; font: 400 clamp(24px, 2vw, 30px) / 1.1 var(--f-d); letter-spacing: 0; }
+.tr-row p { font-size: 16px; line-height: 1.5; color: var(--on-navy); max-width: 52ch; }
+.tr-terms { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 15px !important; color: var(--on-navy2) !important; }
+.tr-terms a { color: var(--on-navy); font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+.tr-terms a:hover { text-decoration-color: currentColor; }
+.trust .code { margin-top: 128px; }
 .code { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px 64px; align-items: start; margin-top: 128px; }
 .code h3 { font: 300 clamp(44px, 5vw, 80px) / 0.92 var(--f-d); }
 .code > div > p { margin-top: 18px; color: var(--ink); font-size: 17px; max-width: 46ch; }
@@ -153,6 +153,11 @@
 
 /* ---------- phone: everything stacks, the panels peek and swipe, the phone captures replace the desktop ones ---------- */
 @media (max-width: 1000px) {
+  .tr-split { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .tr-cell { position: static; min-height: 0; padding: 88px 32px 56px; }
+  .tr-rows { grid-auto-rows: auto; }
+  .tr-row { grid-template-columns: minmax(0, 1fr); padding: 28px 32px; }
+  .tr-row h3 { grid-row: auto; }
   .hero { min-height: calc(92svh - 64px); padding-block: 32px 40px; }
   .hero h1 { font-size: clamp(64px, 19vw, 132px); }
   .hero-foot { flex-direction: column; align-items: stretch; }
@@ -174,21 +179,12 @@
   .faq .faq-list { margin-left: 0; }
   .code { grid-template-columns: minmax(0, 1fr); margin-top: 88px; }
   /* the table becomes one block per row */
-  .tt table, .tt tbody, .tt tr, .tt th, .tt td { display: block; width: auto; }
-  .tt tbody tr:not(.tg-gap) { padding: 16px 18px; border-radius: 14px; }
-  .tt tbody tr:nth-child(odd):not(.tg-gap) { background: color-mix(in srgb, var(--ink) 4%, transparent); }
-  .tt tbody tr > * { background: none !important; padding: 0; border-radius: 0 !important; }
-  .tt tbody tr > * { width: auto !important; }
-  .tt .tg-name:has(.sr) { display: none; }
-  .tt .tg-name { margin-bottom: 10px; font-size: 14px; color: var(--ink3); }
-  .tt .tg-how { margin-top: 4px; }
-  .tt .tg-src:empty { display: none; }
-  .tt .tg-src { margin-top: 8px; }
-  .tt .tg-gap { height: 24px; }
 }
 @media (max-width: 600px) {
+  .tr-cell { padding: 72px 20px 40px; }
+  .trust .tr-title { font-size: clamp(48px, 14vw, 72px); }
+  .tr-row { padding: 26px 20px; }
   .sec h2, .tax h2 { font-size: clamp(44px, 12.4vw, 64px); }
-  .trust h2.stepped > span + span { padding-left: 0.6em; }
   .sum-line { padding-block: 12px; flex-wrap: nowrap; gap: 12px; }
   .sum-name { font-size: clamp(32px, 9.4vw, 48px); min-width: 0; }
   .sum-amt { font-size: clamp(28px, 8.6vw, 44px); flex: none; }

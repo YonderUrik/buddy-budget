@@ -64,7 +64,6 @@ export const HOME_EN: HomeContent = {
     ],
     prefix: "€",
     cents: ".53",
-    caption: "Sample data: Giulia, a made-up person.",
     hint: "Type your own amounts: the sum redoes itself and nothing leaves this page.",
     reset: "Put the sample data back",
     fieldLabel: "Amount for {place}",
@@ -157,38 +156,37 @@ export const HOME_EN: HomeContent = {
     more: { href: CONTENT_PATHS.zainetto, label: "Try the calculator, no account needed (in Italian)" },
   },
   trust: {
-    title: ["It only reads.", "It never moves money."],
-    groups: { facts: "Your data", limits: "Limits, said plainly", code: "The code" },
-    columns: { group: "Group", what: "What", how: "How", source: "Source" },
+    title: ["What the app", "does with", "your data"],
+    lede: "It reads your accounts to show you the numbers. It can't move money or make payments.",
     facts: [
       {
-        icon: "key",
         title: "Your bank password stays with your bank.",
         text: "You type it only on your bank's site. The connection can only read, and you can remove it whenever you like.",
+        terms: ["Read-only", "Revocable"],
         source: { label: "PSD2, art. 67", href: SECURITY_SOURCES_EN.psd2.href },
       },
       {
-        icon: "server",
         title: "Your data stays in Germany.",
         text: FIELD_ENCRYPTION_LIVE
           ? "Encrypted connections; transaction descriptions and notes are encrypted in the database too. Backups in the EU, kept for 14 days."
           : "Encrypted connections. Backups in the EU, kept for 14 days.",
-        source: { label: "Cloudflare R2, data in the EU", href: SECURITY_SOURCES_EN.r2Location.href },
+        terms: FIELD_ENCRYPTION_LIVE ? ["Servers in Germany", "Backups in the EU", "AES-256"] : ["Servers in Germany", "Backups in the EU"],
       },
       {
-        icon: "ban",
         title: "No ads. Your data is not for sale.",
         text: "Usage statistics are anonymous and cookie-free, on our own servers.",
+        terms: ["Cookie-free", "Anonymous", "Our own servers"],
       },
       {
-        icon: "download",
         title: "Take everything with you, any time.",
         text: "A ZIP file with all your data, or delete your account: right away, or with 30 days to change your mind.",
+        terms: ["ZIP", "JSON and CSV", "30 days"],
       },
-    ],
-    limits: [
-      { title: "The server reads your data", text: "It has to, to do the maths, so whoever runs the service could see it. We'd rather say so." },
-      { title: "No certification", text: "It's a small project: no ISO 27001 and no external audits. The open code is how you check." },
+      {
+        title: "What we can't promise.",
+        text: "The server reads your data to do the maths, so whoever runs the service could see it. It's a small project: no certification and no external audits; the open code is how you check.",
+        terms: ["No ISO 27001", "Open code"],
+      },
     ],
     more: "Everything about security, with sources",
     moreHref: EN_PATHS.security,

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import "./site-nav.css";
-import { HOME_PATH, counterpart } from "@/content/locales";
+import { HOME_PATH, languageHrefs } from "@/content/locales";
 import { LOCALE_APP_LINKS, SOURCE_URL } from "@/content/site";
 import { UI, type NavLink } from "@/content/ui";
-import { otherLocale, type Locale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 import { useFieldUnderBar } from "@/lib/use-field-under-bar";
 import { Mark } from "./brand";
 import { CtaLink } from "./cta-link";
@@ -33,7 +33,7 @@ export interface SiteNavProps {
   current?: string;
   tone?: NavTone;
   locale?: Locale;
-  /** Target of the «IT / EN» switch; default: the counterpart of `current`, or the other language's home. */
+  /** Target of the language menu for the other language; default: the counterpart of `current`, or its home. */
   alternate?: string;
 }
 
@@ -51,8 +51,7 @@ export function SiteNav({ links, current, tone = "navy", locale = "it", alternat
   const t = UI[locale];
   const items = links ?? t.nav.links;
   const app = LOCALE_APP_LINKS[locale];
-  const other = otherLocale(locale);
-  const switchHref = alternate ?? (current ? counterpart(current, other) : HOME_PATH[other]);
+  const langHrefs = languageHrefs(locale, current, alternate);
 
   // Phone menu: closes with Esc and when the window grows wide; while open the page behind does not scroll.
   useEffect(() => {
@@ -92,7 +91,7 @@ export function SiteNav({ links, current, tone = "navy", locale = "it", alternat
           {sourceLink("sezione")}
         </nav>
         <div className="nr">
-          <LangSwitch className="nav-lang" locale={locale} href={switchHref} location="nav" label={t.language} />
+          <LangSwitch className="nav-lang" locale={locale} hrefs={langHrefs} location="nav" label={t.language} />
           <ThemeToggle label={t.themeToggle} />
           <CtaLink className="btn line" href={app.login} location="nav" target="login" lang={locale}>{t.nav.login}</CtaLink>
           <CtaLink className="btn sun" href={app.signup} location="nav" target="signup" lang={locale}>{t.nav.signup}</CtaLink>
@@ -113,7 +112,7 @@ export function SiteNav({ links, current, tone = "navy", locale = "it", alternat
           </div>
           <div className="menu-foot">
             <span>{t.language}</span>
-            <LangSwitch locale={locale} href={switchHref} location="menu" label={t.language} />
+            <LangSwitch locale={locale} hrefs={langHrefs} location="menu" label={t.language} up />
           </div>
           <div className="menu-foot">
             <span>{t.nav.theme}</span>

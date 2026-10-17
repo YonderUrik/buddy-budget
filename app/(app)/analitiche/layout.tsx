@@ -57,7 +57,7 @@ function GoalsShell({ children }: { children: React.ReactNode }) {
       {detail ? null : (
         <Header
           action={
-            <Link href={NEW_GOAL_HREF} scroll={false} className={cn(buttonVariants(), "h-11 shrink-0 sm:h-9")}>
+            <Link href={NEW_GOAL_HREF} scroll={false} className={cn(buttonVariants({ variant: "sun" }), "h-11 shrink-0 sm:h-9")}>
               <Plus className="size-4" aria-hidden="true" />
               <span className="max-sm:sr-only">{tr("Nuovo obiettivo")}</span>
             </Link>

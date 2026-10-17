@@ -15,6 +15,7 @@ import { authClient } from "@/lib/auth/client";
 import { track } from "@/lib/analytics";
 import { LegalConsentFields } from "./legal-consent-fields";
 import { useLegalConsent } from "./use-legal-consent";
+import { AUTH_TITLE } from "./auth-styles";
 
 export interface LegalAcceptancePanelProps {
   /** Dove andare dopo l'accettazione. Default: la home (pagina iniziale dell'utente). */
@@ -57,7 +58,7 @@ export function LegalAcceptancePanel({ afterAccept = "/" }: LegalAcceptancePanel
   return (
     <div className="flex flex-col gap-8 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
       <div className="flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-medium tracking-tight">{tr("Abbiamo aggiornato Termini e Privacy")}</h1>
+        <h1 className={AUTH_TITLE}>{tr("Abbiamo aggiornato Termini e Privacy")}</h1>
         <p className="text-text-2">{tr("Per continuare a usare BuddyBudget leggi i documenti e accettali. Se non vuoi accettare puoi scaricare i tuoi dati ed eliminare l'account.")}</p>
       </div>
 

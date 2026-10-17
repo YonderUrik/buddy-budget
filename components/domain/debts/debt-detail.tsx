@@ -34,6 +34,7 @@ import { PayInstallmentDialog } from "./pay-installment-dialog";
 import { START_MODE_LABELS } from "./debt-status";
 import { DEBTS_COLORS } from "./debts-theme";
 import { errorToast } from "@/lib/support/request-report";
+import { PAGE_TITLE } from "@/components/domain/shared";
 
 export interface DebtDetailProps {
   debt: DebtView;
@@ -57,11 +58,11 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
     <div className="flex flex-col gap-8 sm:gap-10">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-heading text-xl font-medium text-foreground">{debt.name}</h2>
+          <h2 className={PAGE_TITLE}>{debt.name}</h2>
           <p className="text-xs text-muted-foreground">{tr(START_MODE_LABELS[debt.startMode])}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" disabled={debt.plan.totals.finished} onClick={() => setEarlyOpen(true)}>
+          <Button size="sm" variant="sun" disabled={debt.plan.totals.finished} onClick={() => setEarlyOpen(true)}>
             <PiggyBankIcon aria-hidden="true" />{tr("Estinzione anticipata")}</Button>
           <Button size="sm" variant="outline" onClick={() => setEventKind("rate_change")}>
             <PercentIcon aria-hidden="true" />{tr("Cambio tasso")}</Button>

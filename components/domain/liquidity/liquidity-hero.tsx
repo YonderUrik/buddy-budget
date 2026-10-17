@@ -7,7 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { MoneyHero } from "@/components/domain/net-worth";
-import { SegmentedControl } from "@/components/domain/shared";
+import { PeriodSelector } from "@/components/domain/shared";
 
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { cn } from "@/lib/utils";
@@ -72,7 +72,7 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
         <TrendChart points={points} description={tr(description)} height={260} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
       </div>
       <div className="mt-3 flex justify-center">
-        <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} />
+        <PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} />
       </div>
     </section>
   );

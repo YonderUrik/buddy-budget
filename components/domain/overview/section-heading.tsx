@@ -5,6 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRightIcon } from "lucide-react";
+import { SECTION_TITLE } from "@/components/domain/shared";
 
 export interface SectionHeadingProps {
   icon: LucideIcon;
@@ -29,7 +30,7 @@ export function SectionHeading({ icon: Icon, title, color, id, href, linkLabel, 
         >
           <Icon className="size-[18px]" />
         </span>
-        <h2 id={id} className="font-heading text-lg font-medium text-foreground">
+        <h2 id={id} className={SECTION_TITLE}>
           {tr(title)}
         </h2>
       </div>

@@ -1,7 +1,7 @@
 import { getLocaleProfile } from "@/lib/localization/server";
 import { LocalizationProvider } from "@/lib/localization/provider";
 import type { Metadata, Viewport } from "next";
-import { Hanken_Grotesk, Space_Grotesk, Geist_Mono } from "next/font/google";
+import { Hanken_Grotesk, Space_Grotesk, Geist_Mono, Sofia_Sans_Extra_Condensed } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,6 +25,12 @@ const hankenGrotesk = Hanken_Grotesk({
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
+  subsets: ["latin"],
+});
+
+/** Display face of the landing (tall, condensed, light): only for the big titles of the sign-in pages (`font-display`). */
+const sofiaCondensed = Sofia_Sans_Extra_Condensed({
+  variable: "--font-sofia-condensed",
   subsets: ["latin"],
 });
 
@@ -67,7 +73,7 @@ export default async function RootLayout({
   return (
     <html
       lang={profile.language}
-      className={`${hankenGrotesk.variable} ${spaceGrotesk.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${hankenGrotesk.variable} ${spaceGrotesk.variable} ${sofiaCondensed.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="h-full bg-background text-foreground font-sans">

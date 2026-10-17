@@ -4,22 +4,22 @@ Durable visual rules of buddybudget.io (home, content pages, legal pages). The s
 
 ## World
 
-The landing is the app's own interface language used to persuade: the same tokens, faces, radii and buttons as the app, so site, sign-in and app read as one thing. The device the home owns is the **sum**: ledger rows separated by hairlines and closed by a 2 px rule, adding up to one big figure with small muted decimals (the Panoramica's number style). Real screenshots of the app are the only imagery, in a browser-like window (`ScreenCrop`, cropped from the top at a fixed ratio) or in the CSS phone (`PhoneFrame`). No gradients, no illustrations, no glass, no icon-card grids as page structure.
+The landing is the app's own interface language used to persuade: the same tokens, faces, radii and buttons as the app, so site, sign-in and app read as one thing. The device the home owns is the **sum**: ledger rows separated by hairlines and closed by a 2 px rule, adding up to one big figure with small muted decimals (the Panoramica's number style). The home opens on the **navy ground** (bar, title, sum card), with the Panoramica big and full width right after it, half on the navy (2026-10-17, after Hermes Agent: one colour as the world, tall light titles, a wordmark across the footer). Real screenshots of the app are the only imagery, in a browser-like window (`ScreenCrop`, cropped from the top at a fixed ratio) or in the CSS phone (`PhoneFrame`). No gradients, no illustrations, no glass, no icon-card grids as page structure.
 
 ## Tokens (`app/globals.css`)
 
 - Ground `--bg` #f7f7f8 / dark #111113; surface `--surface`; text `--ink`, `--ink2`, `--ink3`; hairline `--line`.
 - Primary `--primary` (teal, the app's) for the main button, links and focus; `--accent` for tinted icons and highlighted text.
 - `--navy` for the closing, the footer and the «Sotto il cofano» panel, with `--on-navy`/`--on-navy2` text.
-- `--sun` (brand yellow) only as a small mark: the «=» badge and the dot before a stated limit. Never as a surface.
+- `--sun` (brand yellow) for the main button (`.btn.sun`: «Inizia gratis» in the bar, the opening, the closing and the phone bar) and as a small mark (the «=» badge, the yellow kicker on navy heads). Never as a large surface. In the app the same yellow is the `sun` button variant, the active nav marker and the sign-in main button.
 - `--a-pos`/`--a-neg` only beside real figures (gain, debts).
 - Radii: `--r-sm` 8, `--r` 11 (controls), `--r-card` 16, `--r-lg` 20 (large panels).
-- Faces: Space Grotesk (`--f-h`) for titles and figures, Hanken Grotesk (`--f-b`) for text, Geist Mono only for code.
+- Faces: Sofia Sans Extra Condensed (`--f-d`, weight 300–400) for the big titles (home h1 and h2, panel and place hooks, content-page h1, closing, footer wordmark); Space Grotesk (`--f-h`) for figures and small titles; Hanken Grotesk (`--f-b`) for text; Geist Mono (`--f-m`) for code and for the `.idx` labels in spaced capitals (only the four places: «01 · Banca»).
 
 ## Type scale
 
-- h1 (home) `clamp(36px, 4.8vw, 62px)`, weight 600, tracking −0.035em, line-height 1.02.
-- Section h2 `clamp(28px, 3.4vw, 44px)` (26–32 on phones), tracking −0.03em; one-line `.intro` 17 px in `--ink2`, max 56ch.
+- h1 (home) `clamp(60px, 8.4vw, 124px)` (16vw on phones) in `--f-d` weight 300, line-height 0.9.
+- Section h2 `clamp(44px, 5.6vw, 80px)` (42–56 on phones) in `--f-d` weight 300, no label or intro line above or below.
 - Row h3 20–24 px; body 16–17 px, line-height 1.5–1.65, max 58–66ch; technical `spec` lines 13.5 px in `--ink3`.
 - Figures: `.amt` tabular, tracking −0.04em, `small` at 0.5em muted for decimals and units.
 
@@ -44,5 +44,9 @@ The landing is the app's own interface language used to persuade: the same token
 ## Components
 
 - `components/home/`: `Hero`, `SumCard`, `Sources` (four rows), `Showcase` (tabs + snap track), `Trust` + «Sotto il cofano», `Faq`, `Closing` (shared with `ContentPage`), `MobileCta`.
-- `SiteNav`: light bar, links in a full-screen sheet under 1000 px, «Entra» and «Inizia gratis».
-- `ContentPage`: back link, kicker pill, h1, lead, body, tax notice, the navy `Closing`.
+- `SiteNav`: navy bar on every page (links in spaced capitals, yellow «Inizia gratis»), links in a full-screen sheet under 1000 px, «Entra» and «Inizia gratis».
+- `SiteFooter`: navy, the «BuddyBudget» wordmark across the whole width, then the links.
+- `CopyCommand`: terminal block with the self-hosting commands and a copy button (`self_host_command_copied`).
+- Calculators (`.tool`): card titles and content h2 in `--f-d`; the key answer (`.res .key b`) big in `--f-h` and ink, like the app's `SimulationResult`. Legal section titles in `--f-d` too.
+- `ContentPage`: a navy head (back link, yellow mono kicker, tall h1, lead), then body, tax notice, the navy `Closing`. `LegalPage` has the same navy head with the version line.
+- No filler lines: no trust lists, «free during the beta», schedules («ogni mattina»), section intros or captions that only restate the title. If a line doesn't change what a visitor understands, it goes.

@@ -25,10 +25,8 @@ export const metadata: Metadata = {
  */
 export default function Page() {
   return (
-    <ContentPage kicker="Sicurezza e privacy" current={CONTENT_PATHS.sicurezza} disclaimer={false} wide crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Sicurezza e privacy" }]} ctaTitle="Prova senza collegare niente." ctaText="Puoi iniziare con un conto manuale o con i dati d'esempio, e collegare la banca solo quando ti senti pronto." ctaLocation="sicurezza">
+    <ContentPage title={SECURITY_PAGE.h1} lead={SECURITY_PAGE.lead} kicker="Sicurezza e privacy" current={CONTENT_PATHS.sicurezza} disclaimer={false} wide crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Sicurezza e privacy" }]} ctaTitle="Prova senza collegare niente." ctaText="Puoi iniziare con un conto manuale o con i dati d'esempio, e collegare la banca solo quando ti senti pronto." ctaLocation="sicurezza">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: SECURITY_PAGE.h1, description: SECURITY_PAGE.description, inLanguage: "it-IT", url: `${SITE_URL}${CONTENT_PATHS.sicurezza}` }} />
-      <h1>{SECURITY_PAGE.h1}</h1>
-      <p className="lead">{SECURITY_PAGE.lead}</p>
 
       <section className="sp-sec" aria-labelledby="sp-flow">
         <h2 id="sp-flow">{FLOW.title}</h2>

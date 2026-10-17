@@ -2,46 +2,57 @@
 
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./site-nav.css";
-import { CONTENT_PATHS } from "@/content/seo-pages";
-import { APP_LINKS, SOURCE_URL } from "@/content/site";
+import { HOME_PATH, counterpart } from "@/content/locales";
+import { LOCALE_APP_LINKS, SOURCE_URL } from "@/content/site";
+import { UI, type NavLink } from "@/content/ui";
+import { otherLocale, type Locale } from "@/lib/i18n";
+import { useFieldUnderBar } from "@/lib/use-field-under-bar";
 import { Mark } from "./brand";
 import { CtaLink } from "./cta-link";
 import { GithubMark } from "./github-mark";
+import { LangSwitch } from "./lang-switch";
 import { SourceLink } from "./source-link";
 import { ThemeToggle } from "./theme-toggle";
+
+export type { NavLink } from "@/content/ui";
 
 /** Width (px) from which the links fit in the bar; below, they open from the menu button (aligned with `site-nav.css`). */
 const NAV_MOBILE_BREAKPOINT = 1000;
 
-/** Labels of the two buttons, the same on every page and in the phone bar of the home. */
-const SIGNUP_LABEL = "Inizia gratis";
-const LOGIN_LABEL = "Entra";
-
 export type NavTone = "light" | "navy";
 
-export interface NavLink {
-  href: string;
-  label: string;
+/** The Italian menu (kept as a named export for callers that pass their own list). */
+export const DEFAULT_NAV_LINKS: readonly NavLink[] = UI.it.nav.links;
+
+export interface SiteNavProps {
+  /** Menu entries; default: the menu of `locale`. */
+  links?: readonly NavLink[];
+  /** Path of the menu entry to highlight. */
+  current?: string;
+  tone?: NavTone;
+  locale?: Locale;
+  /** Target of the «IT / EN» switch; default: the counterpart of `current`, or the other language's home. */
+  alternate?: string;
 }
 
-/** One menu for the whole site: absolute paths, so it works the same from the home and from the inner pages. */
-export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
-  { href: CONTENT_PATHS.funzioni, label: "Funzioni" },
-  { href: CONTENT_PATHS.schermate, label: "Schermate" },
-  { href: CONTENT_PATHS.strumenti, label: "Calcolatori" },
-  { href: CONTENT_PATHS.sicurezza, label: "Sicurezza" },
-];
-
 /**
- * Top bar, the same on every page and like the app's top bar: light, a rule below, it scrolls away with the page.
- * On the phone the links live in a full-screen sheet with big rows and the two buttons. With the public repository
- * it also shows «Codice aperto». `current` highlights the entry of the open page. `tone` picks the ground: navy
- * (default, every page opens on navy) or light.
+ * Top bar, the same on every page: it stays at the top and takes the colours of the field under it (taste-skill
+ * «Colour by chapter»: navy on the opening, yellow on the tax section, light on the rest), with a 300 ms change.
+ * On the phone the links live in a full-screen sheet with big rows, the two buttons and the language switch. With
+ * the public repository it also shows the open-source link. `current` highlights the entry of the open page. `tone`
+ * is the field before the page is measured (every page opens on navy). Texts come from `UI[locale]`.
  */
-export function SiteNav({ links = DEFAULT_NAV_LINKS, current, tone = "navy" }: { links?: readonly NavLink[]; current?: string; tone?: NavTone }) {
+export function SiteNav({ links, current, tone = "navy", locale = "it", alternate }: SiteNavProps) {
   const [open, setOpen] = useState(false);
+  const bar = useRef<HTMLElement>(null);
+  const field = useFieldUnderBar(bar, tone === "navy" ? "navy" : "light");
+  const t = UI[locale];
+  const items = links ?? t.nav.links;
+  const app = LOCALE_APP_LINKS[locale];
+  const other = otherLocale(locale);
+  const switchHref = alternate ?? (current ? counterpart(current, other) : HOME_PATH[other]);
 
   // Phone menu: closes with Esc and when the window grows wide; while open the page behind does not scroll.
   useEffect(() => {
@@ -63,45 +74,50 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS, current, tone = "navy" }: {
     SOURCE_URL ? (
       <SourceLink className="gh" href={SOURCE_URL} location={location}>
         <GithubMark />
-        Codice aperto
+        {t.nav.source}
       </SourceLink>
     ) : null;
 
   return (
-    <header className={`nav${tone === "navy" ? " navy" : ""}${open ? " open" : ""}`}>
+    <header ref={bar} className={`nav${open ? " open" : ""}`} data-on={open ? "navy" : field}>
       <div className="wrap">
-        <Link className="brand" href="/" aria-label="BuddyBudget, home">
+        <Link className="brand" href={HOME_PATH[locale]} aria-label={t.nav.home}>
           <Mark />
           BuddyBudget
         </Link>
-        <nav className="links" aria-label="Sezioni">
-          {links.map((l) => (
+        <nav className="links" aria-label={t.nav.sections}>
+          {items.map((l) => (
             <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined}>{l.label}</Link>
           ))}
           {sourceLink("sezione")}
         </nav>
         <div className="nr">
-          <ThemeToggle />
-          <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">{LOGIN_LABEL}</CtaLink>
-          <CtaLink className="btn main sun" href={APP_LINKS.signup} location="nav" target="signup">{SIGNUP_LABEL}</CtaLink>
-          <button type="button" className="menu-btn" aria-expanded={open} aria-controls="nav-menu" aria-label={open ? "Chiudi il menu" : "Apri il menu"} onClick={() => setOpen((v) => !v)}>
+          <LangSwitch className="nav-lang" locale={locale} href={switchHref} location="nav" label={t.language} />
+          <ThemeToggle label={t.themeToggle} />
+          <CtaLink className="btn line" href={app.login} location="nav" target="login" lang={locale}>{t.nav.login}</CtaLink>
+          <CtaLink className="btn sun" href={app.signup} location="nav" target="signup" lang={locale}>{t.nav.signup}</CtaLink>
+          <button type="button" className="menu-btn" aria-expanded={open} aria-controls="nav-menu" aria-label={open ? t.nav.menuClose : t.nav.menuOpen} onClick={() => setOpen((v) => !v)}>
             {open ? <X size={20} strokeWidth={1.75} aria-hidden="true" /> : <Menu size={20} strokeWidth={1.75} aria-hidden="true" />}
           </button>
         </div>
       </div>
-      <nav id="nav-menu" className="menu" aria-label="Sezioni" hidden={!open}>
+      <nav id="nav-menu" className="menu" aria-label={t.nav.sections} hidden={!open}>
         <div className="wrap">
-          {links.map((l) => (
+          {items.map((l) => (
             <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined} onClick={() => setOpen(false)}>{l.label}</Link>
           ))}
           {sourceLink("sezione")}
           <div className="menu-acts">
-            <CtaLink className="btn main sun" href={APP_LINKS.signup} location="nav" target="signup" arrow>{SIGNUP_LABEL}</CtaLink>
-            <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">{LOGIN_LABEL}</CtaLink>
+            <CtaLink className="btn sun" href={app.signup} location="nav" target="signup" lang={locale} arrow>{t.nav.signup}</CtaLink>
+            <CtaLink className="btn line" href={app.login} location="nav" target="login" lang={locale}>{t.nav.login}</CtaLink>
           </div>
           <div className="menu-foot">
-            <span>Tema chiaro o scuro</span>
-            <ThemeToggle />
+            <span>{t.language}</span>
+            <LangSwitch locale={locale} href={switchHref} location="menu" label={t.language} />
+          </div>
+          <div className="menu-foot">
+            <span>{t.nav.theme}</span>
+            <ThemeToggle label={t.themeToggle} />
           </div>
         </div>
       </nav>

@@ -15,7 +15,7 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/componen
 import { FormDialogContent, LoadError } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import type { Category } from "@/lib/db/schema/categories";
-import { formatShortDate } from "@/lib/format";
+import { localizedFormats } from "@/lib/localization/format";
 import type { RecategorizePreviewGroup } from "@/lib/categorization/recategorize-plan";
 import { useRecategorizePreviewQuery } from "@/lib/queries/categorization";
 import { LogoCredit } from "@/components/domain/shared";
@@ -44,7 +44,8 @@ function checkedByDefault(group: RecategorizePreviewGroup): boolean {
 }
 
 function RecategorizeBody({ categories, currency, onDone }: { categories: Category[]; currency: string; onDone: () => void }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
+  const { formatShortDate } = localizedFormats(locale);
   // Scelte dell'utente sopra il default di ogni gruppo.
   const [choices, setChoices] = React.useState<ReadonlyMap<string, boolean>>(new Map());
   const [logosShown, setLogosShown] = React.useState(false);
@@ -103,7 +104,7 @@ function RecategorizeBody({ categories, currency, onDone }: { categories: Catego
           ))}
         </div>
       ) : groups.length === 0 ? (
-        <div className="flex flex-col items-center gap-1 rounded-2xl border border-border p-6 text-center">
+        <div className="flex flex-col items-center gap-1 rounded-2xl bg-muted/50 p-6 text-center">
           <p className="font-heading text-base font-medium text-foreground">{tr("Niente da cambiare")}</p>
           <p className="max-w-sm text-sm text-muted-foreground">{tr("Le categorie messe dall'app sono già quelle che sceglierebbero oggi le tue regole.")}</p>
         </div>
@@ -129,7 +130,7 @@ function RecategorizeBody({ categories, currency, onDone }: { categories: Catego
         </div>
       )}
 
-      <div className="sticky bottom-0 -mx-6 mt-auto flex items-center justify-end gap-3 border-t border-border bg-popover/95 px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur">
+      <div className="sticky bottom-0 -mx-6 mt-auto flex items-center justify-end gap-3 border-t border-border bg-popover px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {data && groups.length === 0 ? (
           <Button type="button" variant="outline" onClick={onDone} className="h-10 px-5 sm:h-9">{tr("Chiudi")}</Button>
         ) : (

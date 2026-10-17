@@ -101,7 +101,7 @@ export function DebtTransactionPicker({ dueDate, expectedAmount, value, onChange
         onSearchTextChange={setSearchText}
       />
       {selected ? (
-        <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-sm">
+        <div className="flex items-center justify-between gap-2 rounded-md bg-primary/10 px-2 py-1 text-sm">
           <span className="truncate">{tr("Collegata:")}{" "}{selected.description} {"·"}{formatCurrency(Math.abs(Number(selected.amount)), currency)}
           </span>
           <Button type="button" variant="ghost" size="icon-sm" aria-label={tr("Scollega la transazione")} onClick={() => onChange(null)}>

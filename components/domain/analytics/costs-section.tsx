@@ -22,13 +22,13 @@ export interface CostsSectionProps extends QuestionSectionData {
 }
 
 export function CostsSection({ question, base, assumptions, plan, saving, error, onSaveTer }: CostsSectionProps) {
-  const { money } = localizedAnalyticsFormats(useLocalization().language);
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr, productCountry } = useLocalization();
+  const { t: tr, productCountry, language } = useLocalization();
   const { currency } = base;
   const summary = summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })), productCountry);
   const drag = summary.annualPct !== null ? costDrag(summary.totalValue, assumptions.expectedReturn, summary.annualPct, COST_DRAG_YEARS) : [];
-  const sentences = costsSentences(summary, drag.at(-1)?.lost ?? null, COST_DRAG_YEARS, plan.liquidation, currency);
+  const sentences = costsSentences(summary, drag.at(-1)?.lost ?? null, COST_DRAG_YEARS, plan.liquidation, currency, language);
   return (
     <QuestionSection
       question={question}
@@ -45,9 +45,9 @@ export function CostsSection({ question, base, assumptions, plan, saving, error,
       </div>
       {summary.totalValue > 0 ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Metric term="ter" label={tr("Costo annuo")} value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? "{0} del portafoglio" : undefined} />
+          <Metric term="ter" label={tr("Costo annuo")} value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? tr("{0} del portafoglio", {0: pct(summary.annualPct, 2)}) : undefined} />
           <Metric term="erosione" label={tr("Persi in {0} anni", {0: COST_DRAG_YEARS})} value={drag.length ? money(drag.at(-1)!.lost, currency) : "—"} tone="neg" sub="a parità di rendimento" />
-          <Metric term="imposte-latenti" label={tr("Imposte se vendessi tutto")} value={money(plan.liquidation.latentTax, currency)} sub={plan.liquidation.taxRatio !== null ? "{0} del valore" : undefined} />
+          <Metric term="imposte-latenti" label={tr("Imposte se vendessi tutto")} value={money(plan.liquidation.latentTax, currency)} sub={plan.liquidation.taxRatio !== null ? tr("{0} del valore", {0: pct(plan.liquidation.taxRatio)}) : undefined} />
         </div>
       ) : null}
     </QuestionSection>

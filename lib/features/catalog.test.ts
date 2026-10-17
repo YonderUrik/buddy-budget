@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NAV_ITEMS } from "@/components/layout/sidebar";
-import { FEATURES, FEATURE_AREAS, featureCounts, featuresByArea, featuresByStatus } from "./catalog";
+import { FEATURES, FEATURE_AREAS, FEATURE_AREA_LABELS_EN, featureCounts, featuresByArea, featuresByStatus } from "./catalog";
 
 describe("catalogo funzionalità", () => {
   it("ha id unici", () => {
@@ -18,6 +18,19 @@ describe("catalogo funzionalità", () => {
     const { total, available } = featureCounts();
     expect(total).toBe(FEATURES.length);
     expect(available).toBe(FEATURES.length - featuresByStatus("soon").length);
+  });
+
+  it("every entry has an English name and description, unique by name", () => {
+    for (const feature of FEATURES) {
+      expect(feature.en?.name, `${feature.id} has no English name`).toBeTruthy();
+      expect(feature.en?.description, `${feature.id} has no English description`).toBeTruthy();
+    }
+    const names = FEATURES.map((feature) => feature.en?.name);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it("every area has an English label", () => {
+    for (const area of FEATURE_AREAS) expect(FEATURE_AREA_LABELS_EN[area]).toBeTruthy();
   });
 
   it("ogni voce di sidebar ha la sua scheda, con lo stesso stato", () => {

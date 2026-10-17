@@ -60,7 +60,7 @@ export interface MobileMoreMenuProps {
 const ROW_CLASS =
   "flex min-h-14 w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors active:bg-muted hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-const SECTION_TITLE_CLASS = "px-3 pb-1 pt-5 text-xs font-semibold uppercase tracking-wider text-text-3";
+const SECTION_TITLE_CLASS = "px-3 pb-1 pt-5 text-sm font-medium text-text-3";
 
 /** Chiude il menu con il tasto indietro del telefono: all'apertura aggiunge una voce di cronologia e la consuma. */
 function useBackToClose(open: boolean, onClose: () => void): () => void {

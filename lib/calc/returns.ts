@@ -325,6 +325,8 @@ export function computePortfolioReturns(params: {
   /** Anteprima fino a una data del grafico, inclusa la base a rendimento zero. */
   asOf?: string;
   dailySeries?: boolean;
+  /** Locale of the X-axis labels. */
+  locale?: string;
 }): PortfolioReturns | null {
   const { transactions, priceIndex, fx, userCurrency, period, today, benchmark, inflation } = params;
   const bounds = resolvePerformanceRange(transactions, period, today, params.range);
@@ -375,7 +377,8 @@ export function computePortfolioReturns(params: {
       portfolio: p.cumulative,
       benchmark: p.date === baseKey ? (comparison ? 0 : null) : (benchmarkByDate.get(p.date) ?? null),
     })),
-    params.dailySeries || params.range ? "3mesi" : period
+    params.dailySeries || params.range ? "3mesi" : period,
+    params.locale
   );
 
   return {

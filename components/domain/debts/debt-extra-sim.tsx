@@ -3,10 +3,11 @@ import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
-/** "Versare di più ogni mese" su un finanziamento: uno slider e, subito, quanto prima finisci e quanti interessi risparmi. */
+/** "Pay more every month" on a loan: a slider and, right away, how much sooner it ends and how much interest is saved. */
 
 import * as React from "react";
 import { Slider } from "@/components/ui/slider";
+import { SimulationResult } from "@/components/domain/shared";
 import { simulatePayoff } from "@/lib/calc/debt-simulator";
 import { todayIso } from "@/lib/debts/dates";
 import type { DebtView } from "@/lib/debts/view";
@@ -50,8 +51,11 @@ export function DebtExtraSim({ debt, currency }: DebtExtraSimProps) {
         <Slider value={[extra]} min={0} max={EXTRA_MAX} step={EXTRA_STEP} onValueChange={(v) => setExtra(Array.isArray(v) ? v[0] : (v as number))} aria-labelledby={id} />
       </div>
       {extra > 0 && monthsSaved > 0 ? (
-        <p className="text-sm text-foreground">{tr("Finisci")}{" "}<strong className="font-medium">{formatDuration(monthsSaved)}{" "}{tr("prima")}</strong> {"("}{formatMonthYear(result.faster.endDate)}{" "}{tr("invece di")}{" "}{formatMonthYear(result.base.endDate)}{tr(") e risparmi")}{" "}
-          <strong className="font-medium tabular-nums text-pos">{money(saved)}</strong>{" "}{tr("di interessi.")}</p>
+        <SimulationResult
+          label={tr("Finisci prima di")}
+          value={formatDuration(monthsSaved)}
+          caption={tr("{0} invece di {1}, e risparmi {2} di interessi.", {0: formatMonthYear(result.faster.endDate), 1: formatMonthYear(result.base.endDate), 2: money(saved)})}
+        />
       ) : (
         <p className="text-sm text-muted-foreground">{tr("Muovi lo slider per vedere quanto anticipi la fine e quanto risparmi.")}</p>
       )}

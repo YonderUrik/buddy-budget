@@ -1,189 +1,198 @@
 /*
- * «Un numero solo» home (2026-10-17).
- * THESIS: one number. The page is the Panoramica unrolled: the sum first, the four places it comes from, what the
- * number tells you, why to trust it. It refuses the feature grid with a testimonial wall and the pinned scrolling story.
- * OWN-WORLD: the app's tokens (navy, teal primary, Space Grotesk figures with muted decimals), ledger rows split by
- * hairlines and closed by a sum rule, real screenshots in window and phone frames. No gradients, no icon-card grid.
- * STORY: understand «all my money in one number», believe it (real screens, verified facts, open code), tap «Inizia gratis».
- * FIRST VIEWPORT: on the navy ground, the title in the tall display face, one sentence and the button
- * on the left, the sum card on the right; the big Panoramica follows, half on the navy. On the phone: title, button,
- * card, then the window. Section titles share the display face; the brand yellow marks the sign-up button.
- * FORM: direction A, pinned by Daniele on 2026-10-17; the navy ground, display face and labels after Hermes Agent
- * (same day). Theme tokens only.
+ * Home (2026-10-17, taste-skill «Type and nothing else»).
+ * THESIS: one number. The opening is only words on the navy field; pictures arrive later, large and few.
+ * SET PIECES, each different: the statement (full width), the four places as a live list at display size (left),
+ * what the number tells you (tabs and a real screen), two giant figures on the yellow field (the net before selling),
+ * trust as a table without lines, questions indented under a wide heading, the idea again on navy.
+ * COLOUR: paper and ink, the navy opening and closing inverted, one section on the brand yellow; nothing but the
+ * field change separates sections. Two faces, theme tokens only.
  */
 
-/* ---------- opening: the navy ground (after Hermes Agent), the title in the tall display face ---------- */
-.hero { padding-block: 72px 240px; background: var(--navy); color: var(--on-navy); }
-.hero .wrap { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 48px 64px; align-items: end; }
-.hero h1 { font: 300 clamp(60px, 8.4vw, 124px) / 0.9 var(--f-d); letter-spacing: -0.01em; color: var(--on-navy); max-width: 9.5em; }
-.hero .lede { margin-top: 28px; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.5; color: var(--on-navy2); max-width: 38ch; }
-.hero .cta { margin-top: 32px; align-items: center; }
-.hero .btn { height: 50px; padding: 0 22px; font-size: 16px; }
-/* «Come funziona»: a quiet link with an arrow that points down the page */
-.hero .how { display: inline-flex; align-items: center; gap: 6px; height: 50px; padding: 0 8px; font: 600 15px var(--f-b); color: var(--on-navy); text-decoration: none; border-radius: var(--r); }
-.hero .how svg { width: 16px; height: 16px; transition: transform 0.3s var(--ease); }
-.hero .how:hover svg { transform: translateY(3px); }
-/* the sum card keeps the page ink: it is a piece of the app laid on the navy */
-.hero .sum { margin-bottom: 8px; color: var(--ink); }
+/* ---------- opening: the statement on the navy field, a sentence bottom-left, the buttons bottom-right ---------- */
+.hero { min-height: calc(100svh - 64px); display: flex; padding-block: 6vh 56px; }
+.hero .wrap { width: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 64px; }
+.hero h1 { font: 300 clamp(68px, 12.4vw, 196px) / 0.84 var(--f-d); letter-spacing: -0.015em; color: var(--on-navy); }
+/* masked headline: each line rises out of its own slot on first paint */
+.hero h1 > span { display: block; overflow: clip; padding-bottom: 0.06em; }
+.hero h1 > span:last-child { color: var(--sun); }
+.js-motion .hero h1 > span > span { display: block; animation: line-up 0.8s var(--ease) both; }
+.js-motion .hero h1 > span:last-child > span { animation-delay: 90ms; }
+@keyframes line-up { from { translate: 0 105%; } to { translate: 0 0; } }
+.hero-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px 64px; flex-wrap: wrap; }
+.hero .lede { font-size: clamp(19px, 1.7vw, 23px); line-height: 1.45; color: var(--on-navy2); max-width: 34ch; }
+.hero .cta { gap: 12px; }
+.hero .btn { height: 56px; padding: 0 26px; font-size: 17px; }
 
-/* the Panoramica right after the opening: big, full width, its top half still on the navy */
-.hero-shot { position: relative; margin-top: -192px; }
-.hero-shot .win { box-shadow: 0 0 0 1px color-mix(in srgb, var(--on-navy) 14%, transparent), 0 50px 100px -40px var(--shadow-win); }
+/* the first picture: the real Panoramica, big, on its own band; it drifts slightly as the page scrolls */
+.hero-shot { padding-block: 72px 0; overflow: clip; }
+.hero-shot .win { margin-bottom: -6%; }
+.hero-shot .hs-phone { display: none; }
+@supports (animation-timeline: view()) {
+  .js-motion .drift { animation: drift linear both; animation-timeline: view(); animation-range: entry 0% exit 60%; }
+  @keyframes drift { from { translate: 0 64px; scale: 0.96; } to { translate: 0 -24px; scale: 1; } }
+}
 
-/* ---------- app window (hero and «cosa ti dice»): real screenshot, cropped from the top ---------- */
-.win { margin: 0; border-radius: var(--r-card); overflow: hidden; background: var(--surface); box-shadow: 0 0 0 1px var(--line), 0 40px 80px -30px var(--shadow-win), 0 16px 32px -20px var(--shadow-win2); }
-.win-bar { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; background: var(--head); border-bottom: 1px solid var(--line); }
-.win-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); display: block; }
-.win-bar span { margin: 0 auto; transform: translateX(-20px); font: 500 11px var(--f-b); color: var(--ink3); background: var(--surface); padding: 2px 12px; border-radius: 99px; white-space: nowrap; }
+/* ---------- app screenshot, cropped from the top; no frame, no shadow ---------- */
+.win { margin: 0; border-radius: 20px; overflow: hidden; background: var(--a-bg); }
 .win-img { position: relative; background: var(--a-bg); }
 /* no `display` here: `app-shot.css` hides the screenshot of the other theme with it */
 .win-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 
-/* ---------- the sum card: the thesis in one glance ---------- */
-.sum { padding: 20px 22px 16px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); box-shadow: 0 24px 50px -24px var(--shadow-win); }
-.sum-t { font: 500 13px var(--f-b); color: var(--ink3); }
-.sum-total { margin-top: 4px; font-size: clamp(34px, 3vw, 42px); }
-/* Panoramica-style figure: big integer, small muted decimals */
-.amt { font-family: var(--f-h); font-weight: 600; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
-.amt small { font-size: 0.5em; font-weight: 500; color: var(--ink3); letter-spacing: -0.01em; }
+/* Panoramica-style figure: big integer, small muted decimals, in the display face */
+.amt { font-family: var(--f-d); font-weight: 400; letter-spacing: -0.01em; line-height: 0.9; }
+.amt small { font-size: 0.5em; color: color-mix(in srgb, currentColor 55%, transparent); }
 .amt.pos { color: var(--a-pos); }
 .amt.neg { color: var(--a-neg); }
-.sum-rows { margin: 16px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
-.sum-rows li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
-.sum-rows li small { color: var(--ink3); font-size: 13px; }
-.sum-rows li b { font-family: var(--f-h); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.sum-rows li.neg b { color: var(--a-neg); }
-/* the sum rule, like a handwritten total */
-.sum-rows li:last-child { border-bottom: 2px solid var(--ink); }
-.sum-cap { margin-top: 10px; font-size: 12.5px; color: var(--ink3); line-height: 1.4; }
-/* with motion the rows and the total come in one at a time when the card is in view; at rest, and without motion, everything is visible */
-.js-motion .sum:not(.on) .sum-total, .js-motion .sum:not(.on) .sum-rows li { opacity: 0; }
-.js-motion .sum-rows li { transition: opacity 0.45s var(--ease), transform 0.45s var(--ease); }
-.js-motion .sum.on .sum-rows li.hid { opacity: 0; transform: translateY(6px); }
 
 /* ---------- sections ---------- */
-.sec { padding-block: 88px; border-top: 1px solid var(--line); }
-.sec h2 { font: 300 clamp(44px, 5.6vw, 80px) / 0.95 var(--f-d); letter-spacing: -0.005em; max-width: 14em; }
-.sec .intro { margin-top: 18px; color: var(--ink2); font-size: 17px; max-width: 56ch; }
-.sec .more { display: inline-block; margin-top: 18px; font: 600 15px var(--f-b); color: var(--primary); text-decoration: none; }
-.sec .more::after { content: " →"; }
-.sec .more:hover { text-decoration: underline; }
+.sec { padding-block: 128px; }
+.sec h2 { font: 300 clamp(52px, 7vw, 112px) / 0.9 var(--f-d); letter-spacing: -0.01em; max-width: 13em; }
+.more { display: inline-block; margin-top: 24px; font: 600 16px var(--f-b); color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); transition: text-decoration-color 0.18s var(--ease); }
+.more:hover { text-decoration-color: currentColor; }
 
-/* ---------- «da quattro posti»: four ledger rows, then the sum line ---------- */
-.places { margin: 44px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; }
-.place { padding: 28px 0 32px; border-top: 1px solid var(--line); }
-.place .place-n { margin-bottom: 12px; }
-.place h3 { font: 400 clamp(30px, 2.8vw, 40px) / 1 var(--f-d); letter-spacing: 0; }
-.place p { margin-top: 10px; color: var(--ink2); font-size: 16px; line-height: 1.55; max-width: 52ch; }
-.place .spec { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 13.5px; color: var(--ink3); line-height: 1.5; max-width: 70ch; }
-.place-art { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
-.flag { width: 28px; height: 21px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent); }
+/* ---------- the four places as a live list: names and amounts at display size, the amounts are fields ---------- */
+.sum-list { margin-top: 64px; }
+.sum-list ul { margin: 0; padding: 0; list-style: none; }
+.sum-line { display: flex; justify-content: space-between; align-items: baseline; gap: 16px 32px; flex-wrap: wrap; padding-block: 10px; }
+.sum-name { border: 0; padding: 0; background: none; cursor: pointer; text-align: left; font: 300 clamp(44px, 6.4vw, 104px) / 0.95 var(--f-d); letter-spacing: -0.01em; color: inherit; transition: color 0.18s var(--ease), translate 0.25s var(--ease); }
+.sum-name::after { content: " +"; color: var(--ink3); font-weight: 200; }
+.sum-row.open .sum-name::after { content: " −"; }
+.sum-name:hover { color: var(--accent); translate: 6px 0; }
+.sum-amt { display: inline-flex; align-items: baseline; gap: 0.08em; font: 400 clamp(40px, 5.6vw, 92px) / 1 var(--f-d); border-radius: 16px; padding: 0.04em 0.22em; background: color-mix(in srgb, var(--ink) 5%, transparent); cursor: text; transition: background-color 0.18s var(--ease), color 0.18s var(--ease); }
+.sum-amt:hover { background: color-mix(in srgb, var(--ink) 9%, transparent); }
+.sum-amt:focus-within { background: var(--surface); outline: 3px solid var(--primary); }
+.sum-amt input { border: 0; padding: 0; margin: 0; background: transparent; color: inherit; font: inherit; text-align: right; width: auto; field-sizing: content; min-width: 2ch; outline: none; }
+.sum-row.neg .sum-amt { color: var(--a-neg); }
+.sum-detail { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 12px 48px; padding: 8px 0 32px; max-width: 1100px; }
+.sum-detail[hidden] { display: none; }
+.js-motion .sum-detail { animation: open-in 0.3s var(--ease) both; }
+@keyframes open-in { from { opacity: 0; translate: 0 -8px; } to { opacity: 1; translate: 0 0; } }
+.sum-detail h3 { grid-column: 1; grid-row: 1 / 4; font: 600 22px / 1.3 var(--f-b); letter-spacing: -0.01em; }
+.sum-detail p { color: var(--ink); font-size: 17px; line-height: 1.55; max-width: 60ch; }
+.sum-detail .spec { font-size: 15px; color: var(--ink2); }
+.place-art { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+.flag { width: 28px; height: 21px; border-radius: 3px; object-fit: cover; display: block; }
 /* broker logos on a light tile even in the dark theme: the marks are drawn for light */
-.tile { display: inline-grid; grid-auto-flow: column; align-items: center; gap: 6px; height: 40px; padding: 0 12px; background: var(--logo-bg); border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--navy); font: 700 13px var(--f-b); white-space: nowrap; }
+.tile { display: inline-grid; grid-auto-flow: column; align-items: center; gap: 6px; height: 40px; padding: 0 14px; background: var(--logo-bg); border-radius: 999px; color: var(--navy); font: 700 13px var(--f-b); white-space: nowrap; }
 .tile img { height: 16px; width: auto; display: block; }
 .tile.ib img { height: 20px; }
 .tile.fin img { height: 18px; }
 .tile.tr img { height: 11px; }
 .tile.yh img { height: 16px; }
-.tile.csv { background: transparent; border-style: dashed; border-color: var(--ink3); color: var(--ink2); font-weight: 600; }
+.tile.csv { background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink2); font-weight: 600; }
+/* the sum bar: thick, like a handwritten total */
+.sum-total { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 32px; margin-top: 24px; padding-top: 20px; border-top: 6px solid var(--ink); }
+.sum-total-t { font: 600 clamp(18px, 1.6vw, 22px) var(--f-b); }
+.sum-total-v { font: 400 clamp(72px, 10.4vw, 168px) / 0.88 var(--f-d); letter-spacing: -0.015em; }
+.sum-total-v small { font-size: 0.42em; color: var(--ink3); }
+.sum-foot { margin-top: 20px; color: var(--ink); font-size: 16px; max-width: 70ch; }
+.sum-foot .text-btn { color: var(--ink); }
 
-/* ---------- «cosa ti dice»: tabs like the app's segmented control, panels in a swipeable track ---------- */
-.tabs { display: flex; gap: 4px; margin-top: 32px; padding: 4px; border-radius: var(--r); background: var(--head); width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+/* ---------- «cosa ti dice»: tabs set as plain words, the real screen beside the figure ---------- */
+.tabs { display: flex; gap: 8px; margin-top: 48px; overflow-x: auto; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { flex: none; border: 0; background: transparent; color: var(--ink2); font: 600 15px var(--f-b); padding: 0 16px; min-height: 42px; border-radius: var(--r-sm); cursor: pointer; transition: color 0.2s, background 0.2s; }
-.tab:hover { color: var(--ink); }
-.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px var(--shadow-win2); }
-.track { position: relative; display: flex; gap: 24px; margin-top: 28px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.tab { flex: none; border: 0; background: transparent; color: var(--ink2); font: 600 18px var(--f-b); padding: 0 18px; min-height: 48px; border-radius: 999px; cursor: pointer; transition: color 0.18s var(--ease), background-color 0.18s var(--ease); }
+.tab:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg-alt); }
+.track { position: relative; display: flex; gap: 32px; margin-top: 40px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .track::-webkit-scrollbar { display: none; }
-.panel { flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px; align-items: center; }
-.panel h3 { font: 400 clamp(34px, 3.4vw, 48px) / 0.98 var(--f-d); }
-.panel .fig { margin-top: 22px; font-size: clamp(40px, 4vw, 54px); }
-.panel .fig-cap { margin-top: 8px; font-size: 14.5px; color: var(--ink3); line-height: 1.45; max-width: 40ch; }
-.panel p { margin-top: 16px; color: var(--ink2); font-size: 16.5px; line-height: 1.55; max-width: 44ch; }
-.panel .more { margin-top: 16px; }
-.panel .pf { display: none; }
-.show .all { margin-top: 28px; }
+.panel { flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 56px; align-items: center; }
+.panel h3 { font: 300 clamp(40px, 3.8vw, 60px) / 0.94 var(--f-d); }
+.panel .fig { margin-top: 28px; font-size: clamp(56px, 5.4vw, 88px); }
+.panel .fig-cap { margin-top: 10px; font-size: 15px; color: var(--ink2); line-height: 1.45; max-width: 40ch; }
+.panel p:not(.fig):not(.fig-cap) { margin-top: 20px; color: var(--ink); font-size: 17px; line-height: 1.55; max-width: 44ch; }
+.panel .ps { display: none; }
 
-/* ---------- «legge soltanto»: four facts, two limits ---------- */
-.facts { margin: 36px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 48px; border-top: 1px solid var(--line); }
-.facts li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 4px 14px; padding: 22px 0; border-bottom: 1px solid var(--line); align-items: start; }
-.facts .ic { grid-row: 1 / 4; width: 36px; height: 36px; border-radius: var(--r-sm); display: inline-grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--primary) 12%, transparent); }
-.facts h3 { font: 600 18px / 1.3 var(--f-h); letter-spacing: -0.015em; }
-.facts p { color: var(--ink2); font-size: 15.5px; line-height: 1.5; }
-.facts .src { font-size: 13.5px; }
-.facts .src a { color: var(--primary); font-weight: 600; text-decoration: none; }
-.facts .src a::after { content: " ↗"; font-weight: 400; }
-.facts .src a:hover { text-decoration: underline; }
-.limits { margin: 28px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 48px; }
-.limits h3 { font: 600 16px var(--f-h); display: flex; align-items: center; gap: 8px; }
-.limits h3::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); flex: none; }
-.limits p { margin-top: 4px; color: var(--ink2); font-size: 15px; line-height: 1.5; }
+/* ---------- the net before selling: two giant figures on the yellow field, a sentence under each ---------- */
+.tax { padding-block: 128px; }
+.tax-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 32px 64px; align-items: end; }
+.tax h2 { font: 300 clamp(52px, 7vw, 112px) / 0.9 var(--f-d); letter-spacing: -0.01em; }
+.tax-head p { font-size: 18px; line-height: 1.5; max-width: 40ch; }
+.tax-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 72px; }
+.tax-sp { margin: 0; }
+.tax-sp figcaption { margin-top: 16px; font: 600 18px / 1.4 var(--f-b); max-width: 30ch; }
+.tax-sp p { font: 300 clamp(80px, 13vw, 232px) / 0.8 var(--f-d); letter-spacing: -0.02em; white-space: nowrap; }
+.tax-sp p small { font-size: 0.4em; }
+.tax-sp + .tax-sp p { font-weight: 600; }
+.tax-more { margin-top: 56px; }
 
-/* ---------- «sotto il cofano»: the navy panel for whoever wants to read or run the code ---------- */
-.hood { margin-top: 64px; padding: 40px 44px; border-radius: var(--r-lg); background: var(--navy); color: var(--on-navy); display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 40px; align-items: center; }
-.hood .ghm { width: 44px; height: 44px; display: block; margin-bottom: 18px; }
-.hood h2 { color: var(--on-navy); font-size: clamp(38px, 3.8vw, 56px); max-width: 12em; }
-.hood > div > p { margin-top: 14px; color: var(--on-navy2); font-size: 16px; line-height: 1.55; max-width: 48ch; }
-.hood .cta { margin-top: 24px; }
-.hood .cta svg { width: 16px; height: 16px; }
-.hood .cta .btn:hover svg { transform: none; }
-.hood .btn.ghost { background: var(--on-navy); color: var(--navy); border-color: var(--on-navy); }
-.hood .btn.ghost:hover { background: color-mix(in srgb, var(--on-navy) 88%, var(--navy)); }
-.hood .btn.plain { background: transparent; color: var(--on-navy); border-color: color-mix(in srgb, var(--on-navy) 30%, transparent); }
-.hood .btn.plain:hover { border-color: var(--on-navy); }
-.hood .who { margin-top: 18px; font-size: 14.5px; color: var(--on-navy2); line-height: 1.5; }
-.hood .who a { color: var(--on-navy); font-weight: 600; text-decoration: none; }
-.hood .who a:hover { text-decoration: underline; }
-/* the self-hosting commands, to copy: a terminal block like Hermes Agent's install box */
-.cmd { margin-top: 24px; border: 1px solid color-mix(in srgb, var(--on-navy) 16%, transparent); border-radius: var(--r); overflow: hidden; }
-.cmd-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 6px 0 14px; min-height: 40px; border-bottom: 1px solid color-mix(in srgb, var(--on-navy) 16%, transparent); font: 500 11.5px var(--f-m); letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-navy2); }
-.cmd-bar button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--on-navy); font: 500 12px var(--f-m); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
-.cmd-bar button:hover { background: color-mix(in srgb, var(--on-navy) 10%, transparent); }
-.cmd pre { margin: 0; padding: 14px; overflow-x: auto; font: 13px / 1.7 var(--f-m); color: var(--on-navy); }
-.hood dl { margin: 0; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 0 14px; font-size: 14.5px; border-top: 1px solid color-mix(in srgb, var(--on-navy) 14%, transparent); }
-.hood dt, .hood dd { padding: 10px 0; border-bottom: 1px solid color-mix(in srgb, var(--on-navy) 14%, transparent); }
-.hood dt { color: var(--on-navy2); }
-.hood dd { margin: 0; color: var(--on-navy); font-weight: 500; overflow-wrap: anywhere; }
-.hood dd a { color: var(--on-navy); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--on-navy) 40%, transparent); text-underline-offset: 3px; }
-.hood dd a:hover { text-decoration-color: var(--on-navy); }
+/* ---------- trust: a heading on two steps, then one table without lines, rows on alternate tones ---------- */
+.trust h2.stepped > span { display: block; }
+.trust h2.stepped > span + span { padding-left: 1.4em; }
+.tt { margin-top: 64px; overflow-x: auto; }
+.tt table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 16px; line-height: 1.5; }
+.tt th, .tt td { text-align: left; vertical-align: top; padding: 18px 20px; }
+.tt tbody tr:nth-child(odd):not(.tg-gap) > * { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.tt tbody tr > :first-child { border-radius: 14px 0 0 14px; }
+.tt tbody tr > :last-child { border-radius: 0 14px 14px 0; }
+.tt .tg-name { width: 14%; font-weight: 700; }
+.tt .tg-what { width: 24%; font-weight: 600; }
+.tt .tg-how { color: var(--ink); }
+.tt .tg-src { width: 14%; white-space: nowrap; }
+.tt .tg-src a { font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+.tt .tg-src a:hover { text-decoration-color: currentColor; }
+.tt .tg-gap td { padding: 0; height: 28px; background: none; }
+/* the code itself: the links to read it, the commands to run it */
+.code { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px 64px; align-items: start; margin-top: 128px; }
+.code h3 { font: 300 clamp(44px, 5vw, 80px) / 0.92 var(--f-d); }
+.code > div > p { margin-top: 18px; color: var(--ink); font-size: 17px; max-width: 46ch; }
+.code .cta { margin-top: 28px; }
+.code .cta svg { width: 18px; height: 18px; }
+.code .cta .btn:hover svg { transform: none; }
+.code .who { font-size: 15px; color: var(--ink2); }
+.code .who a { color: var(--ink); font-weight: 600; }
+/* the self-hosting commands, to copy: a navy block, the only boxed thing because it is code */
+.cmd { border-radius: 20px; background: var(--navy); color: var(--on-navy); overflow: hidden; }
+.cmd-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 12px 0 20px; font: 600 14px var(--f-b); color: var(--on-navy2); }
+.cmd-bar button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--on-navy) 10%, transparent); color: var(--on-navy); font: 600 14px var(--f-b); cursor: pointer; transition: background-color 0.18s var(--ease); }
+.cmd-bar button:hover { background: color-mix(in srgb, var(--on-navy) 18%, transparent); }
+.cmd pre { margin: 0; padding: 16px 20px 22px; overflow-x: auto; font: 14px / 1.75 var(--f-m); color: var(--on-navy); }
 
-/* ---------- «prima di iscriverti»: the questions open one at a time (`faq.css`) ---------- */
-.faq .faq-list { margin-top: 32px; }
+/* ---------- «prima di iscriverti»: the wide heading, the questions indented under it (`faq.css`) ---------- */
+.faq .faq-list { margin-top: 56px; margin-left: clamp(0px, 25%, 320px); }
 
-/* ---------- phone: everything stacks, the window comes before the sum card, the panels peek and swipe ---------- */
+/* ---------- phone: everything stacks, the panels peek and swipe, the phone captures replace the desktop ones ---------- */
 @media (max-width: 1000px) {
-  .hero { padding-block: 40px 128px; }
-  .hero .wrap { grid-template-columns: 1fr; gap: 36px; }
-  .hero h1 { font-size: clamp(56px, 16vw, 96px); }
-  .hero-shot { margin-top: -96px; }
-  .sec { padding-block: 64px; }
-  .places { grid-template-columns: 1fr; }
-  .place { padding: 22px 0 26px; }
-  .track { gap: 14px; }
-  .panel { flex-basis: 86%; grid-template-columns: 1fr; gap: 20px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
+  .hero { min-height: calc(92svh - 64px); padding-block: 32px 40px; }
+  .hero h1 { font-size: clamp(64px, 19vw, 132px); }
+  .hero-foot { flex-direction: column; align-items: stretch; }
+  .hero .cta { display: grid; grid-template-columns: 1fr; }
+  .hero-shot { padding-top: 40px; }
+  .hero-shot .hs-desk { display: none; }
+  .hero-shot .hs-phone { display: block; margin: 0 auto -48px; --ps-h: min(78svh, 640px); }
+  .sec, .tax { padding-block: 88px; }
+  .sum-list { margin-top: 40px; }
+  .sum-detail { grid-template-columns: minmax(0, 1fr); }
+  .sum-detail h3 { grid-row: auto; }
+  .track { gap: 16px; }
+  .panel { flex-basis: 88%; grid-template-columns: 1fr; gap: 24px; }
   .panel .win { display: none; }
-  .panel .pf { display: block; margin: 0 auto; --pf-h: min(54vh, 460px); }
-  .facts, .limits { grid-template-columns: 1fr; }
-  .hood { grid-template-columns: minmax(0, 1fr); padding: 28px 22px; margin-top: 44px; gap: 28px; }
+  .panel .ps { display: block; --ps-h: min(60vh, 520px); }
+  .tax-head { grid-template-columns: 1fr; }
+  .tax-pair { grid-template-columns: 1fr; gap: 40px; margin-top: 48px; }
+  .tax-sp p { font-size: clamp(76px, 22vw, 150px); }
+  .faq .faq-list { margin-left: 0; }
+  .code { grid-template-columns: minmax(0, 1fr); margin-top: 88px; }
+  /* the table becomes one block per row */
+  .tt table, .tt tbody, .tt tr, .tt th, .tt td { display: block; width: auto; }
+  .tt tbody tr:not(.tg-gap) { padding: 16px 18px; border-radius: 14px; }
+  .tt tbody tr:nth-child(odd):not(.tg-gap) { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+  .tt tbody tr > * { background: none !important; padding: 0; border-radius: 0 !important; }
+  .tt tbody tr > * { width: auto !important; }
+  .tt .tg-name:has(.sr) { display: none; }
+  .tt .tg-name { margin-bottom: 10px; font-size: 14px; color: var(--ink3); }
+  .tt .tg-how { margin-top: 4px; }
+  .tt .tg-src:empty { display: none; }
+  .tt .tg-src { margin-top: 8px; }
+  .tt .tg-gap { height: 24px; }
 }
 @media (max-width: 600px) {
-  .hero .btn.main, .hero .how { height: 48px; }
-  .hero .cta { gap: 8px 4px; }
-  .sec { padding-block: 52px; }
-  .sec h2 { font-size: clamp(42px, 12.5vw, 56px); }
-  .win { border-radius: var(--r); }
-  .win-bar { height: 26px; }
-  .win-bar span { display: none; }
-  .sum { padding: 18px 18px 14px; }
-  .panel { flex-basis: 88%; padding: 18px 16px; }
-  .panel .fig { font-size: clamp(34px, 10vw, 44px); }
-}
-
-/* ---------- phone bottom bar: the button follows the reader after the opening, until the closing ---------- */
-.mcta { display: none; }
-@media (max-width: 1000px) {
-  .mcta { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; gap: 10px; padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); border-top: 1px solid var(--line); transition: transform 0.35s var(--ease), visibility 0.35s; }
-  .mcta.off { transform: translateY(110%); visibility: hidden; }
-  .mcta .btn { flex: 1; height: 48px; justify-content: center; font-size: 16px; }
-  .mcta .btn.ghost { flex: 0 0 auto; padding: 0 18px; }
+  .sec h2, .tax h2 { font-size: clamp(44px, 12.4vw, 64px); }
+  .trust h2.stepped > span + span { padding-left: 0.6em; }
+  .sum-line { padding-block: 12px; flex-wrap: nowrap; gap: 12px; }
+  .sum-name { font-size: clamp(32px, 9.4vw, 48px); min-width: 0; }
+  .sum-amt { font-size: clamp(28px, 8.6vw, 44px); flex: none; }
+  .sum-total-v { font-size: clamp(64px, 19vw, 96px); }
+  .win { border-radius: 14px; }
+  .panel .fig { font-size: clamp(48px, 15vw, 64px); }
 }

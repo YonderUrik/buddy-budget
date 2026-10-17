@@ -26,7 +26,7 @@ export function GuidedReading({ tab, steps }: GuidedReadingProps) {
   const [open, setOpen] = usePersistedFlag(`${GUIDED_READING_STORAGE_PREFIX}${tab}`, true);
   if (steps.length === 0) return null;
   return (
-    <Card className="border-primary/30 bg-primary/5">
+    <Card className="bg-primary/5">
       <CardContent className="flex flex-col gap-3">
         <button
           type="button"

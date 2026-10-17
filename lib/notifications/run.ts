@@ -11,7 +11,7 @@ import { loadInvestmentData } from "@/lib/investments/data";
 import { goals as goalsTable } from "@/lib/db/schema/goals";
 import { loadGoalsView } from "@/lib/goals/data";
 import type { GoalsView } from "@/lib/goals/view";
-import { isCountryPathAvailable } from "@/lib/localization/config";
+import { LANGUAGE_LOCALES, isCountryPathAvailable, resolveProfile } from "@/lib/localization/config";
 import { buildDebtsView, type DebtDueItem } from "@/lib/debts/view";
 import { formatCurrency } from "@/lib/format";
 import { getAppUrl } from "@/lib/env";
@@ -46,6 +46,8 @@ export interface NotificationUser {
   hideAmounts: boolean;
   /** Paese del prodotto: gli obiettivi (in Analitiche) ci sono solo dove le Analitiche sono disponibili. */
   productCountry?: string;
+  /** Interface language: emails are written in it, with its number and date formats (Italian when absent). */
+  language?: string;
   preferences: NotificationPreferences;
 }
 
@@ -94,7 +96,7 @@ export interface NotificationsResult {
 export const databaseDeps: NotificationDeps = {
   async listUsers() {
     const rows = await db
-      .select({ id: authUser.id, email: authUser.email, currency: authUser.currency, hideAmounts: authUser.hideAmounts, productCountry: authUser.productCountry, prefs: notificationPreferences })
+      .select({ id: authUser.id, email: authUser.email, currency: authUser.currency, hideAmounts: authUser.hideAmounts, productCountry: authUser.productCountry, language: authUser.language, prefs: notificationPreferences })
       .from(notificationPreferences)
       .innerJoin(authUser, eq(authUser.id, notificationPreferences.userId))
       .where(
@@ -116,6 +118,7 @@ export const databaseDeps: NotificationDeps = {
       currency: r.currency,
       hideAmounts: r.hideAmounts,
       productCountry: r.productCountry,
+      language: r.language,
       preferences: {
         digestEnabled: r.prefs.digestEnabled,
         digestFrequency: r.prefs.digestFrequency === "settimanale" ? ("settimanale" as const) : ("mensile" as const),
@@ -165,10 +168,12 @@ const HIDDEN_AMOUNT = "••••";
 
 function contextFor(user: NotificationUser, kind: NotificationKind, appUrl: string): EmailContext & { token: string } {
   const token = createUnsubscribeToken({ userId: user.id, scope: kind });
+  const { language } = resolveProfile(user);
   return {
     appUrl,
     token,
-    money: (value) => (user.hideAmounts ? HIDDEN_AMOUNT : formatCurrency(value, user.currency)),
+    language,
+    money: (value) => (user.hideAmounts ? HIDDEN_AMOUNT : formatCurrency(value, user.currency, { locale: LANGUAGE_LOCALES[language] })),
     unsubscribeUrl: unsubscribePageUrl(appUrl, token),
     preferencesUrl: `${appUrl}${NOTIFICATION_SETTINGS_PATH}`,
   };

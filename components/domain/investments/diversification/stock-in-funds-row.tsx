@@ -6,6 +6,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import type { Instrument } from "@/lib/db/schema/investments";
 import { InstrumentLabel } from "../instrument-label";
+import { formatDecimal } from "../percent";
 
 import type { StockInsideFunds } from "@/lib/investments/overlap";
 
@@ -30,7 +31,7 @@ export function StockInFundsRow({ item, nameOf, instrumentOf, currency }: StockI
   const via = item.totalValue - item.directValue;
   const directShare = item.totalValue > 0 ? item.directValue / item.totalValue : 1;
   return (
-    <li className="flex flex-col gap-2 rounded-xl border p-3">
+    <li className="flex flex-col gap-2 rounded-xl bg-muted/50 p-3">
       <p className="text-sm text-foreground">
         <span className="font-medium">{stock ? <InstrumentLabel instrument={stock} className="max-w-full" /> : "—"}</span>{" "}{tr("pesa in tutto")}{" "}
         <span className="font-medium tabular-nums">{money(item.totalValue, currency)}</span>{tr(", perché la hai anche dentro")}{" "}
@@ -40,7 +41,7 @@ export function StockInFundsRow({ item, nameOf, instrumentOf, currency }: StockI
         <div className="h-full flex-1 bg-[var(--swatch-amber)]" />
       </div>
       <p className="text-xs text-muted-foreground">
-        <span className="tabular-nums">{money(item.directValue, currency)}</span>{" "}{tr("come azioni ·")}{" "}<span className="tabular-nums">{money(via, currency)}</span>{" "}{tr("dentro gli ETF (")}{item.funds.map((f) => tr("{0}% di {1}", { 0: (f.weightInFund * 100).toFixed(1).replace(".", ","), 1: nameOf(f.fundId) })).join(", ")}{")"}</p>
+        <span className="tabular-nums">{money(item.directValue, currency)}</span>{" "}{tr("come azioni ·")}{" "}<span className="tabular-nums">{money(via, currency)}</span>{" "}{tr("dentro gli ETF (")}{item.funds.map((f) => tr("{0}% di {1}", { 0: formatDecimal(f.weightInFund * 100, 1, formattingLocale), 1: nameOf(f.fundId) })).join(", ")}{")"}</p>
     </li>
   );
 }

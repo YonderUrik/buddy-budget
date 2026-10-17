@@ -10,8 +10,23 @@
 export const FEATURE_AREAS = ["Liquidità", "Investimenti", "Debiti", "Patrimonio", "Account"] as const;
 export type FeatureArea = (typeof FEATURE_AREAS)[number];
 
+/** English names of the areas, for the English landing (`/en/features`). */
+export const FEATURE_AREA_LABELS_EN: Record<FeatureArea, string> = {
+  Liquidità: "Cash",
+  Investimenti: "Investments",
+  Debiti: "Debts",
+  Patrimonio: "Net worth",
+  Account: "Account",
+};
+
 /** `live` disponibile, `new` rilasciata da poco (badge "Nuovo"), `soon` pianificata (badge "Presto"). */
 export type FeatureStatus = "live" | "new" | "soon";
+
+/** Name and description of a feature in another language. */
+export interface FeatureText {
+  name: string;
+  description: string;
+}
 
 export interface Feature {
   /** Identificatore stabile (kebab-case). */
@@ -22,7 +37,55 @@ export interface Feature {
   status: FeatureStatus;
   /** Schermata dell'app che la ospita (pathname), se è una voce di sidebar: il test la confronta con `NAV_ITEMS`. */
   appPath?: string;
+  /** English name and description, from `FEATURES_EN` (the landing's English features page needs one for every entry). */
+  en?: FeatureText;
 }
+
+/**
+ * English texts of the features, by id. When an entry is added or its Italian text changes, update its English text
+ * here too: the test fails if an entry has none.
+ */
+const FEATURES_EN: Readonly<Record<string, FeatureText>> = {
+  "csv-personali-ai": { name: "Personal CSVs with AI", description: "Upload the CSV of a bank or broker we don't know: we read it in the background and remember the institution and the columns of its format. If the saved reader fails, we try again with the AI you have authorized and send a technical report to support. You get an email when the import is done." },
+  "primi-passi-e-dati-d-esempio": { name: "First steps and sample data", description: "Starting without a bank? The Overview shows four steps that tick themselves off (account, transactions, investment, goal), and you can try the app with sample data that resets with one tap." },
+  "demo-senza-account": { name: "Demo without an account", description: "Open the app with the data of a sample account, for Italy or Germany, in Italian, English or German, without signing up: look at everything, nothing is saved." },
+  "collegamento-alla-banca": { name: "Bank connection", description: "Imports balances and transactions from a bank through Open Banking, read-only, every 12 hours or whenever you like. Limited spots during the beta." },
+  "conti-manuali": { name: "Manual accounts", description: "For cash or for banks that don't connect. Tap the account to change its balance, name and icon." },
+  "categorizza-con-ai": { name: "Categorize with AI", description: "If you turn it on, the assistant suggests a category for each merchant. Suggestions that are at least 90% sure apply themselves and you review them in “Set by the app”; you confirm the others with a swipe, one card at a time. It uses only the cleaned-up merchant name and your personal instructions, which you can change in Settings." },
+  "categorie-pronte": { name: "Ready-made categories", description: "When you sign up you get 24 categories already split by type of spending: confirm them with one tap, or remove, rename or add your own." },
+  "categorizzazione-automatica": { name: "Automatic categorization", description: "Your rules, and categories that are at least 90% sure, apply themselves, and a new rule takes effect right away. In “Set by the app” you see what was set, with the merchant's logo, the dates and where it came from (a rule, your past choices or AI), and you fix it with one tap. “Recategorize” redoes the automatic categories with today's rules, with a preview and undo." },
+  "quattro-gruppi-di-spesa": { name: "Four spending groups", description: "Needs, Wants, Future you and Occasional, with colors and icons you choose." },
+  "trasferimenti-tra-conti": { name: "Transfers between your accounts", description: "Put transfers in their own category: they stay visible in your transactions and are left out of income and spending." },
+  "dividi-e-escludi": { name: "Split and exclude", description: "Leave out all or part of refunds, transfers and shared expenses: pick Half, A third or an amount, and see right away how much is yours." },
+  "budget-per-categoria": { name: "Budget per category", description: "Set a budget and see how much of it you've used." },
+  "analisi-e-cash-flow": { name: "Analysis and cash flow", description: "Income, spending, net and savings, month by month and by category." },
+  abbonamenti: { name: "Subscriptions", description: "Finds recurring charges (streaming, gym, insurance) and you confirm them with one tap. See the cost per month and per year, the next charge and price increases. Worked out from your transactions, without AI." },
+  "etf-azioni-btp-fondi-e-crypto": { name: "ETFs, stocks, government bonds, funds and crypto", description: "End-of-day prices from free sources with automatic fallback, ECB exchange rates." },
+  "operazioni-e-import-csv": { name: "Trades and CSV import", description: "Record buys and sells or import your broker's files: Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance or another CSV. Several brokers live in the same portfolio and each import is managed on its own. If you allow AI recovery, read errors start a new analysis automatically, with the financial checks kept in place." },
+  "rendimenti-veri": { name: "Real returns", description: "TWR, MWR and returns after inflation in the product's country (Italy or Germany, Eurostat index), with explanations on hover. The figures follow the chart date; drag to pick a range, also for risk and monthly returns. It also shows what you'd have if costs and taxes had stayed invested." },
+  "confronto-con-un-indice": { name: "Compare with an index", description: "“With the same contributions you'd have X today instead of Y.” Quick picks for the S&P 500, MSCI World, FTSE All-World and Nasdaq-100 through accumulating ETFs, or search for another instrument." },
+  rischio: { name: "Risk", description: "A clear risk level (from low to very high), then how much the portfolio swings, the worst drop, whether the risk paid off and how closely it follows the index." },
+  diversificazione: { name: "Diversification", description: "By region and sector, looking inside the ETFs." },
+  "allocazione-obiettivo": { name: "Target allocation", description: "With a suggestion of where to put your next contribution." },
+  proventi: { name: "Dividends", description: "Income received and expected over the next 12 months, month by month and by instrument, with gross, withholding tax and net." },
+  "pianificazione-germania": { name: "Financial planning for Germany", description: "Essential localization in English and German: portfolio, income and 2026 tax estimates in EUR, with explicit limits. Pension, AVD (a German private pension product), retirement and the advanced simulators are hidden until they have been reviewed." },
+  "tasse-italiane": { name: "Italian taxes", description: "Capital gains and losses, the zainetto fiscale (four-year tax-loss carryforward), government bonds, crypto and bollo (stamp duty)." },
+  "simulatore-prima-di-vendere": { name: "“Before you sell” simulator", description: "Works out the taxes again with the extra sale, before you make it." },
+  "titoli-watchlist-e-avvisi": { name: "Securities, watchlist and alerts", description: "A page for each security, opened from your holdings or by search, with a chart of your purchases, risk, a watchlist and price alerts by email." },
+  "indicatori-fondamentali": { name: "Fundamentals", description: "For every stock: P/E, P/S, P/B, revenue and earnings per share, margins, ROE and debt calculated from the financial statements, with the range of recent years and the calculation under each number. For ETFs: holdings, sectors, what the TER costs you and the securities you already hold elsewhere." },
+  "finanziamenti-nuovi-o-in-corso": { name: "New or ongoing loans", description: "From the start or from a snapshot of today, with the amortization schedule." },
+  "calcolatore-della-variabile-mancante": { name: "Missing-figure calculator", description: "From principal, payment, number of payments or rate it works out the one that's missing, with the APR (TAEG)." },
+  "estinzione-anticipata": { name: "Early repayment", description: "Lower payment or shorter term, with the penalty, the interest saved and a monthly extra." },
+  "simulatore-dei-debiti": { name: "Debt simulator", description: "Inside each loan: how much you save by paying more, paying off part of it or moving to another bank. In the overview, the path to getting out of debt sooner." },
+  "patrimonio-netto-nel-tempo": { name: "Net worth over time", description: "Cash, investments and pension, with debts already subtracted, and the history rebuilt. Show or hide items from the legend and the total updates." },
+  pensione: { name: "Pension", description: "Pension fund and TFR (Italian severance pay): real return, what you'd take home if you withdrew today after tax, and an estimate of what it will be worth. Enter the history by hand or import it from CSV or Excel." },
+  analitiche: { name: "Analytics", description: "The year you could stop working, with four “what if…” sliders for savings, spending, return and withdrawal; the first three start from your data for the last 12 or 24 months, or the months you choose. For those who want more: the FIRE number after tax, Monte Carlo simulations and withdrawal rules." },
+  "obiettivi-di-risparmio": { name: "Savings goals", description: "A trip, a house deposit, an emergency fund: choose how much you need, by when, and which accounts or investments the money comes from. The month's savings go to your goals in the order you choose; see when you'll reach each one, whether your savings cover everything and how much each goal moves the year you could stop working. Email reminders at the start of the month, if you want them." },
+  "tuoi-dati-tuo-controllo": { name: "Your data, your control", description: "Export everything as a ZIP, or reset or delete your account with 30 days to change your mind." },
+  "email-riepilogo-e-avvisi": { name: "Summary and alert emails", description: "If you want, get a summary of the month or the week, with what you spent, what came in, investment gains and dividends in a few lines, and an alert when a budget is nearly used up or a payment is about to fall due. You choose them when you first sign in, they start switched off and each one turns off with one click." },
+  "piu-lingue-e-valute": { name: "Languages and currencies", description: "The Italy product in Italian and English; the Germany product in German and English. Selectable currencies. For Germany: portfolio and income, partial 2026 tax estimates with explicit limits; pension and advanced simulators on hold until review. Unsupported cases are flagged, without applying Italian rules." },
+  "app-per-telefono": { name: "iPhone and Android app", description: "The same BuddyBudget as an app to install: sign in with the email link, Google or Apple, connect your bank without leaving it, get summaries and alerts on your phone (no amounts in the text) and unlock it with Face ID or your fingerprint. Coming to the stores." },
+};
 
 const f = (
   id: string,
@@ -31,11 +94,12 @@ const f = (
   description: string,
   status: FeatureStatus,
   appPath?: string,
-): Feature => ({ id, area, name, description, status, ...(appPath ? { appPath } : {}) });
+): Feature => ({ id, area, name, description, status, ...(appPath ? { appPath } : {}), ...(FEATURES_EN[id] ? { en: FEATURES_EN[id] } : {}) });
 
 export const FEATURES: readonly Feature[] = [
   f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background e ricordiamo istituzione e colonne del formato. Se il lettore salvato fallisce, riproviamo con l’AI autorizzata e inviamo un report tecnico al supporto. Ti avvisiamo per email a import finito.", "new"),
   f("primi-passi-e-dati-d-esempio", "Account", "Primi passi e dati d'esempio", "Chi parte senza banca trova in Panoramica quattro passi che si spuntano da soli (conto, movimenti, investimento, obiettivo) e può provare l'app con dati d'esempio, azzerabili con un tocco.", "new"),
+  f("demo-senza-account", "Account", "Demo senza account", "Apri l'app con i dati di un account d'esempio, per l'Italia o la Germania, in italiano, inglese o tedesco, senza registrarti: guardi tutto, non si salva niente.", "new"),
   f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti di una banca con l'Open Banking, in sola lettura, ogni 12 ore o quando vuoi. Posti limitati durante la beta.", "live"),
   f("conti-manuali", "Liquidità", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
 
@@ -75,7 +139,7 @@ export const FEATURES: readonly Feature[] = [
 
   f("tuoi-dati-tuo-controllo", "Account", "Tuoi dati, tuo controllo", "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.", "live"),
   f("email-riepilogo-e-avvisi", "Account", "Email di riepilogo e avvisi", "Se vuoi, ricevi il riepilogo del mese o della settimana, con speso, entrato, guadagno degli investimenti e dividendi in poche righe, e un avviso quando un budget è quasi finito o una rata sta per scadere. Le scegli già al primo accesso, partono spente e ognuna si disattiva con un clic.", "new"),
-  f("piu-lingue-e-valute", "Account", "Più lingue e valute", "Prodotto Italia in italiano e inglese; prodotto Germania in tedesco e inglese. Valute selezionabili. Per la Germania: portafoglio e proventi, stime fiscali 2026 parziali con limiti espliciti; pensione e simulatori avanzati sospesi in attesa di revisione. I casi non supportati sono indicati, senza applicare regole italiane.", "new"),
+  f("piu-lingue-e-valute", "Account", "Più lingue e valute", "Prodotto Italia in italiano e inglese; prodotto Germania in tedesco e inglese. La lingua del browser viene proposta da sola, e si cambia quando vuoi. Valute selezionabili. Per la Germania: portafoglio e proventi, stime fiscali 2026 parziali con limiti espliciti; pensione e simulatori avanzati sospesi in attesa di revisione. I casi non supportati sono indicati, senza applicare regole italiane.", "new"),
   f("app-per-telefono", "Account", "App per iPhone e Android", "La stessa BuddyBudget come app da installare: entri con il link via email, Google o Apple, colleghi la banca senza uscire, ricevi riepilogo e avvisi sul telefono (senza importi nel testo) e la sblocchi con Face ID o l'impronta. In arrivo sugli store.", "soon"),
 ];
 
@@ -92,4 +156,9 @@ export function featuresByStatus(status: FeatureStatus): Feature[] {
 /** Totale delle funzioni e quante sono già disponibili (live + new). */
 export function featureCounts(): { total: number; available: number } {
   return { total: FEATURES.length, available: FEATURES.filter((x) => x.status !== "soon").length };
+}
+
+/** Name and description of a feature in the page language: English when the entry has it, otherwise the Italian text. */
+export function featureText(feature: Feature, locale: "it" | "en"): FeatureText {
+  return locale === "en" && feature.en ? feature.en : { name: feature.name, description: feature.description };
 }

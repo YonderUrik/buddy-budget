@@ -23,3 +23,40 @@ export function translate<T>(language: Language, source: T, values?: MessageValu
   const translated = language === "it" ? source : messages[source]?.[language === "en" ? 0 : 1] ?? source;
   return (values ? translated.replace(/\{(\w+)\}/g, (match, key: string) => key in values ? String(values[key] ?? "") : match) : translated) as Translated<T>;
 }
+
+/** Generic keys («{0} su {1}», «{0} prima») would half-translate unrelated messages: a key must start with words or carry many of them. */
+function specificEnough(source: string): boolean {
+  const letters = source.replace(/\{\w+\}/g, "").replace(/[^\p{L}]/gu, "").length;
+  return letters >= 10 || (!source.startsWith("{") && letters >= 4);
+}
+
+let patterns: { regex: RegExp; source: string; keys: string[]; literal: number }[] | null = null;
+
+/** Catalog keys with `{0}`-style values as regular expressions, built once on the first error. */
+function placeholderPatterns() {
+  patterns ??= Object.keys(messages).filter((source) => /\{\w+\}/.test(source) && specificEnough(source)).map((source) => {
+    const keys: string[] = [];
+    const body = source.split(/(\{\w+\})/).map((part) => {
+      const key = /^\{(\w+)\}$/.exec(part)?.[1];
+      if (key === undefined) return part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      keys.push(key);
+      return "(.+?)";
+    }).join("");
+    return { regex: new RegExp(`^${body}$`), source, keys, literal: source.replace(/\{\w+\}/g, "").length };
+  }).sort((a, b) => b.literal - a.literal);
+  return patterns;
+}
+
+/**
+ * A message produced elsewhere (server errors, import row issues) in `language`: exact catalog match first, then the
+ * most specific key whose `{0}` values fill the message; values are translated too («Riga 4: Data mancante»).
+ */
+export function translateServerMessage(language: Language, message: string, depth = 0): string {
+  const exact = translate(language, message);
+  if (exact !== message || language === "it") return exact;
+  for (const { regex, source, keys } of placeholderPatterns()) {
+    const match = regex.exec(message);
+    if (match) return translate(language, source, Object.fromEntries(keys.map((key, index) => [key, depth < 2 ? translateServerMessage(language, match[index + 1], depth + 1) : match[index + 1]])));
+  }
+  return message;
+}

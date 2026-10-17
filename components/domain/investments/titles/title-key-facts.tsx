@@ -4,11 +4,11 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { keyFacts, type KeyFactsInput } from "./key-facts";
 
-export type TitleKeyFactsProps = KeyFactsInput;
+export type TitleKeyFactsProps = Omit<KeyFactsInput, "locale">;
 
 export function TitleKeyFacts(props: TitleKeyFactsProps) {
-  const { t: tr } = useLocalization();
-  const facts = keyFacts(props);
+  const { t: tr, locale } = useLocalization();
+  const facts = keyFacts({ ...props, locale });
   if (facts.length === 0) return null;
   return (
     <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-y py-4 sm:grid-cols-3 lg:grid-cols-6">

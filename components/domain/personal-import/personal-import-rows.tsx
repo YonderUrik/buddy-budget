@@ -2,6 +2,7 @@
 import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
+import { translateServerMessage } from "@/lib/localization/messages";
 
 /**
  * Tutte le righe lette di un CSV personale, per esito in tre schede (da importare, escluse, errori). Ogni riga è
@@ -32,7 +33,7 @@ function RecordRow({ record, headers, currency }: { record: PreviewRecord; heade
   return new Date(`${date}T00:00:00`).toLocaleDateString(formattingLocale, { day: "numeric", month: "short" });
 }
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const o = record.outcome;
   const line = record.line ?? o.row + 2;
   let title: string;
@@ -40,22 +41,22 @@ function RecordRow({ record, headers, currency }: { record: PreviewRecord; heade
   let amount: React.ReactNode = null;
   if (o.kind === "cash") {
     title = o.description;
-    sub = `${o.transfer ? "Giroconto" : "Movimento"} · riga ${line}`;
+    sub = `${tr(o.transfer ? "Giroconto" : "Movimento")} · ${tr("riga {0}", { 0: line })}`;
     amount = <span className={o.amount < 0 ? "" : "text-pos"}>{formatCurrency(o.amount, o.currency)}</span>;
   } else if (o.kind === "investment") {
     title = o.name;
-    sub = `${tr(KIND_LABELS[o.type])}${o.quantity ? tr(" · {0} × {1} {2}", { 0: o.quantity, 1: o.price, 2: o.currency }) : ""} · riga ${line}`;
+    sub = `${tr(KIND_LABELS[o.type])}${o.quantity ? tr(" · {0} × {1} {2}", { 0: o.quantity, 1: o.price, 2: o.currency }) : ""} · ${tr("riga {0}", { 0: line })}`;
     amount = o.grossAmount !== null ? <span className="text-pos">{formatCurrency(o.grossAmount, o.currency)}</span> : <span>{formatCurrency(-(o.quantity * o.price) * (o.type === "vendita" ? -1 : 1), o.currency)}</span>;
   } else {
-    title = o.reason;
-    sub = `Riga ${line}`;
+    title = translateServerMessage(language, o.reason);
+    sub = tr("Riga {0}", { 0: line });
   }
   return (
     <details className="group border-t py-2.5 first:border-t-0">
       <summary className="grid min-h-11 cursor-pointer list-none grid-cols-[3.25rem_1fr_auto] items-baseline gap-x-3 [&::-webkit-details-marker]:hidden">
         <span className="text-xs text-muted-foreground">{"date" in o ? shortDate(o.date) : ""}</span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-medium text-foreground">{tr(title)}</span>
+          <span className="block truncate text-sm font-medium text-foreground">{title}</span>
           <span className="block truncate text-xs text-muted-foreground">{sub}</span>
         </span>
         <span className="text-sm font-medium tabular-nums">{amount}</span>

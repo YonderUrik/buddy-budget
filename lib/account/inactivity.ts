@@ -1,6 +1,7 @@
 import "server-only";
 import { and, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
+import { resolveProfile, type Language } from "@/lib/localization/config";
 import { authSession, authUser } from "@/lib/db/schema/auth";
 import { hashUserId, logger as defaultLogger, recordInactiveAccounts, type Logger } from "@/lib/observability";
 import { INACTIVITY_MAX_ACTIONS_PER_RUN } from "./constants";
@@ -14,6 +15,9 @@ export interface InactivityUser {
   email: string;
   lastActiveAt: Date;
   warnedAt: Date | null;
+  /** Saved country and language: the emails are written in that language (Italian when absent). */
+  productCountry?: string | null;
+  language?: string | null;
 }
 
 /** Accesso ai dati e agli effetti collaterali: sostituibile nei test. */
@@ -29,7 +33,7 @@ export interface InactivityDeps {
   /** Azzera l'avviso di chi ha fatto accesso dopo. */
   clearWarning(userId: string): Promise<void>;
   sendWarning(user: InactivityUser, deletionAt: Date): Promise<boolean>;
-  sendDeleted(email: string, userId: string): Promise<void>;
+  sendDeleted(email: string, userId: string, language?: Language): Promise<void>;
   deleteAccount(userId: string): Promise<void>;
   /**
    * Motivo per cui l'account NON va toccato anche se inattivo (null = nessuno). Oggi nessuna regola;
@@ -73,7 +77,7 @@ async function lastSessionUse(userIds: string[]): Promise<Map<string, Date>> {
 export const databaseDeps: InactivityDeps = {
   async listCandidates(now) {
     const rows = await db
-      .select({ id: authUser.id, email: authUser.email, lastActiveAt: authUser.lastActiveAt, warnedAt: authUser.inactivityWarnedAt })
+      .select({ id: authUser.id, email: authUser.email, lastActiveAt: authUser.lastActiveAt, warnedAt: authUser.inactivityWarnedAt, productCountry: authUser.productCountry, language: authUser.language })
       .from(authUser)
       .where(and(isNull(authUser.deletionScheduledAt), or(lte(authUser.lastActiveAt, warningCutoff(now)), isNotNull(authUser.inactivityWarnedAt))));
     const sessions = await lastSessionUse(rows.map((row) => row.id));
@@ -84,12 +88,27 @@ export const databaseDeps: InactivityDeps = {
   },
   async reload(userId) {
     const [row] = await db
-      .select({ id: authUser.id, email: authUser.email, lastActiveAt: authUser.lastActiveAt, warnedAt: authUser.inactivityWarnedAt, scheduled: authUser.deletionScheduledAt })
+      .select({
+        id: authUser.id,
+        email: authUser.email,
+        lastActiveAt: authUser.lastActiveAt,
+        warnedAt: authUser.inactivityWarnedAt,
+        scheduled: authUser.deletionScheduledAt,
+        productCountry: authUser.productCountry,
+        language: authUser.language,
+      })
       .from(authUser)
       .where(eq(authUser.id, userId));
     if (!row || row.scheduled) return null;
     const sessions = await lastSessionUse([userId]);
-    return { id: row.id, email: row.email, lastActiveAt: effectiveLastActive(row.lastActiveAt, sessions.get(userId) ?? null), warnedAt: row.warnedAt };
+    return {
+      id: row.id,
+      email: row.email,
+      lastActiveAt: effectiveLastActive(row.lastActiveAt, sessions.get(userId) ?? null),
+      warnedAt: row.warnedAt,
+      productCountry: row.productCountry,
+      language: row.language,
+    };
   },
   async claimWarning(userId, at) {
     const claimed = await db
@@ -106,10 +125,10 @@ export const databaseDeps: InactivityDeps = {
     await db.update(authUser).set({ inactivityWarnedAt: null }).where(eq(authUser.id, userId));
   },
   async sendWarning(user, deletionAt) {
-    return sendAccountEmail(user.email, "inactivity_warning", { userId: user.id, deletionAt, lastActiveAt: user.lastActiveAt });
+    return sendAccountEmail(user.email, "inactivity_warning", { userId: user.id, deletionAt, lastActiveAt: user.lastActiveAt, language: resolveProfile(user).language });
   },
-  async sendDeleted(email, userId) {
-    await sendAccountEmail(email, "inactivity_deleted", { userId });
+  async sendDeleted(email, userId, language) {
+    await sendAccountEmail(email, "inactivity_deleted", { userId, language });
   },
   deleteAccount: deleteUserAccount,
   async exemptionReason() {
@@ -224,7 +243,7 @@ export async function runInactiveAccounts(options: {
       recordInactiveAccounts("deleted", metricMode);
       log.info("account.inactivity.deleted", { user, inactiveDays: days, trigger: "cron" });
       // L'email di conferma è dopo l'eliminazione e non la può annullare: se non parte, resta il log.
-      await deps.sendDeleted(fresh.email, fresh.id);
+      await deps.sendDeleted(fresh.email, fresh.id, resolveProfile(fresh).language);
     } catch (error) {
       result.failed += 1;
       recordInactiveAccounts("failed", metricMode);

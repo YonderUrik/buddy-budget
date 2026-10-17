@@ -17,7 +17,7 @@ export function AnalyticsCard({ title, explainer, children }: AnalyticsCardProps
   const { t: tr } = useLocalization();
   return (
     <section className="flex flex-col gap-4 border-t pt-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr(title)}</h3>
+      <h3 className="text-sm font-medium text-muted-foreground">{tr(title)}</h3>
       {children}
       {explainer ? <Explainer id={explainer} /> : null}
     </section>
@@ -25,6 +25,7 @@ export function AnalyticsCard({ title, explainer, children }: AnalyticsCardProps
 }
 
 export interface MetricProps {
+  /** Label and note: Italian sources (translated here) or text already in the user's language. */
   label: string;
   value: string;
   sub?: string;
@@ -39,14 +40,14 @@ export function Metric({ label, value, sub, tone = "default", term }: MetricProp
   const color = tone === "pos" ? "text-pos" : tone === "neg" ? "text-neg" : "text-foreground";
   return (
     <div className="border-t pt-3">
-      <p className="text-sm text-muted-foreground">{term ? <Term id={term}>{tr(label)}</Term> : label}</p>
+      <p className="text-sm text-muted-foreground">{term ? <Term id={term}>{tr(label)}</Term> : tr(label)}</p>
       <p className={`font-heading text-2xl font-medium tabular-nums ${color}`}>{value}</p>
-      {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
+      {sub ? <p className="text-xs text-muted-foreground">{tr(sub)}</p> : null}
     </div>
   );
 }
 
 /** Messaggio quando mancano i dati per un'analitica: dice che cosa serve. */
 export function MissingData({ children }: { children: ReactNode }) {
-  return <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">{children}</p>;
+  return <p className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">{children}</p>;
 }

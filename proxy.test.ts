@@ -90,3 +90,38 @@ describe("proxy con documenti legali da accettare", async () => {
     expect((await call("/panoramica")).headers.get("location")).toBe("http://localhost/account-disattivato");
   });
 });
+
+describe("proxy con la demo pubblica", async () => {
+  const { NextRequest } = await import("next/server");
+  const { auth } = await import("@/lib/auth");
+  const { proxy } = await import("./proxy");
+  const mockedGetSession = vi.mocked(auth.api.getSession);
+
+  function sessionAs(id: string) {
+    mockedGetSession.mockResolvedValue({
+      user: { id, language: "en", productCountry: "IT", onboardingCompleted: true, deletionScheduledAt: null, legalAcceptedVersion: LEGAL_VERSION },
+      session: {},
+    } as never);
+  }
+  const call = (path: string, method = "GET") => proxy(new NextRequest(`http://localhost${path}`, { method }));
+
+  it("/demo è pubblico", () => {
+    expect(isPublicPath("/demo")).toBe(true);
+  });
+
+  it("la demo legge tutto e non scrive niente", async () => {
+    sessionAs("public-demo-en");
+    expect((await call("/api/transactions")).status).toBe(200);
+    expect((await call("/panoramica")).headers.get("location")).toBeNull();
+    const blocked = await call("/api/transactions", "POST");
+    expect(blocked.status).toBe(403);
+    expect(await blocked.json()).toMatchObject({ code: "demo_read_only" });
+    expect((await call("/api/user/account", "DELETE")).status).toBe(403);
+    expect((await call("/api/transactions/abc", "PATCH")).status).toBe(403);
+  });
+
+  it("un utente vero scrive come sempre", async () => {
+    sessionAs("Xk2l9ZqP");
+    expect((await call("/api/transactions", "POST")).status).toBe(200);
+  });
+});

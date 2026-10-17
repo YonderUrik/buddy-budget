@@ -34,7 +34,7 @@ const TONE_STYLE: Record<ChoiceTone, { icon: LucideIcon; color: string }> = {
   missing: { icon: CircleAlertIcon, color: "var(--destructive)" },
 };
 
-/** Cosa si importerebbe di questo titolo: nome da mostrare e dettaglio dello strumento scelto. */
+/** What would be imported for this security: name to show and detail of the chosen instrument (parts translated when shown). */
 function chosenName(choice: InstrumentChoice | undefined): { name: string; detail: string | null } | null {
   if (!choice || choice.kind === "skip") return null;
   if (choice.kind === "known") return { name: choice.instrument.name, detail: choice.instrument.isin ?? null };
@@ -79,7 +79,7 @@ function InstrumentRow({
             {identity.count}{" "}{identity.count === 1 ? "operazione" : tr("operazioni")}
           </span>
         </div>
-        {identity.name ? <p className="-mt-1.5 truncate font-mono text-xs text-muted-foreground">{[identity.symbol, identity.isin].filter(Boolean).join(" · ")}</p> : null}
+        {identity.name ? <p className="-mt-1.5 truncate tabular-nums text-xs text-muted-foreground">{[identity.symbol, identity.isin].filter(Boolean).join(" · ")}</p> : null}
         <p className="flex items-start gap-2 text-sm">
           <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full" style={{ color, backgroundColor: `color-mix(in oklab, ${color} 16%, transparent)` }} aria-hidden="true">
             <Icon className="size-3" />
@@ -92,7 +92,7 @@ function InstrumentRow({
         {chosen ? (
           <p className="pl-7 text-sm text-foreground">
             {chosen.name}
-            {chosen.detail ? <span className="text-muted-foreground"> {"·"}{chosen.detail}</span> : null}
+            {chosen.detail ? <span className="text-muted-foreground"> {"·"}{chosen.detail.split(" · ").map((part) => tr(part)).join(" · ")}</span> : null}
           </p>
         ) : null}
         <div className="pl-7">

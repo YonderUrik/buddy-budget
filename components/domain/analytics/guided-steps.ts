@@ -22,7 +22,7 @@ import { LANGUAGE_LOCALES, type Language } from "@/lib/localization/config";
 /** Bind presentation text and formatting to one language without shared mutable state. */
 export function localizedGuidedSteps(language: Language) {
   const locale = LANGUAGE_LOCALES[language];
-  const { formatYears, money, num, pct } = localizedAnalyticsFormats(language);
+  const { formatYearsFromNow, money, num, pct } = localizedAnalyticsFormats(language);
   const tr = (source: string, values?: MessageValues) => translate(language, source, values);
 const RULE_NAMES: Record<WithdrawalRule, string> = {
   fissa: tr("spesa fissa"),
@@ -74,7 +74,7 @@ function fireSteps(plan: AnalyticsPlan, a: AnalyticsAssumptions, currency: strin
       title: tr("Quando ci arrivi"),
       text: [
         savings > 0
-          ? tr("Con {0} di risparmio l'anno e un rendimento reale del {1}, il traguardo arriva {2}.", { 0: money(savings, currency), 1: pct(a.expectedReturn), 2: plan.yearsToFire === null ? tr("oltre gli 80 anni: con queste ipotesi in pratica non arriva") : tr("tra {0}", { 0: formatYears(plan.yearsToFire) }) })
+          ? tr("Con {0} di risparmio l'anno e un rendimento reale del {1}, il traguardo arriva {2}.", { 0: money(savings, currency), 1: pct(a.expectedReturn), 2: plan.yearsToFire === null ? tr("oltre gli 80 anni: con queste ipotesi in pratica non arriva") : formatYearsFromNow(plan.yearsToFire) })
           : tr("Con un risparmio nullo o negativo il patrimonio non cresce con i tuoi versamenti, quindi il traguardo non si avvicina da solo."),
         tr("«Rendimento reale» è già al netto dell'inflazione: tutti gli importi sono in euro di oggi, così sono confrontabili con la tua spesa."),
       ],
@@ -114,7 +114,7 @@ function simulationSteps(result: MonteCarloResult, input: MonteCarloInput, a: An
       title: tr("Il punto di partenza"),
       text: [
         tr("Parti da {0}. {1}", { 0: money(input.startingWealth, currency), 1: retireIn > 0 ? tr("Per {0} anni versi {1} l'anno, poi inizia la pensione.", { 0: retireIn, 1: money(input.annualSavings, currency) }) : tr("La pensione inizia subito: nessun versamento.") }),
-        `Con l'interruttore in alto scegli se smettere oggi o quando raggiungi il traguardo FIRE.`,
+        tr("Con l'interruttore in alto scegli se smettere oggi o quando raggiungi il traguardo FIRE."),
       ],
     },
     {
@@ -134,7 +134,7 @@ function simulationSteps(result: MonteCarloResult, input: MonteCarloInput, a: An
     {
       title: tr("Il grafico"),
       text: [
-        `La linea è il caso tipico (la mediana: metà degli scenari sta sopra, metà sotto). La fascia chiara contiene l'80% dei casi, quella scura il 50%.`,
+        tr("La linea è il caso tipico (la mediana: metà degli scenari sta sopra, metà sotto). La fascia chiara contiene l'80% dei casi, quella scura il 50%."),
         tr("Alla fine il caso tipico lascia {0}, il caso sfortunato (10° percentile) {1}. Passa il mouse sul grafico per leggere i valori di ogni anno.", { 0: money(result.endingWealth.p50, currency), 1: money(result.endingWealth.p10, currency) }),
       ],
     },

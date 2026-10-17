@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { DebtsViewData } from "@/lib/debts/view";
 import type { CreateDebtEventInput, CreateDebtInput, UpdateDebtInput } from "@/lib/validation/debts";
+import { pageText } from "@/lib/localization/page-text";
 
 export const DEBTS_QUERY_KEY = ["debts"] as const;
 /** Quanto restano valide le cifre dei debiti prima di ricaricarle: cambiano solo per azioni dell'utente o col passare dei giorni. */
@@ -11,7 +12,7 @@ const DEBTS_STALE_TIME_MS = 60 * 1000;
 
 async function readError(response: Response, fallback: string): Promise<Error> {
   const body = await response.json().catch(() => null);
-  return new Error(body?.error ?? fallback);
+  return new Error(body?.error ?? pageText(fallback));
 }
 
 function useInvalidateDebts() {

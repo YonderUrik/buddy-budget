@@ -1,4 +1,6 @@
 "use client";
+import type { Language } from "@/lib/localization/config";
+import { translate } from "@/lib/localization/messages";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -54,11 +56,13 @@ function InstitutionLogo({ institution }: { institution: Institution }) {
   );
 }
 
-/** Frase sullo storico che la banca mette a disposizione, se il dato è valido. */
-export function describeHistory(days: string): string | null {
+/** Sentence on the history the bank makes available, in `language`, if the figure is valid. */
+export function describeHistory(days: string, language: Language = "it"): string | null {
   const total = Number(days);
   if (!Number.isFinite(total) || total <= 0) return null;
-  return total >= 365 ? `Storico fino a ${Math.round(total / 365) === 1 ? "1 anno" : `${Math.round(total / 365)} anni`}` : `Storico fino a ${total} giorni`;
+  const years = Math.round(total / 365);
+  if (total < 365) return translate(language, "Storico fino a {0} giorni", { 0: total });
+  return years === 1 ? translate(language, "Storico fino a 1 anno") : translate(language, "Storico fino a {0} anni", { 0: years });
 }
 
 export interface ConnectBankFlowProps {
@@ -69,7 +73,7 @@ export interface ConnectBankFlowProps {
 export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
   const { t: tr } = useLocalization();
   const fieldId = React.useId();
-  const { productCountry } = useLocalization();
+  const { productCountry, language } = useLocalization();
   const [country, setCountry] = React.useState<string>(productCountry);
   const [search, setSearch] = React.useState("");
   const { data: institutions, isLoading, isError, refetch } = useInstitutionsQuery(country);
@@ -145,7 +149,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
           ))}
         </div>
       ) : isError ? (
-        <div role="alert" className="flex flex-col items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+        <div role="alert" className="flex flex-col items-start gap-2 rounded-xl bg-destructive/10 p-4 text-sm">
           <p className="font-medium text-foreground">{tr("Non riesco a caricare l'elenco delle banche.")}</p>
           <p className="text-muted-foreground">{tr("Succede se la connessione cade o il servizio è occupato. Non hai perso nulla.")}</p>
           <div className="flex flex-wrap items-center gap-x-4">
@@ -154,7 +158,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
           </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-start gap-1 rounded-xl border border-dashed p-4 text-sm">
+        <div className="flex flex-col items-start gap-1 rounded-xl bg-muted/50 p-4 text-sm">
           <p className="font-medium text-foreground">{search.trim() ? tr("Nessuna banca trovata per «{0}».", {0: search.trim()}) : tr("Nessuna banca disponibile in questo paese.")}</p>
           <p className="text-muted-foreground">{tr("Controlla il nome o cambia paese.")}{onChooseManual ? tr(" Se non c'è, puoi tenere il conto a mano e importare i movimenti da un file.") : ""}</p>
           {onChooseManual ? <button type="button" onClick={onChooseManual} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">{tr("Aggiungi un conto manuale")}</button> : null}
@@ -164,7 +168,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
           <p className="text-xs text-muted-foreground" aria-live="polite">{filtered.length === 1 ? tr("1 banca") : tr("{0} banche", {0: filtered.length})}</p>
           <ul className="-mt-2 flex max-h-[min(22rem,45dvh)] flex-col gap-2 overflow-y-auto pr-0.5 max-sm:max-h-none">
             {filtered.map((institution) => {
-              const history = describeHistory(institution.transaction_total_days);
+              const history = describeHistory(institution.transaction_total_days, language);
               const chosen = chosenId === institution.id;
               return (
                 <li key={institution.id}>

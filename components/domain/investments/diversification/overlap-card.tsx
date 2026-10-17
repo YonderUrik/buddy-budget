@@ -15,10 +15,7 @@ import { OverlapPairRow } from "./overlap-pair-row";
 import { StockInFundsRow } from "./stock-in-funds-row";
 import { LayersIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
-
-function decimal(value: number): string {
-  return value.toFixed(2).replace(".", ",");
-}
+import { formatDecimal } from "../percent";
 
 export interface OverlapCardProps {
   analysis: Pick<InvestmentsAnalysis, "overlaps" | "stocksInFunds" | "correlations">;
@@ -29,7 +26,7 @@ export interface OverlapCardProps {
 export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCardProps) {
   const { correlationInsight } = localizedRiskInsights(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const nameOf = (id: string) => instrumentsById.get(id)?.name ?? "—";
   const instrumentOf = (id: string) => instrumentsById.get(id);
   const insight = analysis.correlations ? correlationInsight(analysis.correlations) : null;
@@ -63,7 +60,7 @@ export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCard
               <h3 className="text-sm font-medium text-foreground">{tr("Quanto si muovono insieme")}</h3>
               <p className="text-sm text-muted-foreground">
                 {insight
-                  ? tr("In media {0}: più è vicino a 0, più le posizioni si compensano quando il mercato scende.", {0: decimal(insight.average)})
+                  ? tr("In media {0}: più è vicino a 0, più le posizioni si compensano quando il mercato scende.", {0: formatDecimal(insight.average, 2, locale)})
                   : tr("Servono almeno 20 giorni di prezzi in comune per confrontare due posizioni.")}
               </p>
             </div>

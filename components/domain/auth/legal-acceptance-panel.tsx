@@ -71,11 +71,11 @@ export function LegalAcceptancePanel({ afterAccept = "/" }: LegalAcceptancePanel
       )}
 
       <div className="flex flex-col gap-3">
-        <Button type="button" className="h-11 w-full text-base" disabled={!complete || loading} onClick={() => void accept()}>
+        <Button type="button" className="h-11 w-full rounded-full text-base" disabled={!complete || loading} onClick={() => void accept()}>
           {loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
           {loading ? tr("Salvataggio in corso…") : tr("Accetta e continua")}
         </Button>
-        <Button type="button" variant="outline" className="h-11 w-full" onClick={() => void signOut()} disabled={loading}>{tr("Esci")}</Button>
+        <Button type="button" variant="outline" className="h-11 w-full rounded-full" onClick={() => void signOut()} disabled={loading}>{tr("Esci")}</Button>
         <a href="/api/user/export" className="text-center text-sm text-text-3 underline underline-offset-2 hover:text-foreground">{tr("Scarica i miei dati")}</a>
       </div>
     </div>

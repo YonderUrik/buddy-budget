@@ -13,6 +13,7 @@ import {
   type LoanInputs,
 } from "@/lib/calc/amortization";
 import type { DebtStartMode } from "@/lib/db/schema/debts";
+import { parseLocaleNumber } from "@/lib/localization/format";
 import type { CreateDebtInput } from "@/lib/validation/debts";
 
 export interface AddDebtCostField {
@@ -40,13 +41,9 @@ export function emptyAddDebtForm(startMode: DebtStartMode): AddDebtFormState {
   return { name: "", startMode, principal: "", installment: "", installments: "", annualRate: "", firstInstallmentDate: "", costs: [] };
 }
 
-/** Legge un numero scritto all'italiana ("1.250,50" o "6,9"); stringa vuota o non valida → undefined. */
-export function parseAmount(text: string): number | undefined {
-  const trimmed = text.trim();
-  if (trimmed === "") return undefined;
-  const normalized = trimmed.includes(",") ? trimmed.replace(/\./g, "").replace(",", ".") : trimmed;
-  const value = Number(normalized);
-  return Number.isFinite(value) ? value : undefined;
+/** Reads a number written in the user's locale ("1.250,50" in Italian, "1,250.50" in English); empty or invalid → undefined. */
+export function parseAmount(text: string, locale = "it-IT"): number | undefined {
+  return parseLocaleNumber(text, locale) ?? undefined;
 }
 
 export interface ResolvedAddForm {
@@ -66,12 +63,12 @@ const MIN_FILLED_FIELDS = 3;
  * Risolve i quattro dati del finanziamento. Con meno di tre dati non è un errore (l'utente sta ancora scrivendo): `message`
  * è null. Con tre dati calcola il quarto; con quattro li usa come sono.
  */
-export function resolveAddForm(state: AddDebtFormState): AddFormResolution {
+export function resolveAddForm(state: AddDebtFormState, locale = "it-IT"): AddFormResolution {
   const partial: Partial<LoanInputs> = {
-    principal: parseAmount(state.principal),
-    installment: parseAmount(state.installment),
-    installments: parseAmount(state.installments),
-    annualRate: parseAmount(state.annualRate),
+    principal: parseAmount(state.principal, locale),
+    installment: parseAmount(state.installment, locale),
+    installments: parseAmount(state.installments, locale),
+    annualRate: parseAmount(state.annualRate, locale),
   };
   const filled = Object.values(partial).filter((v) => v !== undefined).length;
   if (filled < MIN_FILLED_FIELDS) return { ok: false, message: null };
@@ -80,25 +77,25 @@ export function resolveAddForm(state: AddDebtFormState): AddFormResolution {
   }
   try {
     const { calculated, ...inputs } = resolveMissingLoanInput(partial);
-    return { ok: true, value: { inputs, calculated, apr: computeFormApr(state, inputs) } };
+    return { ok: true, value: { inputs, calculated, apr: computeFormApr(state, inputs, locale) } };
   } catch (error) {
     if (error instanceof AmortizationError) return { ok: false, message: error.message };
     throw error;
   }
 }
 
-function sumCosts(costs: AddDebtCostField[], kind: AddDebtCostField["kind"]): number {
-  return round2(costs.filter((c) => c.kind === kind).reduce((s, c) => s + (parseAmount(c.amount) ?? 0), 0));
+function sumCosts(costs: AddDebtCostField[], kind: AddDebtCostField["kind"], locale: string): number {
+  return round2(costs.filter((c) => c.kind === kind).reduce((s, c) => s + (parseAmount(c.amount, locale) ?? 0), 0));
 }
 
-function computeFormApr(state: AddDebtFormState, inputs: LoanInputs): number | null {
+function computeFormApr(state: AddDebtFormState, inputs: LoanInputs, locale: string): number | null {
   if (state.startMode === "fotografia") return null;
   try {
     return computeApr({
       principal: inputs.principal,
-      upfrontCosts: sumCosts(state.costs, "una_tantum"),
+      upfrontCosts: sumCosts(state.costs, "una_tantum", locale),
       installment: inputs.installment,
-      recurringCosts: sumCosts(state.costs, "per_rata"),
+      recurringCosts: sumCosts(state.costs, "per_rata", locale),
       installments: inputs.installments,
     });
   } catch {
@@ -107,7 +104,7 @@ function computeFormApr(state: AddDebtFormState, inputs: LoanInputs): number | n
 }
 
 /** Input per `POST /api/debts`; la rata si dichiara solo se l'ha scritta l'utente (altrimenti vale quella calcolata dal piano). */
-export function buildCreateDebtInput(state: AddDebtFormState, resolved: ResolvedAddForm, today: string): CreateDebtInput {
+export function buildCreateDebtInput(state: AddDebtFormState, resolved: ResolvedAddForm, today: string, locale = "it-IT"): CreateDebtInput {
   const { inputs, calculated } = resolved;
   return {
     name: state.name.trim(),
@@ -119,8 +116,8 @@ export function buildCreateDebtInput(state: AddDebtFormState, resolved: Resolved
     installment: calculated === "installment" ? undefined : round2(inputs.installment),
     anchorDate: state.startMode === "fotografia" ? today : undefined,
     costs: state.costs
-      .filter((c) => c.label.trim() !== "" && parseAmount(c.amount) !== undefined)
-      .map((c) => ({ label: c.label.trim(), amount: parseAmount(c.amount) as number, kind: c.kind })),
+      .filter((c) => c.label.trim() !== "" && parseAmount(c.amount, locale) !== undefined)
+      .map((c) => ({ label: c.label.trim(), amount: parseAmount(c.amount, locale) as number, kind: c.kind })),
   };
 }
 

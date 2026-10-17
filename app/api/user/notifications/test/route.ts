@@ -8,6 +8,8 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { getAppUrl } from "@/lib/env";
 import { loadInvestmentData } from "@/lib/investments/data";
 import { formatCurrency } from "@/lib/format";
+import { emailLocale } from "@/lib/email";
+import { resolveProfile } from "@/lib/localization/config";
 import { TEST_EMAIL_MAX_PER_HOUR } from "@/lib/notifications";
 import {
   NOTIFICATION_SETTINGS_PATH,
@@ -60,14 +62,17 @@ async function handlePost(request: NextRequest) {
   const appUrl = getAppUrl();
   const token = createUnsubscribeToken({ userId: user.id, scope: "digest" });
   const hidden = user.hideAmounts === true;
+  // The sample is written in the account's interface language, like the real summary.
+  const { language, locale, t } = emailLocale(resolveProfile(user).language);
   const email = digestEmail(data, {
     appUrl,
-    money: (value) => (hidden ? "••••" : formatCurrency(value, user.currency ?? "EUR")),
+    language,
+    money: (value) => (hidden ? "••••" : formatCurrency(value, user.currency ?? "EUR", { locale })),
     unsubscribeUrl: unsubscribePageUrl(appUrl, token),
     preferencesUrl: `${appUrl}${NOTIFICATION_SETTINGS_PATH}`,
   });
   await claimKeys(user.id, "test", [crypto.randomUUID()], now);
-  const ok = await sendNotificationEmail(user.email, { ...email, subject: `Esempio · ${email.subject}` }, { appUrl, unsubscribeToken: token }).catch(() => false);
+  const ok = await sendNotificationEmail(user.email, { ...email, subject: t("Esempio · {0}", email.subject) }, { appUrl, unsubscribeToken: token }).catch(() => false);
   recordNotificationEmail("test", ok ? "sent" : "failed");
   if (!ok) {
     log.warn("notifications.email.failed", { kind: "test" });

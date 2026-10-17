@@ -16,6 +16,7 @@ import { formatIndicator, formatOperand, type IndicatorFormat } from "./indicato
 export interface IndicatorExplanation {
   /** Chiave statica per l'evento di analisi (es. "pe"). */
   id: string;
+  /** Italian source texts, translated here. */
   title: string;
   formula: string;
   /** Il calcolo con i numeri veri, se l'indicatore è calcolato dall'app. */
@@ -29,25 +30,25 @@ export interface IndicatorExplanation {
 
 /** Popover «come si calcola»: formula in parole, poi la divisione con i numeri del titolo e la fonte. */
 export function IndicatorHelp({ id, title, formula, indicator, format = "multiple", currency = "", priceCurrency = currency, source }: IndicatorExplanation) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   return (
     <Popover onOpenChange={(open) => open && track("title_indicator_opened", { indicator: id })}>
       <PopoverTrigger
         className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-        aria-label={tr("Come si calcola: {0}", {0: title})}
+        aria-label={tr("Come si calcola: {0}", {0: tr(title)})}
       >
         <CircleHelpIcon className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent className="flex max-w-80 flex-col gap-2 text-sm">
         <p className="font-heading font-medium text-foreground">{tr(title)}</p>
-        <p className="text-muted-foreground">{formula}</p>
+        <p className="text-muted-foreground">{tr(formula)}</p>
         {indicator ? (
           <p className="rounded-lg bg-muted px-3 py-2 font-heading tabular-nums text-foreground">
-            {formatOperand(indicator.numerator, currency, priceCurrency)}{" "}{tr("÷")}{" "}{formatOperand(indicator.denominator, currency, priceCurrency)} {"="}{" "}
-            <span className="font-medium">{formatIndicator(indicator.value, format)}</span>
+            {formatOperand(indicator.numerator, currency, priceCurrency, locale)}{" "}{tr("÷")}{" "}{formatOperand(indicator.denominator, currency, priceCurrency, locale)} {"="}{" "}
+            <span className="font-medium">{formatIndicator(indicator.value, format, locale)}</span>
           </p>
         ) : null}
-        <p className="text-xs text-muted-foreground">{source}</p>
+        <p className="text-xs text-muted-foreground">{tr(source)}</p>
       </PopoverContent>
     </Popover>
   );
@@ -55,7 +56,7 @@ export function IndicatorHelp({ id, title, formula, indicator, format = "multipl
 
 /** Barra della forbice: fascia tra minimo e massimo, tacca sulla media, pallino sul valore di oggi. */
 function RangeBar({ range, value, format }: { range: IndicatorRange; value: number; format: IndicatorFormat }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const low = Math.min(range.min, value);
   const high = Math.max(range.max, value);
   const span = high - low || 1;
@@ -65,15 +66,15 @@ function RangeBar({ range, value, format }: { range: IndicatorRange; value: numb
       <div
         className="relative h-1.5 rounded-full bg-muted"
         role="img"
-        aria-label={tr("Oggi {0}; negli ultimi {1} esercizi tra {2} e {3}, media {4}", {0: formatIndicator(value, format), 1: range.years, 2: formatIndicator(range.min, format), 3: formatIndicator(range.max, format), 4: formatIndicator(range.average, format)})}
+        aria-label={tr("Oggi {0}; negli ultimi {1} esercizi tra {2} e {3}, media {4}", {0: formatIndicator(value, format, locale), 1: range.years, 2: formatIndicator(range.min, format, locale), 3: formatIndicator(range.max, format, locale), 4: formatIndicator(range.average, format, locale)})}
       >
         <span className="absolute inset-y-0 rounded-full bg-primary/25" style={{ left: at(range.min), right: `calc(100% - ${at(range.max)})` }} />
         <span className="absolute -inset-y-1 w-0.5 rounded-full bg-muted-foreground" style={{ left: at(range.average) }} />
         <span className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-primary" style={{ left: at(value) }} />
       </div>
       <div className="mt-1 flex justify-between text-xs tabular-nums text-muted-foreground">
-        <span>{tr("min")}{" "}{formatIndicator(range.min, format)}</span>
-        <span>{tr("max")}{" "}{formatIndicator(range.max, format)}</span>
+        <span>{tr("min")}{" "}{formatIndicator(range.min, format, locale)}</span>
+        <span>{tr("max")}{" "}{formatIndicator(range.max, format, locale)}</span>
       </div>
     </div>
   );

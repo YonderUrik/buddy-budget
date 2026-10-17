@@ -30,7 +30,7 @@ export function AccumulatedSavingsChart({ entries, currency }: AccumulatedSaving
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr("Risparmio accumulato")}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{tr("Risparmio accumulato")}</CardTitle>
         <span className="font-heading text-lg font-medium tabular-nums text-foreground">
           {formatCurrency(total, currency)}
         </span>
@@ -52,7 +52,7 @@ export function AccumulatedSavingsChart({ entries, currency }: AccumulatedSaving
                   formatter={(value) => (
                     <div className="flex w-full items-center justify-between gap-3">
                       <span className="text-muted-foreground">{tr("Accumulato")}</span>
-                      <span className="font-mono font-medium tabular-nums text-foreground">
+                      <span className="font-medium tabular-nums text-foreground">
                         {formatCurrency(Number(value), currency)}
                       </span>
                     </div>

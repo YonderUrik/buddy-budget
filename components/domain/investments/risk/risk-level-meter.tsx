@@ -50,7 +50,7 @@ export function RiskLevelMeter({ level, volatility, volatilityText, volatilityNo
           ))}
           <span
             style={{ left: `${position * 100}%` }}
-            className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-background bg-foreground shadow-sm transition-[left] duration-300 motion-reduce:transition-none"
+            className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-background bg-foreground transition-[left] duration-300 motion-reduce:transition-none"
           />
         </div>
         <div className="grid grid-cols-4 gap-1 text-xs text-muted-foreground" aria-hidden>

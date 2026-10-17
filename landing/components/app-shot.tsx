@@ -1,49 +1,46 @@
 import "./app-shot.css";
-import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, SCREEN_THEMES, type ScreenId } from "@/content/screens";
+import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, type ScreenId } from "@/content/screens";
+import { screenText } from "@/content/screen-text";
+import type { Locale } from "@/lib/i18n";
 import { screenSize } from "@/lib/screen-size";
+import { screenVariants } from "@/lib/screen-variants";
 
 export interface AppShotProps {
-  /** Id di una schermata di `content/screens.ts`. */
+  /** Id of a screen in `content/screens.ts`. */
   id: ScreenId;
-  /** Indirizzo mostrato nella barra del finto browser (default: dominio dell'app + route reale). */
-  url?: string;
-  /** Larghezza a cui viene mostrata (attributo `sizes`): aiuta il browser a scegliere la versione leggera. */
+  /** Width it is shown at (`sizes` attribute): helps the browser pick the light version. */
   sizes?: string;
-  /** Immagine sopra la piega: caricata subito invece che in lazy. */
+  /** Above-the-fold image: loaded eagerly instead of lazily. */
   priority?: boolean;
+  /** Language of the alt text. */
+  locale?: Locale;
   className?: string;
 }
 
 /**
- * Screenshot vero dell'app in una cornice da browser. Rende entrambe le versioni (chiara e scura) e il CSS mostra
- * quella che corrisponde al tema della landing, così il cambio tema non ricarica nulla.
+ * Real app screenshot, shown as it is (no browser frame, taste-skill: pictures need no frame). Renders every version (light and dark, in each language) and the CSS shows
+ * the one of the landing's theme and the visitor's language, so switching theme reloads nothing.
  */
-export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", priority = false, className }: AppShotProps) {
+export function AppShot({ id, sizes = "(max-width: 860px) 100vw, 900px", priority = false, locale = "it", className }: AppShotProps) {
   const screen = SCREENS.find((s) => s.id === id);
   if (!screen) throw new Error(`Schermata sconosciuta: ${id}`);
   const size = screenSize(screen.id);
   return (
     <figure className={`shot${className ? ` ${className}` : ""}`}>
-      <div className="shot-bar" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <span>{url ?? `app.buddybudget.io${screen.route}`}</span>
-      </div>
       <div className="shot-imgs" style={{ aspectRatio: `${size.width} / ${size.height}` }}>
-        {SCREEN_THEMES.map((theme) => (
-          // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
+        {screenVariants(priority).map(({ language, theme, className, eager }) => (
+          // eslint-disable-next-line @next/next/no-img-element -- static export: no image optimizer
           <img
-            key={theme}
-            className={`shot-img shot-${theme}`}
-            src={screenSmallSrc(screen.id, theme)}
-            // I telefoni scaricano e decodificano la versione a 1x; la 1,5x solo dove serve (schermi larghi e densi).
-            srcSet={size.width > SCREEN_SMALL_WIDTH ? `${screenSmallSrc(screen.id, theme)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme)} ${size.width}w` : undefined}
+            key={`${language}-${theme}`}
+            className={className}
+            src={screenSmallSrc(screen.id, theme, language)}
+            // Phones download and decode the 1x version; the 1.5x only where it pays off (wide, dense screens).
+            srcSet={size.width > SCREEN_SMALL_WIDTH ? `${screenSmallSrc(screen.id, theme, language)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme, false, language)} ${size.width}w` : undefined}
             sizes={sizes}
-            alt={screen.alt}
+            alt={screenText(screen.id, locale).alt}
             width={size.width}
             height={size.height}
-            loading={priority ? "eager" : "lazy"}
+            loading={eager ? "eager" : "lazy"}
             decoding="async"
           />
         ))}

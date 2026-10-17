@@ -74,16 +74,10 @@ export function PensionProjectionCard({ startValue, defaultQuarterlyContribution
         <div className="-mx-4 sm:-mx-6">
           <ChartContainer config={CHART_CONFIG} className="w-full" style={{ height: CHART_HEIGHT }}>
             <ComposedChart data={points} margin={{ left: 0, right: 0 }}>
-              <defs>
-                <linearGradient id="pension-band-fill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-base)" stopOpacity={0.2} />
-                  <stop offset="100%" stopColor="var(--color-base)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="year" tickLine={false} axisLine={false} tickFormatter={(y) => `${y}a`} minTickGap={24} padding={{ left: 16, right: 16 }} />
+              <XAxis dataKey="year" tickLine={false} axisLine={false} tickFormatter={(y) => tr("{0}a", {0: y})} minTickGap={24} padding={{ left: 16, right: 16 }} />
               <YAxis hide domain={[0, "auto"]} />
-              <ChartTooltip cursor={false} content={<PensionChartTooltip config={CHART_CONFIG} currency={currency} title={(point) => `Tra ${Number(point.year ?? 0)} anni`} />} />
-              <Area isAnimationActive={false} type="monotone" dataKey="optimistic" stroke="none" tooltipType="none" fill="url(#pension-band-fill)" />
+              <ChartTooltip cursor={false} content={<PensionChartTooltip config={CHART_CONFIG} currency={currency} title={(point) => tr("Tra {0} anni", {0: Number(point.year ?? 0)})} />} />
+              <Area isAnimationActive={false} type="monotone" dataKey="optimistic" stroke="none" tooltipType="none" fill="var(--color-base)" fillOpacity={0.1} />
               <Line isAnimationActive={false} type="monotone" dataKey="optimistic" stroke="var(--color-optimistic)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
               <Line isAnimationActive={false} type="monotone" dataKey="base" stroke="var(--color-base)" strokeWidth={2.6} dot={false} />
               <Line isAnimationActive={false} type="monotone" dataKey="prudent" stroke="var(--color-prudent)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />

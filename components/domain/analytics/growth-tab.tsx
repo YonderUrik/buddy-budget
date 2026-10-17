@@ -33,7 +33,7 @@ const CONFIG: ChartConfig = {
 export function GrowthTab({ base }: GrowthTabProps) {
   const { growthSteps } = localizedGuidedSteps(useLocalization().language);
 
-  const { money } = localizedAnalyticsFormats(useLocalization().language);
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
   const { locale: formattingLocale } = useLocalization();
   const monthLabel = (key: string) =>
@@ -69,7 +69,7 @@ export function GrowthTab({ base }: GrowthTabProps) {
             value={money(split.totalFromSavings, currency)}
             sub={
               split.savingsShare !== null
-                ? "{0} della crescita"
+                ? tr("{0} della crescita", {0: pct(split.savingsShare, 0)})
                 : undefined
             }
           />

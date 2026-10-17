@@ -20,9 +20,15 @@ function formatYears(years: number | null): string {
   return tr("{0} anni", { 0: new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(years) });
 }
 
+/** "In 12.5 years" form for a future arrival; same fallbacks as `formatYears`. */
+function formatYearsFromNow(years: number | null): string {
+  if (years === null || years === 0) return formatYears(years);
+  return tr("tra {0} anni", { 0: new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(years) });
+}
+
 /** Indice decimale in italiano con `digits` cifre. */
 const num = (value: number, digits = 2): string => new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
-  return { pct, money, formatYears, num };
+  return { pct, money, formatYears, formatYearsFromNow, num };
 }
 
 /** Italian defaults retained for existing callers and pure calculation tests. */

@@ -6,6 +6,7 @@ import { track } from "@/lib/analytics";
 import type { PensionOverviewData } from "@/lib/pension/types";
 import type { SnapshotImportPlan } from "@/lib/pension/import/plan";
 import type { CreatePensionFundInput, CreatePensionSnapshotInput, ImportPensionSnapshotsInput, UpdatePensionFundInput } from "@/lib/validation/pension";
+import { pageText } from "@/lib/localization/page-text";
 
 export const PENSION_QUERY_KEY = ["pension"] as const;
 /** Quanto restano valide le cifre della previdenza: cambiano solo per azioni dell'utente. */
@@ -13,7 +14,7 @@ const PENSION_STALE_TIME_MS = 60 * 1000;
 
 async function readError(response: Response, fallback: string): Promise<Error> {
   const body = await response.json().catch(() => null);
-  return new Error(body?.error ?? fallback);
+  return new Error(body?.error ?? pageText(fallback));
 }
 
 /** Invalida anche il patrimonio netto: la previdenza ne è una classe di asset. */

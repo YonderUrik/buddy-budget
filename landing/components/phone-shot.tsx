@@ -1,40 +1,47 @@
 import "./app-shot.css";
-import { SCREEN_THEMES, SCREENS, screenPhoneSrc, type ScreenId } from "@/content/screens";
+import "./phone-shot.css";
+import type { CSSProperties } from "react";
+import { SCREENS, screenPhoneSrc, type ScreenId } from "@/content/screens";
+import { screenText } from "@/content/screen-text";
+import type { Locale } from "@/lib/i18n";
 import { PHONE_SHOT_SIZE } from "@/lib/screen-size";
-import { PhoneFrame } from "./phone-frame";
+import { screenVariants } from "@/lib/screen-variants";
 
 export interface PhoneShotProps {
   /** Id of a screen in `content/screens.ts` that has the phone version (`phone`). */
   id: ScreenId;
-  /** Screen height (see `PhoneFrame`). */
+  /** Height of the picture (e.g. `46vh`, `520px`); the width follows the 390×751 capture. Without it, the CSS default applies. */
   height?: string;
   /** Above-the-fold image: loaded eagerly instead of lazily. */
   priority?: boolean;
+  /** Language of the alt text. */
+  locale?: Locale;
   className?: string;
 }
 
 /**
- * Real phone-size screenshot of the app inside the phone frame. Renders both the light and the dark version and the
- * CSS shows the one of the current theme (like `AppShot`).
+ * Real phone-size screenshot of the app, shown as it is: no device frame around it (taste-skill: pictures need no
+ * frame). Renders every theme and language version and the CSS shows the one of the current theme and the visitor's
+ * language (like `AppShot`).
  */
-export function PhoneShot({ id, height, priority = false, className }: PhoneShotProps) {
+export function PhoneShot({ id, height, priority = false, locale = "it", className }: PhoneShotProps) {
   const screen = SCREENS.find((s) => s.id === id);
   if (!screen || !("phone" in screen && screen.phone)) throw new Error(`Schermata senza versione da telefono: ${id}`);
   return (
-    <PhoneFrame height={height} className={className}>
-      {SCREEN_THEMES.map((theme) => (
+    <figure className={`ps${className ? ` ${className}` : ""}`} style={height ? ({ "--ps-h": height } as CSSProperties) : undefined}>
+      {screenVariants(priority).map(({ language, theme, className, eager }) => (
         // eslint-disable-next-line @next/next/no-img-element -- static export: no image optimizer
         <img
-          key={theme}
-          className={`shot-img shot-${theme}`}
-          src={screenPhoneSrc(screen.id, theme)}
-          alt={screen.alt}
+          key={`${language}-${theme}`}
+          className={className}
+          src={screenPhoneSrc(screen.id, theme, language)}
+          alt={screenText(screen.id, locale).alt}
           width={PHONE_SHOT_SIZE.width}
           height={PHONE_SHOT_SIZE.height}
-          loading={priority ? "eager" : "lazy"}
+          loading={eager ? "eager" : "lazy"}
           decoding="async"
         />
       ))}
-    </PhoneFrame>
+    </figure>
   );
 }

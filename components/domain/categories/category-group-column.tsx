@@ -41,8 +41,8 @@ export function CategoryGroupColumn({
       onDragEnter={canDrop ? onDragEnter : undefined}
       onDrop={canDrop ? (event) => { event.preventDefault(); onDrop(event.dataTransfer.getData("text/plain")); } : undefined}
       className={cn(
-        "flex flex-col gap-3 rounded-xl border border-border bg-muted/40 p-4 transition-colors",
-        isDropActive && "border-primary bg-primary/5"
+        "flex flex-col gap-3 rounded-xl bg-muted/40 p-4 transition-colors",
+        isDropActive && "bg-primary/10 ring-2 ring-primary/40"
       )}
     >
       <header className="flex flex-col gap-0.5">

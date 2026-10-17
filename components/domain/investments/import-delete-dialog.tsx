@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescript
 
 export interface ImportDeleteDialogProps {
   open: boolean;
+  /** Texts are Italian sources (translated here) or text already in the user's language. */
   title: string;
   /** Una frase sul perché si vede questa conferma (es. caricamenti successivi che dipendono dai saldi). */
   intro?: string;
@@ -34,25 +35,25 @@ export function ImportDeleteDialog({ open, title, intro, items, removes, keeps, 
       <AlertDialogContent className="max-h-[85dvh] overflow-y-auto data-[size=default]:sm:max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle>{tr(title)}</AlertDialogTitle>
-          <AlertDialogDescription>{intro ?? tr("Controlla cosa viene eliminato prima di confermare.")}</AlertDialogDescription>
+          <AlertDialogDescription>{tr(intro ?? "Controlla cosa viene eliminato prima di confermare.")}</AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex flex-col gap-4 text-sm">
           <div className="flex flex-col gap-1.5">
             <p className="font-medium text-foreground">{tr("Viene eliminato")}</p>
             <ul className="flex flex-col gap-1 text-muted-foreground">
-              {items.map((item) => <li key={item} className="font-medium text-foreground">{item}</li>)}
-              {removes.map((line) => <li key={line}>{line}</li>)}
+              {items.map((item) => <li key={item} className="font-medium text-foreground">{tr(item)}</li>)}
+              {removes.map((line) => <li key={line}>{tr(line)}</li>)}
             </ul>
           </div>
           <div className="flex flex-col gap-1.5">
             <p className="font-medium text-foreground">{tr("Resta com'è")}</p>
-            <ul className="flex flex-col gap-1 text-muted-foreground">{keeps.map((line) => <li key={line}>{line}</li>)}</ul>
+            <ul className="flex flex-col gap-1 text-muted-foreground">{keeps.map((line) => <li key={line}>{tr(line)}</li>)}</ul>
           </div>
         </div>
         {error ? <p role="alert" className="text-sm text-destructive">{tr(error)}</p> : null}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>{tr("Annulla")}</AlertDialogCancel>
-          <Button variant="destructive" disabled={pending} onClick={onConfirm}>{pending ? tr("Eliminazione…") : confirmLabel}</Button>
+          <Button variant="destructive" disabled={pending} onClick={onConfirm}>{pending ? tr("Eliminazione…") : tr(confirmLabel)}</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

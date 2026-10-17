@@ -6,6 +6,9 @@
 
 export { SegmentedControl } from "./segmented-control";
 export type { SegmentedControlOption, SegmentedControlProps } from "./segmented-control";
+export { PeriodSelector } from "./period-selector";
+export type { PeriodCustomRange, PeriodOption, PeriodSelectorProps } from "./period-selector";
+export type { PeriodRange } from "./period-range-panel";
 export { InfoHint } from "./info-hint";
 export type { InfoHintProps } from "./info-hint";
 export { LoadError } from "./load-error";
@@ -27,7 +30,9 @@ export { FormDialogContent } from "./form-dialog";
 export type { FormDialogContentProps, FormDialogSize } from "./form-dialog";
 export { InlineOrSheet } from "./inline-or-sheet";
 export type { InlineOrSheetLayout, InlineOrSheetProps } from "./inline-or-sheet";
-export { PAGE_TITLE, PAGE_TITLE_FACE } from "./page-title";
+export { PAGE_TITLE, PAGE_TITLE_FACE, SECTION_TITLE } from "./page-title";
+export { SimulationResult } from "./simulation-result";
+export type { SimulationResultProps, SimulationResultTone } from "./simulation-result";
 export { BackLink } from "./back-link";
 export { BackHistoryRecorder } from "./back-history-recorder";
 export { PageBackBar, TopBarBack } from "./page-back";

@@ -7,13 +7,13 @@
 
 import { CurrencyInput } from "@/components/domain/accounts";
 import { StepHeading } from "@/components/domain/shared";
-import { Input } from "@/components/ui/input";
 import { EMERGENCY_MONTH_CHOICES } from "@/lib/goals/constants";
 import { addMonthsKey } from "@/lib/goals/plan";
 import { useLocalization } from "@/lib/localization/provider";
 import { emergencyTarget, requiredMonthly, type GoalDraft } from "./goal-form-state";
 import type { GoalFormatters } from "./goal-format";
 import { GoalChoice } from "./goal-choice";
+import { GoalMonthPicker } from "./goal-month-picker";
 import { GoalNote } from "./goal-note";
 
 export interface GoalAmountStepProps {
@@ -89,14 +89,7 @@ export function GoalAmountStep({ draft, currency, todayKey, essentialMonthly, es
           <GoalChoice selected={draft.targetMonth === null} onClick={() => onChange({ targetMonth: null })}>
             {tr("Nessuna data")}
           </GoalChoice>
-          <Input
-            type="month"
-            min={minMonth}
-            value={draft.targetMonth ?? ""}
-            onChange={(e) => onChange({ targetMonth: e.target.value || null })}
-            className="h-11 w-auto sm:h-9"
-            aria-label={tr("Mese entro cui arrivarci")}
-          />
+          <GoalMonthPicker value={draft.targetMonth} min={minMonth} onChange={(targetMonth) => onChange({ targetMonth })} aria-label={tr("Mese entro cui arrivarci")} />
         </div>
       </div>
       {required !== null && draft.targetMonth ? (

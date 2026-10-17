@@ -1,0 +1,3 @@
+# Savings goals: target month without the crash (2026-10-17)
+
+The «Entro quando» ("By when") field in the second step of the goal form was an `<input type="month">`. Safari on Mac and Firefox show it as a plain text field: as soon as the user typed a character (`2`, `ott`) the draft held a non-month value, `Intl.DateTimeFormat` threw on the Invalid Date and the page fell into the error screen. The field is now two native selects (month, year; `GoalMonthPicker`) that only ever produce a complete `YYYY-MM`, and `isMonthKey` guards `canAdvance`, `requiredMonthly` and the month formatter as a safety net. Regression tests in `components/domain/goals/goal-form-state.test.ts` and `lib/goals/plan.test.ts`.

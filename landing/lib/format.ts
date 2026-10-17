@@ -1,3 +1,5 @@
+import type { Locale } from "./i18n";
+
 /**
  * Numero intero con il punto come separatore delle migliaia, sempre (anche sotto 10.000).
  * Fatto a mano e non con `toLocaleString`: Node e il browser raggruppano diversamente le cifre a 4 cifre e
@@ -11,4 +13,17 @@ export function groupThousands(n: number): string {
 /** Importo in euro, arrotondato all'unità, con separatore italiano delle migliaia. */
 export function eur(n: number): string {
   return `${groupThousands(n)} €`;
+}
+
+/** Integer grouped by thousands in the page language: «22.595» in Italian, "22,595" in English. Hand-made for the same hydration reason. */
+export function groupThousandsIn(n: number, locale: Locale): string {
+  const it = groupThousands(n);
+  return locale === "en" ? it.replace(/\./g, ",") : it;
+}
+
+/** Rounded euro amount with a real minus sign: «−39.937 €» in Italian, "−€39,937" in English. */
+export function money(n: number, locale: Locale): string {
+  const sign = n < 0 ? "−" : "";
+  const digits = groupThousandsIn(Math.abs(n), locale);
+  return locale === "en" ? `${sign}€${digits}` : `${sign}${digits} €`;
 }

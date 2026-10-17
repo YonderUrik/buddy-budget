@@ -47,7 +47,9 @@ for (const file of htmlFiles(OUT)) {
   const canonical = pick(html, /<link rel="canonical" href="([^"]*)"/);
   // L'H1 della pagina è già il titolo qui sopra (quello della home è un testo animato che in Markdown si legge male).
   const body = td.turndown(main.replace(/<h1[\s\S]*?<\/h1>/, "")).replace(/\n{3,}/g, "\n\n").trim();
-  const md = `# ${title}\n\n${description ? `> ${description}\n\n` : ""}${canonical ? `Fonte: ${canonical}\n\n` : ""}${body}\n`;
+  // English pages (`out/en/…`) get the source line in English.
+  const sourceLabel = /^en(\/|\.html$)/.test(relative(OUT, file)) ? "Source" : "Fonte";
+  const md = `# ${title}\n\n${description ? `> ${description}\n\n` : ""}${canonical ? `${sourceLabel}: ${canonical}\n\n` : ""}${body}\n`;
   writeFileSync(file.replace(/\.html$/, ".md"), md);
   // Chiave = $uri dopo il rewrite di nginx (/pagina.md, /index.md per la home).
   const mdPath = "/" + relative(OUT, file).replace(/\.html$/, ".md");

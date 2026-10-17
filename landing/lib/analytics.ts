@@ -1,6 +1,7 @@
 import type { FeatureArea } from "@/content/catalog.generated";
 import type { ShowcaseId } from "@/content/home";
 import type { ScreenId } from "@/content/screens";
+import type { Locale } from "@/lib/i18n";
 
 /** Sections measured with `section_view`: the home sections, the closing (home and content pages) and the screen gallery. */
 export type SectionId = "come" | "dentro" | "sicurezza" | "codice" | "domande" | "fine" | "schermate";
@@ -13,7 +14,15 @@ export interface LandingEvents {
   cta_click: {
     location: "nav" | "hero" | "mobile_bar" | "dentro" | "closing" | "funzioni" | "schermate" | "strumenti" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "calcolatore_obiettivo" | "guida_zainetto" | "funzione_investimenti" | "sicurezza";
     target: "signup" | "login" | "calculator" | "how";
+    /** Language of the page the click came from. */
+    lang: Locale;
   };
+  /** «Prova la demo» / "Try the demo": the button towards the app's public read-only demo. */
+  demo_click: { location: LandingEvents["cta_click"]["location"]; lang: Locale };
+  /** The «IT / EN» switch, or the "also available in English" bar of the Italian home. */
+  language_switch_click: { from: Locale; to: Locale; location: "nav" | "menu" | "footer" | "hint" };
+  /** The "also available in English" bar closed without following it. */
+  language_hint_dismissed: undefined;
   section_view: { section: SectionId };
   /** Home: a tab of «Cosa ti dice» chosen (by tap or by swipe). */
   showcase_tab_selected: { tab: ShowcaseId };

@@ -5,10 +5,12 @@
  * Only facts verifiable in the product; figures come from the demo screenshots in `public/screens/` (a made-up
  * person, «Giulia Demo»). `ITALY` (the Italian rules already in the calculations) feeds `llms.txt` and the Tasse tab.
  */
+import type { Locale } from "@/lib/i18n";
 import type { ScreenId } from "./screens";
 import { CONTENT_PATHS, SOURCES, type Source } from "./seo-pages";
 import { FIELD_ENCRYPTION_LIVE, SECURITY_SOURCES } from "./security";
-import { SUPPORTED } from "./sheet";
+import { SUPPORTED, type BankCountry, type SupportedSource } from "./sheet";
+import { FAQ, SOURCE_LICENSE, type FaqItem } from "./site";
 
 /** Icons available to the sections (same library as the app: lucide). The component maps the name to the icon. */
 export type HomeIcon =
@@ -19,14 +21,24 @@ export type HomeIcon =
   | "key" | "eye" | "ban" | "sliders" | "file-text" | "database" | "pencil" | "chart"
   | "candles" | "layers" | "bitcoin" | "car" | "spreadsheet";
 
-/** The opening: one promise, one sentence, one button. */
+export interface HeroText {
+  title: string;
+  lede: string;
+  cta: string;
+  /** Secondary button towards the public demo of the app. */
+  demo: string;
+  /** Secondary action: scrolls to «Da quattro posti». */
+  how: string;
+}
+
+/** The opening: one promise, one sentence, the button and the demo. */
 export const HERO = {
   title: "Tutti i tuoi soldi, in un numero solo.",
   lede: "Conto, investimenti, pensione e mutuo insieme. Aggiornato ogni giorno, tasse comprese.",
   cta: "Inizia gratis",
-  /** Secondary action: scrolls to «Da quattro posti». */
+  demo: "Prova la demo",
   how: "Come funziona",
-} as const;
+} as const satisfies HeroText;
 
 export type SumTone = "neg";
 
@@ -40,6 +52,16 @@ export interface SumRow {
   tone?: SumTone;
 }
 
+export interface SumText {
+  title: string;
+  rows: readonly SumRow[];
+  /** Currency written before the total (English); Italian writes it after, inside `cents`. */
+  prefix?: string;
+  /** Decimals of the total, as in the screenshot (the rows are rounded). */
+  cents: string;
+  caption: string;
+}
+
 /** The sum in the opening: the four places add up to the net worth of the Panoramica screenshot beside it. */
 export const SUM = {
   title: "Patrimonio netto",
@@ -49,10 +71,9 @@ export const SUM = {
     { label: "Fondo pensione", detail: "1 fondo", value: 11082 },
     { label: "Mutuo e prestiti", detail: "3 debiti", value: -39937, tone: "neg" },
   ] satisfies readonly SumRow[],
-  /** Decimals of the total, as in the screenshot (the rows are rounded). */
   cents: ",53 €",
   caption: "Dati d'esempio.",
-} as const;
+} as const satisfies SumText;
 
 export interface SourceItem {
   name: string;
@@ -64,6 +85,19 @@ export interface SourceItem {
   spec: string;
   /** Logos or flags shown under the text. */
   art?: "banks" | "brokers";
+}
+
+export interface PlacesText {
+  title: string;
+  intro: string;
+  items: readonly SourceItem[];
+  /** Countries whose banks can be linked (flags), with the name in the page language. */
+  banks: readonly BankCountry[];
+  brokers: readonly SupportedSource[];
+  /** Dashed tile after the broker logos. */
+  anyCsv: string;
+  /** `aria-label` of the flags. */
+  banksLabel: string;
 }
 
 /** «Da quattro posti, un numero»: how each place gets in, once. */
@@ -100,7 +134,9 @@ export const PLACES = {
   ] satisfies readonly SourceItem[],
   banks: SUPPORTED.countries,
   brokers: SUPPORTED.brokers,
-} as const;
+  anyCsv: "qualsiasi CSV",
+  banksLabel: "Paesi delle banche",
+} as const satisfies PlacesText;
 
 export type ShowcaseId = "spese" | "investimenti" | "tasse" | "mutuo" | "futuro";
 
@@ -115,6 +151,16 @@ export interface ShowcaseTab {
   figure: { value: string; small?: string; tone?: "pos" | "neg"; caption: string };
   shot: ScreenId;
   more?: { href: string; label: string };
+}
+
+export interface ShowcaseText {
+  title: string;
+  tabs: readonly ShowcaseTab[];
+  /** `aria-label` of the tab list. */
+  tabsLabel: string;
+  /** Below the tabs: the whole gallery. */
+  all: string;
+  allHref: string;
 }
 
 /** «Cosa ti dice, ogni giorno»: five things the number knows, each with the real screen and its figure. */
@@ -165,15 +211,24 @@ export const SHOWCASE = {
       shot: "analitiche",
     },
   ] satisfies readonly ShowcaseTab[],
-  /** Below the tabs: the whole gallery. */
+  tabsLabel: "Schermate",
   all: "Tutte le schermate",
-} as const;
+  allHref: CONTENT_PATHS.schermate,
+} as const satisfies ShowcaseText;
 
 export interface TrustFact {
   icon: HomeIcon;
   title: string;
   text: string;
   source?: Source;
+}
+
+export interface TrustText {
+  title: string;
+  facts: readonly TrustFact[];
+  limits: readonly { title: string; text: string }[];
+  more: string;
+  moreHref: string;
 }
 
 /** «Legge soltanto. Non sposta soldi.»: four facts for everyone, two limits said plainly. Every sentence is verified in `security.ts`. */
@@ -210,7 +265,8 @@ export const TRUST = {
     { title: "Nessuna certificazione", text: "È un progetto piccolo: niente ISO 27001 né controlli esterni. Il codice aperto è il modo per controllare." },
   ],
   more: "Tutta la sicurezza, con le fonti",
-} as const;
+  moreHref: CONTENT_PATHS.sicurezza,
+} as const satisfies TrustText;
 
 export interface HoodFact {
   label: string;
@@ -219,10 +275,25 @@ export interface HoodFact {
   path?: string;
 }
 
+export interface HoodText {
+  title: string;
+  text: string;
+  /** Text shown instead of `text` when the build has no public repository URL. */
+  fallback: string;
+  cta: string;
+  selfHost: string;
+  selfHostPath: string;
+  command: { label: string; lines: readonly string[]; copy: string; copied: string };
+  who: string;
+  whoTail: string;
+  facts: readonly HoodFact[];
+}
+
 /** «Sotto il cofano»: the technical facts, for whoever wants to read the code or run it at home. */
 export const UNDER_HOOD = {
   title: "Il codice è aperto. Leggilo, o installalo a casa tua.",
   text: "Tutta l'app è pubblica, con licenza AGPL-3.0. Puoi leggere come tratta i dati, segnalare un problema o farla girare su un server tuo con Docker.",
+  fallback: `Il codice ha licenza ${SOURCE_LICENSE} e si installa su un server tuo con Docker.`,
   cta: "Vedi il codice su GitHub",
   selfHost: "Guida al self-hosting",
   selfHostPath: "/blob/main/docs/self-hosting.md",
@@ -249,15 +320,52 @@ export const UNDER_HOOD = {
     { label: "Accesso", value: "Link via email o Google, nessuna password" },
     { label: "Sicurezza", value: "SECURITY.md", path: "/blob/main/SECURITY.md" },
   ] satisfies readonly HoodFact[],
-} as const;
+} as const satisfies HoodText;
 
 export const FAQ_HOME = { title: "Prima di iscriverti." } as const;
+
+export interface CloseText {
+  title: string;
+  cta: string;
+  demo: string;
+  /** Optional plain button towards the calculators (Italian only). */
+  tools?: string;
+}
 
 export const CLOSE = {
   title: "Il tuo numero, da domani mattina.",
   cta: "Inizia gratis",
+  demo: "Prova la demo",
   tools: "Prova un calcolatore",
-} as const;
+} as const satisfies CloseText;
+
+/** Everything the home sections show, in one language: the components take it as a prop (`HOME_IT`, `HOME_EN`). */
+export interface HomeContent {
+  locale: Locale;
+  hero: HeroText;
+  sum: SumText;
+  places: PlacesText;
+  showcase: ShowcaseText;
+  trust: TrustText;
+  hood: HoodText;
+  faq: { title: string; items: readonly FaqItem[] };
+  close: CloseText;
+  /** Sign-in label in the phone bar. */
+  login: string;
+}
+
+export const HOME_IT: HomeContent = {
+  locale: "it",
+  hero: HERO,
+  sum: SUM,
+  places: PLACES,
+  showcase: SHOWCASE,
+  trust: TRUST,
+  hood: UNDER_HOOD,
+  faq: { title: FAQ_HOME.title, items: FAQ },
+  close: CLOSE,
+  login: "Entra",
+};
 
 export interface ItalyRule {
   icon: HomeIcon;

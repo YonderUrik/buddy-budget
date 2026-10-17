@@ -5046,5 +5046,8 @@
   "Movimento": "Transaction",
   "Riga {0}: {1} non valido": "Row {0}: invalid {1}",
   "data mancante": "date missing",
-  "Ti mandiamo un link via email. Non serve una password.": "We'll email you a link. No password needed."
+  "Ti mandiamo un link via email. Non serve una password.": "We'll email you a link. No password needed.",
+  "Scegli la demo": "Choose the demo",
+  "Con tasse e regole italiane": "With Italian taxes and rules",
+  "Con tasse e regole tedesche": "With German taxes and rules"
 }

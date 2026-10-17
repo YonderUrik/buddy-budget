@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.74.1](https://github.com/YonderUrik/buddy-budget/compare/v0.74.0...v0.74.1) (2026-10-17)
+
+
+### Correzioni
+
+* floating capsule bottom bar on the phone web ([#413](https://github.com/YonderUrik/buddy-budget/issues/413)) ([1e3ce68](https://github.com/YonderUrik/buddy-budget/commit/1e3ce680d98ce4077bd666d067439a3720273d7b))
+
 ## [0.74.0](https://github.com/YonderUrik/buddy-budget/compare/v0.73.0...v0.74.0) (2026-10-17)
 
 

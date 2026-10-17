@@ -37,10 +37,10 @@ export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
 /**
  * Top bar, the same on every page and like the app's top bar: light, a rule below, it scrolls away with the page.
  * On the phone the links live in a full-screen sheet with big rows and the two buttons. With the public repository
- * it also shows «Codice aperto». `current` highlights the entry of the open page. `tone="navy"` puts the bar (and the
- * phone menu) on the navy ground, for a page that opens on navy like the home.
+ * it also shows «Codice aperto». `current` highlights the entry of the open page. `tone` picks the ground: navy
+ * (default, every page opens on navy) or light.
  */
-export function SiteNav({ links = DEFAULT_NAV_LINKS, current, tone = "light" }: { links?: readonly NavLink[]; current?: string; tone?: NavTone }) {
+export function SiteNav({ links = DEFAULT_NAV_LINKS, current, tone = "navy" }: { links?: readonly NavLink[]; current?: string; tone?: NavTone }) {
   const [open, setOpen] = useState(false);
 
   // Phone menu: closes with Esc and when the window grows wide; while open the page behind does not scroll.
@@ -83,7 +83,7 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS, current, tone = "light" }: 
         <div className="nr">
           <ThemeToggle />
           <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">{LOGIN_LABEL}</CtaLink>
-          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">{SIGNUP_LABEL}</CtaLink>
+          <CtaLink className="btn main sun" href={APP_LINKS.signup} location="nav" target="signup">{SIGNUP_LABEL}</CtaLink>
           <button type="button" className="menu-btn" aria-expanded={open} aria-controls="nav-menu" aria-label={open ? "Chiudi il menu" : "Apri il menu"} onClick={() => setOpen((v) => !v)}>
             {open ? <X size={20} strokeWidth={1.75} aria-hidden="true" /> : <Menu size={20} strokeWidth={1.75} aria-hidden="true" />}
           </button>
@@ -96,7 +96,7 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS, current, tone = "light" }: 
           ))}
           {sourceLink("sezione")}
           <div className="menu-acts">
-            <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup" arrow>{SIGNUP_LABEL}</CtaLink>
+            <CtaLink className="btn main sun" href={APP_LINKS.signup} location="nav" target="signup" arrow>{SIGNUP_LABEL}</CtaLink>
             <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">{LOGIN_LABEL}</CtaLink>
           </div>
           <div className="menu-foot">

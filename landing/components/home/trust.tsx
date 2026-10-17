@@ -14,7 +14,7 @@ export function Trust() {
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec" aria-labelledby="sicurezza-t">
       <div className="wrap">
-        <SectionHead id="sicurezza-t" index={TRUST.index} title={TRUST.title} intro={TRUST.intro} />
+        <SectionHead id="sicurezza-t" title={TRUST.title} />
         <ul className="facts">
           {TRUST.facts.map((fact) => (
             <li key={fact.title}>

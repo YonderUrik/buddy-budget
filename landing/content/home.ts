@@ -21,17 +21,11 @@ export type HomeIcon =
 
 /** The opening: one promise, one sentence, one button. */
 export const HERO = {
-  /** Small label above the title, in the mono face. */
-  index: "Patrimonio netto · ogni mattina",
   title: "Tutti i tuoi soldi, in un numero solo.",
   lede: "Conto, investimenti, pensione e mutuo insieme. Aggiornato ogni giorno, tasse comprese.",
   cta: "Inizia gratis",
   /** Secondary action: scrolls to «Da quattro posti». */
   how: "Come funziona",
-  /** Short facts next to the button, the ones people check before trusting an app with their bank. */
-  trust: ["Legge soltanto, non sposta soldi", "Dati in Germania", "Codice aperto", "Gratis durante la beta"],
-  /** Caption under the big Panoramica window that follows the opening. */
-  shot: "Panoramica · la prima schermata dell'app",
 } as const;
 
 export type SumTone = "neg";
@@ -57,7 +51,7 @@ export const SUM = {
   ] satisfies readonly SumRow[],
   /** Decimals of the total, as in the screenshot (the rows are rounded). */
   cents: ",53 €",
-  caption: "Dati di una persona inventata, dalla Panoramica dell'app.",
+  caption: "Dati d'esempio.",
 } as const;
 
 export interface SourceItem {
@@ -74,7 +68,6 @@ export interface SourceItem {
 
 /** «Da quattro posti, un numero»: how each place gets in, once. */
 export const PLACES = {
-  index: "#1 · Da dove",
   title: "Da quattro posti, un numero.",
   intro: "Ogni cosa entra una volta. Poi l'app la tiene aggiornata da sola.",
   items: [
@@ -105,8 +98,6 @@ export const PLACES = {
       spec: "Piano alla francese, TAEG, extra mensili, estinzione parziale, surroga · da tre dati fra capitale, rata, numero di rate e tasso ricava il quarto",
     },
   ] satisfies readonly SourceItem[],
-  /** Closing line of the section, where the four rows meet. */
-  result: "Il numero, ogni mattina.",
   banks: SUPPORTED.countries,
   brokers: SUPPORTED.brokers,
 } as const;
@@ -128,9 +119,7 @@ export interface ShowcaseTab {
 
 /** «Cosa ti dice, ogni giorno»: five things the number knows, each with the real screen and its figure. */
 export const SHOWCASE = {
-  index: "#2 · Cosa ti dice",
   title: "Cosa ti dice, ogni giorno.",
-  intro: "Cinque schermate vere, con i dati della stessa persona inventata.",
   tabs: [
     {
       id: "spese",
@@ -172,7 +161,7 @@ export const SHOWCASE = {
       tab: "Futuro",
       title: "Quando puoi smettere di lavorare.",
       text: "Parte da quanto risparmi e spendi davvero, non da un'ipotesi. Muovi un cursore e l'anno cambia.",
-      figure: { value: "2046", caption: "tra 19,2 anni, ai ritmi di oggi · le ipotesi sono scritte sotto i cursori" },
+      figure: { value: "2046", caption: "tra 19,2 anni, ai ritmi di oggi" },
       shot: "analitiche",
     },
   ] satisfies readonly ShowcaseTab[],
@@ -189,9 +178,7 @@ export interface TrustFact {
 
 /** «Legge soltanto. Non sposta soldi.»: four facts for everyone, two limits said plainly. Every sentence is verified in `security.ts`. */
 export const TRUST = {
-  index: "#3 · Fiducia",
   title: "Legge soltanto. Non sposta soldi.",
-  intro: "È la prima domanda di tutti. Risposte corte, con le fonti.",
   facts: [
     {
       icon: "key",
@@ -264,11 +251,10 @@ export const UNDER_HOOD = {
   ] satisfies readonly HoodFact[],
 } as const;
 
-export const FAQ_HOME = { index: "#4 · Domande", title: "Prima di iscriverti.", intro: "Le domande che arrivano più spesso. Tocca per leggere." } as const;
+export const FAQ_HOME = { title: "Prima di iscriverti." } as const;
 
 export const CLOSE = {
   title: "Il tuo numero, da domani mattina.",
-  note: "Entri con un link via email o con Google. Nessuna password da ricordare.",
   cta: "Inizia gratis",
   tools: "Prova un calcolatore",
 } as const;

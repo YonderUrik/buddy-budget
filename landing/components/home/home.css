@@ -5,9 +5,9 @@
  * OWN-WORLD: the app's tokens (navy, teal primary, Space Grotesk figures with muted decimals), ledger rows split by
  * hairlines and closed by a sum rule, real screenshots in window and phone frames. No gradients, no icon-card grid.
  * STORY: understand «all my money in one number», believe it (real screens, verified facts, open code), tap «Inizia gratis».
- * FIRST VIEWPORT: on the navy ground, the title in the tall display face, one sentence, the button and the trust line
+ * FIRST VIEWPORT: on the navy ground, the title in the tall display face, one sentence and the button
  * on the left, the sum card on the right; the big Panoramica follows, half on the navy. On the phone: title, button,
- * card, then the window. Section titles share the display face, with a numbered mono label above («#1 · Da dove»).
+ * card, then the window. Section titles share the display face; the brand yellow marks the sign-up button.
  * FORM: direction A, pinned by Daniele on 2026-10-17; the navy ground, display face and labels after Hermes Agent
  * (same day). Theme tokens only.
  */
@@ -15,29 +15,20 @@
 /* ---------- opening: the navy ground (after Hermes Agent), the title in the tall display face ---------- */
 .hero { padding-block: 72px 240px; background: var(--navy); color: var(--on-navy); }
 .hero .wrap { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 48px 64px; align-items: end; }
-.hero .idx { color: var(--on-navy2); }
 .hero h1 { font: 300 clamp(60px, 8.4vw, 124px) / 0.9 var(--f-d); letter-spacing: -0.01em; color: var(--on-navy); max-width: 9.5em; }
 .hero .lede { margin-top: 28px; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.5; color: var(--on-navy2); max-width: 38ch; }
 .hero .cta { margin-top: 32px; align-items: center; }
 .hero .btn { height: 50px; padding: 0 22px; font-size: 16px; }
-/* the white button on navy, like the closing's */
-.hero .btn.ghost { background: var(--on-navy); color: var(--navy); border-color: var(--on-navy); }
-.hero .btn.ghost:hover { background: color-mix(in srgb, var(--on-navy) 88%, var(--navy)); }
 /* «Come funziona»: a quiet link with an arrow that points down the page */
 .hero .how { display: inline-flex; align-items: center; gap: 6px; height: 50px; padding: 0 8px; font: 600 15px var(--f-b); color: var(--on-navy); text-decoration: none; border-radius: var(--r); }
 .hero .how svg { width: 16px; height: 16px; transition: transform 0.3s var(--ease); }
 .hero .how:hover svg { transform: translateY(3px); }
-/* the four facts people check before trusting an app with their bank */
-.trust { margin: 28px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14px; color: var(--on-navy2); }
-.trust li { display: inline-flex; align-items: center; gap: 6px; }
-.trust li svg { width: 14px; height: 14px; color: var(--on-navy); flex: none; }
 /* the sum card keeps the page ink: it is a piece of the app laid on the navy */
 .hero .sum { margin-bottom: 8px; color: var(--ink); }
 
 /* the Panoramica right after the opening: big, full width, its top half still on the navy */
 .hero-shot { position: relative; margin-top: -192px; }
 .hero-shot .win { box-shadow: 0 0 0 1px color-mix(in srgb, var(--on-navy) 14%, transparent), 0 50px 100px -40px var(--shadow-win); }
-.shot-cap { margin-top: 14px; font: 500 12px / 1.4 var(--f-m); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink3); }
 
 /* ---------- app window (hero and «cosa ti dice»): real screenshot, cropped from the top ---------- */
 .win { margin: 0; border-radius: var(--r-card); overflow: hidden; background: var(--surface); box-shadow: 0 0 0 1px var(--line), 0 40px 80px -30px var(--shadow-win), 0 16px 32px -20px var(--shadow-win2); }
@@ -95,8 +86,6 @@
 .tile.tr img { height: 11px; }
 .tile.yh img { height: 16px; }
 .tile.csv { background: transparent; border-style: dashed; border-color: var(--ink3); color: var(--ink2); font-weight: 600; }
-.places-eq { display: flex; align-items: center; gap: 14px; margin-top: 8px; padding-top: 24px; border-top: 2px solid var(--ink); font: 400 clamp(28px, 2.6vw, 36px) var(--f-d); }
-.places-eq span { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: var(--r-sm); background: var(--sun); color: var(--on-sun); font: 700 20px var(--f-h); flex: none; }
 
 /* ---------- «cosa ti dice»: tabs like the app's segmented control, panels in a swipeable track ---------- */
 .tabs { display: flex; gap: 4px; margin-top: 32px; padding: 4px; border-radius: var(--r); background: var(--head); width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; }

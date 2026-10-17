@@ -5,6 +5,7 @@
  */
 
 export { AuthFrame } from "./auth-frame";
+export { AUTH_PRIMARY_BUTTON, AUTH_TITLE } from "./auth-styles";
 export type { AuthFrameProps } from "./auth-frame";
 export { AuthPreview } from "./auth-preview";
 export type { AuthPreviewProps } from "./auth-preview";

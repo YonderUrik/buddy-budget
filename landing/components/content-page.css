@@ -1,5 +1,13 @@
 /* Content pages in the same system as the home: the bar scrolls away, the body starts a little below, the navy closing ends it. */
-.cp { position: relative; padding-block: 40px 0; background: var(--bg); color: var(--ink); }
+.cp { position: relative; padding-block: 0; background: var(--bg); color: var(--ink); }
+/* the head on the navy ground of the bar, like the home's opening: back link, kicker in the brand yellow, title, lead */
+.cp-head { padding-block: 36px 64px; background: var(--navy); color: var(--on-navy); }
+.cp-head .back-link { color: var(--on-navy2); }
+.cp-head .back-link:hover { color: var(--on-navy); }
+.cp .cp-head .kicker { display: flex; width: fit-content; margin-bottom: 14px; background: transparent; color: var(--sun); padding: 0; border-radius: 0; font: 500 12px / 1.4 var(--f-m); letter-spacing: 0.1em; text-transform: uppercase; }
+.cp .cp-head h1 { color: var(--on-navy); }
+.cp .cp-head .lead { color: var(--on-navy2); margin-bottom: 0; }
+.cp-body { padding-top: 48px; }
 .cp-wrap { max-width: 920px; }
 .cp-wide { max-width: 1200px; }
 .cp .kicker { display: inline-flex; margin-bottom: 16px; }
@@ -13,7 +21,7 @@
 .cp ul { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 6px; max-width: 66ch; }
 .cp a { color: var(--accent); }
 /* the body ends before the closing; the last block keeps its distance from it */
-.cp-wrap > :last-child { margin-bottom: 72px; }
+.cp-body > :last-child { margin-bottom: 72px; }
 
 /* Calculator fields: 44 px tall, like the app's controls, so they work with a thumb. */
 .field { display: grid; gap: 6px; margin-bottom: 14px; }
@@ -93,4 +101,4 @@
 .sources-box summary::marker { color: var(--accent); }
 .sources-box .note { margin-bottom: 18px; }
 
-@media (max-width: 760px) { .cp { padding-top: 24px; } .cp-wrap > :last-child { margin-bottom: 56px; } }
+@media (max-width: 760px) { .cp-head { padding-block: 24px 44px; } .cp-body { padding-top: 32px; } .cp-body > :last-child { margin-bottom: 56px; } }

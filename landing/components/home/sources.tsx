@@ -29,12 +29,12 @@ function Brokers() {
   );
 }
 
-/** «Da quattro posti, un numero»: how each place gets in, four numbered entries (two columns on desktop) closed by the sum line. */
+/** «Da quattro posti, un numero»: how each place gets in, four numbered entries (two columns on desktop) */
 export function Sources() {
   return (
     <TrackedSection id="come" section="come" className="sec" aria-labelledby="come-t">
       <div className="wrap">
-        <SectionHead id="come-t" index={PLACES.index} title={PLACES.title} intro={PLACES.intro} />
+        <SectionHead id="come-t" title={PLACES.title} intro={PLACES.intro} />
         <ol className="places">
           {PLACES.items.map((item, i) => (
             <li key={item.name} className="place">
@@ -51,10 +51,6 @@ export function Sources() {
             </li>
           ))}
         </ol>
-        <p className="places-eq">
-          <span aria-hidden="true">=</span>
-          {PLACES.result}
-        </p>
       </div>
     </TrackedSection>
   );

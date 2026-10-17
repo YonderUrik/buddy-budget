@@ -29,7 +29,7 @@ export const BOTTOM_NAV_HREFS = ["/panoramica", "/liquidita", "/investimenti", "
 const MORE_LABEL = "Altro";
 
 /** Altezza della barra (rem): serve al contenuto per non finirle sotto. */
-export const BOTTOM_NAV_HEIGHT_REM = 4;
+export const BOTTOM_NAV_HEIGHT_REM = 4.75;
 
 export interface BottomNavProps {
   items: NavItem[];
@@ -60,7 +60,7 @@ function ActivePill() {
   );
 }
 
-const TAB_CLASS = "relative flex flex-1 flex-col items-center gap-0.5 pt-1.5 text-[11px] font-medium transition-colors";
+const TAB_CLASS = "relative flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors";
 
 export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, badges, onOpenMore, onTabClick }: BottomNavProps) {
   const { t: tr } = useLocalization();
@@ -94,16 +94,16 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
           >
             <span
               className={cn(
-                "relative flex h-7 w-14 items-center justify-center rounded-full transition-colors duration-200",
+                "relative flex h-8 w-16 items-center justify-center rounded-full transition-colors duration-200",
                 active && "text-on-sun"
               )}
             >
               {active ? <ActivePill /> : null}
-              <Icon className="relative z-10 size-5" aria-hidden="true" />
+              <Icon className="relative z-10 size-6" aria-hidden="true" />
               {showBadge ? (
                 <span
                   aria-label={tr(badge.ariaLabel)}
-                  className="absolute -top-1 right-1 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sidebar-primary px-1 text-[10px] font-bold leading-none text-sidebar-primary-foreground tabular-nums ring-2 ring-sidebar"
+                  className="absolute -top-1 right-2 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sidebar-primary px-1 text-[10px] font-bold leading-none text-sidebar-primary-foreground tabular-nums ring-2 ring-sidebar"
                 >
                   {badge.countLabel ?? badge.count}
                 </span>
@@ -124,12 +124,12 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
       >
         <span
           className={cn(
-            "relative flex h-7 w-14 items-center justify-center rounded-full transition-colors duration-200",
+            "relative flex h-8 w-16 items-center justify-center rounded-full transition-colors duration-200",
             !inPrimary && "text-on-sun"
           )}
         >
           {!inPrimary ? <ActivePill /> : null}
-          <MoreHorizontal className="relative z-10 size-5" aria-hidden="true" />
+          <MoreHorizontal className="relative z-10 size-6" aria-hidden="true" />
         </span>
         <span className="leading-none">{tr(MORE_LABEL)}</span>
       </button>

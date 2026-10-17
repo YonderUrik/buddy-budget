@@ -15,8 +15,11 @@ export const OG_LOCALE: Record<Locale, string> = { it: "it_IT", en: "en_US" };
 /** `inLanguage` of the schema.org data. */
 export const SCHEMA_LANGUAGE: Record<Locale, string> = { it: "it-IT", en: "en" };
 
-/** Short label of the language switch («IT / EN»). */
+/** Short code of each language («IT», «EN»). */
 export const LOCALE_SHORT: Record<Locale, string> = { it: "IT", en: "EN" };
+
+/** Each language written in itself, as the language menu lists it: a visitor finds their own without knowing ours. */
+export const LOCALE_NAME: Record<Locale, string> = { it: "Italiano", en: "English" };
 
 /** The other language: the switch only has two. */
 export function otherLocale(locale: Locale): Locale {

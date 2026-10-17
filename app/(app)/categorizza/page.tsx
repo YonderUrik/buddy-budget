@@ -20,7 +20,7 @@ import {
   useAiGeneration,
   useAutoCategorization,
 } from "@/components/domain/categorization";
-import { LoadError, SegmentedControl, type SegmentedControlOption } from "@/components/domain/shared";
+import { LoadError, SegmentedControl, type SegmentedControlOption, PAGE_TITLE } from "@/components/domain/shared";
 import { buttonVariants } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth/client";
@@ -117,7 +117,7 @@ export default function CategorizzaPage() {
       {/* In basso: il menu «⋯» sta all'altezza del titolo, non del link in alto. */}
       <div className="flex items-end gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h1 className="font-heading text-xl font-medium text-foreground md:text-2xl">{tr("Categorizza")}</h1>
+          <h1 className={PAGE_TITLE}>{tr("Categorizza")}</h1>
           <p className="text-sm text-muted-foreground max-md:hidden">
             {tr("Quando è quasi certa l'app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.")}</p>
         </div>

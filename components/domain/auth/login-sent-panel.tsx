@@ -11,6 +11,7 @@ import { Loader2, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MAGIC_LINK_EXPIRES_MINUTES } from "@/lib/auth/constants";
 import { useLocalization } from "@/lib/localization/provider";
+import { AUTH_TITLE } from "./auth-styles";
 
 export interface LoginSentPanelProps {
   /** Address shown to the user (masked when it comes from the remembered account). */
@@ -32,7 +33,7 @@ export function LoginSentPanel({ email, loading, cooldown, error, onResend, onBa
       <div className="mb-6 flex size-14 items-center justify-center rounded-full bg-pos-soft text-pos">
         <MailCheck className="size-7" aria-hidden="true" />
       </div>
-      <h1 className="font-heading text-3xl font-medium tracking-tight">{tr("Controlla la tua email")}</h1>
+      <h1 className={AUTH_TITLE}>{tr("Controlla la tua email")}</h1>
       <p className="mt-3 text-text-2" role="status">{tr("Abbiamo inviato un link di accesso a")}{" "}<strong className="font-medium text-foreground">{email}</strong>{tr(". Resta valido per")}{" "}{MAGIC_LINK_EXPIRES_MINUTES}{" "}{tr("minuti.")}</p>
       <p className="mt-2 text-sm text-text-3">{tr("Non lo trovi? Guarda anche nella cartella spam.")}</p>
 

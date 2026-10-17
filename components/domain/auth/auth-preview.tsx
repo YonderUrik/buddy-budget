@@ -4,7 +4,7 @@
  * AuthPreview
  *
  * Preview beside the sign-in form: the Panoramica in an app window, with the net worth adding up place by place
- * (bank accounts, investments, pension fund, mortgage and loans) to the total, the same sum as the landing's opening
+ * (bank accounts, investments, pension fund, mortgage and loans) to the total, the same sum as the landing's opening,
  * («Tutti i tuoi soldi, in un numero solo»). Data of a made-up person, the same figures as the landing. With
  * «reduce motion» it shows the result at once.
  */
@@ -83,8 +83,8 @@ export function AuthPreview({ className }: AuthPreviewProps) {
         </div>
       </div>
       <figcaption className="mt-5">
-        <span className="block text-xs font-medium text-text-3">{tr("Dati di una persona inventata")}</span>
-        <span className="mt-1 block font-heading text-xl font-semibold tracking-tight">{tr("Tutti i tuoi soldi, in un numero solo.")}</span>
+        <span className="block text-xs font-medium text-on-brand-navy-2">{tr("Dati di una persona inventata")}</span>
+        <span className="mt-1 block font-display text-[2.75rem] font-light leading-[0.95] text-on-brand-navy">{tr("Tutti i tuoi soldi, in un numero solo.")}</span>
       </figcaption>
     </figure>
   );

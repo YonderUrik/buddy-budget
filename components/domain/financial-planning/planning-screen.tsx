@@ -11,6 +11,7 @@ import { TaxEditor } from "./tax-editor";
 import { PensionEditor } from "./pension-editor";
 import { RetirementEditor } from "./retirement-editor";
 import { GermanIncomeView } from "./income-view";
+import { PAGE_TITLE } from "@/components/domain/shared";
 
 interface SavedPlan { plan: GermanPlan; revision: number }
 const KEY = ["financial-planning", "DE"] as const;
@@ -57,7 +58,7 @@ export function PlanningScreen({ section }: { section: PlanningSection }) {
   } });
   const overview = useInvestmentsOverviewQuery("max");
   return <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-6">
-    <h1 className="font-heading text-2xl font-medium">{t(TITLES[section])}</h1>
+    <h1 className={PAGE_TITLE}>{t(TITLES[section])}</h1>
     {query.isError || overview.isError ? <div role="alert"><p>{t("Could not load the plan.")}</p><Button onClick={() => { void query.refetch(); void overview.refetch(); }}>{t("Retry")}</Button></div> : !query.data || !overview.data ? <p aria-busy="true">{t("Loading…")}</p> : overview.data.currency !== "EUR" ? <p>{t("German financial planning currently requires account currency EUR. Your saved data has not been changed.")}</p> : <Editor key={`${section}:${query.data.revision}`} saved={query.data} section={section} data={overview.data} />}
   </div>;
 }

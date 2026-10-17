@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
 import { track } from "@/lib/analytics";
+import { AiBadge } from "./ai-badge";
 
-/** Preferenze personali inviate all'assistente solo quando la categorizzazione AI è attiva. */
+/** Personal preferences sent to the assistant only while AI categorisation is on. */
 export function AiCategorizationInstructions({ saved }: { saved: string }) {
   const { t: tr } = useLocalization();
   const [draft, setDraft] = React.useState<string | null>(null);
@@ -24,7 +25,10 @@ export function AiCategorizationInstructions({ saved }: { saved: string }) {
         track("ai_categorization_instructions_saved");
       } });
     }}>
-      <label htmlFor="ai-category-instructions" className="text-sm font-medium">{tr("Le tue istruzioni per l’AI")}</label>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <label htmlFor="ai-category-instructions" className="text-sm font-medium">{tr("Le tue istruzioni per l’AI")}</label>
+        <AiBadge />
+      </div>
       <p id="ai-category-instructions-hint" className="text-sm text-muted-foreground">{tr("Spiega come preferisci dividere le spese. Questo testo viene inviato all’assistente quando è attivo: non inserire dati personali o bancari.")}</p>
       <Textarea id="ai-category-instructions" value={value} maxLength={2000} rows={4}
         aria-describedby="ai-category-instructions-hint" disabled={update.isPending}

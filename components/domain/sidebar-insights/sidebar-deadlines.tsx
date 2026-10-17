@@ -66,7 +66,7 @@ export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNav
                     item.overdue ? "bg-neg-soft text-neg" : "bg-sidebar-accent text-sidebar-foreground"
                   )}
                 >
-                  <span className="text-[9px] font-semibold uppercase tracking-wide opacity-70">{month}</span>
+                  <span className="text-[9px] font-semibold uppercase opacity-70">{month}</span>
                   <span className="font-heading text-sm font-semibold tabular-nums">{day}</span>
                 </span>
                 <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-sidebar-foreground">{tr(item.label)}</span>

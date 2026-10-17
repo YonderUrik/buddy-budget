@@ -34,7 +34,7 @@ export default function PerformancePage() {
         <PortfolioPeriodSelector value={performance.period} range={performance.customRange} today={performance.todayKey}
           onChange={performance.changePeriod} onRangeChange={performance.changeRange} surface="performance" showRangeCaption={false} />
       </div>
-      {performance.selection ? <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/30 p-3">
+      {performance.selection ? <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/50 p-3">
         <p className="text-sm">{tr("Intervallo selezionato sul grafico ·")}{" "}{periodLabel}</p>
         <Button variant="outline" size="sm" onClick={performance.resetSelection}>{tr("Torna al periodo scelto")}</Button>
       </div> : null}
@@ -44,7 +44,7 @@ export default function PerformancePage() {
         onInspect={performance.inspectDate} onSelectRange={performance.selectRange}
         benchmark={view.benchmark} benchmarkFirstPriceDate={view.benchmarkFirstPriceDate}
         benchmarkBackfill={benchmarkBackfill} currency={currency} />
-        : <p role="status" className="rounded-lg border p-4 text-sm text-muted-foreground">{tr("Nessuna operazione nell’intervallo scelto. Seleziona un altro periodo.")}</p>}
+        : <p role="status" className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">{tr("Nessuna operazione nell’intervallo scelto. Seleziona un altro periodo.")}</p>}
       </div>
       <div className="min-w-0 lg:col-span-2">
       {view.analysis.risk ? <RiskCard risk={view.analysis.risk} period={performance.calculationPeriod}

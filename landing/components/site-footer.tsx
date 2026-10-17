@@ -18,22 +18,21 @@ export interface SiteFooterProps {
 }
 
 /**
- * Footer, the same on every page: navy like the app's sidebar, the name drawn across its whole width (after Hermes
- * Agent), then the main pages, the language switch, the code, status and support. Texts from `UI[locale]`.
+ * Footer, the same on every page, on the navy field: three columns above (the name, the main pages, language, code,
+ * status and support) and the name drawn across the whole width below, cut by the page's bottom edge (taste-skill
+ * footer «Columns above, wordmark below»). Texts from `UI[locale]`.
  */
 export function SiteFooter({ locale = "it", alternate }: SiteFooterProps) {
   const t = UI[locale];
   return (
-    <footer className="sf">
-      <p className="sf-word" aria-hidden="true">{WORDMARK}</p>
-      <div className="wrap">
-        <span>© BuddyBudget</span>
+    <footer className="sf" data-field="navy">
+      <div className="wrap sf-cols">
+        <p className="sf-name">© BuddyBudget</p>
         <nav aria-label={t.footer.pages}>
           {t.footer.links.map((l) => (
             <Link key={l.href} href={l.href}>{l.label}</Link>
           ))}
         </nav>
-        <span className="sp" />
         <nav aria-label={t.footer.other}>
           <LangSwitch locale={locale} href={alternate ?? HOME_PATH[otherLocale(locale)]} location="footer" label={t.language} />
           {SOURCE_URL ? (
@@ -46,6 +45,7 @@ export function SiteFooter({ locale = "it", alternate }: SiteFooterProps) {
           <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
         </nav>
       </div>
+      <p className="sf-word" aria-hidden="true">{WORDMARK}</p>
     </footer>
   );
 }

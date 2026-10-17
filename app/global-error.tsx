@@ -10,7 +10,7 @@ import { PageError } from "@/components/domain/shared";
 export default function GlobalError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
     <html lang="it">
-      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
+      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
         <title>BuddyBudget non si è caricato</title>
         <PageError
           error={error}

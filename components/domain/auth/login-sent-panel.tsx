@@ -40,11 +40,11 @@ export function LoginSentPanel({ email, loading, cooldown, error, onResend, onBa
       {error && <p className="mt-4 text-sm text-destructive" role="alert">{tr(error)}</p>}
 
       <div className="mt-8 flex w-full flex-col gap-2">
-        <Button type="button" variant="outline" className="h-11 w-full" onClick={onResend} disabled={loading || cooldown > 0}>
+        <Button type="button" variant="outline" className="h-11 w-full rounded-full" onClick={onResend} disabled={loading || cooldown > 0}>
           {loading && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
           {cooldown > 0 ? tr("Invia di nuovo tra {0}s", {0: cooldown}) : tr("Invia di nuovo il link")}
         </Button>
-        <Button type="button" variant="ghost" className="h-11 w-full" onClick={onBack}>{backLabel}</Button>
+        <Button type="button" variant="ghost" className="h-11 w-full rounded-full" onClick={onBack}>{backLabel}</Button>
       </div>
     </div>
   );

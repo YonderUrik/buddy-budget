@@ -66,14 +66,14 @@ function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipP
       {row.segments.map((segment) => (
         <div key={segment.key} className="flex w-full items-center justify-between gap-3">
           <span className="text-muted-foreground">{segment.name}</span>
-          <span className="font-mono font-medium tabular-nums text-foreground">
+          <span className="font-medium tabular-nums text-foreground">
             {formatCurrency(segment.amount, currency)}
           </span>
         </div>
       ))}
       <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-1.5">
         <span className="font-medium text-foreground">{tr("Totale")}</span>
-        <span className="font-mono font-semibold tabular-nums text-foreground">
+        <span className="font-semibold tabular-nums text-foreground">
           {formatCurrency(total, currency)}
         </span>
       </div>
@@ -93,7 +93,7 @@ export function ExpenseTrendChart({ monthlyStacks, currency }: ExpenseTrendChart
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr("Andamento ultimi 6 mesi")}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{tr("Andamento ultimi 6 mesi")}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={{}} className="max-h-56 w-full">

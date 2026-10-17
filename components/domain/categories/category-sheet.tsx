@@ -109,7 +109,7 @@ export function CategorySheet({
           ) : (
             sections.map((section) => (
               <section key={section.key} className="flex flex-col gap-1.5">
-                {section.label && <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{section.key === MOST_USED_KEY ? tr("Per te") : section.label}</h3>}
+                {section.label && <h3 className="text-sm font-medium text-muted-foreground">{section.key === MOST_USED_KEY ? tr("Per te") : section.label}</h3>}
                 {section.key === MOST_USED_KEY ? (
                   <div className="flex flex-wrap gap-2">
                     {section.categories.map((category) => (

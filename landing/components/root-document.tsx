@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import "@fontsource-variable/space-grotesk";
 import "@fontsource-variable/hanken-grotesk";
-import "@fontsource-variable/geist-mono";
 import "@fontsource-variable/sofia-sans-extra-condensed";
 import "@/app/globals.css";
 import { BrandSprite } from "@/components/brand";
+import { RiseObserver } from "@/components/rise-observer";
 import { APP_URL, OG_IMAGE, SITE_NAME, SITE_URL } from "@/content/site";
 import { HTML_LANG, LOCALES, OG_LOCALE, SCHEMA_LANGUAGE, type Locale } from "@/lib/i18n";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
@@ -102,6 +101,7 @@ export function RootDocument({ locale, children }: { locale: Locale; children: R
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }} />
         <BrandSprite />
         {children}
+        <RiseObserver />
         <UtmPassthrough appUrl={APP_URL} />
         {UMAMI_ID ? <Script src={UMAMI_SRC} data-website-id={UMAMI_ID} data-domains={UMAMI_DOMAINS} strategy="afterInteractive" /> : null}
       </body>

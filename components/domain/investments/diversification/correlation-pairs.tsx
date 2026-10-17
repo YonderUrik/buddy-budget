@@ -39,7 +39,7 @@ export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsPr
         {visible.map((pair) => {
           const verdict = correlationLabel(pair.value);
           return (
-            <li key={`${pair.aId}-${pair.bId}`} className="flex flex-col gap-1.5 rounded-xl border p-3">
+            <li key={`${pair.aId}-${pair.bId}`} className="flex flex-col gap-1.5 rounded-xl bg-muted/50 p-3">
               <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-foreground">
                 <PairName instrument={instrumentsById.get(pair.aId)} />{" "}<span className="text-muted-foreground">{tr("e")}</span>{" "}
                 <PairName instrument={instrumentsById.get(pair.bId)} />

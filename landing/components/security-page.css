@@ -3,9 +3,12 @@
 .cp .sp-sec > h2 { margin-top: 0; }
 .sp-table { margin-top: 24px; overflow-x: auto; }
 .sp-table table { width: 100%; border-collapse: collapse; font-size: 15.5px; }
-.sp-table th, .sp-table td { padding: 14px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
-.sp-table tbody tr:last-child th, .sp-table tbody tr:last-child td { border-bottom: 0; }
-.sp-table thead th { font: 600 12px var(--f-b); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink3); background: var(--head); }
+.sp-table table { border-collapse: separate; border-spacing: 0; }
+.sp-table th, .sp-table td { padding: 16px 18px; text-align: left; vertical-align: top; }
+.sp-table tbody tr:nth-child(odd) > * { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.sp-table tbody tr > :first-child { border-radius: 14px 0 0 14px; }
+.sp-table tbody tr > :last-child { border-radius: 0 14px 14px 0; }
+.sp-table thead th { font: 700 14px var(--f-b); color: var(--ink); }
 .sp-table tbody th { font-weight: 600; color: var(--ink); white-space: nowrap; }
 .sp-table td { color: var(--ink2); }
 .sp-kept { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
@@ -17,9 +20,9 @@
 @media (max-width: 640px) {
   .sp-table table, .sp-table tbody, .sp-table tr, .sp-table th, .sp-table td { display: block; }
   .sp-table thead { display: none; }
-  .sp-table tr { padding: 14px 16px; border-bottom: 1px solid var(--line); }
-  .sp-table tbody tr:last-child { border-bottom: 0; }
-  .sp-table th, .sp-table td { padding: 0; border: 0; }
+  .sp-table tr { padding: 16px 18px; border-radius: 14px; }
+  .sp-table tbody tr:nth-child(odd) { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+  .sp-table tbody tr > * { background: none !important; padding: 0; border-radius: 0 !important; }
   .sp-table td { margin-top: 6px; }
 }
 .sp-questions { margin-top: 24px; }

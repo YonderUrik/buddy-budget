@@ -1,7 +1,9 @@
 /*
- * Tokens and base of the landing (2026-10-17, «Un numero solo» home): neutrals, radii, faces and buttons are the
- * app's, so site, sign-in and app look like one thing. The --a-* tokens are the app's, used inside the product
- * window (screenshots and phone frame). No hex colors in components, no gradients: tokens only.
+ * Tokens and base of the landing (2026-10-17, taste-skill «Type and nothing else»): neutrals and radii are the app's,
+ * so site, sign-in and app look like one thing. Two faces only: Sofia Sans Extra Condensed for display and figures,
+ * Hanken Grotesk for everything else (code blocks use the system monospace). Sections are colour fields
+ * (`data-field`: navy, light, alt, sun) and nothing else separates them: no rules, no boxes, no shadows at rest,
+ * no gradients. The --a-* tokens are the app's, used behind the screenshots.
  */
 :root {
   --bg: #f7f7f8;
@@ -20,8 +22,6 @@
   --on-navy2: #a1a1aa;
   --on-sun: #18181b;
   --mk2: #1f224e;
-  --shadow-win: rgba(0, 0, 0, 0.35);
-  --shadow-win2: rgba(0, 0, 0, 0.22);
 
   /* app tokens (product window) */
   --a-bg: #f7f7f8;
@@ -49,12 +49,6 @@
   --head: #f0f0f2;
   --logo-bg: #ffffff;
 
-  /* phone frame (`phone-frame.css`): body, glossy edge, black bezel around the screen, keys, island; the same in both themes */
-  --phone-body: #1d2833;
-  --phone-edge: rgba(255, 255, 255, 0.22);
-  --phone-bezel: #090c10;
-  --phone-key: #2c3947;
-  --phone-island: #090c10;
 
   /* main button and focus rings: the app's --primary */
   --primary: #15738b;
@@ -65,12 +59,11 @@
   --r-card: 16px;
   --r-lg: 20px;
 
-  /* the same faces as the app: Space Grotesk for titles and figures, Hanken Grotesk for text, Geist Mono for code */
-  --f-h: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
+  /* two faces (taste-skill): Hanken Grotesk for text and small headings (--f-h is kept as its alias), the tall
+     condensed display face for titles and figures; --f-m is the system monospace, for code only */
   --f-b: "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, sans-serif;
-  --f-m: "Geist Mono Variable", "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  /* display face (2026-10-17, after Hermes Agent): tall, condensed and light, only for the big titles of the home,
-     the content pages and the footer wordmark; small labels use the mono face in spaced capitals (`.idx`) */
+  --f-h: var(--f-b);
+  --f-m: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --f-d: "Sofia Sans Extra Condensed Variable", "Sofia Sans Extra Condensed", "Arial Narrow", system-ui, sans-serif;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -146,6 +139,7 @@
 }
 
 * { box-sizing: border-box; }
+html { scroll-padding-top: 72px; }
 body {
   margin: 0;
   background: var(--bg);
@@ -155,47 +149,62 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, h4 { font-family: var(--f-h); margin: 0; text-wrap: balance; }
-p { margin: 0; }
+p { margin: 0; text-wrap: pretty; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 img { max-width: 100%; }
 
-.wrap { max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
-/* small label above a page title («Calcolatore gratuito, senza account»): a tinted pill, like the app's badges */
-.kicker { display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); font: 600 13px var(--f-b); }
-/* numbered label above a title («#1 · Da dove»): mono face in spaced capitals, like a ledger index */
-.idx { margin: 0 0 14px; font: 500 12px / 1.4 var(--f-m); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
-/* card like the app's: white ground, thin border, rounded corners */
-.cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
+.wrap { max-width: 1280px; margin-inline: auto; padding-inline: 32px; }
 .mark { height: 26px; aspect-ratio: 378 / 464; display: block; }
 .mark .mk2 { fill: var(--mk2); }
 
+/* ---------- colour fields: every section is one ground with one ink ---------- */
+[data-field="light"] { background: var(--bg); color: var(--ink); }
+[data-field="alt"] { background: var(--bg-alt); color: var(--ink); }
+[data-field="navy"] { background: var(--navy); color: var(--on-navy); --mk2: var(--on-navy); }
+[data-field="sun"] { background: var(--sun); color: var(--on-sun); }
+
+/* ---------- buttons: flat pills, no shadow, the colour is the affordance ---------- */
 .btn {
   white-space: nowrap; flex: none;
-  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--r);
-  font: 600 15px var(--f-b); text-decoration: none; border: 1px solid transparent; cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 22px; border-radius: 999px;
+  font: 600 16px var(--f-b); text-decoration: none; border: 2px solid transparent; cursor: pointer;
+  transition: background-color 0.18s var(--ease), border-color 0.18s var(--ease), color 0.18s var(--ease), transform 0.12s var(--ease);
 }
-/* like the app's Button: main filled in the primary color, secondary with the border */
+/* main: the app's primary */
 .btn.main { background: var(--primary); color: var(--on-primary); }
 .btn.main:hover { background: color-mix(in srgb, var(--primary) 85%, var(--ink)); }
-.btn.ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
-.btn.ghost:hover { background: var(--head); }
-/* the sign-up button in the brand yellow, on navy and on the light page alike */
-.btn.sun, .btn.main.sun { background: var(--sun); color: var(--on-sun); border-color: var(--sun); }
-.btn.sun:hover, .btn.main.sun:hover { background: var(--sun-edge); border-color: var(--sun-edge); }
-.btn:active { transform: translateY(1px); }
-.btn svg { width: 18px; height: 18px; transition: transform 0.35s var(--ease); }
+/* the sign-up button in the brand yellow, on every field but the yellow one */
+.btn.sun, .btn.main.sun { background: var(--sun); color: var(--on-sun); }
+.btn.sun:hover, .btn.main.sun:hover { background: var(--sun-edge); }
+/* ink: filled with the field's ink (on light and yellow fields) */
+.btn.ink { background: var(--ink); color: var(--bg); }
+.btn.ink:hover { background: color-mix(in srgb, var(--ink) 82%, var(--bg)); }
+[data-field="sun"] .btn.ink { background: var(--on-sun); color: var(--sun); }
+/* line: the secondary action, outlined in the field's ink; ghost is its old name */
+.btn.line, .btn.ghost { background: transparent; color: inherit; border-color: color-mix(in srgb, currentColor 34%, transparent); }
+.btn.line:hover, .btn.ghost:hover { border-color: currentColor; }
+.btn.big { height: 60px; padding: 0 30px; font-size: 18px; }
+.btn:active { transform: scale(0.97); }
+.btn svg { width: 18px; height: 18px; transition: transform 0.3s var(--ease); }
 .btn:hover svg { transform: translateX(3px); }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+/* a plain text link with a thick underline that tightens on hover */
+.tlink { color: inherit; font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); transition: text-decoration-color 0.18s var(--ease), text-underline-offset 0.18s var(--ease); }
+.tlink:hover { text-decoration-color: currentColor; text-underline-offset: 3px; }
+.text-btn { border: 0; padding: 0; background: none; cursor: pointer; font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+
+/* ---------- entrances: blocks marked `data-rise` rise into place when they come into view (`RiseObserver`),
+   staggered by `--i` (`rise(i)`), only when motion is allowed: without script or motion everything is visible ---------- */
+.js-motion [data-rise] { transition: opacity 0.6s var(--ease), translate 0.6s var(--ease); transition-delay: calc(var(--i, 0) * 75ms); }
+.js-motion [data-rise]:not(.in) { opacity: 0; translate: 0 24px; }
 
 @media (max-width: 600px) { .wrap { padding-inline: 20px; } }
 /* reduced motion: no scrolling effects, no loops; the short fades that signal a state change stay */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
-  .btn, .btn svg, .gal-tab, .tab { transition-property: color, background-color, box-shadow, opacity !important; transition-duration: 0.15s !important; }
+  .btn, .btn svg, .gal-tab, .tab { transition-property: color, background-color, opacity !important; transition-duration: 0.15s !important; }
 }
 /* text for screen readers only */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-section[id], div[id] { scroll-margin-top: 16px; }

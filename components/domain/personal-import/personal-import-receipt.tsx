@@ -99,7 +99,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
   const Icon = failed ? AlertCircleIcon : CheckCircle2Icon;
 
   return (
-    <section aria-labelledby={`${listId}-receipt`} className="flex flex-col gap-5 rounded-2xl border p-4 sm:p-6">
+    <section aria-labelledby={`${listId}-receipt`} className="flex flex-col gap-5 rounded-2xl bg-card p-4 sm:p-6">
       <div className="flex items-start gap-3">
         <Icon className={cn("mt-0.5 size-6 shrink-0", failed ? "text-destructive" : "text-pos")} aria-hidden="true" />
         <div className="flex min-w-0 flex-col gap-1">

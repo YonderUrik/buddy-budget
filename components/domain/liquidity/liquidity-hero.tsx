@@ -59,7 +59,7 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
       <div className="mt-3 min-h-5">
         {delta !== null && (
           <p className="flex flex-wrap items-center gap-x-2 text-sm">
-            <span className={cn("inline-flex items-center gap-1.5 font-mono font-semibold tabular-nums", up ? "text-pos" : "text-neg")}>
+            <span className={cn("inline-flex items-center gap-1.5 font-semibold tabular-nums", up ? "text-pos" : "text-neg")}>
               <Icon className="size-4" aria-hidden="true" />
               {up ? "+" : "−"}
               {formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 0 })}

@@ -1,12 +1,10 @@
-/* Domande frequenti in una card a righe, come le liste dell'app: titolo fermo a sinistra, risposte che si aprono a destra. */
-.faq-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 24px 64px; align-items: start; }
-.faq-grid > div:first-child { position: sticky; top: 24px; }
-.faq-list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
-.faq-item + .faq-item { border-top: 1px solid var(--line); }
-.faq-item summary { cursor: pointer; list-style: none; padding: 18px 20px 18px 46px; font: 600 clamp(17px, 1.8vw, 18px) / 1.35 var(--f-h); position: relative; }
+/* Questions as rows that open on tap: each row on a tone step of the field, no lines, the sign turns on open. */
+.faq-list { display: grid; gap: 6px; }
+.faq-item { border-radius: 16px; background: color-mix(in srgb, var(--ink) 5%, transparent); transition: background-color 0.18s var(--ease); }
+.faq-item:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.faq-item summary { cursor: pointer; list-style: none; padding: 22px 64px 22px 24px; font: 600 clamp(18px, 1.6vw, 21px) / 1.35 var(--f-b); position: relative; border-radius: 16px; }
 .faq-item summary::-webkit-details-marker { display: none; }
-.faq-item summary::before { content: "›"; position: absolute; left: 22px; top: 16px; font: 600 20px / 1 var(--f-b); color: var(--accent); transition: transform 0.2s; }
-.faq-item[open] summary::before { transform: rotate(90deg); }
+.faq-item summary::after { content: "+"; position: absolute; right: 24px; top: 50%; translate: 0 -50%; font: 300 32px / 1 var(--f-d); transition: rotate 0.25s var(--ease); }
+.faq-item[open] summary::after { rotate: 45deg; }
 .faq-item summary:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
-.faq-item p { margin: 0 20px 20px 46px; color: var(--ink2); line-height: 1.6; max-width: 70ch; }
-@media (max-width: 1000px) { .faq-grid { grid-template-columns: minmax(0, 1fr); } .faq-grid > div:first-child { position: static; } }
+.faq-item p { margin: 0 24px; padding-bottom: 24px; color: var(--ink); line-height: 1.6; max-width: 70ch; }

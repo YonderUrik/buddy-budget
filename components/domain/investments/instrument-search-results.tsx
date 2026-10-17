@@ -73,7 +73,7 @@ function ResultButton(props: {
 function GroupHeader({ type, count }: { type: InstrumentType; count: number }) {
   const { t: tr } = useLocalization();
   return (
-    <p className="flex items-center gap-2 px-2 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-foreground">
+    <p className="flex items-center gap-2 px-2 pt-3 pb-1 text-sm font-medium text-foreground">
       <TypeDot type={type} />
       <span>
         {tr(INSTRUMENT_TYPE_LABELS[type])}{" "}<span className="font-normal text-muted-foreground">{"("}{count}{")"}</span>
@@ -110,7 +110,7 @@ export function InstrumentSearchResults({
     <>
       {known.length ? (
         <div className="flex flex-col gap-0.5">
-          <p className="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{tr(knownTitle)}</p>
+          <p className="px-2 pt-2 text-sm font-medium text-muted-foreground">{tr(knownTitle)}</p>
           {known.map((i) => (
             <ResultButton
               key={i.id}

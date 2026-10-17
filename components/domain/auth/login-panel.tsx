@@ -157,11 +157,9 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
         </Button>
       </form>
 
-      <div className="flex items-center gap-3 text-sm text-text-3">
-        <span className="h-px flex-1 bg-border" />{tr("oppure")}<span className="h-px flex-1 bg-border" />
-      </div>
+      <p className="text-center text-sm text-text-3">{tr("oppure")}</p>
 
-      <Button variant="outline" className="h-11 w-full text-base" type="button" onClick={() => {
+      <Button variant="outline" className="h-11 w-full rounded-full text-base" type="button" onClick={() => {
           // Tracked before the redirect: once Google opens, this page is gone.
           track("google_login_started", { entry, ...attribution });
           void actions.signInWithGoogle();

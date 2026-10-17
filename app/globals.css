@@ -8,8 +8,10 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-hanken);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-space-grotesk);
+  /* Two typefaces only: Hanken Grotesk for everything (`font-heading` is an alias kept for existing callers) and the
+     condensed display face for page/section titles. Literal code uses the system monospace stack. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: var(--font-hanken);
   --font-display: var(--font-sofia-condensed);
   --color-pos: var(--pos);
   --color-pos-soft: var(--pos-soft);
@@ -293,6 +295,10 @@
 }
 
 @layer base {
+  /* `font-heading` sets highlighted figures: aligned digits by default (any `*-nums` utility still overrides it). */
+  .font-heading {
+    font-variant-numeric: tabular-nums;
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -381,33 +387,23 @@
   }
 }
 
-/* Testo che luccica mentre un'operazione è in corso (componente TextShimmer). Senza movimento resta testo secondario. */
+/* Text shown while an operation is in progress (TextShimmer component): flat secondary text that breathes in opacity,
+   like a loading skeleton. With reduced motion it stays still. */
 .text-shimmer {
   color: var(--muted-foreground);
 }
 @media (prefers-reduced-motion: no-preference) {
   .text-shimmer {
-    background-image: linear-gradient(
-      100deg,
-      var(--muted-foreground) 0%,
-      var(--muted-foreground) 40%,
-      var(--foreground) 50%,
-      var(--muted-foreground) 60%,
-      var(--muted-foreground) 100%
-    );
-    background-size: 250% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: text-shimmer 1.8s linear infinite;
+    animation: text-shimmer 1.8s ease-in-out infinite;
   }
 }
 @keyframes text-shimmer {
-  from {
-    background-position: 100% 0;
+  0%,
+  100% {
+    opacity: 1;
   }
-  to {
-    background-position: -150% 0;
+  50% {
+    opacity: 0.55;
   }
 }
 
@@ -420,44 +416,11 @@
   color: var(--island-foreground);
 }
 
-/* Superficie e pulsante «AI» (Categorizza): sfumatura dai token del tema, con un riflesso lento che si ferma col movimento ridotto. */
+/* «AI» surface and button (Categorizza): flat fills from the theme tokens, no outline and no sheen. */
 .ai-surface {
-  border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
-  background-image: linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--primary) 14%, transparent),
-    color-mix(in oklab, var(--pos) 10%, transparent)
-  );
+  background-color: color-mix(in oklab, var(--primary) 10%, var(--card));
 }
 .ai-button {
-  background-image: linear-gradient(110deg, var(--primary), color-mix(in oklab, var(--primary) 55%, var(--pos)), var(--primary));
-  background-size: 220% 100%;
+  background-color: var(--primary);
   color: var(--primary-foreground);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .ai-button {
-    animation: ai-sheen 4s ease-in-out infinite;
-  }
-}
-@keyframes ai-sheen {
-  0%,
-  100% {
-    background-position: 0% 0;
-  }
-  50% {
-    background-position: 100% 0;
-  }
-}
-
-/* Riflesso che attraversa un testo in colore primario un paio di volte e poi si ferma (etichetta «Novità» della Panoramica). */
-@media (prefers-reduced-motion: no-preference) {
-  .text-sweep-once {
-    background-image: linear-gradient(100deg, var(--primary) 0%, var(--primary) 40%, var(--foreground) 50%, var(--primary) 60%, var(--primary) 100%);
-    background-size: 250% 100%;
-    background-position: 100% 0;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: text-shimmer 1.6s linear 0.9s 2 backwards;
-  }
 }

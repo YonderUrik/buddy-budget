@@ -85,7 +85,7 @@ function ItalianPage() {
   if (overview.isError || !view) return <LoadError message={tr("Impossibile caricare i dividendi.")} onRetry={() => overview.refetch()} />;
   if (!view.hasTransactions) {
     return (
-      <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">{tr("Qui vedrai dividendi e cedole: registra prima un acquisto nella scheda Portafoglio.")}</p>
+      <p className="rounded-xl bg-muted/50 p-8 text-center text-sm text-muted-foreground">{tr("Qui vedrai dividendi e cedole: registra prima un acquisto nella scheda Portafoglio.")}</p>
     );
   }
 
@@ -103,7 +103,7 @@ function ItalianPage() {
           {view.byInstrument.length > 0 ? (
             <IncomeInstrumentsCard payments={view.history.payments} rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
           ) : null}
-          {view.byMonth.length === 0 ? <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">{tr("Nessun dividendo o cedola registrato.")}</p> : null}
+          {view.byMonth.length === 0 ? <p className="rounded-xl bg-muted/50 p-6 text-sm text-muted-foreground">{tr("Nessun dividendo o cedola registrato.")}</p> : null}
         </div>
         <div className="flex flex-col gap-10 lg:col-span-2">
           {view.missing.length > 0 ? (

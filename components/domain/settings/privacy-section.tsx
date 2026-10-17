@@ -84,7 +84,7 @@ export function PrivacySection({ settings }: PrivacySectionProps) {
               <a
                 href={buildPrivacyRequestHref(option, email)}
                 onClick={() => track("privacy_request_started", { type: option.type })}
-                className="flex h-full flex-col gap-0.5 rounded-lg border p-3 text-sm transition-colors hover:bg-muted"
+                className="flex h-full flex-col gap-0.5 rounded-lg bg-muted/50 p-3 text-sm transition-colors hover:bg-muted"
               >
                 <span className="font-medium text-foreground">{tr(option.label)}</span>
                 <span className="text-muted-foreground">{tr(option.description)}</span>

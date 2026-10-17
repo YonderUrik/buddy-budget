@@ -68,7 +68,7 @@ export function ReportForm({ context, initialKind = "problema", compact = false,
     return (
       <div role="status" className="flex flex-col gap-2 rounded-lg bg-pos-soft p-4 text-sm">
         <p className="font-medium text-foreground">{tr("Grazie, abbiamo ricevuto la segnalazione.")}</p>
-        <p className="text-muted-foreground">{tr("Codice di riferimento")}{" "}<span className="font-mono text-foreground">{mutation.data.reference}</span>{tr(". Ti rispondiamo via email.")}</p>
+        <p className="text-muted-foreground">{tr("Codice di riferimento")}{" "}<code className="font-mono text-foreground">{mutation.data.reference}</code>{tr(". Ti rispondiamo via email.")}</p>
         <Button variant="outline" size="sm" className="w-fit" onClick={() => mutation.reset()}>{tr("Scrivi un'altra segnalazione")}</Button>
       </div>
     );

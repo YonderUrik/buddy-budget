@@ -17,7 +17,7 @@ export interface CorrelationFamiliesProps {
 
 function Chip({ instrument }: { instrument: Instrument | undefined }) {
   return (
-    <li className="flex max-w-full items-center rounded-full border bg-background py-1 pl-1.5 pr-3 text-sm text-foreground">
+    <li className="flex max-w-full items-center rounded-full bg-background py-1 pl-1.5 pr-3 text-sm text-foreground">
       {instrument ? <InstrumentLabel instrument={instrument} /> : "—"}
     </li>
   );
@@ -31,7 +31,7 @@ export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFami
       {families.map((family, index) => (
         <div
           key={family.join("-")}
-          className="flex flex-col gap-2 rounded-xl border border-[var(--swatch-amber)]/50 bg-[color-mix(in_oklab,var(--swatch-amber)_8%,transparent)] p-3"
+          className="flex flex-col gap-2 rounded-xl bg-[color-mix(in_oklab,var(--swatch-amber)_12%,transparent)] p-3"
         >
           <p className="text-sm font-medium text-foreground">{tr("Famiglia")}{" "}{index + 1}{tr(": si muovono quasi insieme")}<span className="font-normal text-muted-foreground">{" "}{tr("· contano come una sola scommessa")}</span>
           </p>
@@ -43,7 +43,7 @@ export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFami
         </div>
       ))}
       {independent.length > 0 ? (
-        <div className="flex flex-col gap-2 rounded-xl border p-3">
+        <div className="flex flex-col gap-2 rounded-xl bg-muted/50 p-3">
           <p className="text-sm font-medium text-foreground">
             {families.length > 0 ? tr("Vanno per conto loro") : tr("Nessuna coppia si muove insieme")}
             <span className="font-normal text-muted-foreground">{" "}{tr("· diversificano il resto")}</span>

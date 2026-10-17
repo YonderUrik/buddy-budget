@@ -113,7 +113,7 @@ export default function LiquiditaAnalisiPage() {
         <p className="mt-6 text-base text-text-2">{tr("Spese del periodo")}</p>
         <MoneyHero value={spent} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
         {spentBefore > 0 && (
-          <p className="mt-3 font-mono text-sm font-semibold tabular-nums" style={{ color: delta > 0 ? "var(--neg)" : "var(--pos)" }}>
+          <p className="mt-3 text-sm font-semibold tabular-nums" style={{ color: delta > 0 ? "var(--neg)" : "var(--pos)" }}>
             {delta > 0 ? "▲ +" : "▼ −"}
             {money(Math.abs(delta))}{" "}<span className="font-sans font-normal text-text-2">{tr("rispetto al periodo prima")}</span>
           </p>

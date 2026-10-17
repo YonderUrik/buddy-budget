@@ -1,14 +1,14 @@
 .gx { margin: 24px 0 8px; }
 .gx-steps { list-style: none; padding: 0 !important; margin: 0 0 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; position: relative; max-width: none !important; }
-.gx-steps li b { font: 600 14px var(--f-b); color: var(--ink3); letter-spacing: 0.08em; }
-.gx-steps li em { font: 600 clamp(26px, 4vw, 36px) var(--f-h); font-style: normal; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.gx-steps li b { font: 600 14px var(--f-b); color: var(--ink3); }
+.gx-steps li em { font: 400 clamp(34px, 4.6vw, 48px) / 1 var(--f-d); font-style: normal; }
 .gx-steps li em.neg { color: var(--a-neg); }
 .gx-steps li em.pos { color: var(--a-pos); }
 
-.gx-steps li { position: relative; display: grid; gap: 4px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink2); font-size: 14px; }
-.gx-n { position: absolute; top: 14px; right: 0; font: 700 12px var(--f-b); color: var(--ink3); }
-.gx-result { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 24px; padding: 20px 0; border-block: 1px solid var(--line); }
-.gx-result small { display: block; color: var(--ink3); font-size: 12px; margin-bottom: 4px; }
-.gx-result b { font: 600 clamp(22px, 3vw, 30px) var(--f-h); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.gx-steps li { position: relative; display: grid; gap: 4px; padding: 16px 18px; border-radius: 16px; background: color-mix(in srgb, var(--ink) 4%, transparent); color: var(--ink2); font-size: 14px; }
+.gx-n { position: absolute; top: 14px; right: 18px; font: 700 13px var(--f-b); color: var(--ink3); }
+.gx-result { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 24px; padding: 20px 0; }
+.gx-result small { display: block; color: var(--ink3); font-size: 14px; margin-bottom: 4px; }
+.gx-result b { font: 400 clamp(32px, 4vw, 44px) / 1 var(--f-d); }
 .gx-result .hi b { color: var(--a-pos); }
 @media (max-width: 700px) { .gx-steps { grid-template-columns: 1fr; gap: 16px; } .gx-result { grid-template-columns: 1fr 1fr; } }

@@ -33,7 +33,7 @@ export default function DebitiLayout({ children }: { children: React.ReactNode }
               <h1 className={PAGE_TITLE}>{tr("Debiti")}</h1>
               <p className="text-sm text-muted-foreground">{tr("Cosa pagare, cosa pesa, come uscirne")}</p>
             </div>
-            <Button variant="sun" className="gap-1.5 shadow-xs" onClick={actions.openAdd}>
+            <Button variant="sun" className="gap-1.5" onClick={actions.openAdd}>
               <Plus size={15} aria-hidden="true" />{" "}{tr("Aggiungi")}</Button>
           </div>
         </div>

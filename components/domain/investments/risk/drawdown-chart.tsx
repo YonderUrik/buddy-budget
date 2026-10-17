@@ -56,17 +56,11 @@ export function DrawdownChart({ series }: DrawdownChartProps) {
   return (
     <ChartContainer config={CHART_CONFIG} className="max-h-40 w-full" aria-label={tr("Perdita dal massimo nel tempo")}>
       <AreaChart data={series} margin={{ left: 4, right: 8 }}>
-        <defs>
-          <linearGradient id="drawdown-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-drawdown)" stopOpacity={0.05} />
-            <stop offset="100%" stopColor="var(--color-drawdown)" stopOpacity={0.35} />
-          </linearGradient>
-        </defs>
         <CartesianGrid vertical={false} strokeDasharray="3 3" />
         <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
         <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={axisPct} domain={["dataMin", 0]} />
         <ChartTooltip cursor={false} content={<Tooltip />} />
-        <Area type="monotone" dataKey="drawdown" stroke="var(--color-drawdown)" strokeWidth={1.5} fill="url(#drawdown-fill)" isAnimationActive={false} />
+        <Area type="monotone" dataKey="drawdown" stroke="var(--color-drawdown)" strokeWidth={1.5} fill="var(--color-drawdown)" fillOpacity={0.2} isAnimationActive={false} />
       </AreaChart>
     </ChartContainer>
   );

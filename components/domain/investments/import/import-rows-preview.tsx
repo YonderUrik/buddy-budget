@@ -58,10 +58,10 @@ export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
                   <td className="px-2 py-1.5 whitespace-nowrap">{row.operation.date.split("-").reverse().join("/")}</td>
                   <td className="px-2 py-1.5">{tr(TRANSACTION_TYPE_LABELS[row.operation.type])}</td>
                   <td className="max-w-40 truncate px-2 py-1.5">{row.identity.symbol ?? row.identity.isin ?? row.identity.name}</td>
-                  <td className="px-2 py-1.5 text-right font-mono tabular-nums">
+                  <td className="px-2 py-1.5 text-right tabular-nums">
                     {row.operation.quantity ? NUMBER_FORMAT.format(row.operation.quantity) : "—"}
                   </td>
-                  <td className="px-2 py-1.5 text-right font-mono tabular-nums">
+                  <td className="px-2 py-1.5 text-right tabular-nums">
                     {NUMBER_FORMAT.format(row.operation.grossAmount ?? row.operation.price)}
                   </td>
                 </tr>

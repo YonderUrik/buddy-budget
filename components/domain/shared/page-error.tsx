@@ -46,7 +46,7 @@ export function PageError({
     <div role="alert" className="mx-auto flex max-w-xl flex-col items-start gap-4 p-4 py-16 sm:p-6 sm:py-24">
       <h1 className={PAGE_TITLE}>{tr(title)}</h1>
       <p className="text-sm text-text-2">{tr(description)}</p>
-      {reference ? <p className="font-mono text-xs text-text-3">{reference}</p> : null}
+      {reference ? <code className="block font-mono text-xs text-text-3">{reference}</code> : null}
       <div className="flex flex-wrap items-center gap-4">
         <Button type="button" onClick={onRetry}>
           {tr(RETRY_LABEL)}

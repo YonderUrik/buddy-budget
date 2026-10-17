@@ -52,7 +52,7 @@ export function CollapsibleSection({
           aria-controls={panelId}
           className={cn(
             "flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1.5 text-left",
-            "text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/60",
+            "text-xs font-medium text-sidebar-foreground/60",
             "transition-colors hover:text-sidebar-foreground"
           )}
         >

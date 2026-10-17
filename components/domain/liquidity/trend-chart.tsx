@@ -62,7 +62,6 @@ export function TrendChart({ points, description, color = "var(--primary)", refe
   const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "long", year: "numeric" });
 
   const { t: tr } = useLocalization();
-  const gradientId = React.useId();
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
   if (points.length < 2) return <div className={cn("rounded-xl bg-muted/50", className)} style={{ height }} aria-hidden="true" />;
   const values = [...points.map((p) => p.value), ...(reference ?? [])];
@@ -99,16 +98,10 @@ export function TrendChart({ points, description, color = "var(--primary)", refe
       className={cn("block w-full", className)}
       style={{ height }}
     >
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={color} stopOpacity="0.26" />
-          <stop offset="1" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
       {referenceLine && (
         <path d={referenceLine} fill="none" stroke="var(--text-3)" strokeWidth={2} strokeDasharray="2 7" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
       )}
-      <path d={`${line} L${coords[coords.length - 1].x.toFixed(1)} ${height} L0 ${height} Z`} fill={`url(#${gradientId})`} />
+      <path d={`${line} L${coords[coords.length - 1].x.toFixed(1)} ${height} L0 ${height} Z`} fill={color} fillOpacity={0.12} />
       <path d={line} fill="none" stroke={color} strokeWidth={2.6} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
       {activePoint && formatValue && (

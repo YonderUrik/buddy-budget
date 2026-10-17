@@ -19,7 +19,7 @@ import { Sources } from "./sources";
 export function SecurityPage({ content, path, home }: { content: SecurityContent; path: string; home: string }) {
   const { page, locale } = content;
   return (
-    <ContentPage title={page.h1} lead={page.lead} kicker={page.kicker} current={path} locale={locale} alternate={counterpart(path, otherLocale(locale))} disclaimer={false} wide crumbs={[{ href: home, label: "BuddyBudget" }, { label: page.crumb }]} ctaTitle={page.ctaTitle} ctaText={page.ctaText} ctaLocation="sicurezza">
+    <ContentPage title={page.h1} lead={page.lead} current={path} locale={locale} alternate={counterpart(path, otherLocale(locale))} disclaimer={false} wide crumbs={[{ href: home, label: "BuddyBudget" }, { label: page.crumb }]} ctaTitle={page.ctaTitle} ctaText={page.ctaText} ctaLocation="sicurezza">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: page.h1, description: page.description, inLanguage: SCHEMA_LANGUAGE[locale], url: `${SITE_URL}${path}` }} />
 
       <section className="sp-sec" aria-labelledby="sp-flow">
@@ -30,7 +30,7 @@ export function SecurityPage({ content, path, home }: { content: SecurityContent
 
       <section className="sp-sec" aria-labelledby="sp-stored">
         <h2 id="sp-stored">{content.stored.title}</h2>
-        <div className="sp-table cell">
+        <div className="sp-table">
           <table>
             <thead>
               <tr>

@@ -144,7 +144,7 @@ export function CategorizeGroupRow({
         )}
 
         {splitOpen && (
-          <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2">
+          <div className="flex flex-col gap-2 rounded-lg bg-muted/50 px-3 py-2">
             <Slider
               value={[excludedPercentage * 100]}
               min={0}

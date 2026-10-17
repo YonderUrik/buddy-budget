@@ -63,3 +63,7 @@ dump.rdb
 
 # dati locali di valutazione (movimenti veri: mai nel repo)
 /.local/
+
+# taste-skill working files (inspector screenshots, direction sheet)
+/.taste-skill/
+/landing/.taste-skill/

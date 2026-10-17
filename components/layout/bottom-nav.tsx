@@ -58,7 +58,7 @@ function ActivePill() {
     <motion.span
       layoutId="bottom-nav-pill"
       transition={SPRING_SNAPPY}
-      className="absolute inset-x-0 inset-y-1 rounded-full bg-sun"
+      className="absolute inset-x-0 inset-y-1 rounded-full bg-sidebar-accent"
       aria-hidden="true"
     />
   );
@@ -94,7 +94,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
               startNav(item.href);
               onTabClick?.(item.href);
             }}
-            className={cn(TAB_CLASS, active ? "text-on-sun" : "text-sidebar-foreground/60")}
+            className={cn(TAB_CLASS, active ? "text-sidebar-primary" : "text-sidebar-foreground/60")}
           >
             {active ? <ActivePill /> : null}
             <span className="relative flex h-7 w-10 items-center justify-center">
@@ -119,7 +119,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
           onOpenMore();
         }}
         aria-haspopup="dialog"
-        className={cn(TAB_CLASS, !inPrimary ? "text-on-sun" : "text-sidebar-foreground/60")}
+        className={cn(TAB_CLASS, !inPrimary ? "text-sidebar-primary" : "text-sidebar-foreground/60")}
       >
         {!inPrimary ? <ActivePill /> : null}
         <span className="relative flex h-7 w-10 items-center justify-center">

@@ -1,0 +1,95 @@
+name: App mobile
+
+# Builds the native shell (mobile/, Capacitor) when it or the native plugins change: types, generated files in sync,
+# Android debug APK and iOS simulator build, both unsigned. Store builds are signed by hand for now (mobile/README.md).
+on:
+  pull_request:
+    paths:
+      - "mobile/**"
+      - "package.json"
+      - ".github/workflows/mobile.yml"
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - "package.json"
+      - ".github/workflows/mobile.yml"
+
+concurrency:
+  group: mobile-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: mobile
+
+jobs:
+  shell:
+    name: Tipi e file generati
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: mobile/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      # `cap sync` regenerates the plugin lists of both projects: they must already be committed.
+      - run: pnpm exec cap sync
+      - run: git diff --exit-code -- . ':!ios/App/App/capacitor.config.json' ':!android/app/src/main/assets/capacitor.config.json'
+
+  android:
+    name: Android (debug)
+    needs: shell
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: mobile/pnpm-lock.yaml
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec cap sync android
+      - run: ./gradlew assembleDebug --no-daemon
+        working-directory: mobile/android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buddybudget-debug-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+  ios:
+    name: iOS (simulatore)
+    needs: shell
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: mobile/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec cap sync ios
+      - run: >-
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          -skipMacroValidation -skipPackagePluginValidation
+          CODE_SIGNING_ALLOWED=NO build

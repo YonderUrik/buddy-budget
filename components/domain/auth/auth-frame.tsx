@@ -36,7 +36,7 @@ export function AuthFrame({ brand, foot, aside, asideHiddenOn = [], children, cl
 
   return (
     <div className={cn("min-h-dvh bg-background", showAside && "lg:grid lg:grid-cols-[520px_minmax(0,1fr)]", className)}>
-      <section className={cn("flex min-h-dvh flex-col bg-card px-5 pb-8 pt-6 lg:px-14 lg:pb-10 lg:pt-9")}>
+      <section className={cn("flex min-h-dvh flex-col bg-card px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] lg:px-14 lg:pb-10 lg:pt-[calc(2.25rem+env(safe-area-inset-top))]")}>
         <div className={cn("flex w-full items-center justify-between gap-4", !showAside && "mx-auto max-w-2xl")}>{brand}</div>
         <div className={cn("my-auto w-full py-10 lg:py-12", showAside ? "max-w-[400px]" : "mx-auto max-w-2xl")}>{children}</div>
         {foot && <div className={cn("w-full", !showAside && "mx-auto max-w-2xl")}>{foot}</div>}

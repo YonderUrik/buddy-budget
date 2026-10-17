@@ -8,9 +8,10 @@ import { needsLegalAcceptance } from "@/lib/legal";
 import { recordPublicDemoEvent } from "@/lib/observability";
 import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemoUserId, isReadOnlyMethod, publicDemoSessionProfile } from "@/lib/public-demo/config";
 
+// /.well-known/* holds the app-link files iOS and Android fetch without a session.
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
 // /demo opens the read-only public demo (it decides itself whether a session exists).
-const PUBLIC_PATH_PREFIXES = ["/login", "/demo", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/_next", "/favicon.ico"];
+const PUBLIC_PATH_PREFIXES = ["/login", "/demo", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/.well-known", "/api/native", "/api/gocardless/app-return", "/_next", "/favicon.ico"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";

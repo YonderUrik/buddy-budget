@@ -16,6 +16,7 @@ import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
 import { touchLastActive } from "@/lib/account/last-active";
+import { socialProvidersFromEnv } from "./social-providers";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { publicDemo } from "./public-demo-plugin";
 
@@ -24,11 +25,8 @@ function getResend(): Resend | null {
   return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 }
 
-/** Google è attivo solo con entrambe le credenziali; altrimenti resta solo il magic link. */
-const googleProvider =
-  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-    ? { google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET } }
-    : {};
+/** Google and Apple are on only with their credentials (see `socialProvidersFromEnv`); otherwise only the magic link remains. */
+const socialProviders = socialProvidersFromEnv(process.env);
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -81,7 +79,7 @@ export const auth = betterAuth({
     // Read-only sample accounts anyone can open from the landing (`/demo`), when PUBLIC_DEMO_ENABLED=true.
     publicDemo(),
   ],
-  socialProviders: googleProvider,
+  socialProviders,
   // Espliciti (sono anche i default di better-auth) perché la pagina Impostazioni li mostra all'utente.
   session: {
     expiresIn: SESSION_EXPIRES_IN_DAYS * 24 * 60 * 60,

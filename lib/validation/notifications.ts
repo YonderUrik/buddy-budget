@@ -9,6 +9,8 @@ export const updateNotificationPreferencesSchema = z
     budgetAlertsEnabled: z.boolean(),
     deadlineAlertsEnabled: z.boolean(),
     goalAlertsEnabled: z.boolean(),
+    emailEnabled: z.boolean(),
+    pushEnabled: z.boolean(),
   })
   .partial()
   .strict()

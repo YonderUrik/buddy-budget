@@ -2,8 +2,9 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * Sezione «Notifiche»: sceglie quali email non di servizio ricevere (riepilogo, avvisi su budget e scadenze) e ogni
- * quanto. Tutto parte spento: queste email arrivano solo dopo una scelta esplicita e ogni email porta il link per disattivarle.
+ * «Notifiche» section: which non-service notifications to receive (summary, budget, due dates, goals), how often, and
+ * on which channels (email, and the phone in the app). Everything starts off: they arrive only after an explicit
+ * choice, and every email carries the link to turn it off.
  */
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,6 +26,7 @@ import {
 import { Mail } from "lucide-react";
 import { isCountryPathAvailable } from "@/lib/localization/config";
 import { EmailPreview } from "./settings-preview";
+import { NotificationChannels } from "./notification-channels";
 import { SettingsRow, SettingsSection } from "./settings-section";
 
 const FREQUENCY_LABEL: Record<DigestFrequency, string> = { settimanale: "Ogni settimana (lunedì)", mensile: "Ogni mese (primi giorni)" };
@@ -57,6 +59,7 @@ export function NotificationsSection({ email }: { email: string }) {
         <p className="text-sm text-neg" role="alert">{tr("Impossibile caricare le preferenze sulle notifiche.")}</p>
       ) : (
         <>
+          <NotificationChannels preferences={preferences} />
           {kinds.map((kind) => {
             const info = NOTIFICATION_KIND_INFO[kind];
             const field = FIELD_BY_KIND[kind];

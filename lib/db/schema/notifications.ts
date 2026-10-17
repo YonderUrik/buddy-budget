@@ -16,6 +16,9 @@ export const notificationPreferences = pgTable("notification_preferences", {
   deadlineAlertsEnabled: boolean("deadline_alerts_enabled").notNull().default(false),
   /** Promemoria sugli obiettivi di risparmio: raggiunto, in ritardo, data vicina. */
   goalAlertsEnabled: boolean("goal_alerts_enabled").notNull().default(false),
+  /** Channels: the kinds above arrive by email (on by default, as before push existed) and/or on the phone app. */
+  emailEnabled: boolean("email_enabled").notNull().default(true),
+  pushEnabled: boolean("push_enabled").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

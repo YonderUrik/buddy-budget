@@ -13,7 +13,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth/client";
+import { signOutThisDevice } from "@/lib/auth/sign-out";
 import { track } from "@/lib/analytics";
 
 import { useReactivateAccountMutation } from "@/lib/queries/user-settings";
@@ -36,7 +36,7 @@ export function DeactivatedAccountPanel({ deletionScheduledAt, afterReactivate =
 
   async function signOut() {
     setSigningOut(true);
-    await authClient.signOut().catch(() => undefined);
+    await signOutThisDevice().catch(() => undefined);
     window.location.assign("/login");
   }
 

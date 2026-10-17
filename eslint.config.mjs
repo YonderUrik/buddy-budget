@@ -24,6 +24,8 @@ const eslintConfig = defineConfig([
     ".claude/**",
     // La landing è un progetto a sé (suo package.json e suo lint, vedi job "landing" della CI).
     "landing/**",
+    // Native shell (Capacitor): own package.json, generated iOS/Android projects.
+    "mobile/**",
   ]),
 ]);
 

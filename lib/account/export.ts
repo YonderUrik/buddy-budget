@@ -34,6 +34,7 @@ import {
 } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
+import { pushDevices } from "@/lib/db/schema/push-devices";
 import { decimal, toCsv } from "./csv";
 
 /** Versione del formato JSON dell'export: da incrementare se cambia la struttura. */
@@ -105,6 +106,7 @@ async function loadUserData(userId: string) {
     notificationRows,
     goalRows,
     goalSourceRows,
+    pushDeviceRows,
   ] = await Promise.all([
     db
       .select({
@@ -372,6 +374,8 @@ async function loadUserData(userId: string) {
         budgetAlertsEnabled: notificationPreferences.budgetAlertsEnabled,
         deadlineAlertsEnabled: notificationPreferences.deadlineAlertsEnabled,
         goalAlertsEnabled: notificationPreferences.goalAlertsEnabled,
+        emailEnabled: notificationPreferences.emailEnabled,
+        pushEnabled: notificationPreferences.pushEnabled,
       })
       .from(notificationPreferences)
       .where(eq(notificationPreferences.userId, userId)),
@@ -394,6 +398,10 @@ async function loadUserData(userId: string) {
       .select({ goalId: goalSources.goalId, accountId: goalSources.accountId, instrumentId: goalSources.instrumentId, amount: goalSources.amount })
       .from(goalSources)
       .where(eq(goalSources.userId, userId)),
+    db
+      .select({ platform: pushDevices.platform, token: pushDevices.token, createdAt: pushDevices.createdAt, lastSeenAt: pushDevices.lastSeenAt })
+      .from(pushDevices)
+      .where(eq(pushDevices.userId, userId)),
   ]);
 
   return {
@@ -429,6 +437,7 @@ async function loadUserData(userId: string) {
     notificationPreferences: notificationRows[0] ?? null,
     goals: goalRows,
     goalSources: goalSourceRows,
+    pushDevices: pushDeviceRows,
   };
 }
 

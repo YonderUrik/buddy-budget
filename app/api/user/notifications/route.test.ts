@@ -35,7 +35,7 @@ describe("/api/user/notifications", () => {
 
   it("all'inizio è tutto spento", async () => {
     const response = await GET(new NextRequest("http://localhost/api/user/notifications"));
-    expect(await response.json()).toEqual({ digestEnabled: false, digestFrequency: "mensile", budgetAlertsEnabled: false, deadlineAlertsEnabled: false, goalAlertsEnabled: false });
+    expect(await response.json()).toEqual({ digestEnabled: false, digestFrequency: "mensile", budgetAlertsEnabled: false, deadlineAlertsEnabled: false, goalAlertsEnabled: false, emailEnabled: true, pushEnabled: false });
   });
 
   it("attiva, cambia frequenza e poi spegne", async () => {

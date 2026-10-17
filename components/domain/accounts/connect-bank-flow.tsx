@@ -17,6 +17,9 @@ import { useCreateConnectionMutation, useInstitutionsQuery } from "@/lib/queries
 import type { Institution } from "@/lib/queries/gocardless";
 import { ErrorWithReport, ReportErrorLink } from "@/components/domain/support";
 import { LANDING_URL } from "@/lib/legal";
+import { openExternalPage } from "@/lib/native";
+import { useNativePlatform } from "@/lib/hooks/use-native-platform";
+import { track } from "@/lib/analytics";
 
 export const BANK_COUNTRY_OPTIONS = [
   { code: "IT", label: "Italia" },
@@ -75,6 +78,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
   const [search, setSearch] = React.useState("");
   const { data: institutions, isLoading, isError, refetch } = useInstitutionsQuery(country);
   const createConnection = useCreateConnectionMutation();
+  const native = useNativePlatform();
   const [error, setError] = React.useState<string | null>(null);
   const [chosenId, setChosenId] = React.useState<string | null>(null);
 
@@ -87,11 +91,13 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
     setError(null);
     setChosenId(institution.id);
     createConnection.mutate(
-      { institutionId: institution.id, institutionName: institution.name, transactionTotalDays: Number(institution.transaction_total_days) },
+      { institutionId: institution.id, institutionName: institution.name, transactionTotalDays: Number(institution.transaction_total_days), client: native ? "app" : "web" },
       {
-        // Il redirect lascia la pagina: finché non parte restiamo nello stato «ti porto alla banca».
+        // On the web the redirect leaves the page, so we stay in "taking you to the bank" until it does. In the phone
+        // app the bank opens in a browser sheet (banks refuse WebViews) and comes back through `buddybudget://`.
         onSuccess: (data) => {
-          window.location.href = data.link;
+          if (native) track("native_bank_consent_opened", { platform: native });
+          void openExternalPage(data.link, { onClosed: () => setChosenId(null) });
         },
         onError: (mutationError) => {
           setChosenId(null);

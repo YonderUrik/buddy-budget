@@ -17,6 +17,7 @@ import {
   SessionsSection,
   SettingsHub,
   SidebarSection,
+  ThisPhoneSection,
   parseSettingsGroup,
   useRecentLogin,
   type SettingsGroupId,
@@ -110,6 +111,7 @@ function ImpostazioniContent() {
             privacy: (
               <>
                 <PrivacySection settings={settings} />
+                <ThisPhoneSection />
                 <DataSection settings={settings} recentLogin={recentLogin} />
               </>
             ),

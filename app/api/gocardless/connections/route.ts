@@ -82,7 +82,7 @@ async function handlePost(request: NextRequest) {
   }
   const { connection } = reservation;
 
-  const redirectUrl = gocardlessRedirectUrl();
+  const redirectUrl = gocardlessRedirectUrl(parsed.data.client ?? "web");
   try {
     const requisition = await createRequisition({
       institutionId: parsed.data.institutionId,
@@ -101,7 +101,7 @@ async function handlePost(request: NextRequest) {
       .where(eq(bankConnections.id, connection.id));
 
     recordGoCardlessConnect(reservation.kind, "started");
-    log.info("gocardless.connection.started", { connectionId: connection.id, trigger: reservation.kind, count: reservation.used, total: reservation.limits.global });
+    log.info("gocardless.connection.started", { connectionId: connection.id, trigger: reservation.kind, platform: parsed.data.client ?? "web", count: reservation.used, total: reservation.limits.global });
     return Response.json({ link: requisition.link });
   } catch (error) {
     await db.update(bankConnections).set({ status: "error" }).where(eq(bankConnections.id, connection.id));

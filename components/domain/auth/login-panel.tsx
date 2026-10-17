@@ -3,7 +3,7 @@
 /**
  * LoginPanel
  *
- * Sign-in via magic link or Google. With an account remembered on this device it opens on «Rientra in BuddyBudget»
+ * Sign-in via magic link, Google, or Apple in the iPhone app. With an account remembered on this device it opens on «Rientra in BuddyBudget»
  * (one tap to the method used last time); otherwise, or after «Non sei tu?», on the full form. Send errors never
  * show "check your email", the link can be resent after a cooldown. `redirectTo` is where to land after sign-in
  * (already validated by the caller).
@@ -19,6 +19,7 @@ import type { Attribution } from "@/lib/analytics/attribution";
 import { MAGIC_LINK_EXPIRES_MINUTES } from "@/lib/auth/constants";
 import { maskEmail } from "@/lib/auth/returning-user";
 import { useLocalization } from "@/lib/localization/provider";
+import { AppleIcon } from "./apple-icon";
 import { GoogleIcon } from "./google-icon";
 import { LegalLinksNote } from "./legal-links-note";
 import { LoginSentPanel } from "./login-sent-panel";
@@ -56,7 +57,7 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
   }, [forgetRemembered, forget]);
 
   const returning = forgetRemembered ? null : remembered;
-  const busy = actions.loading || actions.googleLoading;
+  const busy = actions.loading || actions.googleLoading || actions.appleLoading;
   const entry = signup ? "signup" : "login";
 
   if (actions.sentTo) {
@@ -81,6 +82,9 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
         method={returning.method}
         loading={actions.loading}
         googleLoading={actions.googleLoading}
+        appleLoading={actions.appleLoading}
+        googleAvailable={actions.googleAvailable}
+        appleAvailable={actions.appleAvailable}
         error={actions.error}
         onSendLink={async () => {
           if (await actions.sendLink(returning.email)) track("returning_login_used", { method: "email" });
@@ -89,6 +93,10 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
           // Tracked before the redirect: once Google opens, this page is gone.
           track("returning_login_used", { method: "google" });
           void actions.signInWithGoogle();
+        }}
+        onApple={() => {
+          track("returning_login_used", { method: "apple" });
+          void actions.signInWithApple();
         }}
         onForget={() => {
           forget();
@@ -157,16 +165,30 @@ export function LoginPanel({ redirectTo, notice, forgetRemembered = false, demoH
         </Button>
       </form>
 
-      <p className="text-center text-sm text-text-3">{tr("oppure")}</p>
+      {(actions.googleAvailable || actions.appleAvailable) && (
+        <>
+          <p className="text-center text-sm text-text-3">{tr("oppure")}</p>
 
-      <Button variant="outline" className="h-11 w-full rounded-full text-base" type="button" onClick={() => {
-          // Tracked before the redirect: once Google opens, this page is gone.
-          track("google_login_started", { entry, ...attribution });
-          void actions.signInWithGoogle();
-        }} disabled={busy}>
-        {actions.googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
-        {actions.googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
-      </Button>
+          <div className="flex flex-col gap-2">
+            {actions.appleAvailable && (
+              <Button className="h-11 w-full rounded-full bg-foreground text-base text-background hover:bg-foreground/90" type="button" onClick={() => void actions.signInWithApple()} disabled={busy}>
+                {actions.appleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <AppleIcon className="size-5" />}
+                {tr("Continua con Apple")}
+              </Button>
+            )}
+            {actions.googleAvailable && (
+              <Button variant="outline" className="h-11 w-full rounded-full text-base" type="button" onClick={() => {
+                  // Tracked before the redirect: once Google opens, this page is gone.
+                  track("google_login_started", { entry, ...attribution });
+                  void actions.signInWithGoogle();
+                }} disabled={busy}>
+                {actions.googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
+                {actions.googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
+              </Button>
+            )}
+          </div>
+        </>
+      )}
 
       {demoHref && (
         <p className="text-sm text-text-2">

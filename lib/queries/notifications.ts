@@ -94,3 +94,39 @@ export function useUpdateAiCategorizationMutation() {
     },
   });
 }
+
+const PUSH_DEVICES_KEY = ["push-devices"] as const;
+
+/** Phones with notifications on for this account, and whether the server can send them at all. */
+export interface PushDevicesState {
+  configured: boolean;
+  devices: number;
+}
+
+/** Push state of the account (number of phones), for the «Sul telefono» row in Notifiche. */
+export function usePushDevicesQuery() {
+  return useQuery({
+    queryKey: PUSH_DEVICES_KEY,
+    queryFn: async () => {
+      const response = await fetch("/api/user/push-devices");
+      if (!response.ok) throw await failure(response, "Impossibile caricare le notifiche sul telefono");
+      return (await response.json()) as PushDevicesState;
+    },
+  });
+}
+
+/** Re-reads the phones after this phone registered or removed its token (done by `lib/native`). */
+export function useInvalidatePushDevices() {
+  const queryClient = useQueryClient();
+  return () => queryClient.invalidateQueries({ queryKey: PUSH_DEVICES_KEY });
+}
+
+/** Sends a test notification to the account's phones. */
+export function useSendPushTestMutation() {
+  return useMutation<void, Error, void>({
+    mutationFn: async () => {
+      const response = await fetch("/api/user/push-devices/test", { method: "POST" });
+      if (!response.ok) throw await failure(response, "Impossibile mandare la notifica di prova");
+    },
+  });
+}

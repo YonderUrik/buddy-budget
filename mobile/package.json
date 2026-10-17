@@ -1,0 +1,33 @@
+{
+  "name": "buddy-budget-mobile",
+  "version": "0.73.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Native iOS/Android shell of BuddyBudget (Capacitor): loads app.buddybudget.io and adds what the web cannot do.",
+  "packageManager": "pnpm@11.5.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "sync": "node scripts/sync-version.mjs && cap sync",
+    "ios": "cap open ios",
+    "android": "cap open android",
+    "assets": "node scripts/generate-assets.mjs",
+    "version:sync": "node scripts/sync-version.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/browser": "8.0.5",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2",
+    "@capacitor/push-notifications": "8.1.3",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capgo/capacitor-native-biometric": "8.7.0",
+    "@capgo/capacitor-social-login": "8.5.12"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2",
+    "@types/node": "^20.19.43",
+    "sharp": "0.35.5",
+    "typescript": "^5"
+  }
+}

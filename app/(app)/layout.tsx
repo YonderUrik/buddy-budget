@@ -8,12 +8,13 @@ import { SyncProgressIndicator } from "@/components/domain/sync";
 import { QuickReportProvider } from "@/components/domain/support";
 // Direct file import: the auth barrel also carries the login preview, which the app layout must not load.
 import { RememberReturningUser } from "@/components/domain/auth/remember-returning-user";
+import { BiometricLockScreen, NativeSessionTasks } from "@/components/domain/native";
 import { auth } from "@/lib/auth";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { AttentionShell } from "./attention-shell";
 import { SidebarInsightsSlot } from "./sidebar-insights-slot";
 
-/** Layout per tutte le pagine dell'app autenticate: monta AppShell con sidebar (e il suo riepilogo finanziario), il pannello globale dei sync, il foglio «Scrivici», la cronologia del link «‹», la preferenza "nascondi importi" e il ricordo dell'account per «Rientra in BuddyBudget». */
+/** Layout of every authenticated app page: mounts AppShell with the sidebar (and its financial summary), the global sync panel, the «Scrivici» sheet, the «‹» history, the "hide amounts" preference, the remembered account for «Rientra in BuddyBudget» and, in the phone app, the push token refresh and the Face ID lock. */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
   const isPublicDemo = isPublicDemoUserId(session?.user.id);
@@ -38,8 +39,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <PersonalImportIsland />
       </SyncProgressIndicator>
       </QuickReportProvider>
-      {/* The shared demo account is never remembered as "your" account on the sign-in page. */}
+      {/* The shared demo account is never remembered as "your" account on the sign-in page, nor registers phones for push. */}
       {session && !isPublicDemo && <RememberReturningUser email={session.user.email} />}
+      {session && !isPublicDemo && <NativeSessionTasks />}
+      <BiometricLockScreen />
     </PrivacyProvider>
   );
 }

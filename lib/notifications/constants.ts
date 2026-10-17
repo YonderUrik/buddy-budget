@@ -25,17 +25,17 @@ export const NOTIFICATION_KIND_INFO: Record<NotificationKind, NotificationKindIn
   budget: {
     label: "Avvisi sul budget",
     reason: "gli avvisi sul budget",
-    hint: "Una email quando una categoria arriva all'80% del budget mensile e quando lo supera.",
+    hint: "Un avviso quando una categoria arriva all'80% del budget mensile e quando lo supera.",
   },
   deadlines: {
     label: "Avvisi sulle scadenze",
     reason: "gli avvisi sulle scadenze",
-    hint: "Una email quando manca poco alla rata di un finanziamento, o quando è scaduta.",
+    hint: "Un avviso quando manca poco alla rata di un finanziamento, o quando è scaduta.",
   },
   goals: {
     label: "Promemoria sugli obiettivi",
     reason: "i promemoria sugli obiettivi di risparmio",
-    hint: "A inizio mese a che punto sono i tuoi obiettivi, e una email quando ne raggiungi uno o quando la data si avvicina.",
+    hint: "A inizio mese a che punto sono i tuoi obiettivi, e un avviso quando ne raggiungi uno o quando la data si avvicina.",
   },
 };
 
@@ -46,6 +46,8 @@ export const NOTIFICATION_DEFAULTS = {
   budgetAlertsEnabled: false,
   deadlineAlertsEnabled: false,
   goalAlertsEnabled: false,
+  emailEnabled: true,
+  pushEnabled: false,
 };
 
 export interface NotificationPreferences {
@@ -54,6 +56,9 @@ export interface NotificationPreferences {
   budgetAlertsEnabled: boolean;
   deadlineAlertsEnabled: boolean;
   goalAlertsEnabled: boolean;
+  /** Channels for the kinds above: email (the default) and push notifications on the phone app. */
+  emailEnabled: boolean;
+  pushEnabled: boolean;
 }
 
 /** Soglie (percentuale del budget mensile speso) che fanno scattare un avviso. */

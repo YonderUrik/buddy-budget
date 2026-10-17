@@ -51,6 +51,7 @@ import { AppVersionLabel } from "@/components/layout/app-version-label";
 import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
 import { usePendingNavHref } from "@/components/layout/use-pending-nav";
 import { authClient } from "@/lib/auth/client";
+import { signOutThisDevice } from "@/lib/auth/sign-out";
 import { SPRING_SNAPPY } from "@/lib/motion/springs";
 import {
   DropdownMenu,
@@ -302,7 +303,7 @@ export function AppSidebar({
     .toUpperCase();
 
   async function handleSignOut() {
-    await authClient.signOut();
+    await signOutThisDevice();
     // Ricarica completa: svuota la cache in memoria, così il prossimo utente della scheda non vede dati altrui.
     window.location.assign("/login");
   }

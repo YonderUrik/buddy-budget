@@ -84,7 +84,7 @@ const FEATURES_EN: Readonly<Record<string, FeatureText>> = {
   "tuoi-dati-tuo-controllo": { name: "Your data, your control", description: "Export everything as a ZIP, or reset or delete your account with 30 days to change your mind." },
   "email-riepilogo-e-avvisi": { name: "Summary and alert emails", description: "If you want, get a summary of the month or the week, with what you spent, what came in, investment gains and dividends in a few lines, and an alert when a budget is nearly used up or a payment is about to fall due. You choose them when you first sign in, they start switched off and each one turns off with one click." },
   "piu-lingue-e-valute": { name: "Languages and currencies", description: "The Italy product in Italian and English; the Germany product in German and English. Selectable currencies. For Germany: portfolio and income, partial 2026 tax estimates with explicit limits; pension and advanced simulators on hold until review. Unsupported cases are flagged, without applying Italian rules." },
-  "notifiche-push": { name: "Push notifications", description: "Alerts on your phone, for example about prices." },
+  "app-per-telefono": { name: "iPhone and Android app", description: "The same BuddyBudget as an app to install: sign in with the email link, Google or Apple, connect your bank without leaving it, get summaries and alerts on your phone (no amounts in the text) and unlock it with Face ID or your fingerprint. Coming to the stores." },
 };
 
 const f = (
@@ -140,7 +140,7 @@ export const FEATURES: readonly Feature[] = [
   f("tuoi-dati-tuo-controllo", "Account", "Tuoi dati, tuo controllo", "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.", "live"),
   f("email-riepilogo-e-avvisi", "Account", "Email di riepilogo e avvisi", "Se vuoi, ricevi il riepilogo del mese o della settimana, con speso, entrato, guadagno degli investimenti e dividendi in poche righe, e un avviso quando un budget è quasi finito o una rata sta per scadere. Le scegli già al primo accesso, partono spente e ognuna si disattiva con un clic.", "new"),
   f("piu-lingue-e-valute", "Account", "Più lingue e valute", "Prodotto Italia in italiano e inglese; prodotto Germania in tedesco e inglese. La lingua del browser viene proposta da sola, e si cambia quando vuoi. Valute selezionabili. Per la Germania: portafoglio e proventi, stime fiscali 2026 parziali con limiti espliciti; pensione e simulatori avanzati sospesi in attesa di revisione. I casi non supportati sono indicati, senza applicare regole italiane.", "new"),
-  f("notifiche-push", "Account", "Notifiche push", "Avvisi sul telefono, per esempio per i prezzi.", "soon"),
+  f("app-per-telefono", "Account", "App per iPhone e Android", "La stessa BuddyBudget come app da installare: entri con il link via email, Google o Apple, colleghi la banca senza uscire, ricevi riepilogo e avvisi sul telefono (senza importi nel testo) e la sblocchi con Face ID o l'impronta. In arrivo sugli store.", "soon"),
 ];
 
 /** Funzioni di un'area, nell'ordine del catalogo. */

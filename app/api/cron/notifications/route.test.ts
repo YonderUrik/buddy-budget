@@ -15,7 +15,7 @@ import { GET } from "./route";
 
 const SECRET = "s".repeat(40);
 const mockedRun = vi.mocked(runNotifications);
-const OK_RESULT = { mode: "dry-run" as const, users: 3, sent: 0, wouldSend: 2, capped: 0, empty: 1, failed: 0, purged: 0, timedOut: false };
+const OK_RESULT = { mode: "dry-run" as const, users: 3, sent: 0, wouldSend: 2, capped: 0, empty: 1, failed: 0, purged: 0, pushed: 0, timedOut: false };
 
 function call(authorization?: string) {
   return GET(new NextRequest("http://localhost/api/cron/notifications", { headers: authorization ? { authorization } : undefined }));

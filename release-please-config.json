@@ -9,7 +9,8 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": false,
       "extra-files": [
-        { "type": "json", "path": "landing/package.json", "jsonpath": "$.version" }
+        { "type": "json", "path": "landing/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "mobile/package.json", "jsonpath": "$.version" }
       ],
       "changelog-sections": [
         { "type": "feat", "section": "Novità" },

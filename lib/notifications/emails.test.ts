@@ -109,3 +109,47 @@ describe("budgetAlertEmail e deadlineAlertEmail", () => {
     expect(email.text).toContain("scaduta il");
   });
 });
+
+describe("email nella lingua di chi le riceve", () => {
+  // No-break spaces (German puts one before the currency sign and the percent sign) become plain spaces, for readable assertions.
+  const moneyIn = (locale: string) => (v: number) => new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(v).replace(/\u00a0/g, " ");
+  const investments = { endValue: 25000, gain: 312.4, twr: 0.0126, income: 48, netContributions: 500 };
+
+  it("in inglese: frasi, righe, formati e piè di pagina", () => {
+    const en: EmailContext = { ...ctx, language: "en", money: moneyIn("en-GB") };
+    const { subject, text, html } = digestEmail({ ...data, investments, toDecide: 3 }, en);
+    expect(subject).toBe("Your monthly summary");
+    expect(text).toContain("In September you spent €1,234.50 and received €2,000.00.");
+    expect(text).toContain("3 transactions are waiting for a category in Categorise.");
+    expect(text).toContain("Spending vs previous month: +12%");
+    expect(text).toContain("Budgets exceeded: 1 of 4");
+    expect(text).toContain("Period gain: +€312.40 (+1.3%)");
+    expect(text).toContain("You're receiving this email because you signed up for the regular summary.");
+    expect(text).toContain("Unsubscribe from these emails: https://app.test/disiscrizione?t=TOKEN");
+    expect(html).toContain('<html lang="en">');
+    expect(budgetAlertEmail([{ categoryId: "c", name: "Food", threshold: 100, spent: 310, budget: 300, itemKey: "k", itemKeys: ["k"] }], en).text).toContain(
+      "This month you've used 103% of your Food budget: €310.00 of €300.00.",
+    );
+    const deadline = deadlineAlertEmail([{ debtId: "d", name: "Mortgage", date: "2026-10-01", amount: 600, overdue: true, itemKey: "k" }], en);
+    expect(deadline.subject).toBe("You have an overdue instalment");
+    expect(deadline.text).toContain("The €600.00 instalment for Mortgage was due on 1 October 2026.");
+  });
+
+  it("in tedesco: frasi, righe, formati e piè di pagina", () => {
+    const de: EmailContext = { ...ctx, language: "de", money: moneyIn("de-DE") };
+    const email = digestEmail({ ...data, investments }, de);
+    const { subject } = email;
+    const text = email.text.replace(/\u00a0/g, " ");
+    expect(subject).toBe("Deine Monatszusammenfassung");
+    expect(text).toContain("Im September hast du 1.234,50 € ausgegeben und 2.000,00 € eingenommen.");
+    expect(text).toContain("Ausgaben im Vergleich zum Vormonat: +12 %");
+    expect(text).toContain("Gewinn im Zeitraum: +312,40 € (+1,3 %)");
+    expect(text).toContain("Du erhältst diese E-Mail, weil du die regelmäßige Zusammenfassung aktiviert hast.");
+    expect(budgetAlertEmail([{ categoryId: "c", name: "Essen", threshold: 100, spent: 310, budget: 300, itemKey: "k", itemKeys: ["k"] }], de).subject).toBe(
+      "Du hast diesen Monat ein Budget überschritten",
+    );
+    expect(deadlineAlertEmail([{ debtId: "d", name: "Kredit", date: "2026-10-12", amount: 600, overdue: false, itemKey: "k" }], de).text).toContain(
+      "Die Rate für Kredit über 600,00 € ist am 12. Oktober 2026 fällig.",
+    );
+  });
+});

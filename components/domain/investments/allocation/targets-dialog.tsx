@@ -17,6 +17,7 @@ import type { TargetInput } from "@/lib/investments/allocation";
 import { useUpdateTargetsMutation } from "@/lib/queries/investments";
 import { MAX_TARGETS } from "@/lib/validation/investments";
 import { cn } from "@/lib/utils";
+import { numberSeparators } from "@/lib/localization/format";
 import { InstrumentPicker } from "../instrument-picker";
 import { TargetIcon } from "lucide-react";
 import { PanelDialogHeader } from "../dialog-parts";
@@ -31,8 +32,9 @@ interface TargetRow {
   text: string;
 }
 
-function toText(weight: number): string {
-  return String(Math.round(weight * 1000) / 10).replace(".", ",");
+/** Field text with the locale's decimal separator; `parsePercent` accepts both "," and ".". */
+function toText(weight: number, locale: string): string {
+  return String(Math.round(weight * 1000) / 10).replace(".", numberSeparators(locale).decimal);
 }
 
 function parsePercent(text: string): number {
@@ -40,8 +42,9 @@ function parsePercent(text: string): number {
   return Number.isFinite(value) ? value : NaN;
 }
 
-function formatPercent(value: number): string {
-  return `${(Math.round(value * 10) / 10).toString().replace(".", ",")}%`;
+/** Percentage points with at most one decimal ("12,5%", "50%" in it-IT). */
+function formatPercent(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1, useGrouping: false }).format(Math.round(value * 10) / 1000);
 }
 
 export interface TargetsDialogProps {
@@ -65,11 +68,11 @@ export function TargetsDialog(props: TargetsDialogProps) {
 }
 
 function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggestions, currency }: TargetsDialogProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const update = useUpdateTargetsMutation();
   const [rows, setRows] = React.useState<TargetRow[]>(() =>
     initial
-      .map((t) => ({ instrument: instrumentsById.get(t.instrumentId), text: toText(t.weight) }))
+      .map((t) => ({ instrument: instrumentsById.get(t.instrumentId), text: toText(t.weight, locale) }))
       .filter((r): r is TargetRow => r.instrument !== undefined)
   );
   const values = rows.map((r) => parsePercent(r.text));
@@ -84,13 +87,13 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
 
   function add(instrument: Instrument) {
     if (rows.some((r) => r.instrument.id === instrument.id) || rows.length >= MAX_TARGETS) return;
-    setRows((prev) => [...prev, { instrument, text: remainder > 0 ? toText(remainder / 100) : "" }]);
+    setRows((prev) => [...prev, { instrument, text: remainder > 0 ? toText(remainder / 100, locale) : "" }]);
   }
 
   function fillRemainder() {
     if (!last) return;
     const lastValue = parsePercent(last.text) || 0;
-    setText(rows.length - 1, toText((lastValue + remainder) / 100));
+    setText(rows.length - 1, toText((lastValue + remainder) / 100, locale));
   }
 
   function save(targets: TargetInput[]) {
@@ -134,8 +137,8 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
         placeholder={tr("Aggiungi uno strumento")}
       />
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <span className={cn("tabular-nums", Math.abs(remainder) <= SUM_TOLERANCE_PERCENT ? "text-muted-foreground" : "text-destructive")}>{tr("Totale")}{" "}{formatPercent(sum)}
-          {Math.abs(remainder) > SUM_TOLERANCE_PERCENT ? (remainder > 0 ? tr(" · mancano {0}", { 0: formatPercent(remainder) }) : tr(" · {0} di troppo", { 0: formatPercent(-remainder) })) : ""}
+        <span className={cn("tabular-nums", Math.abs(remainder) <= SUM_TOLERANCE_PERCENT ? "text-muted-foreground" : "text-destructive")}>{tr("Totale")}{" "}{formatPercent(sum, locale)}
+          {Math.abs(remainder) > SUM_TOLERANCE_PERCENT ? (remainder > 0 ? tr(" · mancano {0}", { 0: formatPercent(remainder, locale) }) : tr(" · {0} di troppo", { 0: formatPercent(-remainder, locale) })) : ""}
         </span>
         {last && Math.abs(remainder) > SUM_TOLERANCE_PERCENT && (parsePercent(last.text) || 0) + remainder > 0 ? (
           <Button variant="ghost" size="sm" onClick={fillRemainder}>

@@ -3,17 +3,17 @@ import { useLocalization } from "@/lib/localization/provider";
 import { localizedFormats } from "@/lib/localization/format";
 /** Guadagno con segno e percentuale ("+120 € · +4,5%"), verde o rosso secondo il segno. */
 
-import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { formatSignedPct as signedPct } from "./percent";
 
-/** "+4,5%" / "−2,0%". */
-export function formatSignedPct(ratio: number): string {
-  return `${ratio < 0 ? "−" : "+"}${Math.abs(ratio * 100).toFixed(1).replace(".", ",")}%`;
+/** "+4,5%" / "−2,0%" in it-IT; follows `locale` ("+4.5%" in en-GB). */
+export function formatSignedPct(ratio: number, locale = "it-IT"): string {
+  return signedPct(ratio, locale);
 }
 
-/** "+120,50 €" / "−3,20 €". */
-export function formatSignedCurrency(amount: number, currency: string): string {
-  return `${amount < 0 ? "−" : "+"}${formatCurrency(Math.abs(amount), currency)}`;
+/** "+120,50 €" / "−3,20 €" in it-IT; follows `locale`. */
+export function formatSignedCurrency(amount: number, currency: string, locale = "it-IT"): string {
+  return localizedFormats(locale).formatSignedCurrency(amount, currency);
 }
 
 export interface GainTextProps {

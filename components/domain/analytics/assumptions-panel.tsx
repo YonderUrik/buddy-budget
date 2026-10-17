@@ -18,7 +18,7 @@ import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { WITHDRAWAL_RULES, type WithdrawalRule } from "@/lib/calc/monte-carlo";
 import { localizedAnalyticsFormats } from "./analytics-format";
 import { localizedReturnSource } from "./return-source";
-import { limitsOf, parseNumber, PERCENT_FIELDS, toFieldText, toPercentDraft, type PercentDraft, type PercentField } from "./assumptions-fields";
+import { limitsOf, localizedNumberFields, PERCENT_FIELDS, toPercentDraft, type PercentDraft, type PercentField } from "./assumptions-fields";
 
 export const RULE_LABELS: Record<WithdrawalRule, string> = {
   fissa: "Fissa (stessa spesa ogni anno)",
@@ -57,8 +57,9 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
 
   const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
-  const initialPercents = React.useMemo(() => toPercentDraft(assumptions), [assumptions]);
+  const { t: tr, locale } = useLocalization();
+  const { parseNumber, toFieldText } = localizedNumberFields(locale);
+  const initialPercents = React.useMemo(() => toPercentDraft(assumptions, locale), [assumptions, locale]);
   const [percents, setPercents] = React.useState<PercentDraft>(initialPercents);
   /** Vero = al salvataggio il rendimento torna a calcolarsi dallo storico. */
   const [returnAuto, setReturnAuto] = React.useState(false);
@@ -75,7 +76,7 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
 
   const reset = (next: AnalyticsAssumptions) => {
     const manual = returnInfo.source === "manuale";
-    setPercents({ ...toPercentDraft(next), expectedReturn: manual ? toFieldText(offer ?? next.expectedReturn, true) : initialPercents.expectedReturn });
+    setPercents({ ...toPercentDraft(next, locale), expectedReturn: manual ? toFieldText(offer ?? next.expectedReturn, true) : initialPercents.expectedReturn });
     setReturnAuto(manual);
     setYears(String(next.retirementYears));
     setSpending(toFieldText(next.annualSpending, false));
@@ -135,7 +136,7 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
             key={field.key}
             id={`ass-${field.key}`}
             label={`${field.label} (%)`}
-            hint={field.key === "expectedReturn" ? `${returnAuto ? "Torna a seguire il tuo storico al salvataggio." : returnSourceText(returnInfo, currency, assumptions.dataPeriod)} ${field.hint}` : field.hint}
+            hint={field.key === "expectedReturn" ? `${returnAuto ? tr("Torna a seguire il tuo storico al salvataggio.") : returnSourceText(returnInfo, currency, assumptions.dataPeriod)} ${tr(field.hint)}` : field.hint}
           >
             <Input
               id={`ass-${field.key}`}
@@ -169,8 +170,8 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
           label={tr("Spesa annua in pensione ({0})", {0: currency})}
           hint={
             plan.spendingSource === "dati" && plan.spending !== null
-              ? `Vuoto = uso le tue uscite ${periodPhrase}, riportate a un anno: ${money(plan.spending, currency)}. Scrivi una cifra se in pensione spenderai diversamente.`
-              : `Vuoto = uso le tue uscite ${periodPhrase}, riportate a un anno (servono almeno 3 mesi di movimenti).`
+              ? tr("Vuoto = uso le tue uscite {0}, riportate a un anno: {1}. Scrivi una cifra se in pensione spenderai diversamente.", { 0: periodPhrase, 1: money(plan.spending, currency) })
+              : tr("Vuoto = uso le tue uscite {0}, riportate a un anno (servono almeno 3 mesi di movimenti).", { 0: periodPhrase })
           }
         >
           <Input id="ass-spending" inputMode="numeric" value={spending} placeholder={tr("Dai tuoi dati")} onChange={(e) => setSpending(e.target.value)} />
@@ -180,8 +181,8 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
           label={tr("Risparmio annuo ({0})", {0: currency})}
           hint={
             plan.savingsSource === "dati" && plan.savings !== null
-              ? `Vuoto = uso quanto hai messo da parte ${periodPhrase}, riportato a un anno: ${money(plan.savings, currency)}.`
-              : `Vuoto = uso entrate meno uscite ${periodPhrase}, riportate a un anno. Scrivi 0 se non versi più nulla.`
+              ? tr("Vuoto = uso quanto hai messo da parte {0}, riportato a un anno: {1}.", { 0: periodPhrase, 1: money(plan.savings, currency) })
+              : tr("Vuoto = uso entrate meno uscite {0}, riportate a un anno. Scrivi 0 se non versi più nulla.", { 0: periodPhrase })
           }
         >
           <Input id="ass-savings" inputMode="numeric" value={savings} placeholder={tr("Dai tuoi dati")} onChange={(e) => setSavings(e.target.value)} />

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { sendAccountEmail } from "@/lib/account/emails";
+import { resolveProfile } from "@/lib/localization/config";
 import { scheduleAccountDeletion } from "@/lib/account/lifecycle";
 import { recentLoginRequired, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { requestLogger, withRoute } from "@/lib/observability";
@@ -18,7 +19,7 @@ async function handlePost(request: NextRequest) {
   }
 
   const deletionAt = await scheduleAccountDeletion(session.user.id, session.session.id);
-  await sendAccountEmail(session.user.email, "deactivated", { userId: session.user.id, deletionAt });
+  await sendAccountEmail(session.user.email, "deactivated", { userId: session.user.id, deletionAt, language: resolveProfile(session.user).language });
   requestLogger().info("account.deactivation.completed");
   return Response.json({ deletionScheduledAt: deletionAt.toISOString() });
 }

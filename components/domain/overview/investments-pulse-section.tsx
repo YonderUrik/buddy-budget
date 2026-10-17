@@ -42,7 +42,7 @@ export function InvestmentsPulseSection({ value, paid, marketGain, positions, cu
         {sign}
         {format(Math.abs(marketGain))}
         <span className="font-sans text-sm font-normal text-muted-foreground">
-          {ratio !== null ? tr("{0}{1}% sul versato", {0: sign, 1: Math.abs(ratio * 100).toFixed(1).replace(".", ",")}) : tr("dal mercato")}
+          {ratio !== null ? tr("{0}{1}% sul versato", {0: sign, 1: new Intl.NumberFormat(formattingLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1, useGrouping: false }).format(Math.abs(ratio * 100))}) : tr("dal mercato")}
         </span>
       </p>
       <div className="flex h-3 overflow-hidden rounded-full bg-muted" role="img" aria-label={tr("Portafoglio da {0}: {1} versati e {2} {3} dal mercato", {0: format(value), 1: format(Math.min(paid, value)), 2: format(Math.abs(marketGain)), 3: isLoss ? "persi" : "guadagnati"})}>

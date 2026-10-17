@@ -43,9 +43,9 @@ export interface CategorizeGroupRowProps {
   onRemoteLogo?: () => void;
 }
 
-/** Numero di movimenti del gruppo con singolare/plurale corretto. */
-function movementCountLabel(count: number): string {
-  return count === 1 ? "1 movimento" : `${count} movimenti`;
+/** Number of transactions in the group, singular or plural, in the user's language. */
+function movementCountLabel(count: number, tr: (source: string, values?: Record<string, number>) => string): string {
+  return count === 1 ? tr("1 movimento") : tr("{0} movimenti", { 0: count });
 }
 
 export function CategorizeGroupRow({
@@ -104,7 +104,7 @@ export function CategorizeGroupRow({
           <div className="flex min-w-0 flex-col">
             <p className="line-clamp-2 min-w-0 text-sm font-medium break-words text-foreground">{group.label}</p>
             <p className="text-xs text-muted-foreground tabular-nums">
-              {movementCountLabel(group.transactionIds.length)} {"·"}{dateRangeLabel(group.transactionDates)}
+              {movementCountLabel(group.transactionIds.length, tr)} {"·"}{dateRangeLabel(group.transactionDates)}
             </p>
           </div>
           <span className={cn("shrink-0 text-sm font-medium tabular-nums", isIncome ? "text-pos" : "text-foreground")}>

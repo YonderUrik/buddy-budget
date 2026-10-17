@@ -4,13 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { CreateAccountInput, UpdateAccountInput } from "@/lib/validation/accounts";
+import { pageText } from "@/lib/localization/page-text";
 
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
 
 async function fetchAccounts(): Promise<Account[]> {
   const response = await fetch("/api/accounts");
   if (!response.ok) {
-    throw new Error("Impossibile caricare i conti");
+    throw new Error(pageText("Impossibile caricare i conti"));
   }
   return response.json();
 }
@@ -32,7 +33,7 @@ export function useCreateAccountMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile creare il conto");
+        throw new Error(body?.error ?? pageText("Impossibile creare il conto"));
       }
       return response.json() as Promise<Account>;
     },
@@ -55,7 +56,7 @@ export function useUpdateAccountMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile aggiornare il conto");
+        throw new Error(body?.error ?? pageText("Impossibile aggiornare il conto"));
       }
       return response.json() as Promise<Account>;
     },
@@ -72,7 +73,7 @@ export function useDeleteAccountMutation() {
     mutationFn: async (id: string) => {
       const response = await fetch(`/api/accounts/${id}`, { method: "DELETE" });
       if (!response.ok) {
-        throw new Error("Impossibile eliminare il conto");
+        throw new Error(pageText("Impossibile eliminare il conto"));
       }
     },
     onSuccess: () => {

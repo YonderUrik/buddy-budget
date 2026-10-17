@@ -1,3 +1,5 @@
+import type { Language } from "@/lib/localization/config";
+import { translate } from "@/lib/localization/messages";
 import {
   BUDGET_ALERT_THRESHOLDS,
   DEADLINE_LEAD_DAYS,
@@ -40,18 +42,19 @@ export interface InboxPreviewItem {
 const DIGEST_TITLE: Record<DigestFrequency, string> = { settimanale: "Riepilogo della settimana", mensile: "Riepilogo del mese" };
 const DIGEST_WHEN: Record<DigestFrequency, string> = { settimanale: "Ogni lunedì", mensile: "Nei primi giorni del mese" };
 
-/** Le email che riceverà chi sceglie queste preferenze, nell'ordine in cui le mostriamo. Pura. */
-export function inboxPreview(preferences: NotificationPreferences): InboxPreviewItem[] {
+/** The emails a user with these preferences will receive, in display order, with texts in `language`. Pure. */
+export function inboxPreview(preferences: NotificationPreferences, language: Language = "it"): InboxPreviewItem[] {
+  const t = (source: string, values?: Record<string, number>) => translate(language, source, values);
   const [first, second] = BUDGET_ALERT_THRESHOLDS;
   const items: (InboxPreviewItem | null)[] = [
     preferences.digestEnabled
-      ? { kind: "digest", title: DIGEST_TITLE[preferences.digestFrequency], when: DIGEST_WHEN[preferences.digestFrequency] }
+      ? { kind: "digest", title: t(DIGEST_TITLE[preferences.digestFrequency]), when: t(DIGEST_WHEN[preferences.digestFrequency]) }
       : null,
-    preferences.budgetAlertsEnabled ? { kind: "budget", title: NOTIFICATION_KIND_INFO.budget.label, when: `All'${first}% e al ${second}% di un budget` } : null,
+    preferences.budgetAlertsEnabled ? { kind: "budget", title: t(NOTIFICATION_KIND_INFO.budget.label), when: t("All'{0}% e al {1}% di un budget", { 0: first, 1: second }) } : null,
     preferences.deadlineAlertsEnabled
-      ? { kind: "deadlines", title: NOTIFICATION_KIND_INFO.deadlines.label, when: `${DEADLINE_LEAD_DAYS} giorni prima di una rata` }
+      ? { kind: "deadlines", title: t(NOTIFICATION_KIND_INFO.deadlines.label), when: t("{0} giorni prima di una rata", { 0: DEADLINE_LEAD_DAYS }) }
       : null,
-    preferences.goalAlertsEnabled ? { kind: "goals", title: NOTIFICATION_KIND_INFO.goals.label, when: "Nei primi giorni del mese" } : null,
+    preferences.goalAlertsEnabled ? { kind: "goals", title: t(NOTIFICATION_KIND_INFO.goals.label), when: t("Nei primi giorni del mese") } : null,
   ];
   return items.filter((item): item is InboxPreviewItem => item !== null);
 }

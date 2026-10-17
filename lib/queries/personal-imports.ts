@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { hasRunningImport } from "@/lib/personal-import/island";
+import { pageText } from "@/lib/localization/page-text";
 
 export type PersonalImportListing = {
   formats: { id: string; name: string }[];
@@ -21,7 +22,7 @@ export function usePersonalImportsQuery() {
     queryKey: ["personal-imports"],
     queryFn: async (): Promise<PersonalImportListing> => {
       const response = await fetch("/api/personal-imports", { cache: "no-store" });
-      if (!response.ok) throw new Error("Impossibile caricare i CSV personali. Riprova.");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare i CSV personali. Riprova."));
       return response.json();
     },
     // Interroga il server solo mentre c'è un'importazione in corso.

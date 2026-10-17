@@ -1,6 +1,7 @@
 import "../app-shot.css";
-import { SCREEN_SMALL_WIDTH, SCREENS, SCREEN_THEMES, screenSmallSrc, screenSrc, type ScreenId } from "@/content/screens";
+import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, type ScreenId } from "@/content/screens";
 import { screenSize } from "@/lib/screen-size";
+import { screenVariants } from "@/lib/screen-variants";
 
 /** Size of the `<id>-top.jpg` captures (the top of the screen at the capture viewport). */
 const TOP_SIZE = { width: 1280, height: 800 } as const;
@@ -22,7 +23,7 @@ export interface ScreenCropProps {
 /**
  * Real screenshot of the app in a browser-like window of fixed proportions: the image is anchored to the top and
  * cropped at the bottom, so the part that matters (title, figure, first chart) always shows and the layout never
- * jumps. Both themes are rendered and the CSS shows the current one (like `AppShot`).
+ * jumps. Every theme and language is rendered and the CSS shows the current one (like `AppShot`).
  */
 export function ScreenCrop({ id, top = false, ratio = "16 / 10", priority = false, sizes = "(max-width: 1000px) 100vw, 640px", className }: ScreenCropProps) {
   const screen = SCREENS.find((s) => s.id === id);
@@ -39,19 +40,19 @@ export function ScreenCrop({ id, top = false, ratio = "16 / 10", priority = fals
         <span>app.buddybudget.io{screen.route}</span>
       </div>
       <div className="win-img" style={{ aspectRatio: ratio }}>
-        {SCREEN_THEMES.map((theme) => (
+        {screenVariants(priority).map(({ language, theme, className, eager }) => (
           // eslint-disable-next-line @next/next/no-img-element -- static export: no image optimizer
           <img
-            key={theme}
-            className={`shot-img shot-${theme}`}
-            src={top ? screenSrc(screen.id, theme, true) : screenSmallSrc(screen.id, theme)}
-            srcSet={top ? undefined : `${screenSmallSrc(screen.id, theme)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme)} ${full.width}w`}
+            key={`${language}-${theme}`}
+            className={className}
+            src={top ? screenSrc(screen.id, theme, true, language) : screenSmallSrc(screen.id, theme, language)}
+            srcSet={top ? undefined : `${screenSmallSrc(screen.id, theme, language)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme, false, language)} ${full.width}w`}
             sizes={top ? undefined : sizes}
             alt={screen.alt}
             width={size.width}
             height={size.height}
-            loading={priority ? "eager" : "lazy"}
-            fetchPriority={priority ? "high" : undefined}
+            loading={eager ? "eager" : "lazy"}
+            fetchPriority={eager ? "high" : undefined}
             decoding="async"
           />
         ))}

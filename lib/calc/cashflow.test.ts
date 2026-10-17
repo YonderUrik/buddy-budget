@@ -110,6 +110,12 @@ describe("formatCashflowPeriodLabel", () => {
     const range = getCashflowPeriodRange("3mesi", new Date(2026, 2, 15));
     expect(formatCashflowPeriodLabel(range)).toBe("Gen – Mar 2026");
   });
+
+  it("follows the locale", () => {
+    const range = getCashflowPeriodRange("3mesi", new Date(2026, 2, 15));
+    expect(formatCashflowPeriodLabel(range, "en-GB")).toBe("Jan – Mar 2026");
+    expect(formatCashflowPeriodLabel(range, "de-DE")).toBe("Jan – März 2026");
+  });
 });
 
 describe("computeCashflowKpis", () => {

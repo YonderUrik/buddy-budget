@@ -1,6 +1,7 @@
 import "./app-shot.css";
-import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, SCREEN_THEMES, type ScreenId } from "@/content/screens";
+import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, type ScreenId } from "@/content/screens";
 import { screenSize } from "@/lib/screen-size";
+import { screenVariants } from "@/lib/screen-variants";
 
 export interface AppShotProps {
   /** Id di una schermata di `content/screens.ts`. */
@@ -15,8 +16,8 @@ export interface AppShotProps {
 }
 
 /**
- * Screenshot vero dell'app in una cornice da browser. Rende entrambe le versioni (chiara e scura) e il CSS mostra
- * quella che corrisponde al tema della landing, così il cambio tema non ricarica nulla.
+ * Real app screenshot in a browser frame. Renders every version (light and dark, in each language) and the CSS shows
+ * the one of the landing's theme and the visitor's language, so switching theme reloads nothing.
  */
 export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", priority = false, className }: AppShotProps) {
   const screen = SCREENS.find((s) => s.id === id);
@@ -31,19 +32,19 @@ export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", pr
         <span>{url ?? `app.buddybudget.io${screen.route}`}</span>
       </div>
       <div className="shot-imgs" style={{ aspectRatio: `${size.width} / ${size.height}` }}>
-        {SCREEN_THEMES.map((theme) => (
+        {screenVariants(priority).map(({ language, theme, className, eager }) => (
           // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
           <img
-            key={theme}
-            className={`shot-img shot-${theme}`}
-            src={screenSmallSrc(screen.id, theme)}
-            // I telefoni scaricano e decodificano la versione a 1x; la 1,5x solo dove serve (schermi larghi e densi).
-            srcSet={size.width > SCREEN_SMALL_WIDTH ? `${screenSmallSrc(screen.id, theme)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme)} ${size.width}w` : undefined}
+            key={`${language}-${theme}`}
+            className={className}
+            src={screenSmallSrc(screen.id, theme, language)}
+            // Phones download and decode the 1x version; the 1.5x only where it pays off (wide, dense screens).
+            srcSet={size.width > SCREEN_SMALL_WIDTH ? `${screenSmallSrc(screen.id, theme, language)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme, false, language)} ${size.width}w` : undefined}
             sizes={sizes}
             alt={screen.alt}
             width={size.width}
             height={size.height}
-            loading={priority ? "eager" : "lazy"}
+            loading={eager ? "eager" : "lazy"}
             decoding="async"
           />
         ))}

@@ -41,3 +41,17 @@ export function numberSeparators(locale: string): { thousand: string; decimal: s
   const thousand = group && group !== decimal ? group : decimal === "," ? "." : ",";
   return { thousand, decimal };
 }
+
+/**
+ * Number typed by the user in `locale`: "1.250,50" or "6,9" in Italian and German, "1,250.50" in English. With a comma
+ * decimal locale a text without the comma keeps "." as the decimal ("6.9" → 6.9), as many keyboards type it; spaces are
+ * ignored. Empty or invalid text → null.
+ */
+export function parseLocaleNumber(text: string, locale: string): number | null {
+  const compact = text.trim().replace(/[\s  ]/g, "");
+  if (compact === "") return null;
+  const { thousand, decimal } = numberSeparators(locale);
+  const normalized = decimal === "." || compact.includes(decimal) ? compact.split(thousand).join("").replace(decimal, ".") : compact;
+  const value = Number(normalized);
+  return Number.isFinite(value) ? value : null;
+}

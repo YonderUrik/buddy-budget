@@ -1,5 +1,5 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
+import { localizedFormats, numberSeparators } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
@@ -67,7 +67,7 @@ function SettingsForm({
   const isBond = instrument.type === "obbligazione";
   const [rate, setRate] = React.useState(setting?.taxRate ? String(Number(setting.taxRate)) : AUTO);
   const [harmonized, setHarmonized] = React.useState(setting?.taxHarmonized == null ? AUTO : String(setting.taxHarmonized));
-  const [couponRate, setCouponRate] = React.useState(setting?.couponRate ? String(Number(setting.couponRate) * 100).replace(".", ",") : "");
+  const [couponRate, setCouponRate] = React.useState(setting?.couponRate ? String(Number(setting.couponRate) * 100).replace(".", numberSeparators(formattingLocale).decimal) : "");
   const [frequency, setFrequency] = React.useState<string>(String(setting?.couponFrequency ?? 2));
   const [maturity, setMaturity] = React.useState(setting?.maturityDate ?? "");
   const [error, setError] = React.useState<string | null>(null);
@@ -83,7 +83,7 @@ function SettingsForm({
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    const couponPercent = couponRate.trim() ? parseAmount(couponRate) : null;
+    const couponPercent = couponRate.trim() ? parseAmount(couponRate, formattingLocale) : null;
     const hasCoupons = isBond && (couponPercent !== null || maturity !== "");
     if (hasCoupons && (!couponPercent || !maturity)) return setError(tr("Per le cedole servono tasso e scadenza"));
     submit({

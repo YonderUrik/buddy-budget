@@ -1,5 +1,5 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
+import { localizedFormats, parseLocaleNumber } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
@@ -32,7 +32,7 @@ export function ContributionSuggestions({ analysis, defaultAmount, instrumentsBy
   const { t: tr } = useLocalization();
   const id = React.useId();
   const [text, setText] = React.useState(String(Math.round(defaultAmount)));
-  const amount = Number(text.replace(",", ".")) || 0;
+  const amount = parseLocaleNumber(text, formattingLocale) ?? 0;
   const suggestions = React.useMemo(() => suggestContribution(analysis, amount), [analysis, amount]);
   return (
     <section className="flex flex-col gap-3 rounded-lg bg-muted/50 p-3" aria-label={tr("Prossimo versamento")}>

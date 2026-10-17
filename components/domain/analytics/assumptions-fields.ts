@@ -1,18 +1,26 @@
 import { ASSUMPTION_LIMITS, type AnalyticsAssumptions } from "@/lib/analitiche/assumptions";
+import { numberSeparators } from "@/lib/localization/format";
 
-/** Legge un numero scritto all'italiana ("3,5", "1.250,5"); null se vuoto o non valido. */
-export function parseNumber(text: string): number | null {
-  const normalized = text.trim().replace(/\s/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Reads a number written with the separators of `locale` ("3,5", "1.250,5" in Italian); null if empty or invalid. */
+export function parseNumber(text: string, locale = "it-IT"): number | null {
+  const { thousand, decimal } = numberSeparators(locale);
+  const normalized = text
+    .trim()
+    .replace(/\s/g, "")
+    .replace(new RegExp(`${escapeRegExp(thousand)}(?=\\d{3}(\\D|$))`, "g"), "")
+    .replace(decimal, ".");
   if (normalized === "") return null;
   const value = Number(normalized);
   return Number.isFinite(value) ? value : null;
 }
 
-/** Numero come testo italiano per un campo ("0,035" → "3,5" se `percent`). */
-export function toFieldText(value: number | null, percent: boolean): string {
+/** Number as field text with the decimal separator of `locale` (0.035 → "3,5" in Italian if `percent`). */
+export function toFieldText(value: number | null, percent: boolean, locale = "it-IT"): string {
   if (value === null) return "";
   const shown = percent ? Math.round(value * 10000) / 100 : Math.round(value);
-  return String(shown).replace(".", ",");
+  return String(shown).replace(".", numberSeparators(locale).decimal);
 }
 
 export interface PercentField {
@@ -52,11 +60,20 @@ export function limitsOf(key: PercentField["key"]): { min: number; max: number }
 
 export type PercentDraft = Record<PercentField["key"], string>;
 
-export function toPercentDraft(a: AnalyticsAssumptions): PercentDraft {
+export function toPercentDraft(a: AnalyticsAssumptions, locale = "it-IT"): PercentDraft {
   return {
-    withdrawalRate: toFieldText(a.withdrawalRate, true),
-    expectedReturn: toFieldText(a.expectedReturn, true),
-    volatility: toFieldText(a.volatility, true),
-    inflation: toFieldText(a.inflation, true),
+    withdrawalRate: toFieldText(a.withdrawalRate, true, locale),
+    expectedReturn: toFieldText(a.expectedReturn, true, locale),
+    volatility: toFieldText(a.volatility, true, locale),
+    inflation: toFieldText(a.inflation, true, locale),
+  };
+}
+
+/** Field parser and formatters bound to one locale, so a form reads back exactly what it wrote. */
+export function localizedNumberFields(locale: string) {
+  return {
+    parseNumber: (text: string) => parseNumber(text, locale),
+    toFieldText: (value: number | null, percent: boolean) => toFieldText(value, percent, locale),
+    toPercentDraft: (a: AnalyticsAssumptions) => toPercentDraft(a, locale),
   };
 }

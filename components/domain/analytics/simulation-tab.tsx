@@ -16,7 +16,7 @@ import { runMonteCarlo } from "@/lib/calc/monte-carlo";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
 import { localizedAnalyticsFormats } from "./analytics-format";
 
-import { successVerdict } from "./plain-answers";
+import { RULE_SHORT_NAMES, successVerdict } from "./plain-answers";
 import { GuidedReading } from "./guided-reading";
 import { localizedGuidedSteps } from "./guided-steps";
 
@@ -46,7 +46,7 @@ export function SimulationTab({ assumptions, plan, currency, compact = false }: 
 
   const { locale: formattingLocale } = useLocalization();
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const [chosenRetireAt, setRetireAt] = React.useState<RetireAt>("oggi");
   const retireAt: RetireAt = compact ? "oggi" : chosenRetireAt;
   const input = React.useMemo(() => buildSimulationInput(plan, assumptions, retireAt), [plan, assumptions, retireAt]);
@@ -55,7 +55,7 @@ export function SimulationTab({ assumptions, plan, currency, compact = false }: 
 
   const data = result.wealth.map((b) => ({ ...b, band80: [b.p10, b.p90], band50: [b.p25, b.p75] }));
   const retireYear = input.accumulationYears;
-  const v = successVerdict(result.successRate);
+  const v = successVerdict(result.successRate, language);
 
   return (
     <div className="flex flex-col gap-4">
@@ -67,8 +67,8 @@ export function SimulationTab({ assumptions, plan, currency, compact = false }: 
         ) : null}
         <div className={compact ? "hidden" : "grid grid-cols-1 gap-3 sm:grid-cols-3"}>
           <Metric label={tr("Probabilità di successo")} value={pct(result.successRate, 0)} tone={v.tone} sub={v.text} />
-          <Metric label={tr("Patrimonio finale (caso tipico)")} value={money(result.endingWealth.p50, currency)} sub={"caso sfortunato {0}"} />
-          <Metric label={tr("Spesa annua")} value={money(input.annualSpending, currency)} sub={"regola: {0} · {1} anni"} />
+          <Metric label={tr("Patrimonio finale (caso tipico)")} value={money(result.endingWealth.p50, currency)} sub={tr("caso sfortunato {0}", {0: money(result.endingWealth.p10, currency)})} />
+          <Metric label={tr("Spesa annua")} value={money(input.annualSpending, currency)} sub={tr("regola: {0} · {1} anni", {0: tr(RULE_SHORT_NAMES[assumptions.rule]), 1: assumptions.retirementYears})} />
         </div>
         <ChartContainer config={CHART_CONFIG} className="h-64 w-full">
           <ComposedChart data={data}>

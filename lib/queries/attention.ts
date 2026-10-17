@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AttentionSummary } from "@/lib/attention";
+import { pageText } from "@/lib/localization/page-text";
 
 export const ATTENTION_QUERY_KEY = ["attention"] as const;
 
@@ -17,7 +18,7 @@ export function useAttentionQuery() {
     retry: false,
     queryFn: async (): Promise<AttentionSummary> => {
       const response = await fetch("/api/transactions/attention");
-      if (!response.ok) throw new Error("Impossibile caricare gli avvisi sui movimenti");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare gli avvisi sui movimenti"));
       return response.json();
     },
   });
@@ -32,7 +33,7 @@ export function useMarkMovementsSeen(): void {
   const { mutate } = useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/transactions/attention/seen", { method: "POST" });
-      if (!response.ok) throw new Error("Impossibile aggiornare l'ultima visita");
+      if (!response.ok) throw new Error(pageText("Impossibile aggiornare l'ultima visita"));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ATTENTION_QUERY_KEY }),
   });

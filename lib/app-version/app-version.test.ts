@@ -55,6 +55,15 @@ describe("formatVersionDetails", () => {
     expect(text).toMatch(/Build \d/);
   });
 
+  it("formats the build date in the given locale", () => {
+    const info = { version: "0.1.0", commit: SHA, builtAt: "2026-09-27T10:00:00Z" };
+    expect(formatVersionDetails(info)).toMatch(/Build 27\/09\/26/);
+    expect(formatVersionDetails(info, "en-GB")).toMatch(/Build 27\/09\/2026/);
+    expect(formatVersionDetails(info, "de-DE")).toMatch(/Build 27\.09\.26/);
+    expect(formatVersionDetails(info, "en-GB")).toMatch(/^Version 0\.1\.0/);
+    expect(formatVersionDetails(info, "de-DE")).toMatch(/^Version 0\.1\.0/);
+  });
+
   it("omette le righe con dati mancanti o non validi", () => {
     expect(formatVersionDetails({ version: "0.1.0", commit: "", builtAt: "boh" })).toBe("Versione 0.1.0");
   });

@@ -21,10 +21,10 @@ import {
 } from "@/lib/queries/categorization";
 import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
 
-/** Testo della barra di avanzamento durante l'applicazione in blocco. */
-function applyProgressLabel(progress: ApplyCategorizationProgress): string {
-  const noun = progress.totalTransactions === 1 ? "transazione" : "transazioni";
-  return `Applicate ${progress.processedTransactions} di ${progress.totalTransactions} ${noun}`;
+/** Progress bar text during the bulk apply, in the user's language. */
+function applyProgressLabel(progress: ApplyCategorizationProgress, tr: (source: string, values?: Record<string, number>) => string): string {
+  const values = { 0: progress.processedTransactions, 1: progress.totalTransactions };
+  return progress.totalTransactions === 1 ? tr("Applicate {0} di {1} transazione", values) : tr("Applicate {0} di {1} transazioni", values);
 }
 
 interface GroupOverride {
@@ -238,14 +238,14 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
             {applyMutation.isPending && applyProgress ? (
               <div className="flex flex-col gap-1">
                 <ProgressBar
-                  label={applyProgressLabel(applyProgress)}
+                  label={applyProgressLabel(applyProgress, tr)}
                   state={{
                     kind: "determinate",
                     value: applyProgress.processedTransactions,
                     max: Math.max(applyProgress.totalTransactions, 1),
                   }}
                 />
-                <p className="text-xs text-muted-foreground">{applyProgressLabel(applyProgress)}</p>
+                <p className="text-xs text-muted-foreground">{applyProgressLabel(applyProgress, tr)}</p>
               </div>
             ) : (
               <div className="flex items-center justify-between gap-3">

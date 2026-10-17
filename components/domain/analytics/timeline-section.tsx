@@ -20,7 +20,7 @@ const CONFIG: ChartConfig = {
 
 /** Domanda 2: la salita del patrimonio verso il numero FIRE; con i cursori mossi, la linea tratteggiata mostra le ipotesi salvate. */
 export function TimelineSection({ question, base, assumptions, plan, baseline }: QuestionSectionData) {
-  const { money } = localizedAnalyticsFormats(useLocalization().language);
+  const { money, num } = localizedAnalyticsFormats(useLocalization().language);
 
   const { t: tr } = useLocalization();
   const { currency } = base;
@@ -38,7 +38,7 @@ export function TimelineSection({ question, base, assumptions, plan, baseline }:
   const data = series.map((p, i) => ({ ...p, baseline: baselineSeries?.[i]?.wealth }));
   return (
     <QuestionSection question={question} expertHint="sensibilità alle ipotesi, Coast FIRE, lean FIRE" renderExpert={expert}>
-      <p className="text-base leading-relaxed text-muted-foreground">{tr("Con")}{" "}{money(plan.savings ?? 0, currency)}{" "}{tr("risparmiati l'anno e un")}{" "}<Term id="rendimento-reale">{tr("rendimento reale")}</Term>{" "}{tr("del")}{" "}{(assumptions.expectedReturn * 100).toFixed(1).replace(".", ",")}{tr("%, in")}{" "}<Term id="euro-di-oggi">{tr("euro di oggi")}</Term>{"."}{baseline ? tr(" La linea tratteggiata è il percorso con le ipotesi salvate.") : ""}
+      <p className="text-base leading-relaxed text-muted-foreground">{tr("Con")}{" "}{money(plan.savings ?? 0, currency)}{" "}{tr("risparmiati l'anno e un")}{" "}<Term id="rendimento-reale">{tr("rendimento reale")}</Term>{" "}{tr("del")}{" "}{num(assumptions.expectedReturn * 100, 1)}{tr("%, in")}{" "}<Term id="euro-di-oggi">{tr("euro di oggi")}</Term>{"."}{baseline ? tr(" La linea tratteggiata è il percorso con le ipotesi salvate.") : ""}
       </p>
       <ChartContainer config={CONFIG} className="h-56 w-full">
         <ComposedChart data={data}>

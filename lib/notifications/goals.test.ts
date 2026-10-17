@@ -69,6 +69,18 @@ describe("goalsEmail", () => {
     expect(email.text).not.toMatch(/\d+ €/);
     expect(email.html).toContain("/analitiche/obiettivi?da=email");
   });
+
+  it("parla la lingua di chi lo riceve, con i mesi nel suo formato", () => {
+    const notice = findGoalNotice({ view: view([goal({ targetDate: "2026-11-01", monthly: 100 })]), alreadySent: new Set(), now: EARLY });
+    const en = goalsEmail(notice, { ...ctx, language: "en" });
+    expect(en.subject).toBe("A goal is getting close to its date");
+    expect(en.text).toContain("Viaggio in Giappone is due in November 2026");
+    expect(en.text).toContain("You can move the date or raise the monthly share.");
+    const de = goalsEmail(notice, { ...ctx, language: "de" });
+    expect(de.subject).toBe("Ein Sparziel nähert sich seinem Datum");
+    expect(de.text).toContain("Viaggio in Giappone ist für November 2026 geplant");
+    expect(de.text).toContain("weil du die Erinnerungen an deine Sparziele aktiviert hast");
+  });
 });
 
 describe("buildGoalsDigest", () => {

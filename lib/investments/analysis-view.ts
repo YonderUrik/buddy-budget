@@ -73,6 +73,8 @@ export interface AnalysisInputs {
   period: NetWorthPeriod;
   today: Date;
   range?: { from: string; to: string };
+  /** Locale of the chart labels. */
+  locale?: string;
 }
 
 /** Calcola rischio, esposizione, sovrapposizioni, correlazioni e confronto con l'obiettivo. */

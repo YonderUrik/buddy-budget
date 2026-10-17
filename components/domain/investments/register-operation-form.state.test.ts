@@ -44,6 +44,8 @@ describe("form operazione", () => {
     expect(priceText(105.23)).toBe("105,23");
     expect(priceText(0.123456789)).toBe("0,123457");
     expect(priceText(100)).toBe("100");
+    expect(priceText(105.23, "en-GB")).toBe("105.23");
+    expect(priceText(105.23, "de-DE")).toBe("105,23");
   });
 
   it("dice da dove viene il prezzo proposto, o perché manca", () => {

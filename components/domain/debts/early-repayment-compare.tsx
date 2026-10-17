@@ -19,9 +19,10 @@ const EFFECT_COPY = {
   reduce_duration: { title: "Riduci la durata", detail: "Stessa rata, finisci prima", Icon: CalendarCheckIcon },
 } as const;
 
-function monthsLabel(months: number): string {
-  if (months <= 0) return "stessa scadenza";
-  return months === 1 ? "1 mese prima" : `${months} mesi prima`;
+/** How much sooner the debt ends, in the user's language. */
+function monthsLabel(months: number, tr: (source: string, values?: Record<string, number>) => string): string {
+  if (months <= 0) return tr("stessa scadenza");
+  return months === 1 ? tr("1 mese prima") : tr("{0} mesi prima", { 0: months });
 }
 
 function Row({ label, value, strong, positive }: { label: string; value: string; strong?: boolean; positive?: boolean }) {
@@ -51,7 +52,7 @@ function OutcomeCard({ outcome, currency, selectable, selected, onSelect }: { ou
       <p className="mb-2 text-xs text-muted-foreground">{copy.detail}</p>
       <dl className="flex flex-col gap-1">
         <Row label={tr("Prossima rata")} value={outcome.closesDebt ? "—" : formatCurrency(outcome.nextInstallment, currency)} />
-        <Row label={tr("Finisci")} value={`${formatMonthYear(outcome.endDate)} · ${monthsLabel(outcome.monthsSaved)}`} />
+        <Row label={tr("Finisci")} value={`${formatMonthYear(outcome.endDate)} · ${monthsLabel(outcome.monthsSaved, tr)}`} />
         <Row label={tr("Interessi risparmiati")} value={formatCurrency(outcome.interestSaved, currency)} strong positive />
         <Row label={tr("Al netto della penale")} value={formatCurrency(outcome.netBenefit, currency)} strong positive={outcome.netBenefit > 0} />
       </dl>
@@ -113,7 +114,7 @@ export function EarlyRepaymentMonthly({ preview, currency }: EarlyRepaymentMonth
     <div>
       <p className="mb-2 text-sm font-medium text-foreground">{tr("Con")}{" "}{formatCurrency(preview.amount, currency)}{" "}{tr("in più ogni mese")}</p>
       <dl className="flex flex-col gap-1">
-        <Row label={tr("Finisci")} value={`${formatMonthYear(result.endDate)} · ${monthsLabel(result.monthsSaved)}`} />
+        <Row label={tr("Finisci")} value={`${formatMonthYear(result.endDate)} · ${monthsLabel(result.monthsSaved, tr)}`} />
         <Row label={tr("Interessi risparmiati")} value={formatCurrency(result.interestSaved, currency)} strong positive />
         <Row label={tr("Versato in extra in totale")} value={formatCurrency(result.extraPaid, currency)} />
       </dl>

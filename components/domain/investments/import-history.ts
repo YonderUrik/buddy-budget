@@ -3,6 +3,8 @@
  * periodo, data di caricamento, dettagli e stato, raggruppate per origine. Solo presentazione: non tocca i dati.
  */
 
+import { languageOfLocale } from "@/lib/localization/config";
+import { translate, type MessageValues } from "@/lib/localization/messages";
 import { getImportProvider } from "@/lib/investments/import/providers";
 import type { BrokerStatement } from "@/lib/investments/import/broker-statement";
 import { personalImportLabels, type PersonalImportListing } from "@/lib/queries/personal-imports";
@@ -29,42 +31,45 @@ export interface ImportHistoryGroup {
   items: ImportHistoryItem[];
 }
 
-const DATE = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
-
-/** `2025-01-31` → `31 gen 2025`; un valore che non è una data resta com'è. */
-export function formatImportDate(value: string): string {
+/** `2025-01-31` → `31 gen 2025` (it-IT) / `31 Jan 2025` (en-GB); a value that is not a date stays as it is. */
+export function formatImportDate(value: string, locale = "it-IT"): string {
   const date = new Date(value.length === 10 ? `${value}T12:00:00` : value);
-  return Number.isNaN(date.getTime()) ? value : DATE.format(date);
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
-/** Periodo leggibile; un solo giorno si scrive una volta. */
-export function formatImportPeriod(from: string, to: string): string {
-  return from === to ? formatImportDate(from) : `${formatImportDate(from)} – ${formatImportDate(to)}`;
+/** Readable period in the user's locale; a single day is written once. */
+export function formatImportPeriod(from: string, to: string, locale = "it-IT"): string {
+  return from === to ? formatImportDate(from, locale) : `${formatImportDate(from, locale)} – ${formatImportDate(to, locale)}`;
 }
 
-function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
+type Translate = (source: string, values?: MessageValues) => string;
+
+/** "1 avviso" / "3 avvisi": `one` and `many` are Italian sources with `{0}` for the count. */
+function plural(t: Translate, n: number, one: string, many: string): string {
+  return t(n === 1 ? one : many, { 0: n });
 }
 
-function brokerSource(statement: BrokerStatement): string {
+function brokerSource(statement: BrokerStatement, t: Translate): string {
   if (statement.provider === "trade-republic") return getImportProvider("trade-republic").name;
   if (statement.provider === "degiro") return getImportProvider("degiro").name;
-  return `${getImportProvider("interactive-brokers").name} · conto …${statement.account.slice(-4)}`;
+  return t("{0} · conto …{1}", { 0: getImportProvider("interactive-brokers").name, 1: statement.account.slice(-4) });
 }
 
-function personalStatus(status: string): ImportHistoryItem["status"] {
-  const label = personalImportLabels[status] ?? status;
+function personalStatus(status: string, t: Translate): ImportHistoryItem["status"] {
+  const label = personalImportLabels[status] ? t(personalImportLabels[status]) : status;
   if (status === "imported") return { label, tone: "ok" };
   if (status === "failed" || status === "review_failed") return { label, tone: "error" };
   if (status === "expired") return { label, tone: "warning" };
   return { label, tone: "pending" };
 }
 
-/** Righe dell'elenco, dalla più recente; raggruppate poi da `groupImports`. */
+/** List rows, newest first, with texts in the language of `locale`; grouped afterwards by `groupImports`. */
 export function buildImportHistory(
   statements: { id: string; createdAt: string; statement: BrokerStatement }[],
   personal: PersonalImportListing | undefined,
+  locale = "it-IT",
 ): ImportHistoryItem[] {
+  const t: Translate = (source, values) => translate(languageOfLocale(locale), source, values);
   const formatNames = new Map(personal?.formats.map((f) => [f.id, f.name]) ?? []);
   const broker = statements.map<ImportHistoryItem>(({ id, createdAt, statement }) => {
     const warnings = statement.issues.length;
@@ -72,25 +77,25 @@ export function buildImportHistory(
       key: `broker:${id}`,
       kind: "broker",
       id,
-      source: brokerSource(statement),
-      period: formatImportPeriod(statement.from, statement.to),
+      source: brokerSource(statement, t),
+      period: formatImportPeriod(statement.from, statement.to, locale),
       createdAt,
       details: [
-        ...(statement.positions.length > 0 ? [plural(statement.positions.length, "posizione", "posizioni")] : []),
-        ...(statement.ledger.length > 0 ? [plural(statement.ledger.length, "movimento di cassa", "movimenti di cassa")] : []),
+        ...(statement.positions.length > 0 ? [plural(t, statement.positions.length, "{0} posizione", "{0} posizioni")] : []),
+        ...(statement.ledger.length > 0 ? [plural(t, statement.ledger.length, "{0} movimento di cassa", "{0} movimenti di cassa")] : []),
       ],
-      status: warnings > 0 ? { label: plural(warnings, "avviso", "avvisi"), tone: "warning" } : { label: "Importato", tone: "ok" },
+      status: warnings > 0 ? { label: plural(t, warnings, "{0} avviso", "{0} avvisi"), tone: "warning" } : { label: t("Importato"), tone: "ok" },
     };
   });
   const custom = (personal?.jobs ?? []).map<ImportHistoryItem>((job) => ({
     key: `personal:${job.id}`,
     kind: "personal",
     id: job.id,
-    source: formatNames.get(job.formatId) ?? "CSV personale",
+    source: formatNames.get(job.formatId) ?? t("CSV personale"),
     period: null,
     createdAt: job.createdAt,
-    details: ["CSV personale"],
-    status: personalStatus(job.status),
+    details: [t("CSV personale")],
+    status: personalStatus(job.status, t),
   }));
   return [...broker, ...custom].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }

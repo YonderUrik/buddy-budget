@@ -12,6 +12,7 @@ import type { CompositionSlice } from "@/lib/calc/investments";
 
 import { ChartPieIcon } from "lucide-react";
 import { PanelSection } from "./panel-section";
+import { formatPct } from "./percent";
 
 export interface CompositionGroup {
   title: string;
@@ -35,8 +36,9 @@ export interface PortfolioCompositionProps {
   children?: ReactNode;
 }
 
-function formatShare(share: number): string {
-  return `${(share * 100).toFixed(share < 0.1 ? 1 : 0).replace(".", ",")}%`;
+/** Share of the total, one decimal below 10% ("4,5%" / "56%" in it-IT). */
+function formatShare(share: number, locale: string): string {
+  return formatPct(share, share < 0.1 ? 1 : 0, locale);
 }
 
 export function PortfolioComposition({ groups, currency, title = "Composizione", subtitle = null, children }: PortfolioCompositionProps) {
@@ -70,7 +72,7 @@ export function PortfolioComposition({ groups, currency, title = "Composizione",
                         <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: group.colorFor(slice.key, i) }} aria-hidden="true" />
                         <span className="flex-1 text-foreground">{tr(group.labelFor?.(slice.key) ?? slice.key)}</span>
                         <span className="tabular-nums text-muted-foreground">{formatCurrency(slice.value, currency, { maximumFractionDigits: 0 })}</span>
-                        <span className="w-12 text-right font-medium tabular-nums text-foreground">{formatShare(slice.share)}</span>
+                        <span className="w-12 text-right font-medium tabular-nums text-foreground">{formatShare(slice.share, formattingLocale)}</span>
                       </li>
                     ))}
                   </ul>

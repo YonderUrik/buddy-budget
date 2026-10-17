@@ -14,17 +14,13 @@ export interface PeriodGainSummaryProps {
   currency: string;
 }
 
-function pctText(ratio: number): string {
-  return `${ratio < 0 ? "−" : "+"}${Math.abs(ratio * 100).toFixed(1).replace(".", ",")}%`;
-}
-
 /**
  * Frase del guadagno nel periodo scelto: da quanto a quanto è passato il valore, quanto ci hai messo tu e quanto ha
  * aggiunto il mercato (proventi inclusi). Al posto del guadagno totale quando il periodo non è «Tutto».
  */
 export function PeriodGainSummary({ gain, currency }: PeriodGainSummaryProps) {
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatSignedPct } = localizedFormats(formattingLocale);
   const DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "short", year: "numeric" });
 
   const { t: tr } = useLocalization();
@@ -38,7 +34,7 @@ export function PeriodGainSummary({ gain, currency }: PeriodGainSummaryProps) {
       <span className={cn("font-semibold tabular-nums", positive ? "text-pos" : "text-neg")}>
         {positive ? "+" : "−"}
         {money(Math.abs(gain.gain))}
-        {gain.twr !== null ? ` (${pctText(gain.twr)})` : ""}
+        {gain.twr !== null ? ` (${formatSignedPct(gain.twr)})` : ""}
       </span>
       {gain.income > 0.5 ? <span className="text-muted-foreground">{tr(", compresi")}{" "}{money(gain.income)}{" "}{tr("tra dividendi e cedole")}</span> : null}
       {"."}</p>

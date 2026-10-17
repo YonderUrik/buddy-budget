@@ -13,6 +13,7 @@ import type {
 } from "@/lib/validation/categorization-rules";
 import type { CategorizationRule } from "@/lib/db/schema/categorization-rules";
 import { track } from "@/lib/analytics";
+import { pageText } from "@/lib/localization/page-text";
 
 const SUGGESTIONS_QUERY_KEY = ["categorize-suggestions"] as const;
 const AUTO_CATEGORIZED_QUERY_KEY = ["auto-categorized"] as const;
@@ -32,7 +33,7 @@ export interface CategorizeSuggestionsResponse {
 async function fetchSuggestions(): Promise<CategorizeSuggestionsResponse> {
   const response = await fetch("/api/transactions/categorize-suggestions");
   if (!response.ok) {
-    throw new Error("Impossibile caricare le proposte di categorizzazione");
+    throw new Error(pageText("Impossibile caricare le proposte di categorizzazione"));
   }
   return (await response.json()) as CategorizeSuggestionsResponse;
 }
@@ -69,7 +70,7 @@ export function useAutoApplyMutation() {
   return useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/transactions/categorize-auto", { method: "POST" });
-      if (!response.ok) throw new Error("Impossibile applicare le categorie sicure");
+      if (!response.ok) throw new Error(pageText("Impossibile applicare le categorie sicure"));
       return (await response.json()) as AutoApplyResponse;
     },
     onSuccess: (result) => {
@@ -92,7 +93,7 @@ export function useAutoCategorizedQuery() {
     queryKey: AUTO_CATEGORIZED_QUERY_KEY,
     queryFn: async () => {
       const response = await fetch("/api/transactions/auto-categorized");
-      if (!response.ok) throw new Error("Impossibile caricare le categorie applicate da sole");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare le categorie applicate da sole"));
       return (await response.json()) as AutoCategorizedResponse;
     },
   });
@@ -108,7 +109,7 @@ export function useMarkAutoCategorizedSeenMutation() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ until, count }),
       });
-      if (!response.ok) throw new Error("Impossibile salvare il controllo");
+      if (!response.ok) throw new Error(pageText("Impossibile salvare il controllo"));
     },
     onSuccess: (_result, { count }) => {
       track("categorization_auto_reviewed", { count });
@@ -127,7 +128,7 @@ async function postApplyCategorization(
   });
   if (!response.ok) {
     const body = await response.json().catch(() => null);
-    throw new Error(body?.error ?? "Impossibile applicare la categorizzazione");
+    throw new Error(body?.error ?? pageText("Impossibile applicare la categorizzazione"));
   }
   return response.json();
 }
@@ -214,7 +215,7 @@ export function useApplyCategorizationMutation() {
 async function fetchCategorizationRules(): Promise<CategorizationRuleWithCategoryName[]> {
   const response = await fetch("/api/categorization-rules");
   if (!response.ok) {
-    throw new Error("Impossibile caricare le regole di categorizzazione");
+    throw new Error(pageText("Impossibile caricare le regole di categorizzazione"));
   }
   return response.json();
 }
@@ -251,7 +252,7 @@ export function useCreateRuleMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile creare la regola");
+        throw new Error(body?.error ?? pageText("Impossibile creare la regola"));
       }
       return response.json() as Promise<SavedRule>;
     },
@@ -271,7 +272,7 @@ export function useUpdateRuleMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile aggiornare la regola");
+        throw new Error(body?.error ?? pageText("Impossibile aggiornare la regola"));
       }
       return response.json() as Promise<SavedRule>;
     },
@@ -287,7 +288,7 @@ export function useDeleteRuleMutation() {
       const response = await fetch(`/api/categorization-rules/${id}`, { method: "DELETE" });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile eliminare la regola");
+        throw new Error(body?.error ?? pageText("Impossibile eliminare la regola"));
       }
     },
     onSuccess: () => {
@@ -302,7 +303,7 @@ export function useRecategorizePreviewQuery({ includeLegacy, enabled = true }: {
     queryKey: [...RECATEGORIZE_PREVIEW_QUERY_KEY, includeLegacy],
     queryFn: async () => {
       const response = await fetch(`/api/transactions/recategorize${includeLegacy ? "?legacy=1" : ""}`);
-      if (!response.ok) throw new Error("Impossibile calcolare cosa cambierebbe");
+      if (!response.ok) throw new Error(pageText("Impossibile calcolare cosa cambierebbe"));
       return (await response.json()) as RecategorizePreviewResponse;
     },
     enabled,
@@ -321,7 +322,7 @@ export function useRecategorizeMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile ricategorizzare");
+        throw new Error(body?.error ?? pageText("Impossibile ricategorizzare"));
       }
       return (await response.json()) as RecategorizeApplyResponse;
     },
@@ -344,7 +345,7 @@ export function useUndoRecategorizeMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile annullare");
+        throw new Error(body?.error ?? pageText("Impossibile annullare"));
       }
       return (await response.json()) as { restored: number };
     },
@@ -360,7 +361,7 @@ export function useGenerateAiSuggestionsMutation() {
   return useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/transactions/categorize-suggestions/generate", { method: "POST" });
-      if (!response.ok) throw new Error("Impossibile avviare l'assistente");
+      if (!response.ok) throw new Error(pageText("Impossibile avviare l'assistente"));
       return (await response.json()) as { status: "started" | "disabled" | "no_key" };
     },
   });

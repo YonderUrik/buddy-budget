@@ -7,6 +7,8 @@ import type { GoalKind } from "@/lib/goals/constants";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import" | "goal";
+/** Screens whose period selector offers a custom range, for the calendar events. */
+export type PeriodSurface = "investimenti" | "performance" | "analitiche";
 /** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
 export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
@@ -178,6 +180,10 @@ export interface ProductEvents {
   analytics_return_source_changed: { source: "storico" | "manuale" };
   /** Origine del rendimento atteso mostrato all'apertura di Analitiche (una volta per visita): storico (con il periodo scelto), valore prudente o scelto a mano. */
   analytics_return_source_shown: { source: "storico-24" | "storico-12" | "storico-personalizzato" | "prudente" | "manuale" };
+  /** Calendar of the shared period selector opened; `surface`: which screen. */
+  period_calendar_opened: { surface: PeriodSurface };
+  /** Custom range applied from that calendar; `span`: its length in days or months (a count, never the dates). */
+  period_range_applied: { surface: PeriodSurface; granularity: "day" | "month"; span: number };
   /** Periodo dei dati di Analitiche cambiato; `period`: quello nuovo. */
   analytics_period_changed: { period: "ultimi-12" | "ultimi-24" | "personalizzato" };
   /** Spesa o risparmio scritti a mano riportati al dato dei movimenti; `field`: quale. */

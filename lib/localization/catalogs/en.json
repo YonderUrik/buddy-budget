@@ -976,7 +976,6 @@
   "Partono tutte spente. Ognuna ha il link per disattivarla e le ritrovi in Impostazioni.": "All start disabled. Each includes an unsubscribe link and can be managed in Settings.",
   "Passa al tema chiaro": "Switch to light theme",
   "Passa al tema scuro": "Switch to dark theme",
-  "Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure usa le date in «Personalizzato».": "Hover over a date to update the figures above. Click and drag to select a range, or enter dates under “Custom”.",
   "Passi del nuovo conto": "New account steps",
   "Passi del nuovo fondo": "New fund steps",
   "Passi del nuovo movimento": "New transaction steps",
@@ -4208,5 +4207,13 @@
   "Non conviene: spenderesti in più": "Not worth it: you would spend more",
   "Al netto delle spese, che rientrano in {0} mesi.": "Net of costs, which pay back in {0} months.",
   "Al netto delle spese.": "Net of costs.",
-  "Tra interessi e spese.": "Between interest and costs."
+  "Tra interessi e spese.": "Between interest and costs.",
+  "Scegli le date": "Choose dates",
+  "Tocca l'ultimo giorno": "Tap the last day",
+  "Tocca l'ultimo mese": "Tap the last month",
+  "Date scelte: {0}. Cambia le date": "Chosen dates: {0}. Change dates",
+  "Mese precedente": "Previous month",
+  "Mese successivo": "Next month",
+  "scegli il mese": "choose the month",
+  "Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.": "Hover over a date to update the figures above. Click and drag to select a range, or choose dates from the calendar next to the periods."
 }

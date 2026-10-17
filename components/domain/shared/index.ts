@@ -6,6 +6,9 @@
 
 export { SegmentedControl } from "./segmented-control";
 export type { SegmentedControlOption, SegmentedControlProps } from "./segmented-control";
+export { PeriodSelector } from "./period-selector";
+export type { PeriodCustomRange, PeriodOption, PeriodSelectorProps } from "./period-selector";
+export type { PeriodRange } from "./period-range-panel";
 export { InfoHint } from "./info-hint";
 export type { InfoHintProps } from "./info-hint";
 export { LoadError } from "./load-error";

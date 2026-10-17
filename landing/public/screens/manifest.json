@@ -1,6 +1,7 @@
 {
-  "capturedAt": "2026-10-17T15:42:56.187Z",
+  "capturedAt": "2026-10-17T19:12:21.545Z",
   "app": "http://localhost:3300",
+  "language": "it",
   "viewport": {
     "width": 1280,
     "height": 800
@@ -41,7 +42,7 @@
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1862,
+      "height": 1928,
       "phone": true
     },
     {
@@ -81,7 +82,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1937,
+      "height": 1961,
       "phone": true
     },
     {
@@ -177,7 +178,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1862,
+      "height": 1928,
       "phone": true
     },
     {
@@ -217,7 +218,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1937,
+      "height": 1961,
       "phone": true
     },
     {

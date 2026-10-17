@@ -25,6 +25,12 @@ Thanks for your interest. The project is developed by a single person: before wr
 - The interface must stay accessible (keyboard, labels, contrast, reduced motion): the checklist is in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
 - A new feature is added to `lib/features/catalog.ts`.
 
+## Documentation
+
+- Start from the [documentation index](docs/README.md); how each area works is in [`docs/architecture/`](docs/architecture/overview.md).
+- If your change alters behaviour described in `docs/architecture/`, update that page in the same PR. A new calculation gets a definition, its formula and a worked example there.
+- A choice worth remembering gets a new file in [`docs/decisioni/`](docs/decisioni/) (`YYYY-MM-DD-title.md`).
+
 ## Contribution license
 
 By contributing you agree that your contribution is released under the same license as the project (AGPL-3.0, see [`LICENSE`](LICENSE)).

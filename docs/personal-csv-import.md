@@ -1,6 +1,6 @@
 # Personal CSVs
 
-From **Movimenti ("Transactions") → Importa un CSV personale ("Import a personal CSV")** or from the investment import picker, `/importazioni` opens. The user states the bank/broker and uploads a CSV file of at most 25 MB and 50,000 physical rows, with no requirements on headers, delimiters or number of columns. Explicit consent is recorded on the job with version `openrouter-raw-zdr-v2` and creation date.
+From **Movimenti ("Transactions") → Importa un CSV personale ("Import a personal CSV")** or from the investment import picker, `/importazioni` opens. The user states the bank/broker and uploads a CSV file of at most 25 MB and 50,000 physical rows, with no requirements on headers, delimiters or number of columns. Explicit consent is recorded on the job with version `openrouter-raw-zdr-v3` and creation date.
 
 The interface shows about one hour and the corresponding expected local completion time. It is an estimate: no artificial wait is introduced, and an overrun is reported. The page refreshes every 10 seconds. The worker saves automatically after the checks and sends a completion or error email; no human confirmation is required.
 

@@ -228,7 +228,7 @@ The app is a responsive web app; no native app exists.
 | Install | Web manifest with `display: "standalone"`, 192 and 512 px icons (any and maskable); `appleWebApp.capable` in metadata | [`app/manifest.ts`](../../app/manifest.ts), [`app/layout.tsx`](../../app/layout.tsx) |
 | Offline | None: no service worker is registered | [`app/manifest.ts`](../../app/manifest.ts) |
 | Install tracking | `PwaInstallTracker` sends `pwa_installed` on the browser's install event | [`components/analytics/pwa-install-tracker.tsx`](../../components/analytics/pwa-install-tracker.tsx) |
-| Navigation | Bottom bar under 768 px with an «Altro» ("More") menu, mobile top bar with the back button | [`components/layout/bottom-nav.tsx`](../../components/layout/bottom-nav.tsx), [`mobile-topbar.tsx`](../../components/layout/mobile-topbar.tsx), [`mobile-more-menu.tsx`](../../components/layout/mobile-more-menu.tsx) |
+| Navigation | Bottom bar under 768 px: a floating rounded capsule inset from the edges (translucent with blur, above the safe area), active tab on a light grey pill with the brand teal icon, «Altro» ("More") menu; mobile top bar with the back button | [`components/layout/bottom-nav.tsx`](../../components/layout/bottom-nav.tsx), [`mobile-topbar.tsx`](../../components/layout/mobile-topbar.tsx), [`mobile-more-menu.tsx`](../../components/layout/mobile-more-menu.tsx) |
 | Dialogs | Popovers, dialogs and alert dialogs render as draggable bottom sheets on the phone | [`lib/motion/sheet.ts`](../../lib/motion/sheet.ts), `components/ui/{dialog,alert-dialog,popover}.tsx` |
 | Safe areas | `viewportFit: "cover"` | [`app/layout.tsx`](../../app/layout.tsx) |
 

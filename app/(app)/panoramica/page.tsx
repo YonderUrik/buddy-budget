@@ -138,7 +138,7 @@ export default function PanoramicaPage() {
     ...(debts ? { debiti: -debts.total } : {}),
   };
   const [pensionIncluded, setPensionIncluded] = usePensionInNetWorth();
-  const fullSeries = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today);
+  const fullSeries = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today, formattingLocale);
   // Escludere la previdenza toglie solo il totale: l'area resta nel grafico (in grigio).
   const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
@@ -176,15 +176,16 @@ export default function PanoramicaPage() {
       ) : isError ? (
         <LoadError message={tr("Impossibile caricare i dati della panoramica.")} onRetry={retry} />
       ) : accounts.length === 0 && !investments && !pension ? (
-        <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
-          <div className="lg:col-span-3">
+        // A new user sees «Primi passi» in a single centred column, with the sample-data offer right under it.
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-10 sm:pt-4">
+          <div>
             {startStatus ? (
               <StartChecklistSection status={startStatus} forceVisible />
             ) : (
               <EmptyState icon={WalletIcon} title={tr("Nessun conto ancora")} description={tr("Aggiungi un conto per vedere il tuo patrimonio netto.")} primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
             )}
           </div>
-          <DemoOfferSection className="lg:col-span-2" />
+          <DemoOfferSection />
         </div>
       ) : (
         <>

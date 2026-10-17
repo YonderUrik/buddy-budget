@@ -40,8 +40,8 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
                 onClick={() => onSelect(group.id)}
                 className="flex min-h-16 w-full items-center gap-3 rounded-2xl px-1 py-3 text-left transition-colors active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className={cn(SECTION_TITLE, "block text-[2rem]", group.danger && "text-neg")}>{tr(group.label)}</span>
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className={cn(SECTION_TITLE, "block text-[1.875rem]", group.danger && "text-neg")}>{tr(group.label)}</span>
                   <span className="block text-sm leading-snug text-text-2">{tr(group.summary)}</span>
                 </span>
                 <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />

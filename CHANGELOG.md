@@ -2,6 +2,19 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.76.0](https://github.com/YonderUrik/buddy-budget/compare/v0.75.0...v0.76.0) (2026-10-17)
+
+
+### Novità
+
+* landing language menu, clearer data section, sum list fix ([#423](https://github.com/YonderUrik/buddy-budget/issues/423)) ([f5124bf](https://github.com/YonderUrik/buddy-budget/commit/f5124bf87a5c17bf91caa1b2602fdba283681dff))
+* **landing:** security page in the home's chapters ([#424](https://github.com/YonderUrik/buddy-budget/issues/424)) ([59504ca](https://github.com/YonderUrik/buddy-budget/commit/59504cad33fff7e6dcc9926badb979e62417ecd5))
+
+
+### Correzioni
+
+* redirect /demo to the public app address ([#421](https://github.com/YonderUrik/buddy-budget/issues/421)) ([84cd19a](https://github.com/YonderUrik/buddy-budget/commit/84cd19a425e64fca325bd919bc19748de66e6b13))
+
 ## [0.75.0](https://github.com/YonderUrik/buddy-budget/compare/v0.74.1...v0.75.0) (2026-10-17)
 
 

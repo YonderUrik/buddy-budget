@@ -1,18 +1,25 @@
 "use client";
-import { LANGUAGE_COOKIE, LANGUAGE_NAMES, LANGUAGES, type Language } from "@/lib/localization/config";
 import { usePathname } from "next/navigation";
+
+import { LanguageSelect } from "@/components/domain/locale";
+import { track } from "@/lib/analytics";
+import { LANGUAGE_COOKIE, type Language } from "@/lib/localization/config";
 import { useLocalization } from "@/lib/localization/provider";
-/** Public language preference only: the authenticated account controls product-country permissions. */
+
+/** Public language preference only (a cookie): the authenticated account controls product-country permissions. Hidden in onboarding, which has its own field. */
 export function LanguagePicker() {
-  const { language, t } = useLocalization();
+  const { language } = useLocalization();
   const pathname = usePathname();
   if (pathname === "/onboarding") return null;
-  return <label className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-    {t("Lingua")}
-    <select aria-label={t("Lingua")} value={language} className="rounded-md border bg-background px-2 py-1 text-foreground" onChange={event => {
-      const next = event.target.value as Language;
-      document.cookie = `${LANGUAGE_COOKIE}=${next}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
-      window.location.reload();
-    }}>{LANGUAGES.map(value => <option key={value} value={value}>{LANGUAGE_NAMES[value]}</option>)}</select>
-  </label>;
+  return (
+    <LanguageSelect
+      variant="link"
+      value={language}
+      onChange={(next: Language) => {
+        track("language_changed", { from: "login", language: next });
+        document.cookie = `${LANGUAGE_COOKIE}=${next}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+        window.location.reload();
+      }}
+    />
+  );
 }

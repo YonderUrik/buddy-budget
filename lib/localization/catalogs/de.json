@@ -4184,5 +4184,12 @@
   "Stai esplorando i dati d'esempio: azzerali per aggiungere i tuoi.": "Du siehst dir gerade die Beispieldaten an: Setze sie zurück, um deine eigenen hinzuzufügen.",
   "Hai già dei conti: i dati d'esempio sono per chi parte da zero.": "Du hast bereits Konten: Die Beispieldaten sind für einen Start bei null gedacht.",
   "I dati d'esempio sono già attivi.": "Die Beispieldaten sind bereits aktiv.",
-  "Completa prima la configurazione iniziale.": "Schließe zuerst die Ersteinrichtung ab."
+  "Completa prima la configurazione iniziale.": "Schließe zuerst die Ersteinrichtung ab.",
+  "Rientra in BuddyBudget": "Zurück bei BuddyBudget anmelden",
+  "Su questo dispositivo ricordiamo il tuo account, così non devi riscrivere l'email.": "Auf diesem Gerät merken wir uns dein Konto, damit du deine E-Mail nicht erneut eingeben musst.",
+  "Ultimo accesso con Google": "Zuletzt mit Google angemeldet",
+  "Ultimo accesso con il link via email": "Zuletzt mit dem E-Mail-Link angemeldet",
+  "Il link arriva a questo indirizzo e vale {0} minuti.": "Der Link geht an diese Adresse und ist {0} Minuten gültig.",
+  "Mandami il link via email": "Schick mir den Link per E-Mail",
+  "Non sei tu? Usa un altro account": "Nicht du? Anderes Konto verwenden"
 }

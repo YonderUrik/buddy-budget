@@ -29,7 +29,7 @@ import {
 import { transactions } from "@/lib/db/schema/transactions";
 import { LEGAL_VERSION } from "@/lib/legal";
 import { snapshotUser } from "@/lib/net-worth/scheduler";
-import { profileForLanguage, type Language } from "@/lib/localization/config";
+import { profileForLanguage, type Language, type ProductCountry } from "@/lib/localization/config";
 import { demoText } from "./texts";
 
 
@@ -85,6 +85,8 @@ export interface SeedDemoAccountOptions {
   email: string;
   /** Interface language of the account and of its texts. */
   language: Language;
+  /** Product country of the account (its tax and planning rules); by default the usual one of the language. */
+  productCountry?: ProductCountry;
   /** Fixed session for the screenshot capture; the public demo opens its own sessions. */
   screenshotSession?: { id: string; token: string };
   /** Clock of the data ("today"), for tests. */
@@ -98,8 +100,8 @@ export interface SeedDemoAccountResult {
 }
 
 /** (Re)creates a complete sample account. Never call it with the id of a real user: it deletes that user first. */
-export async function seedDemoAccount({ userId, email, language, screenshotSession, now = new Date() }: SeedDemoAccountOptions): Promise<SeedDemoAccountResult> {
-  const PROFILE = profileForLanguage(language);
+export async function seedDemoAccount({ userId, email, language, productCountry, screenshotSession, now = new Date() }: SeedDemoAccountOptions): Promise<SeedDemoAccountResult> {
+  const PROFILE = { ...profileForLanguage(language), ...(productCountry ? { productCountry } : {}) };
   const text = (source: string) => demoText(source, language);
   const rand = rng(SEED);
   const between = (min: number, max: number) => min + rand() * (max - min);

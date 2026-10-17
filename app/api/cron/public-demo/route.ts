@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * Daily cron of the public demo: rebuilds the read-only sample account of every language, so dates follow today.
+ * Daily cron of the public demo: rebuilds the read-only sample account of every country and language, so dates follow today.
  * With `PUBLIC_DEMO_ENABLED` off (self-hosting, staging) it does nothing and writes no heartbeat. The run fails if
- * any language could not be rebuilt, so the existing "cron failed" alert reports it.
+ * any account could not be rebuilt, so the existing "cron failed" alert reports it.
  */
 async function handleGet(request: NextRequest) {
   if (!isAuthorizedCronRequest(request.headers.get("authorization"), process.env.CRON_SECRET)) {

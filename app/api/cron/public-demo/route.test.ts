@@ -21,7 +21,7 @@ describe("GET /api/cron/public-demo", () => {
   beforeEach(() => {
     vi.stubEnv("CRON_SECRET", SECRET);
     vi.stubEnv("PUBLIC_DEMO_ENABLED", "true");
-    mockedReset.mockReset().mockResolvedValue({ rebuilt: ["it", "en", "de"], failed: [] });
+    mockedReset.mockReset().mockResolvedValue({ rebuilt: ["IT-it", "IT-en", "DE-en", "DE-de"], failed: [] });
   });
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -39,16 +39,16 @@ describe("GET /api/cron/public-demo", () => {
     expect(mockedReset).not.toHaveBeenCalled();
   });
 
-  it("rebuilds every language", async () => {
+  it("rebuilds every account", async () => {
     const response = await call(`Bearer ${SECRET}`);
     expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ ok: true, rebuilt: ["it", "en", "de"] });
+    expect(await response.json()).toMatchObject({ ok: true, rebuilt: ["IT-it", "IT-en", "DE-en", "DE-de"] });
   });
 
-  it("fails when a language could not be rebuilt", async () => {
-    mockedReset.mockResolvedValue({ rebuilt: ["it", "de"], failed: ["en"] });
+  it("fails when an account could not be rebuilt", async () => {
+    mockedReset.mockResolvedValue({ rebuilt: ["IT-it", "DE-de"], failed: ["IT-en"] });
     const response = await call(`Bearer ${SECRET}`);
     expect(response.status).toBe(500);
-    expect(await response.json()).toMatchObject({ ok: false, failed: ["en"] });
+    expect(await response.json()).toMatchObject({ ok: false, failed: ["IT-en"] });
   });
 });

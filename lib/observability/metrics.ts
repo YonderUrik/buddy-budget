@@ -170,7 +170,7 @@ interface MetricsState {
   inactiveAccounts: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
   startEvents: Counter<"event">;
-  publicDemoEvents: Counter<"event" | "language">;
+  publicDemoEvents: Counter<"event" | "language" | "country">;
   notificationEmails: Counter<"kind" | "outcome">;
   notificationDigestSections: Counter<"section" | "outcome">;
   notificationUnsubscribes: Counter<"kind" | "source">;
@@ -367,8 +367,8 @@ function createState(): MetricsState {
   });
   state.publicDemoEvents = new Counter({
     name: `${METRIC_PREFIX}public_demo_events_total`,
-    help: "Demo pubblica: sessioni aperte, demo non disponibile, scritture bloccate e ricostruzioni dei dati, per lingua.",
-    labelNames: ["event", "language"],
+    help: "Demo pubblica: sessioni aperte, demo non disponibile, scritture bloccate e ricostruzioni dei dati, per lingua e paese.",
+    labelNames: ["event", "language", "country"],
     registers: r,
   });
   state.consentNotices = new Counter({
@@ -739,7 +739,7 @@ export function recordStartEvent(event: StartEvent): void {
   metrics().startEvents.inc({ event });
 }
 
-/** Public demo events; `language` is the demo's interface language (closed enum it/en/de). */
-export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "en" | "de"): void {
-  metrics().publicDemoEvents.inc({ event, language });
+/** Public demo events; `language` (it/en/de) and `country` (IT/DE) are the demo's profile, both closed enums. */
+export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "en" | "de", country: "IT" | "DE"): void {
+  metrics().publicDemoEvents.inc({ event, language, country });
 }

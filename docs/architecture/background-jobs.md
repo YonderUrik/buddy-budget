@@ -220,7 +220,7 @@ Schedules (UTC; the CronJobs set no `timeZone`):
 | `account_deletion` | `/api/cron/account-deletion` | `30 3 * * *` | Yes | `purgeDueAccountDeletions` (accounts past `deletion_scheduled_at`), then `purgeExpiredAuthData` (expired sessions and verifications) | None |
 | `inactive_accounts` | `/api/cron/inactive-accounts` | `15 3 * * *` | No | Warn after 83 days without activity, delete 7 days after the warning | `INACTIVITY_CLEANUP_MODE` (`off`/`dry-run`/`execute`) |
 | `notifications` | `/api/cron/notifications` | `30 7 * * *` | No | Digest, budget alerts, instalment alerts, goal reminders for users who opted in | `NOTIFICATIONS_MODE` (`off`/`dry-run`/`execute`) |
-| `public_demo` | `/api/cron/public-demo` | `0 4 * * *` | No | `resetPublicDemos`: deletes and re-seeds the three shared read-only demo accounts (`public-demo-it/en/de`, `lib/public-demo`) so dates follow today | `PUBLIC_DEMO_ENABLED` (`true` to turn it on; otherwise it answers `skipped` without a heartbeat) |
+| `public_demo` | `/api/cron/public-demo` | `0 4 * * *` | No | `resetPublicDemos`: deletes and re-seeds the four shared read-only demo accounts (`public-demo-<country>-<language>`: it-it, it-en, de-en, de-de; `lib/public-demo`) so dates follow today | `PUBLIC_DEMO_ENABLED` (`true` to turn it on; otherwise it answers `skipped` without a heartbeat) |
 
 Order matters for two pairs. `market-prices` runs 20 minutes before `net-worth-snapshot` (06:30 then 06:50, 17:30 then 17:50, 22:30 then 23:50), because snapshots value investments at the prices just written. `inactive-accounts` runs before `account-deletion`.
 

@@ -54,10 +54,12 @@ export interface ProductEvents {
   demo_started: undefined;
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
   demo_cleared: { from: "banner" | "panoramica" };
-  /** Public demo (`/demo`) opened, once per browser session; `language` is the demo's language. */
-  public_demo_viewed: { language: "it" | "en" | "de" };
+  /** Public demo (`/demo`) opened, once per browser session; `language` and `country` are the demo's. */
+  public_demo_viewed: { language: "it" | "en" | "de"; country: "IT" | "DE" };
   /** «Crea il tuo account» pressed in the public demo's strip. */
-  public_demo_signup_clicked: { language: "it" | "en" | "de" };
+  public_demo_signup_clicked: { language: "it" | "en" | "de"; country: "IT" | "DE" };
+  /** Country or language changed in the public demo's footer (`changed`); `language` and `country` are the new ones. */
+  public_demo_profile_changed: { changed: "country" | "language"; language: "it" | "en" | "de"; country: "IT" | "DE" };
   /** `languageKept`: the language proposed on arrival (picked on the sign-in page or detected from the browser) was not changed. */
   onboarding_completed: { currency: SupportedCurrency; language: "it" | "en" | "de"; languageKept: boolean };
   /** Foglio «Personalizza» aperto nel passo «Categorie» dell'onboarding. */

@@ -1,12 +1,18 @@
-import { LANGUAGES, detectLanguage, profileForLanguage, type Language, type LocaleProfile } from "@/lib/localization/config";
+import { COUNTRY_LANGUAGES, LANGUAGES, PRODUCT_COUNTRIES, detectLanguage, isSupportedProfile, profileForLanguage, type Language, type LocaleProfile, type ProductCountry } from "@/lib/localization/config";
 
 /**
- * Public demo: a read-only sample account per interface language that anyone can open from the landing without
- * signing up (`/demo`). Pure helpers shared by the proxy, the auth plugin, the cron that rebuilds the data and the UI.
+ * Public demo: a read-only sample account per product country and interface language (Italy: Italian and English,
+ * Germany: English and German) that anyone can open from the landing without signing up (`/demo`). Pure helpers shared by the proxy, the auth plugin, the cron that rebuilds the data and the UI.
  */
 
-/** Languages with their own demo account. */
+/** Languages the demo can be shown in (every language of the app). */
 export const PUBLIC_DEMO_LANGUAGES: readonly Language[] = LANGUAGES;
+/** One demo account per supported country and language pair: IT it, IT en, DE en, DE de. */
+export const PUBLIC_DEMO_PROFILES: readonly LocaleProfile[] = PRODUCT_COUNTRIES.flatMap((productCountry) =>
+  COUNTRY_LANGUAGES[productCountry].map((language) => ({ productCountry, language })),
+);
+/** Language a country's demo opens in when the visitor's language is not offered there. */
+const DEFAULT_COUNTRY_LANGUAGE: Record<ProductCountry, Language> = { IT: "it", DE: "de" };
 /** Every demo account id starts with this prefix: the read-only guards recognise demo sessions by it. */
 export const PUBLIC_DEMO_USER_PREFIX = "public-demo-";
 /** A demo session lasts this long; the cookie also ends when the browser closes. */
@@ -34,9 +40,9 @@ export const PUBLIC_DEMO_BLOCKED_AUTH_PATHS: ReadonlySet<string> = new Set([
   "/update-session",
 ]);
 
-/** Id of the demo account for a language. */
-export function publicDemoUserId(language: Language): string {
-  return `${PUBLIC_DEMO_USER_PREFIX}${language}`;
+/** Id of the demo account of a country and language, e.g. `public-demo-de-en`. */
+export function publicDemoUserId({ productCountry, language }: LocaleProfile): string {
+  return `${PUBLIC_DEMO_USER_PREFIX}${productCountry.toLowerCase()}-${language}`;
 }
 
 /** True for a demo account id (never true for real users, whose ids are random). */
@@ -44,20 +50,27 @@ export function isPublicDemoUserId(id: string | null | undefined): boolean {
   return typeof id === "string" && id.startsWith(PUBLIC_DEMO_USER_PREFIX);
 }
 
-/** Product rules of each demo: English shows the Italian rules (the complete feature set), German the German ones. */
-export function publicDemoProfile(language: Language): LocaleProfile {
-  return profileForLanguage(language);
-}
-
 /** The demo is off unless `PUBLIC_DEMO_ENABLED=true` (self-hosted instances have no demo accounts). */
 export function isPublicDemoEnabled(env: Record<string, string | undefined> = process.env): boolean {
   return env.PUBLIC_DEMO_ENABLED === "true";
 }
 
-/** Language of the demo to open: `?lang=` when supported, else the browser's language as the app detects it. */
-export function pickPublicDemoLanguage(param: string | null | undefined, acceptLanguage: string | null | undefined): Language {
-  if (param && (PUBLIC_DEMO_LANGUAGES as readonly string[]).includes(param)) return param as Language;
-  return detectLanguage(acceptLanguage);
+/**
+ * Demo to open from `?country=IT|DE` and `?lang=it|en|de` (both optional) and the browser's languages: a supported
+ * pair is used as is; a lone language takes its usual country (German → Germany, otherwise Italy); a lone country
+ * takes the browser language when that country offers it, else its own language.
+ */
+export function pickPublicDemoProfile(
+  countryParam: string | null | undefined,
+  languageParam: string | null | undefined,
+  acceptLanguage: string | null | undefined,
+): LocaleProfile {
+  const country = PRODUCT_COUNTRIES.find((candidate) => candidate === countryParam);
+  const language = PUBLIC_DEMO_LANGUAGES.find((candidate) => candidate === languageParam) ?? (country ? undefined : detectLanguage(acceptLanguage));
+  if (country && language && isSupportedProfile(country, language)) return { productCountry: country, language };
+  if (!country) return profileForLanguage(language ?? detectLanguage(acceptLanguage));
+  const detected = detectLanguage(acceptLanguage);
+  return { productCountry: country, language: COUNTRY_LANGUAGES[country].includes(detected) ? detected : DEFAULT_COUNTRY_LANGUAGE[country] };
 }
 
 /** HTTP methods a demo session may use on the app's API: reads only. */
@@ -65,7 +78,10 @@ export function isReadOnlyMethod(method: string): boolean {
   return method === "GET" || method === "HEAD" || method === "OPTIONS";
 }
 
-/** Language of a demo session for its messages: the account's own language, English if it is somehow missing. */
-export function publicDemoSessionLanguage(value: string | null | undefined): Language {
-  return (PUBLIC_DEMO_LANGUAGES as readonly string[]).includes(value ?? "") ? (value as Language) : "en";
+/** Profile of a demo session for its messages and metrics: the account's own, English for Italy if it is somehow missing. */
+export function publicDemoSessionProfile(user: { language?: string | null; productCountry?: string | null }): LocaleProfile {
+  const { language, productCountry } = user;
+  return isSupportedProfile(productCountry, language)
+    ? { productCountry: productCountry as ProductCountry, language: language as Language }
+    : { productCountry: "IT", language: "en" };
 }

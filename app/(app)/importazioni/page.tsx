@@ -6,7 +6,6 @@ import { useLocalization } from "@/lib/localization/provider";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FileSpreadsheet } from "lucide-react";
-import { BackLink } from "@/components/domain/shared";
 import {
   PersonalImportList,
   PersonalImportReceipt,
@@ -39,7 +38,6 @@ function PersonalImports() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 sm:p-6">
       <header className="flex flex-col gap-2">
-        <BackLink href="/liquidita" label={tr("Liquidità")} />
         <h1 className="flex items-center gap-2 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
           <FileSpreadsheet className="size-7 text-muted-foreground" aria-hidden="true" />
           {tr(PAGE_TITLE)}

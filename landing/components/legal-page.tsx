@@ -2,6 +2,7 @@ import "./legal-page.css";
 import { LEGAL_OWNER, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
 import { SiteNav } from "./site-nav";
 import { SiteFooter } from "./site-footer";
+import { BackLink } from "./back-link";
 
 /**
  * Testo con l'indirizzo del titolare reso come link `mailto:`. Il marcatore `email_off` impedisce a Cloudflare di sostituirlo con
@@ -31,6 +32,7 @@ export function LegalPage({ doc }: { doc: LegalDocument }) {
       <SiteNav />
       <main className="legal">
         <div className="wrap legal-wrap">
+          <BackLink href="/" label="Home" />
           <h1>{doc.title}</h1>
           <p className="legal-meta">Versione del {LEGAL_VERSION}</p>
           <p className="legal-intro">{doc.intro}</p>

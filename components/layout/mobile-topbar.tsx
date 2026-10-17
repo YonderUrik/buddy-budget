@@ -17,6 +17,7 @@ import { useLocalization } from "@/lib/localization/provider";
  * adattata ad altre app senza modifiche al componente.
  */
 
+import type * as React from "react";
 import Image from "next/image";
 import { Menu, MessageCircleQuestion } from "lucide-react";
 import { useSidebar } from "@/components/layout/sidebar-context";
@@ -32,24 +33,19 @@ interface MobileTopbarProps {
   showMenuButton?: boolean;
   /** Apre il foglio «Scrivici»; senza, a destra resta uno spazio vuoto. */
   onOpenSupport?: () => void;
+  /**
+   * Replaces the left slot (e.g. with a back button); receives the default left content to show when it has nothing
+   * to render. An element marked `data-topbar-back` takes the brand's place too, so a long label has room.
+   */
+  leading?: (fallback: React.ReactNode) => React.ReactNode;
 }
 
-export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true, onOpenSupport }: MobileTopbarProps) {
+export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true, onOpenSupport, leading }: MobileTopbarProps) {
   const { t: tr } = useLocalization();
   const { openMobile } = useSidebar();
 
-  return (
-    <header
-      className={[
-        "md:hidden",
-        "flex h-14 items-center justify-between",
-        "bg-sidebar border-b border-sidebar-border",
-        "px-4 shrink-0",
-      ].join(" ")}
-      aria-label={tr("Barra di navigazione")}
-    >
-      {/* Hamburger (senza, un riquadro vuoto mantiene il brand al centro) */}
-      {showMenuButton ? (
+  // Hamburger (without it, an empty square keeps the brand centred).
+  const menuSlot = showMenuButton ? (
       <button
         onClick={openMobile}
         className={[
@@ -64,10 +60,24 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
       </button>
       ) : (
         <span className="size-9" aria-hidden="true" />
-      )}
+      );
+
+  return (
+    <header
+      className={[
+        "group md:hidden",
+        "grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-2",
+        "bg-sidebar border-b border-sidebar-border",
+        "px-4 shrink-0",
+      ].join(" ")}
+      aria-label={tr("Barra di navigazione")}
+    >
+      <div className="col-start-1 row-start-1 flex min-w-0 items-center justify-self-start group-has-[[data-topbar-back]]:col-span-2">
+        {leading ? leading(menuSlot) : menuSlot}
+      </div>
 
       {/* Brand */}
-      <span className="flex items-center gap-2 font-heading text-base font-bold text-sidebar-foreground">
+      <span className="col-start-2 row-start-1 flex items-center gap-2 font-heading text-base font-bold text-sidebar-foreground group-has-[[data-topbar-back]]:hidden">
         <Image
           src="/brand/logo-mark.svg"
           alt={""}
@@ -83,13 +93,13 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
         <button
           type="button"
           onClick={onOpenSupport}
-          className="flex size-9 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="col-start-3 row-start-1 flex size-9 items-center justify-center justify-self-end rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           aria-label={tr("Scrivici: segnala un problema, una domanda o un'idea")}
         >
           <MessageCircleQuestion className="size-5" aria-hidden="true" />
         </button>
       ) : (
-        <span className="size-9" aria-hidden="true" />
+        <span className="col-start-3 row-start-1 size-9 justify-self-end" aria-hidden="true" />
       )}
     </header>
   );

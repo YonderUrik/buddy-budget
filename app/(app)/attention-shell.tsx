@@ -3,16 +3,21 @@
 import type * as React from "react";
 import { AppShell, type NavBadge } from "@/components/layout";
 import { useQuickReport } from "@/components/domain/support";
+import { PageBackBar, TopBarBack } from "@/components/domain/shared";
 import { formatBadgeCount } from "@/lib/attention";
 import { useAttentionQuery } from "@/lib/queries/attention";
 
 /** Voce di navigazione che mostra il badge dei movimenti da sistemare. */
 const ATTENTION_PARENT_HREF = "/liquidita";
 
+/** «‹» back button in the phone top bar, in place of the brand when there is somewhere to go back to. */
+const renderTopBarBack = (fallback: React.ReactNode) => <TopBarBack fallback={fallback} />;
+
 /**
  * AppShell con il badge accanto a Liquidità e il pulsante «Scrivici». Il badge conta i movimenti da decidere (ancora «Da
  * categorizzare»), lo stesso numero di «Da decidere» in Movimenti e di «Da decidere» in Categorizza: i movimenti nuovi
- * già categorizzati da soli non chiedono niente e restano fuori.
+ * già categorizzati da soli non chiedono niente e restano fuori. Mounts the app-wide «‹» back button (top bar on the
+ * phone, above the page on desktop).
  */
 export function AttentionShell({ children, sidebarExtra }: { children: React.ReactNode; sidebarExtra?: React.ReactNode }) {
   const { data } = useAttentionQuery();
@@ -26,7 +31,13 @@ export function AttentionShell({ children, sidebarExtra }: { children: React.Rea
     },
   };
   return (
-    <AppShell sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={() => openReport({ source: "pulsante" })}>
+    <AppShell
+      sidebarExtra={sidebarExtra}
+      navBadges={navBadges}
+      onOpenSupport={() => openReport({ source: "pulsante" })}
+      topbarLeading={renderTopBarBack}
+      contentHeader={<PageBackBar />}
+    >
       {children}
     </AppShell>
   );

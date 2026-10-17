@@ -55,13 +55,15 @@ const BOTTOM_NAV_TABS: Record<string, "panoramica" | "liquidita" | "investimenti
 
 interface InnerShellProps {
   children: React.ReactNode;
+  topbarLeading?: (fallback: React.ReactNode) => React.ReactNode;
+  contentHeader?: React.ReactNode;
   activeHref?: string;
   sidebarExtra?: React.ReactNode;
   navBadges?: Record<string, NavBadge>;
   onOpenSupport?: () => void;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: InnerShellProps) {
   const { t: tr } = useLocalization();
   const { productCountry } = useLocalization();
   const navigation = NAV_ITEMS.filter(item => isCountryPathAvailable(productCountry, item.href));
@@ -103,7 +105,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} />
+      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} leading={topbarLeading} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -130,6 +132,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
           // Accessibilità: link "skip to content" può puntare qui.
           tabIndex={-1}
         >
+          {contentHeader}
           <SectionTransition>{children}</SectionTransition>
           {/* Spazio sotto il contenuto per la barra in basso (solo mobile). */}
           {bottomNav ? <div className="md:hidden" style={{ height: `calc(${BOTTOM_NAV_HEIGHT_REM}rem + env(safe-area-inset-bottom))` }} aria-hidden="true" /> : null}
@@ -214,16 +217,20 @@ interface AppShellProps {
   navBadges?: Record<string, NavBadge>;
   /** Apre il foglio «Scrivici»: mostra il pulsante in sidebar e nella barra in alto su telefono. */
   onOpenSupport?: () => void;
+  /** Left slot of the phone top bar (e.g. a back button); see `MobileTopbar`. */
+  topbarLeading?: (fallback: React.ReactNode) => React.ReactNode;
+  /** Shown at the top of the scrolling content, above the page (e.g. a desktop back button). */
+  contentHeader?: React.ReactNode;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader}>
         {children}
       </InnerShell>
     </SidebarProvider>

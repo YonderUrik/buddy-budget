@@ -64,7 +64,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
   const position = priced.find((p) => p.instrument.id === instrumentId) ?? priced[0];
   const [quantityText, setQuantityText] = React.useState<string | null>(null);
   if (!position) return null;
-  const quantityValue = quantityText === null ? position.quantity : parseAmount(quantityText);
+  const quantityValue = quantityText === null ? position.quantity : parseAmount(quantityText, formattingLocale);
   const quantity = quantityValue !== null ? Math.min(quantityValue, position.quantity) : null;
   const result =
     quantity !== null && quantity > 0

@@ -21,6 +21,12 @@ describe("parseAmount", () => {
   it("ritorna null per input non numerico", () => {
     expect(parseAmount("abc")).toBeNull();
   });
+
+  it("reads the separators of the user's locale", () => {
+    expect(parseAmount("1,234.56", "en-GB")).toBe(1234.56);
+    expect(parseAmount("1.234,56", "de-DE")).toBe(1234.56);
+    expect(parseAmount("1.234,56")).toBe(1234.56);
+  });
 });
 
 describe("createAccountSchema", () => {

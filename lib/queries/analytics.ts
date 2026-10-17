@@ -3,12 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import { countChangedFields, type AssumptionsResponse, type UpdateAssumptionsInput } from "@/lib/analitiche/assumptions";
+import { pageText } from "@/lib/localization/page-text";
 
 export const ANALYTICS_QUERY_KEY = ["analytics", "assumptions"] as const;
 
 async function readError(response: Response, fallback: string): Promise<Error> {
   const body = await response.json().catch(() => null);
-  return new Error(body?.error ?? fallback);
+  return new Error(body?.error ?? pageText(fallback));
 }
 
 /** Ipotesi di Analitiche dell'utente (con i default) e se ha già visto la guida. */

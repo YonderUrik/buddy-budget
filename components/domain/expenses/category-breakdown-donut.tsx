@@ -1,5 +1,5 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
+import { localizedFormats, parseLocaleNumber } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
@@ -134,9 +134,8 @@ export function CategoryBreakdownDonut({
 
   /** Valida e invia il nuovo budget per una categoria. Ritorna false se il valore non è valido (nessuna mutation inviata). */
   function commitBudget(categoryId: string, raw: string): boolean {
-    const normalized = raw.trim().replace(",", ".");
-    const value = Number(normalized);
-    if (normalized === "" || !Number.isFinite(value) || value < 0) return false;
+    const value = parseLocaleNumber(raw, formattingLocale);
+    if (value === null || value < 0) return false;
     if (value === budgetFor(categoryId)) return true;
 
     setErrorCategoryId((prev) => (prev === categoryId ? null : prev));

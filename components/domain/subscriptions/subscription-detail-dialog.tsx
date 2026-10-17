@@ -68,7 +68,7 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
   function saveChanges(event: React.FormEvent) {
     event.preventDefault();
     if (!item.id) return;
-    const value = parseAmount(amount);
+    const value = parseAmount(amount, formattingLocale);
     if (!name.trim()) return setError(tr("Dai un nome all'abbonamento"));
     if (manual && (!value || value <= 0)) return setError(tr("Inserisci l'importo di ogni addebito"));
     setError(null);

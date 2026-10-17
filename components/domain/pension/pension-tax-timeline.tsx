@@ -99,7 +99,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
                 aria-valuemin={0}
                 aria-valuemax={EXIT_TAX_TIMELINE_YEARS}
                 aria-valuenow={shownYears}
-                aria-valuetext={`${shownYears} anni di partecipazione, aliquota ${rateLabel}`}
+                aria-valuetext={tr("{0} anni di partecipazione, aliquota {1}", {0: shownYears, 1: rateLabel})}
                 className={`${chipClass} relative cursor-grab touch-none select-none outline-none before:absolute before:-inset-2 before:content-[''] focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing`}
                 onPointerDown={(event) => {
                   event.currentTarget.setPointerCapture(event.pointerId);

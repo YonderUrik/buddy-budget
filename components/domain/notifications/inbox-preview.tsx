@@ -27,8 +27,8 @@ export function InboxPreview({
   emptyText = "Nessuna email facoltativa. Puoi attivarle quando vuoi in Impostazioni.",
   className,
 }: InboxPreviewProps) {
-  const { t: tr } = useLocalization();
-  const items = inboxPreview(preferences);
+  const { t: tr, language } = useLocalization();
+  const items = inboxPreview(preferences, language);
   return (
     <div className={cn("flex flex-col gap-2 rounded-xl bg-card p-3.5", className)} aria-live="polite">
       <span className="flex items-center gap-1.5 text-xs font-medium text-text-3">

@@ -7,13 +7,14 @@ import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import { useLocalization } from "@/lib/localization/provider";
 import { localizeCategory } from "@/lib/localization/categories";
 import { track } from "@/lib/analytics";
+import { pageText } from "@/lib/localization/page-text";
 
 const CATEGORIES_QUERY_KEY = ["categories"] as const;
 
 async function fetchCategories(): Promise<Category[]> {
   const response = await fetch("/api/categories");
   if (!response.ok) {
-    throw new Error("Impossibile caricare le categorie");
+    throw new Error(pageText("Impossibile caricare le categorie"));
   }
   return response.json();
 }
@@ -33,7 +34,7 @@ const CATEGORY_USAGE_STALE_TIME_MS = 5 * 60 * 1000;
 async function fetchCategoryUsage(): Promise<CategoryUsageCounts> {
   const response = await fetch("/api/categories/usage");
   if (!response.ok) {
-    throw new Error("Impossibile caricare l'utilizzo delle categorie");
+    throw new Error(pageText("Impossibile caricare l'utilizzo delle categorie"));
   }
   return response.json();
 }
@@ -59,7 +60,7 @@ export function useCreateCategoryMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile creare la categoria");
+        throw new Error(body?.error ?? pageText("Impossibile creare la categoria"));
       }
       return response.json() as Promise<Category>;
     },
@@ -82,7 +83,7 @@ export function useUpdateCategoryMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile aggiornare la categoria");
+        throw new Error(body?.error ?? pageText("Impossibile aggiornare la categoria"));
       }
       return response.json() as Promise<Category>;
     },
@@ -103,7 +104,7 @@ export function useDeleteCategoryMutation() {
       const response = await fetch(`/api/categories/${id}`, { method: "DELETE" });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile eliminare la categoria");
+        throw new Error(body?.error ?? pageText("Impossibile eliminare la categoria"));
       }
     },
     onSuccess: () => {
@@ -123,7 +124,7 @@ export function useDistributeColorsMutation() {
       const response = await fetch("/api/categories/distribute-colors", { method: "POST" });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile distribuire i colori");
+        throw new Error(body?.error ?? pageText("Impossibile distribuire i colori"));
       }
       return response.json() as Promise<Category[]>;
     },

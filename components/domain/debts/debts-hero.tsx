@@ -26,7 +26,7 @@ export function DebtsHero({ totalDebt, currency, openCount, freeDate }: DebtsHer
       <p className="text-sm text-muted-foreground">
         {openCount === 0
           ? tr("Nessun finanziamento aperto")
-          : tr("{0} · liberi da debiti a {1}", {0: openCount === 1 ? "un finanziamento" : `${openCount} finanziamenti`, 1: freeDate ? formatMonthYear(freeDate) : "—"})}
+          : tr("{0} · liberi da debiti a {1}", {0: openCount === 1 ? tr("un finanziamento") : tr("{0} finanziamenti", {0: openCount}), 1: freeDate ? formatMonthYear(freeDate) : "—"})}
       </p>
     </section>
   );

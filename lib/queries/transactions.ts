@@ -4,6 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { CreateTransactionInput, UpdateTransactionInput } from "@/lib/validation/transactions";
 import { track } from "@/lib/analytics";
+import { pageText } from "@/lib/localization/page-text";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
@@ -17,7 +18,7 @@ function transactionsQueryKey(from: string, to: string, type: TransactionDirecti
 async function fetchTransactions(from: string, to: string, type: TransactionDirectionParam): Promise<ListedTransaction[]> {
   const response = await fetch(`/api/transactions?from=${from}&to=${to}&type=${type}`);
   if (!response.ok) {
-    throw new Error("Impossibile caricare le transazioni");
+    throw new Error(pageText("Impossibile caricare le transazioni"));
   }
   return response.json();
 }
@@ -50,7 +51,7 @@ export function useCreateTransactionMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile creare la transazione");
+        throw new Error(body?.error ?? pageText("Impossibile creare la transazione"));
       }
       return response.json() as Promise<Transaction>;
     },
@@ -74,7 +75,7 @@ export function useUpdateTransactionMutation() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile aggiornare la transazione");
+        throw new Error(body?.error ?? pageText("Impossibile aggiornare la transazione"));
       }
       return response.json() as Promise<Transaction>;
     },
@@ -95,7 +96,7 @@ export function useDeleteTransactionMutation() {
       const response = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile eliminare la transazione");
+        throw new Error(body?.error ?? pageText("Impossibile eliminare la transazione"));
       }
     },
     onSuccess: () => {

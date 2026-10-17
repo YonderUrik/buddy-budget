@@ -83,7 +83,7 @@ function SettingsForm({
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    const couponPercent = couponRate.trim() ? parseAmount(couponRate) : null;
+    const couponPercent = couponRate.trim() ? parseAmount(couponRate, formattingLocale) : null;
     const hasCoupons = isBond && (couponPercent !== null || maturity !== "");
     if (hasCoupons && (!couponPercent || !maturity)) return setError(tr("Per le cedole servono tasso e scadenza"));
     submit({

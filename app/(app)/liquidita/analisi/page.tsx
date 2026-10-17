@@ -102,7 +102,7 @@ export default function LiquiditaAnalisiPage() {
   const sentence =
     spent === 0
       ? tr("In questo periodo non ci sono ancora spese.")
-      : `${isCurrentMonth ? tr("Finora hai speso") : tr("Hai speso")} ${money(spent)}${spentBefore > 0 ? tr(", {0} {1} del periodo prima", { 0: money(Math.abs(delta)), 1: delta > 0 ? "in più" : "in meno" }) : ""}.${heaviest ? tr(" La voce che pesa di più è «{0}», il {1}%.", { 0: heaviest.name, 1: Math.round((heaviest.amount / spent) * 100) }) : ""}`;
+      : `${isCurrentMonth ? tr("Finora hai speso") : tr("Hai speso")} ${money(spent)}${spentBefore > 0 ? tr(", {0} {1} del periodo prima", { 0: money(Math.abs(delta)), 1: delta > 0 ? tr("in più") : tr("in meno") }) : ""}.${heaviest ? tr(" La voce che pesa di più è «{0}», il {1}.", { 0: heaviest.name, 1: new Intl.NumberFormat(formattingLocale, { style: "percent", maximumFractionDigits: 0 }).format(heaviest.amount / spent) }) : ""}`;
 
   if (isError) return <LoadError message={tr("Impossibile caricare i dati dell'analisi.")} onRetry={() => refetch()} />;
   return (

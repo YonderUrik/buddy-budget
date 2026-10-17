@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocalization } from "@/lib/localization/provider";
+import { translateServerMessage } from "@/lib/localization/messages";
 
 /**
  * Schermata «Righe da controllare» di un CSV personale: quante righe non sono state riconosciute e perché (raggruppate per
@@ -57,14 +58,14 @@ export interface PersonalImportReviewProps {
 
 /** Un motivo e le sue righe: numero di riga nel file e testo originale (nascosto con «Nascondi gli importi»). */
 function ReasonGroup({ group, hidden }: { group: ErrorReasonGroup; hidden: boolean }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const [all, setAll] = React.useState(false);
   const rows = all ? group.records : group.records.slice(0, ROWS_PER_REASON);
   const count = group.records.length;
   return (
     <li className="flex flex-col gap-2 border-t py-3 first:border-t-0 first:pt-0">
       <p className="text-sm font-medium text-foreground">
-        {tr(group.reason)}
+        {translateServerMessage(language, group.reason)}
         <span className="ml-2 font-normal text-muted-foreground">{count === 1 ? tr("1 riga") : tr("{0} righe", { 0: count })}</span>
       </p>
       <ol className="flex flex-col gap-1.5">
@@ -83,7 +84,7 @@ function ReasonGroup({ group, hidden }: { group: ErrorReasonGroup; hidden: boole
 }
 
 export function PersonalImportReview({ job, file, listId, onUploadCorrected, onReanalyzed }: PersonalImportReviewProps) {
-  const { t: tr, locale } = useLocalization();
+  const { t: tr, locale, language } = useLocalization();
   const { hidden } = usePrivacy();
   const client = useQueryClient();
   const headingRef = React.useRef<HTMLHeadingElement>(null);
@@ -127,7 +128,7 @@ export function PersonalImportReview({ job, file, listId, onUploadCorrected, onR
               ? tr("Un attimo: leggo l'esito dell'analisi.")
               : rowProblem
                 ? tr("Su {0} righe lette, {1} sono pronte e {2} non le ho capite. Non ho salvato nulla: scegli tu cosa fare.", { 0: total, 1: importable, 2: errors })
-                : job.error ?? tr("Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista.")}
+                : (job.error ? translateServerMessage(language, job.error) : null) ?? tr("Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista.")}
           </p>
           <ReportErrorLink area="import_movimenti" error={job.error ?? title} />
         </div>

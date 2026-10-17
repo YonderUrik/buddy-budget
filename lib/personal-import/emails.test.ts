@@ -23,4 +23,10 @@ describe("personalImportEmailContent", () => {
     expect(text).toContain("importare le altre");
     expect(text).toContain(PARAMS.jobUrl);
   });
+
+  it("in inglese e in tedesco", () => {
+    expect(personalImportEmailContent("imported", { ...PARAMS, language: "en" }).subject).toBe("Your CSV has been imported");
+    expect(personalImportEmailContent("review", { ...PARAMS, language: "en" }).text).toContain("See the rows: " + PARAMS.jobUrl);
+    expect(personalImportEmailContent("failed", { ...PARAMS, language: "de" }).text).toContain("Es wurden keine Umsätze gespeichert.");
+  });
 });

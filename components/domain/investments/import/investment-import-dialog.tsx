@@ -30,7 +30,7 @@ import { ImportBatchProgress } from "./import-batch-progress";
 import { ImportDestinationField } from "./import-destination-field";
 import { ImportNotice } from "./import-notice";
 import { ImportStepper } from "./import-stepper";
-import { explainFileError } from "@/lib/investments/import/messages";
+import { explainFileError, translateImportMessage } from "@/lib/investments/import/messages";
 import { useInvestmentImport } from "./use-investment-import";
 import { ReportErrorLink } from "@/components/domain/support";
 
@@ -42,7 +42,7 @@ export interface InvestmentImportDialogProps {
 }
 
 function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi", aiFallbackEnabled, onAiFallbackChange }: { aiFallbackEnabled: boolean; onAiFallbackChange: (enabled: boolean) => void; currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const s = useInvestmentImport(initialFile, aiFallbackEnabled);
   const [direction, setDirection] = React.useState<StepDirection>(1);
   const forward = (action: () => void) => () => {
@@ -60,7 +60,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
     return choice && choice.kind !== "skip" && !s.excluded.has(i.key);
   });
   const newInstruments = included.filter((i) => s.choices[i.key]?.kind === "create").length;
-  const error = s.error ? explainFileError(s.error) : null;
+  const error = s.error ? explainFileError(s.error, language) : null;
   const errorRef = React.useRef<HTMLDivElement>(null);
   // L'errore sta in cima al contenuto: se chi legge è più in basso (es. dopo aver caricato il file) lo porta in vista.
   React.useEffect(() => {
@@ -78,7 +78,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
 
       <div className="min-h-0 overflow-y-auto">
         <StepStage stepKey={s.step} direction={direction}>
-        {error ? <ImportNotice ref={errorRef} tone="error" title={error.text} hint={tr(error.hint)} detail={error.text === s.error ? undefined : s.error ?? undefined} action={<ReportErrorLink area="import_investimenti" error={s.error ?? error.text} />} className="mb-5" /> : null}
+        {error ? <ImportNotice ref={errorRef} tone="error" title={error.text} hint={error.hint} detail={error.text === translateImportMessage(language, s.error ?? "") ? undefined : s.error ? translateImportMessage(language, s.error) : undefined} action={<ReportErrorLink area="import_investimenti" error={s.error ?? error.text} />} className="mb-5" /> : null}
         {s.step === "file" ? (
           <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} onFiles={onFiles} reading={s.reading} aiFallbackEnabled={aiFallbackEnabled} onAiFallbackChange={onAiFallbackChange} />
         ) : null}

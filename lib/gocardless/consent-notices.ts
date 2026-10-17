@@ -2,6 +2,7 @@ import "server-only";
 import { and, count, eq, gt, isNull, lte, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
+import { resolveProfile } from "@/lib/localization/config";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { hashUserId, logger } from "@/lib/observability";
 import { sendConsentEmail } from "./consent-emails";
@@ -53,6 +54,8 @@ async function findNoticeTargets(kind: "expiring" | "expired", now: Date) {
       id: bankConnections.id,
       userId: bankConnections.userId,
       email: authUser.email,
+      productCountry: authUser.productCountry,
+      language: authUser.language,
       institutionName: bankConnections.institutionName,
       consentExpiresAt: bankConnections.consentExpiresAt,
       links: count(bankAccountLinks.id),
@@ -61,7 +64,7 @@ async function findNoticeTargets(kind: "expiring" | "expired", now: Date) {
     .innerJoin(authUser, eq(bankConnections.userId, authUser.id))
     .leftJoin(bankAccountLinks, eq(bankAccountLinks.connectionId, bankConnections.id))
     .where(condition)
-    .groupBy(bankConnections.id, authUser.email)
+    .groupBy(bankConnections.id, authUser.email, authUser.productCountry, authUser.language)
     .limit(MAX_NOTICES_PER_RUN);
   // Una connessione senza conti (rinnovata o conto eliminato) non ha nulla da rinnovare.
   return rows.filter((row) => row.links > 0);
@@ -80,6 +83,7 @@ export async function sendConsentNotices(now: Date): Promise<{ sent: number; fai
         userId: target.userId,
         institutionName: target.institutionName,
         expiresAt: target.consentExpiresAt,
+        language: resolveProfile(target).language,
       });
       if (!ok) {
         failed += 1;

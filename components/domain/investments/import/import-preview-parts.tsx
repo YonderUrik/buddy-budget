@@ -10,7 +10,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { CheckCircle2Icon, FileTextIcon } from "lucide-react";
 import type { ActivityIssue } from "@/lib/investments/import/interactive-brokers";
-import { explainRowMessage } from "@/lib/investments/import/messages";
+import { explainRowMessage, translateImportMessage } from "@/lib/investments/import/messages";
 import type { ImportRow } from "@/lib/investments/import/normalize";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 import { cn } from "@/lib/utils";
@@ -138,7 +138,7 @@ const MAX_LISTED = 5;
 
 /** Righe del file che non vengono importate: quelle da correggere (errori) e quelle che salto di proposito. */
 export function SkippedRows({ rows }: { rows: ImportRow[] }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const problems = rows.flatMap((r) => (r.status === "ok" ? [] : [r]));
   if (problems.length === 0) return null;
   const errors = problems.filter((r) => r.status === "error");
@@ -146,12 +146,12 @@ export function SkippedRows({ rows }: { rows: ImportRow[] }) {
   const skipped = new Map<string, number[]>();
   for (const row of problems) if (row.status === "skipped") skipped.set(row.message, [...(skipped.get(row.message) ?? []), row.line]);
   return (
-    <DialogSection title={`${problems.length} ${problems.length === 1 ? "riga non importata" : "righe non importate"}`}>
+    <DialogSection title={`${problems.length} ${problems.length === 1 ? tr("riga non importata") : tr("righe non importate")}`}>
       {errors.length > 0 ? (
         <div className="flex flex-col gap-3">
           {errors.slice(0, MAX_LISTED).map((row) => {
-            const e = explainRowMessage(row.message);
-            return <ImportNotice key={row.line} tone="warning" title={tr("Riga {0}: {1}", {0: row.line, 1: e.text})} hint={tr(e.hint)} />;
+            const e = explainRowMessage(row.message, language);
+            return <ImportNotice key={row.line} tone="warning" title={tr("Riga {0}: {1}", {0: row.line, 1: e.text})} hint={e.hint} />;
           })}
           {errors.length > MAX_LISTED ? <p className="text-sm text-muted-foreground">{tr("…e altre")}{" "}{errors.length - MAX_LISTED}{" "}{tr("righe con lo stesso tipo di problema.")}</p> : null}
         </div>
@@ -160,7 +160,7 @@ export function SkippedRows({ rows }: { rows: ImportRow[] }) {
         <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
           {[...skipped.entries()].slice(0, MAX_LISTED).map(([message, lines]) => (
             <li key={message}>
-              {explainRowMessage(message).text}{" "}<span className="text-xs">{"("}{lines.length === 1 ? tr("riga {0}", {0: lines[0]}) : tr("{0} righe", {0: lines.length})}{")"}</span>
+              {explainRowMessage(message, language).text}{" "}<span className="text-xs">{"("}{lines.length === 1 ? tr("riga {0}", {0: lines[0]}) : tr("{0} righe", {0: lines.length})}{")"}</span>
             </li>
           ))}
           {skipped.size > MAX_LISTED ? <li>{tr("…e altri")}{" "}{skipped.size - MAX_LISTED}{" "}{tr("tipi di riga.")}</li> : null}
@@ -172,18 +172,18 @@ export function SkippedRows({ rows }: { rows: ImportRow[] }) {
 
 /** Eventi del rendiconto che non vengono importati e vanno guardati a mano (corporate action, interessi...). */
 export function StatementWarnings({ warnings }: { warnings: ActivityIssue[] }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   if (warnings.length === 0) return null;
   return (
     <DialogSection>
       <ImportNotice
         tone="warning"
-        title={`${warnings.length} ${warnings.length === 1 ? "voce del rendiconto non viene importata" : "voci del rendiconto non vengono importate"}`}
+        title={`${warnings.length} ${warnings.length === 1 ? tr("voce del rendiconto non viene importata") : tr("voci del rendiconto non vengono importate")}`}
         hint={tr("Se contano per i tuoi numeri, registrale a mano da «Registra».")}
       >
         <ul className="flex flex-col gap-1">
           {warnings.slice(0, MAX_LISTED).map((w) => (
-            <li key={`${w.line}-${w.message}`}>{tr("Riga")}{" "}{w.line} {"·"}{w.section}{":"}{tr(w.message)}
+            <li key={`${w.line}-${w.message}`}>{tr("Riga")}{" "}{w.line} {"·"}{w.section}{":"}{translateImportMessage(language, w.message)}
             </li>
           ))}
           {warnings.length > MAX_LISTED ? <li>{tr("…e altre")}{" "}{warnings.length - MAX_LISTED}{"."}</li> : null}

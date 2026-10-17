@@ -37,7 +37,7 @@ function AddForm({ categories, today, onDone }: Omit<AddSubscriptionDialogProps,
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    const value = parseAmount(amount);
+    const value = parseAmount(amount, locale);
     if (!name.trim()) return setError(tr("Dai un nome all'abbonamento"));
     if (!value || value <= 0) return setError(tr("Inserisci l'importo di ogni addebito"));
     setError(null);

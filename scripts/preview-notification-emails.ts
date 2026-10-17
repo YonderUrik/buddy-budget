@@ -1,17 +1,20 @@
 /**
- * Scrive in una cartella l'HTML delle tre email di riepilogo e avviso con dati d'esempio, per guardarle nel browser
- * (anche in tema scuro) senza inviare nulla: `pnpm tsx scripts/preview-notification-emails.ts <cartella>`.
+ * Writes to a folder the HTML of the three summary and alert emails with sample data, to look at them in the browser
+ * (dark theme too) without sending anything: `pnpm tsx scripts/preview-notification-emails.ts <folder> [it|en|de]`.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { budgetAlertEmail, deadlineAlertEmail, digestEmail, type EmailContext } from "../lib/notifications/emails";
 import { digestPeriod, type DigestData } from "../lib/notifications/digest";
+import { LANGUAGES, LANGUAGE_LOCALES, type Language } from "../lib/localization/config";
 
 const outDir = path.resolve(process.argv[2] ?? "email-preview");
 const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+const language: Language = LANGUAGES.includes(process.argv[3] as Language) ? (process.argv[3] as Language) : "it";
 const ctx: EmailContext = {
   appUrl,
-  money: (value) => new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(value),
+  language,
+  money: (value) => new Intl.NumberFormat(LANGUAGE_LOCALES[language], { style: "currency", currency: "EUR" }).format(value),
   unsubscribeUrl: `${appUrl}/disiscrizione?t=esempio`,
   preferencesUrl: `${appUrl}/impostazioni#impostazioni-notifiche`,
 };

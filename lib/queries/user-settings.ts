@@ -7,6 +7,7 @@ import { REAUTH_REQUIRED_CODE } from "@/lib/account/constants";
 import type { HomePagePath } from "@/lib/account/home-pages";
 import type { UpdateUserSettingsInput } from "@/lib/validation/user-settings";
 import type { SupportedCurrency } from "@/lib/validation/currency";
+import { pageText } from "@/lib/localization/page-text";
 
 export type { UserDataSummary, UserSessionView };
 
@@ -45,7 +46,7 @@ export class AccountActionError extends Error {
 
 async function failure(response: Response, fallback: string): Promise<AccountActionError> {
   const body = (await response.json().catch(() => null)) as { error?: string; code?: string } | null;
-  return new AccountActionError(body?.error ?? fallback, body?.code === REAUTH_REQUIRED_CODE);
+  return new AccountActionError(body?.error ?? pageText(fallback), body?.code === REAUTH_REQUIRED_CODE);
 }
 
 /** `fetch` che trasforma sia gli errori HTTP sia quelli di rete in `AccountActionError`. */
@@ -54,7 +55,7 @@ async function request(url: string, init: RequestInit | undefined, fallback: str
   try {
     response = await fetch(url, init);
   } catch {
-    throw new AccountActionError("Connessione non riuscita. Controlla la rete e riprova.", false);
+    throw new AccountActionError(pageText("Connessione non riuscita. Controlla la rete e riprova."), false);
   }
   if (!response.ok) throw await failure(response, fallback);
   return response;

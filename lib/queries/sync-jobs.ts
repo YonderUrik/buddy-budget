@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SyncJobView } from "@/lib/sync-jobs/types";
 import { hasFinishedSince, hasNewlyFinishedJob, runningJobIds } from "@/lib/sync-jobs/view";
 import { QUERY_KEYS_CHANGED_BY_CATEGORIZATION } from "./categorization";
+import { pageText } from "@/lib/localization/page-text";
 
 export const SYNC_JOBS_QUERY_KEY = ["sync-jobs"] as const;
 export const SYNC_JOBS_POLL_INTERVAL_MS = 1000;
@@ -23,7 +24,7 @@ export function useSyncJobsQuery() {
     queryKey: SYNC_JOBS_QUERY_KEY,
     queryFn: async (): Promise<SyncJobView[]> => {
       const response = await fetch("/api/sync-jobs");
-      if (!response.ok) throw new Error("Impossibile leggere lo stato della sincronizzazione");
+      if (!response.ok) throw new Error(pageText("Impossibile leggere lo stato della sincronizzazione"));
       return response.json();
     },
     refetchInterval: (query) => (runningJobIds(query.state.data).size > 0 ? SYNC_JOBS_POLL_INTERVAL_MS : false),
@@ -59,7 +60,7 @@ export function useDismissSyncJobMutation() {
   return useMutation({
     mutationFn: async (jobId: string): Promise<void> => {
       const response = await fetch(`/api/sync-jobs/${jobId}/dismiss`, { method: "POST" });
-      if (!response.ok) throw new Error("Impossibile chiudere il riepilogo");
+      if (!response.ok) throw new Error(pageText("Impossibile chiudere il riepilogo"));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY }),
   });

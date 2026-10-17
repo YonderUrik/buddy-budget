@@ -1,3 +1,5 @@
+import { languageOfLocale } from "@/lib/localization/config";
+import { translate, type MessageValues } from "@/lib/localization/messages";
 import type { SyncResult } from "./sync";
 
 export type SyncSuccessResult = Extract<SyncResult, { status: "synced" }>;
@@ -10,49 +12,55 @@ export type SyncErrorInfo =
   | { status: "unavailable" }
   | { status: "unknown" };
 
-function pluralize(count: number, singular: string, plural: string): string {
-  return count === 1 ? singular : plural;
+/** Translator for the language of `locale` ("en-GB" → English); messages are Italian sources from the catalogs. */
+function translator(locale: string) {
+  const language = languageOfLocale(locale);
+  return (source: string, values?: MessageValues) => translate(language, source, values);
 }
 
 /**
- * Messaggio di successo dopo un sync riuscito, con i conteggi presi dopo il giro automatico: quante si sono messe da
- * sole (regole e proposte sicure) e quante restano da decidere in Categorizza.
+ * Success message after a sync, with the counts taken after the automatic pass: how many were categorised on their own
+ * (rules and safe suggestions) and how many are left to decide in Categorizza. Written in the language of `locale`.
  */
-export function buildSyncSummaryMessage(result: SyncSuccessResult): string {
+export function buildSyncSummaryMessage(result: SyncSuccessResult, locale = "it-IT"): string {
+  const t = translator(locale);
   if (result.newTransactionsCount === 0) {
-    return "Nessuna nuova transazione trovata. Saldo aggiornato.";
+    return t("Nessuna nuova transazione trovata. Saldo aggiornato.");
   }
   const parts: string[] = [];
   if (result.categorizedCount > 0) {
-    parts.push(`${result.categorizedCount} ${pluralize(result.categorizedCount, "categorizzata da sola", "categorizzate da sole")}`);
+    parts.push(t(result.categorizedCount === 1 ? "{0} categorizzata da sola" : "{0} categorizzate da sole", { 0: result.categorizedCount }));
   }
   if (result.uncategorizedCount > 0) {
-    parts.push(`${result.uncategorizedCount} da decidere`);
+    parts.push(t("{0} da decidere", { 0: result.uncategorizedCount }));
   }
-  const detail = parts.length > 0 ? ` (${parts.join(", ")})` : "";
-  const label = pluralize(result.newTransactionsCount, "nuova transazione", "nuove transazioni");
-  return `${result.newTransactionsCount} ${label}${detail}. Saldo aggiornato.`;
+  const single = result.newTransactionsCount === 1;
+  if (parts.length === 0) {
+    return t(single ? "{0} nuova transazione. Saldo aggiornato." : "{0} nuove transazioni. Saldo aggiornato.", { 0: result.newTransactionsCount });
+  }
+  return t(single ? "{0} nuova transazione ({1}). Saldo aggiornato." : "{0} nuove transazioni ({1}). Saldo aggiornato.", { 0: result.newTransactionsCount, 1: parts.join(", ") });
 }
 
-/** Error message shown in the toast when a manual sync fails; the time is formatted in `locale`. */
+/** Error message shown in the toast when a manual sync fails, in the language of `locale` (which also formats the time). */
 export function buildSyncErrorMessage(error: SyncErrorInfo, locale = "it-IT"): string {
+  const t = translator(locale);
   switch (error.status) {
     case "not-eligible": {
-      if (!error.nextEligibleAt) return "Sync non disponibile al momento. Riprova più tardi.";
+      if (!error.nextEligibleAt) return t("Sync non disponibile al momento. Riprova più tardi.");
       const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(
         new Date(error.nextEligibleAt)
       );
-      return `Hai raggiunto il limite giornaliero di sync. Prossimo disponibile alle ${time}.`;
+      return t("Hai raggiunto il limite giornaliero di sync. Prossimo disponibile alle {0}.", { 0: time });
     }
     case "gocardless-limited":
-      return "La banca ha temporaneamente esaurito le chiamate disponibili. Riprova più tardi.";
+      return t("La banca ha temporaneamente esaurito le chiamate disponibili. Riprova più tardi.");
     case "expired":
-      return "Sessione con la banca scaduta. Riconnetti il conto per sincronizzare.";
+      return t("Sessione con la banca scaduta. Riconnetti il conto per sincronizzare.");
     case "already-running":
-      return "Sincronizzazione già in corso per questo conto.";
+      return t("Sincronizzazione già in corso per questo conto.");
     case "unavailable":
-      return "Servizio di sincronizzazione temporaneamente non disponibile. Riprova tra poco.";
+      return t("Servizio di sincronizzazione temporaneamente non disponibile. Riprova tra poco.");
     default:
-      return "Impossibile completare la sincronizzazione. Riprova più tardi.";
+      return t("Impossibile completare la sincronizzazione. Riprova più tardi.");
   }
 }

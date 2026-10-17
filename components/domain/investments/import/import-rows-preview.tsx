@@ -10,6 +10,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { AlertTriangleIcon } from "lucide-react";
 import type { ImportRow } from "@/lib/investments/import/normalize";
+import { translateImportMessage } from "@/lib/investments/import/messages";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 
 export interface ImportRowsPreviewProps {
@@ -26,7 +27,7 @@ export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
   const { locale: formattingLocale } = useLocalization();
   const NUMBER_FORMAT = new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 8 });
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const ok = rows.filter((r) => r.status === "ok");
   const problems = rows.filter((r) => r.status !== "ok");
   const warnings = ok.filter((r) => r.warnings.length > 0).length;
@@ -74,7 +75,7 @@ export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
         <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
           {problems.slice(0, MAX_LISTED_PROBLEMS).map((row) => (
             <li key={row.line} className="flex items-start gap-1.5">
-              <AlertTriangleIcon className="mt-0.5 size-3 shrink-0 text-destructive" aria-hidden="true" />{tr("Riga")}{" "}{row.line}{":"}{tr(row.message)}
+              <AlertTriangleIcon className="mt-0.5 size-3 shrink-0 text-destructive" aria-hidden="true" />{tr("Riga")}{" "}{row.line}{":"}{translateImportMessage(language, row.message)}
             </li>
           ))}
           {problems.length > MAX_LISTED_PROBLEMS ? <li>{tr("…e altre")}{" "}{problems.length - MAX_LISTED_PROBLEMS}</li> : null}

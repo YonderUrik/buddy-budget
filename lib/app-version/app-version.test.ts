@@ -60,6 +60,8 @@ describe("formatVersionDetails", () => {
     expect(formatVersionDetails(info)).toMatch(/Build 27\/09\/26/);
     expect(formatVersionDetails(info, "en-GB")).toMatch(/Build 27\/09\/2026/);
     expect(formatVersionDetails(info, "de-DE")).toMatch(/Build 27\.09\.26/);
+    expect(formatVersionDetails(info, "en-GB")).toMatch(/^Version 0\.1\.0/);
+    expect(formatVersionDetails(info, "de-DE")).toMatch(/^Version 0\.1\.0/);
   });
 
   it("omette le righe con dati mancanti o non validi", () => {

@@ -9,7 +9,14 @@ import type { CostSummary } from "@/lib/calc/costs";
 import { fireNumber, fireNumberAfterTax, wealthAfterYears, yearsToTarget } from "@/lib/calc/fire";
 import type { GrowthSplit } from "@/lib/calc/growth-split";
 import type { MonteCarloResult, WithdrawalRule } from "@/lib/calc/monte-carlo";
-import { formatYears, money, pct } from "./analytics-format";
+import type { Language } from "@/lib/localization/config";
+import { translate, type MessageValues } from "@/lib/localization/messages";
+import { localizedAnalyticsFormats } from "./analytics-format";
+
+/** Formatters and translator bound to one language: every sentence below takes `language` (Italian by default). */
+function textTools(language: Language) {
+  return { ...localizedAnalyticsFormats(language), t: (source: string, values?: MessageValues) => translate(language, source, values) };
+}
 
 /** Taglio di spesa e aumento di risparmio (€/anno) provati nella domanda «Quando arrivo?». */
 export const SPENDING_CUT = 0.1;
@@ -29,30 +36,32 @@ export const RULE_SHORT_NAMES: Record<WithdrawalRule, string> = {
 
 export type Tone = "pos" | "neg" | "default";
 
-/** Giudizio a parole sulla probabilità di successo: serve a leggere il numero, non a promettere. */
-export function successVerdict(success: number): { text: string; tone: Tone } {
-  if (success >= 0.9) return { text: "Solida: regge nella grande maggioranza degli scenari", tone: "pos" };
-  if (success >= 0.75) return { text: "Discreta: nei casi sfortunati servirebbe tagliare le spese", tone: "default" };
-  return { text: "Fragile: in troppi scenari il patrimonio finisce prima", tone: "neg" };
+/** Verdict in words on the success probability, in `language`: it helps read the number, it promises nothing. */
+export function successVerdict(success: number, language: Language = "it"): { text: string; tone: Tone } {
+  const t = (source: string) => translate(language, source);
+  if (success >= 0.9) return { text: t("Solida: regge nella grande maggioranza degli scenari"), tone: "pos" };
+  if (success >= 0.75) return { text: t("Discreta: nei casi sfortunati servirebbe tagliare le spese"), tone: "default" };
+  return { text: t("Fragile: in troppi scenari il patrimonio finisce prima"), tone: "neg" };
 }
 
 /** Domanda 1: a che punto sei e da dove viene la crescita recente. */
-export function journeySentences(plan: AnalyticsPlan, split: GrowthSplit | null, currency: string, withdrawalRate?: number): string[] {
+export function journeySentences(plan: AnalyticsPlan, split: GrowthSplit | null, currency: string, withdrawalRate?: number, language: Language = "it"): string[] {
+  const { money, pct, t } = textTools(language);
   const out: string[] = [];
   if (plan.target !== null) {
-    out.push(`Hai ${money(plan.wealth, currency)} su ${money(plan.target, currency)} necessari: ${pct(Math.min(plan.progress ?? 0, 9.99), 0)} del percorso.`);
+    out.push(t("Hai {0} su {1} necessari: {2} del percorso.", { 0: money(plan.wealth, currency), 1: money(plan.target, currency), 2: pct(Math.min(plan.progress ?? 0, 9.99), 0) }));
   } else {
-    out.push(`Hai ${money(plan.wealth, currency)}. Per sapere quanto ti serve indica la spesa annua nelle ipotesi.`);
+    out.push(t("Hai {0}. Per sapere quanto ti serve indica la spesa annua nelle ipotesi.", { 0: money(plan.wealth, currency) }));
   }
   if (plan.target !== null && plan.spending !== null && withdrawalRate !== undefined) {
-    out.push(`Il numero FIRE è la tua spesa annua (${money(plan.spending, currency)}) divisa per il tasso di prelievo (${pct(withdrawalRate)}).`);
+    out.push(t("Il numero FIRE è la tua spesa annua ({0}) divisa per il tasso di prelievo ({1}).", { 0: money(plan.spending, currency), 1: pct(withdrawalRate) }));
   }
   if (split && split.rows.length >= 2) {
     const share = split.savingsShare;
     out.push(
       share !== null
-        ? `Negli ultimi 12 mesi il patrimonio è cresciuto di ${money(split.totalDelta, currency)}: ${pct(share, 0)} grazie al tuo risparmio, il resto dal mercato.`
-        : `Negli ultimi 12 mesi il patrimonio è variato di ${money(split.totalDelta, currency)}.`
+        ? t("Negli ultimi 12 mesi il patrimonio è cresciuto di {0}: {1} grazie al tuo risparmio, il resto dal mercato.", { 0: money(split.totalDelta, currency), 1: pct(share, 0) })
+        : t("Negli ultimi 12 mesi il patrimonio è variato di {0}.", { 0: money(split.totalDelta, currency) })
     );
   }
   return out;
@@ -75,21 +84,23 @@ export interface TimelineScenario {
 }
 
 /** I due scenari «e se…» più utili: spendere un po' meno, risparmiare un po' di più. */
-export function timelineScenarios(plan: AnalyticsPlan, a: AnalyticsAssumptions, currency: string): TimelineScenario[] {
+export function timelineScenarios(plan: AnalyticsPlan, a: AnalyticsAssumptions, currency: string, language: Language = "it"): TimelineScenario[] {
+  const { money, pct, t } = textTools(language);
   const base = plan.yearsToFire;
   const mk = (label: string, years: number | null): TimelineScenario => ({ label, years, yearsSaved: base !== null && years !== null ? base - years : null });
   return [
-    mk(`Spendendo il ${pct(SPENDING_CUT, 0)} in meno`, yearsWithChanges(plan, a, { spending: -SPENDING_CUT })),
-    mk(`Risparmiando ${money(SAVING_BOOST_ANNUAL / 12, currency)} in più al mese`, yearsWithChanges(plan, a, { saving: SAVING_BOOST_ANNUAL })),
+    mk(t("Spendendo il {0} in meno", { 0: pct(SPENDING_CUT, 0) }), yearsWithChanges(plan, a, { spending: -SPENDING_CUT })),
+    mk(t("Risparmiando {0} in più al mese", { 0: money(SAVING_BOOST_ANNUAL / 12, currency) }), yearsWithChanges(plan, a, { saving: SAVING_BOOST_ANNUAL })),
   ];
 }
 
 /** Titolo della domanda 2: quando arrivi, in una riga. */
-export function timelineHeadline(plan: AnalyticsPlan, today: Date): string {
-  if (plan.target === null) return "Per stimare quando arrivi serve la tua spesa annua.";
-  if (plan.yearsToFire === 0) return "Hai già raggiunto il numero FIRE.";
-  if (plan.yearsToFire === null) return "Con questi numeri il traguardo è oltre 80 anni lontano: serve più risparmio o meno spesa.";
-  return `Intorno al ${today.getFullYear() + Math.ceil(plan.yearsToFire)}, tra ${formatYears(plan.yearsToFire)}.`;
+export function timelineHeadline(plan: AnalyticsPlan, today: Date, language: Language = "it"): string {
+  const { formatYears, t } = textTools(language);
+  if (plan.target === null) return t("Per stimare quando arrivi serve la tua spesa annua.");
+  if (plan.yearsToFire === 0) return t("Hai già raggiunto il numero FIRE.");
+  if (plan.yearsToFire === null) return t("Con questi numeri il traguardo è oltre 80 anni lontano: serve più risparmio o meno spesa.");
+  return t("Intorno al {0}, tra {1}.", { 0: today.getFullYear() + Math.ceil(plan.yearsToFire), 1: formatYears(plan.yearsToFire) });
 }
 
 export interface TimelinePoint {
@@ -105,24 +116,27 @@ export function timelineSeries(plan: AnalyticsPlan, a: AnalyticsAssumptions): Ti
 }
 
 export interface LastingAnswer {
+  /** Already in the user's language. */
   headline: string;
   verdict: ReturnType<typeof successVerdict>;
   success: number;
+  /** `label` stays the Italian source name (callers translate it, as with `better.label`). */
   rules: { rule: WithdrawalRule; label: string; success: number }[];
   /** Regola con più probabilità di successo, se diversa da quella scelta. */
   better: { label: string; success: number } | null;
 }
 
 /** Domanda 3: il patrimonio dura? Parte dai risultati del confronto tra regole (smettendo oggi). */
-export function lastingAnswer(results: MonteCarloResult[], selected: WithdrawalRule, retirementYears: number): LastingAnswer | null {
+export function lastingAnswer(results: MonteCarloResult[], selected: WithdrawalRule, retirementYears: number, language: Language = "it"): LastingAnswer | null {
+  const { pct, t } = textTools(language);
   const current = results.find((r) => r.rule === selected) ?? results[0];
   if (!current) return null;
   const rules = results.map((r) => ({ rule: r.rule, label: RULE_SHORT_NAMES[r.rule], success: r.successRate }));
   const best = [...rules].sort((a, b) => b.success - a.success)[0];
   const better = best.rule !== current.rule && best.success > current.successRate + 0.005 ? { label: best.label, success: best.success } : null;
   return {
-    headline: `Se smettessi oggi, il patrimonio dura ${retirementYears} anni nel ${pct(current.successRate, 0)} degli scenari simulati (regola: ${RULE_SHORT_NAMES[current.rule]}).`,
-    verdict: successVerdict(current.successRate),
+    headline: t("Se smettessi oggi, il patrimonio dura {0} anni nel {1} degli scenari simulati (regola: {2}).", { 0: retirementYears, 1: pct(current.successRate, 0), 2: t(RULE_SHORT_NAMES[current.rule]) }),
+    verdict: successVerdict(current.successRate, language),
     success: current.successRate,
     rules,
     better,
@@ -130,13 +144,16 @@ export function lastingAnswer(results: MonteCarloResult[], selected: WithdrawalR
 }
 
 /** Domanda 4: quanto costa il portafoglio e quanta imposta pagheresti vendendo. */
-export function costsSentences(summary: CostSummary, lostAfterYears: number | null, years: number, liquidation: AnalyticsPlan["liquidation"], currency: string): string[] {
-  if (summary.totalValue <= 0) return ["Non hai ancora investimenti: quando ne avrai, qui vedrai quanto costano."];
+export function costsSentences(summary: CostSummary, lostAfterYears: number | null, years: number, liquidation: AnalyticsPlan["liquidation"], currency: string, language: Language = "it"): string[] {
+  const { money, pct, t } = textTools(language);
+  if (summary.totalValue <= 0) return [t("Non hai ancora investimenti: quando ne avrai, qui vedrai quanto costano.")];
   const out = [
-    `Costi dei fondi e bollo: ${money(summary.annualCost, currency)} l'anno${summary.annualPct !== null ? ` (${pct(summary.annualPct, 2)} del portafoglio)` : ""}.`,
+    summary.annualPct !== null
+      ? t("Costi dei fondi e bollo: {0} l'anno ({1} del portafoglio).", { 0: money(summary.annualCost, currency), 1: pct(summary.annualPct, 2) })
+      : t("Costi dei fondi e bollo: {0} l'anno.", { 0: money(summary.annualCost, currency) }),
   ];
-  if (lostAfterYears !== null && lostAfterYears > 0) out.push(`In ${years} anni sono ${money(lostAfterYears, currency)} in meno, a parità di rendimento.`);
-  if (summary.missingTerValue > 0) out.push(`Per posizioni da ${money(summary.missingTerValue, currency)} manca il costo del fondo: il totale è più basso del reale.`);
-  if (liquidation.latentTax > 0) out.push(`Vendendo tutto oggi pagheresti circa ${money(liquidation.latentTax, currency)} di imposte sulle plusvalenze.`);
+  if (lostAfterYears !== null && lostAfterYears > 0) out.push(t("In {0} anni sono {1} in meno, a parità di rendimento.", { 0: years, 1: money(lostAfterYears, currency) }));
+  if (summary.missingTerValue > 0) out.push(t("Per posizioni da {0} manca il costo del fondo: il totale è più basso del reale.", { 0: money(summary.missingTerValue, currency) }));
+  if (liquidation.latentTax > 0) out.push(t("Vendendo tutto oggi pagheresti circa {0} di imposte sulle plusvalenze.", { 0: money(liquidation.latentTax, currency) }));
   return out;
 }

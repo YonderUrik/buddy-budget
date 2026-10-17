@@ -4,7 +4,9 @@
  */
 
 import type { MarginKey, Operand, PerShareKey, ProfitabilityKey, SolidityKey, ValuationKey } from "@/lib/investments/title-fundamentals";
+import { languageOfLocale } from "@/lib/localization/config";
 import { localizedFormats } from "@/lib/localization/format";
+import { translate } from "@/lib/localization/messages";
 import { formatPct } from "../percent";
 
 /** Come si scrive il valore di un indicatore. */
@@ -45,18 +47,18 @@ export const PER_SHARE_LABELS: Record<PerShareKey, string> = {
   revenue: "Ricavi",
   eps: "Utile",
   fcf: "Cassa libera",
-  book: "Patrimonio",
+  book: "Valore contabile",
   dividend: "Dividendo",
 };
 
-/** Indicator value in its format ("14,2", "16,2%", "2,6 anni", "5,8×" in it-IT), with numbers in the user's locale. */
+/** Indicator value in its format ("14,2", "16,2%", "2,6 anni", "5,8×" in it-IT), with numbers and units in the user's locale. */
 export function formatIndicator(value: number, format: IndicatorFormat, locale = "it-IT"): string {
   const { formatRatio } = localizedFormats(locale);
   switch (format) {
     case "pct":
       return formatPct(value, 1, locale);
     case "years":
-      return `${formatRatio(value)} anni`;
+      return translate(languageOfLocale(locale), "{0} anni", { 0: formatRatio(value) });
     case "times":
       return `${formatRatio(value)}×`;
     default:
@@ -79,7 +81,7 @@ export function formatOperand(operand: Operand, currency: string, priceCurrency:
     case "perShare":
       return formatPerShare(operand.value, currency, locale);
     case "shares":
-      return `${formatCompactAmount(operand.value)} azioni`;
+      return translate(languageOfLocale(locale), "{0} azioni", { 0: formatCompactAmount(operand.value) });
     default:
       return `${formatCompactAmount(operand.value)} ${currency}`;
   }

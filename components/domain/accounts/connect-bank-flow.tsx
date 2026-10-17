@@ -1,4 +1,6 @@
 "use client";
+import type { Language } from "@/lib/localization/config";
+import { translate } from "@/lib/localization/messages";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -51,11 +53,13 @@ function InstitutionLogo({ institution }: { institution: Institution }) {
   );
 }
 
-/** Frase sullo storico che la banca mette a disposizione, se il dato è valido. */
-export function describeHistory(days: string): string | null {
+/** Sentence on the history the bank makes available, in `language`, if the figure is valid. */
+export function describeHistory(days: string, language: Language = "it"): string | null {
   const total = Number(days);
   if (!Number.isFinite(total) || total <= 0) return null;
-  return total >= 365 ? `Storico fino a ${Math.round(total / 365) === 1 ? "1 anno" : `${Math.round(total / 365)} anni`}` : `Storico fino a ${total} giorni`;
+  const years = Math.round(total / 365);
+  if (total < 365) return translate(language, "Storico fino a {0} giorni", { 0: total });
+  return years === 1 ? translate(language, "Storico fino a 1 anno") : translate(language, "Storico fino a {0} anni", { 0: years });
 }
 
 export interface ConnectBankFlowProps {
@@ -66,7 +70,7 @@ export interface ConnectBankFlowProps {
 export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
   const { t: tr } = useLocalization();
   const fieldId = React.useId();
-  const { productCountry } = useLocalization();
+  const { productCountry, language } = useLocalization();
   const [country, setCountry] = React.useState<string>(productCountry);
   const [search, setSearch] = React.useState("");
   const { data: institutions, isLoading, isError, refetch } = useInstitutionsQuery(country);
@@ -158,7 +162,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
           <p className="text-xs text-muted-foreground" aria-live="polite">{filtered.length === 1 ? tr("1 banca") : tr("{0} banche", {0: filtered.length})}</p>
           <ul className="-mt-2 flex max-h-[min(22rem,45dvh)] flex-col gap-2 overflow-y-auto pr-0.5 max-sm:max-h-none">
             {filtered.map((institution) => {
-              const history = describeHistory(institution.transaction_total_days);
+              const history = describeHistory(institution.transaction_total_days, language);
               const chosen = chosenId === institution.id;
               return (
                 <li key={institution.id}>

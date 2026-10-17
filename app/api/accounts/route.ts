@@ -1,3 +1,4 @@
+import { resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
 import { asc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -29,7 +30,7 @@ async function handlePost(request: NextRequest) {
     return new Response(null, { status: 401 });
   }
   bindRequestUser(session.user.id);
-  const demoBlock = await rejectIfDemoActive(session.user.id);
+  const demoBlock = await rejectIfDemoActive(session.user.id, resolveProfile(session.user).language);
   if (demoBlock) return demoBlock;
 
   const body = await request.json();

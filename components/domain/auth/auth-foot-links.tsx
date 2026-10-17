@@ -23,8 +23,8 @@ function GithubMark({ className }: { className?: string }) {
 
 const LINK_CLASS = "inline-flex items-center gap-1 rounded-md outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
 
-/** Link al sito in fondo al pannello: Torna al sito, Sicurezza, Codice aperto, Aiuto. */
-export function AuthFootLinks() {
+/** Site links at the bottom of the panel (Torna al sito, Sicurezza, Codice aperto, Aiuto); `children` go at the end of the row (the language chooser). */
+export function AuthFootLinks({ children }: { children?: React.ReactNode } = {}) {
   const { t: tr } = useLocalization();
   return (
     <nav className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-text-3" aria-label={tr("Link al sito")}>
@@ -42,6 +42,7 @@ export function AuthFootLinks() {
       <a href={`${LANDING_URL}/#domande`} onClick={() => track("landing_link_clicked", { from: "help" })} className={LINK_CLASS}>
         {tr("Aiuto")}
       </a>
+      {children}
     </nav>
   );
 }

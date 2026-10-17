@@ -215,6 +215,8 @@ export interface ProductEvents {
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */
   amounts_hidden_toggled: { enabled: boolean; source: "menu_utente" };
   theme_changed: { choice: "chiaro" | "scuro" | "sistema"; source: "menu_utente" };
+  /** Interface language chosen from the sign-in footer (cookie) or from Impostazioni (account). Onboarding is counted by `onboarding_completed`. */
+  language_changed: { from: "login" | "settings"; language: "it" | "en" | "de" };
   settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
   more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
@@ -257,6 +259,10 @@ export interface ProductEvents {
   notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "goals" | "all" };
   /** «‹» back button; `section`/`to`: first segment of the current and destination address, `target`: previous screen or logical parent, `place`: phone top bar or above the page on desktop. */
   back_link_clicked: { section: string; target: "precedente" | "madre"; to: string; place: "barra" | "pagina" };
+  /** «Rientra in BuddyBudget» on the login page: the one-tap way back in was used (link sent or Google opened). */
+  returning_login_used: { method: "email" | "google" };
+  /** «Non sei tu?» on the login page: the remembered account was forgotten on this device. */
+  returning_login_forgotten: undefined;
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

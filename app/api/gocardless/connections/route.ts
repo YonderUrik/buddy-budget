@@ -59,7 +59,7 @@ async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
-  const demoBlock = await rejectIfDemoActive(session.user.id);
+  const demoBlock = await rejectIfDemoActive(session.user.id, resolveProfile(session.user).language);
   if (demoBlock) return demoBlock;
 
   const body = await request.json();

@@ -1,16 +1,40 @@
 /**
- * Dati d'esempio per «Esplora con dati d'esempio»: due conti e sei mesi di movimenti, deterministici (nessun
- * generatore casuale) e costruiti sulle categorie di default. Puro: non conosce DB né utente.
+ * Example data for «Esplora con dati d'esempio»: two accounts and six months of transactions, deterministic (no
+ * random generator) and built on the default categories. Account names and descriptions are written in the user's
+ * interface language; amounts and dates are the same in every language. Pure: knows nothing about DB or user.
  */
+import type { Language } from "@/lib/localization/config";
 
 export const DEMO_MONTHS = 6;
-export const DEMO_CHECKING_NAME = "Conto corrente · demo";
-export const DEMO_SAVINGS_NAME = "Risparmi · demo";
+
+/** Text keys of the demo: every user-visible string the demo writes into the user's accounts and transactions. */
+export type DemoTextKey =
+  | "checking" | "savings" | "salary" | "saving" | "rent" | "energy" | "broadband" | "groceries"
+  | "fuel" | "dinner" | "streaming" | "gym" | "online";
+
+/** Demo texts per interface language (user-facing, so Italian is the base). */
+export const DEMO_TEXTS: Record<Language, Record<DemoTextKey, string>> = {
+  it: {
+    checking: "Conto corrente · demo", savings: "Risparmi · demo", salary: "Stipendio", saving: "Versamento sui risparmi",
+    rent: "Affitto", energy: "Luce e gas", broadband: "Fibra e mobile", groceries: "Supermercato", fuel: "Carburante",
+    dinner: "Cena fuori", streaming: "Streaming video", gym: "Palestra", online: "Acquisto online",
+  },
+  en: {
+    checking: "Current account · demo", savings: "Savings · demo", salary: "Salary", saving: "Transfer to savings",
+    rent: "Rent", energy: "Electricity and gas", broadband: "Broadband and mobile", groceries: "Supermarket", fuel: "Fuel",
+    dinner: "Dinner out", streaming: "Video streaming", gym: "Gym", online: "Online purchase",
+  },
+  de: {
+    checking: "Girokonto · Demo", savings: "Ersparnisse · Demo", salary: "Gehalt", saving: "Einzahlung aufs Sparkonto",
+    rent: "Miete", energy: "Strom und Gas", broadband: "Internet und Handy", groceries: "Supermarkt", fuel: "Tanken",
+    dinner: "Abendessen auswärts", streaming: "Video-Streaming", gym: "Fitnessstudio", online: "Online-Einkauf",
+  },
+};
 const CHECKING_OPENING = 1850;
 const SAVINGS_BALANCE = 7200;
 
 export interface DemoTransaction {
-  /** Nome della categoria di default a cui appartiene. */
+  /** Stable key of the default category it belongs to (`DefaultCategory.key`), independent of the language. */
   category: string;
   description: string;
   amount: number;
@@ -28,22 +52,22 @@ export interface DemoData {
 
 interface Recurring {
   category: string;
-  description: string;
+  text: DemoTextKey;
   day: number;
   amounts: readonly number[];
 }
 
 const RECURRING: readonly Recurring[] = [
-  { category: "Affitto & Mutuo", description: "Affitto", day: 5, amounts: [-720] },
-  { category: "Bollette & Telefono", description: "Luce e gas", day: 12, amounts: [-82.4, -96.1, -71.8] },
-  { category: "Bollette & Telefono", description: "Fibra e mobile", day: 9, amounts: [-34.9] },
-  { category: "Spesa", description: "Supermercato", day: 3, amounts: [-54.2, -38.7, -66.9] },
-  { category: "Spesa", description: "Supermercato", day: 17, amounts: [-47.5, -72.3, -41.1] },
-  { category: "Trasporti", description: "Carburante", day: 8, amounts: [-48, -52.6] },
-  { category: "Ristoranti & Bar", description: "Cena fuori", day: 14, amounts: [-38, -52.5, -29.9] },
-  { category: "Abbonamenti", description: "Streaming video", day: 18, amounts: [-13.99] },
-  { category: "Sport & Benessere", description: "Palestra", day: 7, amounts: [-39] },
-  { category: "Shopping", description: "Acquisto online", day: 22, amounts: [-64, -35.9, -112] },
+  { category: "affitto", text: "rent", day: 5, amounts: [-720] },
+  { category: "bollette", text: "energy", day: 12, amounts: [-82.4, -96.1, -71.8] },
+  { category: "bollette", text: "broadband", day: 9, amounts: [-34.9] },
+  { category: "spesa", text: "groceries", day: 3, amounts: [-54.2, -38.7, -66.9] },
+  { category: "spesa", text: "groceries", day: 17, amounts: [-47.5, -72.3, -41.1] },
+  { category: "trasporti", text: "fuel", day: 8, amounts: [-48, -52.6] },
+  { category: "ristoranti", text: "dinner", day: 14, amounts: [-38, -52.5, -29.9] },
+  { category: "abbonamenti", text: "streaming", day: 18, amounts: [-13.99] },
+  { category: "benessere", text: "gym", day: 7, amounts: [-39] },
+  { category: "shopping", text: "online", day: 22, amounts: [-64, -35.9, -112] },
 ];
 
 const SALARY = 2050;
@@ -53,8 +77,9 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 const pad = (n: number) => String(n).padStart(2, "0");
 const dateKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-/** Costruisce i dati d'esempio finiti a `today` (i movimenti futuri rispetto a oggi vengono scartati). */
-export function buildDemoData(today: Date): DemoData {
+/** Builds the example data ending at `today` (transactions after today are dropped), with texts in `language`. */
+export function buildDemoData(today: Date, language: Language = "it"): DemoData {
+  const text = DEMO_TEXTS[language];
   const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const todayKey = dateKey(end);
   const transactions: DemoTransaction[] = [];
@@ -65,9 +90,9 @@ export function buildDemoData(today: Date): DemoData {
       const date = dateKey(new Date(month.getFullYear(), month.getMonth(), day));
       if (date <= todayKey) transactions.push({ category, description, amount, date });
     };
-    push(27, "Stipendio", "Stipendio", SALARY);
-    push(28, "Risparmio", "Versamento sui risparmi", -MONTHLY_SAVING);
-    for (const r of RECURRING) push(r.day, r.category, r.description, r.amounts[index % r.amounts.length]);
+    push(27, "stipendio", text.salary, SALARY);
+    push(28, "risparmio", text.saving, -MONTHLY_SAVING);
+    for (const r of RECURRING) push(r.day, r.category, text[r.text], r.amounts[index % r.amounts.length]);
   }
   transactions.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 
@@ -80,7 +105,7 @@ export function buildDemoData(today: Date): DemoData {
   const savingsByDate = new Map<string, number>();
   for (const t of transactions) {
     byDate.set(t.date, (byDate.get(t.date) ?? 0) + t.amount);
-    if (t.category === "Risparmio") savingsByDate.set(t.date, (savingsByDate.get(t.date) ?? 0) + MONTHLY_SAVING);
+    if (t.category === "risparmio") savingsByDate.set(t.date, (savingsByDate.get(t.date) ?? 0) + MONTHLY_SAVING);
   }
   const first = transactions.length ? transactions[0].date : todayKey;
   const history: { date: string; amount: number }[] = [];
@@ -95,9 +120,20 @@ export function buildDemoData(today: Date): DemoData {
   history.reverse();
 
   return {
-    checking: { name: DEMO_CHECKING_NAME, type: "Conto corrente", color: "blue", icon: "landmark", balance: checkingToday },
-    savings: { name: DEMO_SAVINGS_NAME, type: "Conto deposito", color: "emerald", icon: "piggy-bank", balance: savingsToday },
+    checking: { name: text.checking, type: "Conto corrente", color: "blue", icon: "landmark", balance: checkingToday },
+    savings: { name: text.savings, type: "Conto deposito", color: "emerald", icon: "piggy-bank", balance: savingsToday },
     transactions,
     liquidityHistory: history,
   };
+}
+
+const DEMO_TEXT_KEYS = Object.keys(DEMO_TEXTS.it) as DemoTextKey[];
+
+/**
+ * Rewrites a demo text written in any supported language into `language`. Returns null for anything that is not a
+ * demo text (for example a description the user edited), so callers never touch text they did not write.
+ */
+export function translateDemoText(value: string, language: Language): string | null {
+  const key = DEMO_TEXT_KEYS.find((k) => Object.values(DEMO_TEXTS).some((texts) => texts[k] === value));
+  return key ? DEMO_TEXTS[language][key] : null;
 }

@@ -46,7 +46,7 @@ export function ScenarioHeadline({ plan, baseline, today }: ScenarioHeadlineProp
     <div className="flex flex-col gap-1">
       <p className="text-muted-foreground">{years === 0 ? tr("Hai già raggiunto il numero FIRE") : tr("Puoi smettere di lavorare intorno al")}</p>
       <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <span className="font-heading text-5xl leading-none font-medium tracking-tight text-foreground tabular-nums sm:text-7xl">{big}</span>
+        <span data-money-hero="" className="font-heading text-5xl leading-none font-medium tracking-tight text-foreground tabular-nums sm:text-7xl">{big}</span>
         {years !== null && years > 0 ? <TextMorph className="text-lg text-muted-foreground">{formatYearsFromNow(years)}</TextMorph> : null}
         {cmp ? <TextMorph className={cn("text-lg font-semibold", cmp.positive ? "text-pos" : "text-neg")}>{cmp.text}</TextMorph> : null}
       </p>

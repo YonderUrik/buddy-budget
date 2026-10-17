@@ -1,4 +1,5 @@
 "use client";
+import { HeroField } from "@/components/domain/shared";
 import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
@@ -92,6 +93,7 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
   const hasHistory = series.length > 0;
 
   return (
+    <HeroField>
     <section aria-labelledby="portfolio-hero-title" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3 max-sm:order-1">
         <div className="space-y-1">
@@ -170,5 +172,6 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
         ) : null}
       </div>
     </section>
+    </HeroField>
   );
 }

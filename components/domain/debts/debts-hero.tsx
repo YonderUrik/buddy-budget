@@ -1,4 +1,5 @@
 "use client";
+import { HeroField } from "@/components/domain/shared";
 import { useLocalization } from "@/lib/localization/provider";
 /** Testata della panoramica Debiti, come in Panoramica: importo grande con i decimali attenuati e, sotto, una frase di contesto. */
 
@@ -20,6 +21,7 @@ export function DebtsHero({ totalDebt, currency, openCount, freeDate }: DebtsHer
 
   const { t: tr } = useLocalization();
   return (
+    <HeroField>
     <section aria-label={tr("Debito totale")} className="flex flex-col gap-1">
       <p className="text-sm text-muted-foreground">{tr("Ancora da restituire")}</p>
       <MoneyHero value={totalDebt} currency={currency} className="text-5xl" />
@@ -29,5 +31,6 @@ export function DebtsHero({ totalDebt, currency, openCount, freeDate }: DebtsHer
           : tr("{0} · liberi da debiti a {1}", {0: openCount === 1 ? tr("un finanziamento") : tr("{0} finanziamenti", {0: openCount}), 1: freeDate ? formatMonthYear(freeDate) : "—"})}
       </p>
     </section>
+    </HeroField>
   );
 }

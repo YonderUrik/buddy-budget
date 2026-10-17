@@ -7,7 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { MoneyHero } from "@/components/domain/net-worth";
-import { PeriodSelector } from "@/components/domain/shared";
+import { PeriodSelector, HeroField } from "@/components/domain/shared";
 
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { cn } from "@/lib/utils";
@@ -53,6 +53,7 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
     ? tr("{0}: da {1} a {2} {3}.", { 0: label, 1: formatCurrency(first.value, currency, { maximumFractionDigits: 0 }), 2: formatCurrency(value, currency, { maximumFractionDigits: 0 }), 3: tr(PERIOD_PHRASES[period]) })
     : `${label}: ${formatCurrency(value, currency, { maximumFractionDigits: 0 })}.`;
   return (
+    <HeroField>
     <section aria-label={tr(label)} className={className}>
       <p className="text-base text-text-2">{tr(label)}</p>
       <MoneyHero value={value} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
@@ -75,5 +76,6 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
         <PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} />
       </div>
     </section>
+    </HeroField>
   );
 }

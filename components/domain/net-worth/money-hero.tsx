@@ -35,7 +35,7 @@ export function MoneyHero({ value, currency, locale, className }: MoneyHeroProps
 
   if (formatCurrency(0, currency) === AMOUNT_MASK) return <p className={cn("font-heading font-medium", className)}>{AMOUNT_MASK}</p>;
   return (
-    <p className={cn("font-heading font-medium tabular-nums text-foreground", className)}>
+    <p data-money-hero="" className={cn("font-heading font-medium tabular-nums text-foreground", className)}>
       <AnimatedNumber value={value} format={{ style: "currency", currency }} locales={locale ?? formattingLocale} mutedTail />
     </p>
   );

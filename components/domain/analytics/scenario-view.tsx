@@ -1,4 +1,5 @@
 "use client";
+import { HeroField } from "@/components/domain/shared";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -109,7 +110,9 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
 
   return (
     <div className="flex flex-col gap-8">
-      <ScenarioHeadline plan={scenarioPlan} baseline={plan} today={today} />
+      <HeroField>
+        <ScenarioHeadline plan={scenarioPlan} baseline={plan} today={today} />
+      </HeroField>
       <DataPeriodPicker
         period={assumptions.dataPeriod}
         fromKey={base.cashflow.fromKey}

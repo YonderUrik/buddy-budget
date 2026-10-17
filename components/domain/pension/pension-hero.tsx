@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import type { ReactNode } from "react";
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { MoneyHero } from "@/components/domain/net-worth";
-import { InfoHint } from "@/components/domain/shared";
+import { InfoHint, HeroField } from "@/components/domain/shared";
 import type { PensionPerformance, PensionSnapshot } from "@/lib/calc/pension";
 import { cn } from "@/lib/utils";
 import { localizedPensionFormats } from "./pension-format";
@@ -48,6 +48,7 @@ export function PensionHero({ name, performance, snapshots, currency, className 
   const tone = up ? "text-pos" : "text-neg";
   const sign = up ? "+" : "−";
   return (
+    <HeroField>
     <section aria-label={name} className={className}>
       <p className="text-base text-text-2">
         {name}{" "}<span aria-hidden="true">{"·"}</span>{" "}{tr("aggiornato al")}{" "}{formatLongDateKey(lastDate)}
@@ -74,5 +75,6 @@ export function PensionHero({ name, performance, snapshots, currency, className 
         </Measure>
       </dl>
     </section>
+    </HeroField>
   );
 }

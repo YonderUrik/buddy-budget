@@ -424,3 +424,51 @@
   background-color: var(--primary);
   color: var(--primary-foreground);
 }
+
+/* ── taste-skill applied to the app (prototype, draft PR) ───────────────────────────────────────────────────────────
+   The opening of each screen is a navy field (`HeroField`): dark tokens, tinted towards navy. */
+#main-content {
+  container-type: inline-size;
+}
+/* Edge to edge of the scrolling area, content still on the page column. */
+[data-hero-field] {
+  margin-inline: calc(50% - 50cqw);
+  padding-inline: calc(50cqw - 50%);
+  --background: var(--brand-navy);
+  --foreground: var(--on-brand-navy);
+  --card: color-mix(in oklab, white 6%, var(--brand-navy));
+  --muted: color-mix(in oklab, white 9%, var(--brand-navy));
+  --secondary: color-mix(in oklab, white 9%, var(--brand-navy));
+  --accent: color-mix(in oklab, white 12%, var(--brand-navy));
+  --border: color-mix(in oklab, white 14%, var(--brand-navy));
+  --input: color-mix(in oklab, white 14%, var(--brand-navy));
+  background-color: var(--brand-navy);
+  color: var(--foreground);
+}
+/* Figures in the opening are set in the display face, at poster size, like the landing's two giant figures. */
+[data-hero-field] [data-money-hero] {
+  font-family: var(--font-sofia-condensed);
+  font-weight: 300;
+  font-size: clamp(4.5rem, 9vw, 8.5rem);
+  line-height: 0.85;
+  letter-spacing: -0.01em;
+}
+/* The condensed face's tabular figures are as wide as the regular face's: proportional digits keep it condensed. */
+[data-hero-field] [data-money-hero],
+[data-hero-field] [data-money-hero] * {
+  font-variant-numeric: proportional-nums !important;
+}
+/* No thin rules between rows: space and tone steps separate them (real tables and form fields keep their lines). */
+#main-content .divide-y > *,
+#main-content :is(.border-b, .border-t):not(input, textarea, select, table, table *),
+[data-slot="sidebar"] :is(.border-b, .border-t),
+[data-slot="sidebar"] .divide-y > *,
+[data-slot="sidebar"] {
+  border-color: transparent;
+}
+/* No tiny letter-spaced capitals: sentence case at a readable size. */
+#main-content .uppercase,
+[data-slot="sidebar"] .uppercase {
+  text-transform: none;
+  letter-spacing: normal;
+}

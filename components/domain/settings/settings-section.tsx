@@ -5,6 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { AiBadge } from "./ai-badge";
 
 export interface SettingsSectionProps {
   title: string;
@@ -44,25 +45,31 @@ export function SettingsSection({ title, description, id, icon: Icon, preview, t
   );
 }
 
-/** Riga etichetta + contenuto dentro una sezione (su mobile si impila). */
+/** Label + content row inside a section (stacked on mobile); `ai` adds the «Usa l'AI» tag next to the label. */
 export function SettingsRow({
   label,
   hint,
   children,
   htmlFor,
+  ai,
 }: {
   label: string;
   hint?: React.ReactNode;
   htmlFor?: string;
+  /** The setting sends data to an AI model when on. */
+  ai?: boolean;
   children: React.ReactNode;
 }) {
   const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
       <div className="flex min-w-0 flex-col gap-0.5 sm:max-w-[55%]">
-        <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
-          {tr(label)}
-        </label>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
+            {tr(label)}
+          </label>
+          {ai ? <AiBadge /> : null}
+        </div>
         {hint && <p className="text-xs text-muted-foreground">{tr(hint)}</p>}
       </div>
       <div className="flex min-w-0 flex-col gap-1 sm:items-end">{children}</div>

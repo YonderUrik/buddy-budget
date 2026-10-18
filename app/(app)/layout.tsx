@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { PrivacyBoundary, PrivacyProvider } from "@/components/privacy-provider";
-import { DemoBannerContainer } from "@/components/domain/start";
+import { DemoBannerContainer, StartProgressWatcher } from "@/components/domain/start";
 import { PublicDemoBanner, PublicDemoFooter } from "@/components/domain/public-demo";
 import { BackHistoryRecorder } from "@/components/domain/shared";
 import { PersonalImportIsland } from "@/components/domain/personal-import";
@@ -28,7 +28,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <PublicDemoBanner />
             </div>
           ) : (
-            <DemoBannerContainer />
+            <>
+              <DemoBannerContainer />
+              <StartProgressWatcher />
+            </>
           )}
           {children}
           {isPublicDemo ? <PublicDemoFooter /> : null}

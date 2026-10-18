@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * Onboarding: valuta principale (EUR preselezionato), categorie proposte (confermabili con un tocco o da personalizzare),
- * assistente per le categorie (se il servizio c'è, spento di default e spiegato), email facoltative (tutte spente: si
- * accendono solo per scelta), conferme legali; infine Panoramica.
+ * Onboarding: main currency (EUR preselected), what to keep an eye on (decides the first steps in Panoramica, can be
+ * skipped), proposed categories (confirm with one tap or customise), category assistant (only if the service exists, off
+ * by default and explained), optional emails (all off), legal confirmations; then Panoramica.
  */
 
 import { useState } from "react";
@@ -11,6 +11,9 @@ import { LocaleFields } from "@/components/domain/settings/locale-fields";
 import { useLocalization } from "@/lib/localization/provider";
 import { AUTH_TITLE, CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
 import { CategorySetupStep, useCategorySetup } from "@/components/domain/categories";
+import { FocusPicker } from "@/components/domain/start";
+import { focusOptionsFor, type StartFocus } from "@/lib/start";
+import { isCountryPathAvailable } from "@/lib/localization/config";
 import { InboxPreview, NotificationChoices, ONBOARDING_NOTIFICATION_INFO } from "@/components/domain/notifications";
 import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
 import { Switch } from "@/components/ui/switch";
@@ -22,7 +25,7 @@ import { summarizeCategorySetup } from "@/lib/categories/setup";
 import { NOTIFICATION_DEFAULTS, type NotificationPreferences } from "@/lib/notifications";
 import { loadAttribution } from "@/lib/analytics/attribution";
 
-type OnboardingStep = "valuta" | "categorie" | "assistente" | "notifiche" | "conferme";
+type OnboardingStep = "valuta" | "interessi" | "categorie" | "assistente" | "notifiche" | "conferme";
 
 export default function OnboardingPage() {
   const { t: tr } = useLocalization();
@@ -36,9 +39,11 @@ export default function OnboardingPage() {
   const { data: assistant } = useAiCategorizationQuery();
   const categorySetup = useCategorySetup();
   const [notifications, setNotifications] = useState<NotificationPreferences>({ ...NOTIFICATION_DEFAULTS });
+  const [focus, setFocus] = useState<StartFocus[]>([]);
+  const focusOptions = focusOptionsFor(isCountryPathAvailable(productCountry, "/pensione"));
   const steps: OnboardingStep[] = assistant?.available
-    ? ["valuta", "categorie", "assistente", "notifiche", "conferme"]
-    : ["valuta", "categorie", "notifiche", "conferme"];
+    ? ["valuta", "interessi", "categorie", "assistente", "notifiche", "conferme"]
+    : ["valuta", "interessi", "categorie", "notifiche", "conferme"];
   const flow = useStepFlow(steps.length);
   const step = steps[flow.index];
   const [loading, setLoading] = useState(false);
@@ -62,6 +67,8 @@ export default function OnboardingPage() {
           currency, productCountry, language,
           legal: payload,
           notifications,
+          // A pension answer left over from a country change is dropped: the checklist must never point to a hidden section.
+          focus: focus.filter((f) => focusOptions.some((o) => o.id === f)),
           ...(categorySetup.payload ? { categories: categorySetup.payload } : {}),
           ...(assistant?.available ? { aiCategorization: assistantEnabled } : {}),
         }),
@@ -74,6 +81,14 @@ export default function OnboardingPage() {
         track("onboarding_categories_chosen", {
           customized: Boolean(categorySetup.payload),
           ...summarizeCategorySetup(categorySetup.payload ?? categorySetup.items),
+        });
+        const chosen = focus.filter((f) => focusOptions.some((o) => o.id === f));
+        track("onboarding_focus_chosen", {
+          count: chosen.length,
+          spese: chosen.includes("spese"),
+          investimenti: chosen.includes("investimenti"),
+          debiti: chosen.includes("debiti"),
+          pensione: chosen.includes("pensione"),
         });
         track("onboarding_notifications_chosen", {
           digest: notifications.digestEnabled ? notifications.digestFrequency : "off",
@@ -104,6 +119,11 @@ export default function OnboardingPage() {
               <StepHeading title={tr("In che valuta vuoi vedere i tuoi soldi?")} description={tr("Vale per saldi, transazioni e investimenti.")} />
               <CurrencyPicker value={currency} onChange={setCurrency} disabled={loading} />
               <LocaleFields value={{ productCountry, language }} currency={currency} onChange={setProfile} disabled={loading} divided />
+            </>
+          ) : step === "interessi" ? (
+            <>
+              <StepHeading title={tr("Cosa vuoi tenere sotto controllo?")} description={tr("Scegli quante cose vuoi: in Panoramica ti diciamo da dove partire. Puoi cambiarle quando vuoi.")} />
+              <FocusPicker value={focus} onChange={setFocus} options={focusOptions} disabled={loading} />
             </>
           ) : step === "categorie" ? (
             <CategorySetupStep setup={categorySetup} disabled={loading} />
@@ -145,7 +165,7 @@ export default function OnboardingPage() {
             setError(null);
             flow.back();
           }}
-          primaryLabel={flow.isLast ? (loading ? "Salvataggio in corso…" : "Inizia") : step === "categorie" && !categorySetup.customized ? tr("Continua con queste") : tr("Continua")}
+          primaryLabel={flow.isLast ? (loading ? "Salvataggio in corso…" : "Inizia") : step === "categorie" && !categorySetup.customized ? tr("Continua con queste") : step === "interessi" && focus.length === 0 ? tr("Salta") : tr("Continua")}
           pending={loading}
           disabled={flow.isLast && !complete}
           className="[&_button]:w-full sm:[&_button]:w-auto"

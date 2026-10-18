@@ -88,7 +88,7 @@ The dependency direction is enforced by convention, not by a lint rule. As of to
 
 Providers mounted in [`app/layout.tsx`](../../app/layout.tsx), outermost first: `LocalizationProvider` (profile from `getLocaleProfile`), `QueryProvider` (one `QueryClient` per browser session, default options), `ThemeProvider` (`next-themes`, class strategy, system default), `MotionProvider`. The Umami script is loaded from `/stats/script.js`.
 
-[`app/(app)/layout.tsx`](../../app/(app)/layout.tsx) adds `PrivacyProvider` (hide amounts, initial value from `session.user.hideAmounts`), `QuickReportProvider` (the «Scrivici» — "Write to us" — support sheet), `BackHistoryRecorder`, `AttentionShell` (sidebar, bottom nav and badges), `DemoBannerContainer`, and the global `SyncProgressIndicator` with `PersonalImportIsland`.
+[`app/(app)/layout.tsx`](../../app/(app)/layout.tsx) adds `PrivacyProvider` (hide amounts, initial value from `session.user.hideAmounts`), `QuickReportProvider` (the «Scrivici» — "Write to us" — support sheet), `BackHistoryRecorder`, `AttentionShell` (sidebar, bottom nav and badges), `DemoBannerContainer`, `StartProgressWatcher` (the «done, next» toast of the first steps, §4.12), and the global `SyncProgressIndicator` with `PersonalImportIsland`.
 
 ### 4.2 Request lifecycle
 
@@ -232,7 +232,21 @@ The app is a responsive web app; no native app exists.
 | Dialogs | Popovers, dialogs and alert dialogs render as draggable bottom sheets on the phone | [`lib/motion/sheet.ts`](../../lib/motion/sheet.ts), `components/ui/{dialog,alert-dialog,popover}.tsx` |
 | Safe areas | `viewportFit: "cover"` | [`app/layout.tsx`](../../app/layout.tsx) |
 
-### 4.12 Route groups
+### 4.12 First steps after onboarding
+
+Onboarding ends on Panoramica. Until the user has data, Panoramica shows «Primi passi» ([`components/domain/start/`](../../components/domain/start/), [`lib/start/`](../../lib/start/)).
+
+| Piece | How it works | Where |
+|---|---|---|
+| Steps asked | `startStepsFor(focus)`: account first, target last (category budget where Analitiche is hidden), the others from the onboarding answer «Cosa vuoi tenere sotto controllo?» (`auth_user.start_focus`). No answer = account, import, investment, target. The pension step is dropped where `/pensione` is hidden | [`lib/start/steps.ts`](../../lib/start/steps.ts) |
+| Done or not | `GET /api/start` checks real data only (non-demo account, `auto` transactions, investment operations, debts, pension funds, budgets, goals or saved Analitiche assumptions); `completed` covers the user's own steps | [`lib/start/status.ts`](../../lib/start/status.ts) |
+| Next step | The first step not done in a filled block with one action; sample data beside it while nothing real exists; the rest as a list | [`start-checklist.tsx`](../../components/domain/start/start-checklist.tsx) |
+| Done, next | `StartProgressWatcher` (app layout) compares the steps with those seen on this device (localStorage) and shows a toast with the next step, or the «done» line on the block in Panoramica. Every successful mutation, finished import and finished sync refetches the steps while incomplete | [`start-progress-watcher.tsx`](../../components/domain/start/start-progress-watcher.tsx), [`lib/start/progress.ts`](../../lib/start/progress.ts), [`query-provider.tsx`](../../components/query-provider.tsx) |
+| Empty tabs | Movimenti, Analisi and Abbonamenti without accounts show what they will hold and «Aggiungi un conto» | [`liquidity-no-accounts.tsx`](../../components/domain/liquidity/liquidity-no-accounts.tsx) |
+
+Example: a user answers «Mutuo e prestiti» only. The steps are account, loan, target. After adding a current account in Liquidità a toast says «Conto aggiunto · Prossimo passo: Aggiungi il mutuo o un prestito» with the button to Debiti.
+
+### 4.13 Route groups
 
 | Group | Path | Shell | Contents |
 |---|---|---|---|
@@ -244,7 +258,7 @@ The app is a responsive web app; no native app exists.
 
 Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths working: `/spese`, `/transazioni`, `/movimenti` → `/liquidita`; `/cash-flow` → `/liquidita/analisi`; `/categorie` → `/liquidita/categorie`; `/movimenti/{analisi,categorie,regole}` → `/liquidita/...`; `/conti` → `/liquidita/conti`. The same file sets security headers (HSTS, `nosniff`, `X-Frame-Options: DENY`, referrer and permissions policies) and `output: "standalone"`.
 
-### 4.13 Map of `lib/`
+### 4.14 Map of `lib/`
 
 | Folder | Responsibility |
 |---|---|
@@ -296,7 +310,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `validation/` | zod schemas for API inputs |
 | `whats-new/` | «Novità» ("What's new") entries |
 
-### 4.14 Architecture documents by domain
+### 4.15 Architecture documents by domain
 
 | Area | Document |
 |---|---|

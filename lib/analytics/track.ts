@@ -44,9 +44,20 @@ export interface ProductEvents {
   /** Interruttore «Rimetti costi/imposte nel portafoglio» in Investimenti; `reinvested`: acceso o spento. */
   investment_reinvest_toggled: { kind: "costi" | "imposte"; reinvested: boolean };
   investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
-  /** Clic sull'azione di un passo della checklist «Primi passi» della Panoramica. */
-  start_step_clicked: { step: "conto" | "import" | "investimento" | "obiettivo" };
-  /** Checklist chiusa; `done`: quanti passi su quattro erano già fatti. */
+  /**
+   * Action of a «Primi passi» step pressed; `placement`: the big «next step» block in Panoramica, the list under it, or
+   * the «done, next» toast shown elsewhere in the app.
+   */
+  start_step_clicked: { step: "conto" | "import" | "investimento" | "debito" | "pensione" | "obiettivo"; placement?: "hero" | "list" | "toast" };
+  /** A step of the user's checklist became done (seen by the app, once per step and device). */
+  start_step_completed: { step: "conto" | "import" | "investimento" | "debito" | "pensione" | "obiettivo" };
+  /** «Cosa vuoi tenere sotto controllo?» answered at the end of onboarding; `count` 0 = skipped (default steps). */
+  onboarding_focus_chosen: { count: number; spese: boolean; investimenti: boolean; debiti: boolean; pensione: boolean };
+  /** The same choice changed later from the checklist's «Cambia». */
+  start_focus_changed: { count: number };
+  /** Action pressed in the «no account yet» state of a Liquidità tab (`area`). */
+  empty_state_action_clicked: { area: "movimenti" | "analisi" | "abbonamenti"; action: "conto" | "import" };
+  /** Checklist closed; `done`: how many of the user's steps were already done. */
   start_checklist_dismissed: { done: number };
   start_checklist_reopened: undefined;
   /** Tutti i passi fatti, registrato una sola volta per utente. */

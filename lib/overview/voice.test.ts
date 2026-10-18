@@ -21,6 +21,11 @@ describe("buildVoiceLines", () => {
     expect(text(lines)[0]).toContain("finora hai speso");
   });
 
+  it("says nothing about the month with no spending and no history (a new user)", () => {
+    const lines = buildVoiceLines({ pace: { ...basePace, spentSoFar: 0, typicalSoFar: null }, monthLabel: "ottobre", currency: "EUR", nextDue: null, today });
+    expect(lines).toHaveLength(0);
+  });
+
   it("in linea entro la tolleranza", () => {
     const lines = buildVoiceLines({ pace: { ...basePace, spentSoFar: 580 }, monthLabel: "ottobre", currency: "EUR", nextDue: null, today });
     expect(text(lines)[0]).toContain("in linea");

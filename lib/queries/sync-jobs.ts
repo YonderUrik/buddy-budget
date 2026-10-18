@@ -15,6 +15,8 @@ const QUERY_KEYS_CHANGED_BY_SYNC = [
   ["accounts"],
   ["gocardless", "connections", "status"],
   ["net-worth-snapshots"],
+  // An import or sync can tick the «Importa i movimenti» first step.
+  ["start"],
   ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION,
 ] as const;
 

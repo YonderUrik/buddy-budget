@@ -2,10 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
-import type { StartStatus } from "@/lib/start";
+import type { StartFocus, StartStatus } from "@/lib/start";
 import { pageText } from "@/lib/localization/page-text";
 
-const START_QUERY_KEY = ["start"] as const;
+import { START_QUERY_KEY } from "./start-key";
 
 async function fetchStart(): Promise<StartStatus> {
   const response = await fetch("/api/start");
@@ -34,6 +34,25 @@ export function useStartDismissMutation() {
     },
     onSuccess: (_data, { dismissed, done }) => {
       track(dismissed ? "start_checklist_dismissed" : "start_checklist_reopened", dismissed ? { done } : undefined);
+      queryClient.invalidateQueries({ queryKey: START_QUERY_KEY });
+    },
+  });
+}
+
+/** Saves what the user keeps an eye on (the checklist's «Cambia»): the steps asked change right away. */
+export function useStartFocusMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (focus: StartFocus[]) => {
+      const response = await fetch("/api/start", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ focus }),
+      });
+      if (!response.ok) throw new Error(pageText("Impossibile aggiornare i primi passi"));
+    },
+    onSuccess: (_data, focus) => {
+      track("start_focus_changed", { count: focus.length });
       queryClient.invalidateQueries({ queryKey: START_QUERY_KEY });
     },
   });

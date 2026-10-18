@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 type Job = PersonalImportListing["jobs"][number];
 
 /** Dati che un import concluso può aver cambiato: da ricaricare quando l'isola vede la fine del lavoro. */
-const QUERY_KEYS_CHANGED_BY_IMPORT = [["accounts"], ["investments"], ["net-worth-snapshots"], ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION] as const;
+const QUERY_KEYS_CHANGED_BY_IMPORT = [["accounts"], ["investments"], ["net-worth-snapshots"], ["start"], ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION] as const;
 const DISMISS_LABEL = "Chiudi riepilogo importazione";
 const MAX_DISMISSED_IDS = 50;
 

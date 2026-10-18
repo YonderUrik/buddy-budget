@@ -9,7 +9,7 @@ import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
 import { clearDemo, localizeDemo, rejectIfDemoActive, startDemo } from "./demo";
 import { localizeStarterCategories } from "@/lib/localization/categories.server";
-import { hasDemoData, loadStartStatus, setChecklistDismissed } from "./status";
+import { hasDemoData, loadStartStatus, setChecklistDismissed, setStartFocus } from "./status";
 
 const userIds: string[] = [];
 
@@ -30,7 +30,8 @@ describe("dati d'esempio", () => {
   it("crea conti e movimenti demo, li esclude dai passi e li azzera", async () => {
     const userId = await makeUser();
     const before = await loadStartStatus(userId);
-    expect(before.steps).toEqual({ conto: false, import: false, investimento: false, obiettivo: false });
+    expect(before.steps).toEqual({ conto: false, import: false, investimento: false, debito: false, pensione: false, obiettivo: false });
+    expect(before.stepIds).toEqual(["conto", "import", "investimento", "obiettivo"]);
     expect(before.demoActive).toBe(false);
 
     const result = await startDemo(userId);
@@ -88,5 +89,23 @@ describe("dati d'esempio", () => {
     expect((await loadStartStatus(userId)).dismissed).toBe(true);
     await setChecklistDismissed(userId, false);
     expect((await loadStartStatus(userId)).dismissed).toBe(false);
+  });
+});
+
+describe("focus", () => {
+  it("asks only for the chosen steps and completes on those", async () => {
+    const userId = await makeUser();
+    await setStartFocus(userId, ["debiti"]);
+    const status = await loadStartStatus(userId);
+    expect(status.focus).toEqual(["debiti"]);
+    expect(status.stepIds).toEqual(["conto", "debito", "obiettivo"]);
+    expect(status.completed).toBe(false);
+  });
+
+  it("drops the pension step where the pension section is hidden", async () => {
+    const userId = await makeUser();
+    await db.update(authUser).set({ productCountry: "DE", language: "de" }).where(eq(authUser.id, userId));
+    await setStartFocus(userId, ["pensione", "investimenti"]);
+    expect((await loadStartStatus(userId)).stepIds).toEqual(["conto", "investimento", "obiettivo"]);
   });
 });

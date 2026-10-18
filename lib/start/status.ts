@@ -5,9 +5,13 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { authUser } from "@/lib/db/schema/auth";
 import { budgets } from "@/lib/db/schema/budgets";
+import { debts } from "@/lib/db/schema/debts";
+import { goals } from "@/lib/db/schema/goals";
 import { investmentTransactions } from "@/lib/db/schema/investments";
+import { pensionFunds } from "@/lib/db/schema/pension";
 import { transactions } from "@/lib/db/schema/transactions";
-import { START_STEP_IDS, type StartStatus, type StartStepId } from "./steps";
+import { isCountryPathAvailable } from "@/lib/localization/config";
+import { START_FOCUS_IDS, START_STEP_IDS, startStepsFor, type StartFocus, type StartStatus, type StartStepId } from "./steps";
 
 /** True se l'account contiene conti di esempio (e quindi, per costruzione, nessun conto vero). */
 export async function hasDemoData(userId: string): Promise<boolean> {
@@ -19,16 +23,27 @@ export async function hasDemoData(userId: string): Promise<boolean> {
   return row != null;
 }
 
+/** Keeps only known focus values, so a stale value in the database never breaks the checklist. */
+export function parseStartFocus(raw: readonly string[] | null | undefined): StartFocus[] | null {
+  if (!raw) return null;
+  return START_FOCUS_IDS.filter((id) => raw.includes(id));
+}
+
 /**
- * Stato dei primi passi, calcolato dai dati veri (i conti e i movimenti di esempio non contano). Alla prima volta che
- * risulta completo registra l'istante e lo segnala con `justCompleted`.
+ * First-steps state, computed from real data (sample accounts and transactions do not count). The steps asked follow
+ * the focus chosen in onboarding. The first time all of them are done it records the moment and flags `justCompleted`.
  */
 export async function loadStartStatus(userId: string): Promise<StartStatus> {
   const [user] = await db
-    .select({ dismissedAt: authUser.startChecklistDismissedAt, completedAt: authUser.startChecklistCompletedAt })
+    .select({
+      dismissedAt: authUser.startChecklistDismissedAt,
+      completedAt: authUser.startChecklistCompletedAt,
+      focus: authUser.startFocus,
+      productCountry: authUser.productCountry,
+    })
     .from(authUser)
     .where(eq(authUser.id, userId));
-  const [row] = await db.execute<{ conto: boolean; import: boolean; investimento: boolean; obiettivo: boolean; demo: boolean }>(sql`
+  const [row] = await db.execute<Record<StartStepId, boolean> & { demo: boolean }>(sql`
     select
       exists(select 1 from ${accounts} where ${accounts.userId} = ${userId} and not ${accounts.isDemo}) as conto,
       exists(
@@ -36,20 +51,30 @@ export async function loadStartStatus(userId: string): Promise<StartStatus> {
         where t.user_id = ${userId} and t.source = 'auto' and not a.is_demo
       ) as import,
       exists(select 1 from ${investmentTransactions} where ${investmentTransactions.userId} = ${userId}) as investimento,
+      exists(select 1 from ${debts} where ${debts.userId} = ${userId}) as debito,
+      exists(select 1 from ${pensionFunds} where ${pensionFunds.userId} = ${userId}) as pensione,
       (
         exists(select 1 from ${budgets} where ${budgets.userId} = ${userId})
+        or exists(select 1 from ${goals} where ${goals.userId} = ${userId})
         or exists(select 1 from ${analyticsAssumptions} where ${analyticsAssumptions.userId} = ${userId} and ${analyticsAssumptions.data} <> '{}'::jsonb)
       ) as obiettivo,
       exists(select 1 from ${accounts} where ${accounts.userId} = ${userId} and ${accounts.isDemo}) as demo
   `);
   const steps = Object.fromEntries(START_STEP_IDS.map((id) => [id, row[id as StartStepId] === true])) as Record<StartStepId, boolean>;
-  const completed = START_STEP_IDS.every((id) => steps[id]);
+  const focus = parseStartFocus(user?.focus);
+  const stepIds = startStepsFor(focus, { pensionAvailable: isCountryPathAvailable(user?.productCountry ?? "IT", "/pensione") });
+  const completed = stepIds.every((id) => steps[id]);
   let justCompleted = false;
   if (completed && !user?.completedAt) {
     await db.update(authUser).set({ startChecklistCompletedAt: new Date() }).where(eq(authUser.id, userId));
     justCompleted = true;
   }
-  return { steps, dismissed: user?.dismissedAt != null, completed, demoActive: row.demo === true, ...(justCompleted ? { justCompleted } : {}) };
+  return { steps, stepIds, focus, dismissed: user?.dismissedAt != null, completed, demoActive: row.demo === true, ...(justCompleted ? { justCompleted } : {}) };
+}
+
+/** Saves what the user wants to keep an eye on (onboarding or the checklist's «Cambia»). */
+export async function setStartFocus(userId: string, focus: readonly StartFocus[]): Promise<void> {
+  await db.update(authUser).set({ startFocus: [...focus] }).where(eq(authUser.id, userId));
 }
 
 /** Chiude o riapre la checklist. */

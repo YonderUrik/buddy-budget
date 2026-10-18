@@ -16,4 +16,11 @@ describe("pickWhatsNew", () => {
     expect(pickWhatsNew([entry("old", "2026-01-01")], [], now)).toBeNull();
     expect(pickWhatsNew([entry("a", "2026-10-10")], ["a"], now)).toBeNull();
   });
+
+  it("skips items released before (or on the day of) the user's sign-up", () => {
+    const entries = [entry("a", "2026-10-01"), entry("b", "2026-10-10")];
+    expect(pickWhatsNew(entries, [], now, new Date("2026-10-12T09:00:00Z"))).toBeNull();
+    expect(pickWhatsNew(entries, [], now, new Date("2026-10-10T09:00:00Z"))).toBeNull();
+    expect(pickWhatsNew(entries, [], now, new Date("2026-10-05T09:00:00Z"))?.id).toBe("b");
+  });
 });

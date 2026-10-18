@@ -16,7 +16,7 @@ import {
 import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
 import { GoalsPanoramicaSection, useGoalFormatters } from "@/components/domain/goals";
 import { EmptyState, LoadError } from "@/components/domain/shared";
-import { DemoOfferSection, StartChecklistSection } from "@/components/domain/start";
+import { StartChecklistSection } from "@/components/domain/start";
 import { WhatsNewSection } from "@/components/domain/whats-new";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
@@ -44,7 +44,7 @@ import { usePensionQuery } from "@/lib/queries/pension";
 
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
-import { NEW_ACCOUNT_HREF } from "@/lib/start";
+import { NEW_ACCOUNT_HREF, shouldShowChecklist } from "@/lib/start";
 import { useStartQuery } from "@/lib/queries/start";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { useHydrated } from "@/lib/hooks/use-hydrated";
@@ -102,7 +102,8 @@ export default function PanoramicaPage() {
   // Anche questo è opzionale: se lo stato delle connessioni non carica, semplicemente non c'è il banner.
   const connectionsQuery = useBankConnectionsStatusQuery();
   // I primi passi sono un di più: se non caricano, la Panoramica funziona lo stesso.
-  const startStatus = useStartQuery().data;
+  const startQuery = useStartQuery();
+  const startStatus = startQuery.data;
   const renewalAlerts = buildRenewalAlerts(connectionsQuery.data ?? [], today);
 
   const isLoading =
@@ -176,16 +177,15 @@ export default function PanoramicaPage() {
       ) : isError ? (
         <LoadError message={tr("Impossibile caricare i dati della panoramica.")} onRetry={retry} />
       ) : accounts.length === 0 && !investments && !pension ? (
-        // A new user sees «Primi passi» in a single centred column, with the sample-data offer right under it.
+        // A new user sees «Primi passi» in a single centred column: the next step on top, with the sample data beside it.
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-10 sm:pt-4">
-          <div>
-            {startStatus ? (
-              <StartChecklistSection status={startStatus} forceVisible />
-            ) : (
-              <EmptyState icon={WalletIcon} title={tr("Nessun conto ancora")} description={tr("Aggiungi un conto per vedere il tuo patrimonio netto.")} primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
-            )}
-          </div>
-          <DemoOfferSection />
+          {startStatus ? (
+            <StartChecklistSection status={startStatus} forceVisible />
+          ) : startQuery.isLoading ? (
+            <div className="h-96 animate-pulse rounded-3xl bg-muted" aria-busy="true" />
+          ) : (
+            <EmptyState icon={WalletIcon} title={tr("Nessun conto ancora")} description={tr("Aggiungi un conto per vedere il tuo patrimonio netto.")} primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
+          )}
         </div>
       ) : (
         <>
@@ -218,6 +218,7 @@ export default function PanoramicaPage() {
                   href="/analitiche/obiettivi"
                   newHref="/analitiche/obiettivi?nuovo=1&da=panoramica"
                   onLinkClick={() => track("overview_tile_clicked", { tile: TILE_GOALS })}
+                  showInvite={!startStatus || !shouldShowChecklist(startStatus)}
                 />
               ) : null}
               {investments ? (

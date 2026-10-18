@@ -1,10 +1,10 @@
 # Self-hosting with Docker
 
-BuddyBudget runs with a single command on any machine with Docker (Linux, macOS, Windows with WSL2; amd64 or arm64, even a Raspberry Pi 4/5). The compose file starts the app, Postgres, Redis and a scheduler that runs the periodic jobs.
+BuddyBudget runs with one command on any machine with Docker (Linux, macOS, Windows with WSL2). The compose file starts the app, Postgres, Redis and a scheduler for the periodic jobs. You need no email server and no external account to start: sign-in is with email and password.
 
-> **Image status**: every release publishes public images on ghcr.io for amd64, with the version tag and `latest`. arm64 images (Raspberry Pi, Apple silicon servers) are published only when the maintainers enable them (section «For those who publish the images» at the bottom); until then, on arm64 build from source (section «Building from source»; internet access is needed to download the fonts).
+> **Images**: every release publishes public images on ghcr.io for amd64, with the version tag and `latest`. arm64 images (Raspberry Pi, Apple silicon servers) are published only when the maintainers enable them (see the end of this page); until then, on arm64, build from source.
 
-## Up and running in 5 minutes
+## Up and running
 
 You need Docker with the Compose v2 plugin and `openssl`.
 
@@ -15,70 +15,93 @@ cd buddy-budget
 docker compose up -d
 ```
 
-Open <http://localhost:3000>. On first start the migrations run on their own (`migrate` service) and the app becomes reachable in about a minute: `docker compose ps` shows `healthy`.
+Open <http://localhost:3000>. The migrations run on their own (`migrate` service) and the app is ready in about a minute (`docker compose ps` shows `healthy`).
 
-### First sign-in without email
+The first page is «Crea il primo account» ("Create the first account"): name, email, password (at least 10 characters). That account is yours. After it, nobody else can sign up unless you allow it (below). Onboarding then asks for country, language and currency.
 
-Sign-in is via an emailed link (or Google). If you have not configured Resend, the link appears in the logs: enter your email on the login page, then
+Behind a domain, pass its address to the init script: `./scripts/selfhost-init.sh https://budget.example.com` (see «HTTPS and domain»).
 
-```bash
-docker compose logs app | grep "Link di accesso"
-```
+## Accounts
 
-and open the printed URL (it is valid for a few minutes). The account is created on first sign-in; onboarding with language and currency follows.
+One install can hold several people. Each account has its own data (accounts, transactions, investments, settings) and nobody sees anyone else's. An account shared by several people (a household) does not exist yet.
+
+| You want to | Do this |
+|---|---|
+| Add one person without opening signups (recommended) | `docker compose run --rm migrate pnpm auth:create-user name@example.com Name`. It prints a password: give it to them, they sign in and change it in Impostazioni → Account → Password |
+| Let people sign up by themselves | `ALLOW_SIGNUPS=true` in `.env`, then `docker compose up -d`. The sign-in page then offers «Crea un account» to anyone who can reach the app: when everyone is in, empty the line and run `docker compose up -d` again |
+| Reset a forgotten password (no email service) | `docker compose run --rm migrate pnpm auth:reset-password name@example.com` (prints a new password and signs the account out everywhere) |
+| Change your password | Impostazioni → Account → Password (at least 10 characters) |
+| Delete an account | The person does it from Impostazioni → Zona pericolosa |
+
+With an email service configured, «Password dimenticata?» on the sign-in page emails a reset link instead, and the emailed sign-in link is offered next to the password. `AUTH_PASSWORD=false` turns password sign-in off (emailed link only, needs email).
 
 ## What works without external services
 
-| Integration | Variables | If you leave it empty |
+Everything that is about your data: accounts and transactions, categories and rules, budgets, CSV import from IBKR, DEGIRO, Trade Republic and Fineco, investments with prices from free sources, debts, pension, goals and analytics. The `cron` service updates prices and net worth snapshots at 06:30, 17:30 and 22:30 UTC.
+
+| Integration | Variables in `.env` | Without it |
 |---|---|---|
-| Email (Resend) | `RESEND_API_KEY`, `RESEND_FROM` | The sign-in link goes to the logs. No price alerts, account emails, bank expiry alerts or in-app reports are sent. |
-| Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | The «Continua con Google» ("Continue with Google") button appears but responds with an error: use the email link. |
-| Banks (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | No linked accounts; manual accounts, CSV import, investments, debts and pension remain. |
+| Email (any SMTP server, or Resend) | `SMTP_URL` + `EMAIL_FROM`, or `RESEND_API_KEY` + `EMAIL_FROM` | No emails: no reset or sign-in links, no price alerts, summaries or reminders. Everything else works |
+| Google sign-in | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | The Google button is not shown |
+| AI (OpenRouter) | `OPENROUTER_API_KEY`, and `COMPOSE_PROFILES=ai` for the CSV import worker | No category suggestions, no import of other banks' CSVs (the broker exports above still import) |
+| Banks (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | No linked bank accounts: manual accounts and CSV import |
+| In-app reports | `SUPPORT_EMAIL_TO` (needs email) | «Scrivici» answers that reports are off on this install |
 
-GoCardless stopped accepting new Bank Account Data sign-ups in July 2025 ([Actual Budget's note](https://actualbudget.org/docs/advanced/bank-sync/gocardless/)): bank sync on your own install works only if you already have GoCardless keys. Without them, import your bank's CSV export.
+GoCardless stopped accepting new Bank Account Data sign-ups in July 2025: bank sync works only if you already have keys.
 
-Everything else (transactions, categories and rules, budgets, investments with prices from the free sources, debts, analytics) works without keys. The `cron` service updates prices and net worth snapshots at the same times as production (06:30/17:30/22:30 UTC).
+**SMTP examples** (special characters in the password must be URL-encoded, `@` → `%40`):
 
-Not included in the compose file: the worker for the AI import of personal CSVs (`buddy-budget-csv-worker`, requires an OpenRouter key). The other CSV imports do not need it.
+```
+SMTP_URL=smtps://you%40gmail.com:app-password@smtp.gmail.com:465
+SMTP_URL=smtp://user:password@smtp.example.com:587
+EMAIL_FROM=BuddyBudget <budget@example.com>
+```
+
+After changing `.env`, run `docker compose up -d`: the boot line `app.instance.configured` in `docker compose logs app` shows what is on, e.g. `self-hosted password=on link=email google=off email=smtp signups=first-account`.
+
+Not part of a self-hosted install: the read-only public demo, deleting accounts unused for 90 days, product analytics, and the Terms of the hosted service (whoever runs the install is responsible for it).
 
 ## HTTPS and domain
 
-The compose file publishes the app only on `127.0.0.1` (change `APP_BIND` to expose it on the local network). To use it from outside, put it behind a reverse proxy with HTTPS and set `APP_URL=https://budget.esempio.it` in `.env` (then `docker compose up -d`): the value is used for magic links, cookies and callbacks. Example with [Caddy](https://caddyserver.com) (automatic Let's Encrypt certificate), `Caddyfile`:
+The compose file publishes the app only on `127.0.0.1`. To use it from other devices, put it behind a reverse proxy with HTTPS and set `APP_URL=https://budget.example.com` in `.env`, then `docker compose up -d`. Sign-in works only from the address in `APP_URL`. Example with [Caddy](https://caddyserver.com) (automatic certificate), `Caddyfile`:
 
 ```
-budget.esempio.it {
+budget.example.com {
     reverse_proxy 127.0.0.1:3000
 }
 ```
 
-Traefik, nginx or a tunnel (Cloudflare Tunnel, Tailscale) work just as well: just forward to `127.0.0.1:3000` with the `X-Forwarded-*` headers.
+Traefik, nginx or a tunnel (Cloudflare Tunnel, Tailscale) work just as well, forwarding to `127.0.0.1:3000` with the `X-Forwarded-*` headers.
+
+On a home network without a domain: `APP_BIND=0.0.0.0` and `APP_URL=http://<the machine's IP>:3000`, and always open the app at that address.
 
 ## Updating
 
 ```bash
+git pull                 # new compose file and scripts, if any
 docker compose pull
 docker compose up -d
 ```
 
-The migrations run before the app. To pin a version, set `BUDDYBUDGET_VERSION=0.44.2` in `.env` (versions are listed in the [releases](https://github.com/YonderUrik/buddy-budget/releases)); with `latest` you follow the latest release. Take a backup before a major update.
+The migrations run before the app. To pin a version, set `BUDDYBUDGET_VERSION=0.79.0` in `.env` ([releases](https://github.com/YonderUrik/buddy-budget/releases)). Take a backup before updating.
 
 ## Backup and restore
 
 All data is in the Postgres volume `postgres-data`.
 
 ```bash
-# backup (compressed file, restorable on any Postgres 17)
+# backup (compressed, restorable on any Postgres 17)
 docker compose exec -T postgres pg_dump -U buddybudget -Fc buddybudget > buddybudget-$(date +%F).dump
 
 # restore onto an empty instance (after `docker compose up -d postgres`)
 docker compose exec -T postgres pg_restore -U buddybudget -d buddybudget --clean --if-exists < buddybudget-2026-10-10.dump
 ```
 
-Schedule the backup with the system `cron` and copy the files off the machine. Keep `.env` too: losing `BETTER_AUTH_SECRET` signs everyone out but loses no data. If you set `DATA_ENCRYPTION_KEY` (descriptions and notes encrypted in the database, optional), keep it separately: without that key a backup cannot be read. Data saved before setting it is encrypted with `docker compose run --rm migrate pnpm db:encrypt-fields --execute`. From the app, Impostazioni ("Settings") → Esporta i dati ("Export data") downloads a readable ZIP with your data.
+Schedule the backup with the system `cron` and copy the files off the machine. Keep `.env` too: losing `BETTER_AUTH_SECRET` only signs everyone out. If you set `DATA_ENCRYPTION_KEY` (descriptions and notes encrypted in the database, optional), keep it apart from the backups: without it they cannot be read. Data saved before setting it is encrypted with `docker compose run --rm migrate pnpm db:encrypt-fields --execute`. In the app, Impostazioni → Esporta i dati downloads a readable ZIP of your data.
 
 ## External Postgres
 
-Remove the `postgres` service and its dependencies, and put your database URL in `DATABASE_URL` (in the `app` and `migrate` services). With TLS use `?sslmode=require`: without `sslmode`, in production the app requires TLS.
+Remove the `postgres` service and its `depends_on`, and put your database URL in `DATABASE_URL` (in `x-app-env` and in the `migrate` service). With TLS use `?sslmode=require`; without `sslmode` the app requires TLS.
 
 ## Building from source
 
@@ -86,21 +109,26 @@ Remove the `postgres` service and its dependencies, and put your database URL in
 docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
 
+The build downloads the fonts from Google, so it needs internet access.
+
 ## Common problems
 
-- **`required variable … is missing`**: `.env` is missing; run `./scripts/selfhost-init.sh`.
-- **`app` stays `unhealthy`**: `docker compose logs app`. If it lists invalid variables, check `APP_URL` (with `http://` or `https://`).
-- **The sign-in link leads to the wrong address**: `APP_URL` does not match the browser URL.
-- **Prices not updating**: `docker compose logs cron` and `docker compose exec cron ps`; the jobs run at the UTC times listed above.
+- **`POSTGRES_PASSWORD is missing`**: there is no `.env`; run `./scripts/selfhost-init.sh`.
+- **`app` stays `unhealthy`**: `docker compose logs app`. A line listing invalid variables names them (for example `APP_URL` without `http://`, or `SMTP_URL` not starting with `smtp://`/`smtps://`).
+- **Sign-in fails with "invalid origin" or loops back to the login**: the address in the browser is not `APP_URL` (different host, port, or `http` instead of `https`).
+- **Locked out with no email service**: `docker compose run --rm migrate pnpm auth:reset-password you@example.com`.
+- **«Su questa installazione non si possono creare nuovi account»**: signups are closed after the first account; see «Accounts».
+- **No emails arrive**: `docker compose logs app | grep email` shows the error type (`smtp_EAUTH` = wrong user or password, `smtp_ECONNECTION` = wrong host or port).
+- **Prices not updating**: `docker compose logs cron`; the jobs run at the UTC times above.
 
 ## For those who publish the images (maintainers)
 
-The images are on **GitHub Container Registry** (`ghcr.io/yonderurik/buddy-budget` and `buddy-budget-migrate`), not Docker Hub: free and without pull limits for public packages, same login and permissions as the repo, already used by the production deploy. The reason for the choice is in the decision `docs/decisioni/2026-10-10-self-hosting-docker.md`.
+The images are on GitHub Container Registry (`ghcr.io/yonderurik/buddy-budget`, `buddy-budget-migrate`, `buddy-budget-csv-worker`): free, no pull limits for public packages, same permissions as the repo. Why: `docs/decisioni/2026-10-10-self-hosting-docker.md`.
 
-Every release publishes the images for amd64 with the version tag and `latest`, and the packages are public. To also publish arm64, it must be enabled once:
+Every release publishes amd64 images with the version tag and `latest`. To also publish arm64:
 
-1. Repo → Settings → Secrets and variables → Actions → **Variables** → create `SELFHOST_IMAGES` = `true`. From the next release the images are multi-architecture (amd64 + arm64, arm64 build with QEMU: CI takes longer), with SBOM.
-2. Packages stay public (profile/organization → Packages → each package → Package settings → *Change visibility* → **Public**); a new package starts private, so check it after adding one. Without this, other people's `docker compose pull` asks for a login.
-3. Test: `docker pull ghcr.io/yonderurik/buddy-budget:latest` from a logged-out account and `docker buildx imagetools inspect` to see both architectures.
+1. Repo → Settings → Secrets and variables → Actions → **Variables** → `SELFHOST_IMAGES` = `true`. From the next release the images are multi-architecture (arm64 built with QEMU, slower CI), with SBOM.
+2. Keep the packages public (profile → Packages → package → Package settings → *Change visibility* → **Public**); a new package starts private.
+3. Check: `docker pull ghcr.io/yonderurik/buddy-budget:latest` while logged out, and `docker buildx imagetools inspect` for both architectures.
 
-To go back to amd64 only, just delete the variable.
+Deleting the variable goes back to amd64 only.

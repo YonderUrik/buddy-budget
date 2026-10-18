@@ -46,7 +46,7 @@ export const FAQ: readonly FaqItem[] = [
   { question: "Funziona sul telefono?", answer: "Sì, dal browser. Si mette sulla schermata Home come un'app. Non è negli store." },
   { question: "In quali lingue e paesi?", answer: "Italia in italiano e inglese, Germania in tedesco e inglese. La valuta la scegli tu. Per la Germania ci sono le funzioni essenziali e stime fiscali parziali, con i limiti scritti chiaramente; pensione e simulatori avanzati sono nascosti in attesa di revisione. Questo sito parla del prodotto per l'Italia." },
   ...(SOURCE_URL
-    ? [{ question: "Posso installarlo su un server mio?", answer: "Sì. Il codice è aperto (AGPL-3.0) e c'è un Docker Compose con app, database e cron. La guida al self-hosting è nel repository." }]
+    ? [{ question: "Posso installarlo su un server mio?", answer: "Sì. Il codice è aperto (AGPL-3.0) e c'è un Docker Compose con app, database e cron. Si entra con email e password, senza bisogno di un server di posta. La guida al self-hosting è nel repository." }]
     : []),
 ];
 

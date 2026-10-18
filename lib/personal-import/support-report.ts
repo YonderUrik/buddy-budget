@@ -1,6 +1,7 @@
 import "server-only";
 import { and, eq, inArray, lte, sql } from "drizzle-orm";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email/send";
+import { isSelfHosted } from "@/lib/instance/config";
 import { db } from "@/lib/db/client";
 import { personalImportJobs as jobs } from "@/lib/db/schema/personal-imports";
 import { SUPPORT_EMAIL } from "@/lib/support";
@@ -39,9 +40,14 @@ export async function notifyImportSupport() {
   });
   if (!pending?.failureReport) return;
   try {
-    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM) throw new Error("Email non configurata");
-    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: process.env.SUPPORT_EMAIL_TO ?? SUPPORT_EMAIL, ...importSupportReport(pending.id, pending.status, pending.attempts, pending.failureReport) }, { idempotencyKey: `import-support-${pending.id}` });
-    if (result.error) throw new Error("Invio fallito");
+    const to = process.env.SUPPORT_EMAIL_TO?.trim() || (isSelfHosted() ? null : SUPPORT_EMAIL);
+    // Self-hosted without SUPPORT_EMAIL_TO: the report stays on the import screen, nothing goes to the project.
+    if (!to) {
+      await db.update(jobs).set({ supportNotifiedAt: new Date() }).where(eq(jobs.id, pending.id));
+      return;
+    }
+    const result = await sendEmail({ to, ...importSupportReport(pending.id, pending.status, pending.attempts, pending.failureReport), idempotencyKey: `import-support-${pending.id}` });
+    if (!result.ok) throw new Error("Invio fallito");
     await db.update(jobs).set({ supportNotifiedAt: new Date() }).where(eq(jobs.id, pending.id));
     logger.info("personal_import.support.sent", { jobId: pending.id });
   } catch { logger.warn("personal_import.support.failed", { jobId: pending.id, reason: "delivery_failed" }); }

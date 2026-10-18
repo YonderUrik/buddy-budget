@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { LocaleFields } from "@/components/domain/settings/locale-fields";
 import { useLocalization } from "@/lib/localization/provider";
+import { useInstance } from "@/lib/instance/provider";
 import { AUTH_TITLE, CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
 import { CategorySetupStep, useCategorySetup } from "@/components/domain/categories";
 import { InboxPreview, NotificationChoices, ONBOARDING_NOTIFICATION_INFO } from "@/components/domain/notifications";
@@ -36,9 +37,16 @@ export default function OnboardingPage() {
   const { data: assistant } = useAiCategorizationQuery();
   const categorySetup = useCategorySetup();
   const [notifications, setNotifications] = useState<NotificationPreferences>({ ...NOTIFICATION_DEFAULTS });
-  const steps: OnboardingStep[] = assistant?.available
-    ? ["valuta", "categorie", "assistente", "notifiche", "conferme"]
-    : ["valuta", "categorie", "notifiche", "conferme"];
+  const { selfHosted, auth } = useInstance();
+  // Self-hosted: no email step without an email service, no acceptance of the hosted service's Terms.
+  const steps: OnboardingStep[] = [
+    "valuta",
+    "categorie",
+    ...(assistant?.available ? (["assistente"] as const) : []),
+    ...(auth.emailDelivery ? (["notifiche"] as const) : []),
+    ...(selfHosted ? [] : (["conferme"] as const)),
+  ];
+  const needsConsent = !selfHosted;
   const flow = useStepFlow(steps.length);
   const step = steps[flow.index];
   const [loading, setLoading] = useState(false);
@@ -60,8 +68,8 @@ export default function OnboardingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           currency, productCountry, language,
-          legal: payload,
-          notifications,
+          ...(needsConsent ? { legal: payload } : {}),
+          ...(auth.emailDelivery ? { notifications } : {}),
           ...(categorySetup.payload ? { categories: categorySetup.payload } : {}),
           ...(assistant?.available ? { aiCategorization: assistantEnabled } : {}),
         }),
@@ -147,7 +155,7 @@ export default function OnboardingPage() {
           }}
           primaryLabel={flow.isLast ? (loading ? "Salvataggio in corso…" : "Inizia") : step === "categorie" && !categorySetup.customized ? tr("Continua con queste") : tr("Continua")}
           pending={loading}
-          disabled={flow.isLast && !complete}
+          disabled={flow.isLast && needsConsent && !complete}
           className="[&_button]:w-full sm:[&_button]:w-auto"
         />
       </form>

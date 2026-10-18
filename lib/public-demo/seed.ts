@@ -1,6 +1,6 @@
 /**
  * Sample account used by the landing screenshots and by the public demo: accounts, a year of transactions, budgets,
- * subscriptions, investments, goals, debts and a pension fund, all invented and deterministic (fixed-seed generator).
+ * subscriptions, investments (`seed-investments.ts`), goals, debts and a pension fund, all invented and deterministic (fixed-seed generator).
  * User-facing texts come in the account's language (`texts.ts`); German also gets the German product rules.
  * Re-running it re-creates the account from scratch (the user row is deleted first and everything cascades).
  */
@@ -20,22 +20,16 @@ import { subscriptionKey } from "@/lib/calc/subscriptions";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
 import { goalSources, goals } from "@/lib/db/schema/goals";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
-import {
-  instrumentPrices,
-  instruments,
-  investmentPortfolios,
-  investmentTransactions,
-} from "@/lib/db/schema/investments";
+import { instruments } from "@/lib/db/schema/investments";
 import { transactions } from "@/lib/db/schema/transactions";
 import { LEGAL_VERSION } from "@/lib/legal";
 import { snapshotUser } from "@/lib/net-worth/scheduler";
 import { profileForLanguage, type Language, type ProductCountry } from "@/lib/localization/config";
+import { DEMO_ISINS, seedDemoInvestments } from "./seed-investments";
 import { demoText } from "./texts";
 
 
 const MONTHS_OF_HISTORY = 12;
-/** Invented ISINs of the demo securities (never real ones), also used to clean up orphans of older seeds. */
-const DEMO_ISINS = ["IE00DEMO0001", "IT00DEMO0002", "IT00DEMO0003", "IT00DEMO0004"];
 const SEED = 20261001;
 
 /** mulberry32 pseudo-random generator: the same numbers on every run. */
@@ -307,73 +301,8 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
     { userId: userId, key: subscriptionKey(text("Rata mutuo")), status: "escluso", origin: "rilevato", name: text("Rata mutuo"), amount: "742.18", cadence: "mensile", categoryId: cat("Affitto & Mutuo") },
   ]);
 
-  // Investments: a global ETF, stocks and a BTP, with invented daily prices (random walk).
-  const [portfolio] = await db
-    .insert(investmentPortfolios)
-    .values({ userId: userId, name: text("Portafoglio principale"), broker: "Broker Demo", taxRegime: "amministrato" })
-    .returning();
-  const [etf, stock, bond, tech] = await db
-    .insert(instruments)
-    .values([
-      { isin: "IE00DEMO0001", name: text("ETF Azionario Globale Demo"), type: "etf", currency: "EUR", exchange: "XETRA", taxHarmonized: true, createdByUserId: userId },
-      { isin: "IT00DEMO0002", name: text("Energia Italia S.p.A."), type: "azione", currency: "EUR", exchange: "MIL", createdByUserId: userId },
-      { isin: "IT00DEMO0003", name: text("BTP Valore 2030"), type: "obbligazione", currency: "EUR", priceUnit: "percentuale_nominale", taxRate: "0.1250", createdByUserId: userId },
-      { isin: "IT00DEMO0004", name: text("Tecnologia Futura S.p.A."), type: "azione", currency: "EUR", exchange: "MIL", createdByUserId: userId },
-    ])
-    .returning();
-  const priceDays = 430;
-  const series = (start: number, drift: number, vol: number) => {
-    const out: number[] = [];
-    let p = start;
-    for (let i = 0; i < priceDays; i++) {
-      p *= 1 + drift + (rand() - 0.5) * vol;
-      out.push(p);
-    }
-    return out;
-  };
-  // A stock falling for the first 50 days (hence last year's realised loss) and then slowly recovering.
-  const techSeries = series(30, 0.0006, 0.016).map((p, i) => (i < 50 ? 30 * (1 - 0.14 * (i / 50)) : p * 0.86));
-  const prices = [
-    { id: etf.id, s: series(88, 0.0004, 0.012), scale: 1 },
-    { id: stock.id, s: series(21, 0.0007, 0.014), scale: 1 },
-    { id: bond.id, s: series(99.6, 0.00004, 0.0012), scale: 1 },
-    { id: tech.id, s: techSeries, scale: 1 },
-  ];
-  const priceRows: (typeof instrumentPrices.$inferInsert)[] = [];
-  for (const p of prices) {
-    p.s.forEach((close, i) => {
-      const date = daysAgo(priceDays - 1 - i);
-      if (date.getUTCDay() === 0 || date.getUTCDay() === 6) return;
-      priceRows.push({ instrumentId: p.id, date: iso(date), close: (close * p.scale).toFixed(4), source: "yahoo" });
-    });
-  }
-  for (let i = 0; i < priceRows.length; i += 500) await db.insert(instrumentPrices).values(priceRows.slice(i, i + 500));
-  const priceOn = (id: string, back: number) => {
-    const p = prices.find((x) => x.id === id)!;
-    return p.s[priceDays - 1 - back];
-  };
-  const ops: (typeof investmentTransactions.$inferInsert)[] = [];
-  for (const back of [330, 270, 210, 150, 90, 30]) {
-    const price = priceOn(etf.id, back);
-    ops.push({
-      userId: userId,
-      portfolioId: portfolio.id,
-      instrumentId: etf.id,
-      type: "acquisto",
-      date: iso(daysAgo(back)),
-      quantity: (Math.floor(3200 / price * 100) / 100).toFixed(2),
-      price: price.toFixed(4),
-      fees: "1.50",
-    });
-  }
-  ops.push({ userId: userId, portfolioId: portfolio.id, instrumentId: stock.id, type: "acquisto", date: iso(daysAgo(300)), quantity: "380", price: priceOn(stock.id, 300).toFixed(4), fees: "4.95" });
-  ops.push({ userId: userId, portfolioId: portfolio.id, instrumentId: stock.id, type: "dividendo", date: iso(daysAgo(120)), quantity: "0", price: "0", grossAmount: "152.00", taxes: "39.52" });
-  ops.push({ userId: userId, portfolioId: portfolio.id, instrumentId: bond.id, type: "acquisto", date: iso(daysAgo(200)), quantity: "10000", price: "99.8000", fees: "0" });
-  // Sales: a loss last year (it goes into the zainetto fiscale, tax-loss carryforward) and a gain this year that offsets it.
-  ops.push({ userId: userId, portfolioId: portfolio.id, instrumentId: tech.id, type: "acquisto", date: iso(daysAgo(425)), quantity: "300", price: priceOn(tech.id, 425).toFixed(4), fees: "4.95" });
-  ops.push({ userId: userId, portfolioId: portfolio.id, instrumentId: tech.id, type: "vendita", date: iso(daysAgo(375)), quantity: "300", price: priceOn(tech.id, 375).toFixed(4), fees: "4.95" });
-  ops.push({ userId: userId, portfolioId: portfolio.id, instrumentId: stock.id, type: "vendita", date: iso(daysAgo(45)), quantity: "190", price: priceOn(stock.id, 45).toFixed(4), fees: "4.95" });
-  await db.insert(investmentTransactions).values(ops);
+  // Investments: a varied portfolio across two brokers, with prices, watchlist, alerts and targets (`seed-investments.ts`).
+  const investments = await seedDemoInvestments({ userId, productCountry: PROFILE.productCountry, text, rand, today });
 
   // Savings goals (Analitiche → Obiettivi): emergency fund from the savings account, a trip with a date and a home partly
   // funded by the ETF, so the view shows priorities, a date and the shift of the target.
@@ -389,7 +318,7 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
   await db.insert(goalSources).values([
     { userId: userId, goalId: emergency.id, accountId: savings.id, amount: "7500.00" },
     { userId: userId, goalId: trip.id, accountId: savings.id, amount: "1800.00" },
-    { userId: userId, goalId: home.id, instrumentId: etf.id, amount: "12000.00" },
+    { userId: userId, goalId: home.id, instrumentId: investments.globalEtfId, amount: "12000.00" },
   ]);
 
   // Debts: a fixed-rate mortgage (invented values).
@@ -455,5 +384,5 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
   // The net worth history is rebuilt by the app's real code (the same as the daily cron).
   await snapshotUser(userId);
 
-  return { transactions: rows.length, operations: ops.length, prices: priceRows.length };
+  return { transactions: rows.length, operations: investments.operations, prices: investments.prices };
 }

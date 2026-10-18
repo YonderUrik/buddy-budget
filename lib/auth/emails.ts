@@ -19,6 +19,24 @@ export function magicLinkEmailContent(params: { url: string; expiresInMinutes: n
   };
 }
 
+/** Subject, text and HTML of the email with the password reset link, in `language` (Italian by default). Pure, so it can be tested. */
+export function passwordResetEmailContent(params: { url: string; expiresInMinutes: number; appUrl: string; language?: Language }): { subject: string; text: string; html: string } {
+  const { t, language } = emailLocale(params.language);
+  return {
+    subject: t("Reimposta la password di BuddyBudget"),
+    ...renderEmail(
+      {
+        title: t("Nuova password"),
+        lead: t("Usa il pulsante per scegliere una nuova password. Il link vale **{0} minuti** e funziona una sola volta.", params.expiresInMinutes),
+        preheader: t("Il link scade tra {0} minuti.", params.expiresInMinutes),
+        cta: { label: t("Scegli una nuova password"), url: params.url },
+        footnote: t("Se non l'hai chiesto tu, ignora questa email: la password resta quella di prima."),
+      },
+      { appUrl: params.appUrl, language },
+    ),
+  };
+}
+
 /** Value of one cookie from a raw `Cookie` header. */
 function cookieValue(header: string | null | undefined, name: string): string | undefined {
   for (const part of (header ?? "").split(";")) {

@@ -6,6 +6,12 @@ export const CRON_SECRET_MIN_LENGTH = 32;
 /** Stringa non vuota facoltativa: `""` (variabile dichiarata ma vuota, tipico di docker compose) vale come assente. */
 const optionalSecret = z.preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional());
 
+/** Optional true/false switch (also 1/0, yes/no); `""` counts as unset. */
+const optionalFlag = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().regex(/^(true|false|1|0|yes|no)$/i, "true or false").optional(),
+);
+
 /**
  * Variabili d'ambiente richieste dal server. OLLAMA_*, LOG_LEVEL, METRICS_TOKEN e le chiavi delle fonti prezzi sono opzionali: se assenti il livello
  * assistente della categorizzazione è semplicemente spento (stato normale, non un guasto).
@@ -25,6 +31,13 @@ export const serverEnvSchema = z.object({
   GOOGLE_CLIENT_SECRET: optionalSecret,
   RESEND_API_KEY: optionalSecret,
   RESEND_FROM: optionalSecret,
+  // Email via any SMTP server (self-hosting), e.g. smtps://user:password@smtp.example.com:465; EMAIL_FROM is the sender.
+  SMTP_URL: z.preprocess((value) => (value === "" ? undefined : value), z.url({ protocol: /^smtps?$/ }).optional()),
+  EMAIL_FROM: optionalSecret,
+  // Self-hosting switches (lib/instance/config.ts): true/false, empty = the default.
+  SELF_HOSTED: optionalFlag,
+  AUTH_PASSWORD: optionalFlag,
+  ALLOW_SIGNUPS: optionalFlag,
   GOCARDLESS_SECRET_ID: optionalSecret,
   GOCARDLESS_SECRET_KEY: optionalSecret,
   CRON_SECRET: z.string().min(CRON_SECRET_MIN_LENGTH),

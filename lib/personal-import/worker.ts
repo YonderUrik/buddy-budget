@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq, lte, inArray, sql } from "drizzle-orm";
-import { Resend } from "resend";
+import { isEmailConfigured, sendEmail } from "@/lib/email/send";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { personalImportJobs as jobs, personalParsers as parsers, personalFormats as formats } from "@/lib/db/schema/personal-imports";
@@ -117,13 +117,13 @@ export async function maintainJobs() {
   });
   if (!pending) return;
   try {
-    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM || !process.env.APP_URL) throw new Error("Email non configurata");
+    if (!isEmailConfigured() || !process.env.APP_URL) throw new Error("Email non configurata");
     const [user] = await db.select({ email: authUser.email, productCountry: authUser.productCountry, language: authUser.language }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
     const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL, language: resolveProfile(user).language });
-    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject, text, html }, { idempotencyKey: `personal-csv-${pending.id}` });
-    if (result.error) throw new Error("Invio fallito");
+    const result = await sendEmail({ to: user.email, subject, text, html, idempotencyKey: `personal-csv-${pending.id}` });
+    if (!result.ok) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));
   } catch { logger.warn("personal_import.email_failed", { jobId: pending.id, reason: "delivery_failed" }); }
 }

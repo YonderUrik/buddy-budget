@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MAGIC_LINK_EXPIRES_MINUTES } from "@/lib/auth/constants";
 import type { ReturningMethod } from "@/lib/auth/returning-user";
+import { useInstance } from "@/lib/instance/provider";
 import { useLocalization } from "@/lib/localization/provider";
 import { GoogleIcon } from "./google-icon";
 import { LegalLinksNote } from "./legal-links-note";
@@ -35,8 +36,9 @@ export interface ReturningLoginPanelProps {
 
 export function ReturningLoginPanel({ maskedEmail, method, loading, googleLoading, error, onSendLink, onGoogle, onForget }: ReturningLoginPanelProps) {
   const { t: tr } = useLocalization();
+  const { auth, selfHosted } = useInstance();
   const busy = loading || googleLoading;
-  const googleFirst = method === "google";
+  const googleFirst = method === "google" && auth.google;
 
   const linkButton = (primary: boolean) => (
     <Button type="button" variant={primary ? "default" : "outline"} className={cn("h-11 w-full rounded-full rounded-full text-base", primary && AUTH_PRIMARY_BUTTON)} onClick={onSendLink} disabled={busy}>
@@ -77,14 +79,14 @@ export function ReturningLoginPanel({ maskedEmail, method, loading, googleLoadin
         )}
       </div>
 
-      <p className="text-center text-sm text-text-3">{tr("oppure")}</p>
+      {(googleFirst || auth.google) && <p className="text-center text-sm text-text-3">{tr("oppure")}</p>}
 
       <div className="flex flex-col gap-2">
-        {googleFirst ? linkButton(false) : googleButton(false)}
+        {googleFirst ? linkButton(false) : auth.google && googleButton(false)}
         <Button type="button" variant="ghost" className="h-11 w-full rounded-full" onClick={onForget} disabled={busy}>{tr("Non sei tu? Usa un altro account")}</Button>
       </div>
 
-      <LegalLinksNote />
+      {!selfHosted && <LegalLinksNote />}
     </div>
   );
 }

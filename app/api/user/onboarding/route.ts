@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { isSupportedCurrency } from "@/lib/validation/currency";
+import { isSelfHosted } from "@/lib/instance/config";
 import { isValidLegalAcceptance } from "@/lib/legal";
 import { recordLegalAcceptance } from "@/lib/legal/acceptance";
 import { saveNotificationPreferences } from "@/lib/notifications/server";
@@ -42,8 +43,10 @@ async function handlePost(request: NextRequest) {
     return Response.json({ error: "Valuta non supportata" }, { status: 400 });
   }
 
+  // Self-hosted installs are not run under the hosted service's Terms: nothing to accept.
+  const selfHosted = isSelfHosted();
   const legal = (body as { legal?: unknown } | null)?.legal;
-  if (!isValidLegalAcceptance(legal)) {
+  if (!selfHosted && !isValidLegalAcceptance(legal)) {
     return Response.json({ error: "Per continuare accetta Termini e Privacy", code: "legal_acceptance_required" }, { status: 400 });
   }
 
@@ -58,13 +61,13 @@ async function handlePost(request: NextRequest) {
     .update(authUser)
     .set({ currency, productCountry: productCountry as string, language: language as string, onboardingCompleted: true, ...(typeof aiCategorization === "boolean" ? { aiCategorizationConsentAt: aiConsent ? new Date() : null } : {}) })
     .where(eq(authUser.id, session.user.id));
-  await recordLegalAcceptance(session.user.id);
+  if (!selfHosted) await recordLegalAcceptance(session.user.id);
   if (notifications.success) {
     await saveNotificationPreferences(session.user.id, notifications.data);
     const enabled = [notifications.data.digestEnabled, notifications.data.budgetAlertsEnabled, notifications.data.deadlineAlertsEnabled].filter(Boolean).length;
     requestLogger().info("notifications.preferences.updated", { trigger: "onboarding", count: enabled });
   }
-  requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });
+  if (isValidLegalAcceptance(legal) && !selfHosted) requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });
   await applyOnboardingCategories((body as { categories?: unknown } | null)?.categories, session.user.id);
 
   await localizeStarterCategories(session.user.id, resolveProfile({ productCountry: productCountry as string, language: language as string }));

@@ -11,6 +11,7 @@ import {
   DataSection,
   AiCategorizationSection,
   NotificationsSection,
+  PasswordSection,
   PreferencesSection,
   PrivacySection,
   ProfileSection,
@@ -92,6 +93,7 @@ function ImpostazioniContent() {
             account: (
               <>
                 <ProfileSection settings={settings} />
+                <PasswordSection settings={settings} recentLogin={recentLogin} />
                 <SessionsSection />
               </>
             ),

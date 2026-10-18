@@ -41,7 +41,7 @@ export function DataSection({ settings, recentLogin }: DataSectionProps) {
       <p className="text-sm text-muted-foreground">{tr("L'archivio ZIP contiene un file JSON con tutti i dati e una tabella CSV per transazioni, conti, categorie, budget, regole, investimenti e storico del patrimonio, da aprire con Excel.")}</p>
 
       {needsReauth ? (
-        <ReauthPanel email={settings.email} googleLinked={settings.googleLinked} />
+        <ReauthPanel email={settings.email} googleLinked={settings.googleLinked} passwordSet={settings.passwordSet} />
       ) : (
         <Button
           type="button"

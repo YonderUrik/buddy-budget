@@ -25,7 +25,7 @@ BuddyBudget is one Next.js App Router application that turns a user's bank data,
                                                           ├──► Postgres (CloudNativePG)   via postgres.js + Drizzle
                                                           ├──► Redis                       via ioredis
                                                           └──► external: GoCardless, Yahoo and other price sources,
-                                                               Resend, OpenRouter, Logo.dev, Umami
+                                                               Resend or SMTP, OpenRouter, Logo.dev, Umami
  k8s CronJobs ── curl + CRON_SECRET ──► /api/cron/*
  csv-worker pod ── polls personal_import_jobs in Postgres
  ArgoCD PreSync Job ── pnpm db:migrate ──► Postgres, before each rollout
@@ -47,7 +47,7 @@ BuddyBudget is one Next.js App Router application that turns a user's bank data,
 
 **P7 — Country and language are independent.** `productCountry` decides which financial features exist. `language` changes only text and number formatting. One central function, `isCountryPathAvailable`, gates routes for both pages and APIs.
 
-**P8 — Optional integrations degrade, they do not break.** [`lib/env.ts`](../../lib/env.ts) requires only `DATABASE_URL`, `REDIS_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL` and `CRON_SECRET`. Without Google the Google button does not work, without Resend the magic link is logged, without GoCardless only manual accounts and imports exist, without `DATA_ENCRYPTION_KEY` fields are stored in plain text.
+**P8 — Optional integrations degrade, they do not break.** [`lib/env.ts`](../../lib/env.ts) requires only `DATABASE_URL`, `REDIS_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL` and `CRON_SECRET`. Without Google the Google button is hidden, without an email service sign-in uses a password (see §4.3), without GoCardless only manual accounts and imports exist, without `DATA_ENCRYPTION_KEY` fields are stored in plain text.
 
 ## 3. Data model
 
@@ -94,7 +94,7 @@ Providers mounted in [`app/layout.tsx`](../../app/layout.tsx), outermost first: 
 
 1. **[`proxy.ts`](../../proxy.ts)** runs on every path except static assets (`_next/static`, `_next/image`, icons, manifest, brand and instrument icons). In order:
    - `/login` with a valid session redirects to `safeRedirectPath(?redirect)`.
-   - Public prefixes pass: `/login`, `/api/auth`, `/api/health`, `/api/cron`, `/api/metrics`, `/api/email`, `/disiscrizione`, `/_next`, `/favicon.ico`. Cron and metrics routes check their own bearer token.
+   - Public prefixes pass: `/login`, `/reimposta-password`, `/api/auth`, `/api/health`, `/api/cron`, `/api/metrics`, `/api/email`, `/disiscrizione`, `/_next`, `/favicon.ico`. Cron and metrics routes check their own bearer token.
    - No session: APIs get 401, pages redirect to `/login?redirect=<path>`.
    - `deletionScheduledAt` set: only `/account-disattivato` and `POST /api/user/reactivate` are reachable; other APIs get 403.
    - Onboarding done but legal version outdated (`needsLegalAcceptance`): only `/accetta-termini` and the APIs for acceptance, export and account deletion are reachable.
@@ -112,13 +112,16 @@ Worked example. A user with `productCountry = "DE"` requests `GET /api/pension`.
 
 | Aspect | Behaviour |
 |---|---|
-| Methods | Magic link (plugin `magicLink`, expires after `MAGIC_LINK_EXPIRES_MINUTES` = 10) and Google OAuth (only when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set) |
-| Email | Resend when `RESEND_API_KEY` is set; otherwise `logMagicLink` writes the link to the server log (self-hosting). A Resend error throws, so the UI does not claim the email was sent |
+| Methods | Chosen per instance by `authMethods()` in [`lib/instance/config.ts`](../../lib/instance/config.ts) and passed to the browser by `InstanceProvider` (root layout). Email and password (`AUTH_PASSWORD`; default on when `SELF_HOSTED=true` or when no email transport exists; at least `PASSWORD_MIN_LENGTH` = 10 characters, no email verification). Magic link (plugin `magicLink`, 10 minutes) whenever emails can be sent, and as the only method when password is off. Google OAuth only when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. The hosted version: magic link + Google |
+| Signups | `ALLOW_SIGNUPS`; default open on the hosted version, first account only when self-hosted. Enforced in the `user.create.before` hook for every method (and before sending a magic link to an unknown address) by `canCreateAccount()` in [`lib/auth/signup-gate.ts`](../../lib/auth/signup-gate.ts); refusals return `SIGNUPS_CLOSED` and count as `auth_events_total{event="signup_refused"}`. The login page opens on «Crea il primo account» while no account exists |
+| Password reset | With email: better-auth's `requestPasswordReset` emails a 30-minute link to `/reimposta-password`; sessions are revoked on reset. Without email: `pnpm auth:reset-password <email>` ([`lib/db/user-admin.ts`](../../lib/db/user-admin.ts), run in the `migrate` image) prints a new password and deletes the sessions; `pnpm auth:create-user` adds an account while signups are closed. Adding a password to a link/Google account (`POST /api/user/password`) needs a recent sign-in |
+| Email | `sendEmail()` in [`lib/email/send.ts`](../../lib/email/send.ts) for every email of the app: Resend when `RESEND_API_KEY` is set, otherwise SMTP from `SMTP_URL` (nodemailer); sender `EMAIL_FROM` (or the older `RESEND_FROM`). Errors come back as a short type, never the provider's message. Without a transport and with password off, `logMagicLink` writes the link to the server log. A failed send throws, so the UI does not claim the email was sent |
+| Self-hosted | `SELF_HOSTED=true` (set by `docker-compose.yml`) also skips the Terms acceptance (onboarding and proxy gate), the Umami script and, without `SUPPORT_EMAIL_TO`, the in-app reports. The boot line `app.instance.configured` lists the active methods |
 | Last method | Plugin `lastLoginMethod` sets a cookie the login page reads |
 | Sessions | `expiresIn` 7 days, `updateAge` 1 day (`SESSION_EXPIRES_IN_DAYS`, `SESSION_UPDATE_AGE_DAYS`) |
 | OAuth tokens | `encryptOAuthTokens: true` (encrypted with `BETTER_AUTH_SECRET`); account linking enabled |
 | Hooks | Session create: IP truncated (`truncateIp`), `auth_events_total{event="sign_in"}`, `touchLastActive`. Session update: `touchLastActive` (feeds the inactive-accounts cron). User create: default categories inserted |
-| Rate limiting | better-auth's built-in limiter. `app/api/auth/[...all]/route.ts` counts its 429 responses as `auth_events_total{event="rate_limited"}`. No Redis storage is configured for it |
+| Rate limiting | better-auth's built-in limiter. `app/api/auth/[...all]/route.ts` counts its 429 responses as `auth_events_total{event="rate_limited"}` and wrong passwords as `password_sign_in_failed`. No Redis storage is configured for it |
 
 ### 4.4 Postgres, Drizzle and migrations
 
@@ -237,7 +240,7 @@ The app is a responsive web app; no native app exists.
 | Group | Path | Shell | Contents |
 |---|---|---|---|
 | `app/(app)` | `/`, `/panoramica`, `/liquidita` (+ `analisi`, `conti`, `categorie`, `regole`, `abbonamenti`), `/categorizza`, `/conti/collega/[connectionId]`, `/investimenti` (+ `operazioni`, `performance`, `diversificazione`, `proventi`, `tasse`, `rendiconti`, `rendiconti/importazioni`, `titoli`, `titoli/[id]`), `/pensione` (+ `andamento`, `dati`, `proiezione`, `scenari`), `/debiti` (+ `finanziamenti`, `simulatore`), `/analitiche` (+ `costi`, `crescita`, `prelievi`, `rischio`, `simulazione`, `obiettivi`, `obiettivi/[id]`), `/importazioni`, `/impostazioni`, `/aiuto`, `/country-unavailable`, `/style-guide` | `AttentionShell` with sidebar, bottom nav, sync panel | Authenticated product screens |
-| `app/(auth)` | `/login`, `/onboarding`, `/accetta-termini`, `/account-disattivato` | `AuthFrame` with the language picker; preview panel hidden on `/onboarding` | Sign-in, onboarding and account gates |
+| `app/(auth)` | `/login`, `/reimposta-password`, `/onboarding`, `/accetta-termini`, `/account-disattivato` | `AuthFrame` with the language picker; preview panel hidden on `/onboarding` | Sign-in, onboarding and account gates |
 | `app/disiscrizione` | `/disiscrizione` | Root layout only | Public email unsubscribe page |
 | `app/api` | `/api/*` (118 handlers in 28 top-level folders) | None | Route Handlers, including `/api/cron/*` and `/api/auth/[...all]` |
 | Root files | `manifest.webmanifest`, `robots.txt`, `icon.svg`, `global-error.tsx` | n/a | Metadata routes and the global error boundary |
@@ -253,7 +256,8 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `analytics/` | Umami `track()` and the `ProductEvents` type, opt-out |
 | `app-version/` | Build version, commit and time baked into the bundle |
 | `attention/` | Badge counts and labels for items that need the user's attention |
-| `auth/` | better-auth server config, client, magic link email, returning-user memory |
+| `auth/` | better-auth server config, client, sign-in and reset emails, signup gate, returning-user memory |
+| `instance/` | Hosted or self-hosted, sign-in methods (`instanceConfig`, `InstanceProvider`) |
 | `calc/` | Pure calculation engines (cash flow, expenses, returns, FX, FIRE, Monte Carlo, amortisation, early repayment, debt plan, pension, net worth, costs) |
 | `categories/` | Default categories, spending groups (Dovute/Volute/Te futuro/Saltuarie — needs, wants, future you, occasional), seeding, picker |
 | `categorization/` | Rules, merchant names and keys, AI suggestions, auto-apply at 90%, recategorise, merchant logos |
@@ -262,7 +266,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `crypto/` | Field encryption |
 | `db/` | Drizzle client, schema, migrations, migration and maintenance scripts |
 | `debts/` | Debt data loading, events, views, forms |
-| `email/` | Shared email HTML template |
+| `email/` | Shared email HTML template and `sendEmail()` (Resend or SMTP) |
 | `env.ts`, `format.ts`, `utils.ts` | Env validation, number/date formatting, class-name helper |
 | `features/` | Feature catalog |
 | `financial-planning/` | German tax, income, pension and AVD models |

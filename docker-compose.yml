@@ -1,5 +1,6 @@
-# BuddyBudget self-hosted: app + Postgres + Redis + scheduler for periodic jobs.
+# BuddyBudget self-hosted: app + Postgres + Redis + scheduler for periodic jobs (+ the AI import worker, optional).
 # Full guide: docs/self-hosting.md. Quick start: ./scripts/selfhost-init.sh && docker compose up -d
+# Then open APP_URL and create the first account (email and password, no email server needed).
 #
 # Images come from ghcr.io (BUDDYBUDGET_VERSION, default latest). To build them from source:
 #   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
@@ -10,19 +11,32 @@ x-app-env: &app-env
   NODE_ENV: production
   # sslmode=disable: the compose Postgres is on the internal network and has no certificates. An external Postgres
   # must instead be reached with sslmode=require (see docs/self-hosting.md).
-  DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?Manca POSTGRES_PASSWORD, lancia ./scripts/selfhost-init.sh}@postgres:5432/buddybudget?sslmode=disable
+  DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is missing, run ./scripts/selfhost-init.sh}@postgres:5432/buddybudget?sslmode=disable
   REDIS_URL: redis://redis:6379
-  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Manca BETTER_AUTH_SECRET}
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is missing, run ./scripts/selfhost-init.sh}
   BETTER_AUTH_URL: ${APP_URL:-http://localhost:3000}
   APP_URL: ${APP_URL:-http://localhost:3000}
-  CRON_SECRET: ${CRON_SECRET:?Manca CRON_SECRET}
+  CRON_SECRET: ${CRON_SECRET:?CRON_SECRET is missing, run ./scripts/selfhost-init.sh}
+  # Self-hosted install: sign-in with email and password, only the first account can sign up (ALLOW_SIGNUPS opens it),
+  # no hosted-service Terms to accept, no product analytics.
+  SELF_HOSTED: "true"
+  AUTH_PASSWORD: ${AUTH_PASSWORD:-}
+  ALLOW_SIGNUPS: ${ALLOW_SIGNUPS:-}
   # Optional integrations: empty = off (see .env.selfhost.example).
+  SMTP_URL: ${SMTP_URL:-}
+  EMAIL_FROM: ${EMAIL_FROM:-}
   RESEND_API_KEY: ${RESEND_API_KEY:-}
   RESEND_FROM: ${RESEND_FROM:-}
+  # The summary and alert emails really go out (each user turns them on in Impostazioni → Notifiche).
+  NOTIFICATIONS_MODE: execute
+  SUPPORT_EMAIL_TO: ${SUPPORT_EMAIL_TO:-}
   GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
   GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
   GOCARDLESS_SECRET_ID: ${GOCARDLESS_SECRET_ID:-}
   GOCARDLESS_SECRET_KEY: ${GOCARDLESS_SECRET_KEY:-}
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+  OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-v4.1-flash}
+  PERSONAL_CSV_ENCRYPTION_KEY: ${PERSONAL_CSV_ENCRYPTION_KEY:-}
   LOG_LEVEL: ${LOG_LEVEL:-info}
   # Optional: encrypts descriptions and notes in the database (see docs/self-hosting.md, «Backup e ripristino»).
   DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
@@ -33,7 +47,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: buddybudget
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Manca POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is missing, run ./scripts/selfhost-init.sh}
       POSTGRES_DB: buddybudget
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -59,7 +73,7 @@ services:
     image: ghcr.io/yonderurik/buddy-budget-migrate:${BUDDYBUDGET_VERSION:-latest}
     restart: "no"
     environment:
-      DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?Manca POSTGRES_PASSWORD}@postgres:5432/buddybudget?sslmode=disable
+      DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is missing, run ./scripts/selfhost-init.sh}@postgres:5432/buddybudget?sslmode=disable
       # Needed only by `pnpm db:encrypt-fields` (encryption of already stored data); migrations do not use it.
       DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
     depends_on:
@@ -86,13 +100,16 @@ services:
       start_period: 30s
 
   # Calls the /api/cron/* endpoints at the same times (UTC) as the production cluster: market prices,
-  # net worth snapshots, bank sync, account deletion. Without this, prices and history are not updated.
+  # net worth snapshots, account deletion, summary emails, bank sync. Without this, prices and history are not updated.
+  # Not here on purpose: `inactive-accounts` (the hosted service deletes accounts unused for 90 days; your own install
+  # keeps them) and `public-demo`.
   cron:
     image: alpine:3.21
     restart: unless-stopped
     environment:
-      CRON_SECRET: ${CRON_SECRET:?Manca CRON_SECRET}
+      CRON_SECRET: ${CRON_SECRET:?CRON_SECRET is missing, run ./scripts/selfhost-init.sh}
       GOCARDLESS_SECRET_ID: ${GOCARDLESS_SECRET_ID:-}
+      EMAIL_CONFIGURED: ${SMTP_URL:-}${RESEND_API_KEY:-}
     depends_on:
       app:
         condition: service_healthy
@@ -105,6 +122,10 @@ services:
           echo "30 6,17,22 * * * $$(call market-prices)"
           echo "50 6,17,23 * * * $$(call net-worth-snapshot)"
           echo "30 3 * * * $$(call account-deletion)"
+          # Summary and alert emails only with an email service.
+          if [ -n "$$EMAIL_CONFIGURED" ]; then
+            echo "30 7 * * * $$(call notifications)"
+          fi
           # Bank jobs run only if GoCardless is configured (without credentials they would return 500).
           if [ -n "$$GOCARDLESS_SECRET_ID" ]; then
             echo "0 */12 * * * $$(call gocardless-sync)"
@@ -112,6 +133,17 @@ services:
           fi
         } > /etc/crontabs/root
         exec crond -f -l 8
+
+  # AI import of any bank or broker CSV (the parser is written by a model through OpenRouter). Off by default:
+  # set OPENROUTER_API_KEY and OPENROUTER_MODEL, then COMPOSE_PROFILES=ai in .env (or `docker compose --profile ai up -d`).
+  csv-worker:
+    image: ghcr.io/yonderurik/buddy-budget-csv-worker:${BUDDYBUDGET_VERSION:-latest}
+    profiles: ["ai"]
+    restart: unless-stopped
+    environment: *app-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   postgres-data:

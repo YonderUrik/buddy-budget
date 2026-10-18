@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.77.0](https://github.com/YonderUrik/buddy-budget/compare/v0.76.1...v0.77.0) (2026-10-18)
+
+
+### Novità
+
+* taste-skill headings and quiet lists across the app screens ([#427](https://github.com/YonderUrik/buddy-budget/issues/427)) ([d76f9f1](https://github.com/YonderUrik/buddy-budget/commit/d76f9f1d4b15b9549f0a94b9c9c47f04e87fa638))
+
+
+### Correzioni
+
+* one clear chooser for the public demo's country and language ([#428](https://github.com/YonderUrik/buddy-budget/issues/428)) ([640f4de](https://github.com/YonderUrik/buddy-budget/commit/640f4dee9502bf5ab199dea411a9f77477877127))
+
 ## [0.76.1](https://github.com/YonderUrik/buddy-budget/compare/v0.76.0...v0.76.1) (2026-10-17)
 
 

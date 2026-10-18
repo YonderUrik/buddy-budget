@@ -6,14 +6,14 @@ import { LEGAL_VERSION } from "@/lib/legal";
 import { isPublicPath } from "./proxy";
 
 describe("isPublicPath", () => {
-  it.each(["/api/health", "/api/health/ready", "/api/legal", "/api/cron/gocardless-sync", "/api/metrics", "/api/auth/callback/google", "/favicon.ico", "/api/email/unsubscribe", "/disiscrizione"])(
+  it.each(["/api/health", "/api/health/ready", "/api/legal", "/api/cron/gocardless-sync", "/api/metrics", "/api/auth/callback/google", "/favicon.ico", "/api/email/unsubscribe", "/disiscrizione", "/api/gocardless/callback/native", "/banca/ritorno"])(
     "%s è pubblico",
     (path) => {
       expect(isPublicPath(path)).toBe(true);
     }
   );
 
-  it.each(["/api/transactions", "/api/me/bootstrap", "/api/legalx", "/api/healthz", "/api/cronjobs", "/api/metricsx", "/api/emails", "/disiscrizionex", "/api/user/notifications", "/conti", "/"])("%s richiede sessione", (path) => {
+  it.each(["/api/transactions", "/api/me/bootstrap", "/api/legalx", "/api/healthz", "/api/cronjobs", "/api/metricsx", "/api/emails", "/disiscrizionex", "/api/user/notifications", "/conti", "/", "/api/gocardless/callback", "/api/gocardless/connections", "/api/gocardless/callback/nativex"])("%s richiede sessione", (path) => {
     expect(isPublicPath(path)).toBe(false);
   });
 });

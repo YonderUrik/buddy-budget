@@ -324,6 +324,33 @@ const whatsNewEntrySchema = z.object({ id: z.string(), date: isoDate, title: z.s
 /** GET /api/whats-new (G14). */
 export const whatsNewSchema = z.object({ maxAgeDays: z.number().int(), entries: z.array(whatsNewEntrySchema), current: whatsNewEntrySchema.nullable() });
 
+/** POST /api/gocardless/connections (R6: `connectionId` and `client` added for the native return). */
+export const bankConnectionStartSchema = z.object({
+  link: z.url(),
+  connectionId: z.uuid(),
+  client: z.enum(["web", "native"]),
+});
+
+/** GET /api/gocardless/connections/{id}/accounts: the «Conti trovati» selection. */
+export const bankConnectionAccountsSchema = z.object({
+  externalAccounts: z.array(
+    z.object({
+      externalAccountId: z.string(),
+      details: z.object({ iban: z.string().optional(), name: z.string().optional(), product: z.string().optional() }).loose(),
+    })
+  ),
+  existingAutoAccounts: z.array(z.object({ id: z.uuid(), name: z.string() })),
+});
+
+/** POST /api/gocardless/connections/{id}/complete (R6): the consent is linked, plus the accounts to select. */
+export const bankConnectionCompletedSchema = bankConnectionAccountsSchema.extend({
+  connectionId: z.uuid(),
+  status: z.literal("linked"),
+  institutionId: z.string(),
+  institutionName: z.string(),
+  consentExpiresAt: timestamp.nullable(),
+});
+
 export type OverviewView = z.infer<typeof overviewViewSchema>;
 export type LiquidityMonth = z.infer<typeof liquidityMonthSchema>;
 export type LiquidityAnalysis = z.infer<typeof liquidityAnalysisSchema>;

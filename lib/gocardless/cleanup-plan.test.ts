@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planConnectionCleanup, planRemoteSweep, type CleanupConnection } from "./cleanup-plan";
+import { isOwnRedirect, planConnectionCleanup, planRemoteSweep, type CleanupConnection } from "./cleanup-plan";
 
 const NOW = new Date("2026-10-01T10:00:00Z");
 const daysAgo = (days: number) => new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000);
@@ -157,5 +157,48 @@ describe("planRemoteSweep", () => {
       agreementIds: [],
       linkedUnknown: [],
     });
+  });
+});
+
+describe("native bank return (R6)", () => {
+  const OWN = "https://app.example.com/api/gocardless/callback";
+  const NATIVE = "https://app.example.com/api/gocardless/callback/native";
+
+  it("recognizes the native return URL as ours, by origin and path", () => {
+    expect(isOwnRedirect(NATIVE, OWN)).toBe(true);
+    expect(isOwnRedirect(`${OWN}?client=app`, OWN)).toBe(true);
+    expect(isOwnRedirect(OWN, OWN)).toBe(true);
+    expect(isOwnRedirect("https://other.example.com/api/gocardless/callback/native", OWN)).toBe(false);
+    expect(isOwnRedirect("https://app.example.com/api/gocardless/callbackx", OWN)).toBe(false);
+    expect(isOwnRedirect("not a url", OWN)).toBe(false);
+    expect(isOwnRedirect(NATIVE, undefined)).toBe(false);
+  });
+
+  it("treats an abandoned native requisition as our own attempt (3-day grace), not as another environment's (30 days)", () => {
+    const sweep = planRemoteSweep(
+      {
+        requisitions: [
+          { id: "known", created: daysAgo(10).toISOString(), status: "LN" },
+          { id: "native-old", created: daysAgo(4).toISOString(), status: "UA", redirect: NATIVE },
+          { id: "native-young", created: daysAgo(1).toISOString(), status: "CR", redirect: NATIVE },
+          { id: "native-ln", created: daysAgo(20).toISOString(), status: "LN", redirect: NATIVE },
+        ],
+        agreements: [],
+        knownRequisitionIds: new Set(["known"]),
+        ownRedirect: OWN,
+      },
+      NOW
+    );
+    expect(sweep.staleRequisitionIds).toEqual(["native-old"]);
+    expect(sweep.requisitionIds).toEqual([]);
+    expect(sweep.linkedUnknown.map(({ id, origin }) => [id, origin])).toEqual([["native-ln", "own_row_gone"]]);
+  });
+
+  it("keeps a native connection pending until the app completes it: no action inside the abandoned-attempt grace", () => {
+    const pending = connection({ status: "pending", linkCount: 0, createdAt: daysAgo(2), consentExpiresAt: null });
+    expect(planConnectionCleanup([pending], NOW).actions).toEqual([]);
+    // Past the grace it becomes a candidate; the runner then asks GoCardless and spares it if consent was given (LN).
+    const stale = connection({ status: "pending", linkCount: 0, createdAt: daysAgo(4), consentExpiresAt: null });
+    expect(planConnectionCleanup([stale], NOW).actions.map((action) => action.kind)).toEqual(["abandoned_attempt"]);
   });
 });

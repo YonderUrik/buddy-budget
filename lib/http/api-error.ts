@@ -42,6 +42,11 @@ export const API_ERROR_CODES = [
   "country_feature_unavailable",
   "invalid_plan",
   "plan_changed",
+  "bank_capacity_reached",
+  "bank_connection_not_found",
+  "bank_consent_pending",
+  "bank_consent_failed",
+  "bank_unavailable",
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

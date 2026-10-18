@@ -10,7 +10,8 @@ This part turns external financial data into rows of `transactions` and `investm
 |---|---|---|---|
 | Capacity check | user, institution id | `pending` row in `bank_connections` + row in `bank_connection_attempts`, or a block reason | [`capacity.ts`](../../lib/gocardless/capacity.ts), [`capacity-store.ts`](../../lib/gocardless/capacity-store.ts) |
 | Consent | institution, history days | GoCardless agreement + requisition, consent link | [`client.ts`](../../lib/gocardless/client.ts) `createRequisition`, [`connections/route.ts`](../../app/api/gocardless/connections/route.ts) |
-| Callback | `?ref=<connection id>` | connection `linked`, `consentExpiresAt` = now + 90 days | [`callback/route.ts`](../../app/api/gocardless/callback/route.ts) |
+| Callback | `?ref=<connection id>` | connection `linked`, `consentExpiresAt` = now + 90 days | [`callback/route.ts`](../../app/api/gocardless/callback/route.ts) (web, cookie) |
+| Native return + complete | `?ref=<connection id>[&error=]`, then the app's bearer call | `buddybudget://bank/return?ref&status`; then connection `linked` + accounts to select | [`callback/native/route.ts`](../../app/api/gocardless/callback/native/route.ts), [`complete/route.ts`](../../app/api/gocardless/connections/%5Bid%5D/complete/route.ts), [`complete.ts`](../../lib/gocardless/complete.ts) |
 | Finalize | chosen external accounts | `accounts` (`source = auto`) + `bank_account_links`, initial import job | [`finalize/route.ts`](../../app/api/gocardless/connections/%5Bid%5D/finalize/route.ts) |
 | Sync | one link | balance update, new `transactions`, categorisation pass | [`sync.ts`](../../lib/gocardless/sync.ts) `syncAccountLink` |
 | Sync job | links + Redis store | per-account progress on Redis | [`lib/sync-jobs/run.ts`](../../lib/sync-jobs/run.ts) `runSyncJob` |
@@ -105,6 +106,9 @@ Example: 38 live requisitions and 41 attempts in the window give `used = 41`. A 
 
 1. `POST /api/gocardless/connections` reserves the slot (4.1), then `createRequisition` creates an end-user agreement (`access_valid_for_days = 90`, scopes `balances`, `details`, `transactions`, `max_historical_days` from the request) and a requisition whose `reference` is the connection id and whose `redirect` is `<APP_URL>/api/gocardless/callback`. The route stores `requisitionId` and returns the bank link. Demo mode blocks this route.
 2. `GET /api/gocardless/callback?ref=` loads the connection for the signed-in user only. If the requisition status is `LN` the connection becomes `linked` and `consentExpiresAt` is reset to now + 90 days (the consent counts from when the user gives it). Any other status sets `error`.
+   The web shows a toast on `/liquidita/conti` for the `bankError` code the callback adds on failure.
+
+   **Native apps** (`client: "native"` on step 1, or `ios`/`android`) get `redirect = <APP_URL>/api/gocardless/callback/native`. That route is public (the system browser has no session) and side-effect free: it maps GoCardless' `ref`/`error` to `buddybudget://bank/return?ref=<id>&status=returned|cancelled|failed|invalid_ref[&error=<code>]` and 302s there. The app then calls `POST /api/gocardless/connections/[id]/complete` with its bearer token: ownership check, then `LN` → `linked` (once; a retry keeps the expiry) and the accounts to select; `CR/GC/UA/SA/GA` → 409 `bank_consent_pending`, no change; any other status → 422 `bank_consent_failed`, `error` (never downgrading a `linked` row). `/banca/ritorno` is a public HTTPS page that deep-links to the same app address (future Universal/App Links target). A native connection stays `pending` until `complete`: the cleanup's abandoned-attempt grace and its LN check (4.7) cover an app that never calls it.
 3. `POST /api/gocardless/connections/[id]/finalize` checks that every selected external account belongs to the requisition, and that any `existing` target account is the user's own `auto` account. It then creates accounts and links (or moves an existing link to the new connection, which is how a renewal keeps history), creates an `initial-import` job and starts `runSyncJob` in `after()`. Connections left without accounts by a renewal are released in `after()`.
 
 `releaseConnectionIfUnused` deletes the requisition on GoCardless (404 counts as done) and then the row, only if no link exists. It also runs when an account is deleted (`DELETE /api/accounts/[id]`), so disconnecting the last account revokes the consent at once. It never throws; a failure is left to the maintenance cron.
@@ -180,7 +184,7 @@ Cleanup of what GoCardless has and the database does not (`planRemoteSweep`, ski
 
 | Origin | Status | Action |
 |---|---|---|
-| ours (reference is one of our connection ids, or redirect is our callback) | not `LN`, older than 3 days | delete (`stale_requisition`) |
+| ours (reference is one of our connection ids, or redirect is our callback: same origin, web or native path) | not `LN`, older than 3 days | delete (`stale_requisition`) |
 | foreign | not `LN`, older than 30 days | delete only with `GOCARDLESS_CLEANUP_DELETE_UNKNOWN=true` |
 | any | `LN` | logged as `linked_unknown`; deleted only if listed in `GOCARDLESS_CLEANUP_APPROVED_REQUISITIONS` |
 | agreements | not referenced by any requisition, older than 30 days | delete only with `DELETE_UNKNOWN` |

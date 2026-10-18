@@ -5071,5 +5071,17 @@
   "Impossibile togliere il budget": "Could not remove the budget",
   "{0} oltre il budget di {1}": "{0} over the {1} budget",
   "restano {0} su {1} di budget": "{0} left of the {1} budget",
-  "Trasferimenti": "Transfers"
+  "Trasferimenti": "Transfers",
+  "Collegamento con la banca non trovato": "Bank connection not found",
+  "Il consenso con la banca non è ancora completo": "The bank consent is not complete yet",
+  "La banca non ha confermato il consenso": "The bank did not confirm the consent",
+  "Non abbiamo trovato il collegamento con la banca. Riprova dall'inizio.": "We couldn't find the bank connection. Please start again.",
+  "La banca non ha confermato il consenso: il collegamento non è stato completato.": "The bank did not confirm the consent: the connection was not completed.",
+  "Il servizio di collegamento bancario non risponde. Riprova tra poco.": "The bank connection service is not responding. Try again shortly.",
+  "Hai finito con la banca. Torna nell'app per scegliere i conti da collegare.": "You're done with the bank. Go back to the app to choose the accounts to connect.",
+  "Hai annullato il collegamento con la banca. Puoi riprovare dall'app.": "You cancelled the bank connection. You can try again from the app.",
+  "La banca non ha completato il collegamento. Puoi riprovare dall'app.": "The bank did not complete the connection. You can try again from the app.",
+  "Questo collegamento non è valido. Riprova dall'app.": "This link is not valid. Try again from the app.",
+  "Torna a BuddyBudget": "Back to BuddyBudget",
+  "Apri l'app": "Open the app"
 }

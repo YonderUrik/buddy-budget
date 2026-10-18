@@ -234,7 +234,9 @@ function pct(share: number): string {
 export function sectorInsight(breakdown: ExposureBreakdown, language: Language = "it"): string | null {
   const top = breakdown.slices.find((s) => isEquitySector(s.key));
   if (!top || top.share < 0.1) return null;
-  const label = translate(language, SECTOR_LABELS[top.key as SectorKey]).toLowerCase();
+  // German capitalises nouns: only Italian and English lowercase the sector inside the sentence.
+  const translated = translate(language, SECTOR_LABELS[top.key as SectorKey]);
+  const label = language === "de" ? translated : translated.toLowerCase();
   return translate(language, "Il settore che pesa di più è {0} ({1} del portafoglio).", {0: label, 1: pct(top.share)});
 }
 

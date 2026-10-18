@@ -1,7 +1,7 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
 
-/** Tessera di una categoria nella board: avatar, nome e utilizzo; apre il dettaglio al clic ed è trascinabile tra i gruppi. */
+/** Tile of a category on the board: avatar, name, monthly budget and usage; opens the detail on click and can be dragged between groups. */
 
 import { cn } from "@/lib/utils";
 import type { Category } from "@/lib/db/schema/categories";
@@ -12,6 +12,8 @@ export interface CategoryTileProps {
   category: Category;
   /** Transazioni recenti della categoria; omesso mentre il dato carica. */
   usageCount?: number;
+  /** Formatted monthly budget, when the category has one. */
+  budgetLabel?: string;
   /** Trascinabile solo se la categoria può cambiare gruppo (non la fallback). */
   draggable: boolean;
   isMoving?: boolean;
@@ -20,7 +22,7 @@ export interface CategoryTileProps {
   onDragEnd: () => void;
 }
 
-export function CategoryTile({ category, usageCount, draggable, isMoving, onOpen, onDragStart, onDragEnd }: CategoryTileProps) {
+export function CategoryTile({ category, usageCount, budgetLabel, draggable, isMoving, onOpen, onDragStart, onDragEnd }: CategoryTileProps) {
   const { t: tr } = useLocalization();
   return (
     <button
@@ -42,6 +44,9 @@ export function CategoryTile({ category, usageCount, draggable, isMoving, onOpen
     >
       <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} className="size-7" size={14} />
       <span className="min-w-0 truncate font-medium text-foreground">{category.name}</span>
+      {budgetLabel && (
+        <span className="shrink-0 text-xs text-text-2 tabular-nums">{tr("{0}/mese", { 0: budgetLabel })}</span>
+      )}
       {usageCount !== undefined && usageCount > 0 && (
         <span className="shrink-0 text-xs text-text-3 tabular-nums">{usageCount}</span>
       )}

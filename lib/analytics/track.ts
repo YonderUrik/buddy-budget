@@ -72,7 +72,10 @@ export interface ProductEvents {
    */
   onboarding_categories_chosen: { customized: boolean; active: number; removed: number; renamed: number; optionalAdded: number; custom: number };
   account_created: undefined;
+  /** Monthly budget of a category saved (created or changed) from the category's detail window. */
   budget_set: undefined;
+  /** Monthly budget of a category removed (field emptied in the category's detail window). */
+  budget_removed: undefined;
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
   /** «Collega la tua banca» mostrato come non disponibile nel dialog «Nuovo conto» (una volta per apertura); `reason`: posti finiti o limite per persona. */

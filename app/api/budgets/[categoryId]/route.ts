@@ -5,7 +5,7 @@ import { db } from "@/lib/db/client";
 import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { upsertBudgetSchema } from "@/lib/validation/budgets";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /**
  * Crea o aggiorna (upsert) il budget mensile di una categoria del proprio utente.
@@ -49,7 +49,33 @@ async function handlePut(
     })
     .returning();
 
+  requestLogger().info("budget.monthly.saved");
   return Response.json(budget);
 }
 
+/**
+ * Removes the monthly budget of one of the user's categories (the category has no budget afterwards).
+ * Idempotent: 204 also when no budget existed; the `userId` filter keeps other users' rows out of reach.
+ */
+async function handleDelete(
+  request: NextRequest,
+  { params }: { params: Promise<{ categoryId: string }> }
+) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session) {
+    return new Response(null, { status: 401 });
+  }
+  bindRequestUser(session.user.id);
+
+  const { categoryId } = await params;
+  const removed = await db
+    .delete(budgets)
+    .where(and(eq(budgets.categoryId, categoryId), eq(budgets.userId, session.user.id)))
+    .returning({ id: budgets.id });
+
+  requestLogger().info("budget.monthly.removed", { count: removed.length });
+  return new Response(null, { status: 204 });
+}
+
 export const PUT = withRoute("budgets.upsert", handlePut);
+export const DELETE = withRoute("budgets.remove", handleDelete);

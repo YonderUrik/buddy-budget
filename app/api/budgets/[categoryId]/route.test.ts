@@ -11,11 +11,11 @@ vi.mock("@/lib/auth", () => ({
 }));
 
 import { auth } from "@/lib/auth";
-import { PUT } from "./route";
+import { DELETE, PUT } from "./route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
 
-describe("PUT /api/budgets/[categoryId]", () => {
+describe("PUT and DELETE /api/budgets/[categoryId]", () => {
   let userId: string;
   let categoryId: string;
   let otherUserId: string;
@@ -131,5 +131,32 @@ describe("PUT /api/budgets/[categoryId]", () => {
       .from(budgets)
       .where(eq(budgets.categoryId, otherUserCategoryId));
     expect(budget).toBeUndefined();
+  });
+  it("removes the budget of the user's category", async () => {
+    await db.insert(budgets).values({ userId, categoryId, monthlyAmount: "300.00" });
+    const response = await DELETE(new NextRequest(`http://localhost/api/budgets/${categoryId}`, { method: "DELETE" }), {
+      params: Promise.resolve({ categoryId }),
+    });
+    expect(response.status).toBe(204);
+    const rows = await db.select().from(budgets).where(eq(budgets.categoryId, categoryId));
+    expect(rows).toHaveLength(0);
+  });
+
+  it("answers 204 when there is no budget to remove", async () => {
+    const response = await DELETE(new NextRequest(`http://localhost/api/budgets/${categoryId}`, { method: "DELETE" }), {
+      params: Promise.resolve({ categoryId }),
+    });
+    expect(response.status).toBe(204);
+  });
+
+  it("never removes another user's budget", async () => {
+    await db.insert(budgets).values({ userId: otherUserId, categoryId: otherUserCategoryId, monthlyAmount: "100.00" });
+    const response = await DELETE(new NextRequest(`http://localhost/api/budgets/${otherUserCategoryId}`, { method: "DELETE" }), {
+      params: Promise.resolve({ categoryId: otherUserCategoryId }),
+    });
+    expect(response.status).toBe(204);
+    const rows = await db.select().from(budgets).where(eq(budgets.categoryId, otherUserCategoryId));
+    expect(rows).toHaveLength(1);
+    await db.delete(budgets).where(eq(budgets.categoryId, otherUserCategoryId));
   });
 });

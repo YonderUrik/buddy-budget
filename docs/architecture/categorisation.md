@@ -201,7 +201,7 @@ Example: a 60.00 dinner split in half: `excludedAmount = -30.00`, effective spen
 
 ### 4.10 Budgets per category
 
-`PUT /api/budgets/[categoryId]` upserts a `monthlyAmount`; transfer categories are refused. Spending per category is `sumByCategory` (effective amounts). In [`lib/calc/expenses.ts`](../../lib/calc/expenses.ts) `scaleBudgetForPeriod` scales the monthly total to the selected period (week = month / 30 * 7, quarter = month * 3, year = month * 12), and `budgetRimanente` (budget remaining) compares only categories that have a budget.
+The user sets a budget in the detail window of an expense category (Liquidità → Categorie, `CategoryBudgetField`): the amount is saved on blur and an empty field removes it. The tile on the board shows it as «420 €/mese», and Liquidità → Analisi draws each budgeted category's bar against its budget for the period («restano 101 € su 420 € di budget»). `PUT /api/budgets/[categoryId]` upserts a `monthlyAmount` (transfer categories are refused) and `DELETE` removes it. Spending per category is `sumByCategory` (effective amounts). In [`lib/calc/expenses.ts`](../../lib/calc/expenses.ts) `scaleBudgetForPeriod` scales the monthly total to the selected period (week = month / 30 * 7, quarter = month * 3, year = month * 12), and `budgetRimanente` (budget remaining) compares only categories that have a budget.
 
 Budget alert emails ([`lib/notifications/alerts.ts`](../../lib/notifications/alerts.ts)) fire at 80% and 100% of the month's budget, once per category, month and threshold (Rome time).
 

@@ -17,6 +17,8 @@ export interface CategoryGroupColumnProps {
   dotClassName?: string;
   categories: Category[];
   usage: CategoryUsageCounts | undefined;
+  /** Formatted monthly budget per category id, shown on the tile of categories that have one. */
+  budgetLabels?: Record<string, string>;
   /** Tipo assegnato dal drop e dal "+ Aggiungi"; assente per la colonna "Da categorizzare" (non accetta né crea). */
   dropType?: CategoryType;
   isDropActive: boolean;
@@ -29,7 +31,7 @@ export interface CategoryGroupColumnProps {
 }
 
 export function CategoryGroupColumn({
-  title, description, dotClassName, categories, usage, dropType, isDropActive, movingId,
+  title, description, dotClassName, categories, usage, budgetLabels, dropType, isDropActive, movingId,
   onOpen, onDragStart, onDragEnd, onDragEnter, onDrop,
 }: CategoryGroupColumnProps) {
   const { t: tr } = useLocalization();
@@ -59,6 +61,7 @@ export function CategoryGroupColumn({
             key={category.id}
             category={category}
             usageCount={usage?.[category.id]}
+            budgetLabel={budgetLabels?.[category.id]}
             draggable={canDrop && !category.isFallback}
             isMoving={movingId === category.id}
             onOpen={onOpen}

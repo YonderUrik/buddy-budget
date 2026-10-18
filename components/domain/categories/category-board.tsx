@@ -14,6 +14,9 @@ import {
   type CategoryType,
 } from "@/lib/categories/groups";
 import type { Category } from "@/lib/db/schema/categories";
+import { authClient } from "@/lib/auth/client";
+import { localizedFormats } from "@/lib/localization/format";
+import { useBudgetsQuery } from "@/lib/queries/budgets";
 import {
   useCategoryUsageQuery,
   useUpdateCategoryMutation,
@@ -30,9 +33,26 @@ export interface CategoryBoardProps {
 const INCOME_DESCRIPTION = "Stipendio, rimborsi e tutto ciò che entra.";
 const UNCATEGORIZED_DESCRIPTION =
   "Movimenti non ancora assegnati: si sistemano da Transazioni.";
+/** Monthly budget of each category, already formatted in the user's currency and language (only categories that have one). */
+function useBudgetLabels(): Record<string, string> {
+  const { locale } = useLocalization();
+  const { data: session } = authClient.useSession();
+  const { data: budgets } = useBudgetsQuery();
+  const currency = session?.user.currency ?? "EUR";
+  return React.useMemo(() => {
+    const { formatCurrency } = localizedFormats(locale);
+    return Object.fromEntries(
+      (budgets ?? [])
+        .filter((b) => Number(b.monthlyAmount) > 0)
+        .map((b) => [b.categoryId, formatCurrency(Number(b.monthlyAmount), currency, { maximumFractionDigits: 0 })])
+    );
+  }, [budgets, currency, locale]);
+}
+
 export function CategoryBoard({ categories }: CategoryBoardProps) {
   const { t: tr } = useLocalization();
   const { data: usage } = useCategoryUsageQuery();
+  const budgetLabels = useBudgetLabels();
   const updateMutation = useUpdateCategoryMutation();
   const sections = groupCategoriesByType(categories);
 
@@ -90,6 +110,7 @@ export function CategoryBoard({ categories }: CategoryBoardProps) {
         dotClassName={props.dotClassName}
         categories={props.items}
         usage={usage}
+        budgetLabels={budgetLabels}
         dropType={type}
         isDropActive={isDropTarget(dnd, type)}
         movingId={movingId}

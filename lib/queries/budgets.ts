@@ -37,8 +37,26 @@ export function useUpsertBudgetMutation() {
       }
       return response.json() as Promise<Budget>;
     },
-    onSuccess: () => {
+    onSuccess: (budget) => {
       track("budget_set");
+      // The saved row goes into the cache right away, so a field that reads it never sees the old value while the list refetches.
+      queryClient.setQueryData<Budget[]>(BUDGETS_QUERY_KEY, (current) => [...(current ?? []).filter((b) => b.categoryId !== budget.categoryId), budget]);
+      queryClient.invalidateQueries({ queryKey: BUDGETS_QUERY_KEY });
+    },
+  });
+}
+
+/** Removes the monthly budget of a category (the category is no longer tracked against a limit). */
+export function useRemoveBudgetMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (categoryId: string) => {
+      const response = await fetch(`/api/budgets/${categoryId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error(pageText("Impossibile togliere il budget"));
+    },
+    onSuccess: (_, categoryId) => {
+      track("budget_removed");
+      queryClient.setQueryData<Budget[]>(BUDGETS_QUERY_KEY, (current) => current?.filter((b) => b.categoryId !== categoryId));
       queryClient.invalidateQueries({ queryKey: BUDGETS_QUERY_KEY });
     },
   });

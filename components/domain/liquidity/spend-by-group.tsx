@@ -22,6 +22,8 @@ export interface SpendCategory {
   color: string;
   icon: string;
   amount: number;
+  /** Budget of the category over the period shown (monthly budget scaled to the period); omitted when it has none. */
+  budget?: number;
 }
 
 export interface SpendGroup {
@@ -56,6 +58,42 @@ interface GroupBlockProps {
   onToggle: () => void;
   onHoverChange: (key: string | null) => void;
   onPickCategory?: (id: string) => void;
+}
+
+/**
+ * Bar under a category: with a budget it fills up to the budget (primary colour, negative once over it) and names what is left;
+ * without one it shows the category's share of its group.
+ */
+function CategoryBar({ category, groupAmount, groupColor, money }: { category: SpendCategory; groupAmount: number; groupColor: string; money: (n: number) => string }) {
+  const { t: tr } = useLocalization();
+  if (category.budget === undefined || category.budget <= 0) {
+    return (
+      <span className="mt-1 block h-1.5 rounded-full bg-foreground/[0.08]" aria-hidden="true">
+        <span className="block h-full rounded-full" style={{ width: `${Math.max((category.amount / (groupAmount || 1)) * 100, 2)}%`, backgroundColor: groupColor }} />
+      </span>
+    );
+  }
+  const over = category.amount > category.budget;
+  const used = Math.min(1, category.amount / category.budget);
+  return (
+    <>
+      <span
+        className="mt-1 block h-1.5 rounded-full bg-foreground/[0.08]"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(used * 100)}
+        aria-label={tr("Budget usato: {0}% di {1}", { 0: Math.round((category.amount / category.budget) * 100), 1: money(category.budget) })}
+      >
+        <span className="block h-full rounded-full" style={{ width: `${Math.max(used * 100, 2)}%`, backgroundColor: over ? "var(--neg)" : "var(--primary)" }} />
+      </span>
+      <span className={cn("mt-1 block text-xs", over ? "text-neg" : "text-text-2")}>
+        {over
+          ? tr("{0} oltre il budget di {1}", { 0: money(category.amount - category.budget), 1: money(category.budget) })
+          : tr("restano {0} su {1} di budget", { 0: money(category.budget - category.amount), 1: money(category.budget) })}
+      </span>
+    </>
+  );
 }
 
 function GroupBlock({ group, total, currency, visible, open, highlighted, locked, onToggle, onHoverChange, onPickCategory }: GroupBlockProps) {
@@ -102,9 +140,7 @@ function GroupBlock({ group, total, currency, visible, open, highlighted, locked
                 <CategoryAvatar color={c.color as CategoryColor} icon={c.icon as CategoryIcon} size={15} className="size-8" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{c.name}</span>
-                  <span className="mt-1 block h-1.5 rounded-full bg-foreground/[0.08]" aria-hidden="true">
-                    <span className="block h-full rounded-full" style={{ width: `${Math.max((c.amount / (group.amount || 1)) * 100, 2)}%`, backgroundColor: group.color }} />
-                  </span>
+                  <CategoryBar category={c} groupAmount={group.amount} groupColor={group.color} money={money} />
                 </span>
                 <span className="text-sm font-semibold tabular-nums">{money(c.amount)}</span>
               </button>

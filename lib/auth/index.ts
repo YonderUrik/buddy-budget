@@ -2,7 +2,7 @@ import 'server-only';
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { lastLoginMethod, magicLink } from "better-auth/plugins";
+import { bearer, lastLoginMethod, magicLink } from "better-auth/plugins";
 import { APIError } from "better-auth/api";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
@@ -99,6 +99,11 @@ export const auth = betterAuth({
     lastLoginMethod(),
     // Read-only sample accounts anyone can open from the landing (`/demo`), when PUBLIC_DEMO_ENABLED=true.
     publicDemo(),
+    // Native apps (no cookie jar): `Authorization: Bearer <session token>` is read as the session cookie by every
+    // `getSession` call (API routes and proxy), and sign-in responses carry the token in the `set-auth-token` header.
+    // The web keeps using the HttpOnly cookie. Unsigned tokens are accepted (the plugin signs them itself), so the
+    // `token` returned by `/magic-link/verify` without a callbackURL works as is.
+    bearer(),
   ],
   socialProviders: googleProvider,
   // Email and password: on for self-hosted installs (no email service needed), off on the hosted version.

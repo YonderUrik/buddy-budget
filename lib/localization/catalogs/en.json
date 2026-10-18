@@ -5062,5 +5062,6 @@
   "Imposta un budget": "Set a budget",
   "Impossibile togliere il budget": "Could not remove the budget",
   "{0} oltre il budget di {1}": "{0} over the {1} budget",
-  "restano {0} su {1} di budget": "{0} left of the {1} budget"
+  "restano {0} su {1} di budget": "{0} left of the {1} budget",
+  "Trasferimenti": "Transfers"
 }

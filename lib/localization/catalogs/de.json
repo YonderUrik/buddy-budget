@@ -5062,5 +5062,6 @@
   "Imposta un budget": "Budget festlegen",
   "Impossibile togliere il budget": "Budget konnte nicht entfernt werden",
   "{0} oltre il budget di {1}": "{0} über dem Budget von {1}",
-  "restano {0} su {1} di budget": "{0} von {1} Budget übrig"
+  "restano {0} su {1} di budget": "{0} von {1} Budget übrig",
+  "Trasferimenti": "Umbuchungen"
 }

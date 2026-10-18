@@ -5,6 +5,7 @@ import { FEATURE_AREAS, FEATURE_AREA_LABELS_EN, FEATURES } from "./catalog.gener
 import { HOME_EN } from "./en/home";
 import { AREA_META_EN } from "./feature-areas";
 import { HOME_IT } from "./home";
+import { LEGAL_PATHS } from "./legal";
 import { EN_PATHS, HOME_PATH, PAGE_PAIRS, counterpart, languageAlternates } from "./locales";
 import { SCREEN_TEXT_EN } from "./screen-text";
 import { SCREENS } from "./screens";
@@ -60,7 +61,7 @@ describe("language pairs", () => {
       expect(counterpart(pair.it, "en")).toBe(pair.en);
       expect(counterpart(pair.en, "it")).toBe(pair.it);
     }
-    expect(counterpart("/strumenti/zainetto-fiscale", "en")).toBe(HOME_PATH.en);
+    expect(counterpart(LEGAL_PATHS.termini, "en")).toBe(HOME_PATH.en);
   });
 
   it("the English menu and footer link pages that exist", () => {

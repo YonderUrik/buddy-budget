@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
+import { languageAlternates } from "@/content/locales";
 import { ObiettivoCalculator } from "@/components/tools/obiettivo-calculator";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
@@ -11,13 +12,13 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata: Metadata = pageMetadata("it", {
   title: OBIETTIVO_PAGE.title,
   description: OBIETTIVO_PAGE.description,
-  alternates: { canonical: CONTENT_PATHS.obiettivo },
+  alternates: languageAlternates(CONTENT_PATHS.obiettivo, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
 });
 
 export default function Page() {
   return (
-    <ContentPage title={OBIETTIVO_PAGE.h1} lead={OBIETTIVO_PAGE.lead} crumbs={[{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.strumenti, label: "Calcolatori" }, { label: "Obiettivo di risparmio" }]} ctaTitle="I tuoi obiettivi, con i soldi veri." ctaText="In BuddyBudget quanto metti da parte ogni mese si legge dai conti collegati. Crei un obiettivo, scegli da quali conti o investimenti arrivano i soldi e vedi quando ci arrivi, se il risparmio basta per tutti gli obiettivi e di quanto ognuno sposta l'anno in cui puoi smettere di lavorare." ctaLocation="calcolatore_obiettivo">
+    <ContentPage title={OBIETTIVO_PAGE.h1} current={CONTENT_PATHS.obiettivo} lead={OBIETTIVO_PAGE.lead} crumbs={[{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.strumenti, label: "Calcolatori" }, { label: "Obiettivo di risparmio" }]} ctaTitle="I tuoi obiettivi, con i soldi veri." ctaText="In BuddyBudget quanto metti da parte ogni mese si legge dai conti collegati. Crei un obiettivo, scegli da quali conti o investimenti arrivano i soldi e vedi quando ci arrivi, se il risparmio basta per tutti gli obiettivi e di quanto ognuno sposta l'anno in cui puoi smettere di lavorare." ctaLocation="calcolatore_obiettivo">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: OBIETTIVO_PAGE.h1, url: `${SITE_URL}${CONTENT_PATHS.obiettivo}`, inLanguage: "it-IT", description: OBIETTIVO_PAGE.description, isPartOf: { "@id": `${SITE_URL}/#website` } }} />
       <ObiettivoCalculator />
       <p className="note">Stima semplificata: versamenti uguali a fine mese, rendimento costante capitalizzato ogni mese, senza tasse sul rendimento né inflazione. Un conto deposito o un fondo rendono in modo diverso da così.</p>

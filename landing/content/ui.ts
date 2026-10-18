@@ -122,7 +122,7 @@ export const UI: Record<Locale, UiText> = {
         { href: EN_PATHS.features, label: "Features" },
         { href: EN_PATHS.screens, label: "Screens" },
         { href: EN_PATHS.security, label: "Security" },
-        { href: CONTENT_PATHS.strumenti, label: "Calculators (Italian)" },
+        { href: EN_PATHS.calculators, label: "Calculators" },
         { href: EN_PATHS.privacy, label: "Privacy and terms" },
       ],
       pages: "Site pages",

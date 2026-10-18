@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-18T09:53:10.260Z",
+  "capturedAt": "2026-10-18T12:16:30.877Z",
   "app": "http://localhost:3300",
   "language": "en",
   "viewport": {
@@ -26,7 +26,7 @@
       "theme": "light",
       "route": "/liquidita/conti",
       "width": 1920,
-      "height": 1200,
+      "height": 1323,
       "phone": true
     },
     {
@@ -74,7 +74,7 @@
       "theme": "light",
       "route": "/investimenti",
       "width": 1920,
-      "height": 2187,
+      "height": 2250,
       "phone": true
     },
     {
@@ -82,7 +82,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1961,
+      "height": 2054,
       "phone": true
     },
     {
@@ -90,7 +90,7 @@
       "theme": "light",
       "route": "/investimenti/diversificazione",
       "width": 1920,
-      "height": 1412,
+      "height": 1962,
       "phone": true
     },
     {
@@ -106,7 +106,7 @@
       "theme": "light",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2079,
+      "height": 2250,
       "phone": true
     },
     {
@@ -162,7 +162,7 @@
       "theme": "dark",
       "route": "/liquidita/conti",
       "width": 1920,
-      "height": 1200,
+      "height": 1323,
       "phone": true
     },
     {
@@ -210,7 +210,7 @@
       "theme": "dark",
       "route": "/investimenti",
       "width": 1920,
-      "height": 2187,
+      "height": 2250,
       "phone": true
     },
     {
@@ -218,7 +218,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1961,
+      "height": 2054,
       "phone": true
     },
     {
@@ -226,7 +226,7 @@
       "theme": "dark",
       "route": "/investimenti/diversificazione",
       "width": 1920,
-      "height": 1412,
+      "height": 1962,
       "phone": true
     },
     {
@@ -242,7 +242,7 @@
       "theme": "dark",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2079,
+      "height": 2250,
       "phone": true
     },
     {

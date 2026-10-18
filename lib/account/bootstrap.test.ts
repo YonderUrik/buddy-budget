@@ -21,7 +21,8 @@ describe("buildMeBootstrap", () => {
     expect(bootstrap.gate).toBeNull();
     expect(bootstrap.profile).toEqual({ productCountry: "IT", language: "it", availableLanguages: ["it", "en"], currency: "EUR", homePage: "/panoramica", hideAmounts: false });
     expect(bootstrap.legal).toEqual({ currentVersion: LEGAL_VERSION, acceptedVersion: LEGAL_VERSION, acceptedAt: createdAt.toISOString(), needsAcceptance: false });
-    expect(Object.values(bootstrap.capabilities.sections).every(Boolean)).toBe(true);
+    // Italy has every section except the German financial plan (no Italian planning model).
+    expect(bootstrap.capabilities.sections).toEqual({ pension: true, analytics: true, goals: true, investmentTaxes: true, investmentIncome: true, fire: true, financialPlanning: false });
     expect(bootstrap.session.recentLoginUntil).toBe("2026-10-18T08:10:00.000Z");
     expect(bootstrap.account).toEqual({ deactivated: false, deletionScheduledAt: null, readOnlyDemo: false });
   });

@@ -40,6 +40,8 @@ export const API_ERROR_CODES = [
   "position_not_sellable",
   "pension_fund_not_found",
   "country_feature_unavailable",
+  "invalid_plan",
+  "plan_changed",
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

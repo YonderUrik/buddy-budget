@@ -252,6 +252,34 @@ export const debtsInsightsSchema = z.object({
   }),
 });
 
+/** GET /api/analytics/base (G9). Engine objects are loose: their own tests pin them. */
+export const analyticsViewSchema = z.object({
+  currency: z.string(),
+  today: isoDate,
+  walkthroughSeen: z.boolean(),
+  storedAssumptions: z.looseObject({ expectedReturn: z.number(), withdrawalRate: z.number(), expectedReturnAuto: z.boolean(), dataPeriod: z.looseObject({ kind: z.string() }) }),
+  assumptions: z.looseObject({ expectedReturn: z.number(), withdrawalRate: z.number() }),
+  returnInfo: z.looseObject({ value: z.number(), source: z.enum(["storico", "prudente", "manuale"]), clamped: z.boolean(), high: z.boolean() }),
+  base: z.looseObject({
+    currency: z.string(),
+    wealth: z.object({ liquidity: z.number(), investments: z.number(), pension: z.number(), debts: z.number() }),
+    cashflow: z.looseObject({ annualIncome: z.number(), annualSpending: z.number(), annualSavings: z.number(), savingsRate: z.number().nullable(), monthsWithData: z.number().int() }),
+  }),
+  plan: z.looseObject({
+    spending: z.number().nullable(),
+    savings: z.number().nullable(),
+    wealth: z.number(),
+    taxShare: z.number(),
+    fireNumberGross: z.number().nullable(),
+    target: z.number().nullable(),
+    progress: z.number().nullable(),
+    yearsToFire: z.number().nullable(),
+    coast: z.array(z.object({ years: z.number(), number: z.number() })),
+  }),
+  growth: z.object({ split: z.looseObject({ rows: z.array(z.looseObject({})) }), journey: z.array(z.string()) }),
+  timeline: z.object({ headline: z.string(), series: z.array(z.object({ year: z.number().int(), wealth: z.number() })) }),
+});
+
 export type OverviewView = z.infer<typeof overviewViewSchema>;
 export type LiquidityMonth = z.infer<typeof liquidityMonthSchema>;
 export type LiquidityAnalysis = z.infer<typeof liquidityAnalysisSchema>;

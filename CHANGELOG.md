@@ -2,6 +2,19 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.78.0](https://github.com/YonderUrik/buddy-budget/compare/v0.77.0...v0.78.0) (2026-10-18)
+
+
+### Novità
+
+* fuller investment portfolio in the demo account ([#433](https://github.com/YonderUrik/buddy-budget/issues/433)) ([fc395dd](https://github.com/YonderUrik/buddy-budget/commit/fc395dd8f7218d7cdbec056f102a4782d396b096))
+* launch prep with English legal texts and calculators, AI on the security page and leaner docs ([#431](https://github.com/YonderUrik/buddy-budget/issues/431)) ([bf0c5ec](https://github.com/YonderUrik/buddy-budget/commit/bf0c5ece31698c7e2b1c57634f5711c938427908))
+
+
+### Correzioni
+
+* set a category's monthly budget again from the category ([#432](https://github.com/YonderUrik/buddy-budget/issues/432)) ([f576ef6](https://github.com/YonderUrik/buddy-budget/commit/f576ef695459b11958293eee072807980eca17d3))
+
 ## [0.77.0](https://github.com/YonderUrik/buddy-budget/compare/v0.76.1...v0.77.0) (2026-10-18)
 
 

@@ -35,7 +35,7 @@ export function InstrumentTaxListCard({ instruments, resolved, onEdit }: Instrum
   if (shown.length === 0) return null;
   return (
     <PanelSection icon={ListIcon} title={tr("Aliquote degli strumenti")} color="var(--swatch-slate)">
-      <ul className="flex flex-col divide-y divide-border">
+      <ul className="flex flex-col">
         {shown.map((instrument) => {
           const settings = resolved.get(instrument.id)!;
           return (

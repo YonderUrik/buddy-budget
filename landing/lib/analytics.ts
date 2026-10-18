@@ -19,7 +19,7 @@ export interface LandingEvents {
   };
   /** «Prova la demo» / "Try the demo": the button towards the app's public read-only demo. */
   demo_click: { location: LandingEvents["cta_click"]["location"]; lang: Locale };
-  /** The «IT / EN» switch, or the "also available in English" bar of the Italian home. */
+  /** The language menu, or the "also available in English" bar of the Italian home. */
   language_switch_click: { from: Locale; to: Locale; location: "nav" | "menu" | "footer" | "hint" };
   /** The "also available in English" bar closed without following it. */
   language_hint_dismissed: undefined;
@@ -32,8 +32,6 @@ export interface LandingEvents {
   screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
   theme_toggled: { theme: "light" | "dark" };
-  /** /sicurezza page: step opened in the data path diagram. */
-  security_node_selected: { node: "tu" | "banca" | "gocardless" | "buddybudget" };
   source_link_click: { location: "footer" | "sezione" };
   /** Home, «Sotto il cofano»: the self-hosting commands copied. */
   self_host_command_copied: undefined;

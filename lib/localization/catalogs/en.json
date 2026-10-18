@@ -5080,5 +5080,8 @@
   "Sblocca con Face ID": "Unlock with Face ID",
   "Sblocca con l'impronta": "Unlock with fingerprint",
   "Sblocca con il riconoscimento del telefono": "Unlock with the phone's recognition",
-  "Nessuna connessione": "No connection"
+  "Nessuna connessione": "No connection",
+  "Scegli la demo": "Choose the demo",
+  "Con tasse e regole italiane": "With Italian taxes and rules",
+  "Con tasse e regole tedesche": "With German taxes and rules"
 }

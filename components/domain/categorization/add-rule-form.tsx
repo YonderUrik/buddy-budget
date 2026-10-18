@@ -55,7 +55,7 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 p-4">
       <div className="flex flex-1 flex-col gap-1">
         <label className="text-xs font-medium text-foreground" htmlFor="new-rule-pattern">{tr("Pattern")}</label>
         <Input

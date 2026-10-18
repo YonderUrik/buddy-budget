@@ -39,7 +39,7 @@ export function SegmentedControl<T extends string>({
   const pillId = React.useId();
   return (
     <div role="group" aria-label={tr(ariaLabel)} className={cn(
-        "items-center gap-1 rounded-lg bg-muted p-1",
+        "items-center gap-1 rounded-full bg-muted p-1",
         stretch ? "flex w-full" : "inline-flex w-fit",
         className
       )}>
@@ -50,7 +50,7 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(option.value)}
           aria-pressed={value === option.value}
           className={cn(
-            "relative min-h-9 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors sm:min-h-8",
+            "relative min-h-9 rounded-full px-3 text-sm font-medium whitespace-nowrap transition-colors sm:min-h-8",
             stretch && "flex-1 px-2",
             value === option.value ? "text-foreground" : "text-muted-foreground hover:text-foreground"
           )}
@@ -60,7 +60,7 @@ export function SegmentedControl<T extends string>({
               layoutId={pillId}
               transition={SPRING_BOUNCY}
               aria-hidden="true"
-              className="absolute inset-0 rounded-md bg-background"
+              className="absolute inset-0 rounded-full bg-background"
             />
           ) : null}
           <span className="relative">{tr(option.label)}</span>

@@ -28,6 +28,15 @@ export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
+/**
+ * Absolute address of an app page for a redirect. Behind the ingress `request.url` carries the container's bind
+ * address (`0.0.0.0:3000`), so the public `APP_URL` wins; without it (tests, local dev) the request URL is used.
+ */
+function appUrl(request: NextRequest, path: string): URL {
+  const base = process.env.APP_URL?.replace(/\/+$/, "");
+  return new URL(path, base ? `${base}/` : request.url);
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -36,7 +45,7 @@ export async function proxy(request: NextRequest) {
     const existing = await auth.api.getSession({ headers: request.headers });
     if (existing) {
       const target = safeRedirectPath(request.nextUrl.searchParams.get("redirect"));
-      return NextResponse.redirect(new URL(target, request.url));
+      return NextResponse.redirect(appUrl(request, target));
     }
     return NextResponse.next();
   }
@@ -51,7 +60,7 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return new NextResponse(null, { status: 401 });
     }
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = appUrl(request, "/login");
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -73,10 +82,10 @@ export async function proxy(request: NextRequest) {
     }
     return pathname === DEACTIVATED_PAGE_PATH
       ? NextResponse.next()
-      : NextResponse.redirect(new URL(DEACTIVATED_PAGE_PATH, request.url));
+      : NextResponse.redirect(appUrl(request, DEACTIVATED_PAGE_PATH));
   }
   if (pathname === DEACTIVATED_PAGE_PATH) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(appUrl(request, "/"));
   }
 
   // Chi ha già un account deve accettare la versione in vigore dei documenti legali (nuova versione o utenti precedenti).
@@ -85,24 +94,24 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return LEGAL_GATE_ALLOWED_API_PATHS.includes(pathname) ? NextResponse.next() : new NextResponse(null, { status: 403 });
     }
-    return pathname === LEGAL_ACCEPTANCE_PAGE_PATH ? NextResponse.next() : NextResponse.redirect(new URL(LEGAL_ACCEPTANCE_PAGE_PATH, request.url));
+    return pathname === LEGAL_ACCEPTANCE_PAGE_PATH ? NextResponse.next() : NextResponse.redirect(appUrl(request, LEGAL_ACCEPTANCE_PAGE_PATH));
   }
   if (pathname === LEGAL_ACCEPTANCE_PAGE_PATH) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(appUrl(request, "/"));
   }
 
   if (!onboardingCompleted && pathname !== "/onboarding" && !pathname.startsWith("/api/")) {
-    return NextResponse.redirect(new URL("/onboarding", request.url));
+    return NextResponse.redirect(appUrl(request, "/onboarding"));
   }
 
   if (onboardingCompleted && pathname === "/onboarding") {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(appUrl(request, "/"));
   }
 
   const profile = resolveProfile(session.user);
   if (!isCountryPathAvailable(profile.productCountry, pathname)) {
     if (pathname.startsWith("/api/")) return NextResponse.json({ code: "country_feature_unavailable", error: translate(profile.language, "Questa funzione non è ancora disponibile per la Germania.") }, { status: 403 });
-    return NextResponse.redirect(new URL("/country-unavailable", request.url));
+    return NextResponse.redirect(appUrl(request, "/country-unavailable"));
   }
   return NextResponse.next();
 }

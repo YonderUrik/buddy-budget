@@ -20,7 +20,7 @@ export default function Page() {
   return (
     <ContentPage
       title="The app's screens"
-      lead="Screenshots of the real app, with the data of a made-up person. Pick an area and a screen."
+      lead="Screenshots of the real app. Pick an area and a screen."
       current={EN_PATHS.screens}
       locale="en"
       wide

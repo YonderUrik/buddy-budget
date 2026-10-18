@@ -61,7 +61,7 @@ export function TitleCompanySection({ stock, priceCurrency }: TitleCompanySectio
           );
         })}
       </div>
-      <div className="mt-4 grid gap-x-6 gap-y-5 border-t pt-5 sm:grid-cols-4">
+      <div className="mt-4 grid gap-x-6 gap-y-5 pt-5 sm:grid-cols-4">
         <IndicatorGrid keys={MARGIN_KEYS} values={stock.margins} currency={stock.currency} priceCurrency={priceCurrency} className="col-span-full grid-cols-2 sm:col-span-3 sm:grid-cols-3" />
         {growth.lastYear !== null ? (
           <dl>

@@ -26,7 +26,7 @@ export interface TaxRegimeNoteProps {
 export function TaxRegimeNote({ regime, onChange, saving }: TaxRegimeNoteProps) {
   const { t: tr } = useLocalization();
   return (
-    <div className="flex flex-col gap-3 border-t pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
       <p className="max-w-prose">{tr("Sono stime secondo le regole italiane, non un calcolo fiscale: per la dichiarazione fai riferimento al broker o a un commercialista.")}</p>
       <div className="flex shrink-0 items-center gap-2">
         <span>{tr("Regime")}</span>

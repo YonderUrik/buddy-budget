@@ -84,7 +84,7 @@ export function CategorizeGroupRow({
   return (
     <div
       className={cn(
-        "flex gap-3 border-b border-border px-4 py-3 last:border-b-0",
+        "flex gap-3 px-4 py-3",
         selected && "bg-primary/5"
       )}
     >

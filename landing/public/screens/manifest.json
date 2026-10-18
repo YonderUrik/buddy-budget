@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-17T18:49:16.497Z",
+  "capturedAt": "2026-10-18T08:11:16.652Z",
   "app": "http://localhost:3300",
   "language": "it",
   "viewport": {
@@ -42,7 +42,7 @@
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1862,
+      "height": 1865,
       "phone": true
     },
     {
@@ -58,7 +58,7 @@
       "theme": "light",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1800,
+      "height": 1803,
       "phone": true
     },
     {
@@ -74,7 +74,7 @@
       "theme": "light",
       "route": "/investimenti",
       "width": 1920,
-      "height": 2186,
+      "height": 2187,
       "phone": true
     },
     {
@@ -82,7 +82,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1934,
+      "height": 1937,
       "phone": true
     },
     {
@@ -106,7 +106,7 @@
       "theme": "light",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2094,
+      "height": 2079,
       "phone": true
     },
     {
@@ -114,7 +114,7 @@
       "theme": "light",
       "route": "/pensione",
       "width": 1920,
-      "height": 1580,
+      "height": 1581,
       "phone": true
     },
     {
@@ -122,7 +122,7 @@
       "theme": "light",
       "route": "/pensione/scenari",
       "width": 1920,
-      "height": 1980,
+      "height": 1979,
       "phone": true
     },
     {
@@ -130,7 +130,7 @@
       "theme": "light",
       "route": "/debiti",
       "width": 1920,
-      "height": 1721,
+      "height": 1710,
       "phone": true
     },
     {
@@ -146,7 +146,7 @@
       "theme": "light",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1757,
+      "height": 1760,
       "phone": true
     },
     {
@@ -178,7 +178,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1862,
+      "height": 1865,
       "phone": true
     },
     {
@@ -194,7 +194,7 @@
       "theme": "dark",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1800,
+      "height": 1803,
       "phone": true
     },
     {
@@ -210,7 +210,7 @@
       "theme": "dark",
       "route": "/investimenti",
       "width": 1920,
-      "height": 2186,
+      "height": 2187,
       "phone": true
     },
     {
@@ -218,7 +218,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1934,
+      "height": 1937,
       "phone": true
     },
     {
@@ -242,7 +242,7 @@
       "theme": "dark",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2094,
+      "height": 2079,
       "phone": true
     },
     {
@@ -250,7 +250,7 @@
       "theme": "dark",
       "route": "/pensione",
       "width": 1920,
-      "height": 1580,
+      "height": 1581,
       "phone": true
     },
     {
@@ -258,7 +258,7 @@
       "theme": "dark",
       "route": "/pensione/scenari",
       "width": 1920,
-      "height": 1980,
+      "height": 1979,
       "phone": true
     },
     {
@@ -266,7 +266,7 @@
       "theme": "dark",
       "route": "/debiti",
       "width": 1920,
-      "height": 1721,
+      "height": 1710,
       "phone": true
     },
     {
@@ -282,7 +282,7 @@
       "theme": "dark",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1757,
+      "height": 1760,
       "phone": true
     }
   ]

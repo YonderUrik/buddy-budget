@@ -59,7 +59,6 @@ export interface SumText {
   cents: string;
   /** Currency written after a row's figure (Italian); English writes it before with `prefix`. */
   suffix?: string;
-  caption: string;
   /** Under the list: what the visitor can do with the amounts. */
   hint: string;
   /** Button that puts the sample figures back. */
@@ -79,7 +78,6 @@ export const SUM = {
   ] satisfies readonly SumRow[],
   cents: ",53 €",
   suffix: " €",
-  caption: "Dati d'esempio: Giulia, una persona inventata.",
   hint: "Scrivi i tuoi importi: il conto si rifà da solo e niente esce da questa pagina.",
   reset: "Rimetti i dati d'esempio",
   fieldLabel: "Importo di {place}",
@@ -244,60 +242,61 @@ export const TAX = {
 } as const satisfies TaxText;
 
 export interface TrustFact {
-  icon: HomeIcon;
   title: string;
   text: string;
+  /** Three plain words that name how it is done (a law, a place, a format); one may link to its source. */
+  terms: readonly string[];
   source?: Source;
 }
 
 export interface TrustText {
-  /** The heading, stepped over two lines (the second indented). */
-  title: readonly [string, string];
-  /** Names of the row groups of the table: what happens to the data, the limits, the code. */
-  groups: { facts: string; limits: string; code: string };
-  /** Column headers of the table (read by screen readers, hidden on the phone). */
-  columns: { group: string; what: string; how: string; source: string };
+  /** The heading, in three short lines (the middle one sits flush right). */
+  title: readonly [string, string, string];
+  /** Two sentences under the heading: what the app can and cannot do with the accounts. */
+  lede: string;
+  /** What happens to the data, then what the project cannot promise: one row each, told apart by tone only. */
   facts: readonly TrustFact[];
-  limits: readonly { title: string; text: string }[];
   more: string;
   moreHref: string;
 }
 
-/** «Legge soltanto. Non sposta soldi.»: four facts for everyone, two limits said plainly. Every sentence is verified in `security.ts`. */
+/**
+ * «Cosa fa l'app con i tuoi dati»: four facts and one row of limits, said plainly. Every sentence is verified in
+ * `security.ts`.
+ */
 export const TRUST = {
-  title: ["Legge soltanto.", "Non sposta soldi."],
-  groups: { facts: "I tuoi dati", limits: "Limiti, detti chiari", code: "Il codice" },
-  columns: { group: "Gruppo", what: "Cosa", how: "Come", source: "Fonte" },
+  title: ["Cosa fa", "l'app con", "i tuoi dati"],
+  lede: "Legge i tuoi conti per mostrartene i numeri. Non può spostare soldi né fare pagamenti.",
   facts: [
     {
-      icon: "key",
       title: "La password della banca resta alla banca.",
       text: "La scrivi solo sul suo sito. Il collegamento può leggere e basta, e lo togli quando vuoi.",
+      terms: ["Sola lettura", "Revocabile"],
       source: { label: "PSD2, art. 67", href: SECURITY_SOURCES.psd2.href },
     },
     {
-      icon: "server",
       title: "I dati stanno in Germania.",
       text: FIELD_ENCRYPTION_LIVE
         ? "Connessioni cifrate; descrizioni e note dei movimenti cifrate anche nel database. Copie di sicurezza in Europa per 14 giorni."
         : "Connessioni cifrate. Copie di sicurezza in Europa per 14 giorni.",
-      source: { label: "Cloudflare R2, dati nell'UE", href: SECURITY_SOURCES.r2Location.href },
+      terms: FIELD_ENCRYPTION_LIVE ? ["Server in Germania", "Copie nell'UE", "AES-256"] : ["Server in Germania", "Copie nell'UE"],
     },
     {
-      icon: "ban",
       title: "Niente pubblicità, niente vendita di dati.",
       text: "Le statistiche d'uso sono anonime e senza cookie, sui nostri server.",
+      terms: ["Senza cookie", "Anonime", "Sui nostri server"],
     },
     {
-      icon: "download",
       title: "Porti via tutto quando vuoi.",
       text: "Un file ZIP con tutti i dati, oppure elimini l'account: subito, o con 30 giorni per ripensarci.",
+      terms: ["ZIP", "JSON e CSV", "30 giorni"],
+    },
+    {
+      title: "Quello che non promettiamo.",
+      text: "Il server legge i dati per fare i conti, quindi chi gestisce il servizio potrebbe vederli. È un progetto piccolo: niente certificazioni né controlli esterni, il codice aperto è il modo per controllare.",
+      terms: ["Nessuna ISO 27001", "Codice aperto"],
     },
   ] satisfies readonly TrustFact[],
-  limits: [
-    { title: "Il server legge i dati", text: "Deve farlo per fare i conti, quindi chi gestisce il servizio potrebbe vederli. Preferiamo dirlo." },
-    { title: "Nessuna certificazione", text: "È un progetto piccolo: niente ISO 27001 né controlli esterni. Il codice aperto è il modo per controllare." },
-  ],
   more: "Tutta la sicurezza, con le fonti",
   moreHref: CONTENT_PATHS.sicurezza,
 } as const satisfies TrustText;

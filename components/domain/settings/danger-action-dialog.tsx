@@ -80,7 +80,7 @@ export function DangerActionDialog({
   }
 
   return (
-    <div className="flex flex-col gap-3 border-t border-border pt-4 first:border-t-0 first:pt-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+    <div className="flex flex-col gap-3 pt-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
       <div className="flex min-w-0 flex-col gap-0.5">
         <p className="text-sm font-medium text-foreground">{tr(title)}</p>
         <p className="text-xs text-muted-foreground">{tr(summary)}</p>

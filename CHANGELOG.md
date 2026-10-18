@@ -2,6 +2,47 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.77.0](https://github.com/YonderUrik/buddy-budget/compare/v0.76.1...v0.77.0) (2026-10-18)
+
+
+### Novità
+
+* taste-skill headings and quiet lists across the app screens ([#427](https://github.com/YonderUrik/buddy-budget/issues/427)) ([d76f9f1](https://github.com/YonderUrik/buddy-budget/commit/d76f9f1d4b15b9549f0a94b9c9c47f04e87fa638))
+
+
+### Correzioni
+
+* one clear chooser for the public demo's country and language ([#428](https://github.com/YonderUrik/buddy-budget/issues/428)) ([640f4de](https://github.com/YonderUrik/buddy-budget/commit/640f4dee9502bf5ab199dea411a9f77477877127))
+
+## [0.76.1](https://github.com/YonderUrik/buddy-budget/compare/v0.76.0...v0.76.1) (2026-10-17)
+
+
+### Correzioni
+
+* proxy redirects use the public app address ([#425](https://github.com/YonderUrik/buddy-budget/issues/425)) ([7fc1c7e](https://github.com/YonderUrik/buddy-budget/commit/7fc1c7e85616054b0f1936dcfedcce39882941e2))
+
+## [0.76.0](https://github.com/YonderUrik/buddy-budget/compare/v0.75.0...v0.76.0) (2026-10-17)
+
+
+### Novità
+
+* landing language menu, clearer data section, sum list fix ([#423](https://github.com/YonderUrik/buddy-budget/issues/423)) ([f5124bf](https://github.com/YonderUrik/buddy-budget/commit/f5124bf87a5c17bf91caa1b2602fdba283681dff))
+* **landing:** security page in the home's chapters ([#424](https://github.com/YonderUrik/buddy-budget/issues/424)) ([59504ca](https://github.com/YonderUrik/buddy-budget/commit/59504cad33fff7e6dcc9926badb979e62417ecd5))
+
+
+### Correzioni
+
+* redirect /demo to the public app address ([#421](https://github.com/YonderUrik/buddy-budget/issues/421)) ([84cd19a](https://github.com/YonderUrik/buddy-budget/commit/84cd19a425e64fca325bd919bc19748de66e6b13))
+
+## [0.75.0](https://github.com/YonderUrik/buddy-budget/compare/v0.74.1...v0.75.0) (2026-10-17)
+
+
+### Novità
+
+* apply taste-skill across landing, sign-in and app ([#417](https://github.com/YonderUrik/buddy-budget/issues/417)) ([089c041](https://github.com/YonderUrik/buddy-budget/commit/089c0419c6a9e630363826dc3cc2ecc74a1e9b02))
+* public demo without an account, English landing and latest Docker images ([#415](https://github.com/YonderUrik/buddy-budget/issues/415)) ([3a6c03b](https://github.com/YonderUrik/buddy-budget/commit/3a6c03b1e9adadd194cc3590b68c28d21a743c78))
+* screenshots in the visitor's language, browser language detection and a fully translated app ([#409](https://github.com/YonderUrik/buddy-budget/issues/409)) ([f25738f](https://github.com/YonderUrik/buddy-budget/commit/f25738f62ac2803037b672242f9305d27e787eaf))
+
 ## [0.74.1](https://github.com/YonderUrik/buddy-budget/compare/v0.74.0...v0.74.1) (2026-10-17)
 
 

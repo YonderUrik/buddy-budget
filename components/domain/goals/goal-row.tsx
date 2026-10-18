@@ -43,7 +43,7 @@ export function GoalRow({ goal, fmt, href, onMoveUp, onMoveDown, compact = false
   const label = statusLabel(goal, tr);
   const shift = fireShiftText(goal, tr);
   return (
-    <li className={cn("flex gap-3 border-b last:border-b-0", compact ? "py-3" : "py-4")}>
+    <li className={cn("flex gap-3", compact ? "py-3" : "py-4")}>
       <GoalIcon icon={info.icon} color={info.color} size={compact ? "sm" : "md"} />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">

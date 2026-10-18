@@ -199,7 +199,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
       ) : (
         <>
           <Card className="gap-0 p-0">
-            <label className="flex cursor-pointer items-center gap-3 border-b border-border px-4 py-3 text-sm text-muted-foreground">
+            <label className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm text-muted-foreground">
               <Checkbox
                 checked={allSelected}
                 disabled={selectableGroupCount === 0 || applyMutation.isPending}

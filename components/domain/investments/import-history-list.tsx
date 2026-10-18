@@ -27,7 +27,7 @@ export function ImportHistoryList({ groups, busy = false, onDelete }: ImportHist
       {groups.map((group) => (
         <section key={group.source} aria-label={group.source} className="flex flex-col">
           <h3 className="text-sm font-semibold text-foreground">{group.source}</h3>
-          <ul className="flex flex-col divide-y">
+          <ul className="flex flex-col">
             {group.items.map((item) => {
               const color = TONE_COLOR[item.status.tone];
               const label = tr("{0}{1}, caricato il {2}", { 0: item.source, 1: item.period ? `, ${item.period}` : "", 2: formatImportDate(item.createdAt, locale) });

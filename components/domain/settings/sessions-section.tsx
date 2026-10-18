@@ -24,7 +24,7 @@ function SessionRow({ session, onRevoke, revoking }: { session: UserSessionView;
   const { t: tr } = useLocalization();
   const Icon = session.mobile ? Smartphone : Laptop;
   return (
-    <li className="flex items-center gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+    <li className="flex items-center gap-3 py-3 first:pt-0">
       <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">

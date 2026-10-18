@@ -13,7 +13,7 @@ export interface FaqListProps {
 export function FaqList({ items = FAQ_ITEMS }: FaqListProps) {
   const { t } = useLocalization();
   return (
-    <ul className="divide-y divide-border border-y border-border">
+    <ul>
       {items.map((item) => (
         <li key={item.id}>
           <details

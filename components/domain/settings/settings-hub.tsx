@@ -11,6 +11,7 @@ import * as React from "react";
 import { ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { SECTION_TITLE } from "@/components/domain/shared";
 import { SETTINGS_GROUPS, type SettingsGroupId, type SettingsGroupInfo } from "./settings-groups";
 
 export interface SettingsHubProps {
@@ -20,22 +21,6 @@ export interface SettingsHubProps {
   /** Contenuto di ogni gruppo. */
   content: Record<SettingsGroupId, React.ReactNode>;
   groups?: readonly SettingsGroupInfo[];
-}
-
-function GroupIcon({ group, size = "md" }: { group: SettingsGroupInfo; size?: "sm" | "md" }) {
-
-  const Icon = group.icon;
-  return (
-    <span
-      className={cn(
-        "flex shrink-0 items-center justify-center rounded-xl",
-        size === "md" ? "size-10" : "size-8",
-        group.danger ? "bg-neg-soft text-neg" : "bg-primary/10 text-primary"
-      )}
-    >
-      <Icon className={size === "md" ? "size-5" : "size-4"} aria-hidden="true" />
-    </span>
-  );
 }
 
 export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GROUPS }: SettingsHubProps) {
@@ -53,12 +38,11 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
               <button
                 type="button"
                 onClick={() => onSelect(group.id)}
-                className="flex min-h-16 w-full items-center gap-3 rounded-xl px-1 py-2 text-left transition-colors active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex min-h-16 w-full items-center gap-3 rounded-2xl px-1 py-3 text-left transition-colors active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <GroupIcon group={group} />
-                <span className="min-w-0 flex-1">
-                  <span className={cn("block text-[15px] font-semibold leading-tight", group.danger && "text-neg")}>{tr(group.label)}</span>
-                  <span className="block text-xs leading-snug text-text-2">{tr(group.summary)}</span>
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className={cn(SECTION_TITLE, "block text-[1.875rem]", group.danger && "text-neg")}>{tr(group.label)}</span>
+                  <span className="block text-sm leading-snug text-text-2">{tr(group.summary)}</span>
                 </span>
                 <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
               </button>
@@ -78,12 +62,11 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
               onClick={() => onSelect(group.id)}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex min-h-10 items-center rounded-full px-4 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active && "bg-muted"
               )}
             >
-              <GroupIcon group={group} size="sm" />
-              <span className={cn("text-sm font-medium", group.danger && "text-neg")}>{tr(group.label)}</span>
+              <span className={cn("text-[15px] font-medium", active ? "text-foreground" : "text-text-2", group.danger && "text-neg")}>{tr(group.label)}</span>
             </button>
           );
         })}
@@ -91,7 +74,7 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
 
       {/* Contenuto del gruppo */}
       <div className={cn("min-w-0 flex-1", selected === null && "max-md:hidden")}>
-        <h2 className={cn("mb-1 font-heading text-xl font-medium", currentGroup.danger ? "text-neg" : "text-foreground")}>{tr(currentGroup.label)}</h2>
+        <h2 className={cn(SECTION_TITLE, "mb-1", currentGroup.danger && "text-neg")}>{tr(currentGroup.label)}</h2>
         <p className="mb-5 text-sm text-muted-foreground">{tr(currentGroup.summary)}</p>
         <div className="flex flex-col gap-8">{content[current]}</div>
       </div>

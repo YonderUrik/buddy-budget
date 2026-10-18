@@ -26,10 +26,10 @@ export const SECURITY_SOURCES_EN: SecurityContent["sources"] = {
 export const SECURITY_EN: SecurityContent = {
   locale: "en",
   page: {
-    h1: "Security and privacy: what happens to your data",
+    h1: "What happens to your data",
     title: "Security and privacy: how BuddyBudget handles your data",
     description: "How the read-only bank connection (PSD2) works, what we store and what we don't, where the servers are and how you delete everything. With official sources.",
-    lead: "Connecting your bank to an app takes trust. Here is what happens to your data, step by step, with the sources to check it yourself.",
+    lead: "The app reads your accounts and can't move money. Here is the path your data takes, what we keep and what we don't, with the sources to check.",
     kicker: "Security and privacy",
     crumb: "Security and privacy",
     ctaTitle: "Try it without connecting anything.",
@@ -45,15 +45,13 @@ export const SECURITY_EN: SecurityContent = {
     ],
   },
   flow: {
-    title: "Where your data goes when you connect your bank.",
-    lede: "Your login details stay with your bank. Only balances and transactions travel to BuddyBudget, read-only. Tap a step to see what it receives.",
+    title: "The path, step by step.",
+    lede: "Your login details stay with your bank. Only balances and transactions reach BuddyBudget, read-only.",
     links: ["Login and confirmation", "Read-only consent", "Balances and transactions"],
-    label: "Steps of your data",
-    neverTitle: "What never happens",
+    neverTitle: "Never.",
     nodes: [
       {
         id: "tu",
-        seesTitle: "What you do",
         label: "You",
         role: "Pick your bank in the app",
         sees: ["You choose which bank to connect and which accounts to share.", "You can disconnect the bank whenever you like, from the app or from your bank."],
@@ -61,7 +59,6 @@ export const SECURITY_EN: SecurityContent = {
       },
       {
         id: "banca",
-        seesTitle: "What your bank does",
         label: "Your bank",
         role: "Where you enter your login",
         sees: ["It identifies you with its own login and an extra confirmation (strong customer authentication), as when you open online banking.", "It asks you to authorize reading your accounts for at most 90 days."],
@@ -69,7 +66,6 @@ export const SECURITY_EN: SecurityContent = {
       },
       {
         id: "gocardless",
-        seesTitle: "What GoCardless receives",
         label: "GoCardless",
         role: "Authorized provider (PSD2)",
         sees: ["GoCardless SAS is authorized by the French supervisor (ACPR, no. 17118) to provide account information services.", "It receives balances, account details and transactions from the bank and passes them to BuddyBudget, because you asked it to. It keeps a copy under its own terms and legal obligations."],
@@ -77,7 +73,6 @@ export const SECURITY_EN: SecurityContent = {
       },
       {
         id: "buddybudget",
-        seesTitle: "What BuddyBudget receives",
         label: "BuddyBudget",
         role: "Server in Germany",
         sees: [
@@ -93,7 +88,6 @@ export const SECURITY_EN: SecurityContent = {
   },
   stored: {
     title: "What we keep, and what never reaches us.",
-    headers: { what: "Data", kept: "Do we keep it?", detail: "Details" },
     rows: [
       { what: "Bank login details", kept: "no", keptLabel: "Never", detail: "They stay with your bank: you enter them only on its pages." },
       { what: "Passwords", kept: "no", keptLabel: "Never", detail: "There are none: you sign in with an email link that works for a few minutes, or with Google." },
@@ -149,7 +143,7 @@ export const SECURITY_EN: SecurityContent = {
     note: ["All the details are on the ", { text: "cookie page (in Italian)", href: LEGAL_PATHS.cookie }, "."],
   },
   controls: {
-    question: "How do I take my data with me, or delete it?",
+    title: "Take it all with you, or delete it.",
     items: [
       { title: "Disconnect the bank", text: "Removing a bank's last account revokes the consent on GoCardless right away. The consent expires after 90 days anyway, and you renew it only if you want to." },
       { title: "Download your data", text: "From Settings you download a ZIP file with everything, in JSON and CSV." },
@@ -158,7 +152,7 @@ export const SECURITY_EN: SecurityContent = {
     ],
   },
   limits: {
-    question: "What don't you promise?",
+    title: "What we can't promise.",
     items: [
       {
         title: "It isn't end-to-end encrypted",

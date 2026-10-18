@@ -71,7 +71,7 @@ function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipP
           </span>
         </div>
       ))}
-      <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-1.5">
+      <div className="flex w-full items-center justify-between gap-3 pt-1.5">
         <span className="font-medium text-foreground">{tr("Totale")}</span>
         <span className="font-semibold tabular-nums text-foreground">
           {formatCurrency(total, currency)}

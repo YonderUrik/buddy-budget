@@ -47,7 +47,7 @@ export function Disclosure({ title, summary, trailing, defaultOpen = false, bare
         <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} aria-hidden="true" />
       </button>
       {open ? (
-        <div id={panelId} className={cn("flex flex-col gap-3", bare ? "pt-3" : "border-t px-4 py-4")}>
+        <div id={panelId} className={cn("flex flex-col gap-3", bare ? "pt-3" : "px-4 py-4")}>
           {children}
         </div>
       ) : null}

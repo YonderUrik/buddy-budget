@@ -31,7 +31,7 @@ export function QuestionSection({ question, expertHint, renderExpert, children }
       </h2>
       {children}
       <details
-        className="group border-t pt-3"
+        className="group pt-3"
         onToggle={(event) => {
           const next = (event.currentTarget as HTMLDetailsElement).open;
           setOpen(next);

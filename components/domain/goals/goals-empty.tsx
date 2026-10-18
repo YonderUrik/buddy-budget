@@ -41,7 +41,7 @@ export function GoalsEmpty({ view, fmt, onNew }: GoalsEmptyProps) {
         primary={{ label: tr("Nuovo obiettivo"), onClick: () => onNew() }}
       />
       {emergencyText !== null ? (
-        <div className="flex gap-3 border-t pt-6">
+        <div className="flex gap-3 pt-6">
           <GoalIcon icon={ShieldCheckIcon} color="var(--swatch-teal)" />
           <div className="flex min-w-0 flex-col items-start gap-2">
             <p className="font-medium text-foreground">{tr("Da dove partire: un fondo di emergenza")}</p>

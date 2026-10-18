@@ -21,6 +21,7 @@ export {
   type InvestmentsViewInputs,
 } from "./investments";
 export { buildAnalyticsView, type AnalyticsView, type AnalyticsViewInputs } from "./analytics";
+export { buildPlanningResults, PLANNING_CURRENCY, type PlanningResults } from "./financial-planning";
 export { buildPensionView, type PensionView, type PensionViewInputs } from "./pension";
 export { buildInvestmentsIncome, buildInvestmentsTaxes, simulateInvestmentSale, type InvestmentsIncome, type InvestmentsTaxes, type SaleSimulationRequest, type SaleSimulationResult } from "./investments-tax";
 export {

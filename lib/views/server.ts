@@ -8,3 +8,4 @@ export { loadInvestmentsIncome, loadInvestmentsPerformance, loadInvestmentsTaxes
 export { loadInvestmentViewData, type LoadedInvestmentData } from "./investments-data.server";
 export { loadPensionView } from "./pension.server";
 export { loadAnalyticsView } from "./analytics.server";
+export { loadPlanningResults } from "./financial-planning.server";

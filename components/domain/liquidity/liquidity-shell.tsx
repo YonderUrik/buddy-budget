@@ -15,12 +15,14 @@ import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
+import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { AddAccountDialog } from "./add-account-dialog";
 import { LiquidityActionsProvider } from "./liquidity-actions";
 import { LiquidityProvider } from "./liquidity-context";
 import { LiquidityHeader } from "./liquidity-header";
+import { LiquidityNoAccounts, NO_ACCOUNT_TABS } from "./liquidity-no-accounts";
 import { LIQUIDITY_ACCOUNT_PARAM, LIQUIDITY_TABS } from "./liquidity-nav";
 
 const IMPORT_HREF = "/importazioni";
@@ -34,6 +36,9 @@ function Frame({ children }: { children: React.ReactNode }) {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { data: categories } = useCategoriesQuery();
+  // Before the first account, the tabs that need one say what they will show instead of zeros and empty charts.
+  const { data: accounts } = useAccountsQuery();
+  const needsAccount = accounts !== undefined && accounts.length === 0 && pathname in NO_ACCOUNT_TABS;
   const [addTransactionOpen, setAddTransactionOpen] = React.useState(false);
   const [accountDialog, setAccountDialog] = React.useState<{ open: boolean; renew: boolean }>({ open: false, renew: false });
 
@@ -63,7 +68,7 @@ function Frame({ children }: { children: React.ReactNode }) {
     <LiquidityActionsProvider value={actions}>
       <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6">
         <LiquidityHeader subtitle={SUBTITLE} tabs={LIQUIDITY_TABS} activeHref={pathname} onAddTransaction={actions.addTransaction} onAddAccount={addAccount} onImport={() => router.push(IMPORT_HREF)} />
-        {children}
+        {needsAccount ? <LiquidityNoAccounts href={pathname} onAddAccount={addAccount} /> : children}
       </div>
       <Dialog open={addTransactionOpen} onOpenChange={setAddTransactionOpen}>
         <FormDialogContent>

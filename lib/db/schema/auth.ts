@@ -27,6 +27,8 @@ export const authUser = pgTable("auth_user", {
   startChecklistDismissedAt: timestamp("start_checklist_dismissed_at", { withTimezone: true }),
   /** Quando la checklist «Primi passi» è risultata completa per la prima volta (serve a registrarlo una sola volta). */
   startChecklistCompletedAt: timestamp("start_checklist_completed_at", { withTimezone: true }),
+  /** What the user wants to keep an eye on (`START_FOCUS_IDS`), chosen at the end of onboarding; null = never chosen (default steps). */
+  startFocus: text("start_focus").array(),
   /** Quando l'utente ha acconsentito all'assistente per le categorie (invio del nome pulito dell'esercente a un servizio esterno). Null = spento. */
   aiCategorizationInstructions: text("ai_categorization_instructions").notNull().default(""),
   aiCategorizationConsentAt: timestamp("ai_categorization_consent_at", { withTimezone: true }),

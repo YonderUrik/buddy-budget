@@ -3,7 +3,8 @@ import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Obiettivo FIRE nella sidebar: barra di avanzamento verso il numero FIRE, quanto manca e gli anni stimati, con gli
- * stessi numeri di Analitiche. Senza una spesa annua da cui stimarlo invita a completare le ipotesi.
+ * stessi numeri di Analitiche. Senza una spesa annua da cui stimarlo invita a completare le ipotesi (solo se c'è già
+ * qualcosa da parte: a un utente appena arrivato non dice nulla).
  */
 
 import Link from "next/link";
@@ -42,6 +43,8 @@ export function SidebarFireModule({
   if (!data) return null;
   const { progress, target, wealth, yearsToFire, currency } = data;
   const hasProgress = target !== null && progress !== null;
+  // With no money recorded yet the hint to fill in Analitiche is noise: the first steps in Panoramica come first.
+  if (!hasProgress && wealth <= 0) return null;
   const years = formatYearsToFire(yearsToFire);
   const handleClick = () => {
     onItemClick?.();

@@ -24,6 +24,8 @@ export interface GoalsPanoramicaSectionProps {
   /** Indirizzo per creare il primo obiettivo (apre il form). */
   newHref?: string;
   onLinkClick?: () => void;
+  /** False hides the «new feature» invite shown without goals (e.g. while the first steps are still on screen). */
+  showInvite?: boolean;
   className?: string;
 }
 
@@ -38,14 +40,14 @@ export function closestGoals(goals: GoalView[], limit = OVERVIEW_GOALS): GoalVie
     .slice(0, limit);
 }
 
-export function GoalsPanoramicaSection({ view, fmt, href = "/analitiche/obiettivi", newHref = "/analitiche/obiettivi?nuovo=1", onLinkClick, className }: GoalsPanoramicaSectionProps) {
+export function GoalsPanoramicaSection({ view, fmt, href = "/analitiche/obiettivi", newHref = "/analitiche/obiettivi?nuovo=1", onLinkClick, showInvite = true, className }: GoalsPanoramicaSectionProps) {
   const { t: tr } = useLocalization();
   const [dismissed, setDismissed] = usePersistedFlag(GOALS_INVITE_DISMISSED_KEY, false);
   const dismiss = () => setDismissed(true);
   const shown = closestGoals(view.goals);
 
   if (view.goals.length === 0) {
-    if (dismissed) return null;
+    if (dismissed || !showInvite) return null;
     return (
       <section aria-labelledby="overview-goals" className={cn("flex flex-col gap-3", className)}>
         <div className="flex items-start justify-between gap-3">

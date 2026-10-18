@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-17T20:31:49.561Z",
+  "capturedAt": "2026-10-18T08:18:25.194Z",
   "app": "http://localhost:3300",
   "language": "de",
   "viewport": {
@@ -42,7 +42,7 @@
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1862,
+      "height": 1865,
       "phone": true
     },
     {
@@ -58,7 +58,7 @@
       "theme": "light",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1800,
+      "height": 1803,
       "phone": true
     },
     {
@@ -74,7 +74,7 @@
       "theme": "light",
       "route": "/investimenti",
       "width": 1920,
-      "height": 2186,
+      "height": 2187,
       "phone": true
     },
     {
@@ -82,7 +82,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1958,
+      "height": 1937,
       "phone": true
     },
     {
@@ -106,7 +106,7 @@
       "theme": "light",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2094,
+      "height": 2079,
       "phone": true
     },
     {
@@ -114,7 +114,7 @@
       "theme": "light",
       "route": "/debiti",
       "width": 1920,
-      "height": 1721,
+      "height": 1710,
       "phone": true
     },
     {
@@ -154,7 +154,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1862,
+      "height": 1865,
       "phone": true
     },
     {
@@ -170,7 +170,7 @@
       "theme": "dark",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1800,
+      "height": 1803,
       "phone": true
     },
     {
@@ -186,7 +186,7 @@
       "theme": "dark",
       "route": "/investimenti",
       "width": 1920,
-      "height": 2186,
+      "height": 2187,
       "phone": true
     },
     {
@@ -194,7 +194,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1958,
+      "height": 1937,
       "phone": true
     },
     {
@@ -218,7 +218,7 @@
       "theme": "dark",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 2094,
+      "height": 2079,
       "phone": true
     },
     {
@@ -226,7 +226,7 @@
       "theme": "dark",
       "route": "/debiti",
       "width": 1920,
-      "height": 1721,
+      "height": 1710,
       "phone": true
     },
     {

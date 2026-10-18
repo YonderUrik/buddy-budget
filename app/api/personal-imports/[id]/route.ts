@@ -3,6 +3,7 @@ import { after, NextRequest } from "next/server";
 import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { isTrustedWriteOrigin } from "@/lib/http";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { getPreview, reanalyze } from "@/lib/personal-import/jobs";
 import { confirmImport } from "@/lib/personal-import/confirm";
@@ -31,7 +32,7 @@ export const POST = withRoute("personal_import.confirm", async (request: NextReq
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
-  if (request.headers.get("origin") !== new URL(process.env.APP_URL ?? request.url).origin) return new Response(null, { status: 403 });
+  if (!isTrustedWriteOrigin(request)) return new Response(null, { status: 403 });
   const id = idOf(request); if (!id.success) return new Response(null, { status: 404 });
   const raw = await request.text();
   let parsedBody: unknown = null;
@@ -59,7 +60,7 @@ export const DELETE = withRoute("personal_import.delete", async (request: NextRe
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
-  if (request.headers.get("origin") !== new URL(process.env.APP_URL ?? request.url).origin) return new Response(null, { status: 403 });
+  if (!isTrustedWriteOrigin(request)) return new Response(null, { status: 403 });
   const id = idOf(request); if (!id.success) return new Response(null, { status: 404 });
   const body = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/) }).safeParse(await request.json().catch(() => null));
   if (!body.success) return Response.json({ error: "Conferma non valida" }, { status: 400 });

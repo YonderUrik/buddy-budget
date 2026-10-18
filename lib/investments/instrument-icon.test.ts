@@ -11,6 +11,10 @@ describe("resolveInstrumentIcon", () => {
     expect(findFundIssuer("Lyxor Core STOXX Europe 600")?.id).toBe("amundi");
   });
 
+  it("recognises the issuer of an ETC", () => {
+    expect(resolveInstrumentIcon({ type: "etc", name: "iShares Physical Gold ETC" }, SWATCH)).toMatchObject({ kind: "initials", text: "iS" });
+  });
+
   it("non confonde un emittente con una parola più lunga", () => {
     expect(findFundIssuer("UBSX Qualcosa")).toBeNull();
     expect(findFundIssuer("ETF Azionario Globale Demo")).toBeNull();

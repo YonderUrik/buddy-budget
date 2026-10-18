@@ -21,8 +21,17 @@ describe("logoSourceFor", () => {
     expect(logoSourceFor({ type: "azione", name: "Eni", isin: null })).toBeNull();
   });
 
-  it("non chiede loghi per crypto, obbligazioni ed ETC", () => {
-    for (const type of ["crypto", "obbligazione", "etc"] as const) {
+  it("uses the issuer for an ETC too (gold from iShares, WisdomTree…)", () => {
+    expect(logoSourceFor({ type: "etc", name: "iShares Physical Gold ETC", isin: "IE00B4ND3602" })).toEqual({
+      kind: "issuer",
+      domain: "ishares.com",
+      key: "issuer:ishares.com",
+    });
+    expect(logoSourceFor({ type: "etc", name: "ETC Oro Fisico", isin: null })).toBeNull();
+  });
+
+  it("asks for no logo for crypto and bonds", () => {
+    for (const type of ["crypto", "obbligazione"] as const) {
       expect(logoSourceFor({ type, name: "iShares Qualcosa", isin: "IE00B4L5Y983" })).toBeNull();
     }
   });

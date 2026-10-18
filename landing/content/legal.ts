@@ -14,35 +14,33 @@ export const LEGAL_OWNER = {
 } as const;
 
 /** Durate citate nell'informativa: tenerle allineate al codice e all'infrastruttura. */
-const SESSION_DAYS = 7;
-const MAGIC_LINK_MINUTES = 10;
-const DEACTIVATION_DAYS = 30;
+export const SESSION_DAYS = 7;
+export const MAGIC_LINK_MINUTES = 10;
+export const DEACTIVATION_DAYS = 30;
 /** Account senza accessi eliminato dopo questi giorni, con avviso via email `INACTIVITY_NOTICE_DAYS` giorni prima (`lib/account/constants.ts`). */
-const INACTIVITY_DAYS = 90;
-const INACTIVITY_NOTICE_DAYS = 7;
-const BACKUP_DAYS = 14;
-const BANK_CONSENT_DAYS = 90;
+export const INACTIVITY_DAYS = 90;
+export const INACTIVITY_NOTICE_DAYS = 7;
+export const BACKUP_DAYS = 14;
+export const BANK_CONSENT_DAYS = 90;
 /** Retention di Loki nel repo infra (`limits_config.retention_period`). */
-const LOG_DAYS = 30;
+export const LOG_DAYS = 30;
 /** Anteprima cifrata di un import CSV con AI (`expiresAt` in lib/personal-import/jobs.ts). */
-const CSV_PREVIEW_DAYS = 7;
+export const CSV_PREVIEW_DAYS = 7;
 /** Registro degli invii delle email di riepilogo e avviso (`NOTIFICATION_LOG_RETENTION_DAYS` nell'app). */
-const NOTIFICATION_LOG_DAYS = 90;
+export const NOTIFICATION_LOG_DAYS = 90;
 
 /** Segnalazioni al supporto: tempo massimo di conservazione dopo la chiusura. */
-const SUPPORT_MONTHS = 12;
+export const SUPPORT_MONTHS = 12;
 
 export interface LegalSection {
   id: string;
   title: string;
   paragraphs?: readonly string[];
   items?: readonly string[];
-  /** Links listed after the text (the English summary points to the full Italian documents). */
-  links?: readonly { text: string; href: string }[];
 }
 
 export interface LegalDocument {
-  slug: "privacy" | "termini" | "cookie" | "summary-en";
+  slug: "privacy" | "termini" | "cookie" | "privacy-en" | "terms-en" | "cookies-en";
   title: string;
   description: string;
   intro: string;

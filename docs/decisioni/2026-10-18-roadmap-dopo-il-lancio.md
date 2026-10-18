@@ -8,4 +8,4 @@ Prepared for the Show HN launch after reading 22 Hacker News threads about finan
 - README, roadmap and the docs index were trimmed to what a reader needs.
 - README and the self-hosting guide say that GoCardless no longer accepts new sign-ups (July 2025), so a new self-hosted install imports CSVs.
 - The security page has a question on AI: the three places it is used, what is sent (merchant name and direction for categories, the whole file for an import), OpenRouter with zero retention requested on every request, and the limit that this is not a signed contract.
-- `/en/privacy` is an English summary of the Privacy policy, Terms and Cookie page, naming who runs the service; the Italian texts stay binding and are paired with it for hreflang.
+- The Privacy policy, Terms and Cookie page are translated in full at `/en/privacy`, `/en/terms` and `/en/cookies`, paired with the Italian pages for hreflang and the language menu. Each says the Italian text prevails; a test checks both languages have the same sections.

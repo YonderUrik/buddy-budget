@@ -1,7 +1,6 @@
 /**
  * Page pairs between the Italian and the English site: the single list behind hreflang, the sitemap, the language
- * menu and the tests. Pages without an English version (calculators, guides, Terms and Cookie pages) are not here: from
- * them the switch goes to the English home. The Italian privacy policy pairs with the English summary of all three.
+ * menu and the tests. Pages without an English version are not here: from them the switch goes to the English home.
  */
 import type { Metadata } from "next";
 import { HTML_LANG, LOCALES, otherLocale, type Locale } from "@/lib/i18n";
@@ -15,8 +14,9 @@ export const EN_PATHS = {
   features: "/en/features",
   featureInvestments: "/en/features/investments",
   screens: "/en/screens",
-  /** English summary of the Italian legal texts. */
   privacy: "/en/privacy",
+  terms: "/en/terms",
+  cookies: "/en/cookies",
 } as const;
 
 export interface PagePair {
@@ -31,6 +31,8 @@ export const PAGE_PAIRS: readonly PagePair[] = [
   { it: CONTENT_PATHS.funzioneInvestimenti, en: EN_PATHS.featureInvestments },
   { it: CONTENT_PATHS.schermate, en: EN_PATHS.screens },
   { it: LEGAL_PATHS.privacy, en: EN_PATHS.privacy },
+  { it: LEGAL_PATHS.termini, en: EN_PATHS.terms },
+  { it: LEGAL_PATHS.cookie, en: EN_PATHS.cookies },
 ];
 
 /** Home of each language: where the switch goes from a page that has no counterpart. */

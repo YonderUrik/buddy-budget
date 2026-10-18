@@ -38,8 +38,8 @@ export const SECURITY_EN: SecurityContent = {
     more: "Other questions.",
     sourcesSummary: "Official sources",
     legalNote: [
-      "Who runs the service, the providers and the retention periods are in ",
-      { text: "Privacy and terms", href: EN_PATHS.privacy },
+      "For the legal details (legal bases, providers, retention periods) read the ",
+      { text: "privacy policy", href: EN_PATHS.privacy },
       ". To report a security issue, write to ",
       { text: LEGAL_OWNER.email, href: `mailto:${LEGAL_OWNER.email}` },
       ".",
@@ -143,7 +143,7 @@ export const SECURITY_EN: SecurityContent = {
       { label: "The limit", text: "No retention is a condition we ask OpenRouter for on every request, not a contract we signed with the model providers." },
       { label: "How to turn it off", text: "Withdraw your consent in Settings at any time: from then on no request goes out. If you host BuddyBudget yourself you can leave AI out entirely: the app works the same." },
     ],
-    note: ["Details in ", { text: "Privacy and terms", href: `${EN_PATHS.privacy}#providers` }, "."],
+    note: ["Details in the ", { text: "privacy policy", href: `${EN_PATHS.privacy}#ai-categories` }, "."],
   },
   analytics: {
     question: "What do the usage statistics count?",
@@ -154,7 +154,7 @@ export const SECURITY_EN: SecurityContent = {
       { label: "Where", text: "Umami, installed on our own servers. It uses no cookies, doesn't follow you to other sites and doesn't pass data to third parties." },
       { label: "How to turn them off", text: "In the app, under Settings → Privacy, on each device." },
     ],
-    note: ["All the details are in ", { text: "Privacy and terms", href: `${EN_PATHS.privacy}#cookies` }, "."],
+    note: ["All the details are on the ", { text: "cookie page", href: EN_PATHS.cookies }, "."],
   },
   controls: {
     title: "Take it all with you, or delete it.",

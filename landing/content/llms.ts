@@ -32,7 +32,9 @@ const PAGES_EN: readonly { path: string; title: string; text: string }[] = [
   { path: EN_PATHS.featureInvestments, title: "Investments with Italian taxes", text: "Real returns, risk, tax-loss carryforward (zainetto fiscale) and stamp duty (bollo) worked out from your trades." },
   { path: EN_PATHS.security, title: "Security and privacy", text: "Read-only bank connection (PSD2) via GoCardless, what is stored and what is not, servers in Germany, export and deletion, stated limits." },
   { path: EN_PATHS.screens, title: "Screens", text: "Screenshots of the real app with sample data." },
-  { path: EN_PATHS.privacy, title: "Privacy and terms, in short", text: "Who runs the service, what data it keeps, which providers handle it, for how long, and the terms of service: an English summary of the Italian legal texts." },
+  { path: EN_PATHS.privacy, title: "Privacy policy", text: "Who runs the service, what data it keeps and why, which providers handle it, for how long, and your rights (English translation; the Italian text prevails)." },
+  { path: EN_PATHS.terms, title: "Terms of service", text: "What the service is and isn't, who can use it, liability and governing law (English translation)." },
+  { path: EN_PATHS.cookies, title: "Cookies", text: "Only technical cookies and cookie-free anonymous statistics, and how to turn the statistics off (English translation)." },
 ];
 
 /** Builds the text of `/llms.txt`. */
@@ -57,7 +59,7 @@ export function buildLlmsTxt(): string {
     "",
     "- Open-source (AGPL-3.0), self-hostable personal finance web app. Two products: Italy (Italian and English, every feature) and Germany (German and English, essentials only: accounts, portfolio, dividends and partial 2026 tax estimates; pension and advanced simulators hidden until review).",
     "- It is not a bank or a broker and gives no investment advice. It never moves money: the bank connection is read-only.",
-    "- The calculators and guides are in Italian only; the legal texts are Italian, with an English summary.",
+    "- The calculators and guides are in Italian only. The legal texts are translated into English; the Italian version prevails.",
     "",
   );
   if (!CONTENT_DRAFT) {

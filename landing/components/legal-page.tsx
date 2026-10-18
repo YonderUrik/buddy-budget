@@ -1,5 +1,4 @@
 import "./legal-page.css";
-import Link from "next/link";
 import { LEGAL_OWNER, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
 import { HOME_PATH } from "@/content/locales";
 import type { Locale } from "@/lib/i18n";
@@ -31,7 +30,7 @@ function RichText({ text }: { text: string }) {
 /** Chrome texts of the legal pages, per language. */
 const LEGAL_UI: Record<Locale, { version: string; toc: string }> = {
   it: { version: "Versione del", toc: "Indice" },
-  en: { version: "Summary of the texts of", toc: "Contents" },
+  en: { version: "Version of", toc: "Contents" },
 };
 
 export interface LegalPageProps {
@@ -76,13 +75,6 @@ export function LegalPage({ doc, locale = "it", alternate }: LegalPageProps) {
                 <ul>
                   {section.items.map((text) => (
                     <li key={text}><RichText text={text} /></li>
-                  ))}
-                </ul>
-              ) : null}
-              {section.links ? (
-                <ul>
-                  {section.links.map((link) => (
-                    <li key={link.href}><Link href={link.href}>{link.text}</Link></li>
                   ))}
                 </ul>
               ) : null}

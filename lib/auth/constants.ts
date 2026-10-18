@@ -3,6 +3,12 @@
 /** Durata di validità del magic link, in minuti. */
 export const MAGIC_LINK_EXPIRES_MINUTES = 10;
 
+/** Validity of the emailed sign-in code (email OTP, native apps), in minutes. */
+export const SIGN_IN_OTP_EXPIRES_MINUTES = 10;
+
+/** Number of digits of the emailed sign-in code. */
+export const SIGN_IN_OTP_LENGTH = 6;
+
 /** Attesa minima prima di poter richiedere un nuovo magic link dalla UI, in secondi. */
 export const MAGIC_LINK_RESEND_COOLDOWN_SECONDS = 30;
 

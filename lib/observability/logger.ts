@@ -87,6 +87,11 @@ export interface LogFields {
   kind?: string;
   /** Giorni senza accessi di un account inattivo (conteggio, non dato personale). */
   inactiveDays?: number;
+  /**
+   * Emailed sign-in code, only in the dev-only `auth.otp.dev_code` event (never emitted when NODE_ENV=production,
+   * see `lib/auth/otp-dev-log.ts`). It is a short-lived secret: no other event may carry it.
+   */
+  devCode?: string;
   error?: unknown;
 }
 

@@ -19,6 +19,26 @@ export function magicLinkEmailContent(params: { url: string; expiresInMinutes: n
   };
 }
 
+/**
+ * Subject, text and HTML of the email with the 6-digit sign-in code (email OTP, used by the native apps), in
+ * `language`. The code is also in the subject, so iOS and Android can offer it as a one-tap autofill.
+ */
+export function signInCodeEmailContent(params: { otp: string; expiresInMinutes: number; appUrl: string; language?: Language }): { subject: string; text: string; html: string } {
+  const { t, language } = emailLocale(params.language);
+  return {
+    subject: t("{0} è il tuo codice di accesso a BuddyBudget", params.otp),
+    ...renderEmail(
+      {
+        title: t("Codice di accesso"),
+        lead: t("Il tuo codice per entrare in BuddyBudget è **{0}**. Vale **{1} minuti** e funziona una sola volta.", params.otp, params.expiresInMinutes),
+        preheader: t("Il codice scade tra {0} minuti.", params.expiresInMinutes),
+        footnote: t("Se non l'hai chiesto tu, ignora questa email: senza il codice nessuno può entrare."),
+      },
+      { appUrl: params.appUrl, language },
+    ),
+  };
+}
+
 /** Value of one cookie from a raw `Cookie` header. */
 function cookieValue(header: string | null | undefined, name: string): string | undefined {
   for (const part of (header ?? "").split(";")) {

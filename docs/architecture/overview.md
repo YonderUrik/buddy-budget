@@ -112,8 +112,9 @@ Worked example. A user with `productCountry = "DE"` requests `GET /api/pension`.
 
 | Aspect | Behaviour |
 |---|---|
-| Methods | Magic link (plugin `magicLink`, expires after `MAGIC_LINK_EXPIRES_MINUTES` = 10) and Google OAuth (only when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set) |
-| Email | Resend when `RESEND_API_KEY` is set; otherwise `logMagicLink` writes the link to the server log (self-hosting). A Resend error throws, so the UI does not claim the email was sent |
+| Methods | Magic link (plugin `magicLink`, expires after `MAGIC_LINK_EXPIRES_MINUTES` = 10), Google OAuth (only when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set) and, for the native apps, a 6-digit emailed code (plugin `emailOTP`, `SIGN_IN_OTP_EXPIRES_MINUTES` = 10, stored hashed, 3 attempts; `POST /api/auth/email-otp/send-verification-otp` then `POST /api/auth/sign-in/email-otp`) |
+| Native sessions | Plugin `bearer`: `Authorization: Bearer <token>` works wherever `getSession` runs; sign-in responses return the token in `set-auth-token` |
+| Email | Resend when `RESEND_API_KEY` is set; otherwise `logMagicLink` writes the link to the server log (self-hosting). A Resend error throws, so the UI does not claim the email was sent. Sign-in codes: outside production, when Resend is missing or fails, `logDevOtp` writes the code in the `auth.otp.dev_code` event (field `devCode`); in production the code is never logged (`auth.otp.undeliverable` / `auth.otp.failed`). Metrics `auth_events_total{event="otp_sent"\|"otp_failed"}` |
 | Last method | Plugin `lastLoginMethod` sets a cookie the login page reads |
 | Sessions | `expiresIn` 7 days, `updateAge` 1 day (`SESSION_EXPIRES_IN_DAYS`, `SESSION_UPDATE_AGE_DAYS`) |
 | OAuth tokens | `encryptOAuthTokens: true` (encrypted with `BETTER_AUTH_SECRET`); account linking enabled |

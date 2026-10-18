@@ -15,7 +15,7 @@ export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
 export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications" | "inactive_accounts" | "public_demo";
 export type CronOutcome = "success" | "error";
-export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
+export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "otp_sent" | "otp_failed" | "sign_in" | "rate_limited";
 export type SupportReportKind = "problema" | "domanda" | "idea";
 export type SupportReportOutcome = "sent" | "failed" | "rate_limited";
 /** Esito della ricezione di un errore del browser: registrato o scartato per il limite per utente. */
@@ -239,7 +239,7 @@ function createState(): MetricsState {
   });
   state.authEvents = new Counter({
     name: `${METRIC_PREFIX}auth_events_total`,
-    help: "Eventi di autenticazione (invio magic link, accessi, rate limit).",
+    help: "Authentication events (magic link and sign-in code sent, sign-ins, rate limits).",
     labelNames: ["event"],
     registers: r,
   });

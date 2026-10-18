@@ -2,7 +2,7 @@ import 'server-only';
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer, lastLoginMethod, magicLink } from "better-auth/plugins";
+import { bearer, emailOTP, lastLoginMethod, magicLink } from "better-auth/plugins";
 import { Resend } from "resend";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
@@ -10,9 +10,18 @@ import { categories } from "@/lib/db/schema/categories";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { recordAuthEvent, requestLogger } from "@/lib/observability";
 import { eq } from "drizzle-orm";
-import { magicLinkEmailContent, magicLinkLanguage } from "./emails";
+import { magicLinkEmailContent, magicLinkLanguage, signInCodeEmailContent } from "./emails";
 import { logMagicLink } from "./magic-link-log";
-import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE_DAYS } from "./constants";
+import { logDevOtp } from "./otp-dev-log";
+import {
+  MAGIC_LINK_EXPIRES_MINUTES,
+  SESSION_EXPIRES_IN_DAYS,
+  SESSION_UPDATE_AGE_DAYS,
+  SIGN_IN_OTP_EXPIRES_MINUTES,
+  SIGN_IN_OTP_LENGTH,
+} from "./constants";
+import type { Language } from "@/lib/localization/config";
+import { getAppUrl } from "@/lib/env";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
 import { touchLastActive } from "@/lib/account/last-active";
@@ -22,6 +31,20 @@ import { publicDemo } from "./public-demo-plugin";
 /** Client Resend creato al primo uso: senza RESEND_API_KEY (self-hosting) il costruttore lancerebbe già all'import. */
 function getResend(): Resend | null {
   return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+}
+
+/**
+ * Language of a sign-in email (link or code): the account's saved language, or the language of the sign-in page for
+ * a new address. A failed lookup only costs the saved language: the email still goes out.
+ */
+async function signInEmailLanguage(email: string, headers: Headers | null | undefined): Promise<Language> {
+  const [user] = await db
+    .select({ productCountry: authUser.productCountry, language: authUser.language })
+    .from(authUser)
+    .where(eq(authUser.email, email.toLowerCase()))
+    .limit(1)
+    .catch(() => []);
+  return magicLinkLanguage({ user, headers });
 }
 
 /** Google è attivo solo con entrambe le credenziali; altrimenti resta solo il magic link. */
@@ -53,15 +76,7 @@ export const auth = betterAuth({
         }
         // Resend non lancia in caso di errore: restituisce `{ error }`. Lo trasformiamo in eccezione
         // così better-auth risponde con errore e la UI non mostra "controlla la tua email" a vuoto.
-        // Written in the account's saved language, or in the language of the sign-in page for a new address.
-        // A failed lookup only costs the saved language: the link still goes out.
-        const [user] = await db
-          .select({ productCountry: authUser.productCountry, language: authUser.language })
-          .from(authUser)
-          .where(eq(authUser.email, email.toLowerCase()))
-          .limit(1)
-          .catch(() => []);
-        const language = magicLinkLanguage({ user, headers: ctx?.headers ?? ctx?.request?.headers });
+        const language = await signInEmailLanguage(email, ctx?.headers ?? ctx?.request?.headers);
         const { error } = await resend.emails.send({
           from: process.env.RESEND_FROM!,
           to: email,
@@ -74,6 +89,48 @@ export const auth = betterAuth({
           throw new Error(`Invio magic link non riuscito (${error.name})`);
         }
         recordAuthEvent("magic_link_sent");
+      },
+    }),
+    // Sign-in with a 6-digit emailed code, for the native apps (no deep link needed, works across devices). Same
+    // implicit sign-up as the magic link: an unknown address creates the user (and the category seed hook runs).
+    // POST /api/auth/email-otp/send-verification-otp { email, type: "sign-in" } → POST /api/auth/sign-in/email-otp
+    // { email, otp } → `token` in the body and in `set-auth-token`. Codes are stored hashed.
+    emailOTP({
+      otpLength: SIGN_IN_OTP_LENGTH,
+      expiresIn: SIGN_IN_OTP_EXPIRES_MINUTES * 60,
+      storeOTP: "hashed",
+      sendVerificationOTP: async ({ email, otp, type }, ctx) => {
+        // Only sign-in codes exist here: no password, email verification or email change flows.
+        if (type !== "sign-in") return;
+        const log = requestLogger();
+        const resend = getResend();
+        if (!resend) {
+          // Development without email: the code goes to the dev log. In production nothing is logged and the code
+          // can't be delivered (self-hosters without Resend keep the magic link, which prints its URL).
+          if (!logDevOtp(otp, { log })) log.warn("auth.otp.undeliverable", { reason: "email_not_configured" });
+          recordAuthEvent("otp_failed");
+          return;
+        }
+        const language = await signInEmailLanguage(email, ctx?.headers ?? ctx?.request?.headers);
+        const { error } = await resend.emails.send({
+          from: process.env.RESEND_FROM!,
+          to: email,
+          ...signInCodeEmailContent({
+            otp,
+            expiresInMinutes: SIGN_IN_OTP_EXPIRES_MINUTES,
+            appUrl: getAppUrl(),
+            language,
+          }),
+        });
+        if (error) {
+          recordAuthEvent("otp_failed");
+          // Only Resend's error type: the message can contain the address.
+          log.error("auth.otp.failed", { reason: error.name });
+          logDevOtp(otp, { log });
+          return;
+        }
+        recordAuthEvent("otp_sent");
+        log.info("auth.otp.sent");
       },
     }),
     // Cookie readable by the page (no database field): lets the login page offer the method used last time.

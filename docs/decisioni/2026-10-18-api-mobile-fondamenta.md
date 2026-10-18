@@ -1,0 +1,7 @@
+# 2026-10-18 — API foundations for the native apps
+
+Data: 2026-10-18
+
+The native iOS/Android apps (spec in the separate `buddy-budget-mobile-spec` repo, `api/auth.md` R1/R7/R8 and `api/gaps.md` G1/G13) need to call the existing API without a browser cookie jar. Decided: (1) the better-auth `bearer()` plugin, so `Authorization: Bearer <session token>` works on every route and in the proxy, with the token returned in the `set-auth-token` header at sign-in; the web keeps the HttpOnly cookie, no CORS change (native clients are not browsers). (2) Public `GET /api/legal` with the current `LEGAL_VERSION`, the clauses to approve and the document links. (3) The proxy's gate 403s for APIs now carry `{ code: "account_deactivated" }` and `{ code: "legal_acceptance_required", version }` (pages still redirect). (4) `GET /api/me/bootstrap`: profile, the gate to show and the country capability map, open through every gate; gates live in `lib/account/gates.ts` and capabilities come from `isCountryPathAvailable`, one source for proxy, web and apps. (5) Personal-import writes skip the Origin check only for bearer requests without cookies (`lib/http/same-origin.ts`).
+
+Why bearer and not JWT/cookie jars: no route changes, sessions stay revocable from Impostazioni, and the 7-day sliding expiry works the same. Open: native sign-in (email OTP, Google client IDs, Sign in with Apple), the GoCardless return flow without cookies, `GET /api/meta` for the remaining constants. No migration, no impact on the landing.

@@ -1,9 +1,10 @@
 /**
  * Texts of the investments feature page in each language (`/funzioni/investimenti`, `/en/features/investments`).
- * The English one links the Italian-only calculator and guide with an «(in Italian)» note.
+ * The English one links the English calculator and guide.
  */
 import type { Locale } from "@/lib/i18n";
 import type { HomeIcon } from "./home";
+import { SOURCES_CHECKED_EN, SOURCES_EN } from "./en/tools";
 import { EN_PATHS } from "./locales";
 import { CONTENT_PATHS, SOURCES, SOURCES_CHECKED, type Source } from "./seo-pages";
 
@@ -69,14 +70,11 @@ export const INVESTMENTS_EN: InvestmentsPageContent = {
     { icon: "backpack", title: "Italian taxation", text: "Capital gains, the four-year zainetto fiscale (tax-loss carryforward) and bollo (stamp duty), worked out from your trades." },
     { icon: "calculator", title: "Before you sell", text: "The tax you'd pay if you sold today, counting the losses already in your zainetto." },
   ],
-  toolsTitle: "Free tools (in Italian)",
+  toolsTitle: "Free tools",
   tools: [
-    { href: CONTENT_PATHS.zainetto, title: "Zainetto fiscale calculator", text: "Losses, expiry dates and the tax on a gain." },
-    { href: CONTENT_PATHS.guidaZainetto, title: "Guide to the zainetto fiscale", text: "What it is and how the four years work, with examples." },
+    { href: EN_PATHS.zainetto, title: "Zainetto fiscale calculator", text: "Losses, expiry dates and the tax on a gain." },
+    { href: EN_PATHS.guideZainetto, title: "Guide to the zainetto fiscale", text: "What it is and how the four years work, with examples." },
   ],
-  sources: [
-    { label: "Article 68 of the TUIR (Presidential Decree 917/1986), capital gains and losses: offsetting, and carrying losses forward \"no later than the fourth\" year", href: SOURCES.tuir68.href },
-    { label: "Agenzia delle Entrate (the Italian Revenue Agency), Circular 19/E of 27 June 2014: taxation of financial income (26% rate, government bonds at 12.5%)", href: SOURCES.circolare19e.href },
-  ],
-  sourcesChecked: "2 October 2026",
+  sources: [SOURCES_EN.tuir68, SOURCES_EN.circolare19e],
+  sourcesChecked: SOURCES_CHECKED_EN,
 };

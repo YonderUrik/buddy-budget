@@ -17,6 +17,12 @@ export const EN_PATHS = {
   privacy: "/en/privacy",
   terms: "/en/terms",
   cookies: "/en/cookies",
+  calculators: "/en/calculators",
+  /** The calculators keep the Italian slug where the Italian term is the name people search for. */
+  zainetto: "/en/calculators/zainetto-fiscale",
+  loanAmortization: "/en/calculators/loan-amortization",
+  savingsGoal: "/en/calculators/savings-goal",
+  guideZainetto: "/en/guides/zainetto-fiscale",
 } as const;
 
 export interface PagePair {
@@ -33,6 +39,11 @@ export const PAGE_PAIRS: readonly PagePair[] = [
   { it: LEGAL_PATHS.privacy, en: EN_PATHS.privacy },
   { it: LEGAL_PATHS.termini, en: EN_PATHS.terms },
   { it: LEGAL_PATHS.cookie, en: EN_PATHS.cookies },
+  { it: CONTENT_PATHS.strumenti, en: EN_PATHS.calculators },
+  { it: CONTENT_PATHS.zainetto, en: EN_PATHS.zainetto },
+  { it: CONTENT_PATHS.ammortamento, en: EN_PATHS.loanAmortization },
+  { it: CONTENT_PATHS.obiettivo, en: EN_PATHS.savingsGoal },
+  { it: CONTENT_PATHS.guidaZainetto, en: EN_PATHS.guideZainetto },
 ];
 
 /** Home of each language: where the switch goes from a page that has no counterpart. */

@@ -8,9 +8,10 @@ import type { Transaction } from "@/lib/db/schema/transactions";
 import type { DebtsViewData } from "@/lib/debts/view";
 import { localizeCategory } from "@/lib/localization/categories";
 import { buildAccountExtras } from "./accounts";
+import { buildLiquidityAnalysis } from "./liquidity-analysis";
 import { buildLiquidityMonth } from "./liquidity-month";
 import { buildOverviewView } from "./overview";
-import { accountExtrasSchema, liquidityMonthSchema, overviewViewSchema } from "./schemas";
+import { accountExtrasSchema, liquidityAnalysisSchema, liquidityMonthSchema, overviewViewSchema } from "./schemas";
 
 const TODAY = new Date(2026, 9, 18);
 const NOW = new Date(2026, 9, 18, 12, 0, 0);
@@ -90,6 +91,35 @@ describe("buildLiquidityMonth", () => {
     const month = buildLiquidityMonth({ ...input, language: "en", categories: english });
     expect(month.budgets[0]?.name).toBe("Groceries");
     expect(month.groups[0]?.label).toBe("Needs");
+  });
+});
+
+describe("buildLiquidityAnalysis", () => {
+  const input = { today: TODAY, period: "mese" as const, referenceDate: TODAY, accountId: null, currency: "EUR", language: "it" as const, transactions, categories, budgets };
+
+  it("matches the contract: spend against the period before, groups, income, savings, sentence", () => {
+    const view = liquidityAnalysisSchema.parse(buildLiquidityAnalysis(input));
+    expect(view).toMatchObject({ range: { from: "2026-10-01", to: "2026-10-31" }, previousRange: { from: "2026-09-01", to: "2026-09-30" }, isCurrentMonth: true, spent: 165, spentBefore: 100, delta: 65, hasBudgets: true });
+    expect(view.curve).toHaveLength(18);
+    expect(view.curve.at(-1)).toEqual({ date: "2026-10-18", value: 165 });
+    expect(view.typical).toEqual(computeMonthPace(transactions, budgets, TODAY).typical);
+    expect(view.groups.map((g) => [g.key, g.label, g.amount])).toEqual([["dovuta", "Dovute", 150], ["daCategorizzare", "Da categorizzare", 15]]);
+    expect(view.groups[0]?.categories).toEqual([expect.objectContaining({ id: groceries.id, amount: 150, budget: 200 })]);
+    expect(view.incomeSources).toEqual([expect.objectContaining({ categoryId: salary.id, amount: 2000, quotaPct: 100 })]);
+    expect(view.savings.map((s) => s.month)).toEqual(["2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"]);
+    expect(view.saved).toBe(2000 - 165 - 100 - 80);
+    expect(view.sentence.replace(/\s/g, " ")).toBe("Finora hai speso 165 €, 65 € in più del periodo prima. La voce che pesa di più è «Spesa», il 91%.");
+  });
+
+  it("past periods: no typical line, «Hai speso», budgets scaled to the period", () => {
+    const view = buildLiquidityAnalysis({ ...input, period: "3mesi", referenceDate: new Date(2026, 8, 15), language: "en" });
+    expect(view).toMatchObject({ isCurrentMonth: false, typical: null, range: { from: "2026-07-01", to: "2026-09-30" }, spent: 180 });
+    expect(view.groups[0]?.categories[0]?.budget).toBe(600);
+    expect(view.sentence.startsWith("You spent")).toBe(true);
+  });
+
+  it("an account scope keeps only its movements", () => {
+    expect(buildLiquidityAnalysis({ ...input, accountId: uuid(2) }).spent).toBe(30);
   });
 });
 

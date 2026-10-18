@@ -222,7 +222,7 @@ Strings: Italian is the source language. `translate(language, source)` in [`mess
 
 ### 4.11 Mobile and PWA
 
-The app is a responsive web app. Native iOS/Android apps are specified in the separate `buddy-budget-mobile-spec` repo and use the same API with `Authorization: Bearer` sessions (better-auth `bearer` plugin, email OTP sign-in). For them the server also computes views the web computes in the browser, with the same functions (`lib/views`): `GET /api/overview`, `GET /api/liquidity/month`, `GET /api/accounts?include=trend,health`, the paged `GET /api/transactions?limit&cursor` (`lib/liquidity/transactions-list.ts`), and default category names localized in `GET /api/categories`.
+The app is a responsive web app. Native iOS/Android apps are specified in the separate `buddy-budget-mobile-spec` repo and use the same API with `Authorization: Bearer` sessions (better-auth `bearer` plugin, email OTP sign-in). For them the server also computes views the web computes in the browser, with the same functions (`lib/views`): `GET /api/overview`, `GET /api/liquidity/month`, `GET /api/liquidity/analysis`, `GET /api/accounts?include=trend,health`, the paged `GET /api/transactions?limit&cursor` (`lib/liquidity/transactions-list.ts`), and default category names localized in `GET /api/categories`.
 
 | Aspect | Behaviour | Code |
 |---|---|---|
@@ -297,7 +297,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `support/` | Support reports and their sending |
 | `sync-jobs/` | Background sync job store, runner, views |
 | `validation/` | zod schemas for API inputs |
-| `views/` | Server-computed views for the native apps (Overview, Liquidità month, account extras): pure builders over the web's own calc functions, loaders in `views/server`, zod response schemas |
+| `views/` | Server-computed views for the native apps (Overview, Liquidità month and analysis, account extras): pure builders over the web's own calc functions, loaders in `views/server`, zod response schemas |
 | `whats-new/` | «Novità» ("What's new") entries |
 
 ### 4.14 Architecture documents by domain

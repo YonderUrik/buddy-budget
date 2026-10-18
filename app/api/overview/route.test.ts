@@ -8,17 +8,18 @@ import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
 import { defaultCategoryRows } from "@/lib/categories/seed";
-import { liquidityMonthSchema, overviewViewSchema } from "@/lib/views";
+import { liquidityAnalysisSchema, liquidityMonthSchema, overviewViewSchema } from "@/lib/views";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
 import { auth } from "@/lib/auth";
 import { GET as getOverview } from "./route";
 import { GET as getMonth } from "../liquidity/month/route";
+import { GET as getAnalysis } from "../liquidity/analysis/route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
 
-describe("view endpoints: GET /api/overview and GET /api/liquidity/month", () => {
+describe("view endpoints: GET /api/overview, /api/liquidity/month and /api/liquidity/analysis", () => {
   let userId: string;
   let accountId: string;
 
@@ -80,5 +81,20 @@ describe("view endpoints: GET /api/overview and GET /api/liquidity/month", () =>
     const response = await getMonth(new NextRequest("http://localhost/api/liquidity/month?accountId=abc"));
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ code: "validation_failed", field: "accountId" });
+  });
+
+  it("liquidity analysis: period spend against the previous one, localized", async () => {
+    const response = await getAnalysis(new NextRequest("http://localhost/api/liquidity/analysis?period=mese&today=2026-10-18"));
+    expect(response.status).toBe(200);
+    const view = liquidityAnalysisSchema.parse(await response.json());
+    expect(view).toMatchObject({ spent: 120, spentBefore: 80, isCurrentMonth: true });
+    expect(view.groups).toEqual([expect.objectContaining({ key: "dovuta", label: "Needs", categories: [expect.objectContaining({ name: "Groceries", budget: 300 })] })]);
+    const previous = liquidityAnalysisSchema.parse(await (await getAnalysis(new NextRequest("http://localhost/api/liquidity/analysis?period=mese&ref=2026-09-10&today=2026-10-18"))).json());
+    expect(previous).toMatchObject({ spent: 80, isCurrentMonth: false, typical: null });
+  });
+
+  it("liquidity analysis: rejects unknown periods and malformed reference days", async () => {
+    expect(await (await getAnalysis(new NextRequest("http://localhost/api/liquidity/analysis?period=1mese"))).json()).toMatchObject({ code: "invalid_period" });
+    expect(await (await getAnalysis(new NextRequest("http://localhost/api/liquidity/analysis?ref=2026/10/01"))).json()).toMatchObject({ code: "invalid_date", field: "ref" });
   });
 });

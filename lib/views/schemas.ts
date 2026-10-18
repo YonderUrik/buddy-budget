@@ -115,6 +115,46 @@ export const liquidityMonthSchema = z.object({
   voice: z.array(voiceLineSchema),
 });
 
+export const expensePeriodSchema = z.enum(["settimana", "mese", "3mesi", "anno"]);
+
+/** GET /api/liquidity/analysis (G6). */
+export const liquidityAnalysisSchema = z.object({
+  currency: z.string(),
+  today: isoDate,
+  period: expensePeriodSchema,
+  accountId: z.string().nullable(),
+  /** The period on screen and the one before it (same calendar length). */
+  range: z.object({ from: isoDate, to: isoDate }),
+  previousRange: z.object({ from: isoDate, to: isoDate }),
+  /** The period is the current month: the curve has a typical line and the sentence says «Finora». */
+  isCurrentMonth: z.boolean(),
+  spent: z.number(),
+  spentBefore: z.number(),
+  /** spent − spentBefore (shown only when spentBefore > 0). */
+  delta: z.number(),
+  /** Cumulative effective spend, one point per day from range.from to min(range.to, today). */
+  curve: z.array(z.object({ date: isoDate, value: z.number() })),
+  /** Typical cumulative spend per day of month (index = day − 1), only for the current month. */
+  typical: z.array(z.number()).nullable(),
+  /** Spend by group (with «Da categorizzare»), largest first, empty groups left out; categories largest first. */
+  groups: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      amount: z.number(),
+      categories: z.array(z.object({ id: z.string(), name: z.string(), color: z.string(), icon: z.string(), amount: z.number(), budget: z.number().nullable() })),
+    }),
+  ),
+  /** At least one category has a monthly budget («Modifica i budget» vs «Imposta un budget»). */
+  hasBudgets: z.boolean(),
+  incomeSources: z.array(z.object({ categoryId: z.string(), name: z.string(), color: z.string(), icon: z.string(), amount: z.number(), quotaPct: z.number().nullable() })),
+  /** Cumulative income − spend per month over the trend window (6 months, 12 for `anno`), `month` = YYYY-MM. */
+  savings: z.array(z.object({ month: z.string().regex(/^\d{4}-\d{2}$/), cumulative: z.number() })),
+  /** Last cumulative value («Messo da parte» when ≥ 0, «In meno» otherwise). */
+  saved: z.number(),
+  sentence: z.string(),
+});
+
 export const accountHealthSchema = z.object({
   connectionId: z.string(),
   institutionName: z.string(),
@@ -160,6 +200,7 @@ export const transactionPageSchema = z.object({
 
 export type OverviewView = z.infer<typeof overviewViewSchema>;
 export type LiquidityMonth = z.infer<typeof liquidityMonthSchema>;
+export type LiquidityAnalysis = z.infer<typeof liquidityAnalysisSchema>;
 export type AccountExtras = z.infer<typeof accountExtrasSchema>;
 export type AccountHealth = z.infer<typeof accountHealthSchema>;
 export type TransactionPage = z.infer<typeof transactionPageSchema>;

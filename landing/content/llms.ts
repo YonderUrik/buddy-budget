@@ -32,6 +32,7 @@ const PAGES_EN: readonly { path: string; title: string; text: string }[] = [
   { path: EN_PATHS.featureInvestments, title: "Investments with Italian taxes", text: "Real returns, risk, tax-loss carryforward (zainetto fiscale) and stamp duty (bollo) worked out from your trades." },
   { path: EN_PATHS.security, title: "Security and privacy", text: "Read-only bank connection (PSD2) via GoCardless, what is stored and what is not, servers in Germany, export and deletion, stated limits." },
   { path: EN_PATHS.screens, title: "Screens", text: "Screenshots of the real app with sample data." },
+  { path: EN_PATHS.privacy, title: "Privacy and terms, in short", text: "Who runs the service, what data it keeps, which providers handle it, for how long, and the terms of service: an English summary of the Italian legal texts." },
 ];
 
 /** Builds the text of `/llms.txt`. */
@@ -56,7 +57,7 @@ export function buildLlmsTxt(): string {
     "",
     "- Open-source (AGPL-3.0), self-hostable personal finance web app. Two products: Italy (Italian and English, every feature) and Germany (German and English, essentials only: accounts, portfolio, dividends and partial 2026 tax estimates; pension and advanced simulators hidden until review).",
     "- It is not a bank or a broker and gives no investment advice. It never moves money: the bank connection is read-only.",
-    "- The calculators, guides and legal pages are in Italian only.",
+    "- The calculators and guides are in Italian only; the legal texts are Italian, with an English summary.",
     "",
   );
   if (!CONTENT_DRAFT) {

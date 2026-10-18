@@ -87,7 +87,7 @@ export function SecurityPage({ content, path, home }: { content: SecurityContent
       <section className="sp-sec" aria-labelledby="sp-more">
         <h2 id="sp-more">{page.more}</h2>
         <div className="faq-list sp-questions">
-          {[content.gocardless, content.analytics].map((q) => (
+          {[content.gocardless, content.ai, content.analytics].map((q) => (
             <details key={q.question} className="faq-item">
               <summary>{q.question}</summary>
               <div className="sp-answer">

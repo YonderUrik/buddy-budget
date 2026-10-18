@@ -280,6 +280,50 @@ export const analyticsViewSchema = z.object({
   timeline: z.object({ headline: z.string(), series: z.array(z.object({ year: z.number().int(), wealth: z.number() })) }),
 });
 
+const countryMetaSchema = z.object({
+  id: z.enum(["IT", "DE"]),
+  languages: z.array(z.enum(["it", "en", "de"])),
+  features: z.object({ taxes: z.boolean(), pension: z.boolean(), retirement: z.boolean(), incomeForecasts: z.boolean(), inflation: z.boolean() }),
+  sections: z.record(z.string(), z.boolean()),
+  planning: z.object({ tax: z.boolean(), income: z.boolean(), pension: z.boolean(), retirement: z.boolean(), simulations: z.boolean() }),
+});
+
+/** GET /api/meta (G13). */
+export const appMetaSchema = z.object({
+  language: z.enum(["it", "en", "de"]),
+  server: z.object({ version: z.string(), commit: z.string(), builtAt: z.string() }),
+  legal: z.looseObject({ version: z.string() }),
+  languages: z.array(z.object({ id: z.enum(["it", "en", "de"]), name: z.string(), locale: z.string() })),
+  countries: z.array(countryMetaSchema),
+  currencies: z.array(z.object({ value: z.string(), label: z.string(), symbol: z.string() })),
+  defaultCurrency: z.string(),
+  homePages: z.array(z.object({ path: z.string(), label: z.string() })),
+  defaultHomePage: z.string(),
+  notifications: z.object({
+    defaults: z.object({ digestEnabled: z.boolean(), digestFrequency: z.string(), budgetAlertsEnabled: z.boolean(), deadlineAlertsEnabled: z.boolean(), goalAlertsEnabled: z.boolean() }),
+    kinds: z.array(z.object({ id: z.string(), label: z.string(), hint: z.string() })),
+    digestFrequencies: z.array(z.string()),
+    budgetAlertThresholds: z.array(z.number()),
+    deadlineLeadDays: z.number().int(),
+    alertsMaxPerWeek: z.number().int(),
+  }),
+  limits: z.record(z.string(), z.number()),
+  features: z.array(z.object({ id: z.string(), area: z.string(), areaLabel: z.string(), name: z.string(), description: z.string(), status: z.enum(["live", "new", "soon"]), appPath: z.string().nullable(), available: z.boolean().nullable() })),
+  profile: z
+    .object({
+      productCountry: z.enum(["IT", "DE"]),
+      language: z.enum(["it", "en", "de"]),
+      capabilities: countryMetaSchema,
+      categoryProposal: z.array(z.looseObject({ key: z.string().nullable(), name: z.string() })),
+    })
+    .nullable(),
+});
+
+const whatsNewEntrySchema = z.object({ id: z.string(), date: isoDate, title: z.string(), summary: z.string(), href: z.string(), ctaLabel: z.string() });
+
+/** GET /api/whats-new (G14). */
+export const whatsNewSchema = z.object({ maxAgeDays: z.number().int(), entries: z.array(whatsNewEntrySchema), current: whatsNewEntrySchema.nullable() });
+
 export type OverviewView = z.infer<typeof overviewViewSchema>;
 export type LiquidityMonth = z.infer<typeof liquidityMonthSchema>;
 export type LiquidityAnalysis = z.infer<typeof liquidityAnalysisSchema>;

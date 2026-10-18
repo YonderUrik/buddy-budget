@@ -22,6 +22,7 @@ export {
 } from "./investments";
 export { buildAnalyticsView, type AnalyticsView, type AnalyticsViewInputs } from "./analytics";
 export { buildPlanningResults, PLANNING_CURRENCY, type PlanningResults } from "./financial-planning";
+export { buildAppMeta, buildWhatsNew, type AppMeta, type AppMetaInputs, type WhatsNew, type WhatsNewInputs } from "./meta";
 export { buildPensionView, type PensionView, type PensionViewInputs } from "./pension";
 export { buildInvestmentsIncome, buildInvestmentsTaxes, simulateInvestmentSale, type InvestmentsIncome, type InvestmentsTaxes, type SaleSimulationRequest, type SaleSimulationResult } from "./investments-tax";
 export {
@@ -36,6 +37,7 @@ export {
   accountExtrasSchema,
   accountHealthSchema,
   analyticsViewSchema,
+  appMetaSchema,
   debtsInsightsSchema,
   liquidityAnalysisSchema,
   liquidityMonthSchema,
@@ -45,6 +47,7 @@ export {
   renewalAlertSchema,
   transactionPageSchema,
   voiceLineSchema,
+  whatsNewSchema,
   type AccountExtras,
   type AccountHealth,
   type LiquidityAnalysis,

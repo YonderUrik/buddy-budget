@@ -9,6 +9,7 @@ main:has(.close) ~ .sf { margin-top: 0; padding-top: 24px; }
 .sf a:hover { color: var(--on-navy); }
 .sf .gh { display: inline-flex; align-items: center; gap: 6px; }
 .sf .gh svg { width: 15px; height: 15px; }
-/* the name across the whole width, a step lighter than the ground, its feet cut by the page's edge */
-.sf-word { margin: 56px 0 -0.16em; text-align: center; white-space: nowrap; font: 300 23vw / 0.8 var(--f-d); letter-spacing: -0.01em; color: color-mix(in srgb, var(--on-navy) 12%, var(--navy)); user-select: none; }
+/* the name across the whole width, a step lighter than the ground, its feet cut by the page's edge. Decoration only:
+   at 23vw its glyph box rises above the line box and, on wide screens, over the last footer links, so it takes no clicks */
+.sf-word { margin: 56px 0 -0.16em; text-align: center; white-space: nowrap; font: 300 23vw / 0.8 var(--f-d); letter-spacing: -0.01em; color: color-mix(in srgb, var(--on-navy) 12%, var(--navy)); user-select: none; pointer-events: none; }
 @media (max-width: 800px) { .sf-cols { grid-template-columns: minmax(0, 1fr); gap: 24px; } }

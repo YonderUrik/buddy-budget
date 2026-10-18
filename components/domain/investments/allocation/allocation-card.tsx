@@ -77,7 +77,7 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
         allocation
                 ? outOfLine.length === 0
                   ? tr("Tutto entro ±{0} punti dall'obiettivo.", {0: Math.round(ALLOCATION_TOLERANCE * 100)})
-                  : tr("{0} fuori di più di {1} punti.", {0: outOfLine.length === 1 ? "Uno strumento è" : `${outOfLine.length} strumenti sono`, 1: Math.round(ALLOCATION_TOLERANCE * 100)})
+                  : tr("{0} fuori di più di {1} punti.", {0: outOfLine.length === 1 ? tr("Uno strumento è") : tr("{0} strumenti sono", {0: outOfLine.length}), 1: Math.round(ALLOCATION_TOLERANCE * 100)})
                 : tr("Decidi quanto deve pesare ogni strumento: ti diciamo dove mettere il prossimo versamento.")
       }
       action={

@@ -5046,5 +5046,8 @@
   "Movimento": "Umsatz",
   "Riga {0}: {1} non valido": "Zeile {0}: {1} ungültig",
   "data mancante": "Datum fehlt",
-  "Ti mandiamo un link via email. Non serve una password.": "Wir senden dir einen Link per E-Mail. Ein Passwort brauchst du nicht."
+  "Ti mandiamo un link via email. Non serve una password.": "Wir senden dir einen Link per E-Mail. Ein Passwort brauchst du nicht.",
+  "Scegli la demo": "Demo auswählen",
+  "Con tasse e regole italiane": "Mit italienischen Steuern und Regeln",
+  "Con tasse e regole tedesche": "Mit deutschen Steuern und Regeln"
 }

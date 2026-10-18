@@ -24,12 +24,11 @@
 
 ## Why it exists
 
-People who keep track of their money usually use three tools: an app for expenses, a spreadsheet for investments, another one for the mortgage. BuddyBudget brings them together and links them to net worth, with the Italian rules where they matter: plusvalenze and minusvalenze (capital gains and losses), zainetto fiscale (tax-loss carryforward), the reduced tax rate on government bonds, bollo (stamp duty), taxation of the pension fund.
+Most people who track their money use three tools: an app for expenses, a spreadsheet for investments, another one for the mortgage. BuddyBudget puts them in one app and one net worth, and applies the Italian rules where they change the result: capital gains and losses, the zainetto fiscale (tax-loss carryforward), the lower rate on government bonds, bollo (stamp duty), pension fund taxation.
 
-- **A single picture.** Cash, investments, pension and debts all end up in the same net worth, day by day.
-- **Calculations you can check.** Returns, taxes and amortisation schedules come from pure, tested functions in [`lib/calc/`](lib/calc/); estimates show what they start from.
-- **No choices made on your behalf.** A category is applied automatically only if there is a rule you created or confirmed; suggestions, including the AI's, are confirmed by hand.
-- **Your data stays yours.** Full ZIP export, account deletion, open source code and a `docker compose` to host it yourself.
+- It only reads your data. It never moves money.
+- Every number comes from a tested function in [`lib/calc/`](lib/calc/), and [`docs/architecture/`](docs/architecture/overview.md) explains how it is calculated.
+- You can export or delete everything, or host it yourself with `docker compose`.
 
 ## Features
 
@@ -129,19 +128,11 @@ Components sit on three layers with dependencies pointing only downwards (`ui` â
 
 ## Documentation
 
-The [documentation index](docs/README.md) lists everything, grouped by what you want to do.
-
-| Document | Content |
-| --- | --- |
-| [`docs/self-hosting.md`](docs/self-hosting.md) | Docker installation, HTTPS, updates, backups |
-| [`docs/architecture/`](docs/architecture/overview.md) | how each area works and how every number is calculated, with worked examples |
-| [`ROADMAP.md`](ROADMAP.md) | direction, what is done and what is deferred |
-| [`docs/decisioni/`](docs/decisioni/) | why each choice was made, one decision per file ([earlier archive](docs/decision-log.md)) |
-| [`CHANGELOG.md`](CHANGELOG.md) | what changed in each version |
+Start from the [documentation index](docs/README.md). How each number is calculated is in [`docs/architecture/`](docs/architecture/overview.md), why each choice was made is in [`docs/decisioni/`](docs/decisioni/).
 
 ## Project status
 
-BuddyBudget is in beta and is developed by a single person, with the help of an AI coding assistant. Product country and language are chosen separately during onboarding and in Preferences: Italy in Italian/English, Germany in German/English. For Germany, Italian taxation, pension/TFR, forecast income, Analitiche/FIRE and Italian inflation are temporarily disabled; existing data is preserved. Email translations and the review of legal documents remain separate from the interface. Bank connection has limited slots during the beta. What comes next is in the [roadmap](ROADMAP.md).
+BuddyBudget is in beta. It is built mostly by one developer with an AI coding assistant. It is made for Italy; Germany is partly supported (partial 2026 German tax estimates; pension, TFR and Analitiche are off). The interface is in Italian, English and German. Bank connections are limited during the beta. What comes next is in the [roadmap](ROADMAP.md).
 
 ## Contributing, security and contacts
 

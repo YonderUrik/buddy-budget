@@ -1,11 +1,11 @@
-# Interactive Brokers Activity Statement backend
+# Interactive Brokers statement parser (API)
 
 `POST /api/investments/import/parse` accepts an authenticated request with the
 UTF-8 CSV as the raw body (`Content-Type: text/csv` or `text/plain`). The actual
 stream is limited to 5 MiB, even without a Content-Length header. Parsing is
 read-only and responses have `Cache-Control: no-store`.
 
-This PR provides the backend contract; connecting the upload UI is a separate PR.
+User-facing behaviour of the import is in [ibkr-import.md](ibkr-import.md); this page is the parser's API contract.
 
 ## Response
 

@@ -2,7 +2,7 @@ import 'server-only';
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer, lastLoginMethod, magicLink } from "better-auth/plugins";
+import { bearer, emailOTP, lastLoginMethod, magicLink } from "better-auth/plugins";
 import { APIError } from "better-auth/api";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
@@ -12,8 +12,9 @@ import { recordAuthEvent, requestLogger } from "@/lib/observability";
 import { eq } from "drizzle-orm";
 import { sendEmail } from "@/lib/email/send";
 import { authMethods } from "@/lib/instance/config";
-import { magicLinkEmailContent, magicLinkLanguage, passwordResetEmailContent } from "./emails";
+import { magicLinkEmailContent, magicLinkLanguage, passwordResetEmailContent, signInCodeEmailContent } from "./emails";
 import { logMagicLink } from "./magic-link-log";
+import { logDevOtp } from "./otp-dev-log";
 import { canCreateAccount, SIGNUPS_CLOSED_CODE } from "./signup-gate";
 import {
   MAGIC_LINK_EXPIRES_MINUTES,
@@ -22,7 +23,10 @@ import {
   PASSWORD_RESET_EXPIRES_MINUTES,
   SESSION_EXPIRES_IN_DAYS,
   SESSION_UPDATE_AGE_DAYS,
+  SIGN_IN_OTP_EXPIRES_MINUTES,
+  SIGN_IN_OTP_LENGTH,
 } from "./constants";
+import { getAppUrl } from "@/lib/env";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
 import { touchLastActive } from "@/lib/account/last-active";
@@ -96,6 +100,50 @@ export const auth = betterAuth({
           throw new Error(`Invio magic link non riuscito (${result.reason})`);
         }
         recordAuthEvent("magic_link_sent");
+      },
+    }),
+    // Sign-in with a 6-digit emailed code, for the native apps (no deep link needed, works across devices). Same
+    // implicit sign-up as the magic link: an unknown address creates the user (and the category seed hook runs).
+    // POST /api/auth/email-otp/send-verification-otp { email, type: "sign-in" } → POST /api/auth/sign-in/email-otp
+    // { email, otp } → `token` in the body and in `set-auth-token`. Codes are stored hashed.
+    emailOTP({
+      otpLength: SIGN_IN_OTP_LENGTH,
+      expiresIn: SIGN_IN_OTP_EXPIRES_MINUTES * 60,
+      storeOTP: "hashed",
+      sendVerificationOTP: async ({ email, otp, type }, ctx) => {
+        // Only sign-in codes exist here: no password, email verification or email change flows.
+        if (type !== "sign-in") return;
+        const log = requestLogger();
+        const user = await accountByEmail(email);
+        // Closed signups: an unknown address gets no code, as with the magic link.
+        if (!user && !(await canCreateAccount())) {
+          recordAuthEvent("signup_refused");
+          throw signupsClosed();
+        }
+        const language = magicLinkLanguage({ user, headers: ctx?.headers ?? ctx?.request?.headers });
+        const result = await sendEmail({
+          to: email,
+          ...signInCodeEmailContent({
+            otp,
+            expiresInMinutes: SIGN_IN_OTP_EXPIRES_MINUTES,
+            appUrl: getAppUrl(),
+            language,
+          }),
+        });
+        if (!result.ok) {
+          recordAuthEvent("otp_failed");
+          // Development without email (or a failed send): the code goes to the dev log. In production nothing is
+          // logged and the code can't be delivered. Only the error type: the provider's message can contain the address.
+          if (result.reason === "email_not_configured") {
+            if (!logDevOtp(otp, { log })) log.warn("auth.otp.undeliverable", { reason: result.reason });
+          } else {
+            log.error("auth.otp.failed", { reason: result.reason });
+            logDevOtp(otp, { log });
+          }
+          return;
+        }
+        recordAuthEvent("otp_sent");
+        log.info("auth.otp.sent");
       },
     }),
     // Cookie readable by the page (no database field): lets the login page offer the method used last time.

@@ -18,6 +18,8 @@ export type CronOutcome = "success" | "error";
 export type AuthEvent =
   | "magic_link_sent"
   | "magic_link_failed"
+  | "otp_sent"
+  | "otp_failed"
   | "sign_in"
   | "rate_limited"
   | "signup_refused"
@@ -253,7 +255,7 @@ function createState(): MetricsState {
   });
   state.authEvents = new Counter({
     name: `${METRIC_PREFIX}auth_events_total`,
-    help: "Eventi di autenticazione (invio magic link, accessi, rate limit).",
+    help: "Authentication events (magic link and sign-in code sent, sign-ins, rate limits).",
     labelNames: ["event"],
     registers: r,
   });

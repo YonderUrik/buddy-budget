@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.79.0](https://github.com/YonderUrik/buddy-budget/compare/v0.78.1...v0.79.0) (2026-10-18)
+
+
+### Novità
+
+* real brand names and logos in the demo data ([#438](https://github.com/YonderUrik/buddy-budget/issues/438)) ([85e532d](https://github.com/YonderUrik/buddy-budget/commit/85e532d4839f548202818b8b46d3917265d9d66c))
+
 ## [0.78.1](https://github.com/YonderUrik/buddy-budget/compare/v0.78.0...v0.78.1) (2026-10-18)
 
 

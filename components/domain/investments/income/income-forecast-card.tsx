@@ -78,7 +78,7 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
                 title: `${shortMonthLabel(m.key)} ${m.key.slice(0, 4)}: ${format(m.net)} netti, ${format(m.gross)} lordi`,
               }))}
             />
-            <ul className="flex flex-col divide-y divide-border">
+            <ul className="flex flex-col">
               {events.map((event) => (
                 <li key={`${event.instrumentId}-${event.kind}-${event.date}`} className="flex items-baseline justify-between gap-3 py-2 text-sm">
                   <span className="min-w-0">

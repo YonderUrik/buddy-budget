@@ -72,7 +72,7 @@ export function MissingIncomeCard({
         <p className="max-w-prose text-sm text-muted-foreground">
           {count === 1 ? tr("Un provento") : tr("{0} proventi", {0: count})}
           {tr(" che probabilmente hai incassato: avevi le quote il giorno dello stacco, ma non c'è")}{" "}{tr("un dividendo o una cedola registrati vicino a quella data. Controlla l'importo netto sull'estratto del broker.")}</p>
-        <ul className="flex flex-col divide-y divide-border">
+        <ul className="flex flex-col">
           {shown.map((item) => {
             const instrument = instrumentsById.get(item.instrumentId);
             const key = `${item.instrumentId}|${item.date}`;

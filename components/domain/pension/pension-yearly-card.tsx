@@ -75,11 +75,11 @@ export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
         </ul>
         {best && worst && years.length > 1 ? (
           <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
-            <div className="border-t border-border pt-3">
+            <div className="pt-3">
               <dt className="text-sm text-text-2">{tr("Anno migliore")}</dt>
               <dd className="font-heading text-xl font-medium tabular-nums text-pos">{best.year} {"·"}{best.gain >= 0 ? "+" : "−"}{money(Math.abs(best.gain), currency)}{best.returnRate !== null ? <span className="text-sm text-text-2"> {"("}{formatSignedPercent(best.returnRate)}{")"}</span> : null}</dd>
             </div>
-            <div className="border-t border-border pt-3">
+            <div className="pt-3">
               <dt className="text-sm text-text-2">{tr("Anno peggiore")}</dt>
               <dd className={`font-heading text-xl font-medium tabular-nums ${worst.gain < 0 ? "text-neg" : "text-foreground"}`}>{worst.year} {"·"}{worst.gain >= 0 ? "+" : "−"}{money(Math.abs(worst.gain), currency)}{worst.returnRate !== null ? <span className="text-sm text-text-2"> {"("}{formatSignedPercent(worst.returnRate)}{")"}</span> : null}</dd>
             </div>

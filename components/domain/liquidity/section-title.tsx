@@ -16,16 +16,12 @@ export interface SectionTitleProps {
   linkLabel?: string;
 }
 
-export function SectionTitle({ icon: Icon, title, color, href, linkLabel }: SectionTitleProps) {
+/** taste-skill: the heading stands on its own, no tinted icon beside it (`icon` and `color` are kept for callers). */
+export function SectionTitle({ title, href, linkLabel }: SectionTitleProps) {
   const { t: tr } = useLocalization();
   return (
     <div className="mb-3 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2.5">
-        <span className="grid size-9 place-items-center rounded-full" style={{ color, backgroundColor: `color-mix(in oklab, ${color} 16%, transparent)` }} aria-hidden="true">
-          <Icon className="size-[18px]" />
-        </span>
-        <h2 className={SECTION_TITLE}>{tr(title)}</h2>
-      </div>
+      <h2 className={SECTION_TITLE}>{tr(title)}</h2>
       {href && linkLabel ? (
         <Link href={href} className="-mr-2 flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-ring">
           {tr(linkLabel)}

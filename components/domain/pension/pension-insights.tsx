@@ -30,7 +30,7 @@ interface InsightProps {
 function Insight({ href, eyebrow, headline, caption }: InsightProps) {
   const { t: tr } = useLocalization();
   return (
-    <Link href={href} className="group flex min-h-11 flex-col gap-1.5 border-t border-border pt-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+    <Link href={href} className="group flex min-h-11 flex-col gap-1.5 pt-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
       <p className="text-sm text-text-2">{tr(eyebrow)}</p>
       <div className="font-heading text-2xl font-medium tabular-nums text-foreground">{headline}</div>
       <p className="text-sm text-text-2">{tr(caption)}</p>

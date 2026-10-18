@@ -66,7 +66,7 @@ export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, sup
     <PanelSection icon={BellIcon} title={tr("Avvisi di prezzo")} color="var(--swatch-amber)">
       <div className="flex flex-col gap-4">
         {alerts.length > 0 ? (
-          <ul className="flex flex-col divide-y rounded-lg border">
+          <ul className="flex flex-col rounded-lg border">
             {alerts.map((alert) => {
               const triggered = alert.status === "scattato";
               const Icon = triggered ? BellRingIcon : BellIcon;

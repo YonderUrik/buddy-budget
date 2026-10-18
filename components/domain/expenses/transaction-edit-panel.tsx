@@ -47,7 +47,7 @@ export function TransactionEditPanel({ transaction, currency, onClose, className
   }
 
   return (
-    <div className={cn("flex flex-col gap-3 border-t border-border bg-muted/50 px-4 py-3", className)}>
+    <div className={cn("flex flex-col gap-3 bg-muted/50 px-4 py-3", className)}>
       <div className="flex flex-col gap-1">
         <label htmlFor={`${idPrefix}-description`} className="text-xs text-muted-foreground">{tr("Descrizione")}</label>
         <Input

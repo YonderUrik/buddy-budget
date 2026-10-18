@@ -63,7 +63,7 @@ function ReasonGroup({ group, hidden }: { group: ErrorReasonGroup; hidden: boole
   const rows = all ? group.records : group.records.slice(0, ROWS_PER_REASON);
   const count = group.records.length;
   return (
-    <li className="flex flex-col gap-2 border-t py-3 first:border-t-0 first:pt-0">
+    <li className="flex flex-col gap-2 py-3 first:pt-0">
       <p className="text-sm font-medium text-foreground">
         {translateServerMessage(language, group.reason)}
         <span className="ml-2 font-normal text-muted-foreground">{count === 1 ? tr("1 riga") : tr("{0} righe", { 0: count })}</span>

@@ -71,7 +71,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
         </PopoverTrigger>
         <PopoverContent className="w-72 max-w-[calc(100vw-2rem)] p-3">
           {onPeriodChange && (
-            <div role="group" aria-label={tr("Tipo di periodo")} className="mb-3 grid grid-cols-4 gap-1 border-b border-border pb-3 sm:hidden">
+            <div role="group" aria-label={tr("Tipo di periodo")} className="mb-3 grid grid-cols-4 gap-1 pb-3 sm:hidden">
               {PERIOD_OPTIONS.map((option) => (
                 <button
                   key={option.value}

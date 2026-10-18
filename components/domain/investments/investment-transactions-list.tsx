@@ -83,7 +83,7 @@ export function InvestmentTransactionsList({
       {months.length === 0 ? (
         <p className="text-sm text-muted-foreground">{tr("Nessuna operazione registrata.")}</p>
       ) : (
-        <div className="-mx-4 border-t border-border sm:-mx-6">
+        <div className="-mx-4 sm:-mx-6">
           {visible.map((group) => (
             <OperationMonthGroup
               key={group.key}

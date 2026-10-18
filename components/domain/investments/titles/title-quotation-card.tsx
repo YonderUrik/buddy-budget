@@ -38,7 +38,7 @@ export function TitleQuotationCard({ instrumentId, isin, currency }: TitleQuotat
             {tr(candidates.error.message)}
           </p>
         ) : data?.status === "ok" ? (
-          <ul className="flex flex-col divide-y">
+          <ul className="flex flex-col">
             {data.candidates.map((candidate) => (
               <li key={candidate.symbol} className="flex items-center gap-3 py-2.5">
                 <div className="min-w-0 flex-1 text-sm">

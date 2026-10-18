@@ -48,7 +48,7 @@ export function DebtFacts({ debt, currency }: DebtFactsProps) {
           <p className="text-sm text-muted-foreground">{t.finished ? tr("Estinto") : tr("ancora da restituire · finisce a {0}", {0: formatMonthYear(t.endDate)})}</p>
         </div>
       </div>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-4 border-t pt-4 sm:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-4 pt-4 sm:grid-cols-4">
         {facts.map((fact) => (
           <div key={fact.label}>
             <dt className="text-xs text-muted-foreground">{tr(fact.label)}</dt>

@@ -121,7 +121,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
         {result ? (
           <>
             <SimulationResult label={tr("Ti resta")} value={format(result.net)} />
-            <dl className="divide-y divide-border">
+            <dl>
               <Line label={tr("Incasso")} value={format(result.proceeds)} />
               <Line label={tr("Costo fiscale (prezzo medio)")} value={format(result.cost)} />
               <Line label={result.gain >= 0 ? tr("Plusvalenza") : tr("Minusvalenza")} value={formatSignedCurrency(result.gain, currency)} />

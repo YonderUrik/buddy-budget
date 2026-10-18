@@ -7,7 +7,6 @@
 
 import Link from "next/link";
 import { ArrowRightIcon, type LucideIcon } from "lucide-react";
-import { GoalIcon } from "./goal-icon";
 import { SECTION_TITLE } from "@/components/domain/shared";
 
 export interface GoalSectionHeadingProps {
@@ -20,13 +19,11 @@ export interface GoalSectionHeadingProps {
   onLinkClick?: () => void;
 }
 
-export function GoalSectionHeading({ id, icon, title, color, href, linkLabel, onLinkClick }: GoalSectionHeadingProps) {
+/** taste-skill: the heading stands on its own, no tinted icon beside it (`icon` and `color` are kept for callers). */
+export function GoalSectionHeading({ id, title, href, linkLabel, onLinkClick }: GoalSectionHeadingProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2.5">
-        <GoalIcon icon={icon} color={color} size="sm" className="size-9" />
-        <h2 id={id} className={SECTION_TITLE}>{title}</h2>
-      </div>
+      <h2 id={id} className={SECTION_TITLE}>{title}</h2>
       {href && linkLabel ? (
         <Link href={href} onClick={onLinkClick} className="-mr-2 flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
           {linkLabel}

@@ -22,7 +22,7 @@ export interface DebtsListCardProps {
 
 function Row({ href, name, detail, amount, share }: { href: string; name: string; detail: string; amount: string; share: number }) {
   return (
-    <li className="border-b last:border-b-0">
+    <li>
       <Link href={href} className="flex items-center gap-3 rounded-lg py-3.5 outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <span className="flex min-w-0 flex-1 flex-col gap-1.5">
           <span className="truncate text-sm font-medium text-foreground">{name}</span>

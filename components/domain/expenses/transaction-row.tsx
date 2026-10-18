@@ -112,7 +112,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   }
 
   return (
-    <div className={cn("border-b border-border last:border-b-0", isUncategorized && "bg-neg-soft/40")}>
+    <div className={cn(isUncategorized && "bg-neg-soft/40")}>
       <div className="flex flex-wrap items-start gap-x-3 gap-y-1 px-4 py-3 sm:flex-nowrap sm:items-center">
         <div className="min-w-0 flex-1 space-y-1">
           <p className="truncate text-sm font-medium text-foreground" title={descriptionTitle}>

@@ -62,7 +62,6 @@ export function SectionHeading({
       </div>
       {hasViews && active ? (
         <div className="min-w-0 flex-1 lg:hidden">
-          <p className="text-sm font-medium text-text-3">{tr(title)}</p>
           <h1>
             <button
               type="button"

@@ -40,7 +40,7 @@ export function AnswerViews({ views, selected, onSelect, panelId }: AnswerViewsP
     document.getElementById(`answer-tab-${next.id}`)?.focus();
   };
   return (
-    <div role="tablist" aria-label={tr("Le quattro risposte")} className="grid grid-cols-2 border-b lg:grid-cols-4">
+    <div role="tablist" aria-label={tr("Le quattro risposte")} className="grid grid-cols-2 lg:grid-cols-4">
       {views.map((v, i) => {
         const on = v.id === selected;
         return (
@@ -60,7 +60,6 @@ export function AnswerViews({ views, selected, onSelect, panelId }: AnswerViewsP
             )}
           >
             <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <v.icon className="size-4" aria-hidden="true" />
               {tr(v.label)}
             </span>
             <span className="font-heading text-2xl font-medium tabular-nums text-foreground sm:text-3xl">{v.value}</span>

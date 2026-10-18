@@ -24,7 +24,7 @@ export interface DebtRefinanceSimProps {
 function Side({ title, rows }: { title: string; rows: { label: string; value: string }[] }) {
   const { t: tr } = useLocalization();
   return (
-    <div className="border-t pt-3">
+    <div className="pt-3">
       <p className="mb-2 text-sm font-medium text-foreground">{tr(title)}</p>
       <dl className="flex flex-col gap-1">
         {rows.map((row) => (

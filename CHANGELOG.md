@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.78.1](https://github.com/YonderUrik/buddy-budget/compare/v0.78.0...v0.78.1) (2026-10-18)
+
+
+### Correzioni
+
+* **landing:** footer links under the big wordmark take clicks again ([#436](https://github.com/YonderUrik/buddy-budget/issues/436)) ([d1e19f3](https://github.com/YonderUrik/buddy-budget/commit/d1e19f368c80d1bc21880ffc0ab656e4b3175ed4))
+
 ## [0.78.0](https://github.com/YonderUrik/buddy-budget/compare/v0.77.0...v0.78.0) (2026-10-18)
 
 

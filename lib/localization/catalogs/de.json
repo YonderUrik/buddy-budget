@@ -5050,5 +5050,19 @@
   "Ti mandiamo un link via email. Non serve una password.": "Wir senden dir einen Link per E-Mail. Ein Passwort brauchst du nicht.",
   "Scegli la demo": "Demo auswählen",
   "Con tasse e regole italiane": "Mit italienischen Steuern und Regeln",
-  "Con tasse e regole tedesche": "Mit deutschen Steuern und Regeln"
+  "Con tasse e regole tedesche": "Mit deutschen Steuern und Regeln",
+  "Budget al mese (facoltativo)": "Monatsbudget (optional)",
+  "Nessun budget": "Kein Budget",
+  "Lascia vuoto per non avere un tetto. Lo vedi in Panoramica e in Analisi, e negli avvisi email se li hai accesi.": "Leer lassen für kein Limit. Du siehst es in der Übersicht und in der Analyse, und in den E-Mail-Hinweisen, wenn du sie eingeschaltet hast.",
+  "Non è stato possibile togliere il budget, riprova.": "Das Budget konnte nicht entfernt werden, bitte versuche es erneut.",
+  "Non è stato possibile salvare il budget, riprova.": "Das Budget konnte nicht gespeichert werden, bitte versuche es erneut.",
+  "Scrivi un importo, per esempio 300.": "Gib einen Betrag ein, zum Beispiel 300.",
+  "{0}/mese": "{0}/Monat",
+  "Trascina una categoria in un altro gruppo, oppure toccala per modificarla o darle un budget al mese.": "Ziehe eine Kategorie in eine andere Gruppe oder tippe sie an, um sie zu bearbeiten oder ihr ein Monatsbudget zu geben.",
+  "Modifica i budget": "Budgets bearbeiten",
+  "Imposta un budget": "Budget festlegen",
+  "Impossibile togliere il budget": "Budget konnte nicht entfernt werden",
+  "{0} oltre il budget di {1}": "{0} über dem Budget von {1}",
+  "restano {0} su {1} di budget": "{0} von {1} Budget übrig",
+  "Trasferimenti": "Umbuchungen"
 }

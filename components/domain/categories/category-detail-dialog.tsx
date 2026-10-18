@@ -2,8 +2,9 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * Pannello di dettaglio di una categoria: nome, descrizione, gruppo, colore e icona (salvataggio immediato/on-blur)
- * ed eliminazione con conferma. La fallback "Da categorizzare" non si rinomina, non cambia gruppo e non si elimina.
+ * Detail window of a category: name, description, group, monthly budget (expense groups only), colour and icon
+ * (saved immediately or on blur) and deletion with confirmation. The "Da categorizzare" fallback cannot be renamed,
+ * moved, budgeted or deleted.
  */
 
 import * as React from "react";
@@ -11,16 +12,17 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { SegmentedControl, FormDialogContent } from "@/components/domain/shared";
+import { FormDialogContent } from "@/components/domain/shared";
 import { useDeleteCategoryMutation, useUpdateCategoryMutation } from "@/lib/queries/categories";
-import { CATEGORY_TYPES, CATEGORY_TYPE_LABELS, type CategoryType } from "@/lib/categories/groups";
+import { EXPENSE_GROUP_KEYS, type CategoryType } from "@/lib/categories/groups";
 import type { Category } from "@/lib/db/schema/categories";
 import { CATEGORY_DESCRIPTION_MAX_LENGTH, type CategoryColor, type CategoryIcon } from "@/lib/validation/categories";
 import { CategoryAppearanceFields } from "./category-appearance-fields";
 import { CategoryAvatar } from "./category-avatar";
+import { CategoryBudgetField } from "./category-budget-field";
+import { CategoryGroupPicker } from "./category-group-picker";
 
 const DESCRIPTION_PLACEHOLDER = "Es. supermercato, alimentari";
-const TYPE_OPTIONS = CATEGORY_TYPES.map((type) => ({ value: type, label: CATEGORY_TYPE_LABELS[type] }));
 
 export interface CategoryDetailDialogProps {
   /** Categoria aperta; `null` chiude il pannello. */
@@ -120,14 +122,16 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
         {!category.isFallback && (
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-muted-foreground">{tr("Gruppo")}</span>
-            <SegmentedControl<CategoryType>
+            <CategoryGroupPicker
               ariaLabel={tr("Gruppo della categoria")}
-              options={TYPE_OPTIONS}
               value={category.type as CategoryType}
-              onChange={(type) => type !== category.type && updateMutation.mutate({ id: category.id, input: { type } })}
-              className="flex-wrap"
+              onChange={(type) => updateMutation.mutate({ id: category.id, input: { type } })}
             />
           </div>
+        )}
+
+        {!category.isFallback && (EXPENSE_GROUP_KEYS as readonly string[]).includes(category.type) && (
+          <CategoryBudgetField categoryId={category.id} categoryName={category.name} />
         )}
 
         <CategoryAppearanceFields value={{ color, icon }} onChange={commitAppearance} />

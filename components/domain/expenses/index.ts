@@ -18,8 +18,6 @@ export { ExpensesFilterBar } from "./expenses-filter-bar";
 export type { ExpensesFilterBarProps } from "./expenses-filter-bar";
 export { ExpensesReferenceNav } from "./expenses-reference-nav";
 export type { ExpensesReferenceNavProps } from "./expenses-reference-nav";
-export { CategoryBreakdownDonut } from "./category-breakdown-donut";
-export type { CategoryBreakdownDonutProps } from "./category-breakdown-donut";
 export { ExpenseTrendChart } from "./expense-trend-chart";
 export type { ExpenseTrendChartProps } from "./expense-trend-chart";
 export { TransactionRow } from "./transaction-row";

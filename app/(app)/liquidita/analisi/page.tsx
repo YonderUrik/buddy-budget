@@ -32,6 +32,7 @@ import {
   getPeriodRange,
   getPreviousPeriodRange,
   isExpense,
+  scaleBudgetForPeriod,
   startOfDay,
 } from "@/lib/calc/expenses";
 import { computeMonthPace } from "@/lib/calc/month-pace";
@@ -76,6 +77,11 @@ export default function LiquiditaAnalisiPage() {
     [scoped, categories, period, referenceDate, today]
   );
   const heaviest = breakdown[0];
+  // Monthly budgets scaled to the period on screen (a year shows twelve months of budget).
+  const budgetById = React.useMemo(
+    () => new Map(budgets.filter((b) => Number(b.monthlyAmount) > 0).map((b) => [b.categoryId, scaleBudgetForPeriod(Number(b.monthlyAmount), period)])),
+    [budgets, period]
+  );
   const groups = React.useMemo<SpendGroup[]>(
     () =>
       ([...EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY] as CategoryGroupKey[])
@@ -86,12 +92,12 @@ export default function LiquiditaAnalisiPage() {
             label: GROUP_DISPLAY[key].label,
             color: GROUP_DISPLAY[key].colorVar,
             amount: items.reduce((sum, c) => sum + c.amount, 0),
-            categories: items.map((c) => ({ id: c.categoryId, name: c.name, color: c.color, icon: c.icon, amount: c.amount })),
+            categories: items.map((c) => ({ id: c.categoryId, name: c.name, color: c.color, icon: c.icon, amount: c.amount, budget: budgetById.get(c.categoryId) })),
           };
         })
         .filter((g) => g.amount > 0)
         .sort((x, y) => y.amount - x.amount),
-    [breakdown]
+    [breakdown, budgetById]
   );
   const sources = computeIncomeSources(scoped, categories, range);
   const savings = computeAccumulatedSavings(scoped, getTrendRange(period, referenceDate));
@@ -132,7 +138,13 @@ export default function LiquiditaAnalisiPage() {
       </section>
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <section aria-label={tr("Dove vanno i soldi")}>
-          <SectionTitle icon={PieChartIcon} title={tr("Dove vanno i soldi")} color="var(--swatch-teal)" />
+          <SectionTitle
+            icon={PieChartIcon}
+            title={tr("Dove vanno i soldi")}
+            color="var(--swatch-teal)"
+            href={`${LIQUIDITY_HREF}/categorie`}
+            linkLabel={budgetById.size > 0 ? "Modifica i budget" : "Imposta un budget"}
+          />
           {groups.length === 0 ? (
             <p className="text-text-2">{tr("Nessuna spesa da mostrare in questo periodo.")}</p>
           ) : (

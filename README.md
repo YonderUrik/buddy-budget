@@ -78,7 +78,7 @@ docker compose up -d         # then open http://localhost:3000
 
 The images are public on ghcr.io (`ghcr.io/yonderurik/buddy-budget`, `latest` follows the latest release; set `BUDDYBUDGET_VERSION` in `.env` to pin one). On an arm64 machine, or to run your own changes, build them from source: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
 
-Email (Resend), Google sign-in and bank connection (GoCardless) are optional: without Resend the sign-in link appears in the logs. The guide [`docs/self-hosting.md`](docs/self-hosting.md) explains what works without external services, how to put the app behind HTTPS, how to update it and how to make backups.
+Email (Resend), Google sign-in and bank connection (GoCardless) are optional: without Resend the sign-in link appears in the logs. GoCardless no longer accepts new sign-ups, so on a new install you import bank CSVs instead. The guide [`docs/self-hosting.md`](docs/self-hosting.md) explains what works without external services, how to put the app behind HTTPS, how to update it and how to make backups.
 
 ### Local development
 

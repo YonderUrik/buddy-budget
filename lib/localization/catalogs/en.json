@@ -5049,5 +5049,18 @@
   "Ti mandiamo un link via email. Non serve una password.": "We'll email you a link. No password needed.",
   "Scegli la demo": "Choose the demo",
   "Con tasse e regole italiane": "With Italian taxes and rules",
-  "Con tasse e regole tedesche": "With German taxes and rules"
+  "Con tasse e regole tedesche": "With German taxes and rules",
+  "Budget al mese (facoltativo)": "Monthly budget (optional)",
+  "Nessun budget": "No budget",
+  "Lascia vuoto per non avere un tetto. Lo vedi in Panoramica e in Analisi, e negli avvisi email se li hai accesi.": "Leave it empty for no limit. You see it in Overview and Analysis, and in the email alerts if you turned them on.",
+  "Non è stato possibile togliere il budget, riprova.": "The budget could not be removed, please try again.",
+  "Non è stato possibile salvare il budget, riprova.": "The budget could not be saved, please try again.",
+  "Scrivi un importo, per esempio 300.": "Type an amount, for example 300.",
+  "{0}/mese": "{0}/month",
+  "Trascina una categoria in un altro gruppo, oppure toccala per modificarla o darle un budget al mese.": "Drag a category to another group, or tap it to edit it or give it a monthly budget.",
+  "Modifica i budget": "Edit budgets",
+  "Imposta un budget": "Set a budget",
+  "Impossibile togliere il budget": "Could not remove the budget",
+  "{0} oltre il budget di {1}": "{0} over the {1} budget",
+  "restano {0} su {1} di budget": "{0} left of the {1} budget"
 }

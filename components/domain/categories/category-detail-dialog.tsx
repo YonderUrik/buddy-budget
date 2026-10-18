@@ -2,8 +2,9 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * Pannello di dettaglio di una categoria: nome, descrizione, gruppo, colore e icona (salvataggio immediato/on-blur)
- * ed eliminazione con conferma. La fallback "Da categorizzare" non si rinomina, non cambia gruppo e non si elimina.
+ * Detail window of a category: name, description, group, monthly budget (expense groups only), colour and icon
+ * (saved immediately or on blur) and deletion with confirmation. The "Da categorizzare" fallback cannot be renamed,
+ * moved, budgeted or deleted.
  */
 
 import * as React from "react";
@@ -13,11 +14,12 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/componen
 import { Input } from "@/components/ui/input";
 import { SegmentedControl, FormDialogContent } from "@/components/domain/shared";
 import { useDeleteCategoryMutation, useUpdateCategoryMutation } from "@/lib/queries/categories";
-import { CATEGORY_TYPES, CATEGORY_TYPE_LABELS, type CategoryType } from "@/lib/categories/groups";
+import { CATEGORY_TYPES, CATEGORY_TYPE_LABELS, EXPENSE_GROUP_KEYS, type CategoryType } from "@/lib/categories/groups";
 import type { Category } from "@/lib/db/schema/categories";
 import { CATEGORY_DESCRIPTION_MAX_LENGTH, type CategoryColor, type CategoryIcon } from "@/lib/validation/categories";
 import { CategoryAppearanceFields } from "./category-appearance-fields";
 import { CategoryAvatar } from "./category-avatar";
+import { CategoryBudgetField } from "./category-budget-field";
 
 const DESCRIPTION_PLACEHOLDER = "Es. supermercato, alimentari";
 const TYPE_OPTIONS = CATEGORY_TYPES.map((type) => ({ value: type, label: CATEGORY_TYPE_LABELS[type] }));
@@ -128,6 +130,10 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
               className="flex-wrap"
             />
           </div>
+        )}
+
+        {!category.isFallback && (EXPENSE_GROUP_KEYS as readonly string[]).includes(category.type) && (
+          <CategoryBudgetField categoryId={category.id} categoryName={category.name} />
         )}
 
         <CategoryAppearanceFields value={{ color, icon }} onChange={commitAppearance} />

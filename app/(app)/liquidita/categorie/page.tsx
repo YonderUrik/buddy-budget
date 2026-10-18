@@ -30,7 +30,7 @@ export default function LiquiditaCategoriePage() {
       <section>
         <SectionTitle icon={TagsIcon} title={tr("Le tue categorie")} color="var(--swatch-teal)" />
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-text-2">{tr("Trascina una categoria in un altro gruppo, oppure toccala per modificarla.")}</p>
+          <p className="text-sm text-text-2">{tr("Trascina una categoria in un altro gruppo, oppure toccala per modificarla o darle un budget al mese.")}</p>
           <DistributeColorsButton />
         </div>
         {isLoading ? (

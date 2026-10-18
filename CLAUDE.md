@@ -286,7 +286,7 @@ Updated on 2026-10-01. The historical detail of each piece of work is in [`docs/
 
 - **Observability Phase C**: read-only access for agents via MCP (never on the production VPS).
 - **Phase 7, Task 8 (VPS migration)**: not before 2 weeks after the cutover (i.e. after 2026-10-11) and with the user's explicit confirmation: rotation of all secrets (they went through Vercel), final shutdown of Vercel/Neon, removal of unused Umami keys from the env (`@vercel/analytics` was already removed with GDPR PR 3). Plan: `docs/superpowers/plans/2026-09-27-fase-7-cutover.md`.
-- **Separate Budget section**: today the budget per category lives in the pie chart legend in Movimenti. It needs a dedicated brainstorming (change of IA and data model).
+- **Separate Budget section**: today the budget per category is set in the category's detail window (Liquidità → Categorie) and shown in Analisi. It needs a dedicated brainstorming (change of IA and data model).
 - **Screens not implemented**: Pianifica (see "Coming soon screens").
 - **i18n**: the app runs in Italian, English and German through `lib/localization`; remaining hardcoded Italian strings are extracted when their screen is touched.
 - **Backlog**: tracked on Slack in `#bb-backlog` (see Rules). Ideas and minor debts are there too.

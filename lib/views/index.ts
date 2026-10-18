@@ -33,6 +33,7 @@ export {
 export {
   accountExtrasSchema,
   accountHealthSchema,
+  debtsInsightsSchema,
   liquidityAnalysisSchema,
   liquidityMonthSchema,
   monthPaceSchema,

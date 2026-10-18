@@ -233,6 +233,25 @@ export const pensionViewSchema = z.object({
   }),
 });
 
+const exitPlanSchema = z.object({
+  steps: z.array(z.object({ id: z.string(), name: z.string(), endDate: isoDate, baselineEndDate: isoDate, monthsSaved: z.number().int() })),
+  endDate: isoDate,
+  baselineEndDate: isoDate,
+  interestSaved: z.number(),
+});
+
+/** `insights` of GET /api/debts?include=insights (G12). */
+export const debtsInsightsSchema = z.object({
+  interestShares: z.object({ items: z.array(z.object({ id: z.string(), name: z.string(), yearly: z.number(), share: z.number() })), total: z.number() }),
+  repaid: z.array(z.object({ debtId: z.string(), share: z.number() })),
+  exit: z.object({
+    loans: z.array(z.object({ id: z.string(), name: z.string(), residual: z.number(), annualRate: z.number(), installment: z.number() })),
+    slider: z.object({ min: z.number(), max: z.number(), step: z.number(), default: z.number() }),
+    extras: z.array(z.number()),
+    plans: z.array(exitPlanSchema.nullable()),
+  }),
+});
+
 export type OverviewView = z.infer<typeof overviewViewSchema>;
 export type LiquidityMonth = z.infer<typeof liquidityMonthSchema>;
 export type LiquidityAnalysis = z.infer<typeof liquidityAnalysisSchema>;

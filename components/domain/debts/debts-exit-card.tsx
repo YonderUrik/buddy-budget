@@ -14,7 +14,7 @@ import { PanelSection } from "@/components/domain/investments/light";
 import { Slider } from "@/components/ui/slider";
 import { track } from "@/lib/analytics";
 import { todayIso } from "@/lib/debts/dates";
-import { buildExitPlan } from "@/lib/debts/overview-insights";
+import { buildExitPlan, EXIT_EXTRA_DEFAULT, EXIT_EXTRA_MAX, EXIT_EXTRA_STEP } from "@/lib/debts/overview-insights";
 import type { DebtView } from "@/lib/debts/view";
 
 import { localizedDebtFormats } from "./debts-format";
@@ -25,9 +25,9 @@ export interface DebtsExitCardProps {
   currency: string;
 }
 
-const EXTRA_DEFAULT = 200;
-const EXTRA_MAX = 1000;
-const EXTRA_STEP = 50;
+const EXTRA_DEFAULT = EXIT_EXTRA_DEFAULT;
+const EXTRA_MAX = EXIT_EXTRA_MAX;
+const EXTRA_STEP = EXIT_EXTRA_STEP;
 
 export function DebtsExitCard({ debts, currency }: DebtsExitCardProps) {
   const { formatDuration, formatMonthYear } = localizedDebtFormats(useLocalization().language);

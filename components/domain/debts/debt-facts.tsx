@@ -6,6 +6,9 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { MoneyHero } from "@/components/domain/net-worth";
 import type { DebtView } from "@/lib/debts/view";
+import { repaidShare } from "@/lib/debts/overview-insights";
+
+export { repaidShare };
 
 import { DebtRing } from "./debt-ring";
 import { localizedDebtFormats } from "./debts-format";
@@ -13,14 +16,6 @@ import { localizedDebtFormats } from "./debts-format";
 export interface DebtFactsProps {
   debt: DebtView;
   currency: string;
-}
-
-/** Quota del capitale già restituita (0-1), dal piano. */
-export function repaidShare(debt: DebtView): number {
-  const first = debt.plan.rows[0];
-  if (!first) return 0;
-  const total = first.residual + first.capital;
-  return total > 0 ? Math.min(1, Math.max(0, 1 - debt.plan.totals.residual / total)) : 0;
 }
 
 export function DebtFacts({ debt, currency }: DebtFactsProps) {

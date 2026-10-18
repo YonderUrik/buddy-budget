@@ -50,6 +50,40 @@ export interface ExitPlan {
   interestSaved: number;
 }
 
+/** «Come uscirne prima» slider: monthly extra from 0 to `EXIT_EXTRA_MAX` in steps of `EXIT_EXTRA_STEP`. */
+export const EXIT_EXTRA_DEFAULT = 200;
+export const EXIT_EXTRA_MAX = 1000;
+export const EXIT_EXTRA_STEP = 50;
+
+/** Share of the principal already repaid (0-1), from the plan. */
+export function repaidShare(debt: DebtView): number {
+  const first = debt.plan.rows[0];
+  if (!first) return 0;
+  const total = first.residual + first.capital;
+  return total > 0 ? Math.min(1, Math.max(0, 1 - debt.plan.totals.residual / total)) : 0;
+}
+
+/**
+ * Overview readings of `GET /api/debts?include=insights` (gaps.md G12): yearly interest shares, repaid share per debt,
+ * the exit-plan inputs and the avalanche plan for every step of the extra-per-month slider (so the slider only indexes).
+ */
+export function buildDebtsInsights(debts: DebtView[], today: IsoDate) {
+  const extras = Array.from({ length: EXIT_EXTRA_MAX / EXIT_EXTRA_STEP + 1 }, (_, i) => i * EXIT_EXTRA_STEP);
+  return {
+    interestShares: yearlyInterestShares(debts),
+    repaid: debts.map((debt) => ({ debtId: debt.id, share: repaidShare(debt) })),
+    exit: {
+      loans: toPayoffLoans(debts),
+      slider: { min: 0, max: EXIT_EXTRA_MAX, step: EXIT_EXTRA_STEP, default: EXIT_EXTRA_DEFAULT },
+      /** `plans[i]` is the plan with `extras[i]` per month; null when no open loan or a payment never closes it. */
+      extras,
+      plans: extras.map((extra) => buildExitPlan(debts, extra, today)),
+    },
+  };
+}
+
+export type DebtsInsights = ReturnType<typeof buildDebtsInsights>;
+
 /** Tetto di mesi: oltre, la simulazione non chiude il debito e il piano non viene proposto. */
 const MAX_MONTHS_SIM = 600;
 

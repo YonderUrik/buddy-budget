@@ -171,6 +171,24 @@ export const ANALYTICS_DATA = {
   ] satisfies readonly FactRow[],
 } as const;
 
+/**
+ * Where the app uses AI and what it sends: the same three places as «Dove l'app usa l'AI» in the app's Settings
+ * (`components/domain/settings/ai-usage-summary.tsx`) and the request in `lib/llm/jev.ts` (merchant name, direction,
+ * categories; `zdr: true`, `data_collection: "deny"`).
+ */
+export const AI_DATA = {
+  question: "Dove entra l'AI, e cosa vede?",
+  lede: "L'AI è spenta finché non dici sì. Calcoli, regole, sincronizzazione con la banca e avvisi non la usano mai.",
+  rows: [
+    { label: "Quando", text: "Solo in tre punti: le proposte di categoria, l'importazione di un estratto conto in un formato nuovo e l'importazione degli investimenti quando la lettura normale non riesce." },
+    { label: "Cosa riceve", text: "Per le categorie, il nome pulito dell'esercente, se è un'entrata o un'uscita, le tue categorie e le tue istruzioni: mai importi, date, IBAN, note o nomi di persone. Per un'importazione, il file intero, perché deve capire com'è fatto." },
+    { label: "A chi va", text: "A OpenRouter, che passa la richiesta a un fornitore del modello. A ogni richiesta chiediamo un fornitore che non conservi i dati dopo la risposta e non li usi per l'addestramento; se nessuno lo garantisce, la richiesta non parte." },
+    { label: "Cosa decide", text: "Propone, non comanda. Le tue regole vengono prima. Se lasci attiva l'opzione, si applicano da sole solo le proposte sicure almeno al 90%, segnate come messe dall'app e correggibili." },
+    { label: "Il limite", text: "La non conservazione è una condizione che chiediamo a OpenRouter a ogni richiesta, non un contratto firmato con i fornitori dei modelli." },
+    { label: "Come spegnerla", text: "Da Impostazioni revochi il consenso quando vuoi: da lì non parte più nessuna richiesta. Chi installa BuddyBudget sul proprio server può non configurare affatto l'AI: l'app funziona lo stesso." },
+  ] satisfies readonly FactRow[],
+} as const;
+
 export interface Pillar {
   title: string;
   text: string;
@@ -233,6 +251,7 @@ export interface SecurityContent {
   flow: FlowContent;
   stored: { title: string; rows: readonly StoredRow[] };
   gocardless: { question: string; lede: string; rows: readonly FactRow[]; note: readonly RichPart[] };
+  ai: { question: string; lede: string; rows: readonly FactRow[]; note: readonly RichPart[] };
   analytics: { question: string; lede: string; rows: readonly FactRow[]; note: readonly RichPart[] };
   controls: { title: string; items: readonly Pillar[] };
   limits: { title: string; items: readonly Pillar[] };
@@ -271,6 +290,7 @@ export const SECURITY_IT: SecurityContent = {
       ", dove trovi i contatti per esercitare i tuoi diritti.",
     ],
   },
+  ai: { ...AI_DATA, note: ["I dettagli sono nell'", { text: "informativa privacy", href: `${LEGAL_PATHS.privacy}#proposte-categorie` }, "."] },
   analytics: { ...ANALYTICS_DATA, note: ["Tutti i dettagli nella ", { text: "pagina sui cookie", href: LEGAL_PATHS.cookie }, "."] },
   controls: CONTROLS,
   limits: LIMITS,

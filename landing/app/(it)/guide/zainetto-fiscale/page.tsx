@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { GuideExample } from "@/components/guide-example";
 import { JsonLd } from "@/components/json-ld";
+import { languageAlternates } from "@/content/locales";
 import { YearsStrip } from "@/components/viz/viz";
 import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
@@ -10,20 +11,20 @@ import { SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/page-metadata";
 
 const H1 = "Zainetto fiscale: cos'è e come recuperare le minusvalenze";
-/** Diverso dall'h1 di proposito: un title identico all'h1 spreca la seconda occasione di descrivere la pagina. */
+/** Different from the h1 on purpose: a title identical to the h1 wastes the second chance to describe the page. */
 const TITLE = "Zainetto fiscale: guida alle minusvalenze, con esempi";
 const DESCRIPTION = "Che cos'è lo zainetto fiscale, come funzionano i 4 anni per compensare le minusvalenze di azioni e ETF, con esempi numerici e un calcolatore gratuito.";
 
 export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: CONTENT_PATHS.guidaZainetto },
+  alternates: languageAlternates(CONTENT_PATHS.guidaZainetto, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
 });
 
 export default function Page() {
   return (
-    <ContentPage title={H1} lead={<>Se vendi un investimento in perdita, quella perdita non è tutta persa: per quattro anni puoi usarla per ridurre le tasse sui guadagni futuri. Questo &ldquo;serbatoio&rdquo; di perdite è lo zainetto fiscale.</>} crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Guide" }, { label: "Zainetto fiscale" }]} ctaTitle="Lo zainetto lo tiene BuddyBudget." ctaText="BuddyBudget ricostruisce lo zaino fiscale dalle tue operazioni e ti avvisa quando una minusvalenza sta per scadere." ctaLocation="guida_zainetto">
+    <ContentPage title={H1} current={CONTENT_PATHS.guidaZainetto} lead={<>Se vendi un investimento in perdita, quella perdita non è tutta persa: per quattro anni puoi usarla per ridurre le tasse sui guadagni futuri. Questo &ldquo;serbatoio&rdquo; di perdite è lo zainetto fiscale.</>} crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Guide" }, { label: "Zainetto fiscale" }]} ctaTitle="Lo zainetto lo tiene BuddyBudget." ctaText="BuddyBudget ricostruisce lo zaino fiscale dalle tue operazioni e ti avvisa quando una minusvalenza sta per scadere." ctaLocation="guida_zainetto">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", headline: H1, description: DESCRIPTION, inLanguage: "it-IT", mainEntityOfPage: `${SITE_URL}${CONTENT_PATHS.guidaZainetto}`, author: { "@type": "Organization", name: "BuddyBudget" }, publisher: { "@type": "Organization", name: "BuddyBudget" } }} />
       <h2>Che cos&apos;è</h2>
       <p>Quando vendi azioni, ETF o altri strumenti e incassi più di quanto hai pagato, hai una plusvalenza e paghi di norma il 26%. Se incassi meno, hai una minusvalenza. Le minusvalenze possono compensare le plusvalenze della stessa categoria, riducendo l&apos;imposta. Quelle che non riesci a usare subito restano &ldquo;nello zainetto&rdquo;.</p>

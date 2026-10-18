@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
+import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 import { TOOLS, TOOLS_PAGE } from "@/content/tools";
@@ -10,11 +11,11 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata: Metadata = pageMetadata("it", {
   title: TOOLS_PAGE.title,
   description: TOOLS_PAGE.description,
-  alternates: { canonical: CONTENT_PATHS.strumenti },
+  alternates: languageAlternates(CONTENT_PATHS.strumenti, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
 });
 
-/** Elenco dei calcolatori gratuiti: una scheda per strumento, nello stesso stile dei rimandi delle altre pagine. */
+/** List of the free calculators: one card per tool, in the same style as the links of the other pages. */
 export default function Page() {
   return (
     <ContentPage title={TOOLS_PAGE.h1} lead={TOOLS_PAGE.lead} current={CONTENT_PATHS.strumenti} crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Calcolatori" }]} ctaTitle="Nell'app i numeri sono i tuoi." ctaText="Zainetto, rate e risparmio si calcolano dalle tue operazioni e dai tuoi movimenti, senza riscrivere niente." ctaLocation="strumenti">

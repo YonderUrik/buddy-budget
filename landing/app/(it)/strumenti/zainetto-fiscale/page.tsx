@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
+import { languageAlternates } from "@/content/locales";
 import { ZainettoCalculator } from "@/components/tools/zainetto-calculator";
 import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
@@ -14,7 +15,7 @@ const DESCRIPTION = "Calcola quanto puoi compensare con le minusvalenze degli ul
 export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: CONTENT_PATHS.zainetto },
+  alternates: languageAlternates(CONTENT_PATHS.zainetto, "it"),
   robots: CONTENT_DRAFT ? { index: false, follow: true } : undefined,
 });
 

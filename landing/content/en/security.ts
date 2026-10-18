@@ -3,7 +3,8 @@
  * 2026-10-12). When a sentence changes there, it changes here too; the test in `security.test.ts` checks that the
  * encryption claims follow `FIELD_ENCRYPTION_LIVE` in both languages.
  */
-import { LEGAL_OWNER, LEGAL_PATHS } from "../legal";
+import { LEGAL_OWNER } from "../legal";
+import { EN_PATHS } from "../locales";
 import { FIELD_ENCRYPTION_LIVE, SECURITY_SOURCES, type SecurityContent } from "../security";
 
 /** The same EU laws on EUR-Lex, in English. */
@@ -38,7 +39,7 @@ export const SECURITY_EN: SecurityContent = {
     sourcesSummary: "Official sources",
     legalNote: [
       "For the legal details (legal bases, providers, retention periods) read the ",
-      { text: "privacy policy (in Italian)", href: LEGAL_PATHS.privacy },
+      { text: "privacy policy", href: EN_PATHS.privacy },
       ". To report a security issue, write to ",
       { text: LEGAL_OWNER.email, href: `mailto:${LEGAL_OWNER.email}` },
       ".",
@@ -131,6 +132,19 @@ export const SECURITY_EN: SecurityContent = {
       ", where you'll find the contacts to exercise your rights.",
     ],
   },
+  ai: {
+    question: "Where does AI come in, and what does it see?",
+    lede: "AI is off until you say yes. Calculations, rules, bank sync and alerts never use it.",
+    rows: [
+      { label: "When", text: "Only in three places: category suggestions, importing a bank statement in a new format, and importing investments when the normal reader fails." },
+      { label: "What it receives", text: "For categories, the cleaned-up merchant name, whether it's income or an expense, your categories and your instructions: never amounts, dates, IBANs, notes or people's names. For an import, the whole file, because it has to work out its layout." },
+      { label: "Where it goes", text: "To OpenRouter, which passes the request to a model provider. With every request we ask for a provider that keeps nothing after the answer and doesn't train on it; if none does, the request doesn't go out." },
+      { label: "What it decides", text: "It suggests, it doesn't decide. Your rules come first. If you leave the option on, only suggestions it is at least 90% sure of apply by themselves, marked as set by the app and easy to change." },
+      { label: "The limit", text: "No retention is a condition we ask OpenRouter for on every request, not a contract we signed with the model providers." },
+      { label: "How to turn it off", text: "Withdraw your consent in Settings at any time: from then on no request goes out. If you host BuddyBudget yourself you can leave AI out entirely: the app works the same." },
+    ],
+    note: ["Details in the ", { text: "privacy policy", href: `${EN_PATHS.privacy}#ai-categories` }, "."],
+  },
   analytics: {
     question: "What do the usage statistics count?",
     lede: "We use statistics to learn which features get used and where people get stuck. They are not for getting to know you.",
@@ -140,7 +154,7 @@ export const SECURITY_EN: SecurityContent = {
       { label: "Where", text: "Umami, installed on our own servers. It uses no cookies, doesn't follow you to other sites and doesn't pass data to third parties." },
       { label: "How to turn them off", text: "In the app, under Settings → Privacy, on each device." },
     ],
-    note: ["All the details are on the ", { text: "cookie page (in Italian)", href: LEGAL_PATHS.cookie }, "."],
+    note: ["All the details are on the ", { text: "cookie page", href: EN_PATHS.cookies }, "."],
   },
   controls: {
     title: "Take it all with you, or delete it.",

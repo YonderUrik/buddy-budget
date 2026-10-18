@@ -1,12 +1,6 @@
 # BuddyBudget documentation
 
-Everything written about BuddyBudget lives in this folder. Pick the section that matches what you want to do.
-
-Documents fall into three kinds, and it helps to know which one you are reading:
-
-- **Living documents** describe the code as it is today. They change in the same pull request that changes the behaviour they describe. Everything under [`architecture/`](architecture/) and the guides below are living documents.
-- **Decisions** explain why a choice was made, on the day it was made. They are never rewritten; a later decision supersedes an earlier one.
-- **Specs and plans** are the working notes of a feature while it was being built. They are history: when one disagrees with the code or with a living document, the code wins.
+Pick the section that matches what you want to do. The guides and [`architecture/`](architecture/) describe the code as it is today. Decisions, specs and plans are history: if one disagrees with the code, the code wins.
 
 ## Use and host BuddyBudget
 
@@ -56,11 +50,8 @@ Rules every contributor follows (component layers, observability, background job
 | [Roadmap](../ROADMAP.md) | Direction, what is done and what is deferred |
 | [Decisions](decisioni/) | One file per decision since 2026-10-04 (`YYYY-MM-DD-title.md`) |
 | [Decision log archive](decision-log.md) | Decisions up to 2026-10-03 |
-| [Specs and plans](superpowers/) | Design notes and implementation plans per feature (history) |
-| [Functional spec from the mockup](functional-spec.md) | What the original mockup did, screen by screen (history) |
-| [Design reference](design-reference/) | The original mockup |
-| [SEO plan](seo-piano.md) | Landing SEO audit and plan (2026-10-02) |
 | [Changelog](../CHANGELOG.md) | What changed in each version |
+| [Specs and plans](superpowers/) | Working notes written while each feature was built |
 
 ## Writing documentation
 

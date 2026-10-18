@@ -83,7 +83,7 @@ export const AREA_META_EN: Record<FeatureArea, AreaMeta> = {
     icon: "card",
     intro: "Mortgages and loans with the payment schedule, the APR and what an early repayment would change.",
     shot: { id: "debiti" },
-    more: { href: CONTENT_PATHS.ammortamento, label: "Loan calculator (in Italian)" },
+    more: { href: EN_PATHS.loanAmortization, label: "Loan calculator" },
   },
   Patrimonio: {
     name: FEATURE_AREA_LABELS_EN.Patrimonio,

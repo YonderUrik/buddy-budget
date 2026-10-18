@@ -30,3 +30,14 @@ describe("testi legali", () => {
     }
   });
 });
+
+describe("English legal texts", () => {
+  it("have the same number of sections as the Italian ones, with unique ids", async () => {
+    const { LEGAL_DOCUMENTS_EN } = await import("./en/legal");
+    LEGAL_DOCUMENTS.forEach((doc, i) => {
+      const en = LEGAL_DOCUMENTS_EN[i];
+      expect(en.sections.length, en.slug).toBe(doc.sections.length);
+      expect(new Set(en.sections.map((s) => s.id)).size).toBe(en.sections.length);
+    });
+  });
+});

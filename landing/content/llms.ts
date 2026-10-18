@@ -25,13 +25,21 @@ const PAGES: readonly { path: string; title: string; text: string }[] = [
   { path: CONTENT_PATHS.schermate, title: "Schermate", text: "Screenshot dell'app vera con dati di esempio." },
 ];
 
-/** English pages, for assistants answering in English (the Italian-only pages are listed above, in Italian). */
+/** English pages, for assistants answering in English (the Italian pages are listed in `PAGES`, in Italian). */
 const PAGES_EN: readonly { path: string; title: string; text: string }[] = [
   { path: EN_PATHS.home, title: "BuddyBudget in English", text: "The product in one page: one net worth from bank accounts, investments, pension and debts, how each gets in, what it tells you, security and the open code." },
   { path: EN_PATHS.features, title: "All the features", text: "The full list by area, with the status of each." },
   { path: EN_PATHS.featureInvestments, title: "Investments with Italian taxes", text: "Real returns, risk, tax-loss carryforward (zainetto fiscale) and stamp duty (bollo) worked out from your trades." },
   { path: EN_PATHS.security, title: "Security and privacy", text: "Read-only bank connection (PSD2) via GoCardless, what is stored and what is not, servers in Germany, export and deletion, stated limits." },
   { path: EN_PATHS.screens, title: "Screens", text: "Screenshots of the real app with sample data." },
+  { path: EN_PATHS.privacy, title: "Privacy policy", text: "Who runs the service, what data it keeps and why, which providers handle it, for how long, and your rights (a translation; the Italian text is the binding version)." },
+  { path: EN_PATHS.terms, title: "Terms of service", text: "What the service is and isn't, who can use it, liability and governing law (English translation)." },
+  { path: EN_PATHS.cookies, title: "Cookies", text: "Only technical cookies and cookie-free anonymous statistics, and how to turn the statistics off (English translation)." },
+  { path: EN_PATHS.calculators, title: "Calculators", text: "The three free calculators, no account needed: zainetto fiscale, loan amortization, savings goal." },
+  { path: EN_PATHS.zainetto, title: "Zainetto fiscale calculator", text: "How much Italian tax you avoid by offsetting capital gains with past capital losses (Italian tax-loss carryforward, 26% and 12.5%)." },
+  { path: EN_PATHS.loanAmortization, title: "Loan amortization calculator", text: "Monthly payment, interest and early repayment of mortgages and loans." },
+  { path: EN_PATHS.savingsGoal, title: "Savings goal calculator", text: "How many months it takes to reach an amount with a monthly deposit and a return, and how much a month it takes to get there by a date." },
+  { path: EN_PATHS.guideZainetto, title: "Guide to the zainetto fiscale", text: "How Italian capital losses can be used for four years, with examples and official sources." },
 ];
 
 /** Builds the text of `/llms.txt`. */
@@ -56,7 +64,7 @@ export function buildLlmsTxt(): string {
     "",
     "- Open-source (AGPL-3.0), self-hostable personal finance web app. Two products: Italy (Italian and English, every feature) and Germany (German and English, essentials only: accounts, portfolio, dividends and partial 2026 tax estimates; pension and advanced simulators hidden until review).",
     "- It is not a bank or a broker and gives no investment advice. It never moves money: the bank connection is read-only.",
-    "- The calculators, guides and legal pages are in Italian only.",
+    "- The calculators and the zainetto fiscale guide are in English too, and they apply Italian tax law. The legal texts are translated into English; the Italian text is the binding version.",
     "",
   );
   if (!CONTENT_DRAFT) {

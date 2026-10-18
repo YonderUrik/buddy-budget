@@ -14,23 +14,23 @@ export const LEGAL_OWNER = {
 } as const;
 
 /** Durate citate nell'informativa: tenerle allineate al codice e all'infrastruttura. */
-const SESSION_DAYS = 7;
-const MAGIC_LINK_MINUTES = 10;
-const DEACTIVATION_DAYS = 30;
+export const SESSION_DAYS = 7;
+export const MAGIC_LINK_MINUTES = 10;
+export const DEACTIVATION_DAYS = 30;
 /** Account senza accessi eliminato dopo questi giorni, con avviso via email `INACTIVITY_NOTICE_DAYS` giorni prima (`lib/account/constants.ts`). */
-const INACTIVITY_DAYS = 90;
-const INACTIVITY_NOTICE_DAYS = 7;
-const BACKUP_DAYS = 14;
-const BANK_CONSENT_DAYS = 90;
+export const INACTIVITY_DAYS = 90;
+export const INACTIVITY_NOTICE_DAYS = 7;
+export const BACKUP_DAYS = 14;
+export const BANK_CONSENT_DAYS = 90;
 /** Retention di Loki nel repo infra (`limits_config.retention_period`). */
-const LOG_DAYS = 30;
+export const LOG_DAYS = 30;
 /** Anteprima cifrata di un import CSV con AI (`expiresAt` in lib/personal-import/jobs.ts). */
-const CSV_PREVIEW_DAYS = 7;
+export const CSV_PREVIEW_DAYS = 7;
 /** Registro degli invii delle email di riepilogo e avviso (`NOTIFICATION_LOG_RETENTION_DAYS` nell'app). */
-const NOTIFICATION_LOG_DAYS = 90;
+export const NOTIFICATION_LOG_DAYS = 90;
 
 /** Segnalazioni al supporto: tempo massimo di conservazione dopo la chiusura. */
-const SUPPORT_MONTHS = 12;
+export const SUPPORT_MONTHS = 12;
 
 export interface LegalSection {
   id: string;
@@ -40,7 +40,7 @@ export interface LegalSection {
 }
 
 export interface LegalDocument {
-  slug: "privacy" | "termini" | "cookie";
+  slug: "privacy" | "termini" | "cookie" | "privacy-en" | "terms-en" | "cookies-en";
   title: string;
   description: string;
   intro: string;
@@ -320,7 +320,7 @@ export const COOKIE: LegalDocument = {
       title: "Statistiche d'uso anonime",
       paragraphs: [
         "Usiamo Umami, installato sui nostri server, per contare visite e azioni (per esempio \"transazione aggiunta\"). Non usa cookie, non ti segue su altri siti, vale per un solo sito alla volta e non riceve importi, nomi o testi tuoi. Non è condiviso con terzi. Serve solo a statistiche aggregate: per questo lo trattiamo come gli strumenti statistici che le Linee guida (par. 7.2) equiparano ai tecnici, senza consenso.",
-        "Vuoi che le tue visite non vengano contate? Nell'app, in Impostazioni → Preferenze, spegni \"Statistiche d'uso anonime\". Sul sito, e in generale, basta impostare nel browser il valore localStorage \"umami.disabled\" a \"1\" (localStorage.setItem(\"umami.disabled\", \"1\")). La scelta vale per il dispositivo e il sito in cui la fai.",
+        "Vuoi che le tue visite non vengano contate? Nell'app, in Impostazioni → Privacy, spegni \"Statistiche d'uso anonime\". Sul sito, e in generale, basta impostare nel browser il valore localStorage \"umami.disabled\" a \"1\" (localStorage.setItem(\"umami.disabled\", \"1\")). La scelta vale per il dispositivo e il sito in cui la fai.",
       ],
     },
     {

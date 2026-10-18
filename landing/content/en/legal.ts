@@ -20,8 +20,8 @@ import {
   type LegalDocument,
 } from "../legal";
 
-/** Opening line of every English legal page: which text prevails. */
-const TRANSLATION_NOTE = "This is an English translation for convenience. If it differs from the Italian text, the Italian text prevails.";
+/** Opening line of every English legal page: the Italian text is the binding one. */
+const TRANSLATION_NOTE = "This is a translation of the Italian text, which is the binding version.";
 
 export const PRIVACY_EN: LegalDocument = {
   slug: "privacy-en",

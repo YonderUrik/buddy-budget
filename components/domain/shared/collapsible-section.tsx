@@ -43,7 +43,7 @@ export function CollapsibleSection({
   const [open, setOpen] = usePersistedFlag(`${COLLAPSIBLE_STORAGE_PREFIX}${id}`, defaultOpen);
   const panelId = React.useId();
   return (
-    <section className={cn("pt-4", className)} aria-label={tr(title)}>
+    <section className={cn("border-t border-sidebar-border pt-2", className)} aria-label={tr(title)}>
       <div className="flex items-center gap-1">
         <button
           type="button"
@@ -51,8 +51,8 @@ export function CollapsibleSection({
           aria-expanded={open}
           aria-controls={panelId}
           className={cn(
-            "flex min-w-0 flex-1 items-center gap-1.5 rounded-full px-1.5 py-1.5 text-left",
-            "text-[13px] font-semibold text-sidebar-foreground/55",
+            "flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1.5 text-left",
+            "text-xs font-medium text-sidebar-foreground/60",
             "transition-colors hover:text-sidebar-foreground"
           )}
         >

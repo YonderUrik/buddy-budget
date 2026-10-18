@@ -1,4 +1,4 @@
-/** lib/legal — barrel file: indirizzi dei documenti legali, versione in vigore e dichiarazione di accettazione. Il codice solo-server sta in `./acceptance`. */
+/** lib/legal — barrel file: legal document links, current version and acceptance statement. Server-only code lives in `./acceptance`; the API metadata (`./meta`, which pulls in the translation catalogs) is imported directly so client bundles stay light. */
 export { LANDING_URL, LEGAL_LINKS, PRIVACY_EMAIL, legalHref } from "./links";
 export type { LegalDocumentId, LegalLink } from "./links";
 export { LEGAL_VERSION, SPECIFIC_CLAUSE_SECTIONS, needsLegalAcceptance } from "./version";

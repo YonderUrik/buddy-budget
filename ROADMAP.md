@@ -59,8 +59,14 @@ The detailed, always up-to-date backlog is private (Slack). This file lists the 
 - [x] Interface in Italian, English and German; Germany as a second product country with partial 2026 tax estimates ([decision](docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md))
 - [x] Self-hosting with Docker ([guide](docs/self-hosting.md))
 - [x] Public read-only demo without an account, English landing and `latest` Docker images ([decision](docs/decisioni/2026-10-17-demo-pubblica.md))
-- [ ] Native iOS and Android app (Capacitor), push notifications and biometric unlock
+- [ ] Native iOS and Android app on the App Store and Google Play (Capacitor), push notifications and biometric unlock: **current focus**
 - [ ] German pension and simulators after the product review
+
+### Phase 6: Next
+
+- [ ] More countries, one at a time: each country has its own taxes, pension system and banks, so a country is added only when its rules can be applied correctly (Italy first, Germany partly today)
+- [ ] Shared accounts, to follow the net worth of a couple or a family together
+- [ ] A small subscription for the hosted version at buddybudget.io, to cover servers and bank connections; self-hosting stays free under AGPL-3.0
 
 ### Consciously deferred
 
@@ -69,7 +75,6 @@ These are known gaps, kept out on purpose until there is a clear need:
 - Multiple portfolios per user, lot-level tax reconstruction, foreign withholding taxes and tax return sections
 - Real estate and other assets, multi-currency cash accounts
 - Automatic Euribor updates and foreign-currency loans
-- Sharing an account with a partner
 - An assistant or MCP access to your own data
 
 ---

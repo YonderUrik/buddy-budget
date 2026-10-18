@@ -37,7 +37,7 @@ export function DebtEventsList({ events, currency, onDelete }: DebtEventsListPro
   return (
     <ul>
       {ordered.map((event) => (
-        <li key={event.id} className="flex items-center justify-between gap-3 border-b py-2.5 last:border-b-0">
+        <li key={event.id} className="flex items-center justify-between gap-3 py-2.5">
           <div className="min-w-0">
             <p className="truncate text-sm text-foreground">{describeEvent(event, currency)}</p>
             <p className="text-xs text-muted-foreground">{formatDateWithYear(event.date)}</p>

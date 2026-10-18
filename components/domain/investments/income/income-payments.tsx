@@ -23,7 +23,7 @@ export function IncomePayments({ payments, currency, instrumentsById }: IncomePa
   const { t: tr } = useLocalization();
   if (!payments.length) return <p className="py-3 text-sm text-muted-foreground">{tr("Nessun pagamento registrato.")}</p>;
   const money = (amount: number) => formatCurrency(amount, currency);
-  return <ul className="divide-y divide-border" aria-label={tr("Pagamenti registrati")}>
+  return <ul aria-label={tr("Pagamenti registrati")}>
     {payments.map((payment) => <li key={payment.id} className="space-y-2 py-3 text-sm">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span><time dateTime={payment.date}>{DATE_FORMAT.format(parseDateOnly(payment.date))}</time> {"·"}{payment.kind === "cedola" ? tr("Cedola") : tr("Dividendo")}</span>

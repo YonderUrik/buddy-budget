@@ -103,7 +103,7 @@ export function LossCarryforwardCard({ losses, carryforwards, currency, currentY
         {cryptoByExpiry.length > 0 ? (
           <p className="text-sm text-muted-foreground">{tr("Zaino crypto (compensabile solo con crypto):")}{" "}{format(cryptoByExpiry.reduce((s, e) => s + e.amount, 0))}{"."}</p>
         ) : null}
-        <div className="flex flex-col gap-2 border-t border-border pt-3">
+        <div className="flex flex-col gap-2 pt-3">
           <p className="text-xs font-medium text-muted-foreground">{tr("Minusvalenze pregresse")}</p>
           {carryforwards.length > 0 ? (
             <ul className="flex flex-col gap-1">

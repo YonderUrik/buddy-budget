@@ -39,7 +39,7 @@ export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: Titl
 
   const { t: tr } = useLocalization();
   return (
-    <ul className="-mx-4 divide-y sm:-mx-6">
+    <ul className="-mx-4 sm:-mx-6">
           {items.map((item) => {
             const { instrument } = item;
             return (

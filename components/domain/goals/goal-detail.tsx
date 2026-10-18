@@ -79,7 +79,7 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
               <p className="pb-1 text-sm font-medium text-text-3">{tr(group.title)}</p>
               <ul>
                 {items.map((s) => (
-                  <li key={s.id} className="flex items-center gap-3 border-b py-3 last:border-b-0">
+                  <li key={s.id} className="flex items-center gap-3 py-3">
                     <GoalSourceIcon source={s} onRemoteLogo={showLogoCredit} />
                     <div className="flex min-w-0 flex-1 flex-col">
                       <span className="truncate font-medium text-foreground">{s.name}</span>
@@ -105,12 +105,12 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
         <section aria-labelledby="goal-after" className="flex flex-col gap-3">
           <GoalSectionHeading id="goal-after" icon={FlagIcon} title={tr("Cosa cambia quando lo raggiungi")} color="var(--swatch-amber)" />
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1 border-t pt-3">
+            <div className="flex flex-col gap-1 pt-3">
               <span className="text-sm text-text-2">{tr("Patrimonio")}</span>
               <span className="font-heading text-2xl font-medium tabular-nums text-foreground">{kept ? fmt.money(0) : `−${fmt.money(goal.target)}`}</span>
               <span className="text-sm text-text-3">{kept ? tr("i soldi restano tuoi, da parte") : goal.etaMonth ? tr("escono a {0}", { 0: fmt.month(goal.etaMonth) }) : tr("escono quando lo raggiungi")}</span>
             </div>
-            <div className="flex flex-col gap-1 border-t pt-3">
+            <div className="flex flex-col gap-1 pt-3">
               <span className="text-sm text-text-2">{tr("Smetti di lavorare")}</span>
               <span className="font-heading text-2xl font-medium tabular-nums text-foreground">{fireYear ?? "—"}</span>
               <span className="text-sm text-text-3">{shift ?? tr("serve sapere spesa e risparmio nelle Risposte")}</span>

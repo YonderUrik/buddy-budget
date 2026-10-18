@@ -48,7 +48,7 @@ export function OperationMonthGroup({ group, instrumentsById, currency, deleting
           <GainText gain={totals.gain} pct={totals.gainPct} currency={currency} />
         </p>
       </div>
-      <ul className="divide-y divide-border">
+      <ul>
         {group.operations.map((insight) => (
           <OperationRow
             key={insight.transaction.id}

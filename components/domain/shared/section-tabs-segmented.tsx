@@ -10,7 +10,6 @@ import { SPRING_BOUNCY } from "@/lib/motion/springs";
 import { cn } from "@/lib/utils";
 import type { SectionTab } from "./section-tabs";
 
-const SEGMENT_ICON_SIZE = 14;
 
 export interface SectionTabsSegmentedProps {
   tabs: readonly SectionTab[];
@@ -23,17 +22,16 @@ export function SectionTabsSegmented({ tabs, activeIndex, ariaLabel }: SectionTa
   const thumbId = React.useId();
   return (
     <nav aria-label={tr(ariaLabel)} className="scrollbar-hidden max-w-full overflow-x-auto">
-      <ul className="inline-flex w-max items-center gap-1 rounded-lg bg-muted p-1">
+      <ul className="inline-flex w-max items-center gap-1 rounded-full bg-muted p-1">
         {tabs.map((tab, index) => {
           const active = index === activeIndex;
-          const Icon = tab.icon;
           return (
             <li key={tab.href}>
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative inline-flex min-h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors",
+                  "relative inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium whitespace-nowrap transition-colors",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -42,14 +40,7 @@ export function SectionTabsSegmented({ tabs, activeIndex, ariaLabel }: SectionTa
                     layoutId={thumbId}
                     transition={SPRING_BOUNCY}
                     aria-hidden="true"
-                    className="absolute inset-0 rounded-md bg-background"
-                  />
-                ) : null}
-                {Icon ? (
-                  <Icon
-                    size={SEGMENT_ICON_SIZE}
-                    aria-hidden="true"
-                    className={cn("relative shrink-0", active ? "text-primary" : "text-muted-foreground/70")}
+                    className="absolute inset-0 rounded-full bg-background"
                   />
                 ) : null}
                 <span className="relative">{tr(tab.label)}</span>

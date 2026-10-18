@@ -57,7 +57,7 @@ export function IncomeInstrumentsCard({ rows, payments, instrumentsById, currenc
           <strong>{tr("Sul costo")}</strong>{tr(": netto incassato negli ultimi 12 mesi su quanto hai pagato le quote che hai.")}{" "}
           <strong>{tr("Attuale")}</strong>{tr(": lordo previsto nei prossimi 12 mesi sul valore di oggi.")}{" "}<strong>{tr("Crescita")}</strong>{tr(": di quanto è cresciuto ogni anno il dividendo per quota, sugli ultimi anni completi.")}</InfoHint>
       }>
-      <ul className="flex flex-col divide-y divide-border">
+      <ul className="flex flex-col">
         {rows.map((row) => {
           const instrument = instrumentsById.get(row.instrumentId);
           if (!instrument) return null;
@@ -79,7 +79,7 @@ export function IncomeInstrumentsCard({ rows, payments, instrumentsById, currenc
                     <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
                   </span>
                 </summary>
-                <div className="space-y-4 border-t pb-3 pt-4">
+                <div className="space-y-4 pb-3 pt-4">
                   <dl className="grid grid-cols-3 gap-2 text-sm">
                     <Metric label={tr("Sul costo")} value={row.yieldOnCost !== null && row.trailingNet > 0 ? formatPct(row.yieldOnCost) : "—"} />
                     <Metric label={tr("Attuale")} value={row.currentYield !== null && row.forecastGross > 0 ? formatPct(row.currentYield) : "—"} />

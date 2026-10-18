@@ -41,7 +41,7 @@ export function InboxPreview({
         <AnimatedList
           ariaLabel={tr(title)}
           className="gap-1.5"
-          itemClassName="flex items-baseline justify-between gap-3 border-t border-border pt-1.5 text-xs first:border-t-0 first:pt-0"
+          itemClassName="flex items-baseline justify-between gap-3 pt-1.5 text-xs first:pt-0"
           items={items.map((item) => ({
             key: item.kind,
             content: (

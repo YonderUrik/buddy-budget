@@ -25,7 +25,7 @@ export function TransactionsPeriodSummary({ expenses, income, currency }: Transa
   const net = income.entrateEffettive - expenses.speseEffettive;
 
   return (
-    <dl className="grid grid-cols-3 gap-3 border-b border-border px-4 py-3">
+    <dl className="grid grid-cols-3 gap-3 px-4 py-3">
       <div className="min-w-0">
         <dt className="text-xs text-muted-foreground">{tr("Spese")}</dt>
         <dd className="truncate font-heading text-lg font-medium tabular-nums text-foreground">

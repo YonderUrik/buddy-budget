@@ -28,7 +28,7 @@ export function RulesManager({ categories }: RulesManagerProps) {
 
   return (
     <Card className="p-0">
-      <CardHeader className="border-b border-border px-4 py-4">
+      <CardHeader className="px-4 py-4">
         <CardTitle className="text-base font-medium">{tr("Regole di categorizzazione")}</CardTitle>
         <p className="text-sm text-muted-foreground">{tr("Le regole si applicano da sole alle nuove transazioni. \"Contiene\" copre tutte le varianti: cambia")}{" "}<code className="text-xs">{tr("esselunga via roma")}</code>{" "}{tr("in")}{" "}
           <code className="text-xs">{tr("esselunga")}</code>{" "}{tr("per prendere ogni filiale.")}</p>

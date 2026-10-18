@@ -154,7 +154,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
         {liquidation.byPosition.length > 0 ? (
           <ul className="flex flex-col gap-1 text-sm">
             {liquidation.byPosition.slice(0, 6).map((p) => (
-              <li key={p.id} className="flex justify-between gap-3 border-t pt-1">
+              <li key={p.id} className="flex justify-between gap-3 pt-1">
                 <span className="truncate">{p.name}</span>
                 <span className="shrink-0 tabular-nums text-muted-foreground">{money(p.tax, currency)}</span>
               </li>

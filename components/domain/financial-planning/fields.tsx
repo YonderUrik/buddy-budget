@@ -29,6 +29,6 @@ export function Amount({ value }: { value: number | null }) {
 /** Label and amount for a scenario result. */
 export function Result({ label, value }: { label: string; value: number | null }) {
   const { t } = useLocalization();
-  return <div className="flex justify-between gap-4 border-b py-2"><span>{t(label)}</span><Amount value={value} /></div>;
+  return <div className="flex justify-between gap-4 py-2"><span>{t(label)}</span><Amount value={value} /></div>;
 }
 export const FUND_OPTIONS = [{ value: "unknown", label: "Not yet classified" }, { value: "equity", label: "Equity fund (30% exemption)" }, { value: "mixed", label: "Mixed fund (15% exemption)" }, { value: "property", label: "Property fund (60% exemption)" }, { value: "foreign-property", label: "Foreign property fund (80% exemption)" }, { value: "other", label: "Other fund (no exemption)" }] as const;

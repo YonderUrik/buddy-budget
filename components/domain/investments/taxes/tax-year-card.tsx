@@ -73,7 +73,7 @@ export function TaxYearCard({ years, regime, currency, currentYear }: TaxYearCar
           </p>
         ) : null}
         <dl className="grid gap-x-8 sm:grid-cols-2">
-          <div className="divide-y divide-border">
+          <div>
             <Row label={tr("Plusvalenze")} value={format(year.gains)} tone={year.gains > 0 ? "pos" : undefined} hint={tr("Guadagni da vendite e rimborsi di azioni, obbligazioni ed ETC: si possono compensare con lo zaino.")} />
             <Row label={tr("Minusvalenze")} value={format(year.losses)} tone={year.losses > 0 ? "neg" : undefined} hint={tr("Perdite da vendite e rimborsi, anche di ETF e fondi: entrano nello zaino.")} />
             <Row
@@ -84,7 +84,7 @@ export function TaxYearCard({ years, regime, currency, currentYear }: TaxYearCar
             <Row label={tr("Zaino usato")} value={format(year.lossesUsed)} hint={tr("Minusvalenze (portate all'aliquota del 26%) usate per ridurre le plusvalenze.")} />
             {year.lossesExpired > 0 ? <Row label={tr("Zaino scaduto")} value={format(year.lossesExpired)} tone="neg" /> : null}
           </div>
-          <div className="divide-y divide-border">
+          <div>
             {hasCrypto ? (
               <Row
                 label={tr("Crypto (netto)")}

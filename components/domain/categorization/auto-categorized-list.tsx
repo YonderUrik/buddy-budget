@@ -65,7 +65,7 @@ export function AutoCategorizedList({
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">
         {total === 1 ? tr("1 movimento ha") : tr("{0} movimenti hanno", {0: total})}{" "}{tr("la categoria messa dall'app")}{autoApplyEnabled ? tr(", con le tue regole o perché era quasi certa") : tr(", con le tue regole")}{tr(". Se una non va, toccala e cambiala.")}</p>
-      <ul className="flex flex-col divide-y divide-border">
+      <ul className="flex flex-col">
         {groups.map((group) => (
           <AutoCategorizedRow
             key={group.groupKey}

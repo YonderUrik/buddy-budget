@@ -52,7 +52,7 @@ function RecordRow({ record, headers, currency }: { record: PreviewRecord; heade
     sub = tr("Riga {0}", { 0: line });
   }
   return (
-    <details className="group border-t py-2.5 first:border-t-0">
+    <details className="group py-2.5">
       <summary className="grid min-h-11 cursor-pointer list-none grid-cols-[3.25rem_1fr_auto] items-baseline gap-x-3 [&::-webkit-details-marker]:hidden">
         <span className="text-xs text-muted-foreground">{"date" in o ? shortDate(o.date) : ""}</span>
         <span className="min-w-0">

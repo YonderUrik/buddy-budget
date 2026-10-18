@@ -53,7 +53,7 @@ export function StartChecklist({ steps, definitions = START_STEPS, onStepClick, 
         {countryDefinitions.map((step) => {
           const isDone = steps[step.id];
           return (
-            <li key={step.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b py-3 last:border-b-0">
+            <li key={step.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-3">
               <span
                 className={cn("grid size-7 shrink-0 place-items-center rounded-full border", isDone ? "border-primary bg-primary text-primary-foreground" : "border-border text-transparent")}
                 aria-hidden="true"

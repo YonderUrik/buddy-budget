@@ -59,7 +59,7 @@ export function NetWorthChartTooltip({ active, payload, currency, classes, total
       <p
         className={
           showBreakdown
-            ? "mt-1.5 flex justify-between gap-4 border-t pt-1.5 font-medium tabular-nums text-foreground"
+            ? "mt-1.5 flex justify-between gap-4 pt-1.5 font-medium tabular-nums text-foreground"
             : "font-medium tabular-nums text-foreground"
         }
       >

@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { apiError, validationError } from "@/lib/http";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
@@ -38,20 +39,17 @@ async function handlePatch(
   const { id } = await params;
   const transaction = await getOwnedTransaction(session.user.id, id);
   if (!transaction) {
-    return new Response(null, { status: 404 });
+    return apiError(404, "transaction_not_found", "Movimento non trovato");
   }
 
   const body = await request.json();
   const parsed = updateTransactionSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    return validationError(parsed.error);
   }
 
   if (transaction.source === "auto" && MANUAL_ONLY_FIELDS.some((field) => field in parsed.data)) {
-    return Response.json(
-      { error: 'Per una transazione automatica sono modificabili solo categoria e "Dividi"' },
-      { status: 403 }
-    );
+    return apiError(403, "linked_transaction_field_locked", 'Per una transazione automatica sono modificabili solo categoria e "Dividi"');
   }
 
   let resolvedCategory: typeof categories.$inferSelect | null = null;
@@ -61,7 +59,7 @@ async function handlePatch(
       .from(categories)
       .where(and(eq(categories.id, parsed.data.categoryId), eq(categories.userId, session.user.id)));
     if (!category) {
-      return Response.json({ error: "Categoria non valida" }, { status: 400 });
+      return apiError(400, "invalid_category", "Categoria non valida");
     }
     resolvedCategory = category;
   }
@@ -80,10 +78,7 @@ async function handlePatch(
   if (resolvedCategory && parsed.data.amount === undefined && !resolvedCategory.isFallback && !isTransfer) {
     const newCategoryIsIncome = resolvedCategory.type === "entrata";
     if (newCategoryIsIncome !== currentIsIncome) {
-      return Response.json(
-        { error: "La categoria scelta non è compatibile con la direzione della transazione" },
-        { status: 400 }
-      );
+      return apiError(400, "category_direction_mismatch", "La categoria scelta non è compatibile con la direzione della transazione");
     }
   }
 
@@ -116,7 +111,7 @@ async function handlePatch(
     const excludedAmountToValidate =
       newExcludedAmount !== undefined ? newExcludedAmount : Number(transaction.excludedAmount);
     if (!isValidExcludedAmount(newAmount, excludedAmountToValidate)) {
-      return Response.json({ error: "Quota esclusa non valida" }, { status: 400 });
+      return apiError(400, "invalid_excluded_amount", "Quota esclusa non valida");
     }
   }
 
@@ -175,11 +170,11 @@ async function handleDelete(
   const { id } = await params;
   const transaction = await getOwnedTransaction(session.user.id, id);
   if (!transaction) {
-    return new Response(null, { status: 404 });
+    return apiError(404, "transaction_not_found", "Movimento non trovato");
   }
 
   if (transaction.source === "auto") {
-    return Response.json({ error: "Una transazione automatica non può essere eliminata" }, { status: 400 });
+    return apiError(400, "linked_transaction_not_deletable", "Una transazione automatica non può essere eliminata");
   }
 
   await db.delete(transactions).where(eq(transactions.id, id));

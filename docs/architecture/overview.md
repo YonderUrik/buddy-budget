@@ -100,7 +100,7 @@ Providers mounted in [`app/layout.tsx`](../../app/layout.tsx), outermost first: 
    - Onboarding done but legal version outdated (`needsLegalAcceptance`): only `/accetta-termini` and the APIs for acceptance, export and account deletion are reachable.
    - Onboarding not done: pages redirect to `/onboarding`.
    - `isCountryPathAvailable(productCountry, pathname)` false: APIs get 403 `{ code: "country_feature_unavailable" }`, pages redirect to `/country-unavailable`.
-2. **`withRoute(name, handler)`** creates the request context (`requestId` from a valid `x-request-id` header or a new UUID, `route`, `method`), runs the handler, turns an uncaught exception into a generic 500, logs `http.request.completed` or `http.request.failed`, records `buddybudget_http_requests_total` and the duration histogram, and returns `x-request-id`.
+2. **`withRoute(name, handler)`** creates the request context (`requestId` from a valid `x-request-id` header or a new UUID, `route`, `method`), runs the handler, turns an uncaught exception into a generic 500, logs `http.request.completed` or `http.request.failed`, records `buddybudget_http_requests_total` and the duration histogram, and returns `x-request-id`. Error responses get a stable `code` when the handler set none (`withErrorCode` in [`lib/http/api-error.ts`](../../lib/http/api-error.ts): a JSON body with `error` gets the generic code of its status, `bad_request`, `not_found`, `conflict`…, an empty 4xx body becomes `{ code }`, 401 stays empty) and the `error` message in the user's language. Routes set specific codes with `apiError(status, code, message)` and `validationError(zodError)` (`validation_failed` + `field`); the closed list is `API_ERROR_CODES`.
 3. **The handler** reads the session, calls `bindRequestUser` (the log field `user` is `hashUserId(id)`, an HMAC with `LOG_HASH_SECRET`), optionally checks `rejectIfDemoActive`, parses the body with a zod schema from `lib/validation/`, runs Drizzle queries filtered by `userId`, and returns `Response.json`. 14 handlers for country-gated areas (goals, pension, sidebar FIRE, tax carry-forwards, analytics) are also wrapped in `withCountryGuard` from [`lib/localization/guard.ts`](../../lib/localization/guard.ts), which repeats the proxy check.
 4. **The client** uses a hook from `lib/queries/<area>.ts`. Mutations call `track(<event>)` from `lib/analytics` on success and invalidate the query keys they change.
 
@@ -222,7 +222,7 @@ Strings: Italian is the source language. `translate(language, source)` in [`mess
 
 ### 4.11 Mobile and PWA
 
-The app is a responsive web app; no native app exists.
+The app is a responsive web app. Native iOS/Android apps are specified in the separate `buddy-budget-mobile-spec` repo and use the same API with `Authorization: Bearer` sessions (better-auth `bearer` plugin, email OTP sign-in). For them the server also computes views the web computes in the browser, with the same functions (`lib/views`): `GET /api/overview`, `GET /api/liquidity/month`, `GET /api/accounts?include=trend,health`, the paged `GET /api/transactions?limit&cursor` (`lib/liquidity/transactions-list.ts`), and default category names localized in `GET /api/categories`.
 
 | Aspect | Behaviour | Code |
 |---|---|---|
@@ -264,17 +264,19 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `db/` | Drizzle client, schema, migrations, migration and maintenance scripts |
 | `debts/` | Debt data loading, events, views, forms |
 | `email/` | Shared email HTML template |
+| `dev/` | Guards for dev-only tools (local database, test addresses) |
 | `env.ts`, `format.ts`, `utils.ts` | Env validation, number/date formatting, class-name helper |
 | `features/` | Feature catalog |
 | `financial-planning/` | German tax, income, pension and AVD models |
 | `goals/` | Savings goals: data, plan, views |
 | `gocardless/` | GoCardless client, sync, scheduler, eligibility, rate limits, capacity, cleanup, consent notices |
 | `health/` | Readiness checks |
+| `http/` | Request helpers for route handlers: same-origin check for cookie writes, stable API error codes |
 | `hooks/` | Small client hooks (media query, persisted flags, sidebar preferences) |
 | `imports/` | Format metadata learned from imports |
 | `investments/` | Positions, returns, allocation, exposure, dividends, alerts, broker imports, instrument icons and logos |
 | `legal/` | Legal document links, version, acceptance |
-| `liquidity/` | Liquidità ("Cash") view helpers: split, day groups, account series, spend curve |
+| `liquidity/` | Liquidità ("Cash") view helpers: split, day groups, account series, spend curve, paged and filtered transaction feed |
 | `llm/` | OpenRouter decision client used by categorisation |
 | `localization/` | Country and language profile, route policy, translation catalogs, formatting |
 | `market-data/` | Price, FX, inflation, rate, profile and dividend providers and their stores |
@@ -295,6 +297,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `support/` | Support reports and their sending |
 | `sync-jobs/` | Background sync job store, runner, views |
 | `validation/` | zod schemas for API inputs |
+| `views/` | Server-computed views for the native apps (Overview, Liquidità month, account extras): pure builders over the web's own calc functions, loaders in `views/server`, zod response schemas |
 | `whats-new/` | «Novità» ("What's new") entries |
 
 ### 4.14 Architecture documents by domain

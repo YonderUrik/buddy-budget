@@ -3,6 +3,9 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { eq } from "drizzle-orm";
+import { accounts } from "@/lib/db/schema/accounts";
+import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
+import { accountExtrasSchema } from "@/lib/views";
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: vi.fn() } },
@@ -73,5 +76,30 @@ describe("GET/POST /api/accounts", () => {
       })
     );
     expect(response.status).toBe(400);
+  });
+
+  it("with include=trend,health adds bank, 30-day trend, connection health and status (native apps)", async () => {
+    const [linked] = await db.insert(accounts).values({ userId, name: "Corrente", type: "Conto corrente", balance: "1000.00", source: "auto" }).returning();
+    await db.insert(accounts).values({ userId, name: "Contanti", type: "Contanti", balance: "50.00" });
+    const [connection] = await db
+      .insert(bankConnections)
+      .values({ userId, institutionId: "TEST_BANK", institutionName: "Banca Test", status: "linked", consentExpiresAt: new Date("2026-10-21T12:00:00.000Z") })
+      .returning();
+    await db.insert(bankAccountLinks).values({ connectionId: connection.id, accountId: linked.id, externalAccountId: "ext-1" });
+    mockedGetSession.mockResolvedValue({ user: { id: userId, language: "en", productCountry: "IT" } } as never);
+
+    const response = await GET(new NextRequest("http://localhost/api/accounts?include=trend,health&today=2026-10-18"));
+    expect(response.status).toBe(200);
+    const list = await response.json();
+    const [auto, manual] = list.map((row: unknown) => ({ row, extras: accountExtrasSchema.parse(row) }));
+    expect(auto.extras).toMatchObject({ bankName: "Banca Test", health: { state: "expiring", needsRenewal: true, institutionName: "Banca Test" }, status: { tone: "warning" } });
+    expect(auto.extras.trend).toHaveLength(31);
+    expect(manual.extras).toMatchObject({ bankName: null, trend: null, health: null, status: { tone: "neutral" } });
+  });
+
+  it("rejects unknown extras with a stable code", async () => {
+    const response = await GET(new NextRequest("http://localhost/api/accounts?include=secrets"));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: "validation_failed", field: "include" });
   });
 });

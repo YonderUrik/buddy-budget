@@ -1,17 +1,6 @@
 import { NextRequest } from "next/server";
-import { and, asc, eq, gte, lte } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db/client";
-import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
-import { loadUserDebts } from "@/lib/debts/data";
-import { todayIso } from "@/lib/debts/dates";
-import { buildDebtsView } from "@/lib/debts/view";
-import { compactSnapshotRows } from "@/lib/net-worth/compact";
-import { buildDebtHistoryRows } from "@/lib/net-worth/debt-history";
-import { buildPensionHistoryRows } from "@/lib/net-worth/pension-history";
-import { loadUserPension } from "@/lib/pension/data";
-import { refreshDerivedInvestmentHistory } from "@/lib/net-worth/investments";
-import { backfillDerivedHistory } from "@/lib/net-worth/snapshots";
+import { loadNetWorthSnapshotRows } from "@/lib/net-worth/snapshot-rows";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
@@ -31,27 +20,7 @@ async function handleGet(request: NextRequest) {
     return Response.json({ error: "from e to sono obbligatori nel formato YYYY-MM-DD" }, { status: 400 });
   }
 
-  await backfillDerivedHistory(session.user.id);
-  await refreshDerivedInvestmentHistory(session.user.id);
-
-  const rows = await db
-    .select()
-    .from(netWorthSnapshots)
-    .where(
-      and(eq(netWorthSnapshots.userId, session.user.id), gte(netWorthSnapshots.date, from), lte(netWorthSnapshots.date, to))
-    )
-    .orderBy(asc(netWorthSnapshots.date));
-
-  // Il debito non si salva: lo storico si ricalcola da piani ed eventi, così segue ogni modifica.
-  const today = todayIso();
-  const { debts: debtRows, events } = await loadUserDebts(session.user.id);
-  const debtHistory = buildDebtHistoryRows(buildDebtsView(debtRows, events, today), today, from).filter((r) => r.date <= to);
-
-  // Anche la previdenza si ricalcola dalle fotografie dei fondi, senza salvare nulla.
-  const pensionHistory = buildPensionHistoryRows((await loadUserPension(session.user.id)).funds, today, from).filter((r) => r.date <= to);
-
-  const all = [...rows, ...debtHistory, ...pensionHistory];
-  return Response.json(url.searchParams.get("compact") === "1" ? compactSnapshotRows(all, today) : all);
+  return Response.json(await loadNetWorthSnapshotRows(session.user.id, from, to, { compact: url.searchParams.get("compact") === "1" }));
 }
 
 export const GET = withRoute("net_worth.snapshots", handleGet);

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { withErrorCode } from "@/lib/http/api-error";
 import { logger } from "./logger";
 import { recordHttpRequest } from "./metrics";
 import { currentRequestFields, runWithRequestContext } from "./request-context";
@@ -30,9 +31,13 @@ function withRequestIdHeader(response: Response, requestId: string): Response {
   }
 }
 
-/** The error message in the user's language; the response as it is when the language cannot be resolved (tests, scripts). */
-async function localizedError(response: Response): Promise<Response> {
-  if (response.status < 400) return response;
+/**
+ * Error responses get a stable `code` when the route set none (`lib/http/api-error.ts`), and the error message in the
+ * user's language; the message stays as it is when the language cannot be resolved (tests, scripts).
+ */
+async function localizedError(original: Response): Promise<Response> {
+  if (original.status < 400) return original;
+  const response = await withErrorCode(original);
   try {
     const { translateErrorResponse } = await import("@/lib/localization/route-errors");
     return await translateErrorResponse(response);
@@ -44,7 +49,8 @@ async function localizedError(response: Response): Promise<Response> {
 /**
  * Avvolge un Route Handler: requestId (accettato o generato e restituito in `x-request-id`), durata,
  * log `http.request.completed|failed`, metriche HTTP, e 500 generico sulle eccezioni non gestite.
- * The `error` of a JSON error response is translated into the user's language (Italian sources in the catalogs).
+ * The `error` of a JSON error response is translated into the user's language (Italian sources in the catalogs), and
+ * error responses without a `code` get a generic one by status (`withErrorCode`).
  * `name` è un nome STATICO (es. "transactions.update"), mai il path reale: finisce nelle etichette
  * delle metriche. Dentro l'handler il logger della richiesta si ottiene con `requestLogger()`.
  */

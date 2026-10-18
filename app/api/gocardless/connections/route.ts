@@ -3,14 +3,14 @@ import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
-import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
+import { bankConnections } from "@/lib/db/schema/bank-connections";
 import { GoCardlessError, createRequisition } from "@/lib/gocardless/client";
 import { CAPACITY_BLOCK_MESSAGES } from "@/lib/gocardless/capacity";
 import { reserveConnectionSlot } from "@/lib/gocardless/capacity-store";
 import { consentExpiryFrom } from "@/lib/gocardless/connection-health";
 import { gocardlessRedirectUrl } from "@/lib/gocardless/redirect";
 import { createConnectionSchema } from "@/lib/validation/gocardless";
-import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
+import { loadBankConnectionStatuses } from "@/lib/views/server";
 import { rejectIfDemoActive } from "@/lib/start/demo";
 import { bindRequestUser, recordGoCardlessConnect, requestLogger, withRoute } from "@/lib/observability";
 
@@ -19,40 +19,7 @@ async function handleGet(request: NextRequest) {
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
 
-  const rows = await db
-    .select({
-      accountId: bankAccountLinks.accountId,
-      connectionId: bankConnections.id,
-      institutionName: bankConnections.institutionName,
-      status: bankConnections.status,
-      consentExpiresAt: bankConnections.consentExpiresAt,
-      lastSyncedAt: bankAccountLinks.lastSyncedAt,
-      syncTimestamps: bankAccountLinks.syncTimestamps,
-    })
-    .from(bankAccountLinks)
-    .innerJoin(bankConnections, eq(bankAccountLinks.connectionId, bankConnections.id))
-    .where(eq(bankConnections.userId, session.user.id));
-
-  const now = new Date();
-  return Response.json(
-    rows.map((row) => {
-      const eligibility = computeSyncEligibility(
-        row.syncTimestamps.map((t) => new Date(t)),
-        now
-      );
-      return {
-        accountId: row.accountId,
-        connectionId: row.connectionId,
-        institutionName: row.institutionName,
-        status: row.status,
-        consentExpiresAt: row.consentExpiresAt,
-        lastSyncedAt: row.lastSyncedAt,
-        eligible: eligibility.eligible,
-        nextEligibleAt: eligibility.nextEligibleAt,
-        syncsRemainingToday: eligibility.syncsRemainingToday,
-      };
-    })
-  );
+  return Response.json(await loadBankConnectionStatuses(session.user.id, new Date()));
 }
 
 async function handlePost(request: NextRequest) {

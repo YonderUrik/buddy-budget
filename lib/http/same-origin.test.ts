@@ -21,7 +21,8 @@ describe("isTrustedWriteOrigin", () => {
   });
 
   it("uses the request URL when APP_URL is not set", () => {
-    expect(isTrustedWriteOrigin(request({ origin: APP_URL }), undefined)).toBe(true);
+    // An empty value (as an unset env var reads) falls back to the request URL; `undefined` would pick process.env.APP_URL.
+    expect(isTrustedWriteOrigin(request({ origin: APP_URL }), "")).toBe(true);
   });
 });
 

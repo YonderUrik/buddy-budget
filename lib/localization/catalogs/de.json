@@ -4481,6 +4481,8 @@
   "Banca non raggiungibile, riprova tra poco": "Bank nicht erreichbar, versuche es gleich erneut",
   "Conto non appartenente a questa connessione": "Dieses Konto gehört nicht zu dieser Verbindung",
   "Conto non trovato": "Konto nicht gefunden",
+  "Movimento non trovato": "Buchung nicht gefunden",
+  "Cursore non valido": "Ungültiger Cursor",
   "Impossibile avviare il collegamento con la banca": "Die Bankverbindung konnte nicht gestartet werden",
   "Parametro country obbligatorio": "Der Parameter „country“ ist erforderlich",
   "Formato country non valido": "Ungültiges Länderformat",

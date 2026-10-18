@@ -39,7 +39,7 @@ export function DangerZoneSection({ settings, recentLogin }: DangerZoneSectionPr
   const remove = useDeleteAccountMutation();
   const [resetWord, setResetWord] = React.useState("");
   const [deleteEmail, setDeleteEmail] = React.useState("");
-  const common = { recentLogin, email: settings.email, googleLinked: settings.googleLinked };
+  const common = { recentLogin, email: settings.email, googleLinked: settings.googleLinked, passwordSet: settings.passwordSet };
   const emailMatches = deleteEmail.trim().toLowerCase() === settings.email.toLowerCase();
 
   return (

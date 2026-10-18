@@ -9,6 +9,8 @@ import { MotionProvider } from "@/components/motion";
 import Script from "next/script";
 import "./globals.css";
 import { PwaInstallTracker } from "@/components/analytics";
+import { instanceConfig } from "@/lib/instance/config";
+import { InstanceProvider } from "@/lib/instance/provider";
 
 /** Website ID del sito "BuddyBudget" nell'istanza Umami self-hosted (non segreto: finisce comunque nell'HTML). */
 const UMAMI_WEBSITE_ID = "051f9e59-8ac4-4dc2-8d9e-825421b3af8c";
@@ -60,6 +62,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const profile = await getLocaleProfile();
+  // Read per request: the same image serves the hosted version and every self-hosted install.
+  const instance = instanceConfig();
   return (
     <html
       lang={profile.language}
@@ -67,15 +71,16 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="h-full bg-background text-foreground font-sans">
-        <Script src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} strategy="afterInteractive" />
-        <LocalizationProvider profile={profile}><QueryProvider>
+        {/* Self-hosted installs have no Umami behind /stats: no script, no product events. */}
+        {!instance.selfHosted && <Script src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} strategy="afterInteractive" />}
+        <InstanceProvider value={instance}><LocalizationProvider profile={profile}><QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MotionProvider>
               {children}
               <Toaster />
             </MotionProvider>
           </ThemeProvider>
-        </QueryProvider></LocalizationProvider>
+        </QueryProvider></LocalizationProvider></InstanceProvider>
         <PwaInstallTracker />
       </body>
     </html>

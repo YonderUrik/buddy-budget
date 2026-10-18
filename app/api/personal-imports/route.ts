@@ -16,7 +16,7 @@ export const POST = withRoute("personal_import.enqueue", async (request: NextReq
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
   if (request.headers.get("origin") !== new URL(process.env.APP_URL ?? request.url).origin) return new Response(null, { status: 403 });
-  if (!process.env.PERSONAL_CSV_ENCRYPTION_KEY) return Response.json({ error: "Importazione personalizzata non ancora configurata" }, { status: 503 });
+  if (!process.env.PERSONAL_CSV_ENCRYPTION_KEY || !process.env.OPENROUTER_API_KEY?.trim() || !process.env.OPENROUTER_MODEL?.trim()) return Response.json({ error: "Importazione personalizzata non ancora configurata" }, { status: 503 });
   const reader = request.body?.getReader();
   if (!reader) return new Response(null, { status: 400 });
   let size = 0; const chunks: Uint8Array[] = [];

@@ -4,13 +4,15 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
+import { isSelfHosted } from "@/lib/instance/config";
 import { needsLegalAcceptance } from "@/lib/legal";
 import { recordPublicDemoEvent } from "@/lib/observability";
 import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemoUserId, isReadOnlyMethod, publicDemoSessionProfile } from "@/lib/public-demo/config";
 
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
 // /demo opens the read-only public demo (it decides itself whether a session exists).
-const PUBLIC_PATH_PREFIXES = ["/login", "/demo", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/_next", "/favicon.ico"];
+// /reimposta-password receives the emailed password reset link (the token in the address is the authorisation).
+const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/_next", "/favicon.ico"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";
@@ -89,7 +91,8 @@ export async function proxy(request: NextRequest) {
 
   // Chi ha già un account deve accettare la versione in vigore dei documenti legali (nuova versione o utenti precedenti).
   // Chi non ha finito l'onboarding li accetta lì.
-  if (onboardingCompleted && needsLegalAcceptance(session.user.legalAcceptedVersion)) {
+  // Self-hosted installs are run by whoever installed them, not under the hosted service's Terms: no acceptance.
+  if (onboardingCompleted && !isSelfHosted() && needsLegalAcceptance(session.user.legalAcceptedVersion)) {
     if (pathname.startsWith("/api/")) {
       return LEGAL_GATE_ALLOWED_API_PATHS.includes(pathname) ? NextResponse.next() : new NextResponse(null, { status: 403 });
     }

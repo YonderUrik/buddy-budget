@@ -18,9 +18,13 @@ const ACCOUNT_DELETED_NOTICE = "Il tuo account e tutti i tuoi dati sono stati el
 export interface LoginClientProps {
   /** Link to the public demo, only when it is enabled on this instance. */
   demoHref?: string;
+  /** The instance has no account yet (password sign-in): the page opens on «Crea il primo account». */
+  firstAccount?: boolean;
+  /** New accounts can be created on this instance. */
+  signupOpen?: boolean;
 }
 
-function LoginWithRedirect({ demoHref }: LoginClientProps) {
+function LoginWithRedirect({ demoHref, firstAccount, signupOpen }: LoginClientProps) {
   const searchParams = useSearchParams();
   const [key, value] = ACCOUNT_DELETED_QUERY.split("=");
   const accountDeleted = searchParams.get(key) === value;
@@ -35,14 +39,16 @@ function LoginWithRedirect({ demoHref }: LoginClientProps) {
       notice={accountDeleted ? ACCOUNT_DELETED_NOTICE : undefined}
       forgetRemembered={accountDeleted}
       demoHref={demoHref}
+      firstAccount={firstAccount}
+      signupOpen={signupOpen}
     />
   );
 }
 
-export function LoginClient({ demoHref }: LoginClientProps) {
+export function LoginClient({ demoHref, firstAccount, signupOpen }: LoginClientProps) {
   return (
-    <Suspense fallback={<LoginPanel redirectTo={safeRedirectPath(null)} demoHref={demoHref} />}>
-      <LoginWithRedirect demoHref={demoHref} />
+    <Suspense fallback={<LoginPanel redirectTo={safeRedirectPath(null)} demoHref={demoHref} firstAccount={firstAccount} signupOpen={signupOpen} />}>
+      <LoginWithRedirect demoHref={demoHref} firstAccount={firstAccount} signupOpen={signupOpen} />
     </Suspense>
   );
 }

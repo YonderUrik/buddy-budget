@@ -20,6 +20,7 @@ export {
   type InvestmentsViewData,
   type InvestmentsViewInputs,
 } from "./investments";
+export { buildPensionView, type PensionView, type PensionViewInputs } from "./pension";
 export { buildInvestmentsIncome, buildInvestmentsTaxes, simulateInvestmentSale, type InvestmentsIncome, type InvestmentsTaxes, type SaleSimulationRequest, type SaleSimulationResult } from "./investments-tax";
 export {
   investmentsIncomeSchema,
@@ -36,6 +37,7 @@ export {
   liquidityMonthSchema,
   monthPaceSchema,
   overviewViewSchema,
+  pensionViewSchema,
   renewalAlertSchema,
   transactionPageSchema,
   voiceLineSchema,

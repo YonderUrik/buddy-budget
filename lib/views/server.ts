@@ -6,3 +6,4 @@ export { loadAccountsWithExtras } from "./accounts.server";
 export { loadBankConnectionStatuses, loadUserAccounts, loadUserBudgets, loadUserCategories, type BankConnectionStatus } from "./data.server";
 export { loadInvestmentsIncome, loadInvestmentsPerformance, loadInvestmentsTaxes, loadInvestmentsView, runSaleSimulation } from "./investments.server";
 export { loadInvestmentViewData, type LoadedInvestmentData } from "./investments-data.server";
+export { loadPensionView } from "./pension.server";

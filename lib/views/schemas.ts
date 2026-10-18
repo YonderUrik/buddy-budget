@@ -198,6 +198,41 @@ export const transactionPageSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 
+const withdrawalScenarioSchema = z.object({ reason: z.enum(["pensionamento", "sanitarie", "altri"]), rate: z.number(), netLow: z.number(), netHigh: z.number() });
+const projectionPointSchema = z.object({ year: z.number().int(), prudent: z.number(), base: z.number(), optimistic: z.number() });
+const sliderSchema = z.object({ min: z.number(), max: z.number(), step: z.number(), default: z.number() });
+
+/** GET /api/pension/view (G10). */
+export const pensionViewSchema = z.object({
+  currency: z.string(),
+  today: isoDate,
+  funds: z.array(z.object({ id: z.string(), name: z.string(), adhesionDate: isoDate, snapshotCount: z.number().int(), lastDate: isoDate.nullable() })),
+  fund: z.object({ id: z.string(), name: z.string(), adhesionDate: isoDate, snapshots: z.array(z.object({ id: z.string(), date: isoDate, netContributions: z.number(), value: z.number() })) }).nullable(),
+  last: z.object({ id: z.string(), date: isoDate, netContributions: z.number(), value: z.number() }).nullable(),
+  performance: z
+    .object({ value: z.number(), netContributions: z.number(), gain: z.number(), gainPct: z.number().nullable(), annualReturn: z.number().nullable(), approximate: z.boolean(), firstDate: isoDate, lastDate: isoDate })
+    .nullable(),
+  contributions: z.array(z.object({ date: isoDate, amount: z.number(), estimated: z.boolean() })),
+  scenarios: z.array(withdrawalScenarioSchema),
+  tfr: z.object({ gross: z.number(), net: z.number(), annualRate: z.number() }).nullable(),
+  assumedInflation: z.number(),
+  quarterly: z.number(),
+  yearly: z.array(z.object({ year: z.number().int(), contributions: z.number(), gain: z.number(), endValue: z.number(), returnRate: z.number().nullable(), partial: z.boolean() })),
+  projection: z.object({
+    preview: projectionPointSchema.nullable(),
+    years: z.number().int(),
+    rates: z.object({ prudent: z.number(), base: z.number(), optimistic: z.number() }),
+    sliders: z.object({ years: sliderSchema, quarterlyContribution: sliderSchema }),
+  }),
+  exitTax: z.object({
+    realYears: z.number().int(),
+    rate: z.number(),
+    milestones: z.object({ reductionStartsOn: isoDate, minRateOn: isoDate }).nullable(),
+    maxYears: z.number().int(),
+    timeline: z.array(z.object({ years: z.number().int(), rate: z.number(), scenarios: z.array(withdrawalScenarioSchema) })),
+  }),
+});
+
 export type OverviewView = z.infer<typeof overviewViewSchema>;
 export type LiquidityMonth = z.infer<typeof liquidityMonthSchema>;
 export type LiquidityAnalysis = z.infer<typeof liquidityAnalysisSchema>;

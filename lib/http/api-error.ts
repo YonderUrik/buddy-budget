@@ -38,6 +38,7 @@ export const API_ERROR_CODES = [
   "transaction_not_found",
   "category_not_found",
   "position_not_sellable",
+  "pension_fund_not_found",
   "country_feature_unavailable",
 ] as const;
 

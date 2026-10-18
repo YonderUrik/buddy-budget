@@ -7,7 +7,28 @@ export { buildOverviewView, OVERVIEW_DEFAULT_PERIOD, OVERVIEW_INVESTMENTS_PERIOD
 export { buildLiquidityMonth, type LiquidityMonthInputs } from "./liquidity-month";
 export { ANALYSIS_PERIODS, buildLiquidityAnalysis, type LiquidityAnalysisInputs } from "./liquidity-analysis";
 export { ACCOUNT_TREND_DAYS, accountTrendFrom, buildAccountExtras, type AccountExtrasInput } from "./accounts";
-export { ACCOUNT_INCLUDES, parseAccountIncludes, parseDateParam, parseExpensePeriod, parseNetWorthPeriod, parseTodayParam, type AccountInclude } from "./params";
+export { ACCOUNT_INCLUDES, parseAccountIncludes, parseChartPeriod, parseDateParam, parseExcludedBrokers, parseExpensePeriod, parseNetWorthPeriod, parseRangeParams, parseTodayParam, type AccountInclude } from "./params";
+export {
+  buildInvestmentsPerformance,
+  buildInvestmentsViewData,
+  HEATMAP_GROUPINGS,
+  INSPECT_MAX_POINTS,
+  INVESTMENTS_VIEW_DEFAULT_PERIOD,
+  PORTFOLIO_CHART_PERIODS,
+  sampleIndexes,
+  type InvestmentsPerformance,
+  type InvestmentsViewData,
+  type InvestmentsViewInputs,
+} from "./investments";
+export { buildInvestmentsIncome, buildInvestmentsTaxes, simulateInvestmentSale, type InvestmentsIncome, type InvestmentsTaxes, type SaleSimulationRequest, type SaleSimulationResult } from "./investments-tax";
+export {
+  investmentsIncomeSchema,
+  investmentsPerformanceSchema,
+  investmentsTaxesSchema,
+  investmentsViewSchema,
+  saleSimulationRequestSchema,
+  saleSimulationSchema,
+} from "./investments-schemas";
 export {
   accountExtrasSchema,
   accountHealthSchema,

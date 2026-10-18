@@ -37,6 +37,8 @@ export const API_ERROR_CODES = [
   "account_not_found",
   "transaction_not_found",
   "category_not_found",
+  "position_not_sellable",
+  "country_feature_unavailable",
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

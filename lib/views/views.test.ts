@@ -11,6 +11,7 @@ import { buildAccountExtras } from "./accounts";
 import { buildLiquidityAnalysis } from "./liquidity-analysis";
 import { buildLiquidityMonth } from "./liquidity-month";
 import { buildOverviewView } from "./overview";
+import { sampleIndexes } from "./investments";
 import { accountExtrasSchema, liquidityAnalysisSchema, liquidityMonthSchema, overviewViewSchema } from "./schemas";
 
 const TODAY = new Date(2026, 9, 18);
@@ -132,5 +133,15 @@ describe("buildAccountExtras", () => {
     expect(linked?.trend).toHaveLength(31);
     expect(linked?.trend?.at(-1)).toBe(2500);
     expect(manual).toMatchObject({ bankName: null, trend: null, health: null, status: { tone: "neutral" } });
+  });
+});
+
+describe("sampleIndexes", () => {
+  it("keeps every point up to the cap, then samples evenly with the last one", () => {
+    expect(sampleIndexes(3, 5)).toEqual([0, 1, 2]);
+    const sampled = sampleIndexes(1000, 160);
+    expect(sampled).toHaveLength(160);
+    expect(sampled[0]).toBe(0);
+    expect(sampled.at(-1)).toBe(999);
   });
 });

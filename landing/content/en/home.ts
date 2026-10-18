@@ -5,7 +5,6 @@
  * true in the product; when the Italian copy changes a fact, this file changes with it.
  */
 import { EN_PATHS } from "../locales";
-import { CONTENT_PATHS } from "../seo-pages";
 import { FIELD_ENCRYPTION_LIVE } from "../security";
 import { SUPPORTED, type BankCountry } from "../sheet";
 import { SOURCE_LICENSE, SOURCE_URL, type FaqItem } from "../site";
@@ -131,7 +130,7 @@ export const HOME_EN: HomeContent = {
         text: "Type how much more you can pay each month. See when you'd finish and how much interest you'd save. Extra money goes first to the debt that costs the most.",
         figure: { value: "3 years 2 months", caption: "sooner, with €200 more a month · €1,708 of interest saved" },
         shot: "debiti",
-        more: { href: CONTENT_PATHS.ammortamento, label: "Try the loan calculator (in Italian)" },
+        more: { href: EN_PATHS.loanAmortization, label: "Try the loan calculator" },
       },
       {
         id: "futuro",
@@ -153,7 +152,7 @@ export const HOME_EN: HomeContent = {
       { caption: "You receive if you sell the sample ETF today", value: "€19,772", small: ".18" },
       { caption: "You keep, after €146.93 of tax", value: "€19,625", small: ".25" },
     ],
-    more: { href: CONTENT_PATHS.zainetto, label: "Try the calculator, no account needed (in Italian)" },
+    more: { href: EN_PATHS.zainetto, label: "Try the calculator, no account needed" },
   },
   trust: {
     title: ["What the app", "does with", "your data"],

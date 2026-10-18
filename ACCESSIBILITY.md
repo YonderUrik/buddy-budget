@@ -5,7 +5,7 @@ BuddyBudget aims to be usable by anyone, including with a keyboard, screen reade
 ## Goal and status
 
 - **Goal**: [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA for the app (`app.buddybudget.io`) and for the landing page (`buddybudget.io`).
-- **Status**: it is a goal, **not a certified conformance**. No external audit or full screen reader check has been carried out. The project is developed by a single person.
+- **Status**: it is a goal, **not a certified conformance**. No external audit or full screen reader check has been carried out.
 - Last review of this document: 2026-10-10.
 
 ## What is there today
@@ -14,7 +14,7 @@ Verified by reading the code, not through an audit:
 
 - **Components**: the primitives in `components/ui/` are shadcn on [Base UI](https://base-ui.com/), which handles roles, ARIA states, focus trapping and closing with `Esc` in dialogs, menus, popovers, selects and sliders.
 - **Visible focus**: buttons and controls have a `focus-visible` style (ring with the `ring` token).
-- **Language**: the page declares `lang="it"`.
+- **Language**: the page declares `lang` from the user's language (`it`, `en` or `de`).
 - **Main content**: `<main id="main-content">` can receive programmatic focus.
 - **Labels**: controls without text (icons) use `aria-label`; screen-reader-only text uses `sr-only`; decorations are `aria-hidden`.
 - **Theme**: light and dark, with colors from tokens in `app/globals.css`. Income and expenses also have a sign and text, not just color.
@@ -34,7 +34,6 @@ Things we do **not** know to be fine, or that we know are missing:
 - Drag & drop (e.g. the categories board): it has not been verified that a complete keyboard alternative exists.
 - 200% zoom and reflow at 320 px have not been checked on all screens.
 - There are no automated accessibility tests in CI (neither axe nor Lighthouse); ESLint only applies the `jsx-a11y` rules included in `eslint-config-next`.
-- The interface is in Italian only.
 - Linked external pages (e.g. the bank consent flow, Google sign-in) depend on third parties.
 
 ## Reporting a problem

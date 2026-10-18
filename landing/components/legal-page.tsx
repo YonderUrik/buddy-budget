@@ -1,5 +1,7 @@
 import "./legal-page.css";
 import { LEGAL_OWNER, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
+import { HOME_PATH } from "@/content/locales";
+import type { Locale } from "@/lib/i18n";
 import { SiteNav } from "./site-nav";
 import { SiteFooter } from "./site-footer";
 import { BackLink } from "./back-link";
@@ -25,22 +27,36 @@ function RichText({ text }: { text: string }) {
   );
 }
 
+/** Chrome texts of the legal pages, per language. */
+const LEGAL_UI: Record<Locale, { version: string; toc: string }> = {
+  it: { version: "Versione del", toc: "Indice" },
+  en: { version: "Version of", toc: "Contents" },
+};
+
+export interface LegalPageProps {
+  doc: LegalDocument;
+  locale?: Locale;
+  /** The same page in the other language, for the language menu. */
+  alternate?: string;
+}
+
 /** Page of a legal document: navy head with title and version, then the intro, the index and the numbered sections. */
-export function LegalPage({ doc }: { doc: LegalDocument }) {
+export function LegalPage({ doc, locale = "it", alternate }: LegalPageProps) {
+  const t = LEGAL_UI[locale];
   return (
     <>
-      <SiteNav />
+      <SiteNav locale={locale} alternate={alternate} />
       <main className="legal">
         <header className="legal-head">
           <div className="wrap legal-wrap">
-            <BackLink href="/" label="Home" />
+            <BackLink href={HOME_PATH[locale]} label="Home" />
             <h1>{doc.title}</h1>
-            <p className="legal-meta">Versione del {LEGAL_VERSION}</p>
+            <p className="legal-meta">{t.version} {LEGAL_VERSION}</p>
           </div>
         </header>
         <div className="wrap legal-wrap">
           <p className="legal-intro">{doc.intro}</p>
-          <nav className="legal-toc" aria-label="Indice">
+          <nav className="legal-toc" aria-label={t.toc}>
             <ol>
               {doc.sections.map((section) => (
                 <li key={section.id}>
@@ -66,7 +82,7 @@ export function LegalPage({ doc }: { doc: LegalDocument }) {
           ))}
         </div>
       </main>
-      <SiteFooter />
+      <SiteFooter locale={locale} alternate={alternate} />
     </>
   );
 }

@@ -1,10 +1,10 @@
 /**
  * Page pairs between the Italian and the English site: the single list behind hreflang, the sitemap, the language
- * menu and the tests. Pages without an English version (calculators, guides, legal pages) are not here: from them
- * the switch goes to the English home.
+ * menu and the tests. Pages without an English version are not here: from them the switch goes to the English home.
  */
 import type { Metadata } from "next";
 import { HTML_LANG, LOCALES, otherLocale, type Locale } from "@/lib/i18n";
+import { LEGAL_PATHS } from "./legal";
 import { CONTENT_PATHS } from "./seo-pages";
 
 /** Paths of the English pages. */
@@ -14,6 +14,15 @@ export const EN_PATHS = {
   features: "/en/features",
   featureInvestments: "/en/features/investments",
   screens: "/en/screens",
+  privacy: "/en/privacy",
+  terms: "/en/terms",
+  cookies: "/en/cookies",
+  calculators: "/en/calculators",
+  /** The calculators keep the Italian slug where the Italian term is the name people search for. */
+  zainetto: "/en/calculators/zainetto-fiscale",
+  loanAmortization: "/en/calculators/loan-amortization",
+  savingsGoal: "/en/calculators/savings-goal",
+  guideZainetto: "/en/guides/zainetto-fiscale",
 } as const;
 
 export interface PagePair {
@@ -27,6 +36,14 @@ export const PAGE_PAIRS: readonly PagePair[] = [
   { it: CONTENT_PATHS.funzioni, en: EN_PATHS.features },
   { it: CONTENT_PATHS.funzioneInvestimenti, en: EN_PATHS.featureInvestments },
   { it: CONTENT_PATHS.schermate, en: EN_PATHS.screens },
+  { it: LEGAL_PATHS.privacy, en: EN_PATHS.privacy },
+  { it: LEGAL_PATHS.termini, en: EN_PATHS.terms },
+  { it: LEGAL_PATHS.cookie, en: EN_PATHS.cookies },
+  { it: CONTENT_PATHS.strumenti, en: EN_PATHS.calculators },
+  { it: CONTENT_PATHS.zainetto, en: EN_PATHS.zainetto },
+  { it: CONTENT_PATHS.ammortamento, en: EN_PATHS.loanAmortization },
+  { it: CONTENT_PATHS.obiettivo, en: EN_PATHS.savingsGoal },
+  { it: CONTENT_PATHS.guidaZainetto, en: EN_PATHS.guideZainetto },
 ];
 
 /** Home of each language: where the switch goes from a page that has no counterpart. */

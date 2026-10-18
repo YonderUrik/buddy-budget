@@ -60,7 +60,7 @@ describe("language pairs", () => {
       expect(counterpart(pair.it, "en")).toBe(pair.en);
       expect(counterpart(pair.en, "it")).toBe(pair.it);
     }
-    expect(counterpart("/strumenti/zainetto-fiscale", "en")).toBe(HOME_PATH.en);
+    expect(counterpart("/pagina-solo-italiana", "en")).toBe(HOME_PATH.en);
   });
 
   it("the English menu and footer link pages that exist", () => {

@@ -35,6 +35,8 @@ and open the printed URL (it is valid for a few minutes). The account is created
 | Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | The «Continua con Google» ("Continue with Google") button appears but responds with an error: use the email link. |
 | Banks (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | No linked accounts; manual accounts, CSV import, investments, debts and pension remain. |
 
+GoCardless stopped accepting new Bank Account Data sign-ups in July 2025 ([Actual Budget's note](https://actualbudget.org/docs/advanced/bank-sync/gocardless/)): bank sync on your own install works only if you already have GoCardless keys. Without them, import your bank's CSV export.
+
 Everything else (transactions, categories and rules, budgets, investments with prices from the free sources, debts, analytics) works without keys. The `cron` service updates prices and net worth snapshots at the same times as production (06:30/17:30/22:30 UTC).
 
 Not included in the compose file: the worker for the AI import of personal CSVs (`buddy-budget-csv-worker`, requires an OpenRouter key). The other CSV imports do not need it.

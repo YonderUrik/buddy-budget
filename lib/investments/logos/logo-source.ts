@@ -18,14 +18,14 @@ export interface LogoSourceInput {
 
 /**
  * Cosa chiedere al servizio di loghi per uno strumento, o null se non si chiede niente.
- * - ETF e fondi: il logo dell'**emittente** riconosciuto dal nome, non quello dell'ISIN. Il servizio può confondere
- *   i fondi (provato: un ISIN Xtrackers restituiva il logo iShares) e non c'è modo di accorgersene dalla risposta.
- *   Se l'emittente non si riconosce non si chiede niente e resta la sigla.
- * - Azioni: il logo dell'azienda dall'ISIN.
- * - Crypto: icone locali. Obbligazioni, ETC e altro: nessun logo.
+ * - ETFs, ETCs and funds: the logo of the **issuer** recognised from the name, never the ISIN's. The service can mix up
+ *   funds (tried: an Xtrackers ISIN returned the iShares logo) and the answer gives no way to notice.
+ *   When the issuer is not recognised nothing is requested and the initials stay.
+ * - Stocks: the company's logo from the ISIN.
+ * - Crypto: local icons. Bonds and anything else: no logo.
  */
 export function logoSourceFor({ type, name, isin }: LogoSourceInput): LogoSource | null {
-  if (type === "etf" || type === "fondo") {
+  if (type === "etf" || type === "etc" || type === "fondo") {
     const issuer = findFundIssuer(name);
     return issuer ? { kind: "issuer", domain: issuer.domain, key: `issuer:${issuer.domain}` } : null;
   }

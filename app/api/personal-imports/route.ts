@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { enqueue, listImports } from "@/lib/personal-import/jobs";
 import { ImportError, MAX_BYTES } from "@/lib/personal-import/contract";
+import { instanceCapabilities } from "@/lib/selfhost";
 const inputSchema = z.object({ csv: z.string().min(1).max(MAX_BYTES), name: z.string().trim().min(1).max(80), formatId: z.uuid().optional(), regenerate: z.boolean().optional(), brokerFallback: z.boolean().optional(), correctionOf: z.uuid().optional(), feedback: z.string().trim().min(1).max(2000).optional(), consent: z.literal(true), consentVersion: z.literal("openrouter-raw-zdr-v3") });
 export const GET = withRoute("personal_import.list", async (request: NextRequest) => {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -16,7 +17,7 @@ export const POST = withRoute("personal_import.enqueue", async (request: NextReq
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
   if (request.headers.get("origin") !== new URL(process.env.APP_URL ?? request.url).origin) return new Response(null, { status: 403 });
-  if (!process.env.PERSONAL_CSV_ENCRYPTION_KEY) return Response.json({ error: "Importazione personalizzata non ancora configurata" }, { status: 503 });
+  if (!process.env.PERSONAL_CSV_ENCRYPTION_KEY || (process.env.SELF_HOSTED === "true" && !instanceCapabilities().aiCsv)) return Response.json({ error: "Importazione personalizzata non ancora configurata" }, { status: 503 });
   const reader = request.body?.getReader();
   if (!reader) return new Response(null, { status: 400 });
   let size = 0; const chunks: Uint8Array[] = [];

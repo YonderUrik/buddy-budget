@@ -14,6 +14,7 @@ import {
   PreferencesSection,
   PrivacySection,
   ProfileSection,
+  InstanceSection,
   SessionsSection,
   SettingsHub,
   SidebarSection,
@@ -93,6 +94,7 @@ function ImpostazioniContent() {
               <>
                 <ProfileSection settings={settings} />
                 <SessionsSection />
+                {settings.instance && <InstanceSection status={settings.instance} />}
               </>
             ),
             aspetto: (

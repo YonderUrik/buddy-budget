@@ -16,6 +16,13 @@ const req = (method = "GET", body?: unknown, path = "", origin = "http://localho
 beforeEach(() => { vi.mocked(auth.api.getSession).mockResolvedValue({ user: { id: "owner" } } as never); vi.stubEnv("PERSONAL_CSV_ENCRYPTION_KEY", Buffer.alloc(32).toString("base64")); vi.clearAllMocks(); });
 afterEach(() => vi.unstubAllEnvs());
 describe("personal import API", () => {
+  it("non accoda CSV self-hosted quando OpenRouter è spento, anche se conserva la chiave di cifratura", async () => {
+    vi.stubEnv("APP_URL", "http://localhost:3000");
+    vi.stubEnv("SELF_HOSTED", "true");
+    vi.stubEnv("OPENROUTER_API_KEY", "");
+    expect((await POST(req("POST", { csv: "a,b\nx,y", name: "Test", consent: true, consentVersion: "openrouter-raw-zdr-v3" }))).status).toBe(503);
+    expect(enqueue).not.toHaveBeenCalled();
+  });
   it("requires authentication on every route", async () => {
     vi.mocked(auth.api.getSession).mockResolvedValue(null);
     expect((await GET(req())).status).toBe(401); expect((await POST(req("POST", {}))).status).toBe(401);

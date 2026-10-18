@@ -59,6 +59,11 @@ export const REPORT_RATE_WINDOW_SECONDS = 60 * 60;
 /** Casella che riceve le segnalazioni; sovrascrivibile lato server con `SUPPORT_EMAIL_TO`. */
 export const SUPPORT_EMAIL = "support@buddybudget.io";
 
+/** In self-hosting, nessun invio automatico senza una destinazione scelta dall’amministratore. */
+export function supportRecipient(env: Record<string, string | undefined> = process.env): string | null {
+  return env.SUPPORT_EMAIL_TO?.trim() || (env.SELF_HOSTED === "true" ? null : SUPPORT_EMAIL);
+}
+
 /** Repository open source dell'app: issue, release e policy di sicurezza. */
 export const REPO_URL = "https://github.com/YonderUrik/buddy-budget";
 

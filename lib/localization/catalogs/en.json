@@ -4189,5 +4189,21 @@
   "Confronta la correzione prima di confermare.": "Compare the correction before confirming.",
   "Correzione da confermare": "Correction awaiting confirmation",
   "Confronta": "Compare",
-  "Operazioni di investimento": "Investment transactions"
+  "Operazioni di investimento": "Investment transactions",
+  "Accedi con un link, senza password. Senza email configurata, il link compare nei log dell’app.": "Sign in with a link, without a password. If email is not configured, the link appears in the app logs.",
+  "Accesso con Google": "Sign in with Google",
+  "Apri l’ultimo link di accesso: vale pochi minuti e si usa una volta sola.": "Open the latest sign-in link: it expires after a few minutes and can only be used once.",
+  "Categorie AI": "AI categories",
+  "Configurato": "Configured",
+  "Email di accesso": "Sign-in emails",
+  "I prezzi Yahoo e i cambi BCE non richiedono chiavi. AI e notifiche richiedono anche il tuo consenso nelle Impostazioni.": "Yahoo prices and ECB exchange rates do not require keys. AI and notifications also require your consent in Settings.",
+  "Il link è nei log dell’app": "Your sign-in link is in the app logs",
+  "Installazione self-hosted": "Self-hosted installation",
+  "Loghi da Logo.dev": "Logos from Logo.dev",
+  "Non configurato": "Not configured",
+  "Per modificare le chiavi, l’amministratore rilancia l’installer sul server e poi aggiorna i container.": "To change keys, the administrator runs the installer again on the server, then updates the containers.",
+  "Questa installazione non invia email. L’amministratore trova il link di accesso nei log del servizio app.": "This installation does not send emails. The administrator can find your sign-in link in the app service logs.",
+  "Riepiloghi e avvisi email": "Email summaries and alerts",
+  "Servizi configurati dall’amministratore. Questo elenco non verifica la disponibilità dei fornitori.": "Services configured by the administrator. This list does not check provider availability.",
+  "Sincronizzazione bancaria": "Bank synchronization"
 }

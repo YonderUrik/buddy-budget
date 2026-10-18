@@ -1,21 +1,39 @@
 # Self-hosting con Docker
 
-BuddyBudget gira con un solo comando su qualunque macchina con Docker (Linux, macOS, Windows con WSL2; amd64 o arm64, anche un Raspberry Pi 4/5). Il compose avvia l'app, Postgres, Redis e un promemoria che lancia i lavori periodici.
+BuddyBudget si installa con Docker Compose. L’installer ti guida nel terminale: indirizzo pubblico, servizi consigliati, integrazioni facoltative e riepilogo. Il compose avvia app, Postgres, Redis e lavori periodici; con OpenRouter include anche il worker AI.
 
-> **Stato delle immagini**: finché i manutentori non attivano la pubblicazione su ghcr.io (sezione «Per chi pubblica le immagini» in fondo), `docker compose up` non trova `latest`: costruisci dal sorgente (sezione «Costruire dal sorgente», serve internet per scaricare i font).
+> **Versione e architettura**: i tag pubblici dipendono dalla pubblicazione dei manutentori (sezione in fondo). Su ARM verifica che il tag contenga `linux/arm64`, oppure costruisci dal sorgente. Per modifiche non ancora rilasciate usa sempre la build dal sorgente.
 
 ## Avvio in 5 minuti
 
-Servono Docker con il plugin Compose v2 e `openssl`.
+Servono Docker con il plugin Compose v2 e un terminale interattivo. Il setup usa Node.js 24 o successivo se presente, altrimenti gira in un container temporaneo, senza installare dipendenze sul computer.
 
 ```bash
 git clone https://github.com/YonderUrik/buddy-budget.git
 cd buddy-budget
-./scripts/selfhost-init.sh      # crea .env con i segreti casuali
+./scripts/selfhost-init.sh      # setup guidato, chiavi API nascoste mentre scrivi
 docker compose up -d
 ```
 
 Apri <http://localhost:3000>. Alla prima partenza le migration girano da sole (servizio `migrate`) e l'app diventa raggiungibile in circa un minuto: `docker compose ps` mostra `healthy`.
+
+### Quali servizi servono davvero?
+
+- **OpenRouter — fortemente consigliato** per categorie AI e CSV di banche e broker non supportati. Crea la chiave su <https://openrouter.ai/settings/keys>, aggiungi credito e imposta un limite di spesa. App e worker la ricevono automaticamente. Ogni persona deve comunque autorizzare l’AI nelle proprie Impostazioni; i CSV richiedono il consenso all’invio del file.
+- **Yahoo — già configurato, senza chiave API**. Il setup può controllare una quotazione dalla macchina su cui gira. Un blocco o limite del servizio non richiede di acquistare una chiave Yahoo. Le altre fonti e i cambi BCE sono integrati.
+- **Resend — consigliato** per login via email, riepiloghi e avvisi. Servono chiave e mittente su un dominio verificato. Il setup abilita il cron email; ogni utente sceglie le notifiche, inizialmente spente.
+- **GoCardless, Google, Logo.dev e fonti prezzi aggiuntive — facoltativi**. Il setup spiega cosa abilitano e dove ottenere le credenziali. Google richiede il callback `<APP_URL>/api/auth/callback/google`.
+- **Ollama — facoltativo** per commenti al portafoglio, anche su un server locale. Non sostituisce OpenRouter per categorie e CSV.
+
+Le verifiche non inviano dati finanziari, non generano risposte AI a pagamento e non spediscono email. OpenRouter viene controllato per autenticazione e limite della chiave: credito dell’account e compatibilità del modello JSON/ZDR si confermano al primo uso. Resend viene controllato per chiave e dominio: una chiave di solo invio può non permettere di leggere i domini. Google e GoCardless vengono controllati come coppie di campi; il login o collegamento reale si verifica dall’app.
+
+### Modificare la configurazione
+
+Rilancia `./scripts/selfhost-init.sh`: Invio conserva il valore, `-` rimuove un campo. I segreti esistenti non vengono mostrati; password database, segreto di accesso e cifratura non vengono rigenerati. Annullando al riepilogo non si modifica `.env`.
+
+Dopo il salvataggio esegui `docker compose up -d --remove-orphans`. Se disabiliti l’AI, prima esegui `docker compose --profile ai stop csv-worker`, come indicato dall’installer: Compose non ferma da solo un container di un profilo disabilitato. La chiave di cifratura CSV viene conservata. Impostazioni → Account mostra i servizi configurati; solo chi amministra il server cambia le chiavi con l’installer.
+
+Per uno script automatico o la configurazione manuale: `./scripts/selfhost-init.sh --defaults` crea un file minimo (richiede `openssl`) e non tocca un `.env` esistente. Per abilitare manualmente l’AI configura `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `PERSONAL_CSV_ENCRYPTION_KEY` (32 byte in base64) e `COMPOSE_PROFILES=ai`.
 
 ### Primo accesso senza email
 
@@ -32,12 +50,14 @@ e apri l'URL stampato (vale pochi minuti). L'account si crea al primo accesso; s
 | Integrazione | Variabili | Se la lasci vuota |
 |---|---|---|
 | Email (Resend) | `RESEND_API_KEY`, `RESEND_FROM` | Il link di accesso va nei log. Non partono avvisi di prezzo, email dell'account, avvisi di scadenza bancaria, segnalazioni dall'app. |
-| Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Il pulsante «Continua con Google» compare ma risponde con un errore: usa il link via email. |
+| Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Il pulsante non compare: usa il link di accesso. |
 | Banche (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | Niente conti collegati; restano conti manuali, import CSV, investimenti, debiti, pensione. |
+| AI (OpenRouter) | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `PERSONAL_CSV_ENCRYPTION_KEY`, `COMPOSE_PROFILES=ai` | Niente categorie AI o CSV personali; restano regole e import standard. |
+| Loghi (Logo.dev) | `LOGODEV_PUBLISHABLE_KEY`, `LOGODEV_SECRET_KEY` | Icone locali. |
 
-Tutto il resto (movimenti, categorie e regole, budget, investimenti con i prezzi dalle fonti gratuite, debiti, analitiche) funziona senza chiavi. Il servizio `cron` aggiorna i prezzi e gli snapshot del patrimonio agli stessi orari della produzione (06:30/17:30/22:30 UTC).
+Movimenti, categorie e regole, budget, investimenti con prezzi gratuiti, debiti e analitiche funzionano senza chiavi. Prezzi, cambi e inflazione richiedono comunque internet. Il cron aggiorna i prezzi alle 06:30/17:30/22:30 UTC e gli snapshot alle 06:50/17:50/23:50 UTC. Le notifiche girano alle 07:00 UTC se `NOTIFICATIONS_MODE=execute`.
 
-Non incluso nel compose: il worker per l'import AI dei CSV personali (`buddy-budget-csv-worker`, richiede una chiave OpenRouter). Gli altri import CSV non ne hanno bisogno.
+Il servizio `csv-worker` usa il profilo `ai`, abilitato dal wizard. La stessa chiave di cifratura CSV viene passata ad app e worker. In self-hosting il tracker Umami del servizio ospitato è disattivato. I report di supporto richiedono `SUPPORT_EMAIL_TO`: se vuota, nessun report viene inviato al supporto BuddyBudget.
 
 ## HTTPS e dominio
 
@@ -73,6 +93,8 @@ docker compose exec -T postgres pg_restore -U buddybudget -d buddybudget --clean
 ```
 
 Pianifica il backup con `cron` del sistema e copia i file fuori dalla macchina. Conserva anche `.env`: perdere `BETTER_AUTH_SECRET` disconnette tutti, non perde dati. Se hai impostato `DATA_ENCRYPTION_KEY` (descrizioni e note cifrate nel database, facoltativa), conservala a parte: senza quella chiave un backup non si rilegge. I dati salvati prima di impostarla si cifrano con `docker compose run --rm migrate pnpm db:encrypt-fields --execute`. Dall'app, Impostazioni → Esporta i dati scarica uno ZIP leggibile con i tuoi dati.
+
+Conserva anche `PERSONAL_CSV_ENCRYPTION_KEY` nei backup privati del file `.env`: senza, i file e i parser AI già cifrati non sono recuperabili. I dati strutturati importati restano nel database.
 
 ## Postgres esterno
 

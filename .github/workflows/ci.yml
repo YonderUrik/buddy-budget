@@ -65,6 +65,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - name: Verifica installer self-hosted (nessun servizio esterno)
+        run: node --test scripts/selfhost/verify.mjs
       - run: pnpm exec tsc --noEmit
 
   # I test girano contro un Postgres reale e un file alla volta (vitest.config.ts: fileParallelism false), quindi non si

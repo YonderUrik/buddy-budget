@@ -30,12 +30,14 @@ function describeAuthError(error: { status?: number; message?: string } | null |
 
 export interface LoginPanelProps {
   redirectTo: string;
+  googleEnabled: boolean;
+  emailDelivery: boolean;
   /** Avviso informativo sopra il form (es. account appena eliminato). */
   notice?: string;
 }
 
 /** Form di accesso: titolo, email con la nota sulla durata del link, pulsante, Google e i link legali. */
-export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
+export function LoginPanel({ redirectTo, notice, googleEnabled, emailDelivery }: LoginPanelProps) {
   const { t: tr } = useLocalization();
   const [email, setEmail] = React.useState("");
   const [sent, setSent] = React.useState(false);
@@ -90,9 +92,19 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         <div className="mb-6 flex size-14 items-center justify-center rounded-full bg-pos-soft text-pos">
           <MailCheck className="size-7" aria-hidden="true" />
         </div>
-        <h1 className="font-heading text-3xl font-medium tracking-tight">{tr("Controlla la tua email")}</h1>
-        <p className="mt-3 text-text-2" role="status">{tr("Abbiamo inviato un link di accesso a")}{" "}<strong className="font-medium text-foreground">{email}</strong>{tr(". Resta valido per")}{" "}{MAGIC_LINK_EXPIRES_MINUTES}{" "}{tr("minuti.")}</p>
-        <p className="mt-2 text-sm text-text-3">{tr("Non lo trovi? Guarda anche nella cartella spam.")}</p>
+        <h1 className="font-heading text-3xl font-medium tracking-tight">{tr(emailDelivery ? "Controlla la tua email" : "Il link è nei log dell’app")}</h1>
+        {emailDelivery ? (
+          <>
+            <p className="mt-3 text-text-2" role="status">{tr("Abbiamo inviato un link di accesso a")}{" "}<strong className="font-medium text-foreground">{email}</strong>{tr(". Resta valido per")}{" "}{MAGIC_LINK_EXPIRES_MINUTES}{" "}{tr("minuti.")}</p>
+            <p className="mt-2 text-sm text-text-3">{tr("Non lo trovi? Guarda anche nella cartella spam.")}</p>
+          </>
+        ) : (
+          <div className="mt-3 text-sm text-text-2" role="status">
+            <p>{tr("Questa installazione non invia email. L’amministratore trova il link di accesso nei log del servizio app.")}</p>
+            <code className="mt-3 block rounded-lg bg-muted p-3">docker compose logs app</code>
+            <p className="mt-3">{tr("Apri l’ultimo link di accesso: vale pochi minuti e si usa una volta sola.")}</p>
+          </div>
+        )}
 
         {error && <p className="mt-4 text-sm text-destructive" role="alert">{tr(error)}</p>}
 
@@ -132,7 +144,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
       )}
       <div className="flex flex-col gap-3">
         <h1 className="font-heading text-[2.1rem] font-semibold leading-tight tracking-tight text-balance">{tr("Entra in")}{" "}{tr("BuddyBudget")}</h1>
-        <p className="text-text-2">{tr("Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo.")}</p>
+        <p className="text-text-2">{tr(emailDelivery ? "Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo." : "Accedi con un link, senza password. Senza email configurata, il link compare nei log dell’app.")}</p>
       </div>
 
       <form
@@ -171,7 +183,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         </Button>
       </form>
 
-      <div className="flex items-center gap-3 text-sm text-text-3">
+      {googleEnabled && <><div className="flex items-center gap-3 text-sm text-text-3">
         <span className="h-px flex-1 bg-border" />{tr("oppure")}<span className="h-px flex-1 bg-border" />
       </div>
 
@@ -179,6 +191,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         {googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
         {googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
       </Button>
+      </>}
 
       <LegalLinksNote />
     </div>

@@ -4189,5 +4189,21 @@
   "Confronta la correzione prima di confermare.": "Vergleiche die Korrektur vor der Bestätigung.",
   "Correzione da confermare": "Korrektur wartet auf Bestätigung",
   "Confronta": "Vergleichen",
-  "Operazioni di investimento": "Wertpapiertransaktionen"
+  "Operazioni di investimento": "Wertpapiertransaktionen",
+  "Accedi con un link, senza password. Senza email configurata, il link compare nei log dell’app.": "Melde dich mit einem Link ohne Passwort an. Ohne E-Mail-Konfiguration erscheint der Link in den App-Protokollen.",
+  "Accesso con Google": "Anmeldung mit Google",
+  "Apri l’ultimo link di accesso: vale pochi minuti e si usa una volta sola.": "Öffne den neuesten Anmeldelink: Er ist nur wenige Minuten gültig und kann einmal verwendet werden.",
+  "Categorie AI": "KI-Kategorien",
+  "Configurato": "Konfiguriert",
+  "Email di accesso": "Anmelde-E-Mails",
+  "I prezzi Yahoo e i cambi BCE non richiedono chiavi. AI e notifiche richiedono anche il tuo consenso nelle Impostazioni.": "Yahoo-Kurse und EZB-Wechselkurse benötigen keine Schlüssel. KI und Benachrichtigungen erfordern außerdem deine Zustimmung in den Einstellungen.",
+  "Il link è nei log dell’app": "Dein Anmeldelink steht in den App-Protokollen",
+  "Installazione self-hosted": "Selbst gehostete Installation",
+  "Loghi da Logo.dev": "Logos von Logo.dev",
+  "Non configurato": "Nicht konfiguriert",
+  "Per modificare le chiavi, l’amministratore rilancia l’installer sul server e poi aggiorna i container.": "Um Schlüssel zu ändern, führt der Administrator das Installationsprogramm auf dem Server erneut aus und aktualisiert anschließend die Container.",
+  "Questa installazione non invia email. L’amministratore trova il link di accesso nei log del servizio app.": "Diese Installation versendet keine E-Mails. Der Administrator findet deinen Anmeldelink in den Protokollen des App-Dienstes.",
+  "Riepiloghi e avvisi email": "Zusammenfassungen und Hinweise per E-Mail",
+  "Servizi configurati dall’amministratore. Questo elenco non verifica la disponibilità dei fornitori.": "Vom Administrator konfigurierte Dienste. Diese Liste prüft nicht die Verfügbarkeit der Anbieter.",
+  "Sincronizzazione bancaria": "Banksynchronisierung"
 }

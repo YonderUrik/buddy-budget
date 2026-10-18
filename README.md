@@ -72,13 +72,13 @@ App, Postgres, Redis e i lavori periodici partono con un solo comando:
 ```bash
 git clone https://github.com/YonderUrik/buddy-budget.git
 cd buddy-budget
-./scripts/selfhost-init.sh   # crea .env con segreti casuali
+./scripts/selfhost-init.sh   # setup guidato nel terminale: chiavi, verifiche e riepilogo
 docker compose up -d         # poi apri http://localhost:3000
 ```
 
-Finché le immagini non sono pubblicate su ghcr.io, costruiscile dal sorgente: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
+Per provare modifiche non ancora rilasciate, costruisci dal sorgente: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
 
-Email (Resend), accesso con Google e collegamento alla banca (GoCardless) sono facoltativi: senza Resend il link di accesso compare nei log. La guida [`docs/self-hosting.md`](docs/self-hosting.md) spiega cosa funziona senza servizi esterni, come mettere l'app dietro HTTPS, come aggiornarla e come fare i backup.
+OpenRouter è consigliato per categorie AI e CSV personali; il setup abilita anche il worker. Yahoo non richiede chiavi. Email (Resend), Google e GoCardless sono facoltativi: senza Resend il link di accesso compare nei log. Per cambiare le chiavi rilancia l’installer, poi `docker compose up -d --remove-orphans`. La guida [`docs/self-hosting.md`](docs/self-hosting.md) descrive servizi, HTTPS e backup. `--defaults` crea invece il file minimo senza domande.
 
 ### Sviluppo in locale
 
@@ -152,7 +152,7 @@ BuddyBudget è in beta e lo sviluppa una persona sola, con l'aiuto di un assiste
 
 BuddyBudget is a personal finance web app: manual and Open Banking accounts, categorised transactions with budgets and recurring-payment detection, investment tracking (TWR/XIRR returns, benchmarks, risk, look-through diversification, Italian capital-gains tax estimates, broker imports), debts with amortisation and payoff simulations, pension funds, FIRE projections and net worth over time. Product country and interface language are independent: Italy supports Italian and English; Germany supports German and English. Italian tax calculations, pensions/TFR, income forecasts, retirement analytics/FIRE and Italian inflation are disabled for Germany pending dedicated models. Switching country preserves existing records. Email and legal-document localisation remain separate from the app interface.
 
-Self-host it with `./scripts/selfhost-init.sh && docker compose up -d` (see [`docs/self-hosting.md`](docs/self-hosting.md)), or run it for development with Node 24, pnpm, Postgres and Redis: `pnpm install`, copy `.env.local.example` to `.env.local`, `pnpm db:migrate`, `pnpm dev`. Email, Google sign-in and bank connections are optional. Tax and financial figures are informational estimates, not advice.
+Self-host it with `./scripts/selfhost-init.sh && docker compose up -d`: a terminal wizard guides you through your API keys and checks, recommending OpenRouter for AI and enabling its worker automatically. Yahoo prices need no key. Rerun the installer to change services; use `--defaults` for an unattended minimal setup. See [`docs/self-hosting.md`](docs/self-hosting.md). For development use Node 24, pnpm, Postgres and Redis: `pnpm install`, copy `.env.local.example` to `.env.local`, `pnpm db:migrate`, `pnpm dev`. Email, Google sign-in and bank connections are optional. Tax and financial figures are informational estimates, not advice.
 
 ## Licenza
 

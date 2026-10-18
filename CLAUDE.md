@@ -136,6 +136,7 @@ pnpm test              # vitest (uses DATABASE_URL: development DB, or an empty 
 pnpm db:generate        # generates a migration from the TypeScript schema (after every change to lib/db/schema)
 pnpm db:migrate         # applies pending migrations (DATABASE_URL from env or .env.local)
 pnpm db:mark-baseline   # one-off: records the baseline on an existing, already aligned DB
+pnpm -s dev:mobile-session --email <x@y.test> [--demo]   # dev only, local DB: onboarded user (+ sample data) and a bearer token on stdout for the native apps
 docker build -t buddy-budget:local .   # app image (migrator target: --target migrator)
 ```
 

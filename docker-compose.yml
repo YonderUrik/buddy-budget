@@ -28,7 +28,7 @@ x-app-env: &app-env
   RESEND_API_KEY: ${RESEND_API_KEY:-}
   RESEND_FROM: ${RESEND_FROM:-}
   # The summary and alert emails really go out (each user turns them on in Impostazioni → Notifiche).
-  NOTIFICATIONS_MODE: execute
+  NOTIFICATIONS_MODE: ${NOTIFICATIONS_MODE:-execute}
   SUPPORT_EMAIL_TO: ${SUPPORT_EMAIL_TO:-}
   GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
   GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
@@ -41,6 +41,17 @@ x-app-env: &app-env
   LOG_LEVEL: ${LOG_LEVEL:-info}
   # Optional: encrypts descriptions and notes in the database (see docs/self-hosting.md, «Backup e ripristino»).
   DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
+  CATEGORIZATION_MODEL: ${CATEGORIZATION_MODEL:-typesafe/jev-1.13}
+  LOGODEV_PUBLISHABLE_KEY: ${LOGODEV_PUBLISHABLE_KEY:-}
+  LOGODEV_SECRET_KEY: ${LOGODEV_SECRET_KEY:-}
+  ALPHAVANTAGE_API_KEY: ${ALPHAVANTAGE_API_KEY:-}
+  TWELVEDATA_API_KEY: ${TWELVEDATA_API_KEY:-}
+  STOOQ_API_KEY: ${STOOQ_API_KEY:-}
+  COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+  OPENFIGI_API_KEY: ${OPENFIGI_API_KEY:-}
+  OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+  OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+
 
 services:
   postgres:
@@ -110,6 +121,8 @@ services:
     environment:
       CRON_SECRET: ${CRON_SECRET:?CRON_SECRET is missing, run ./scripts/selfhost-init.sh}
       GOCARDLESS_SECRET_ID: ${GOCARDLESS_SECRET_ID:-}
+      NOTIFICATIONS_MODE: ${NOTIFICATIONS_MODE:-execute}
+      GOCARDLESS_SECRET_KEY: ${GOCARDLESS_SECRET_KEY:-}
       EMAIL_CONFIGURED: ${SMTP_URL:-}${RESEND_API_KEY:-}
     depends_on:
       app:
@@ -124,11 +137,11 @@ services:
           echo "50 6,17,23 * * * $$(call net-worth-snapshot)"
           echo "30 3 * * * $$(call account-deletion)"
           # Summary and alert emails only with an email service.
-          if [ -n "$$EMAIL_CONFIGURED" ]; then
+          if [ -n "$$EMAIL_CONFIGURED" ] && [ "$$NOTIFICATIONS_MODE" = "execute" ]; then
             echo "30 7 * * * $$(call notifications)"
           fi
           # Bank jobs run only if GoCardless is configured (without credentials they would return 500).
-          if [ -n "$$GOCARDLESS_SECRET_ID" ]; then
+          if [ -n "$$GOCARDLESS_SECRET_ID" ] && [ -n "$$GOCARDLESS_SECRET_KEY" ]; then
             echo "0 */12 * * * $$(call gocardless-sync)"
             echo "15 4 * * * $$(call gocardless-maintenance)"
           fi

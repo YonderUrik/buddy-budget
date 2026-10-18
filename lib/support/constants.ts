@@ -64,3 +64,8 @@ export const REPO_URL = "https://github.com/YonderUrik/buddy-budget";
 
 /** Pagina pubblica con lo stato del servizio (UptimeRobot): da linkare dove l'utente cerca aiuto se l'app non risponde. */
 export const STATUS_URL = "https://stats.uptimerobot.com/BCuTWm0Ukg";
+
+/** Self-hosted reports require an explicit destination chosen by the administrator. */
+export function supportRecipient(env: Record<string, string | undefined> = process.env): string | null {
+  return env.SUPPORT_EMAIL_TO?.trim() || (env.SELF_HOSTED === "true" ? null : SUPPORT_EMAIL);
+}

@@ -6,6 +6,7 @@ import { seal, unseal, digest } from "./crypto";
 import { brokerFallbackSource } from "./broker-fallback";
 import { ImportError, readRawFile } from "./contract";
 import type { Preview } from "./confirm";
+import { instanceCapabilities } from "@/lib/selfhost";
 import { importCounts } from "./counts";
 // Raw-file parsers are selected only within the source explicitly chosen by this user.
 export const RAW_PARSER_VERSION = "raw-csv-v1";
@@ -16,6 +17,7 @@ export function fileFingerprint(csv: string) {
   return digest(csv.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").replace(/\s+$/, ""));
 }
 export async function enqueue(userId: string, input: { csv: string; name: string; formatId?: string; regenerate?: boolean; brokerFallback?: boolean }) {
+  if (process.env.SELF_HOSTED === "true" && !instanceCapabilities().aiCsv) throw new ImportError("Importazione personalizzata non ancora configurata");
   readRawFile(input.csv);
   const broker = input.brokerFallback ? brokerFallbackSource(input.csv) : null;
   // Every upload carries its fingerprint, whatever source the user picked: the same file chosen again as a «new bank»

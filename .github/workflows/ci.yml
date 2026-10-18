@@ -65,6 +65,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - name: Verifica installer self-hosted (nessun servizio esterno)
+        run: node --test scripts/selfhost/verify.mjs
       - run: pnpm exec tsc --noEmit
 
   # Tests run against a real Postgres and one file at a time (vitest.config.ts: fileParallelism false), so they cannot

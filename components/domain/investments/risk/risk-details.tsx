@@ -17,7 +17,7 @@ export function RiskDetails({ title, children }: RiskDetailsProps) {
   const [open, setOpen] = React.useState(false);
   const panelId = React.useId();
   return (
-    <div className="border-t pt-2">
+    <div className="pt-2">
       <button
         type="button"
         onClick={() => setOpen(!open)}

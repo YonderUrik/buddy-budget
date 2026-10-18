@@ -60,7 +60,7 @@ export function SettingsRow({
 }) {
   const { t: tr } = useLocalization();
   return (
-    <div className={cn("flex flex-col gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6", className)}>
+    <div className={cn("flex flex-col gap-2 pt-4 first:pt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6", className)}>
       <div className="flex min-w-0 flex-col gap-0.5 sm:max-w-[55%]">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">

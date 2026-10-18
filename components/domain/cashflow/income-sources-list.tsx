@@ -25,7 +25,7 @@ export function IncomeSourcesList({ sources, currency }: IncomeSourcesListProps)
       <CardHeader className="pt-4">
         <CardTitle className="text-sm font-medium text-muted-foreground">{tr("Fonti di entrata")}</CardTitle>
       </CardHeader>
-      <CardContent className="divide-y divide-border p-0">
+      <CardContent className="p-0">
         {sources.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">{tr("Nessuna entrata registrata in questo periodo.")}</p>
         ) : (

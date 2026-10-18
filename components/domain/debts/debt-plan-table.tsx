@@ -48,7 +48,7 @@ export function DebtPlanTable({ rows, currency, today, onPay }: DebtPlanTablePro
   return (
     <div className="flex flex-col gap-2">
       {/* Telefono: una scheda per rata, senza scroll laterale. */}
-      <ul className="divide-y sm:hidden">
+      <ul className="sm:hidden">
         {visible.map((row) => (
           <li key={row.number} className={cn("flex flex-col gap-1.5 py-3", row.status === "pagata" && "text-muted-foreground")}>
             <div className="flex items-baseline justify-between gap-3">

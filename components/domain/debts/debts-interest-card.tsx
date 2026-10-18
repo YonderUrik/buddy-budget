@@ -46,7 +46,7 @@ export function DebtsInterestCard({ interest, currency, hrefFor = defaultHref }:
       </div>
       <ul>
         {interest.items.map((item, index) => (
-          <li key={item.id} className="border-b last:border-b-0">
+          <li key={item.id}>
             <Link href={hrefFor(item.id)} className="flex items-center gap-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <span className={cn("size-3 shrink-0 rounded-sm", tone(index))} aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{item.name}</span>

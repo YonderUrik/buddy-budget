@@ -60,7 +60,7 @@ export function PensionProjectionCard({ startValue, defaultQuarterlyContribution
       <div className="flex flex-col gap-6">
         <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-3">
           {SCENARIOS.map((scenario) => (
-            <div key={scenario.key} className="min-w-0 border-t border-border pt-3">
+            <div key={scenario.key} className="min-w-0 pt-3">
               <dt className="flex items-center gap-2 text-sm text-text-2">
                 <span className="size-2.5 rounded-full" style={{ backgroundColor: CHART_CONFIG[scenario.key].color }} aria-hidden="true" />
                 <span className={scenario.key === "base" ? "font-semibold text-foreground" : undefined}>{tr(scenario.label)}</span>{" "}{tr("· rendimento reale")}{" "}{formatPercent(rates[scenario.key], 0)}

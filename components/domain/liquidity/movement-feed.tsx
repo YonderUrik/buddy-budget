@@ -49,7 +49,7 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
               {formatCurrency(Math.abs(group.total), currency)}
             </span>
           </div>
-          <ul className="divide-y divide-border/70">
+          <ul>
             {group.items.map((transaction) => (
               <MovementItem
                 key={transaction.id}

@@ -424,15 +424,3 @@
   background-color: var(--primary);
   color: var(--primary-foreground);
 }
-
-/* ── taste-skill applied to the app (prototype, draft PR) ─────────────────────────────────────────────────────────── */
-/* No thin rules between rows: space and tone steps separate them (real tables and form fields keep their lines). */
-#main-content .divide-y > *,
-#main-content :is(.border-b, .border-t):not(input, textarea, select, table, table *) {
-  border-color: transparent;
-}
-/* No tiny letter-spaced capitals: sentence case at a readable size. */
-#main-content .uppercase {
-  text-transform: none;
-  letter-spacing: normal;
-}

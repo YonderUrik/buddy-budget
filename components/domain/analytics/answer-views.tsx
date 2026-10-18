@@ -40,7 +40,7 @@ export function AnswerViews({ views, selected, onSelect, panelId }: AnswerViewsP
     document.getElementById(`answer-tab-${next.id}`)?.focus();
   };
   return (
-    <div role="tablist" aria-label={tr("Le quattro risposte")} className="grid grid-cols-2 border-b lg:grid-cols-4">
+    <div role="tablist" aria-label={tr("Le quattro risposte")} className="grid grid-cols-2 lg:grid-cols-4">
       {views.map((v, i) => {
         const on = v.id === selected;
         return (

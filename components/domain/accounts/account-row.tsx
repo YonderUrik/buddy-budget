@@ -57,7 +57,7 @@ export function AccountRow({ account, currency, needsReconnect, syncInfo, syncin
   const StatusIcon = status.tone === "warning" ? AlertTriangle : status.tone === "progress" ? Loader2 : null;
 
   return (
-    <li className="flex items-stretch border-b border-border last:border-b-0">
+    <li className="flex items-stretch">
       <button
         type="button"
         onClick={onOpen}

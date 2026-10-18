@@ -123,7 +123,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
             </div>
           </div>
         ) : null}
-        <ul className="flex w-full min-w-0 flex-1 flex-col divide-y divide-border/60">
+        <ul className="flex w-full min-w-0 flex-1 flex-col">
           {items.map((item) => (
             <li key={item.key}>
               <Link

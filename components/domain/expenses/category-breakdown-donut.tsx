@@ -236,7 +236,7 @@ export function CategoryBreakdownDonut({
 
         <div className="relative min-w-0">
           <div
-            className="max-h-56 divide-y divide-border overflow-y-auto pr-1.5 custom-scrollbar"
+            className="max-h-56 overflow-y-auto pr-1.5 custom-scrollbar"
           >
             {sortedLegendEntries.map((entry) => (
               <CategoryLegendRow

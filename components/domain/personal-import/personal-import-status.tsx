@@ -116,7 +116,7 @@ export function PersonalImportList({ listing, selectedId, onSelect, onRetry }: P
         </div>
       ) : null}
       {jobs.length > 0 ? (
-        <ul className="flex flex-col divide-y">
+        <ul className="flex flex-col">
           {jobs.map((job) => {
             const state = islandState(job);
             const { message: source, values, action } = describeImportJob(job);

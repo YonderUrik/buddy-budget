@@ -65,7 +65,7 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
       ) : (
         <>
           <div
-            className={cn("hidden items-center gap-x-4 border-b border-border px-4 pb-2 text-xs font-medium text-muted-foreground @3xl:grid sm:px-6", POSITIONS_GRID_COLUMNS)}
+            className={cn("hidden items-center gap-x-4 px-4 pb-2 text-xs font-medium text-muted-foreground @3xl:grid sm:px-6", POSITIONS_GRID_COLUMNS)}
             aria-hidden="true"
           >
             {COLUMN_LABELS.map((label, i) => (
@@ -74,7 +74,7 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
               </span>
             ))}
           </div>
-          <ul className="-mx-4 divide-y divide-border sm:-mx-6">
+          <ul className="-mx-4 sm:-mx-6">
             {rows.map((row) => (
               <PositionRowView
                 key={row.instrument.id}

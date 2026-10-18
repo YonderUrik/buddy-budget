@@ -16,7 +16,7 @@ export interface AnalyticsCardProps {
 export function AnalyticsCard({ title, explainer, children }: AnalyticsCardProps) {
   const { t: tr } = useLocalization();
   return (
-    <section className="flex flex-col gap-4 border-t pt-4">
+    <section className="flex flex-col gap-4 pt-4">
       <h3 className="text-sm font-medium text-muted-foreground">{tr(title)}</h3>
       {children}
       {explainer ? <Explainer id={explainer} /> : null}
@@ -39,7 +39,7 @@ export function Metric({ label, value, sub, tone = "default", term }: MetricProp
   const { t: tr } = useLocalization();
   const color = tone === "pos" ? "text-pos" : tone === "neg" ? "text-neg" : "text-foreground";
   return (
-    <div className="border-t pt-3">
+    <div className="pt-3">
       <p className="text-sm text-muted-foreground">{term ? <Term id={term}>{tr(label)}</Term> : tr(label)}</p>
       <p className={`font-heading text-2xl font-medium tabular-nums ${color}`}>{value}</p>
       {sub ? <p className="text-xs text-muted-foreground">{tr(sub)}</p> : null}

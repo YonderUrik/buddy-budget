@@ -58,7 +58,7 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
   }
 
   return (
-    <div className="flex flex-col gap-2 border-t border-border bg-muted/50 px-4 py-3">
+    <div className="flex flex-col gap-2 bg-muted/50 px-4 py-3">
       <p className="text-xs text-muted-foreground">
         {isIncome
           ? tr("Sposta il cursore per escludere una parte dal conteggio: è entrata sul conto, ma non è reddito reale (rimborsi, giroconto, storni).")

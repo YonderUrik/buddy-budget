@@ -49,7 +49,7 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
       <button
         onClick={openMobile}
         className={[
-          "flex size-9 items-center justify-center rounded-lg",
+          "-ml-2 flex size-11 items-center justify-center rounded-lg",
           "text-sidebar-foreground/70 hover:bg-sidebar-accent",
           "hover:text-sidebar-accent-foreground transition-colors duration-150",
         ].join(" ")}
@@ -59,7 +59,7 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
         <Menu className="size-5" aria-hidden="true" />
       </button>
       ) : (
-        <span className="size-9" aria-hidden="true" />
+        <span className="size-11" aria-hidden="true" />
       );
 
   return (
@@ -95,13 +95,13 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
         <button
           type="button"
           onClick={onOpenSupport}
-          className="col-start-3 row-start-1 flex size-9 items-center justify-center justify-self-end rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="-mr-2 col-start-3 row-start-1 flex size-11 items-center justify-center justify-self-end rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           aria-label={tr("Scrivici: segnala un problema, una domanda o un'idea")}
         >
           <MessageCircleQuestion className="size-5" aria-hidden="true" />
         </button>
       ) : (
-        <span className="col-start-3 row-start-1 size-9 justify-self-end" aria-hidden="true" />
+        <span className="col-start-3 row-start-1 size-11 justify-self-end" aria-hidden="true" />
       )}
     </header>
   );

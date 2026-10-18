@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-18T08:18:25.194Z",
+  "capturedAt": "2026-10-18T09:56:22.695Z",
   "app": "http://localhost:3300",
   "language": "de",
   "viewport": {
@@ -82,7 +82,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1937,
+      "height": 1961,
       "phone": true
     },
     {
@@ -194,7 +194,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1937,
+      "height": 1961,
       "phone": true
     },
     {

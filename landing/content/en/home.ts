@@ -41,7 +41,7 @@ export const FAQ_EN: readonly FaqItem[] = [
   },
   { question: "Does it work on my phone?", answer: "Yes, in the browser. You can add it to your home screen like an app. It isn't in the app stores." },
   ...(SOURCE_URL
-    ? [{ question: "Can I run it on my own server?", answer: "Yes. The code is open source (AGPL-3.0) and there is a Docker Compose file with the app, the database and the scheduled jobs. The self-hosting guide is in the repository." }]
+    ? [{ question: "Can I run it on my own server?", answer: "Yes. The code is open source (AGPL-3.0) and there is a Docker Compose file with the app, the database and the scheduled jobs. You sign in with email and password, no mail server needed. The self-hosting guide is in the repository." }]
     : []),
 ];
 

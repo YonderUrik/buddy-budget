@@ -16,6 +16,8 @@ export { AiUsageSummary, AI_USAGES } from "./ai-usage-summary";
 export type { AiUsageItem } from "./ai-usage-summary";
 export { NotificationsSection } from "./notifications-section";
 export { SessionsSection } from "./sessions-section";
+export { PasswordSection } from "./password-section";
+export type { PasswordSectionProps } from "./password-section";
 export { DataSection } from "./data-section";
 export type { DataSectionProps } from "./data-section";
 export { PrivacySection } from "./privacy-section";

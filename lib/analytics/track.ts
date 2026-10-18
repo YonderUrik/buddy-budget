@@ -295,6 +295,12 @@ export interface ProductEvents {
   login_link_requested: { entry: "signup" | "login" } & Attribution;
   /** «Continua con Google» on the sign-in page; same props as `login_link_requested`. */
   google_login_started: { entry: "signup" | "login" } & Attribution;
+  /** Signed in with email and password (instances with password sign-in, i.e. self-hosted ones). */
+  password_login_completed: undefined;
+  /** Account created with email and password; `first` = the first account of the instance. */
+  password_signup_completed: { first: boolean };
+  /** Password changed or set from Impostazioni → Account. */
+  password_changed: { kind: "change" | "set" };
   /** «Rientra in BuddyBudget» on the login page: the one-tap way back in was used (link sent or Google opened). */
   returning_login_used: { method: "email" | "google" };
   /** «Non sei tu?» on the login page: the remembered account was forgotten on this device. */

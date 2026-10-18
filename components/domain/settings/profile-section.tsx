@@ -6,12 +6,13 @@ import { useLocalization } from "@/lib/localization/provider";
 /** Sezione Profilo: nome modificabile, email, data di iscrizione e metodi di accesso (con "Collega Google"). */
 
 import * as React from "react";
-import { Check, Loader2, Mail } from "lucide-react";
+import { Check, KeyRound, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GoogleIcon } from "@/components/domain/auth";
 import { authClient } from "@/lib/auth/client";
 import { DISPLAY_NAME_MAX_LENGTH } from "@/lib/account/constants";
+import { useInstance } from "@/lib/instance/provider";
 
 import { useUpdateUserSettingsMutation, type UserSettings } from "@/lib/queries/user-settings";
 import { UserRound } from "lucide-react";
@@ -28,6 +29,7 @@ export function ProfileSection({ settings, returnTo = "/impostazioni" }: Profile
   const { formatLongDate } = localizedFormats(formattingLocale);
 
   const { t: tr } = useLocalization();
+  const { auth } = useInstance();
   const [name, setName] = React.useState(settings.name);
   const [linking, setLinking] = React.useState(false);
   const [linkError, setLinkError] = React.useState<string | null>(null);
@@ -89,17 +91,27 @@ export function ProfileSection({ settings, returnTo = "/impostazioni" }: Profile
 
       <SettingsRow label={tr("Metodi di accesso")} hint={tr("Puoi entrare con uno qualsiasi di questi.")}>
         <ul className="flex flex-col gap-2 text-sm sm:items-end">
-          <li className="flex items-center gap-2">
-            <Mail className="size-4 text-muted-foreground" aria-hidden="true" />{tr("Link via email")}<span className="text-xs text-pos">{tr("attivo")}</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <GoogleIcon className="size-4" />{tr("Google")}{settings.googleLinked ? (
-              <span className="text-xs text-pos">{tr("collegato")}</span>
-            ) : (
-              <Button type="button" size="sm" variant="outline" onClick={linkGoogle} disabled={linking}>
-                {linking && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}{tr("Collega")}</Button>
-            )}
-          </li>
+          {auth.password && (
+            <li className="flex items-center gap-2">
+              <KeyRound className="size-4 text-muted-foreground" aria-hidden="true" />{tr("Password")}
+              <span className={settings.passwordSet ? "text-xs text-pos" : "text-xs text-text-3"}>{settings.passwordSet ? tr("attiva") : tr("non impostata")}</span>
+            </li>
+          )}
+          {auth.magicLink && (
+            <li className="flex items-center gap-2">
+              <Mail className="size-4 text-muted-foreground" aria-hidden="true" />{tr("Link via email")}<span className="text-xs text-pos">{tr("attivo")}</span>
+            </li>
+          )}
+          {(auth.google || settings.googleLinked) && (
+            <li className="flex items-center gap-2">
+              <GoogleIcon className="size-4" />{tr("Google")}{settings.googleLinked ? (
+                <span className="text-xs text-pos">{tr("collegato")}</span>
+              ) : (
+                <Button type="button" size="sm" variant="outline" onClick={linkGoogle} disabled={linking}>
+                  {linking && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}{tr("Collega")}</Button>
+              )}
+            </li>
+          )}
         </ul>
         {linkError && (
           <p className="text-xs text-neg" role="alert">

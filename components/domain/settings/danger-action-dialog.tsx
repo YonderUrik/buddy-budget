@@ -49,6 +49,8 @@ export interface DangerActionDialogProps {
   recentLogin: boolean;
   email: string;
   googleLinked: boolean;
+  /** The account has a password (identity confirmed with it where the instance offers password sign-in). */
+  passwordSet?: boolean;
   children?: React.ReactNode;
 }
 
@@ -67,6 +69,7 @@ export function DangerActionDialog({
   recentLogin,
   email,
   googleLinked,
+  passwordSet,
   children,
 }: DangerActionDialogProps) {
   const { t: tr } = useLocalization();
@@ -99,7 +102,7 @@ export function DangerActionDialog({
             <AlertDialogDescription render={<div />}>{tr(dialogDescription)}</AlertDialogDescription>
           </AlertDialogHeader>
           {needsReauth ? (
-            <ReauthPanel email={email} googleLinked={googleLinked} />
+            <ReauthPanel email={email} googleLinked={googleLinked} passwordSet={passwordSet} />
           ) : (
             <>
               {children}

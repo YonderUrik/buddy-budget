@@ -15,6 +15,8 @@ export const LOG_SERVICE_NAME = "buddy-budget";
 export interface LogFields {
   requestId?: string;
   route?: string;
+  /** Instance setup at boot (hosted or self-hosted, sign-in methods, email transport): flags only, never values. */
+  instance?: string;
   method?: string;
   status?: number;
   durationMs?: number;

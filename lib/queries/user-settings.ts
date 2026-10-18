@@ -26,6 +26,8 @@ export interface UserSettings {
   legalAcceptedVersion: string | null;
   createdAt: string;
   googleLinked: boolean;
+  /** The account has an email/password sign-in (better-auth's `credential` provider). */
+  passwordSet: boolean;
   /** Fino a quando le azioni sensibili non chiedono di accedere di nuovo. */
   recentLoginUntil: string;
 }

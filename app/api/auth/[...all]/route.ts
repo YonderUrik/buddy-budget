@@ -4,11 +4,15 @@ import { recordAuthEvent, withRoute } from "@/lib/observability";
 
 const handlers = toNextJsHandler(auth);
 
-/** Conta i rifiuti del rate limiter integrato di better-auth (che non espone un hook dedicato). */
+/** Path of the password sign-in endpoint (under /api/auth). */
+const PASSWORD_SIGN_IN_PATH = "/api/auth/sign-in/email";
+
+/** Counts the refusals of better-auth's built-in rate limiter and wrong passwords (better-auth has no hook for either). */
 function countRateLimited(handler: (request: Request) => Promise<Response>) {
   return async (request: Request) => {
     const response = await handler(request);
     if (response.status === 429) recordAuthEvent("rate_limited");
+    else if (response.status === 401 && new URL(request.url).pathname === PASSWORD_SIGN_IN_PATH) recordAuthEvent("password_sign_in_failed");
     return response;
   };
 }

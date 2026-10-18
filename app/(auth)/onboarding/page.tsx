@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { LocaleFields } from "@/components/domain/settings/locale-fields";
 import { useLocalization } from "@/lib/localization/provider";
+import { useInstance } from "@/lib/instance/provider";
 import { AUTH_TITLE, CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
 import { CategorySetupStep, useCategorySetup } from "@/components/domain/categories";
 import { FocusPicker } from "@/components/domain/start";
@@ -41,9 +42,17 @@ export default function OnboardingPage() {
   const [notifications, setNotifications] = useState<NotificationPreferences>({ ...NOTIFICATION_DEFAULTS });
   const [focus, setFocus] = useState<StartFocus[]>([]);
   const focusOptions = focusOptionsFor(isCountryPathAvailable(productCountry, "/pensione"));
-  const steps: OnboardingStep[] = assistant?.available
-    ? ["valuta", "interessi", "categorie", "assistente", "notifiche", "conferme"]
-    : ["valuta", "interessi", "categorie", "notifiche", "conferme"];
+  const { selfHosted, auth } = useInstance();
+  // Self-hosted: no email step without an email service, no acceptance of the hosted service's Terms.
+  const steps: OnboardingStep[] = [
+    "valuta",
+    "interessi",
+    "categorie",
+    ...(assistant?.available ? (["assistente"] as const) : []),
+    ...(auth.emailDelivery ? (["notifiche"] as const) : []),
+    ...(selfHosted ? [] : (["conferme"] as const)),
+  ];
+  const needsConsent = !selfHosted;
   const flow = useStepFlow(steps.length);
   const step = steps[flow.index];
   const [loading, setLoading] = useState(false);
@@ -65,8 +74,8 @@ export default function OnboardingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           currency, productCountry, language,
-          legal: payload,
-          notifications,
+          ...(needsConsent ? { legal: payload } : {}),
+          ...(auth.emailDelivery ? { notifications } : {}),
           // A pension answer left over from a country change is dropped: the checklist must never point to a hidden section.
           focus: focus.filter((f) => focusOptions.some((o) => o.id === f)),
           ...(categorySetup.payload ? { categories: categorySetup.payload } : {}),
@@ -167,7 +176,7 @@ export default function OnboardingPage() {
           }}
           primaryLabel={flow.isLast ? (loading ? "Salvataggio in corso…" : "Inizia") : step === "categorie" && !categorySetup.customized ? tr("Continua con queste") : step === "interessi" && focus.length === 0 ? tr("Salta") : tr("Continua")}
           pending={loading}
-          disabled={flow.isLast && !complete}
+          disabled={flow.isLast && needsConsent && !complete}
           className="[&_button]:w-full sm:[&_button]:w-auto"
         />
       </form>

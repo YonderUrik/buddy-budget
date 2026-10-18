@@ -31,3 +31,12 @@ export const SESSION_EXPIRES_IN_DAYS = 7;
 
 /** Ogni quanti giorni di utilizzo la scadenza della sessione viene spostata in avanti. */
 export const SESSION_UPDATE_AGE_DAYS = 1;
+
+/** Shortest password accepted (better-auth's default is 8; a longer one costs nothing with a password manager). */
+export const PASSWORD_MIN_LENGTH = 10;
+
+/** Longest password accepted (better-auth's default). */
+export const PASSWORD_MAX_LENGTH = 128;
+
+/** Validity of the emailed password reset link, in minutes. */
+export const PASSWORD_RESET_EXPIRES_MINUTES = 30;

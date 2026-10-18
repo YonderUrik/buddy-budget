@@ -23,14 +23,17 @@ Behind a domain, pass its address to the init script: `./scripts/selfhost-init.s
 
 ## Accounts
 
+One install can hold several people. Each account has its own data (accounts, transactions, investments, settings) and nobody sees anyone else's. An account shared by several people (a household) does not exist yet.
+
 | You want to | Do this |
 |---|---|
-| Let family members sign up by themselves | `ALLOW_SIGNUPS=true` in `.env`, then `docker compose up -d`. Anyone who can reach the app can then create an account: set it back to empty when done |
-| Add one person without opening signups | `docker compose run --rm migrate pnpm auth:create-user name@example.com Name` (prints their password) |
+| Add one person without opening signups (recommended) | `docker compose run --rm migrate pnpm auth:create-user name@example.com Name`. It prints a password: give it to them, they sign in and change it in Impostazioni → Account → Password |
+| Let people sign up by themselves | `ALLOW_SIGNUPS=true` in `.env`, then `docker compose up -d`. The sign-in page then offers «Crea un account» to anyone who can reach the app: when everyone is in, empty the line and run `docker compose up -d` again |
 | Reset a forgotten password (no email service) | `docker compose run --rm migrate pnpm auth:reset-password name@example.com` (prints a new password and signs the account out everywhere) |
-| Change your password | Impostazioni → Account → Password |
+| Change your password | Impostazioni → Account → Password (at least 10 characters) |
+| Delete an account | The person does it from Impostazioni → Zona pericolosa |
 
-With an email service configured, «Password dimenticata?» on the sign-in page emails a reset link instead, and the emailed sign-in link is offered next to the password.
+With an email service configured, «Password dimenticata?» on the sign-in page emails a reset link instead, and the emailed sign-in link is offered next to the password. `AUTH_PASSWORD=false` turns password sign-in off (emailed link only, needs email).
 
 ## What works without external services
 

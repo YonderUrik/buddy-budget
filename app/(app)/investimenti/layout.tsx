@@ -26,7 +26,9 @@ import {
 } from "@/components/domain/investments";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { usedInstruments } from "@/lib/investments/view";
+import { heldInstruments, toTransactionInputs } from "@/lib/investments/view";
+import { toDateKey } from "@/lib/calc/net-worth";
+import { startOfDay } from "@/lib/calc/expenses";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 
@@ -48,7 +50,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
   const data = overview.data;
   const currency = data?.currency ?? "EUR";
   const suggestions = React.useMemo(
-    () => (data ? usedInstruments(data.transactions, new Map(data.instruments.map((i) => [i.id, i]))) : []),
+    () => (data ? heldInstruments(toTransactionInputs(data), new Map(data.instruments.map((i) => [i.id, i])), toDateKey(startOfDay(new Date()))) : []),
     [data]
   );
 
@@ -86,7 +88,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
             <RegisterOperationForm
               currency={currency}
               initial={registerInitial}
-              usedInstruments={suggestions}
+              heldInstruments={suggestions}
               onSuccess={() => setRegisterInitial(null)}
             />
           ) : null}

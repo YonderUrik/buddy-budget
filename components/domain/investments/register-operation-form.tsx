@@ -73,8 +73,8 @@ export interface EditingOperation {
 export interface RegisterOperationFormProps {
   currency: string;
   initial?: RegisterOperationInitial;
-  /** Strumenti già usati, proposti nel selettore prima di scrivere. */
-  usedInstruments?: Instrument[];
+  /** Instruments held today, offered by the picker before typing. */
+  heldInstruments?: Instrument[];
   /** Se presente, il form salva le modifiche di questa operazione invece di registrarne una nuova. */
   editing?: EditingOperation;
   onSuccess?: () => void;
@@ -84,7 +84,7 @@ function roundCents(value: number | null | undefined): number | null {
   return value === null || value === undefined ? null : Math.round(value * 100) / 100;
 }
 
-export function RegisterOperationForm({ currency, initial, usedInstruments = [], editing, onSuccess }: RegisterOperationFormProps) {
+export function RegisterOperationForm({ currency, initial, heldInstruments = [], editing, onSuccess }: RegisterOperationFormProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -175,7 +175,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
       {editing ? (
         <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-foreground">{instrument?.name ?? tr("Strumento")}</p>
       ) : (
-        <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
+        <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={heldInstruments} />
       )}
     </Field>
   );

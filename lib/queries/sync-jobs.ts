@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SyncJobView } from "@/lib/sync-jobs/types";
 import { hasFinishedSince, hasNewlyFinishedJob, runningJobIds } from "@/lib/sync-jobs/view";
 import { QUERY_KEYS_CHANGED_BY_CATEGORIZATION } from "./categorization";
+import { markHistoryRefreshPending } from "./history-refresh-signal";
 import { pageText } from "@/lib/localization/page-text";
 
 export const SYNC_JOBS_QUERY_KEY = ["sync-jobs"] as const;
@@ -15,6 +16,8 @@ const QUERY_KEYS_CHANGED_BY_SYNC = [
   ["accounts"],
   ["gocardless", "connections", "status"],
   ["net-worth-snapshots"],
+  // The sidebar total and its 30-day change.
+  ["investments", "sidebar-summary"],
   // An import or sync can tick the «Importa i movimenti» first step.
   ["start"],
   ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION,
@@ -50,6 +53,7 @@ export function useInvalidateOnSyncJobFinish(jobs: SyncJobView[] | undefined): v
       for (const queryKey of QUERY_KEYS_CHANGED_BY_SYNC) {
         queryClient.invalidateQueries({ queryKey: [...queryKey] });
       }
+      markHistoryRefreshPending();
     }
     previous.current = current;
     for (const job of jobs ?? []) seenIds.current.add(job.id);

@@ -11,7 +11,7 @@ import { buildDebtHistoryRows } from "@/lib/net-worth/debt-history";
 import { buildPensionHistoryRows } from "@/lib/net-worth/pension-history";
 import { loadUserPension } from "@/lib/pension/data";
 import { refreshDerivedInvestmentHistory } from "@/lib/net-worth/investments";
-import { backfillDerivedHistory } from "@/lib/net-worth/snapshots";
+import { refreshDerivedCashHistory } from "@/lib/net-worth/snapshots";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
@@ -31,7 +31,7 @@ async function handleGet(request: NextRequest) {
     return Response.json({ error: "from e to sono obbligatori nel formato YYYY-MM-DD" }, { status: 400 });
   }
 
-  await backfillDerivedHistory(session.user.id);
+  await refreshDerivedCashHistory(session.user.id);
   await refreshDerivedInvestmentHistory(session.user.id);
 
   const rows = await db

@@ -6,7 +6,8 @@ import { useLocalization } from "@/lib/localization/provider";
 /** Cifra eroe di Liquidità (totale o di un conto) con variazione, grafico a tutta larghezza e selettore del periodo. */
 
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
-import { MoneyHero } from "@/components/domain/net-worth";
+import { ChartRefreshNote, MoneyHero } from "@/components/domain/net-worth";
+import type { ChartRefreshState } from "@/lib/net-worth/refresh-status";
 import { PeriodSelector } from "@/components/domain/shared";
 
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
@@ -38,10 +39,12 @@ export interface LiquidityHeroProps {
   period: NetWorthPeriod;
   onPeriodChange: (period: NetWorthPeriod) => void;
   points: readonly TrendPoint[];
+  /** Imported data on its way into the chart (see `useChartRefreshState`): shows a note and dims the old curve. */
+  refreshState?: ChartRefreshState;
   className?: string;
 }
 
-export function LiquidityHero({ label, value, currency, delta, period, onPeriodChange, points, className }: LiquidityHeroProps) {
+export function LiquidityHero({ label, value, currency, delta, period, onPeriodChange, points, refreshState = null, className }: LiquidityHeroProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -68,8 +71,9 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
           </p>
         )}
       </div>
-      <div className="-mx-4 mt-2 sm:-mx-6">
-        <TrendChart points={points} description={tr(description)} height={260} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
+      <div className="relative -mx-4 mt-2 sm:-mx-6">
+        <ChartRefreshNote state={refreshState} />
+        <TrendChart points={points} description={tr(description)} height={260} className={cn("transition-opacity duration-200", refreshState && "opacity-50")} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
       </div>
       <div className="mt-3 flex justify-center">
         <PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} />

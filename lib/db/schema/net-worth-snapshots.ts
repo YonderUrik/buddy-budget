@@ -20,6 +20,12 @@ export const netWorthSnapshots = pgTable(
     assetClass: text("asset_class").$type<AssetClass>().notNull(),
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
     source: text("source").$type<SnapshotSource>().notNull(),
+    /**
+     * Cash rows only: the part of `amount` that came from accounts whose balance follows their transactions (bank and
+     * file imports). Lets the history be corrected when those transactions change (see `lib/calc/cash-history.ts`);
+     * null on rows written before it existed.
+     */
+    ledgerAmount: numeric("ledger_amount", { precision: 14, scale: 2 }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

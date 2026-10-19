@@ -9,6 +9,7 @@ import { loadUserDebts } from "@/lib/debts/data";
 import { buildDebtsView } from "@/lib/debts/view";
 import { buildDebtHistoryRows } from "@/lib/net-worth/debt-history";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
+import { refreshDerivedCashHistory } from "@/lib/net-worth/snapshots";
 import { loadUserPension } from "@/lib/pension/data";
 import { loadUserTransactions } from "@/lib/investments/data";
 import { shiftDateKey, toCalcInput, todayKey } from "@/lib/investments/operations";
@@ -74,6 +75,8 @@ function watchItem(item: TitleListItem, label: string): SidebarWatchItem {
  */
 export async function loadSidebarSummary(userId: string): Promise<SidebarSummary> {
   const today = todayKey();
+  // The 30-day change reads stored cash rows: bring them up to date first (a no-op unless transactions changed).
+  await refreshDerivedCashHistory(userId);
   const [[user], liquid, titles] = await Promise.all([
     db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId)),
     liquidity(userId),

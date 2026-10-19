@@ -1,0 +1,1 @@
+ALTER TABLE "net_worth_snapshots" ADD COLUMN "ledger_amount" numeric(14, 2);

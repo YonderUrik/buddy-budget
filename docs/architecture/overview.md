@@ -88,7 +88,7 @@ The dependency direction is enforced by convention, not by a lint rule. As of to
 
 Providers mounted in [`app/layout.tsx`](../../app/layout.tsx), outermost first: `LocalizationProvider` (profile from `getLocaleProfile`), `QueryProvider` (one `QueryClient` per browser session, default options), `ThemeProvider` (`next-themes`, class strategy, system default), `MotionProvider`. The Umami script is loaded from `/stats/script.js`.
 
-[`app/(app)/layout.tsx`](../../app/(app)/layout.tsx) adds `PrivacyProvider` (hide amounts, initial value from `session.user.hideAmounts`), `QuickReportProvider` (the «Scrivici» — "Write to us" — support sheet), `BackHistoryRecorder`, `AttentionShell` (sidebar, bottom nav and badges), `DemoBannerContainer`, `StartProgressWatcher` (the «done, next» toast of the first steps, §4.12), and the global `SyncProgressIndicator` with `PersonalImportIsland`.
+[`app/(app)/layout.tsx`](../../app/(app)/layout.tsx) adds `PrivacyProvider` (hide amounts, initial value from `session.user.hideAmounts`), `QuickReportProvider` (the «Scrivici» — "Write to us" — support sheet), `BackHistoryRecorder`, `AttentionShell` (sidebar and bottom nav; no count badge on Liquidità since 2026-10-19, transactions to decide show only inside the section), `DemoBannerContainer`, `StartProgressWatcher` (the «done, next» toast of the first steps, §4.12), and the global `SyncProgressIndicator` with `PersonalImportIsland`.
 
 ### 4.2 Request lifecycle
 
@@ -269,7 +269,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `analitiche/` | Analitiche ("Analytics") assumptions, data period, scenarios, simulations, plan |
 | `analytics/` | Umami `track()` and the `ProductEvents` type, opt-out |
 | `app-version/` | Build version, commit and time baked into the bundle |
-| `attention/` | Badge counts and labels for items that need the user's attention |
+| `attention/` | Counts and labels for items that need the user's attention (shown inside Liquidità) |
 | `auth/` | better-auth server config, client, sign-in and reset emails, signup gate, returning-user memory |
 | `instance/` | Hosted or self-hosted, sign-in methods (`instanceConfig`, `InstanceProvider`) |
 | `calc/` | Pure calculation engines (cash flow, expenses, returns, FX, FIRE, Monte Carlo, amortisation, early repayment, debt plan, pension, net worth, costs) |

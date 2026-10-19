@@ -1,4 +1,6 @@
 "use client";
+
+import { useLocalMode } from "@/components/local-mode-provider";
 import { useLocalization } from "@/lib/localization/provider";
 import { withCountryLocks } from "@/components/layout/country-locks";
 
@@ -360,6 +362,7 @@ export function AppSidebar({
   const [pendingHref, startNav] = usePendingNavHref();
   /** Una sidebar desktop e una nel menu mobile possono convivere: ognuna ha la sua pillola. */
   const navGroupId = React.useId();
+  const local = useLocalMode();
   const { data: sessionData } = authClient.useSession();
   // La sessione si legge solo sul client: finché non siamo idratati si usa il placeholder, come sul server,
   // altrimenti nome e iniziali renderizzati dal server ("Utente", "U") non combaciano con quelli del client.
@@ -495,7 +498,7 @@ export function AppSidebar({
     <DropdownMenuContent side="top" align="start" className="w-56">
       <div className="px-2 py-1.5">
         <p className="text-sm font-medium">{userName}</p>
-        <p className="text-xs text-muted-foreground truncate">{session?.user.email ?? ""}</p>
+        <p className="text-xs text-muted-foreground truncate">{local ? tr("Profilo personale") : session?.user.email ?? ""}</p>
       </div>
       <DropdownMenuSeparator />
       <DropdownMenuItem

@@ -1,3 +1,4 @@
+import { isLocalMode, isLocalRequest } from "@/lib/selfhost";
 import { auth } from "@/lib/auth";
 import { toNextJsHandler } from "better-auth/next-js";
 import { recordAuthEvent, withRoute } from "@/lib/observability";
@@ -10,6 +11,11 @@ const PASSWORD_SIGN_IN_PATH = "/api/auth/sign-in/email";
 /** Counts the refusals of better-auth's built-in rate limiter and wrong passwords (better-auth has no hook for either). */
 function countRateLimited(handler: (request: Request) => Promise<Response>) {
   return async (request: Request) => {
+    if (isLocalMode()) {
+      if (!isLocalRequest(request)) return new Response(null, { status: 403 });
+      const endpoint = new URL(request.url).pathname.replace(/^\/api\/auth/, "");
+      if (!["/selfhost-local", "/get-session", "/sign-out"].includes(endpoint)) return new Response(null, { status: 403 });
+    }
     const response = await handler(request);
     if (response.status === 429) recordAuthEvent("rate_limited");
     else if (response.status === 401 && new URL(request.url).pathname === PASSWORD_SIGN_IN_PATH) recordAuthEvent("password_sign_in_failed");

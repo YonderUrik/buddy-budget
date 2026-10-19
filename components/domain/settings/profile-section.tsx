@@ -1,4 +1,5 @@
 "use client";
+import { useLocalMode } from "@/components/local-mode-provider";
 import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
@@ -25,6 +26,7 @@ export interface ProfileSectionProps {
 }
 
 export function ProfileSection({ settings, returnTo = "/impostazioni" }: ProfileSectionProps) {
+  const local = useLocalMode();
   const { locale: formattingLocale } = useLocalization();
   const { formatLongDate } = localizedFormats(formattingLocale);
 
@@ -85,11 +87,11 @@ export function ProfileSection({ settings, returnTo = "/impostazioni" }: Profile
         )}
       </SettingsRow>
 
-      <SettingsRow label={tr("Email")} hint={tr("Con BuddyBudget dal {0}.", {0: formatLongDate(new Date(settings.createdAt))})}>
+      {!local && <SettingsRow label={tr("Email")} hint={tr("Con BuddyBudget dal {0}.", {0: formatLongDate(new Date(settings.createdAt))})}>
         <p className="text-sm text-foreground break-all">{settings.email}</p>
-      </SettingsRow>
+      </SettingsRow>}
 
-      <SettingsRow label={tr("Metodi di accesso")} hint={tr("Puoi entrare con uno qualsiasi di questi.")}>
+      {local ? <p className="text-sm text-text-2">{tr("Modalità personale: accesso automatico su questo computer.")}</p> : <SettingsRow label={tr("Metodi di accesso")} hint={tr("Puoi entrare con uno qualsiasi di questi.")}>
         <ul className="flex flex-col gap-2 text-sm sm:items-end">
           {auth.password && (
             <li className="flex items-center gap-2">
@@ -118,7 +120,7 @@ export function ProfileSection({ settings, returnTo = "/impostazioni" }: Profile
             {linkError}
           </p>
         )}
-      </SettingsRow>
+      </SettingsRow>}
     </SettingsSection>
   );
 }

@@ -32,7 +32,7 @@ async function handleGet(request: NextRequest) {
     createdAt: new Date(user.createdAt).toISOString(),
     googleLinked: providers.includes("google"),
     passwordSet: providers.includes("credential"),
-    recentLoginUntil: recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),
+    recentLoginUntil: process.env.SELF_HOSTED === "true" && instanceCapabilities().localMode ? "9999-12-31T00:00:00.000Z" : recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),
   });
 }
 

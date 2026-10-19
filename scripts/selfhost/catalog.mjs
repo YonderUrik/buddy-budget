@@ -37,10 +37,15 @@ export const SECTIONS = [
     { name: 'OLLAMA_BASE_URL', label: 'Ollama server URL', required: true },
     { name: 'OLLAMA_MODEL', label: 'Installed Ollama model', default: 'llama3.2' },
   ] },
-  { id: 'support', title: 'Instance support reports', level: 'Optional', description: 'Receive reports from people using your installation. Nothing is sent to BuddyBudget support by default.', needed: 'An email inbox you manage. Requires email delivery from step 4.', requiresEmail: true, fields: [
+  { id: 'support', title: 'Instance support reports', level: 'Optional', description: 'Receive reports from people using your installation. Nothing is sent to BuddyBudget support by default.', needed: 'An email inbox you manage. Requires email delivery from step 5.', requiresEmail: true, fields: [
     { name: 'SUPPORT_EMAIL_TO', label: 'Email address to receive reports', required: true },
   ] },
 ];
 
-export const FIELDS = SECTIONS.flatMap(section => section.fields);
+export const FIELDS = [
+  ...SECTIONS.flatMap(section => section.fields),
+  { name: 'SELFHOST_AUTH_MODE', default: 'server' },
+  { name: 'SELFHOST_OWNER_EMAIL' },
+  { name: 'APP_BIND', default: '127.0.0.1' },
+];
 export const DEFAULTS = Object.fromEntries(FIELDS.filter(field => field.default).map(field => [field.name, field.default]));

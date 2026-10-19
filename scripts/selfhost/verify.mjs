@@ -64,12 +64,12 @@ test('validazione URL, coppie credenziali e nomi modelli', () => {
   assert.equal(mergeConfig({ OPENROUTER_MODEL: '' }, {}).OPENROUTER_MODEL, 'deepseek/deepseek-v4.1-flash');
 });
 
-function scriptedPrompts(answer) {
+function scriptedPrompts(answer, mode = '2') {
   const output = [], questions = [];
   return {
     output, questions,
     write: text => output.push(text),
-    async ask(question, hidden) { questions.push({ question, hidden }); return answer(question, hidden); },
+    async ask(question, hidden) { questions.push({ question, hidden }); return question.startsWith('Choose your use case') ? mode : answer(question, hidden); },
   };
 }
 
@@ -83,7 +83,7 @@ test('English setup: skip services without model prompts, credential checks or o
   assert(!prompts.questions.some(item => /API key|model|Sender email|Secret ID/.test(item.question)));
   assert(!prompts.questions.some(item => item.question.startsWith('Bank sync:')));
   const transcript = prompts.output.join('\n');
-  for (let step = 1; step <= 6; step++) assert(transcript.includes(`Step ${step} of 6`));
+  for (let step = 1; step <= 7; step++) assert(transcript.includes(`Step ${step} of 7`));
   assert(transcript.includes('Skip for now'));
   assert(transcript.includes('AI will be off'));
   assert(!/[àèìòù]/.test(transcript));
@@ -179,7 +179,7 @@ test('combined setup promises a readiness check rather than claiming the app is 
   const output = prompts.output.join('\n');
   assert(output.includes('Setup is not finished yet'));
   assert(output.includes('build this checkout and start'));
-  assert(output.includes('sign-in instructions will appear once the app is ready'));
+  assert(output.includes('next steps will appear once the app is ready'));
   assert(!output.includes('BuddyBudget is ready.'));
 }));
 
@@ -428,3 +428,58 @@ test('cleanup rejects an ambiguous unattended invocation before touching Docker'
   assert.equal(result.calls.length, 0);
   assert.equal(await readFile(path, 'utf8'), 'private configuration\n');
 }));
+
+test('new personal setup defaults to automatic local access and skips authentication credentials', async () => temporary(async path => {
+  const prompts = scriptedPrompts(skipService, '');
+  await runSetup({ path, prompts, check: async () => ({ status: 'ok', message: 'Checked.' }) });
+  const { values } = await readConfig(path);
+  assert.equal(values.SELFHOST_AUTH_MODE, 'local');
+  assert.equal(values.APP_BIND, '127.0.0.1');
+  assert.equal(values.APP_URL, 'http://localhost:3000');
+  assert(!prompts.questions.some(({ question }) => /Resend API|Google Client|Sign-in emails/.test(question)));
+  assert(!prompts.output.join('\n').includes('2) Google sign-in'));
+  assert(prompts.output.join('\n').includes('no login needed'));
+}));
+
+test('local setup cannot save a public URL or a broad network binding', async () => temporary(async path => {
+  await assert.rejects(saveConfig(path, { SELFHOST_AUTH_MODE: 'local', APP_URL: 'https://budget.example.com' }));
+  await assert.rejects(saveConfig(path, { SELFHOST_AUTH_MODE: 'local', APP_BIND: '0.0.0.0' }));
+  assert.equal((await readConfig(path)).source, '');
+  const corrected = mergeConfig({}, { SELFHOST_AUTH_MODE: 'server', APP_BIND: '0.0.0.0', APP_URL: 'https://budget.example.com' });
+  assert.deepEqual(validateConfig(corrected), []);
+}));
+
+test('switching a personal installation to server mode collects an owner email and preserves secrets', async () => temporary(async path => {
+  await saveConfig(path, { SELFHOST_AUTH_MODE: 'local' });
+  const original = (await readConfig(path)).values;
+  const prompts = scriptedPrompts(question => question.startsWith('Your account email') ? 'owner@example.com' : skipService(question));
+  await runSetup({ path, prompts, check: async () => ({ status: 'ok', message: 'Checked.' }) });
+  const { values } = await readConfig(path);
+  assert.equal(values.SELFHOST_AUTH_MODE, 'server');
+  assert.equal(values.SELFHOST_OWNER_EMAIL, 'owner@example.com');
+  assert.equal(values.POSTGRES_PASSWORD, original.POSTGRES_PASSWORD);
+  assert(prompts.output.join('\n').includes('Automatic local sessions will be closed'));
+}));
+
+test('personal startup explains automatic access without suggesting login links', async () => temporary(async (path, dir) => {
+  const result = await startFixture(dir, { SELFHOST_AUTH_MODE: 'local' });
+  assert.equal(result.status, 0, result.stderr);
+  assert(result.stdout.includes('No sign-in is needed'));
+  assert(!result.stdout.includes('docker compose logs --since'));
+}));
+
+test('personal setup derives its local address from the chosen port, including after an HTTPS configuration', async () => temporary(async path => {
+  await saveConfig(path, { APP_URL: 'https://localhost:3000' });
+  const prompts = scriptedPrompts(question => question.startsWith('Local port') ? '8088' : skipService(question), '1');
+  await runSetup({ path, prompts, check: async () => ({ status: 'ok', message: 'Checked.' }) });
+  const { values } = await readConfig(path);
+  assert.equal(values.APP_URL, 'http://localhost:8088');
+  assert.equal(values.APP_PORT, '8088');
+  assert(!prompts.questions.some(({ question }) => question.startsWith('Public URL')));
+}));
+
+test('personal email delivery needs a recipient before enabling notification jobs', () => {
+  const values = mergeConfig({}, { SELFHOST_AUTH_MODE: 'local', RESEND_API_KEY: 're_test', RESEND_FROM: 'budget@example.test' });
+  assert.equal(prepareConfig(values).NOTIFICATIONS_MODE, 'off');
+  assert.equal(prepareConfig({ ...values, SELFHOST_OWNER_EMAIL: 'owner@example.test' }).NOTIFICATIONS_MODE, 'execute');
+});

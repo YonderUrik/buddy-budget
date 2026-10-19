@@ -9,6 +9,9 @@ name: buddybudget
 
 x-app-env: &app-env
   NODE_ENV: production
+  SELFHOST_AUTH_MODE: ${SELFHOST_AUTH_MODE:-server}
+  SELFHOST_OWNER_EMAIL: ${SELFHOST_OWNER_EMAIL:-}
+  APP_BIND: ${APP_BIND:-127.0.0.1}
   # sslmode=disable: the compose Postgres is on the internal network and has no certificates. An external Postgres
   # must instead be reached with sslmode=require (see docs/self-hosting.md).
   DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is missing, run ./scripts/selfhost-init.sh}@postgres:5432/buddybudget?sslmode=disable

@@ -230,3 +230,28 @@ describe("proxy and the visitor's country", async () => {
     expect((await proxy(new NextRequest("http://localhost/analitiche"))).headers.get("location")).toBeNull();
   });
 });
+
+describe("personal setup routing", async () => {
+  const { NextRequest } = await import("next/server");
+  const { auth } = await import("@/lib/auth");
+  const { proxy } = await import("./proxy");
+  const call = (path: string, headers = {}) => proxy(new NextRequest(`http://localhost:8080${path}`, { headers: { host: "localhost:8080", ...headers } }));
+
+  it("opens the local session entry from both the app and login screen", async () => {
+    vi.stubEnv("SELF_HOSTED", "true");
+    vi.stubEnv("SELFHOST_AUTH_MODE", "local");
+    vi.stubEnv("APP_BIND", "127.0.0.1");
+    vi.stubEnv("APP_URL", "http://localhost:8080");
+    vi.stubEnv("BETTER_AUTH_URL", "http://localhost:8080");
+    vi.mocked(auth.api.getSession).mockResolvedValue(null);
+    try {
+      for (const path of ["/", "/login"]) {
+        expect((await call(path)).headers.get("location")).toMatch(/^http:\/\/localhost:8080\/api\/auth\/selfhost-local\?/);
+      }
+      expect((await call("/api/transactions")).status).toBe(401);
+      expect((await call("/", { origin: "https://evil.test" })).status).toBe(403);
+      expect((await call("/", { host: "evil.test" })).status).toBe(403);
+      expect((await call("/api/health/ready", { host: "localhost:3000" })).status).toBe(200);
+    } finally { vi.unstubAllEnvs(); }
+  });
+});

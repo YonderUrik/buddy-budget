@@ -1,5 +1,7 @@
 "use client";
 
+import { useEmailAvailable } from "@/components/local-mode-provider";
+
 /**
  * Onboarding: main currency (EUR preselected), what to keep an eye on (decides the first steps in Panoramica, can be
  * skipped), proposed categories (confirm with one tap or customise), category assistant (only if the service exists, off

@@ -1,3 +1,4 @@
+import { validateLocalMode } from "@/lib/selfhost";
 import { z } from "zod";
 
 /** Lunghezza minima del segreto condiviso con chi chiama gli endpoint cron. */
@@ -18,6 +19,7 @@ const optionalFlag = z.preprocess(
  */
 export const serverEnvSchema = z.object({
   DATABASE_URL: z.string().min(1),
+  SELFHOST_OWNER_EMAIL: z.preprocess(value => value === "" ? undefined : value, z.email().optional()),
   REDIS_URL: z.string().min(1),
   BETTER_AUTH_SECRET: z.string().min(32),
   // Solo http/https: z.url() da solo accetterebbe "localhost:3000" (schema "localhost:") o "ftp://x",
@@ -69,7 +71,7 @@ export type ServerEnv = z.infer<typeof serverEnvSchema>;
  */
 export function parseServerEnv(source: Record<string, string | undefined>): ServerEnv {
   const result = serverEnvSchema.safeParse(source);
-  if (result.success) return result.data;
+  if (result.success) { validateLocalMode(source); return result.data; }
   const names = [...new Set(result.error.issues.map((issue) => String(issue.path[0])))].sort();
   throw new Error(`Variabili d'ambiente mancanti o non valide: ${names.join(", ")}`);
 }

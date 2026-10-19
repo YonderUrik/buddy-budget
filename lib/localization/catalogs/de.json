@@ -5145,5 +5145,7 @@
   "La password attuale non è corretta.": "Das aktuelle Passwort ist falsch.",
   "Su questa installazione l'accesso con password è spento.": "Die Anmeldung mit Passwort ist auf dieser Installation aus.",
   "Hai già una password: cambiala con quella attuale.": "Du hast schon ein Passwort: Ändere es mit dem aktuellen.",
-  "Su questa installazione le segnalazioni non sono attive. Apri una segnalazione su GitHub: github.com/YonderUrik/buddy-budget/issues": "Meldungen sind auf dieser Installation nicht eingerichtet. Eröffne ein Issue auf GitHub: github.com/YonderUrik/buddy-budget/issues"
+  "Su questa installazione le segnalazioni non sono attive. Apri una segnalazione su GitHub: github.com/YonderUrik/buddy-budget/issues": "Meldungen sind auf dieser Installation nicht eingerichtet. Eröffne ein Issue auf GitHub: github.com/YonderUrik/buddy-budget/issues",
+  "Sto aggiungendo i nuovi movimenti: il grafico si aggiorna da solo appena finisco.": "Die neuen Umsätze werden hinzugefügt: Das Diagramm aktualisiert sich von selbst, sobald das erledigt ist.",
+  "Aggiorno il grafico con i nuovi movimenti…": "Das Diagramm wird mit den neuen Umsätzen aktualisiert …"
 }

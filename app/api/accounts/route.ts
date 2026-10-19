@@ -6,6 +6,7 @@ import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { createAccountSchema } from "@/lib/validation/accounts";
 import { rejectIfDemoActive } from "@/lib/start/demo";
+import { importAccountIds } from "@/lib/net-worth/snapshots";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
 async function handleGet(request: NextRequest) {
@@ -15,13 +16,13 @@ async function handleGet(request: NextRequest) {
   }
   bindRequestUser(session.user.id);
 
-  const userAccounts = await db
-    .select()
-    .from(accounts)
-    .where(eq(accounts.userId, session.user.id))
-    .orderBy(asc(accounts.createdAt));
+  const [userAccounts, imported] = await Promise.all([
+    db.select().from(accounts).where(eq(accounts.userId, session.user.id)).orderBy(asc(accounts.createdAt)),
+    importAccountIds(session.user.id),
+  ]);
 
-  return Response.json(userAccounts);
+  // Linked banks and file imports move their balance with their transactions: their trend can be drawn day by day.
+  return Response.json(userAccounts.map((a) => ({ ...a, followsTransactions: a.source === "auto" || imported.has(a.id) })));
 }
 
 async function handlePost(request: NextRequest) {

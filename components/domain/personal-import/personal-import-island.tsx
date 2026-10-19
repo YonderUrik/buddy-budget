@@ -15,7 +15,8 @@ import { AlertCircle, Check, X } from "lucide-react";
 import { TextMorph, TextShimmer } from "@/components/motion";
 import { SyncProgressRing } from "@/components/domain/sync/sync-progress-ring";
 import { SPRING_BOUNCY } from "@/lib/motion/springs";
-import { ISLAND_DISMISSED_STORAGE_KEY, islandJobs, islandState, runningImportIds } from "@/lib/personal-import/island";
+import { hasNewlyFinishedImport, importStatuses, ISLAND_DISMISSED_STORAGE_KEY, islandJobs, islandState } from "@/lib/personal-import/island";
+import { markHistoryRefreshPending } from "@/lib/queries/history-refresh-signal";
 import { usePersonalImportsQuery, type PersonalImportListing } from "@/lib/queries/personal-imports";
 import { QUERY_KEYS_CHANGED_BY_CATEGORIZATION } from "@/lib/queries/categorization";
 import { cn } from "@/lib/utils";
@@ -110,12 +111,14 @@ export function PersonalImportIsland() {
   const [dismissed, setDismissed] = React.useState<Set<string>>(() => (typeof window === "undefined" ? new Set() : readDismissed()));
   const [now] = React.useState(() => Date.now());
 
-  const previous = React.useRef<Set<string>>(new Set());
+  const previous = React.useRef<Map<string, string>>(new Map());
   React.useEffect(() => {
-    const running = runningImportIds(data?.jobs);
-    const finished = [...previous.current].some((id) => !running.has(id));
-    if (finished) for (const key of QUERY_KEYS_CHANGED_BY_IMPORT) void client.invalidateQueries({ queryKey: [...key] });
-    previous.current = running;
+    if (hasNewlyFinishedImport(previous.current, data?.jobs)) {
+      for (const key of QUERY_KEYS_CHANGED_BY_IMPORT) void client.invalidateQueries({ queryKey: [...key] });
+      // The charts say they are updating until the reloaded history arrives.
+      markHistoryRefreshPending();
+    }
+    previous.current = importStatuses(data?.jobs);
   }, [data, client]);
 
   const dismiss = React.useCallback((id: string) => {

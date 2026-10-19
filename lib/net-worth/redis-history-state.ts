@@ -9,10 +9,20 @@ const FINGERPRINT_TTL_SECONDS = 7 * 24 * 60 * 60;
 export const investmentHistoryFingerprintKey = (userId: string) => `net-worth:investments:fingerprint:${userId}`;
 const key = investmentHistoryFingerprintKey;
 
+/** Redis key of the fingerprint of a user's cash history (see `refreshDerivedCashHistory`). */
+export const cashHistoryFingerprintKey = (userId: string) => `net-worth:cash:fingerprint:${userId}`;
+
+function redisStore(keyOf: (userId: string) => string): InvestmentHistoryStateStore {
+  return {
+    get: (userId) => redis.get(keyOf(userId)),
+    async set(userId, fingerprint) {
+      await redis.set(keyOf(userId), fingerprint, "EX", FINGERPRINT_TTL_SECONDS);
+    },
+  };
+}
+
 /** Impronta dello storico investimenti su Redis, condivisa tra i pod. */
-export const redisHistoryStateStore: InvestmentHistoryStateStore = {
-  get: (userId) => redis.get(key(userId)),
-  async set(userId, fingerprint) {
-    await redis.set(key(userId), fingerprint, "EX", FINGERPRINT_TTL_SECONDS);
-  },
-};
+export const redisHistoryStateStore: InvestmentHistoryStateStore = redisStore(key);
+
+/** Fingerprint of the cash history on Redis, shared between pods. */
+export const redisCashHistoryStateStore: InvestmentHistoryStateStore = redisStore(cashHistoryFingerprintKey);

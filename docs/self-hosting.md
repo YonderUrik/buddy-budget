@@ -13,11 +13,14 @@ Servono Docker con il plugin Compose v2 e un terminale interattivo. Il setup usa
 ```bash
 git clone https://github.com/YonderUrik/buddy-budget.git
 cd buddy-budget
-./scripts/selfhost-init.sh      # setup guidato, chiavi API nascoste mentre scrivi
-docker compose up -d
+./scripts/selfhost-init.sh --start  # configura e avvia con le immagini pubblicate
 ```
 
-Apri <http://localhost:3000>. Alla prima partenza le migration girano da sole (servizio `migrate`) e l'app diventa raggiungibile in circa un minuto: `docker compose ps` mostra `healthy`.
+L’installer attende che l’app sia pronta e poi mostra `BuddyBudget is ready`, l’URL da aprire e come accedere. Le migration girano da sole. Senza Resend, la schermata finale spiega come richiedere il link dalla pagina di login e trovarlo nei log; con Resend invita ad aprire l’email.
+
+Per provare questo branch o altre modifiche non rilasciate: `./scripts/selfhost-init.sh --build`. Configura, costruisce e avvia con un solo comando. Se `.env` è già pronto, usa `./scripts/selfhost-start.sh --build` per avviare senza ripetere le domande.
+
+Senza opzioni, `./scripts/selfhost-init.sh` salva solo la configurazione: il messaggio finale chiarisce che l’app non è stata avviata e indica il comando successivo. `--start` usa le immagini pubblicate, `--build` usa il checkout locale. In caso di errore di build o timeout di avvio non compare alcun messaggio di successo e vengono indicati stato e log da controllare.
 
 ### Quali servizi servono davvero?
 
@@ -33,7 +36,7 @@ Le verifiche non inviano dati finanziari, non generano risposte AI a pagamento e
 
 Rilancia `./scripts/selfhost-init.sh`: i servizi già configurati propongono `Keep existing settings`, `Edit settings` e `Disable this service`. Invio conserva il valore suggerito o già salvato; per disabilitare un servizio usa il menu esplicito. Saltare un servizio a metà non salva credenziali incomplete e conserva l’eventuale configurazione precedente. I segreti esistenti non vengono mostrati; password database, segreto di accesso e cifratura non vengono rigenerati. Annullando al riepilogo non si modifica `.env`.
 
-Dopo il salvataggio esegui `docker compose up -d --remove-orphans`. Se disabiliti l’AI, prima esegui `docker compose --profile ai stop csv-worker`, come indicato dall’installer: Compose non ferma da solo un container di un profilo disabilitato. La chiave di cifratura CSV viene conservata. Impostazioni → Account mostra i servizi configurati; solo chi amministra il server cambia le chiavi con l’installer.
+Dopo il salvataggio esegui `./scripts/selfhost-start.sh` (oppure `--build` per usare il codice locale). Il comando ferma l’eventuale worker precedente e applica i profili correnti: Compose non ferma da solo un container di un profilo disabilitato. La chiave di cifratura CSV viene conservata. Con `selfhost-init.sh --start` o `--build` questo passaggio è automatico. Impostazioni → Account mostra i servizi configurati; solo chi amministra il server cambia le chiavi con l’installer.
 
 Per uno script automatico o la configurazione manuale: `./scripts/selfhost-init.sh --defaults` crea un file minimo (richiede `openssl`) e non tocca un `.env` esistente. Per abilitare manualmente l’AI configura `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `PERSONAL_CSV_ENCRYPTION_KEY` (32 byte in base64) e `COMPOSE_PROFILES=ai`.
 

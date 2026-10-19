@@ -93,7 +93,17 @@ export const PRIVACY_EN: LegalDocument = {
       title: "Category suggestions with artificial intelligence",
       paragraphs: [
         "If you turn it on in Settings → Category assistant (it is off until you choose it), for new transactions from syncs and imports we send an artificial intelligence model the cleaned-up merchant name, the direction (income or expense) and the list of your categories, with a few examples of your past choices and the personal instructions you choose to enter in Settings. Avoid putting personal or bank data in the instructions. We don't send amounts, dates, IBANs, notes, full transaction descriptions, transfers or names that look like a person's.",
-        "The service is OpenRouter, with a request not to keep the data and not to use it for training. The model suggests a category with a degree of confidence. If in Settings you leave on the option «Lascia che l'app scelga quando è abbastanza sicura» (Let the app choose when it is fairly sure), suggestions at least 70% certain apply without asking you: you find them in Categorizza (Categorize) → «Messe dall'app» (Set by the app), marked as coming from artificial intelligence, and you can change them at any time. The other suggestions wait for your confirmation, and a choice becomes a rule only if you ask for it. You can turn off automatic application or withdraw consent at any time: from then on no new requests go out and suggestions already received no longer apply by themselves.",
+        "The service is OpenRouter, in the zero data retention mode described in the next section. The model suggests a category with a degree of confidence. If in Settings you leave on the option «Lascia che l'app scelga quando è abbastanza sicura» (Let the app choose when it is fairly sure), suggestions at least 70% certain apply without asking you: you find them in Categorizza (Categorize) → «Messe dall'app» (Set by the app), marked as coming from artificial intelligence, and you can change them at any time. The other suggestions wait for your confirmation, and a choice becomes a rule only if you ask for it. You can turn off automatic application or withdraw consent at any time: from then on no new requests go out and suggestions already received no longer apply by themselves.",
+      ],
+    },
+    {
+      id: "zero-data-retention",
+      title: "Zero data retention for artificial intelligence",
+      paragraphs: [
+        "Every artificial intelligence request (importing a file, category suggestions, «Chiedi all'AI» (Ask the AI) on a transaction) goes through OpenRouter in zero data retention mode: OpenRouter sends it only to model providers that keep no data after the answer and don't use it to train models. If no provider meets these conditions, the request is rejected and doesn't go out.",
+        "The condition is enforced twice: it is written into every request our servers send and it is turned on in our OpenRouter account settings for all models, so it holds even if one of the two were missing. OpenRouter doesn't keep the text of requests and answers; it keeps technical usage data (model, amount of text processed, cost).",
+        `What it doesn't cover: the mode concerns the providers OpenRouter passes the request to, not what we keep. On our side, as described in the sections above, we keep the result (the file's reading rules, the suggested category) and technical logs without the content of the requests, for ${LOG_DAYS} days. We don't use additional OpenRouter tools such as web search.`,
+        "This applies to the service at buddybudget.io. Whoever installs BuddyBudget on their own servers uses their own OpenRouter key: requests still ask for zero data retention, but the account settings are those of whoever installs it.",
       ],
     },
     {
@@ -107,7 +117,7 @@ export const PRIVACY_EN: LegalDocument = {
         "Cloudflare: traffic routing, DNS and storage (R2) of the database backups.",
         "GoCardless: reading the bank accounts you connect, under PSD2.",
         "Resend: sending service emails and, if you turn them on, summaries and alerts (it uses your email address and the text of the emails, which may contain figures from your budget), and delivering the messages you write to support.",
-        "OpenRouter and the model provider it selects: only if you use the AI import or category suggestions, with your consent (see the dedicated sections).",
+        "OpenRouter and the model provider it selects, always in zero data retention mode: only if you use the AI import or category suggestions, with your consent (see the dedicated sections).",
         "Google: only if you choose to sign in with Google; it acts as an independent controller for authentication.",
         "Monitoring, technical alerting and anonymous statistics tools (Umami), which we run on our own servers and which receive no financial data or content of yours.",
       ],
@@ -214,6 +224,7 @@ export const TERMS_EN: LegalDocument = {
         "Calculations, estimates, simulations, charts, tax estimates, pension projections and comments on securities are for information only and are based on the data you enter and on simplified assumptions. They are not an investment recommendation or personalized advice, and BuddyBudget is not a financial intermediary. Tax and pension rules change and depend on your situation: before deciding, consult a qualified professional.",
         "Market prices come from third-party sources, may be delayed or wrong and are end-of-day closes, not real-time quotes. The same goes for data received from banks through Open Banking: it depends on the bank and on the connection provider.",
         "The AI import produces automatically generated reading rules: check that the imported transactions match your documents. Categories set by the app (from your rules, from your bank's category in imported files or from the most certain suggestions, if you chose so) may be wrong: they are marked as set by the app, you can change them at any time and you are the one who checks that they are right.",
+        "Artificial intelligence requests go through OpenRouter only to providers that keep no data and don't use it for training (zero data retention, see the privacy policy); if none is available the feature doesn't answer and your data stays as it is.",
       ],
     },
     {

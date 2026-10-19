@@ -1,5 +1,6 @@
 import "server-only";
 import { formatMetadataSchema } from "@/lib/imports";
+import { OPENROUTER_PRIVACY } from "@/lib/llm/openrouter";
 import { parserSchema, type PersonalTable } from "./contract";
 export class ModelInputError extends Error {}
 const METADATA = `Also return a metadata property alongside kind and code:
@@ -22,7 +23,7 @@ export async function generateParser(table: PersonalTable, sourceName?: string) 
   if (!model || !key) throw new Error("OpenRouter non configurato");
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST", signal: AbortSignal.timeout(240000), headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model, temperature: 0, max_tokens: 32768, ...(model.startsWith("deepseek/") ? { reasoning: { enabled: false, exclude: true } } : {}), provider: { zdr: true, data_collection: "deny", require_parameters: true }, response_format: { type: "json_object" }, messages: [{ role: "system", content: SYSTEM + "\n" + SETTLEMENT_RULES + "\n" + METADATA }, { role: "user", content: JSON.stringify(inputForModel(table, sourceName)) }] }),
+    body: JSON.stringify({ model, temperature: 0, max_tokens: 32768, ...(model.startsWith("deepseek/") ? { reasoning: { enabled: false, exclude: true } } : {}), provider: { ...OPENROUTER_PRIVACY, require_parameters: true }, response_format: { type: "json_object" }, messages: [{ role: "system", content: SYSTEM + "\n" + SETTLEMENT_RULES + "\n" + METADATA }, { role: "user", content: JSON.stringify(inputForModel(table, sourceName)) }] }),
   });
   if (!response.ok) {
     if ([400, 413, 422].includes(response.status)) throw new ModelInputError("Il modello configurato non ha accettato il file completo. Verifica la finestra di contesto e il supporto JSON/ZDR del modello.");

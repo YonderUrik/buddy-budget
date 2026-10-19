@@ -1,4 +1,5 @@
 import type { CategoryType } from "@/lib/categories/groups";
+import { OPENROUTER_PRIVACY } from "./openrouter";
 
 /** Endpoint Decisions di OpenRouter (alpha): Jev risponde con un'opzione e una probabilità per ciascuna. */
 export const JEV_DECISIONS_URL = "https://openrouter.ai/api/alpha/decisions";
@@ -77,7 +78,7 @@ export function buildCategorizationRequest(input: JevRequestInput) {
       merchants: input.merchants.map(({ id, name, mcc, isIncome }) => ({ id, name, mcc, isIncome })),
     },
     questions,
-    provider: { zdr: true, data_collection: "deny" },
+    provider: OPENROUTER_PRIVACY,
   };
 }
 

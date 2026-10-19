@@ -68,6 +68,7 @@ export function MonthPaceChart({ pace, currency }: MonthPaceChartProps) {
   return (
     <div ref={ref}>
       <svg
+        data-amount-chart
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         width={WIDTH}
         height={HEIGHT}

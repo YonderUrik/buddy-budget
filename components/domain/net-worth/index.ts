@@ -23,5 +23,5 @@ export {
   assetClassesInSeries,
   FALLBACK_ASSET_CLASS_COLOR,
 } from "./asset-classes";
-export { MoneyHero, splitMoney } from "./money-hero";
+export { MoneyHero } from "./money-hero";
 export type { MoneyHeroProps } from "./money-hero";

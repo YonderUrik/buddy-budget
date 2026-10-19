@@ -249,7 +249,24 @@ Onboarding ends on Panoramica. Until the user has data, Panoramica shows «Primi
 
 Example: a user answers «Mutuo e prestiti» only. The steps are account, loan, target. After adding a current account in Liquidità a toast says «Conto aggiunto · Prossimo passo: Aggiungi il mutuo o un prestito» with the button to Debiti.
 
-### 4.13 Route groups
+### 4.13 Hide amounts
+
+The eye in the sidebar (and in «Altro» on the phone) hides every figure about the user's money. The choice is saved on the profile (`auth_user.hide_amounts`) and read on the server, so the first render is already masked.
+
+| Piece | How it works | Where |
+|---|---|---|
+| Mask switch | `PrivacyProvider` calls `setAmountsMasked` during render, in the browser only (on the server the flag would be shared between users), and sets `<html data-privacy>`; `PrivacyBoundary` remounts the page when the choice changes, so strings formatted earlier are redone | [`privacy-provider.tsx`](../../components/privacy-provider.tsx) |
+| Amounts | `formatCurrency` (and everything built on it: `localizedFormats`, `formatSignedCurrency`, `formatPrice`) returns `AMOUNT_MASK` («••••») | [`lib/format.ts`](../../lib/format.ts) |
+| Rolling numbers | `AnimatedNumber` with a currency `format` shows the mask (`isAmountsMasked`) | [`animated-number.tsx`](../../components/motion/animated-number.tsx) |
+| Numbers without a currency | `privateNumberFormat(locale, options)` for quantities held, prices paid, fees and figures read from an import file: an `Intl.NumberFormat` whose `format` returns the mask | [`lib/format.ts`](../../lib/format.ts) |
+| Charts | Recharts charts and hand-drawn SVG charts marked `data-amount-chart` are blurred by CSS and stop reacting to the pointer | [`globals.css`](../../app/globals.css) |
+| Guard | ESLint, in `app/**/*.tsx` and `components/**`: `new Intl.NumberFormat` with `style: "currency"` and any `toLocaleString` are errors, so a new figure cannot skip the mask. A fixed sample (the language chooser) disables the rule on that line with the reason | [`eslint.config.mjs`](../../eslint.config.mjs) |
+
+What stays visible: percentages and ratios (returns, weights, Sharpe), counts, dates, public market data about a company (market cap, financial statements, TER), sample figures in tours and previews, and values already typed into a form field.
+
+Example: with amounts hidden, Liquidità reads «Hai •••• su 4 conti» and an investment operation «•••• × •••• EUR · commissioni ••••», while «+9,2% sul costo» stays.
+
+### 4.14 Route groups
 
 | Group | Path | Shell | Contents |
 |---|---|---|---|
@@ -261,7 +278,7 @@ Example: a user answers «Mutuo e prestiti» only. The steps are account, loan, 
 
 Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths working: `/spese`, `/transazioni`, `/movimenti` → `/liquidita`; `/cash-flow` → `/liquidita/analisi`; `/categorie` → `/liquidita/categorie`; `/movimenti/{analisi,categorie,regole}` → `/liquidita/...`; `/conti` → `/liquidita/conti`. The same file sets security headers (HSTS, `nosniff`, `X-Frame-Options: DENY`, referrer and permissions policies) and `output: "standalone"`.
 
-### 4.14 Map of `lib/`
+### 4.15 Map of `lib/`
 
 | Folder | Responsibility |
 |---|---|
@@ -314,7 +331,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `validation/` | zod schemas for API inputs |
 | `whats-new/` | «Novità» ("What's new") entries |
 
-### 4.15 Architecture documents by domain
+### 4.16 Architecture documents by domain
 
 | Area | Document |
 |---|---|
@@ -336,7 +353,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 - better-auth's rate limiter is not backed by Redis, so its counters are per pod.
 - `resolveDbSsl` can throw on multi-host Postgres URLs, and the migrator image does not force TLS (CLAUDE.md "Known technical debt").
 - better-auth writes its internal errors to the console, outside `logger`.
-- The "hide amounts" mask covers only values formatted with `formatCurrency`.
+- The "hide amounts" mask covers what goes through `lib/format` (§4.13); text the server renders (emails) and form fields keep the real value. The lint guard does not see `lib/` helpers that build their own strings.
 - No Content Security Policy header is set (comment in `next.config.ts`).
 - Only strings passed through `translate` (server `getTranslator`, client `useLocalization`) change with the language; anything rendered as a literal stays Italian.
 
@@ -354,6 +371,7 @@ Tests run with Vitest against `DATABASE_URL` (a migrated database; CI runs `pnpm
 | [`lib/db/ssl.test.ts`](../../lib/db/ssl.test.ts), [`baseline.test.ts`](../../lib/db/baseline.test.ts) | TLS resolution, baseline marking |
 | [`lib/localization/config.test.ts`](../../lib/localization/config.test.ts), [`completeness.test.ts`](../../lib/localization/completeness.test.ts), [`guard.test.ts`](../../lib/localization/guard.test.ts) | Allowed country/language pairs, German route policy, catalog parity and interpolation, guard behaviour |
 | [`lib/features/catalog.test.ts`](../../lib/features/catalog.test.ts) | Catalog integrity and sidebar consistency |
+| [`lib/format.test.ts`](../../lib/format.test.ts) | Currency formatting, the hide-amounts mask on `formatCurrency` and `privateNumberFormat` |
 | [`lib/cron/auth.test.ts`](../../lib/cron/auth.test.ts) | Bearer check for crons and metrics |
 | [`lib/health/readiness.test.ts`](../../lib/health/readiness.test.ts) | Readiness timeouts and per-dependency status |
 

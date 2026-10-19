@@ -271,8 +271,6 @@ export interface ProductEvents {
   categorization_auto_apply_toggled: { enabled: boolean; from: "categorizza" | "impostazioni" };
   /** Movimenti categorizzati da soli quando la pagina Categorizza ha trovato proposte sicure pronte. */
   categorization_auto_applied: { count: number; groups: number };
-  /** «Va tutto bene» in «Messe dall'app»: movimenti controllati in un colpo. */
-  categorization_auto_reviewed: { count: number };
   /** L'utente ha cambiato una categoria applicata da sola; `source` = da dove veniva. */
   categorization_auto_corrected: { source: "regola" | "storico" | "assistente" | "banca"; count: number; remember: boolean; from: "categorizza" | "movimenti" };
   /** Anteprima di «Ricategorizza» aperta; `scope` = tutto (Categorizza) o una regola appena salvata, `changes` = movimenti che cambierebbero. */

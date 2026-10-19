@@ -1,10 +1,9 @@
 import { NextRequest } from "next/server";
 import { and, desc, eq, gt, inArray } from "drizzle-orm";
 import { sessionOrUnauthorized } from "@/lib/account/route-session";
-import { groupAutoCategorized } from "@/lib/categorization/auto-review";
+import { AUTO_CATEGORIZED_RECENT_DAYS, groupAutoCategorized } from "@/lib/categorization/auto-review";
 import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
 import { db } from "@/lib/db/client";
-import { authUser } from "@/lib/db/schema/auth";
 import { AUTOMATIC_CATEGORY_SOURCES, transactions, type AutomaticCategorySource } from "@/lib/db/schema/transactions";
 import { withRoute } from "@/lib/observability";
 
@@ -12,16 +11,16 @@ import { withRoute } from "@/lib/observability";
 const AUTO_CATEGORIZED_LIMIT = 1000;
 
 /**
- * GET /api/transactions/auto-categorized — movimenti categorizzati da soli (regole, proposte sicure e categorie della banca) che l'utente non ha
- * ancora controllato, raggruppati per esercente e categoria: la sezione «Messe dall'app» di Categorizza.
+ * GET /api/transactions/auto-categorized — transactions categorised on their own (rules, confident suggestions, bank categories) in the
+ * last `AUTO_CATEGORIZED_RECENT_DAYS` days, grouped by merchant and category: the «Messe dall'app» history in Categorizza. Nothing here
+ * waits for a confirmation; the user only corrects what is wrong.
  */
 async function handleGet(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);
   if (session instanceof Response) return session;
   const userId = session.user.id;
 
-  const [user] = await db.select({ seenAt: authUser.autoCategorizedSeenAt }).from(authUser).where(eq(authUser.id, userId));
-  if (!user) return new Response(null, { status: 404 });
+  const since = new Date(Date.now() - AUTO_CATEGORIZED_RECENT_DAYS * 86_400_000);
 
   const rows = await db
     .select({
@@ -41,7 +40,7 @@ async function handleGet(request: NextRequest) {
       and(
         eq(transactions.userId, userId),
         inArray(transactions.categorySource, [...AUTOMATIC_CATEGORY_SOURCES]),
-        gt(transactions.categorizedAt, user.seenAt)
+        gt(transactions.categorizedAt, since)
       )
     )
     .orderBy(desc(transactions.categorizedAt))
@@ -57,7 +56,7 @@ async function handleGet(request: NextRequest) {
       categoryId: row.categoryId,
       source: row.source as AutomaticCategorySource,
       confidence: row.confidence === null ? null : Number(row.confidence),
-      categorizedAt: (row.categorizedAt ?? user.seenAt).toISOString(),
+      categorizedAt: (row.categorizedAt ?? since).toISOString(),
       bankCategory: row.bankCategory,
     }))
   );
@@ -70,7 +69,7 @@ async function handleGet(request: NextRequest) {
     }),
     userId
   );
-  return Response.json({ groups, total: rows.length, seenAt: user.seenAt.toISOString() });
+  return Response.json({ groups, total: rows.length });
 }
 
 export const GET = withRoute("transactions.auto_categorized", handleGet);

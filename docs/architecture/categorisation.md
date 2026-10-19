@@ -61,7 +61,7 @@ new rows (sync, CSV, manual) ─> fallback category
 | `categorization_runs`, `categorization_run_items` | one Ricategorizza run and, per transaction, the previous category, excluded amount, origin, confidence and time | [`categorization-runs.ts`](../../lib/db/schema/categorization-runs.ts) |
 | `budgets` | `monthlyAmount` per category, unique per user and category | [`budgets.ts`](../../lib/db/schema/budgets.ts) |
 | `subscriptions` | only the user's decisions (`confermato`, `escluso`, `terminato`) and manual subscriptions, keyed by `key` | [`subscriptions.ts`](../../lib/db/schema/subscriptions.ts) |
-| `auth_user` columns | `aiCategorizationConsentAt`, `aiCategorizationInstructions`, `categorizationAutoApply` (default true), `autoCategorizedSeenAt` | [`auth.ts`](../../lib/db/schema/auth.ts) |
+| `auth_user` columns | `aiCategorizationConsentAt`, `aiCategorizationInstructions`, `categorizationAutoApply` (default true), `autoCategorizedSeenAt` (unused since 2026-10-19, to drop in a later migration) | [`auth.ts`](../../lib/db/schema/auth.ts) |
 
 On `transactions`: `categoryId`, `excludedAmount` (same sign as `amount`, magnitude not above it), `categorySource`, `categoryConfidence`, `categorizedAt`, `description` (cleaned name), `rawDescription` (bank text), `merchantCategoryCode` and `bankCategory` (the bank's own label from an imported file, encrypted, kept also when it did not map).
 
@@ -194,9 +194,9 @@ The Categorizza page (`/categorizza`) has two lists:
 | List | Content | Source |
 |---|---|---|
 | «Da decidere» (To decide) | merchant groups still on the fallback, each with its best proposal and an origin line | `loadCategorizationState` via `/api/transactions/categorize-suggestions` |
-| «Messe dall'app» (Set by the app) | rows with an automatic `categorySource` and `categorizedAt` after `autoCategorizedSeenAt`, at most 1000, grouped by merchant, direction, category and origin; group confidence is the lowest of its rows | `/api/transactions/auto-categorized`, `groupAutoCategorized` |
+| «Messe dall'app» (Set by the app) | rows with an automatic `categorySource` and `categorizedAt` in the last 30 days (`AUTO_CATEGORIZED_RECENT_DAYS`), at most 1000, grouped by merchant, direction, category and origin; group confidence is the lowest of its rows | `/api/transactions/auto-categorized`, `groupAutoCategorized` |
 
-«Va tutto bene» moves `autoCategorizedSeenAt` forward. Applying a choice (`POST /api/transactions/categorize-apply`, in batches of 5 groups from the client) checks ownership and direction of every row first, then in one transaction sets the category, the excluded amount, `categorySource = utente`, and optionally upserts the learned rule. Moving rows that had an automatic origin is counted as a correction (metric `categorization_auto_total` and log `categorization.auto.corrected`): this measures the errors of the 90% threshold.
+«Messe dall'app» is a history, not a to-do list: those categories are already on the transactions and count everywhere, nothing asks to confirm them, the tab has no counter and the page always opens on «Da decidere». The user only corrects what is wrong. Applying a choice (`POST /api/transactions/categorize-apply`, in batches of 5 groups from the client) checks ownership and direction of every row first, then in one transaction sets the category, the excluded amount, `categorySource = utente`, and optionally upserts the learned rule. Moving rows that had an automatic origin is counted as a correction (metric `categorization_auto_total` and log `categorization.auto.corrected`): this measures the errors of the 90% threshold.
 
 Origin labels ([`origin.ts`](../../lib/categorization/origin.ts)): «Regola», «Le tue scelte» (history), «AI» and «Banca». The percentage appears only in the tooltip text. A manual edit of the category, or of the split of an automatic row, makes the row `utente`; moving it back to the fallback clears the origin.
 

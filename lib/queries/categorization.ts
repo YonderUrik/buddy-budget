@@ -84,10 +84,9 @@ export function useAutoApplyMutation() {
 export interface AutoCategorizedResponse {
   groups: AutoCategorizedGroup[];
   total: number;
-  seenAt: string;
 }
 
-/** Gruppi di movimenti categorizzati da soli dall'ultimo controllo dell'utente. */
+/** Groups of transactions the app categorised on its own in the last 30 days («Messe dall'app»). */
 export function useAutoCategorizedQuery() {
   return useQuery({
     queryKey: AUTO_CATEGORIZED_QUERY_KEY,
@@ -95,25 +94,6 @@ export function useAutoCategorizedQuery() {
       const response = await fetch("/api/transactions/auto-categorized");
       if (!response.ok) throw new Error(pageText("Impossibile caricare le categorie applicate da sole"));
       return (await response.json()) as AutoCategorizedResponse;
-    },
-  });
-}
-
-/** «Va tutto bene»: le categorie applicate da sole fino a `until` escono dalla lista da controllare. */
-export function useMarkAutoCategorizedSeenMutation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ until, count }: { until: string; count: number }) => {
-      const response = await fetch("/api/transactions/auto-categorized/seen", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ until, count }),
-      });
-      if (!response.ok) throw new Error(pageText("Impossibile salvare il controllo"));
-    },
-    onSuccess: (_result, { count }) => {
-      track("categorization_auto_reviewed", { count });
-      queryClient.invalidateQueries({ queryKey: AUTO_CATEGORIZED_QUERY_KEY });
     },
   });
 }

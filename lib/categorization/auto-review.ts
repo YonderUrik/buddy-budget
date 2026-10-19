@@ -1,6 +1,9 @@
 import type { AutomaticCategorySource } from "./category-source";
 import { merchantKey } from "./merchant-key";
 
+/** «Messe dall'app» is a history, not a to-do list: it shows what the app categorised on its own in the last days. */
+export const AUTO_CATEGORIZED_RECENT_DAYS = 30;
+
 /** Movimento categorizzato da solo, nella forma che serve a «Messe dall'app». */
 export interface AutoCategorizedTransaction {
   id: string;

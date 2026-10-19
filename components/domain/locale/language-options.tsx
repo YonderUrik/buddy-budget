@@ -33,7 +33,8 @@ export function LanguageOptions({ value, onSelect, available = LANGUAGES, unavai
         const enabled = available.includes(language);
         const locale = LANGUAGE_LOCALES[language];
         const sample = enabled
-          ? `${new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(today)} · ${new Intl.NumberFormat(locale, { style: "currency", currency }).format(SAMPLE_AMOUNT)}`
+          ? // eslint-disable-next-line no-restricted-syntax -- a fixed sample amount showing the language's number format, not the user's money.
+            `${new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(today)} · ${new Intl.NumberFormat(locale, { style: "currency", currency }).format(SAMPLE_AMOUNT)}`
           : unavailableHint?.(language);
         return (
           <button

@@ -245,6 +245,8 @@ Example: 9.99 charged on the 5th of three consecutive months: `0.45 + 0.21 + 0.1
 
 `buildSubscriptionsView` ([`lib/subscriptions/view.ts`](../../lib/subscriptions/view.ts)) merges detection with the stored decisions and manual rows. Totals count only `confermato` and active items; detected items without a decision appear as «da confermare» and are totalled separately. Upcoming charges cover 30 days; price rises are shown for 365 days. Nothing detected is stored.
 
+A decision («È un abbonamento», «Non lo è», «È terminato») is an upsert on `(user, key)` with a snapshot of what the user saw. The detected name is the raw bank description of the last charge, often longer than the 80 characters allowed for a typed name, so for decisions it is shortened to 80 characters instead of being rejected; the key is matched as is (up to 1000 characters). A refused save is logged as `subscriptions.save.rejected` (`reason`, and `field` for invalid input) and the list shows the error as a toast.
+
 ## 5. Limits and out of scope
 
 - The 90% threshold is fixed; it is not adjustable by the user.

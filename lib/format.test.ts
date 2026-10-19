@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { AMOUNT_MASK, formatCurrency, formatRelativeTime, formatShortDate, getCurrencySymbol, setAmountsMasked } from "./format";
+import { AMOUNT_MASK, formatCurrency, formatRelativeTime, formatShortDate, getCurrencySymbol, isAmountsMasked, privateNumberFormat, setAmountsMasked } from "./format";
 
 describe("formatCurrency", () => {
   it("formatta un valore positivo nella valuta indicata", () => {
@@ -78,5 +78,13 @@ describe("maschera degli importi", () => {
     expect(formatCurrency(1234.5, "EUR")).toBe(AMOUNT_MASK);
     setAmountsMasked(false);
     expect(formatCurrency(1234.5, "EUR")).toContain("1234,50");
+  });
+
+  it("masks numbers about the user's money formatted without a currency, read at call time", () => {
+    const quantity = privateNumberFormat("it-IT", { maximumFractionDigits: 2 });
+    expect(quantity.format(127.094)).toBe("127,09");
+    setAmountsMasked(true);
+    expect(isAmountsMasked()).toBe(true);
+    expect(quantity.format(127.094)).toBe(AMOUNT_MASK);
   });
 });

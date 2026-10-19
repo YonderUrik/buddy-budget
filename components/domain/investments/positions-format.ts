@@ -15,6 +15,7 @@ export interface PriceNote {
 }
 import { translate, type MessageValues } from "@/lib/localization/messages";
 import { LANGUAGE_LOCALES, type Language } from "@/lib/localization/config";
+import { privateNumberFormat } from "@/lib/format";
 
 /** Bind presentation text and formatting to one language without shared mutable state. */
 export function localizedPositionFormats(language: Language) {
@@ -26,8 +27,8 @@ const STALE_PRICE_DAYS = 4;
 /** Testo mostrato quando un prezzo aggiornato in automatico è fermo: la fonte potrebbe non conoscere quel simbolo. */
 const STALE_AUTO_PRICE_HINT = tr("La fonte non lo aggiorna: puoi inserire il prezzo a mano.");
 
-const QUANTITY_FORMAT = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
-const PRICE_FORMAT = new Intl.NumberFormat(locale, { maximumFractionDigits: 4 });
+const QUANTITY_FORMAT = privateNumberFormat(locale, { maximumFractionDigits: 6 });
+const PRICE_FORMAT = privateNumberFormat(locale, { maximumFractionDigits: 4 });
 
 const MS_PER_DAY = 86_400_000;
 

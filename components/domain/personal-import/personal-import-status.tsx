@@ -51,7 +51,7 @@ export function PersonalImportProgress({ job }: PersonalImportProgressProps) {
       <DialogSteps steps={STEPS} current={step} ariaLabel={tr("Avanzamento dell'importazione")} className="max-sm:hidden" />
       <div role="status" className="flex flex-col gap-1.5 text-sm">
         <p className="font-medium text-foreground sm:font-normal">{tr("Puoi chiudere questa pagina: ti scriviamo un'email appena abbiamo finito.")}</p>
-        <p className="text-muted-foreground">{tr("Stima: circa 1 ora, entro il")}{" "}{new Date(job.estimatedAt).toLocaleString(formattingLocale, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}{tr(". È una stima, non una scadenza garantita.")}</p>
+        <p className="text-muted-foreground">{tr("Stima: circa 1 ora, entro il")}{" "}{new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(job.estimatedAt))}{tr(". È una stima, non una scadenza garantita.")}</p>
         {late ? <p className="text-foreground">{tr("Sta richiedendo più tempo del previsto. Ti avvisiamo appena è pronto.")}</p> : null}
       </div>
     </PanelSection>

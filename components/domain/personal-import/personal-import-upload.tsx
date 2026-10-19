@@ -37,7 +37,7 @@ interface LoadedFile {
 
 /** Human-readable file size (KB or MB), with the decimal separator of `locale`. */
 export function formatFileSize(bytes: number, locale = "it-IT"): string {
-  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toLocaleString(locale, { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return bytes >= 1024 * 1024 ? `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(bytes / 1024 / 1024)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
 /** Legge un file scelto dall'utente e lo restituisce come testo CSV; lancia con un messaggio comprensibile se non va. */
@@ -67,7 +67,7 @@ export interface PersonalImportUploadProps {
 export function PersonalImportUpload({ formats, onQueued }: PersonalImportUploadProps) {
   const { locale: formattingLocale } = useLocalization();
   function formatFileSize(bytes: number): string {
-  return bytes >= 1024 * 1024 ? tr("{0} MB", { 0: (bytes / 1024 / 1024).toLocaleString(formattingLocale, { maximumFractionDigits: 1 }) }) : tr("{0} KB", { 0: Math.max(1, Math.round(bytes / 1024)) });
+  return bytes >= 1024 * 1024 ? tr("{0} MB", { 0: new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 1 }).format(bytes / 1024 / 1024) }) : tr("{0} KB", { 0: Math.max(1, Math.round(bytes / 1024)) });
 }
   async function readPersonalImportFile(file: File): Promise<LoadedFile> {
   if (/\.xlsx$/i.test(file.name)) {
@@ -183,7 +183,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
 
         {flow.index === 1 ? (
         <>
-          <StepHeading title={tr("Carica il file")} description={tr("CSV o Excel (.xlsx), fino a {0} e {1} righe.", {0: formatFileSize(PERSONAL_IMPORT_MAX_BYTES), 1: PERSONAL_IMPORT_MAX_ROWS.toLocaleString(formattingLocale)})} />
+          <StepHeading title={tr("Carica il file")} description={tr("CSV o Excel (.xlsx), fino a {0} e {1} righe.", {0: formatFileSize(PERSONAL_IMPORT_MAX_BYTES), 1: new Intl.NumberFormat(formattingLocale).format(PERSONAL_IMPORT_MAX_ROWS)})} />
           {file ? (
             <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>

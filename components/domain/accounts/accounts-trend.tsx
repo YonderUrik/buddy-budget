@@ -46,7 +46,7 @@ export function AccountsTrend({ values, currency, className }: AccountsTrendProp
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      <svg viewBox={`0 0 ${TREND_WIDTH} ${TREND_HEIGHT}`} className="w-full max-w-[260px]" role="img" aria-label={summary}>
+      <svg data-amount-chart viewBox={`0 0 ${TREND_WIDTH} ${TREND_HEIGHT}`} className="w-full max-w-[260px]" role="img" aria-label={summary}>
         <polygon
           points={`${TREND_PADDING},${TREND_HEIGHT} ${points.join(" ")} ${TREND_WIDTH - TREND_PADDING},${TREND_HEIGHT}`}
           className="fill-primary/10"

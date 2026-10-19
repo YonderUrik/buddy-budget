@@ -138,7 +138,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
       {!imported && !failed ? (
         <div className="flex flex-col gap-1 text-sm text-muted-foreground">
           <p className="text-foreground">{tr("Puoi chiudere questa pagina: ti scriviamo un'email appena abbiamo finito.")}</p>
-          {job ? <p>{tr("Stima: entro il")}{" "}{new Date(job.estimatedAt).toLocaleString(formattingLocale, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}{tr(". È una stima, non una scadenza garantita.")}</p> : null}
+          {job ? <p>{tr("Stima: entro il")}{" "}{new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(job.estimatedAt))}{tr(". È una stima, non una scadenza garantita.")}</p> : null}
         </div>
       ) : null}
 

@@ -91,6 +91,7 @@ export function TrendChart({ points, description, color = "var(--primary)", refe
       onPointerCancel={formatValue ? () => setActiveIndex(null) : undefined}
     >
     <svg
+      data-amount-chart
       viewBox={`0 0 ${VIEW_WIDTH} ${height}`}
       preserveAspectRatio="none"
       role="img"

@@ -2,17 +2,28 @@ import { z } from "zod";
 import { SUBSCRIPTION_CADENCES } from "@/lib/calc/subscriptions";
 import { SUBSCRIPTION_STATUSES } from "@/lib/db/schema/subscriptions";
 
-const name = z.string().trim().min(1, "Dai un nome all'abbonamento").max(80, "Il nome è troppo lungo");
+/** Longest name a user can type for a subscription. */
+export const SUBSCRIPTION_NAME_MAX = 80;
+const name = z.string().trim().min(1, "Dai un nome all'abbonamento").max(SUBSCRIPTION_NAME_MAX, "Il nome è troppo lungo");
+/**
+ * Name of a detected subscription: the raw bank description of its last charge, which is often longer than a typed
+ * name. It is a snapshot the user never typed, so it is shortened instead of rejecting the decision.
+ */
+const detectedName = z.string().trim().min(1).transform((value) => value.slice(0, SUBSCRIPTION_NAME_MAX).trimEnd());
 const amount = z.number().positive("L'importo deve essere maggiore di zero").max(100_000);
 const cadence = z.enum(SUBSCRIPTION_CADENCES);
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida");
 
-/** Scelta su un abbonamento rilevato (conferma, esclusione, terminato): nasce da `key`, con l'istantanea di ciò che l'utente ha visto. */
+/**
+ * Decision on a detected subscription (confirm, exclude, ended): keyed by `key`, with a snapshot of what the user saw.
+ * The key must match the detected one exactly, so it is neither trimmed nor shortened; its length follows the bank
+ * description it comes from.
+ */
 export const decideSubscriptionSchema = z.object({
   origin: z.literal("rilevato"),
-  key: z.string().trim().min(1).max(200),
+  key: z.string().min(1).max(1000),
   status: z.enum(SUBSCRIPTION_STATUSES),
-  name,
+  name: detectedName,
   amount,
   cadence,
   categoryId: z.uuid().nullable().optional(),

@@ -319,7 +319,7 @@ Updated on 2026-10-01. The historical detail of each piece of work is in [`docs/
 - Similarity matching in the "Categorizza automaticamente" ("Categorise automatically") wizard does not discard generic words (e.g. "pagamento pos"); every suggestion is still confirmed by hand.
 - In the PATCH of a transaction that changes direction via `categoryId` without sending `excludedAmount`, the value saved for the old direction can cause the update to be rejected (fail-safe, no corruption).
 - `resolveDbSsl` can throw on multi-host Postgres URLs; the `migrator` stage of the Dockerfile does not force TLS; the GoCardless cron has no time budget within `maxDuration`.
-- The "hide amounts" mask covers only what goes through `formatCurrency` (quantities, percentages and some local formatters remain in plain view).
+- The "hide amounts" mask covers what goes through `lib/format` (amounts, rolling numbers, quantities and prices of operations, hand-drawn charts; guarded by ESLint in `app/` and `components/`); emails, form fields and `lib/` helpers that build their own strings are outside the guard (`docs/architecture/overview.md` §4.13).
 - better-auth writes its own internal errors to the console, outside our `logger`: to be reassessed by looking at the logs in Loki.
 
 ### Operational notes (lessons not to repeat)

@@ -16,6 +16,7 @@ import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 import { cn } from "@/lib/utils";
 import { DialogSection } from "../dialog-parts";
 import { ImportNotice } from "./import-notice";
+import { privateNumberFormat } from "@/lib/format";
 
 export interface PreviewHeaderProps {
   fileName: string | null;
@@ -82,7 +83,7 @@ export interface ImportRowsPreviewProps {
 /** Le prime operazioni lette, come verranno importate: tabella su schermi larghi, elenco compatto su telefono. */
 export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
   const { locale: formattingLocale } = useLocalization();
-  const NUMBER_FORMAT = new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 8 });
+  const NUMBER_FORMAT = privateNumberFormat(formattingLocale, { maximumFractionDigits: 8 });
 
   const { t: tr } = useLocalization();
   const ok = rows.flatMap((r) => (r.status === "ok" ? [r] : []));

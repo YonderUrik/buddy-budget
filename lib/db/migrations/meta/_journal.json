@@ -309,6 +309,13 @@
       "when": 1792414385403,
       "tag": "0045_bank_category",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1792424034896,
+      "tag": "0046_welcome_visit",
+      "breakpoints": true
     }
   ]
 }

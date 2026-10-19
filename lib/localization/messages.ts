@@ -4,6 +4,11 @@ import type { Language } from "./config";
 /** Source-language keys keep existing Italian wording stable during translation extraction. */
 export const messages: Record<string, readonly [english: string, german: string]> = {
   ...Object.fromEntries(Object.entries(en).map(([source, english]) => [source, [english, (de as Record<string, string>)[source] ?? english] as const])),
+  "Modalità personale: accesso automatico su questo computer.": ["Personal mode: automatic access on this computer.", "Persönlicher Modus: automatischer Zugriff auf diesem Computer."],
+  "Azioni che cancellano i tuoi dati. Conferma prima di continuare.": ["Actions that delete your data. Confirm before continuing.", "Aktionen, die deine Daten löschen. Bestätige, bevor du fortfährst."],
+  "Per rimuovere l’installazione e il profilo personale, usa il comando di disinstallazione sul tuo computer.": ["To remove the installation and your personal profile, run the uninstall command on your computer.", "Um die Installation und dein persönliches Profil zu entfernen, führe den Deinstallationsbefehl auf deinem Computer aus."],
+  "CSV personali con AI": ["Custom CSV imports with AI", "Eigene CSV-Importe mit KI"],
+  "Profilo personale": ["Personal profile", "Persönliches Profil"],
   "Paese del prodotto": ["Product country", "Produktland"],
   "Lingua": ["Language", "Sprache"],
   "Italia": ["Italy", "Italien"],

@@ -16,17 +16,30 @@ cd buddy-budget
 ./scripts/selfhost-init.sh --start  # configura e avvia con le immagini pubblicate
 ```
 
-L’installer attende che l’app sia pronta e poi mostra `BuddyBudget is ready`, l’URL da aprire e come accedere. Le migration girano da sole. Senza Resend, la schermata finale spiega come richiedere il link dalla pagina di login e trovarlo nei log; con Resend invita ad aprire l’email.
+L’installer attende che l’app sia pronta e poi mostra `BuddyBudget is ready`, l’URL da aprire e come accedere. Le migration girano da sole. In modalità personale apre automaticamente il profilo locale, senza pagina di login. In modalità server, senza Resend, la schermata finale spiega come richiedere il link dalla pagina di login e trovarlo nei log; con Resend invita ad aprire l’email.
 
 Per provare questo branch o altre modifiche non rilasciate: `./scripts/selfhost-init.sh --build`. Configura, costruisce e avvia con un solo comando. Se `.env` è già pronto, usa `./scripts/selfhost-start.sh --build` per avviare senza ripetere le domande.
 
 Senza opzioni, `./scripts/selfhost-init.sh` salva solo la configurazione: il messaggio finale chiarisce che l’app non è stata avviata e indica il comando successivo. `--start` usa le immagini pubblicate, `--build` usa il checkout locale. In caso di errore di build o timeout di avvio non compare alcun messaggio di successo e vengono indicati stato e log da controllare.
 
+### Uso personale o server
+
+Il primo dei sette passi chiede `How will you use BuddyBudget?`:
+
+- **Just me, on this computer**: crea un solo profilo personale e apre l’app senza login. Non servono email o Google. L’onboarding conserva le scelte di paese, lingua, valuta, categorie e consensi. Le email restano facoltative, con mittente Resend e indirizzo personale per ricevere le notifiche.
+- **On a server or shared with others**: accesso con email o Google. Una configurazione già esistente mantiene questa modalità come suggerimento; non viene disabilitata automaticamente l’autenticazione di installazioni precedenti.
+
+La modalità personale salva `SELFHOST_AUTH_MODE=local`, richiede `APP_BIND=127.0.0.1` e un URL `http://localhost:<porta>` o `http://127.0.0.1:<porta>`. L’app rifiuta l’avvio con configurazioni che espongono l’accesso automatico; rifiuta host inattesi e richieste del browser provenienti da altri siti. Non pubblicare questa modalità tramite proxy, tunnel o inoltro di porte. Per la rete scegli la modalità server. Il valore predefinito del template e di `--defaults` resta `server`.
+
+Per spostare il profilo personale su un server, rilancia il setup, scegli server e inserisci la tua email. `SELFHOST_OWNER_EMAIL` viene associato allo stesso profilo: categorie, dati e preferenze restano intatti; tutte le vecchie sessioni automatiche vengono revocate all’avvio. Puoi poi accedere con il link via email (o dai log). L’email deve essere diversa da quella di eventuali altri account: non vengono fusi utenti. Per attivare la modalità personale serve un database nuovo o il solo profilo personale già creato dal setup; non viene adottato un account di un database condiviso.
+
+In modalità personale le Impostazioni mantengono export e reset dei dati, senza richiedere una nuova verifica via email. Per eliminare tutta l’installazione e il profilo usa la disinstallazione descritta sotto.
+
 ### Quali servizi servono davvero?
 
 - **OpenRouter — fortemente consigliato** per categorie AI e CSV di banche e broker non supportati. Crea la chiave su <https://openrouter.ai/settings/keys>, aggiungi credito e imposta un limite di spesa. App e worker la ricevono automaticamente. Ogni persona deve comunque autorizzare l’AI nelle proprie Impostazioni; i CSV richiedono il consenso all’invio del file.
 - **Yahoo — già configurato, senza chiave API**. Il setup può controllare una quotazione dalla macchina su cui gira. Un blocco o limite del servizio non richiede di acquistare una chiave Yahoo. Le altre fonti e i cambi BCE sono integrati.
-- **Resend — consigliato** per login via email, riepiloghi e avvisi. Servono chiave e mittente su un dominio verificato. Il setup abilita il cron email; ogni utente sceglie le notifiche, inizialmente spente.
+- **Resend — consigliato in modalità server, facoltativo in modalità personale** per login via email, riepiloghi e avvisi. Servono chiave e mittente su un dominio verificato. Il setup abilita il cron email; ogni utente sceglie le notifiche, inizialmente spente.
 - **GoCardless, Google, Logo.dev e fonti prezzi aggiuntive — facoltativi**. Il setup spiega cosa abilitano e dove ottenere le credenziali. Google richiede il callback `<APP_URL>/api/auth/callback/google`.
 - **Ollama — facoltativo** per commenti al portafoglio, anche su un server locale. Non sostituisce OpenRouter per categorie e CSV.
 
@@ -40,9 +53,9 @@ Dopo il salvataggio esegui `./scripts/selfhost-start.sh` (oppure `--build` per u
 
 Per uno script automatico o la configurazione manuale: `./scripts/selfhost-init.sh --defaults` crea un file minimo (richiede `openssl`) e non tocca un `.env` esistente. Per abilitare manualmente l’AI configura `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `PERSONAL_CSV_ENCRYPTION_KEY` (32 byte in base64) e `COMPOSE_PROFILES=ai`.
 
-### Primo accesso senza email
+### Primo accesso in modalità server senza email
 
-L'accesso è con un link via email (o Google). Se non hai configurato Resend, il link compare nei log: inserisci la tua email nella pagina di login, poi
+In modalità personale non c’è alcun login. In modalità server l’accesso è con un link via email (o Google). Se non hai configurato Resend, il link compare nei log: inserisci la tua email nella pagina di login, poi
 
 ```bash
 docker compose logs app | grep "Link di accesso"

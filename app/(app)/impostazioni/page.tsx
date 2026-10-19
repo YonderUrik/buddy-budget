@@ -93,7 +93,7 @@ function ImpostazioniContent() {
             account: (
               <>
                 <ProfileSection settings={settings} />
-                <SessionsSection />
+                {!settings.instance?.localMode && <SessionsSection />}
                 {settings.instance && <InstanceSection status={settings.instance} />}
               </>
             ),
@@ -105,7 +105,7 @@ function ImpostazioniContent() {
             ),
             notifiche: (
               <>
-                <NotificationsSection email={settings.email} />
+                {(!settings.instance?.localMode || settings.instance.notifications) && <NotificationsSection email={settings.email} />}
                 <AiCategorizationSection />
               </>
             ),

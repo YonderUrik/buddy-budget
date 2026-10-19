@@ -40,6 +40,14 @@ export function validateConfig(values, only) {
     const url = new URL(values.APP_URL);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash || url.pathname !== '/') throw new Error();
   } catch { add(['APP_URL'], 'Public URL: enter an http:// or https:// address without a path, credentials or query parameters.'); }
+  if (!['local', 'server'].includes(values.SELFHOST_AUTH_MODE)) add(['SELFHOST_AUTH_MODE'], 'Choose local or server mode.');
+  if (values.SELFHOST_AUTH_MODE === 'local') {
+    try {
+      const url = new URL(values.APP_URL);
+      if (url.protocol !== 'http:' || !['localhost', '127.0.0.1'].includes(url.hostname) || values.APP_BIND !== '127.0.0.1') throw new Error();
+    } catch { add(['APP_URL', 'APP_BIND', 'SELFHOST_AUTH_MODE'], 'Personal mode requires http://localhost or http://127.0.0.1 and APP_BIND=127.0.0.1. Choose server mode for network access.'); }
+  }
+  if (values.SELFHOST_OWNER_EMAIL && !/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(values.SELFHOST_OWNER_EMAIL)) add(['SELFHOST_OWNER_EMAIL'], 'Owner email: enter a valid email address.');
   if (!/^\d+$/.test(values.APP_PORT ?? '') || Number(values.APP_PORT) < 1 || Number(values.APP_PORT) > 65535) add(['APP_PORT'], 'Local port: enter a number between 1 and 65535.');
   for (const [first, second, label] of [
     ['RESEND_API_KEY', 'RESEND_FROM', 'Email: provide both a Resend API key and a sender address.'],
@@ -66,9 +74,9 @@ export function readiness(values) {
     { id: 'core', label: 'Manual accounts, transactions, budgets and standard imports', configured: true },
     { id: 'yahoo', label: 'Market prices and exchange rates (no Yahoo key needed)', configured: true },
     { id: 'openrouter', label: 'AI categories and custom CSV imports (worker included)', configured: Boolean(values.OPENROUTER_API_KEY) },
-    { id: 'resend', label: 'Sign-in emails, summaries and alerts', configured: Boolean(values.RESEND_API_KEY && values.RESEND_FROM) },
+    { id: 'resend', label: values.SELFHOST_AUTH_MODE === 'local' ? 'Optional email summaries and alerts' : 'Sign-in emails, summaries and alerts', configured: Boolean(values.RESEND_API_KEY && values.RESEND_FROM && (values.SELFHOST_AUTH_MODE !== 'local' || values.SELFHOST_OWNER_EMAIL)) },
     { id: 'gocardless', label: 'Bank sync', configured: Boolean(values.GOCARDLESS_SECRET_ID && values.GOCARDLESS_SECRET_KEY) },
-    { id: 'google', label: 'Google sign-in', configured: Boolean(values.GOOGLE_CLIENT_ID && values.GOOGLE_CLIENT_SECRET) },
+    { id: 'google', label: 'Google sign-in', configured: values.SELFHOST_AUTH_MODE !== 'local' && Boolean(values.GOOGLE_CLIENT_ID && values.GOOGLE_CLIENT_SECRET) },
     { id: 'logos', label: 'Logo.dev logos', configured: Boolean(values.LOGODEV_PUBLISHABLE_KEY) },
     { id: 'prices', label: 'Additional financial data providers', configured: ['ALPHAVANTAGE_API_KEY', 'TWELVEDATA_API_KEY', 'STOOQ_API_KEY', 'COINGECKO_API_KEY', 'OPENFIGI_API_KEY'].some(name => Boolean(values[name])) },
     { id: 'ollama', label: 'Portfolio commentary with Ollama', configured: Boolean(values.OLLAMA_BASE_URL) },
@@ -85,7 +93,7 @@ export function prepareConfig(values) {
   const profiles = new Set((next.COMPOSE_PROFILES ?? '').split(',').filter(Boolean));
   if (next.OPENROUTER_API_KEY) profiles.add('ai'); else profiles.delete('ai');
   next.COMPOSE_PROFILES = [...profiles].join(',');
-  next.NOTIFICATIONS_MODE = next.RESEND_API_KEY && next.RESEND_FROM ? 'execute' : 'off';
+  next.NOTIFICATIONS_MODE = next.RESEND_API_KEY && next.RESEND_FROM && (next.SELFHOST_AUTH_MODE !== 'local' || next.SELFHOST_OWNER_EMAIL) ? 'execute' : 'off';
   return next;
 }
 

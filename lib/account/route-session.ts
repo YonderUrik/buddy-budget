@@ -1,4 +1,5 @@
 import "server-only";
+import { isLocalMode, LOCAL_OWNER_ID } from "@/lib/selfhost";
 import { auth, type Session } from "@/lib/auth";
 import { bindRequestUser } from "@/lib/observability";
 import { REAUTH_REQUIRED_CODE } from "./constants";
@@ -14,6 +15,7 @@ export async function sessionOrUnauthorized(request: Request): Promise<Session |
 
 /** Risposta 403 per le azioni sensibili se l'accesso non è recente, altrimenti null. */
 export function recentLoginRequired(session: Session, now: Date = new Date()): Response | null {
+  if (isLocalMode() && session.user.id === LOCAL_OWNER_ID) return null;
   if (isRecentLogin(new Date(session.session.createdAt), now)) return null;
   return Response.json(
     { error: "Per sicurezza accedi di nuovo prima di continuare.", code: REAUTH_REQUIRED_CODE },

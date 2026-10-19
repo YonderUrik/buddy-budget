@@ -56,7 +56,7 @@ export async function runSetup({ path, template = '', prompts, check = checkServ
       prompts.write(`Choose ${Object.keys(options).join(', ')} or press Enter for ${fallback}.`);
     }
   };
-  const heading = (step, title) => prompts.write(`\n── Step ${step} of 6: ${title} ──`);
+  const heading = (step, title) => prompts.write(`\n── Step ${step} of 7: ${title} ──`);
   const readField = async field => {
     if (field.help) prompts.write(field.help);
     if (field.link) prompts.write(`Get this key: ${field.link}`);
@@ -123,36 +123,72 @@ export async function runSetup({ path, template = '', prompts, check = checkServ
   };
 
   prompts.write('\nBuddyBudget — self-host setup\n');
-  prompts.write('We will set up your address, AI, prices and email. Other integrations are optional.');
+  prompts.write('Choose how you will use BuddyBudget, then set up AI, prices and any optional services.');
   prompts.write('Nothing is saved until you confirm the final summary. Ctrl+C cancels.');
   prompts.write('API keys are hidden while you type. Enter keeps a saved value or uses the suggested default.');
   if (current.source) prompts.write('Existing installation found. Database passwords and encryption keys will be preserved.');
 
-  heading(1, 'Your address');
+  heading(1, 'How will you use BuddyBudget?');
+  prompts.write('Personal mode opens directly into one account on this computer. Server mode requires sign-in.');
+  const mode = await choice('Choose your use case', { 1: 'Just me, on this computer — no login needed', 2: 'On a server or shared with others — sign-in required' }, current.source ? (values.SELFHOST_AUTH_MODE === 'local' ? '1' : '2') : '1');
+  set('SELFHOST_AUTH_MODE', mode === '1' ? 'local' : 'server');
+  const local = mode === '1';
+  if (local) {
+    set('APP_BIND', '127.0.0.1');
+    prompts.write('Personal mode: this computer only. No email or Google account is needed to open the app.');
+    prompts.write('Use a fresh database, or the account created by an earlier personal installation. Existing shared accounts keep their login.');
+    set('APP_URL', `http://localhost:${values.APP_PORT}`);
+  } else if (current.values.SELFHOST_AUTH_MODE === 'local' || current.values.SELFHOST_OWNER_EMAIL) {
+    prompts.write('Keep your personal account and data: provide the email you will use to sign in on the server. Automatic local sessions will be closed.');
+    do {
+      await readField({ name: 'SELFHOST_OWNER_EMAIL', label: 'Your account email', required: true });
+      if (values.SELFHOST_OWNER_EMAIL && !validateConfig(values, ['SELFHOST_OWNER_EMAIL']).length) break;
+      prompts.write('A valid email is required to keep access to your personal account in server mode.');
+    } while (true);
+  }
+
+  heading(2, 'Your address');
   const address = SECTIONS.find(section => section.id === 'address');
-  prompts.write(address.description);
-  for (const field of address.fields) {
+  prompts.write(local ? 'Choose the local address you will open on this computer.' : address.description);
+  for (const field of address.fields.filter(field => !local || field.name === "APP_PORT")) {
     if (field.name === 'APP_PORT' && !current.values.APP_PORT) {
       try { const url = new URL(values.APP_URL); if (['localhost', '127.0.0.1'].includes(url.hostname) && url.port) set('APP_PORT', url.port); } catch { /* URL validation below. */ }
     }
     do {
-      await readField(field);
-      const errors = validateConfig(values, [field.name]);
+      await readField(local ? { ...field, help: 'Choose the port BuddyBudget will use on this computer. Your browser address is set automatically.' } : field);
+      const errors = validateConfig(values, [field.name, ...(local ? ['APP_BIND'] : [])]);
       if (!errors.length) break;
       prompts.write(errors.join('\n'));
     } while (true);
   }
-  heading(2, 'AI features');
+  if (local) {
+    set('APP_URL', `http://localhost:${values.APP_PORT}`);
+    prompts.write(`Your browser address will be ${values.APP_URL}.`);
+  }
+  heading(3, 'AI features');
   await configure(SECTIONS.find(section => section.id === 'openrouter'));
-  heading(3, 'Market prices — no key needed');
+  heading(4, 'Market prices — no key needed');
   prompts.write('Yahoo Finance and other public sources are already included. There is nothing to enter here.');
   if (await yes('Check Yahoo connectivity now?')) {
     prompts.write('Checking prices…'); checks.yahoo = await check('yahoo', values); prompts.write(checks.yahoo.message);
   }
-  heading(4, 'Sign-in emails and notifications');
-  await configure(SECTIONS.find(section => section.id === 'resend'));
-  heading(5, 'Optional integrations');
-  const extras = SECTIONS.filter(section => !['address', 'openrouter', 'yahoo', 'resend'].includes(section.id));
+  heading(5, local ? 'Optional email notifications' : 'Sign-in emails and notifications');
+  const emailSection = SECTIONS.find(section => section.id === 'resend');
+  if (local) {
+    prompts.write('You do not need email to access BuddyBudget. Set it up only if you want emailed summaries and alerts.');
+    if (await yes('Set up optional email notifications?', false)) {
+      await configure({ ...emailSection, title: 'Email notifications', level: 'Optional', description: 'Send the summaries and alerts you choose in Settings.', skip: 'You can still use BuddyBudget without email notifications.' });
+      if (values.RESEND_API_KEY && values.RESEND_FROM) {
+        do {
+          await readField({ name: 'SELFHOST_OWNER_EMAIL', label: 'Your email to receive notifications', required: true });
+          if (values.SELFHOST_OWNER_EMAIL && !validateConfig(values, ['SELFHOST_OWNER_EMAIL']).length) break;
+          prompts.write('Provide a valid recipient email for your notifications.');
+        } while (true);
+      }
+    }
+  } else await configure(emailSection);
+  heading(6, 'Optional integrations');
+  const extras = SECTIONS.filter(section => !['address', 'openrouter', 'yahoo', 'resend', ...(local ? ['google'] : [])].includes(section.id));
   prompts.write('Choose only the services you want to configure. Press Enter to skip all; existing settings stay unchanged.');
   for (const [index, section] of extras.entries()) {
     const existing = section.fields.some(field => !field.default && values[field.name]);
@@ -169,9 +205,10 @@ export async function runSetup({ path, template = '', prompts, check = checkServ
 
   const errors = validateConfig(values);
   if (errors.length) { prompts.write(`\nNot saved:\n${errors.join('\n')}\nRun setup again to correct these settings.`); return false; }
-  heading(6, 'Review and save');
-  prompts.write(`Public URL: ${values.APP_URL}\nLocal port: ${values.APP_PORT}`);
-  for (const item of readiness(values)) {
+  heading(7, 'Review and save');
+  prompts.write(local ? 'Personal mode — opens automatically, restricted to this computer.' : 'Server mode — sign-in required.');
+  prompts.write(`Browser address: ${values.APP_URL}\nLocal port: ${values.APP_PORT}`);
+  for (const item of readiness(values).filter(item => !local || item.id !== 'google')) {
     const result = checks[item.id];
     const status = !item.configured ? 'Off' : ['core', 'yahoo'].includes(item.id) ? 'Included' : 'Configured';
     prompts.write(`  [${status}] ${item.label}`);
@@ -183,12 +220,12 @@ export async function runSetup({ path, template = '', prompts, check = checkServ
   prompts.write('\nConfiguration saved to .env. Keep a private backup, including its encryption keys.');
   if (launch !== 'configure') {
     prompts.write(`\nSetup is not finished yet. Next, this installer will ${launch === 'build' ? 'build this checkout and start' : 'start'} BuddyBudget.`);
-    prompts.write('Please wait. Your browser address and sign-in instructions will appear once the app is ready.');
+    prompts.write('Please wait. Your browser address and next steps will appear once the app is ready.');
   } else {
     prompts.write('\nConfiguration is complete. This setup has not started or restarted BuddyBudget.');
     prompts.write('\nNEXT STEP — run this command in this same folder:\n  ./scripts/selfhost-start.sh');
     prompts.write('\nTesting this branch or other unreleased changes? Use this command instead:\n  ./scripts/selfhost-start.sh --build');
-    prompts.write('The start command waits for the app to be ready, then shows the address to open and how to sign in.');
+    prompts.write('The start command waits for the app to be ready, then shows the address to open and your next steps.');
     prompts.write(`Your configured browser address is: ${values.APP_URL.replace(/\/+$/, '')}`);
   }
   return true;

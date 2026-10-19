@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { localAccessPlugin } from "./local-plugin";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
@@ -38,6 +39,7 @@ export const auth = betterAuth({
     },
   }),
   plugins: [
+    localAccessPlugin(),
     magicLink({
       expiresIn: MAGIC_LINK_EXPIRES_MINUTES * 60,
       sendMagicLink: async ({ email, url }) => {
@@ -154,5 +156,7 @@ export const auth = betterAuth({
     },
   },
 });
+
+export { initializeLocalOwner } from "./local-owner";
 
 export type Session = typeof auth.$Infer.Session;

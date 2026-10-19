@@ -50,13 +50,16 @@ fi
 docker compose "$@" exec -T app node -e '
 const url = (process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
 const email = Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM);
-const lines = ["", "BuddyBudget is ready.", "", "1. Open this address in your browser:", "   " + url, "", "2. Sign in:"];
-if (email) {
+const local = process.env.SELFHOST_AUTH_MODE === "local";
+const lines = ["", "BuddyBudget is ready.", "", "1. Open this address in your browser:", "   " + url, "", local ? "2. Your personal account opens automatically. No sign-in is needed." : "2. Sign in:"];
+if (local) {
+  lines.push("   BuddyBudget is restricted to this computer.");
+} else if (email) {
   lines.push("   Enter your email address and request a sign-in link.", "   Open the email and click the link to continue.");
 } else {
   lines.push("   Enter your email address on the login page and request a sign-in link.", "   Email delivery is off. In this terminal, run:", "     docker compose logs --since=5m app", "   Copy the latest sign-in link from the logs into your browser.");
 }
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) lines.push("   You can also choose Continue with Google.");
+if (!local && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) lines.push("   You can also choose Continue with Google.");
 lines.push("", "3. Complete your profile in the app.", "   You can enable AI suggestions and email notifications in Settings.", "", "You can close this terminal. BuddyBudget will keep running in Docker.", "To change your API keys later: ./scripts/selfhost-init.sh", "To uninstall: ./scripts/selfhost-uninstall.sh (keeps your data)");
 process.stdout.write(lines.join("\n") + "\n");
 '

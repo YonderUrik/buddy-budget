@@ -74,6 +74,22 @@ export const bankConnectionAttempts = pgTable(
 
 export type BankConnectionAttempt = typeof bankConnectionAttempts.$inferSelect;
 
+/**
+ * People who asked to be told when new bank connections open again («Tienimi aggiornato»), one row per user.
+ * `country` is the product country at the time of the request (which banks they will need); `notifiedAt` is set
+ * once the announcement email has gone out, so nobody is written to twice.
+ */
+export const bankConnectionInterest = pgTable("bank_connection_interest", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => authUser.id, { onDelete: "cascade" }),
+  country: text("country").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  notifiedAt: timestamp("notified_at", { withTimezone: true }),
+});
+
+export type BankConnectionInterest = typeof bankConnectionInterest.$inferSelect;
+
 /** Singola riga: cache dell'access token applicativo GoCardless (non è per-utente). */
 export const gocardlessToken = pgTable("gocardless_token", {
   id: text("id").primaryKey(),

@@ -72,7 +72,7 @@ export interface FlowContent {
 /** The data path when you connect a bank, step by step. */
 export const FLOW = {
   title: "Il percorso, passo per passo.",
-  lede: "Le credenziali restano alla banca. Verso BuddyBudget arrivano solo saldi e movimenti, in sola lettura.",
+  lede: "Il collegamento alla banca per ora non accetta conti nuovi e torna presto; chi l'ha già lo tiene. Così funziona: le credenziali restano alla banca e verso BuddyBudget arrivano solo saldi e movimenti, in sola lettura.",
   /** Cosa viaggia su ogni collegamento, nell'ordine dei nodi. */
   links: ["Credenziali e conferma", "Consenso in sola lettura", "Saldi e movimenti"],
   neverTitle: "Mai.",
@@ -268,7 +268,7 @@ export const SECURITY_IT: SecurityContent = {
     kicker: "Sicurezza e privacy",
     crumb: "Sicurezza e privacy",
     ctaTitle: "Prova senza collegare niente.",
-    ctaText: "Puoi iniziare con un conto manuale o con i dati d'esempio, e collegare la banca solo quando ti senti pronto.",
+    ctaText: "Puoi iniziare con un conto manuale, l'estratto conto o i dati d'esempio.",
     more: "Le altre domande.",
     sourcesSummary: "Fonti ufficiali",
     legalNote: [

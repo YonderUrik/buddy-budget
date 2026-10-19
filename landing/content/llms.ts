@@ -21,7 +21,7 @@ const PAGES: readonly { path: string; title: string; text: string }[] = [
   { path: CONTENT_PATHS.guidaZainetto, title: "Guida allo zainetto fiscale", text: "Come funzionano le minusvalenze a quattro anni, con esempi e fonti ufficiali." },
   { path: CONTENT_PATHS.funzioneInvestimenti, title: "Investimenti con le tasse italiane", text: "Rendimento vero, rischio, zainetto e bollo calcolati dalle operazioni." },
   { path: CONTENT_PATHS.funzioni, title: "Tutte le funzioni", text: "Elenco completo per area, con lo stato di ognuna." },
-  { path: CONTENT_PATHS.sicurezza, title: "Sicurezza e privacy", text: "Collegamento alla banca in sola lettura (PSD2) tramite GoCardless, cosa viene salvato e cosa no, server in Germania, export e cancellazione, limiti dichiarati." },
+  { path: CONTENT_PATHS.sicurezza, title: "Sicurezza e privacy", text: "Collegamento alla banca in sola lettura (PSD2) tramite GoCardless (in arrivo per i conti nuovi), cosa viene salvato e cosa no, server in Germania, export e cancellazione, limiti dichiarati." },
   { path: CONTENT_PATHS.schermate, title: "Schermate", text: "Screenshot dell'app vera con dati di esempio." },
 ];
 
@@ -30,7 +30,7 @@ const PAGES_EN: readonly { path: string; title: string; text: string }[] = [
   { path: EN_PATHS.home, title: "BuddyBudget in English", text: "The product in one page: one net worth from bank accounts, investments, pension and debts, how each gets in, what it tells you, security and the open code." },
   { path: EN_PATHS.features, title: "All the features", text: "The full list by area, with the status of each." },
   { path: EN_PATHS.featureInvestments, title: "Investments with Italian taxes", text: "Real returns, risk, tax-loss carryforward (zainetto fiscale) and stamp duty (bollo) worked out from your trades." },
-  { path: EN_PATHS.security, title: "Security and privacy", text: "Read-only bank connection (PSD2) via GoCardless, what is stored and what is not, servers in Germany, export and deletion, stated limits." },
+  { path: EN_PATHS.security, title: "Security and privacy", text: "Read-only bank connection (PSD2) via GoCardless (coming soon for new accounts), what is stored and what is not, servers in Germany, export and deletion, stated limits." },
   { path: EN_PATHS.screens, title: "Screens", text: "Screenshots of the real app with sample data." },
   { path: EN_PATHS.privacy, title: "Privacy policy", text: "Who runs the service, what data it keeps and why, which providers handle it, for how long, and your rights (a translation; the Italian text is the binding version)." },
   { path: EN_PATHS.terms, title: "Terms of service", text: "What the service is and isn't, who can use it, liability and governing law (English translation)." },
@@ -52,7 +52,7 @@ export function buildLlmsTxt(): string {
     "- App web di finanza personale in italiano per chi vive in Italia: conto, investimenti, fondo pensione e mutuo sommati in un patrimonio netto aggiornato ogni giorno, con spese, rendimenti, tasse e rate nello stesso posto.",
     "- Calcola le tasse sugli investimenti con le regole italiane (zainetto fiscale a quattro anni, ETF armonizzati, titoli di Stato al 12,5%, imposta di bollo). Sono stime, non consulenza.",
     "- Gratuita durante la beta. Si usa dal browser e si installa come PWA; non è nei negozi di app.",
-    "- La banca si collega in sola lettura con l'Open Banking (PSD2); i server sono in Germania; i dati si esportano in un file ZIP.",
+    "- I movimenti della banca entrano dall'estratto conto (CSV o Excel); il collegamento in sola lettura con l'Open Banking (PSD2) arriva presto. I server sono in Germania; i dati si esportano in un file ZIP.",
     `- Non è una banca, non è un broker e non dà consigli di investimento.${SOURCE_URL ? ` Il codice è pubblico (${SOURCE_LICENSE}): ${SOURCE_URL}` : ""}`,
     `- Sito: ${SITE_URL} · App: ${APP_URL}`,
     "",
@@ -76,7 +76,7 @@ export function buildLlmsTxt(): string {
   for (const r of ITALY.rules) lines.push(`- ${r.rule} ${r.app}${r.source ? ` Fonte: ${r.source.href}` : ""}`);
   lines.push("", "## Fonti supportate", "");
   for (const b of SUPPORTED.brokers) lines.push(`- **${b.name}**: ${b.detail}`);
-  lines.push(`- **Banche (Open Banking, sola lettura)**: ${SUPPORTED.countries.map((c) => c.name).join(", ")}`);
+  lines.push(`- **Banche (Open Banking, sola lettura, in arrivo)**: ${SUPPORTED.countries.map((c) => c.name).join(", ")}`);
   for (const o of SUPPORTED.other) lines.push(`- ${o.label}`);
   for (const d of TOUR.tabs) {
     const after = [d.after.lead, "strong" in d.after ? d.after.strong : "", "tail" in d.after ? d.after.tail : ""].filter(Boolean).join(" ");

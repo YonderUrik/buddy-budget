@@ -44,7 +44,7 @@ Everything that is about your data: accounts and transactions, categories and ru
 | Email (any SMTP server, or Resend) | `SMTP_URL` + `EMAIL_FROM`, or `RESEND_API_KEY` + `EMAIL_FROM` | No emails: no reset or sign-in links, no price alerts, summaries or reminders. Everything else works |
 | Google sign-in | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | The Google button is not shown |
 | AI (OpenRouter) | `OPENROUTER_API_KEY`, and `COMPOSE_PROFILES=ai` for the CSV import worker | No category suggestions, no import of other banks' CSVs (the broker exports above still import) |
-| Banks (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | No linked bank accounts: manual accounts and CSV import |
+| Banks (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` (new connections open by default; `BANK_CONNECTIONS_OPEN=false` allows only renewals) | No linked bank accounts: manual accounts and CSV import |
 | In-app reports | `SUPPORT_EMAIL_TO` (needs email) | «Scrivici» answers that reports are off on this install |
 
 Every OpenRouter request asks for zero data retention endpoints only (`provider.zdr`), so a model with no such endpoint fails instead of falling back to one that keeps data. You can also turn ZDR on for all models in your OpenRouter account (Settings → Privacy); the two combine, either one is enough.

@@ -14,7 +14,7 @@ import { SECURITY_SOURCES_EN } from "./security";
 /** Title and description of the English pages (root layout and home). */
 export const SITE_TITLE_EN = "BuddyBudget: open-source personal finance, all in one number";
 export const SITE_DESCRIPTION_EN =
-  "Bank accounts, investments, pension and debts in one net worth, updated every day, with Italian taxes worked out. Read-only bank connection or file upload. Open source and self-hostable, free during the beta.";
+  "Bank accounts, investments, pension and debts in one net worth, updated every day, with Italian taxes worked out. Upload your bank statement; a read-only bank connection is coming soon. Open source and self-hostable, free during the beta.";
 export const OG_ALT_EN = "BuddyBudget: all your money, in one number";
 
 /** Countries whose banks can be linked, with English names (same codes as `SUPPORTED.countries`). */
@@ -29,7 +29,7 @@ export const FAQ_EN: readonly FaqItem[] = [
     question: "Which countries and languages?",
     answer: `Two products: Italy, in Italian and English, and Germany, in German and English. You pick the currency. Italy has every feature. Germany has the essentials: accounts, portfolio, dividends and partial 2026 tax estimates, with the limits written out; pension and the advanced simulators stay hidden until they have been reviewed. Banks can be connected in ${BANK_LIST_EN}.`,
   },
-  { question: "Do I have to connect my bank?", answer: "No. You can add accounts by hand or upload a file. The connection only saves you typing transactions, and it can only read." },
+  { question: "Does it connect to my bank?", answer: "Not yet: a read-only Open Banking connection is coming soon. Until then you upload your bank statement as CSV or Excel, or add accounts by hand." },
   {
     question: "Are the taxes real?",
     answer: "They are estimates. For Italy: 26% on gains, 12.5% on government bonds, losses carried forward for four years (the zainetto fiscale) and stamp duty (bollo). For Germany, partial 2026 estimates. They are for making decisions; the final figure comes from your bank, your broker or your accountant.",
@@ -73,9 +73,9 @@ export const HOME_EN: HomeContent = {
     items: [
       {
         name: "Your bank",
-        hook: "It connects and reads. It can't move money.",
-        text: "Transactions arrive by themselves, already categorized. You type your password only on your bank's site. Or you upload a file.",
-        spec: `Open Banking (PSD2) via GoCardless · banks in ${BANK_LIST_EN} · 90-day consent · refreshed every 12 hours`,
+        hook: "Upload the statement. The app reads it.",
+        text: "A CSV or Excel file from any bank, even in a new format, already categorized. A direct, read-only connection to your bank is coming soon.",
+        spec: "CSV and Excel from any bank · your bank's categories, when the file has them · Open Banking (PSD2) connection coming soon",
         art: "banks",
       },
       {
@@ -101,7 +101,7 @@ export const HOME_EN: HomeContent = {
     banks: BANKS_EN,
     brokers: SUPPORTED.brokers,
     anyCsv: "any CSV",
-    banksLabel: "Countries of the banks",
+    banksLabel: "Countries of the banks for the upcoming connection",
   },
   showcase: {
     title: "What it tells you, every day.",
@@ -110,7 +110,7 @@ export const HOME_EN: HomeContent = {
         id: "spese",
         tab: "Spending",
         title: "Where the money goes, without typing a thing.",
-        text: "Transactions come in from the bank. The app sorts them into four groups and only asks you when it isn't sure.",
+        text: "Upload your bank statement. The app sorts the transactions into four groups and only asks you when it isn't sure.",
         figure: { value: "€2,164", caption: "spent so far in October · 5 transactions to decide, the app sorted the rest" },
         shot: "movimenti",
       },
@@ -160,7 +160,7 @@ export const HOME_EN: HomeContent = {
     facts: [
       {
         title: "Your bank password stays with your bank.",
-        text: "You type it only on your bank's site. The connection can only read, and you can remove it whenever you like.",
+        text: "We never ask for it. The bank connection, coming soon, will only read: you'll type your password on your bank's site alone and remove the connection whenever you like.",
         terms: ["Read-only", "Revocable"],
         source: { label: "PSD2, art. 67", href: SECURITY_SOURCES_EN.psd2.href },
       },
@@ -209,7 +209,7 @@ export const HOME_EN: HomeContent = {
       { label: "License", value: "AGPL-3.0" },
       { label: "Stack", value: "TypeScript · Next.js · Postgres · Redis" },
       { label: "Self-hosting", value: "Docker Compose: app, database, cron", path: "/blob/main/docs/self-hosting.md" },
-      { label: "Bank", value: "Open Banking (PSD2) via GoCardless, read-only" },
+      { label: "Bank", value: "CSV and Excel today; read-only Open Banking (PSD2) coming soon" },
       ...(FIELD_ENCRYPTION_LIVE ? [{ label: "In the database", value: "Descriptions and notes encrypted (AES-256)" }] : []),
       { label: "Your data", value: "ZIP export in JSON and CSV, deletion from the app" },
       { label: "Sign-in", value: "Email link or Google, no password" },

@@ -18,7 +18,7 @@ export const SITE_NAME = "BuddyBudget";
 /** Home title: brand + the promise + the words people search for (conti, investimenti, pensione, mutuo), within ~60 characters. */
 export const SITE_TITLE = "BuddyBudget: conti, investimenti, pensione e mutuo in un numero";
 export const SITE_DESCRIPTION =
-  "Conto, investimenti, fondo pensione e mutuo in un numero solo, aggiornato ogni giorno con le tasse italiane già calcolate. La banca si collega in sola lettura, oppure carichi un file. Gratis durante la beta, codice aperto.";
+  "Conto, investimenti, fondo pensione e mutuo in un numero solo, aggiornato ogni giorno con le tasse italiane già calcolate. Carichi l'estratto conto della banca; il collegamento diretto arriva presto. Gratis durante la beta, codice aperto.";
 /** Preview image for social networks and rich results (1200×630, see `scripts/make-og-image.mjs`). */
 export const OG_IMAGE = { url: "/og.png", width: 1200, height: 630, alt: "BuddyBudget: tutti i tuoi soldi, in un numero solo" } as const;
 
@@ -36,7 +36,7 @@ export const SUPPORT_EMAIL = "support@buddybudget.io";
  */
 export const FAQ: readonly FaqItem[] = [
   { question: "È gratis?", answer: "Sì, durante la beta. Se cambierà lo diremo prima, e potrai portare via tutto in un file ZIP." },
-  { question: "Devo collegare la banca?", answer: "No. Puoi aggiungere i conti a mano o caricare un file. Il collegamento serve solo a non scrivere i movimenti, e può solo leggere." },
+  { question: "Si collega alla banca?", answer: "Non ancora: il collegamento in sola lettura con l'Open Banking arriva presto. Intanto carichi l'estratto conto in CSV o Excel, o aggiungi i conti a mano." },
   { question: "Le tasse sono quelle vere?", answer: "Sono stime con le regole italiane: 26% sui guadagni, 12,5% sui titoli di Stato, perdite da scalare per quattro anni, bollo. Servono per decidere. Il conto finale lo fa la banca o il commercialista." },
   { question: "Cosa non fa?", answer: "Non ti dice cosa comprare o vendere. Non sposta soldi e non fa ordini al broker. I prezzi sono di fine giornata, non in tempo reale." },
   {

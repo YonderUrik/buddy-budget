@@ -291,7 +291,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `instance/` | Hosted or self-hosted, sign-in methods (`instanceConfig`, `InstanceProvider`) |
 | `calc/` | Pure calculation engines (cash flow, expenses, returns, FX, FIRE, Monte Carlo, amortisation, early repayment, debt plan, pension, net worth, costs) |
 | `categories/` | Default categories, spending groups (Dovute/Volute/Te futuro/Saltuarie — needs, wants, future you, occasional), seeding, picker |
-| `categorization/` | Rules, merchant names and keys, AI suggestions, auto-apply at 90%, recategorise, merchant logos |
+| `categorization/` | Rules, merchant names and keys, AI suggestions, auto-apply at 70%, recategorise, merchant logos |
 | `client-errors/` | Browser error reports and their per-user quota |
 | `cron/` | `isAuthorizedCronRequest` |
 | `crypto/` | Field encryption |

@@ -5,7 +5,7 @@
  */
 
 /** Versione dei documenti (data dell'ultima modifica sostanziale). */
-export const LEGAL_VERSION = "2026-10-12";
+export const LEGAL_VERSION = "2026-10-19";
 
 export const LEGAL_OWNER = {
   name: "Daniele Roccaforte",
@@ -67,7 +67,7 @@ export const PRIVACY: LegalDocument = {
       title: "Quali dati trattiamo",
       items: [
         "Dati dell'account: nome, indirizzo email, valuta e preferenze scelte. Se accedi con Google, anche la foto del profilo.",
-        "Dati finanziari che inserisci tu o che importi: conti, saldi, transazioni (con descrizione, note e controparte), categorie, budget, investimenti, debiti, fondi pensione e patrimonio netto. Le descrizioni possono contenere informazioni su abitudini, acquisti o contesti personali: non ti chiediamo mai di inserire dati sulla salute, sulle opinioni o altre categorie particolari, ma possono emergere dai testi delle transazioni.",
+        "Dati finanziari che inserisci tu o che importi: conti, saldi, transazioni (con descrizione, note, controparte e, se il file importato la contiene, la categoria scritta dalla tua banca), categorie, budget, investimenti, debiti, fondi pensione e patrimonio netto. Le descrizioni possono contenere informazioni su abitudini, acquisti o contesti personali: non ti chiediamo mai di inserire dati sulla salute, sulle opinioni o altre categorie particolari, ma possono emergere dai testi delle transazioni.",
         "Dati bancari: se colleghi un conto con Open Banking, tramite GoCardless riceviamo i conti e le transazioni che autorizzi. Non vediamo né conserviamo le credenziali della tua banca.",
         "File che carichi per l'import: estratti conto e rendiconti (per esempio CSV o file dei broker). Se scegli l'import con intelligenza artificiale, il file viene conservato cifrato solo per il tempo dell'elaborazione (vedi la sezione dedicata).",
         "Proposte di categoria: se attivi l'assistente, per ogni esercente conserviamo il nome normalizzato, la categoria proposta e se l'hai confermata o corretta (mai importi o date), insieme alla data del tuo consenso.",
@@ -118,7 +118,7 @@ export const PRIVACY: LegalDocument = {
       title: "Proposte di categoria con intelligenza artificiale",
       paragraphs: [
         "Se lo attivi in Impostazioni → Assistente per le categorie (è spento finché non lo scegli), per i movimenti nuovi di sincronizzazioni e importazioni inviamo a un modello di intelligenza artificiale il nome pulito dell'esercente, la direzione (entrata o uscita) e l'elenco delle tue categorie, con qualche esempio di tue scelte passate e le istruzioni personali che scegli di inserire nelle Impostazioni. Evita di inserire dati personali o bancari nelle istruzioni. Non inviamo importi, date, IBAN, note, descrizioni complete dei movimenti, bonifici né nomi che sembrano di persona.",
-        "Il servizio è OpenRouter, con richiesta di non conservazione dei dati e di non uso per l'addestramento. Il modello propone una categoria con un grado di sicurezza. Se in Impostazioni lasci attiva l'opzione «Lascia che l'app scelga quando è quasi certa», le proposte sicure almeno al 90% si applicano senza chiederti conferma: le ritrovi in Categorizza → «Messe dall'app», con l'indicazione che vengono dall'intelligenza artificiale, e puoi cambiarle in ogni momento. Le altre proposte restano da confermare, e una scelta diventa una regola solo se lo chiedi tu. Puoi spegnere l'applicazione automatica o revocare il consenso in ogni momento: da quel momento non partono nuove richieste e le proposte già ricevute non si applicano più da sole.",
+        "Il servizio è OpenRouter, con richiesta di non conservazione dei dati e di non uso per l'addestramento. Il modello propone una categoria con un grado di sicurezza. Se in Impostazioni lasci attiva l'opzione «Lascia che l'app scelga quando è abbastanza sicura», le proposte sicure almeno al 70% si applicano senza chiederti conferma: le ritrovi in Categorizza → «Messe dall'app», con l'indicazione che vengono dall'intelligenza artificiale, e puoi cambiarle in ogni momento. Le altre proposte restano da confermare, e una scelta diventa una regola solo se lo chiedi tu. Puoi spegnere l'applicazione automatica o revocare il consenso in ogni momento: da quel momento non partono nuove richieste e le proposte già ricevute non si applicano più da sole.",
       ],
     },
     {
@@ -186,7 +186,7 @@ export const PRIVACY: LegalDocument = {
       id: "decisioni",
       title: "Decisioni automatizzate",
       paragraphs: [
-        "BuddyBudget non prende decisioni che producano effetti giuridici su di te. La categorizzazione delle transazioni usa regole che puoi vedere e modificare, le tue scelte passate e, se lo attivi, le proposte di un modello di intelligenza artificiale. Se lo scegli, le proposte più sicure si applicano da sole: riguardano solo l'etichetta dei tuoi movimenti, sono sempre indicate come applicate automaticamente e puoi correggerle in ogni momento. Le stime fiscali, le proiezioni e le simulazioni sono strumenti informativi, non decisioni su di te.",
+        "BuddyBudget non prende decisioni che producano effetti giuridici su di te. La categorizzazione delle transazioni usa regole che puoi vedere e modificare, le tue scelte passate, la categoria scritta dalla tua banca nei file che importi e, se lo attivi, le proposte di un modello di intelligenza artificiale. La categoria della banca, quando corrisponde chiaramente a una delle tue, si applica da sola (senza intelligenza artificiale); se lo scegli, anche le proposte più sicure si applicano da sole: riguardano solo l'etichetta dei tuoi movimenti, sono sempre indicate come applicate automaticamente e puoi correggerle in ogni momento. Le stime fiscali, le proiezioni e le simulazioni sono strumenti informativi, non decisioni su di te.",
       ],
     },
     {
@@ -239,7 +239,7 @@ export const TERMINI: LegalDocument = {
       paragraphs: [
         "Calcoli, stime, simulazioni, grafici, stime fiscali, proiezioni pensionistiche e commenti sui titoli hanno solo scopo informativo e si basano sui dati che inserisci e su ipotesi semplificate. Non sono una raccomandazione di investimento né una consulenza personalizzata e BuddyBudget non è un intermediario finanziario. Le regole fiscali e previdenziali cambiano e dipendono dalla tua situazione: prima di decidere rivolgiti a un professionista abilitato.",
         "I prezzi di mercato provengono da fonti di terzi, possono essere in ritardo o errati e sono chiusure di fine giornata, non quotazioni in tempo reale. Lo stesso vale per i dati ricevuti dalle banche tramite Open Banking: dipendono dalla banca e dal fornitore del collegamento.",
-        "L'import con intelligenza artificiale produce regole di lettura generate automaticamente: controlla che i movimenti importati corrispondano ai tuoi documenti. Le proposte di categoria dell'assistente possono essere sbagliate: nulla si applica senza la tua conferma, e sei tu a verificare che le categorie scelte siano giuste.",
+        "L'import con intelligenza artificiale produce regole di lettura generate automaticamente: controlla che i movimenti importati corrispondano ai tuoi documenti. Le categorie messe dall'app (dalle tue regole, dalla categoria della banca nei file importati o dalle proposte più sicure, se lo hai scelto) possono essere sbagliate: le trovi indicate come messe dall'app, puoi cambiarle in ogni momento e sei tu a verificare che siano giuste.",
       ],
     },
     {

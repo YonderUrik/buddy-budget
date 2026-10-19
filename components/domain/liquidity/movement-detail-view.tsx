@@ -68,7 +68,7 @@ export function MovementDetailView({ detail, partial, categories, usage, currenc
   const uncategorized = category?.isFallback ?? false;
   const isSplit = excluded > 0 && !isTransfer;
   const confidence = transaction.categoryConfidence === null ? null : Number(transaction.categoryConfidence);
-  const categoryOrigin = categoryOriginText(transaction.categorySource, confidence, rule, uncategorized);
+  const categoryOrigin = categoryOriginText(transaction.categorySource, confidence, rule, uncategorized, transaction.bankCategory ?? null);
   const raw = transaction.rawDescription && transaction.rawDescription !== transaction.description ? transaction.rawDescription : null;
   const avatar = category ? <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={22} className="size-14" /> : null;
 

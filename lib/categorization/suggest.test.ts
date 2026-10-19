@@ -249,7 +249,7 @@ describe("withAssistantSuggestions", () => {
 
   it("sostituisce una proposta incerta solo se quella dell'assistente è sicura", () => {
     const uncertain = { ...group, suggestion: makeSuggestion({ confidence: 0.5 }) };
-    const [kept] = withAssistantSuggestions([uncertain], new Map([[groupKey, { categoryId: "cat-altro", confidence: 0.8 }]]));
+    const [kept] = withAssistantSuggestions([uncertain], new Map([[groupKey, { categoryId: "cat-altro", confidence: 0.6 }]]));
     expect(kept.suggestion?.source).toBe("storico");
     const [replaced] = withAssistantSuggestions([uncertain], new Map([[groupKey, { categoryId: "cat-altro", confidence: 0.95 }]]));
     expect(replaced.suggestion?.source).toBe("assistente");
@@ -268,7 +268,7 @@ describe("isAutoApplicable", () => {
 
   it("vuole una proposta sicura e coerente in tutto il gruppo", () => {
     expect(isAutoApplicable({ ...group, suggestion: null })).toBe(false);
-    expect(isAutoApplicable({ ...group, suggestion: makeSuggestion({ confidence: 0.8 }) })).toBe(false);
+    expect(isAutoApplicable({ ...group, suggestion: makeSuggestion({ confidence: 0.6 }) })).toBe(false);
     expect(isAutoApplicable({ ...group, suggestion: makeSuggestion(), hasDivergentSuggestions: true })).toBe(false);
     expect(isAutoApplicable({ ...group, suggestion: makeSuggestion() })).toBe(true);
   });

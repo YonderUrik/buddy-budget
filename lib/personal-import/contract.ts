@@ -2,6 +2,7 @@ import { z } from "zod";
 import { formatMetadataSchema } from "@/lib/imports";
 import { parseDate } from "@/lib/investments/import/values";
 import { isValidIsin } from "@/lib/validation/investments";
+import { cleanBankCategory } from "@/lib/categorization/bank-category";
 
 export class ImportError extends Error {}
 export const MAX_BYTES = 25 * 1024 * 1024;
@@ -10,7 +11,9 @@ const money = z.number().finite().min(-999999999).max(999999999);
 const positive = z.number().finite().min(0).max(999999999);
 const base = { row: z.number().int().min(0), date: z.string().refine(v => parseDate(v, "ymd") === v && v <= new Date().toISOString().slice(0, 10), "Data non valida"), currency: z.string().regex(/^[A-Z]{3}$/), description: z.string().min(1).max(500) };
 export const outcomeSchema = z.discriminatedUnion("kind", [
-  z.object({ ...base, kind: z.literal("cash"), amount: money, transfer: z.boolean() }),
+  // `bankCategory`: the category the bank itself wrote on the row, verbatim (optional; mapped to the user's
+  // categories on import). A malformed one is dropped, never a reason to reject the row.
+  z.object({ ...base, kind: z.literal("cash"), amount: money, transfer: z.boolean(), bankCategory: z.unknown().transform(v => typeof v === "string" ? cleanBankCategory(v) : null).optional() }),
   z.object({ ...base, kind: z.literal("investment"), type: z.enum(["acquisto", "vendita", "dividendo", "cedola"]), name: z.string().min(1).max(200), isin: z.string().refine(isValidIsin).nullable(), instrumentType: z.enum(["azione", "etf", "fondo", "crypto", "etc", "obbligazione"]), quantity: positive, price: positive, grossAmount: positive.nullable(), fees: positive, taxes: positive }),
   z.object({ row: z.number().int().min(0), kind: z.enum(["ignore", "error"]), reason: z.string().min(1).max(300) }),
 ]);

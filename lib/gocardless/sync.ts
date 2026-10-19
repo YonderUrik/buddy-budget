@@ -202,7 +202,7 @@ export async function syncAccountLink(
     }
 
     await flushRuleHits(ruleResolver.appliedRuleIds());
-    // Proposte dell'assistente per gli esercenti rimasti senza categoria, poi le sicure (dal 90%) si applicano da sole
+    // Proposte dell'assistente per gli esercenti rimasti senza categoria, poi le sicure (dal 70%) si applicano da sole
     // se l'utente lo ha scelto; le altre restano da confermare in Categorizza.
     // I conteggi del risultato sono quelli dopo il giro: «categorizzati» comprende quelli messi da soli adesso.
     if (uncategorizedCount > 0) {

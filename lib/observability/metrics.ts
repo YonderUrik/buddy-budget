@@ -306,7 +306,7 @@ function createState(): MetricsState {
   });
   state.categorizationAuto = new Counter({
     name: `${METRIC_PREFIX}categorization_auto_total`,
-    help: "Movimenti categorizzati da soli (regole, proposte sicure dal 90% e categorie della banca negli import), poi corretti dall'utente, ricategorizzati con «Ricategorizza» e riportati indietro con l'annulla, per origine.",
+    help: "Movimenti categorizzati da soli (regole, proposte sicure dal 70% e categorie della banca negli import), poi corretti dall'utente, ricategorizzati con «Ricategorizza» e riportati indietro con l'annulla, per origine.",
     labelNames: ["source", "event"],
     registers: r,
   });

@@ -58,7 +58,7 @@ export interface AiCategorizationState {
   enabled: boolean;
   available: boolean;
   instructions: string;
-  /** Le proposte sicure (dal 90%) si applicano da sole. */
+  /** Le proposte sicure (dal 70%) si applicano da sole. */
   autoApply: boolean;
 }
 

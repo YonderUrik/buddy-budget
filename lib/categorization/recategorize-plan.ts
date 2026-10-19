@@ -105,7 +105,7 @@ interface Target {
 
 /**
  * Cosa deciderebbe oggi BuddyBudget per i movimenti già categorizzati da solo: prima le regole (come negli import),
- * poi, solo per `tutto` e con l'applicazione automatica attiva, le proposte sicure dal 90% ricavate dalle scelte
+ * poi, solo per `tutto` e con l'applicazione automatica attiva, le proposte sicure dal 70% ricavate dalle scelte
  * dell'utente (mai dalle categorie messe da sole, che si confermerebbero da sé) e dall'assistente con il consenso.
  * Rows categorised with the bank's own category change only through a rule.
  * Tiene solo i movimenti la cui categoria cambierebbe; quelli senza una proposta sicura restano come sono. Non scrive

@@ -47,8 +47,8 @@ export function AutoCategorizedList({
         <p className="font-heading text-lg font-medium text-foreground">{tr("Ancora niente qui")}</p>
         <p className="max-w-sm text-sm text-muted-foreground">
           {autoApplyEnabled
-            ? tr("Qui compaiono i movimenti a cui l'app ha messo la categoria da sola: con le tue regole o perché era quasi certa.")
-            : tr("Qui compaiono i movimenti a cui l'app ha messo la categoria con le tue regole. In Impostazioni puoi lasciarla scegliere anche quando è quasi certa.")}
+            ? tr("Qui compaiono i movimenti a cui l'app ha messo la categoria da sola: con le tue regole o perché era abbastanza sicura.")
+            : tr("Qui compaiono i movimenti a cui l'app ha messo la categoria con le tue regole. In Impostazioni puoi lasciarla scegliere anche quando è abbastanza sicura.")}
         </p>
       </div>
     );
@@ -57,7 +57,7 @@ export function AutoCategorizedList({
   // The bank's file is named only when some of these rows took their category from it.
   const fromBank = groups.some((group) => group.source === "banca");
   const reasonText = autoApplyEnabled
-    ? fromBank ? tr(", con le tue regole, con la categoria della banca o perché era quasi certa") : tr(", con le tue regole o perché era quasi certa")
+    ? fromBank ? tr(", con le tue regole, con la categoria della banca o perché era abbastanza sicura") : tr(", con le tue regole o perché era abbastanza sicura")
     : fromBank ? tr(", con le tue regole o con la categoria della banca") : tr(", con le tue regole");
 
   return (

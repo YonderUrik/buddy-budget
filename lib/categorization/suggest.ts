@@ -4,8 +4,8 @@ import type { CategoryType } from "@/lib/categories/groups";
 
 const SIMILARITY_THRESHOLD = 0.5;
 
-/** Dal 90% una proposta è «sicura»: se l'utente lo ha scelto si applica da sola, senza passare da Categorizza. */
-export const AUTO_APPLY_THRESHOLD = 0.9;
+/** From 70% a suggestion applies on its own (if the user left auto-apply on), without going through Categorizza: a wrong category costs one tap, a pile of cards to confirm costs the whole flow (decision 2026-10-19). */
+export const AUTO_APPLY_THRESHOLD = 0.7;
 /** Una proposta dalle scelte passate è sicura solo se almeno tanti movimenti dello stesso esercente concordano. */
 export const MIN_HISTORY_AGREEING = 3;
 

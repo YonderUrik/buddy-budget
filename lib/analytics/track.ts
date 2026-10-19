@@ -267,7 +267,7 @@ export interface ProductEvents {
   categorize_tour: { action: "avanti" | "salta" | "fine" | "riapri"; step: number };
   /** Carta della categorizzazione rapida: scelta dell'utente; `source` = da dove veniva la proposta. */
   categorize_card_decided: { action: "conferma" | "cambia" | "salta" | "annulla"; source: "regola" | "storico" | "assistente" | "nessuna"; remember: boolean };
-  /** Interruttore «Lascia che l'app scelga quando è quasi certa»; `from` = dove l'utente l'ha cambiato. */
+  /** Interruttore «Lascia che l'app scelga quando è abbastanza sicura»; `from` = dove l'utente l'ha cambiato. */
   categorization_auto_apply_toggled: { enabled: boolean; from: "categorizza" | "impostazioni" };
   /** Movimenti categorizzati da soli quando la pagina Categorizza ha trovato proposte sicure pronte. */
   categorization_auto_applied: { count: number; groups: number };

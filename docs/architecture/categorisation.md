@@ -14,7 +14,7 @@ This part turns a bank transaction into a category and a counted amount. A trans
 | AI proposals | uncategorised merchant groups | rows in `categorization_suggestions` | [`ai/suggest-for-user.ts`](../../lib/categorization/ai/suggest-for-user.ts), [`lib/llm/jev.ts`](../../lib/llm/jev.ts) |
 | Proposals | uncategorised rows, history, rules, stored AI rows | one proposal per merchant group | [`suggest.ts`](../../lib/categorization/suggest.ts), [`load-groups.ts`](../../lib/categorization/load-groups.ts) |
 | Bank category | label the bank wrote in an imported file | one of the user's categories, `categorySource = banca` | [`bank-category.ts`](../../lib/categorization/bank-category.ts), [`load-bank-category-mapper.ts`](../../lib/categorization/load-bank-category-mapper.ts) |
-| Auto-apply | proposals at 90% or more | category with origin and confidence | [`auto-apply.ts`](../../lib/categorization/auto-apply.ts) |
+| Auto-apply | proposals at 70% or more | category with origin and confidence | [`auto-apply.ts`](../../lib/categorization/auto-apply.ts) |
 | Review | user choices | `categorySource = utente`, optional learned rule | [`categorize-apply/route.ts`](../../app/api/transactions/categorize-apply/route.ts) |
 | Ricategorizza | categorised rows | changes with undo | [`recategorize-plan.ts`](../../lib/categorization/recategorize-plan.ts), [`recategorize.ts`](../../lib/categorization/recategorize.ts) |
 | Logos | group label and texts | logo path on our server | [`merchant-logo`](../../lib/categorization/merchant-logo) |
@@ -27,7 +27,7 @@ new rows (sync, CSV, manual) ─> fallback category
                 ├─ rules (always) ─────────────────────────> categorySource = regola
                 ├─ AI proposals stored (consent only)
                 └─ proposals: similar rule / history / AI
-                       │ >= 0.90 and autoApply on ──────────> regola | storico | assistente
+                       │ >= 0.70 and autoApply on ──────────> regola | storico | assistente
                        └ otherwise ─> Categorizza «Da decidere» ─> utente (+ learned rule)
 ```
 
@@ -37,7 +37,7 @@ new rows (sync, CSV, manual) ─> fallback category
 
 **P2 — Rules always apply.** User rules are explicit choices: they categorise new rows on sync, after CSV and broker imports, after a manual add and right after a rule is created or edited, whatever the auto-apply setting.
 
-**P3 — Only certain proposals act alone.** A proposal is applied without the user only at confidence 0.90 or more (`AUTO_APPLY_THRESHOLD`), only if the user's `categorizationAutoApply` is on, only if no other transaction of the same group points elsewhere and, for AI proposals, only while the consent is active.
+**P3 — Only likely proposals act alone.** A proposal is applied without the user only at confidence 0.70 or more (0.90 until 2026-10-19, lowered because nobody went through the cards: a wrong category costs one tap in «Messe dall'app» or Movimenti) (`AUTO_APPLY_THRESHOLD`), only if the user's `categorizationAutoApply` is on, only if no other transaction of the same group points elsewhere and, for AI proposals, only while the consent is active.
 
 **P4 — Automatic writes touch only the fallback.** Auto-apply updates a row only if it is still on a fallback category at write time. Ricategorizza never touches rows with `categorySource = utente`, and changes rows with `categorySource = banca` only through a rule.
 
@@ -133,7 +133,7 @@ history proposal: matches  = past categorised rows with jaccard >= 0.5 (directio
                   confidence = round(winning / matches * avgSimilarity(winning) * evidence, 2)
 ```
 
-A history proposal counts as confident only if it reaches 0.90 and at least 3 past rows agree (`MIN_HISTORY_AGREEING`).
+A history proposal counts as confident only if it reaches 0.70 and at least 3 past rows agree (`MIN_HISTORY_AGREEING`).
 
 Example: key `esselunga`. Five past rows have key `esselunga`, four in Spesa and one in Svago. `confidence = 4/5 * 1.0 * 1 = 0.80`: shown as a proposal, not applied. With six rows all in Spesa, `confidence = 1.00` and 6 agree: applied when auto-apply is on.
 
@@ -196,7 +196,7 @@ The Categorizza page (`/categorizza`) has two lists:
 | «Da decidere» (To decide) | merchant groups still on the fallback, each with its best proposal and an origin line | `loadCategorizationState` via `/api/transactions/categorize-suggestions` |
 | «Messe dall'app» (Set by the app) | rows with an automatic `categorySource` and `categorizedAt` in the last 30 days (`AUTO_CATEGORIZED_RECENT_DAYS`), at most 1000, grouped by merchant, direction, category and origin; group confidence is the lowest of its rows | `/api/transactions/auto-categorized`, `groupAutoCategorized` |
 
-«Messe dall'app» is a history, not a to-do list: those categories are already on the transactions and count everywhere, nothing asks to confirm them, the tab has no counter and the page always opens on «Da decidere». The user only corrects what is wrong. Applying a choice (`POST /api/transactions/categorize-apply`, in batches of 5 groups from the client) checks ownership and direction of every row first, then in one transaction sets the category, the excluded amount, `categorySource = utente`, and optionally upserts the learned rule. Moving rows that had an automatic origin is counted as a correction (metric `categorization_auto_total` and log `categorization.auto.corrected`): this measures the errors of the 90% threshold.
+«Messe dall'app» is a history, not a to-do list: those categories are already on the transactions and count everywhere, nothing asks to confirm them, the tab has no counter and the page always opens on «Da decidere». The user only corrects what is wrong. Applying a choice (`POST /api/transactions/categorize-apply`, in batches of 5 groups from the client) checks ownership and direction of every row first, then in one transaction sets the category, the excluded amount, `categorySource = utente`, and optionally upserts the learned rule. Moving rows that had an automatic origin is counted as a correction (metric `categorization_auto_total` and log `categorization.auto.corrected`): this measures the errors of the 70% threshold.
 
 Origin labels ([`origin.ts`](../../lib/categorization/origin.ts)): «Regola», «Le tue scelte» (history), «AI» and «Banca». The percentage appears only in the tooltip text. A manual edit of the category, or of the split of an automatic row, makes the row `utente`; moving it back to the fallback clears the origin.
 
@@ -275,9 +275,9 @@ A decision («È un abbonamento», «Non lo è», «È terminato») is an upsert
 
 ## 5. Limits and out of scope
 
-- The 90% threshold is fixed; it is not adjustable by the user.
-- Bank categories are read only from personal CSV imports (GoCardless does not send a usable category). The dictionary covers common Italian, English and German labels and is maintained by hand; a bank label it does not know falls back to the usual flow until the user's corrections teach it. The Terms of service still say proposals are never applied without the user: to be aligned at the professional legal review, together with the 90% threshold.
-- A rule-similarity proposal reaches 0.90 only when token sets are almost identical, so most automatic decisions come from exact rules, history or the AI.
+- The 70% threshold is fixed; it is not adjustable by the user.
+- Bank categories are read only from personal CSV imports (GoCardless does not send a usable category). The dictionary covers common Italian, English and German labels and is maintained by hand; a bank label it does not know falls back to the usual flow until the user's corrections teach it. The Terms of service still say proposals are never applied without the user: to be aligned at the professional legal review, together with the automatic threshold (the Privacy policy and Terms still say 90%).
+- A rule-similarity proposal reaches 0.70 only when most tokens match, so most automatic decisions come from exact rules, history or the AI.
 - Ricategorizza runs synchronously in the request (no background job) and loads all of the user's transactions; very large accounts are a known risk. Undo covers only the latest run.
 - The AI never sees amounts or dates and never proposes transfer categories. Blocked names (people, transfers) stay for the user to decide.
 - Logos: no logo for names seen by fewer than 3 users, and the dictionary is maintained by hand.

@@ -118,7 +118,7 @@ export default function CategorizzaPage() {
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h1 className={PAGE_TITLE}>{tr("Categorizza")}</h1>
           <p className="text-sm text-muted-foreground max-md:hidden">
-            {tr("Quando è quasi certa l'app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.")}</p>
+            {tr("Quando è abbastanza sicura l'app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.")}</p>
         </div>
         {!isDesktop ? banner : null}
         {/* Strumento per chi cambia le regole: in un menu, così la pagina mostra solo le due schede. */}

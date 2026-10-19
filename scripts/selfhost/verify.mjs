@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, stat, symlink, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, stat, symlink, rm, mkdir, chmod } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseEnv } from 'node:util';
@@ -151,7 +151,7 @@ test('rerunning setup keeps secrets and optional integrations without showing or
   assert(!prompts.output.join('\n').includes('saved-secret'));
 }));
 
-test('disabling AI keeps its encryption key and explains how to stop the old worker', async () => temporary(async path => {
+test('disabling AI keeps its encryption key and points to the service-aware start command', async () => temporary(async path => {
   await saveConfig(path, { OPENROUTER_API_KEY: 'sk-or-old' });
   const original = (await readConfig(path)).values;
   const prompts = scriptedPrompts(question => question.startsWith('AI features: choose') ? '3' : question.startsWith('Sign-in emails and notifications: choose') ? '2' : '');
@@ -160,7 +160,27 @@ test('disabling AI keeps its encryption key and explains how to stop the old wor
   assert.equal(updated.OPENROUTER_API_KEY, '');
   assert.equal(updated.COMPOSE_PROFILES, '');
   assert.equal(updated.PERSONAL_CSV_ENCRYPTION_KEY, original.PERSONAL_CSV_ENCRYPTION_KEY);
-  assert(prompts.output.join('\n').includes('docker compose --profile ai stop csv-worker'));
+  assert(prompts.output.join('\n').includes('./scripts/selfhost-start.sh'));
+}));
+
+test('configuration-only completion clearly says the app has not been started and gives the next command', async () => temporary(async path => {
+  const prompts = scriptedPrompts(skipService);
+  await runSetup({ path, prompts, check: async () => ({ status: 'ok', message: 'Checked.' }) });
+  const output = prompts.output.join('\n');
+  assert(output.includes('has not started or restarted BuddyBudget'));
+  assert(output.includes('NEXT STEP'));
+  assert(output.includes('./scripts/selfhost-start.sh --build'));
+  assert(!output.includes('BuddyBudget is ready.'));
+}));
+
+test('combined setup promises a readiness check rather than claiming the app is running', async () => temporary(async path => {
+  const prompts = scriptedPrompts(skipService);
+  await runSetup({ path, prompts, launch: 'build', check: async () => ({ status: 'ok', message: 'Checked.' }) });
+  const output = prompts.output.join('\n');
+  assert(output.includes('Setup is not finished yet'));
+  assert(output.includes('build this checkout and start'));
+  assert(output.includes('sign-in instructions will appear once the app is ready'));
+  assert(!output.includes('BuddyBudget is ready.'));
 }));
 
 test('only selected optional services are requested, with a concrete Google callback URL', async () => temporary(async path => {
@@ -252,3 +272,85 @@ test('terminal regression: visible questions survive redraws and secret input st
     assert(!rendered.includes('test-secret-value'));
   } finally { prompts.close(); }
 });
+
+async function startFixture(dir, env = {}, args = []) {
+  await mkdir(join(dir, 'scripts'));
+  await mkdir(join(dir, 'bin'));
+  const script = join(dir, 'scripts/selfhost-start.sh');
+  await writeFile(script, await readFile(new URL('../selfhost-start.sh', import.meta.url)));
+  await writeFile(join(dir, '.env'), '# isolated test configuration\n');
+  const docker = join(dir, 'bin/docker');
+  await writeFile(docker, `#!/usr/bin/env node
+import {appendFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+const args=process.argv.slice(2);
+appendFileSync(process.env.SETUP_TEST_CALLS,JSON.stringify(args)+'\\n');
+if (process.env.SETUP_TEST_FAIL && args.includes(process.env.SETUP_TEST_FAIL)) process.exit(7);
+if (args.includes('exec')) {
+  const result=spawnSync(process.execPath,['-e',args[args.indexOf('-e')+1]],{env:process.env,encoding:'utf8'});
+  process.stdout.write(result.stdout); process.stderr.write(result.stderr); process.exit(result.status);
+}
+`);
+  await chmod(docker, 0o755);
+  const log = join(dir, 'calls.jsonl');
+  const result = spawnSync('sh', [script, ...args], { encoding: 'utf8', env: {
+    ...process.env, PATH: join(dir, 'bin') + ':' + process.env.PATH, SETUP_TEST_CALLS: log,
+    APP_URL: 'http://localhost:8888', RESEND_API_KEY: '', RESEND_FROM: '', GOOGLE_CLIENT_ID: '', GOOGLE_CLIENT_SECRET: '', ...env,
+  } });
+  const calls = (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
+  return { ...result, calls };
+}
+
+test('source startup builds first, handles the previous worker, waits for readiness and explains local sign-in', async () => temporary(async (path, dir) => {
+  const result = await startFixture(dir, {}, ['--build']);
+  assert.equal(result.status, 0, result.stderr);
+  assert(result.calls[0].includes('build'));
+  assert(result.calls[1].includes('stop'));
+  assert(result.calls[2].includes('--wait'));
+  assert(result.calls[3].includes('exec'));
+  assert(result.stdout.includes('BuddyBudget is ready.'));
+  assert(result.stdout.includes('http://localhost:8888'));
+  assert(result.stdout.includes('docker compose logs --since=5m app'));
+  assert(result.stdout.includes('You can close this terminal'));
+}));
+
+test('published startup shows email instructions when delivery is configured', async () => temporary(async (path, dir) => {
+  const result = await startFixture(dir, { RESEND_API_KEY: 're_test', RESEND_FROM: 'budget@example.test' });
+  assert.equal(result.status, 0, result.stderr);
+  assert(!result.calls.some(args => args.includes('build')));
+  assert(result.stdout.includes('Open the email and click the link'));
+  assert(!result.stdout.includes('docker compose logs --since'));
+  assert(!result.stdout.includes('re_test'));
+}));
+
+test('failed startup never claims readiness and provides recovery commands', async () => temporary(async (path, dir) => {
+  const result = await startFixture(dir, { SETUP_TEST_FAIL: 'up' });
+  assert.equal(result.status, 1);
+  assert(!result.stdout.includes('BuddyBudget is ready.'));
+  assert(!result.calls.some(args => args.includes('exec')));
+  assert(result.stderr.includes('BuddyBudget is not ready'));
+  assert(result.stderr.includes('docker compose logs --tail=50 app migrate postgres'));
+}));
+
+test('failed source build leaves the previous worker untouched', async () => temporary(async (path, dir) => {
+  const result = await startFixture(dir, { SETUP_TEST_FAIL: 'build' }, ['--build']);
+  assert.equal(result.status, 1);
+  assert.equal(result.calls.length, 1);
+  assert(!result.stdout.includes('BuddyBudget is ready.'));
+  assert(result.stderr.includes('Build failed'));
+}));
+
+test('cancelling the wizard prevents the combined command from starting Docker', async () => temporary(async (path, dir) => {
+  await mkdir(join(dir, 'scripts'));
+  await mkdir(join(dir, 'bin'));
+  const init = join(dir, 'scripts/selfhost-init.sh');
+  await writeFile(init, await readFile(new URL('../selfhost-init.sh', import.meta.url)));
+  const node = join(dir, 'bin/node');
+  await writeFile(node, '#!/bin/sh\nif [ "$1" = "-e" ]; then exit 0; fi\nexit 1\n');
+  await chmod(node, 0o755);
+  await writeFile(path, 'unchanged configuration\n');
+  const result = spawnSync('sh', [init, '--build'], { encoding: 'utf8', env: { ...process.env, PATH: join(dir, 'bin') + ':' + process.env.PATH } });
+  assert.equal(result.status, 1);
+  assert(!result.stdout.includes('Building BuddyBudget'));
+  assert.equal(await readFile(path, 'utf8'), 'unchanged configuration\n');
+}));

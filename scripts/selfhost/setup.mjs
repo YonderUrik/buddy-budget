@@ -29,7 +29,7 @@ export function terminalPrompts(input = process.stdin, output = process.stdout) 
 }
 
 /** Guided setup with explicit add/skip/keep choices and no partial service credentials. */
-export async function runSetup({ path, template = '', prompts, check = checkService }) {
+export async function runSetup({ path, template = '', prompts, check = checkService, launch = 'configure' }) {
   const current = await readConfig(path);
   let values = mergeConfig(current.values, {});
   const patch = {}, checks = {};
@@ -180,25 +180,30 @@ export async function runSetup({ path, template = '', prompts, check = checkServ
   prompts.write('\nConfigured means credentials are present. Paid AI requests, email delivery and bank/Google connections are confirmed when you use them in the app.');
   if (!await yes('Save these settings to .env?')) { prompts.write('Cancelled. Your .env file has not changed.'); return false; }
   await saveConfig(path, patch, current.source ? '' : template);
-  prompts.write('\nSaved to .env with private permissions. Keep a backup of this file, including its encryption keys.');
-  if (!values.OPENROUTER_API_KEY && current.values.OPENROUTER_API_KEY) prompts.write('\nAI disabled. First stop the previous worker:\n  docker compose --profile ai stop csv-worker');
-  prompts.write('\nNext: start or update BuddyBudget:\n  docker compose up -d --remove-orphans');
-  prompts.write('\nTesting unreleased changes from this checkout? Build from source instead:\n  docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build --remove-orphans');
-  prompts.write(`\nThen open ${values.APP_URL.replace(/\/+$/, '')}`);
-  if (!values.RESEND_API_KEY || !values.RESEND_FROM) prompts.write('To sign in without email: request a link on the login page, then find it with:\n  docker compose logs app');
-  prompts.write('Each person can enable AI suggestions and email notifications in Settings.');
-  prompts.write('To change services later, rerun ./scripts/selfhost-init.sh and restart the containers.');
+  prompts.write('\nConfiguration saved to .env. Keep a private backup, including its encryption keys.');
+  if (launch !== 'configure') {
+    prompts.write(`\nSetup is not finished yet. Next, this installer will ${launch === 'build' ? 'build this checkout and start' : 'start'} BuddyBudget.`);
+    prompts.write('Please wait. Your browser address and sign-in instructions will appear once the app is ready.');
+  } else {
+    prompts.write('\nConfiguration is complete. This setup has not started or restarted BuddyBudget.');
+    prompts.write('\nNEXT STEP — run this command in this same folder:\n  ./scripts/selfhost-start.sh');
+    prompts.write('\nTesting this branch or other unreleased changes? Use this command instead:\n  ./scripts/selfhost-start.sh --build');
+    prompts.write('The start command waits for the app to be ready, then shows the address to open and how to sign in.');
+    prompts.write(`Your configured browser address is: ${values.APP_URL.replace(/\/+$/, '')}`);
+  }
   return true;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  if (!process.stdin.isTTY) { process.stderr.write('An interactive terminal is required. For a minimal unattended setup, run ./scripts/selfhost-init.sh --defaults\n'); process.exitCode = 1; }
+  const launch = (process.argv[2] || '--launch=configure').replace(/^--launch=/, '');
+  if (!['configure', 'images', 'build'].includes(launch)) { process.stderr.write('Use ./scripts/selfhost-init.sh [--start|--build] to configure and start BuddyBudget.\n'); process.exitCode = 1; }
+  else if (!process.stdin.isTTY) { process.stderr.write('An interactive terminal is required. For a minimal unattended setup, run ./scripts/selfhost-init.sh --defaults\n'); process.exitCode = 1; }
   else {
     const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
     const prompts = terminalPrompts();
     try {
       const template = await readFile(resolve(root, '.env.selfhost.example'), 'utf8');
-      if (!await runSetup({ path: resolve(root, '.env'), template, prompts })) process.exitCode = 1;
+      if (!await runSetup({ path: resolve(root, '.env'), template, prompts, launch })) process.exitCode = 1;
     } catch { prompts.write('\nSetup interrupted or not saved. Check the .env file permissions and try again.'); process.exitCode = 1; }
     finally { prompts.close(); }
   }

@@ -9,7 +9,7 @@ import {
   Wallet, CreditCard, PiggyBank, Banknote, Landmark, Receipt,
   TrendingUp, Coins, Flame, Sofa, Hammer, Paintbrush,
   Laptop, Headphones, Camera, Printer, TrainFront, Ship,
-  MapPin, Luggage, Coffee, Pizza, Wine, Cake, Pill,
+  MapPin, Luggage, Coffee, Pizza, Wine, Cake, Pill, Cross,
   Activity, Glasses, BookOpen, Palette, Bike, Calculator,
   Watch,
 } from "lucide-react";
@@ -76,6 +76,7 @@ export const ICON_MAP: Record<CategoryIcon, LucideIcon> = {
   wine: Wine,
   cake: Cake,
   pill: Pill,
+  cross: Cross,
   activity: Activity,
   glasses: Glasses,
   "book-open": BookOpen,

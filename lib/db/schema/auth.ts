@@ -31,6 +31,14 @@ export const authUser = pgTable("auth_user", {
   startFocus: text("start_focus").array(),
   /** First steps the user chose not to do («Non mi serve»): they count as settled, so the checklist can finish. */
   startSkipped: text("start_skipped").array(),
+  /** Last time the app was open (heartbeat from the app layout, at most once a minute): a gap longer than `VISIT_GAP_MS` starts a new visit. Null = never seen since the field exists. */
+  appSeenAt: timestamp("app_seen_at", { withTimezone: true }),
+  /** When the current visit started (see `lib/welcome/visit.ts`). */
+  visitStartedAt: timestamp("visit_started_at", { withTimezone: true }),
+  /** End of the previous visit (its last heartbeat): the «Dall'ultima visita» summary counts what happened after it. Null = no previous visit. */
+  visitSinceAt: timestamp("visit_since_at", { withTimezone: true }),
+  /** When the user closed the «Dall'ultima visita» summary: hidden while it is later than `visitStartedAt`. */
+  welcomeDismissedAt: timestamp("welcome_dismissed_at", { withTimezone: true }),
   /** Quando l'utente ha acconsentito all'assistente per le categorie (invio del nome pulito dell'esercente a un servizio esterno). Null = spento. */
   aiCategorizationInstructions: text("ai_categorization_instructions").notNull().default(""),
   aiCategorizationConsentAt: timestamp("ai_categorization_consent_at", { withTimezone: true }),

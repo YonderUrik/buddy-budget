@@ -32,8 +32,14 @@ export async function loadStoredSubscriptions(userId: string): Promise<StoredSub
   }));
 }
 
-/** Rilevamento + scelte salvate per l'utente: legge le uscite degli ultimi 26 mesi e costruisce la vista, con i loghi. */
-export async function loadSubscriptions(userId: string, now: Date = new Date()): Promise<SubscriptionsResponse> {
+/**
+ * Detection + saved choices for the user, without logos: reads the spending of the last 26 months and builds the view.
+ * Also used by the «Dall'ultima visita» summary, which only needs counts.
+ */
+export async function loadSubscriptionsView(
+  userId: string,
+  now: Date = new Date()
+): Promise<{ view: SubscriptionsView; currency: string; today: string; descriptions: Map<string, string> }> {
   const started = performance.now();
   const today = now.toISOString().slice(0, 10);
   const since = addMonthsIso(today, -SUBSCRIPTION_LOOKBACK_MONTHS);
@@ -61,11 +67,16 @@ export async function loadSubscriptions(userId: string, now: Date = new Date()):
     pending: view.totals.pendingCount,
     stopped: view.items.filter((i) => i.activity === "fermo").length,
   });
-  const descriptions = new Map(spending.map((tx) => [tx.id, tx.description]));
+  return { view, currency: user?.currency ?? "EUR", today, descriptions: new Map(spending.map((tx) => [tx.id, tx.description])) };
+}
+
+/** Rilevamento + scelte salvate per l'utente, con i loghi (schermata Abbonamenti). */
+export async function loadSubscriptions(userId: string, now: Date = new Date()): Promise<SubscriptionsResponse> {
+  const { view, currency, today, descriptions } = await loadSubscriptionsView(userId, now);
   const items = await withMerchantLogos(
     view.items,
     (item) => ({ label: item.name, texts: item.charges.map((charge) => descriptions.get(charge.id)), isExpense: true }),
     userId
   );
-  return { ...view, items, currency: user?.currency ?? "EUR", today };
+  return { ...view, items, currency, today };
 }

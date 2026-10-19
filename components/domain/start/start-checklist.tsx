@@ -11,7 +11,7 @@ import Link from "next/link";
 import { CheckIcon, XIcon } from "lucide-react";
 import { SECTION_TITLE } from "@/components/domain/shared";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { START_STEPS, countDoneSteps, nextStartStep, type StartStepDef, type StartStepId } from "@/lib/start";
+import { START_STEPS, UNSKIPPABLE_STEPS, countDoneSteps, nextStartStep, type StartStepDef, type StartStepId } from "@/lib/start";
 import { cn } from "@/lib/utils";
 
 /** Where a step's action was pressed (goes into `start_step_clicked`). */
@@ -31,6 +31,8 @@ export interface StartChecklistProps {
   stepIds: readonly StartStepId[];
   /** Step texts and links (default: the app's, already adapted to the country by the caller). */
   definitions?: readonly StartStepDef[];
+  /** Steps the user skipped: out of the count, shown dimmed with a way back. */
+  skipped?: readonly StartStepId[];
   /** Steps done since the last visit: acknowledged in one line above the next step. */
   justDone?: readonly StartStepId[];
   /** Sample data offer; shown only while nothing real exists. */
@@ -38,6 +40,10 @@ export interface StartChecklistProps {
   onStepClick?: (step: StartStepId, placement: StartStepPlacement) => void;
   /** Opens the «Cosa vuoi tenere sotto controllo?» sheet. */
   onChangeFocus?: () => void;
+  /** «Non mi serve» on the next step (not offered for the account). */
+  onSkip?: (step: StartStepId) => void;
+  /** Brings a skipped step back. */
+  onRestore?: (step: StartStepId) => void;
   onDismiss?: () => void;
   dismissing?: boolean;
   className?: string;
@@ -47,10 +53,13 @@ export function StartChecklist({
   steps,
   stepIds,
   definitions = START_STEPS,
+  skipped = [],
   justDone = [],
   demo,
   onStepClick,
   onChangeFocus,
+  onSkip,
+  onRestore,
   onDismiss,
   dismissing,
   className,
@@ -59,7 +68,8 @@ export function StartChecklist({
   const byId = new Map(definitions.map((d) => [d.id, d]));
   const list = stepIds.map((id) => byId.get(id)).filter((d): d is StartStepDef => d != null);
   const done = countDoneSteps(steps, stepIds);
-  const nextId = nextStartStep(steps, stepIds);
+  const asked = list.filter((d) => !skipped.includes(d.id) || steps[d.id]).length;
+  const nextId = nextStartStep(steps, stepIds, skipped);
   const next = nextId ? byId.get(nextId) : undefined;
   const rest = list.filter((d) => d.id !== nextId);
   const acknowledged = justDone.map((id) => byId.get(id)?.done).filter((t): t is string => Boolean(t));
@@ -72,7 +82,7 @@ export function StartChecklist({
             {tr("Primi passi")}
           </h2>
           <p className="mt-1 text-sm text-text-2" role="status">
-            {tr("{0} su {1} fatti", { 0: done, 1: list.length })}
+            {tr("{0} su {1} fatti", { 0: done, 1: asked })}
           </p>
         </div>
         {onDismiss ? (
@@ -114,6 +124,11 @@ export function StartChecklist({
                 {demo.pending ? tr("Preparo l'esempio…") : tr("Prima prova con dati d'esempio")}
               </Button>
             ) : null}
+            {onSkip && !UNSKIPPABLE_STEPS.includes(next.id) ? (
+              <Button variant="ghost" className="h-11 px-4 text-text-2" onClick={() => onSkip(next.id)}>
+                {tr("Non mi serve")}
+              </Button>
+            ) : null}
           </div>
           {demo?.errorMessage ? (
             <p className="text-sm text-neg" role="alert">
@@ -127,6 +142,7 @@ export function StartChecklist({
         <ol className="flex flex-col">
           {rest.map((step) => {
             const isDone = steps[step.id];
+            const isSkipped = !isDone && skipped.includes(step.id);
             return (
               <li key={step.id} className="flex items-center gap-3 py-2.5">
                 <span
@@ -135,11 +151,22 @@ export function StartChecklist({
                 >
                   <CheckIcon className="size-4" />
                 </span>
-                <span className={cn("min-w-0 flex-1 text-sm", isDone ? "text-text-2 line-through" : "font-medium text-foreground")}>
+                <span className={cn("min-w-0 flex-1 text-sm", isDone ? "text-text-2 line-through" : isSkipped ? "text-text-2" : "font-medium text-foreground")}>
                   {tr(step.title)}
                   {isDone ? <span className="sr-only"> · {tr("Fatto")}</span> : null}
+                  {isSkipped ? <span> · {tr("Saltato")}</span> : null}
                 </span>
-                {isDone ? null : (
+                {isSkipped ? (
+                  onRestore ? (
+                    <button
+                      type="button"
+                      onClick={() => onRestore(step.id)}
+                      className="-mr-2 flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                    >
+                      {tr("Rimetti")}
+                    </button>
+                  ) : null
+                ) : isDone ? null : (
                   <Link
                     href={step.href}
                     onClick={() => onStepClick?.(step.id, "list")}

@@ -1,0 +1,8 @@
+# «Primi passi» react to imports and other updates (2026-10-19)
+
+**Decision**: the «Importa i movimenti» step is done as soon as the user has any real (non-sample) transaction: bank sync, CSV import or typed by hand. Before, only bank-synced transactions (`source = 'auto'`) counted, so a CSV import never ticked the step and it kept asking for something already done.
+**Also**: while a step is missing and the tab is visible, the steps are re-read every 15 seconds (`useStartQuery`), on top of the refresh after any write, finished import or sync and when the user comes back to the page. Imports finishing on another device or from a cron show up without a reload. The done line reads «Movimenti aggiunti».
+**Why**: Daniele noticed the section did not mark what had been done after an import. **Deferred**: a push from the server (SSE) instead of polling; not worth it for one cheap query.
+
+**Skipping a step**: every step except the account has «Non mi serve» (and «Rimetti» on the skipped row), saved in `auth_user.start_skipped` (migration 0044). The checklist is complete when every step is done or skipped, so someone who does not want to set a target can still close «Primi passi». Skipped steps are not asked again (not counted in «2 su 3», not proposed as next step, not in the done-next toast). The account step cannot be skipped: without one nothing else can be shown. Signals: log `onboarding.step.skipped|restored`, Umami `start_step_skipped`, metric `buddybudget_start_events_total{event="step_skipped|step_restored"}`.
+**Why**: Daniele noted the checklist should be closable one way or another, e.g. for someone who does not want to set a target.

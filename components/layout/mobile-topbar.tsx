@@ -9,16 +9,17 @@ import { useLocalization } from "@/lib/localization/provider";
  * il drawer della sidebar.
  *
  * Contiene:
- * - Brand/logo testuale
+ * - Brand/logo testuale, che è un link alla pagina iniziale dell'app (`/`)
  * - Hamburger button (apre il drawer via SidebarContext)
  * Tema e «Nascondi importi» stanno nel menu utente del drawer o in «Altro».
  *
- * Riusabilità: accetta `brandName` e `brandHref` come prop per essere
+ * Riusabilità: accetta `brandName` come prop per essere
  * adattata ad altre app senza modifiche al componente.
  */
 
 import type * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Menu, MessageCircleQuestion } from "lucide-react";
 import { useSidebar } from "@/components/layout/sidebar-context";
 
@@ -76,8 +77,12 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
         {leading ? leading(menuSlot) : menuSlot}
       </div>
 
-      {/* Brand */}
-      <span className="col-start-2 row-start-1 flex items-center gap-2 font-heading text-base font-bold text-sidebar-foreground group-has-[[data-topbar-back]]:hidden">
+      {/* Brand — torna alla pagina iniziale */}
+      <Link
+        href="/"
+        aria-label={tr("{0}: torna alla pagina iniziale", {0: brandName})}
+        className="col-start-2 row-start-1 flex items-center gap-2 rounded-lg font-heading text-base font-bold text-sidebar-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring group-has-[[data-topbar-back]]:hidden"
+      >
         <Image
           src="/brand/logo-mark.svg"
           alt={""}
@@ -87,7 +92,7 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
           aria-hidden="true"
         />
         {brandName}
-      </span>
+      </Link>
 
       {onOpenSupport ? (
         <button

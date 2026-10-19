@@ -2,6 +2,23 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.81.0](https://github.com/YonderUrik/buddy-budget/compare/v0.80.1...v0.81.0) (2026-10-19)
+
+
+### Novità
+
+* apply bank categories from imports and let the app categorise more on its own ([#456](https://github.com/YonderUrik/buddy-budget/issues/456)) ([1b2c675](https://github.com/YonderUrik/buddy-budget/commit/1b2c6758319353fc6b4044e40cfc7129e5a060d8))
+* let «Primi passi» tick for any movement and close with skipped steps ([#452](https://github.com/YonderUrik/buddy-budget/issues/452)) ([b6d9541](https://github.com/YonderUrik/buddy-budget/commit/b6d95417a4b894d211316eef47c885d5c2ad8961))
+* open a transaction's detail by tapping it ([#455](https://github.com/YonderUrik/buddy-budget/issues/455)) ([977b8b5](https://github.com/YonderUrik/buddy-budget/commit/977b8b5f4a68aec7d1a912aa8999ffc6e42113cd))
+* tell returning users what happened since their last visit ([#457](https://github.com/YonderUrik/buddy-budget/issues/457)) ([bbc1753](https://github.com/YonderUrik/buddy-budget/commit/bbc175352bff22b79a77b3688dd45493953e9f03))
+
+
+### Correzioni
+
+* confirm detected subscriptions whose bank description is long ([#453](https://github.com/YonderUrik/buddy-budget/issues/453)) ([bab69cd](https://github.com/YonderUrik/buddy-budget/commit/bab69cd2451d6497c98f60acd24a1915294b0cd7))
+* hide every amount when «Nascondi gli importi» is on ([#448](https://github.com/YonderUrik/buddy-budget/issues/448)) ([7995663](https://github.com/YonderUrik/buddy-budget/commit/79956635f0a1c141dc79f0e6e8ae30a3c8ff0564))
+* remove the to-categorise count badge from Liquidità in the navigation ([#451](https://github.com/YonderUrik/buddy-budget/issues/451)) ([bc64d89](https://github.com/YonderUrik/buddy-budget/commit/bc64d89c4b8326d666e08fe44eed10a8604f58fe))
+
 ## [0.80.1](https://github.com/YonderUrik/buddy-budget/compare/v0.80.0...v0.80.1) (2026-10-19)
 
 

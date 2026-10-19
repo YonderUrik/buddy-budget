@@ -354,3 +354,77 @@ test('cancelling the wizard prevents the combined command from starting Docker',
   assert(!result.stdout.includes('Building BuddyBudget'));
   assert.equal(await readFile(path, 'utf8'), 'unchanged configuration\n');
 }));
+
+async function uninstallFixture(dir, { args = [], input = '', fail = false, configured = true } = {}) {
+  await mkdir(join(dir, 'scripts'));
+  await mkdir(join(dir, 'bin'));
+  const script = join(dir, 'scripts/selfhost-uninstall.sh');
+  await writeFile(script, await readFile(new URL('../selfhost-uninstall.sh', import.meta.url)));
+  if (configured) await writeFile(join(dir, '.env'), 'private configuration\n');
+  await writeFile(join(dir, '.env.local'), 'developer configuration\n');
+  const log = join(dir, 'calls.jsonl');
+  const docker = join(dir, 'bin/docker');
+  await writeFile(docker, `#!/usr/bin/env node
+import {appendFileSync} from 'node:fs';
+appendFileSync(process.env.SETUP_TEST_CALLS, JSON.stringify(process.argv.slice(2))+'\\n');
+process.exit(Number(process.env.SETUP_TEST_EXIT));
+`);
+  await chmod(docker, 0o755);
+  const result = spawnSync('sh', [script, ...args], { encoding: 'utf8', input, env: {
+    ...process.env, PATH: join(dir, 'bin') + ':' + process.env.PATH,
+    SETUP_TEST_CALLS: log, SETUP_TEST_EXIT: fail ? '7' : '0',
+  } });
+  let calls = [];
+  try { calls = (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line)); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  assert.equal(await readFile(join(dir, '.env.local'), 'utf8'), 'developer configuration\n');
+  return { ...result, calls };
+}
+
+test('uninstall keeps database and configuration by default and includes the AI worker', async () => temporary(async (path, dir) => {
+  const result = await uninstallFixture(dir);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(result.calls, [['compose', '-f', 'docker-compose.yml', '--profile', 'ai', 'down', '--remove-orphans']]);
+  assert.equal(await readFile(path, 'utf8'), 'private configuration\n');
+  assert(result.stdout.includes('To reinstall with the same data'));
+}));
+
+test('purge needs explicit confirmation and cancellation changes nothing', async () => temporary(async (path, dir) => {
+  const result = await uninstallFixture(dir, { args: ['--purge'], input: '\n' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.calls.length, 0);
+  assert.equal(await readFile(path, 'utf8'), 'private configuration\n');
+  assert(result.stdout.includes('Cancelled. Nothing was changed.'));
+}));
+
+for (const unattended of [false, true]) {
+  test(`confirmed purge deletes only setup configuration after volume removal (unattended=${unattended})`, async () => temporary(async (path, dir) => {
+    const result = await uninstallFixture(dir, { args: unattended ? ['--purge', '--yes'] : ['--purge'], input: 'DELETE\n' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.calls.length, 1);
+    assert(result.calls[0].includes('--volumes'));
+    await assert.rejects(readFile(path), { code: 'ENOENT' });
+    assert(result.stdout.includes('To start fresh'));
+  }));
+}
+
+test('failed purge retains configuration and gives retry instructions', async () => temporary(async (path, dir) => {
+  const result = await uninstallFixture(dir, { args: ['--purge', '--yes'], fail: true });
+  assert.equal(result.status, 1);
+  assert.equal(await readFile(path, 'utf8'), 'private configuration\n');
+  assert(result.stderr.includes('Your .env was kept'));
+  assert(!result.stdout.includes('BuddyBudget was removed'));
+}));
+
+test('cleanup remains possible after configuration was lost', async () => temporary(async (path, dir) => {
+  const result = await uninstallFixture(dir, { configured: false, args: ['--purge', '--yes'] });
+  assert.equal(result.status, 0, result.stderr);
+  assert(result.calls[0].includes('--volumes'));
+  await assert.rejects(readFile(path), { code: 'ENOENT' });
+}));
+
+test('cleanup rejects an ambiguous unattended invocation before touching Docker', async () => temporary(async (path, dir) => {
+  const result = await uninstallFixture(dir, { args: ['--yes'] });
+  assert.equal(result.status, 1);
+  assert.equal(result.calls.length, 0);
+  assert.equal(await readFile(path, 'utf8'), 'private configuration\n');
+}));

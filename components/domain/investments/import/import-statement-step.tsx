@@ -1,5 +1,6 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
+import { localizedFormats } from "@/lib/localization/format";
 
 /**
  * Secondo passo per un rendiconto già strutturato (Interactive Brokers, DEGIRO, Trade Republic): cosa ho letto, quanto
@@ -28,7 +29,8 @@ export interface ImportStatementStepProps {
 const MAX_LISTED_CASH = 4;
 
 export function ImportStatementStep({ fileName, providerName, rows, warnings, cashMovements, destination }: ImportStatementStepProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
+  const { formatCurrency } = localizedFormats(locale);
   const operations = rows.filter((r) => r.status === "ok").length;
   const notImported = rows.length - operations;
   return (
@@ -61,7 +63,7 @@ export function ImportStatementStep({ fileName, providerName, rows, warnings, ca
                   <span className="text-muted-foreground">{m.date.split("-").reverse().join("/")} {"·"}</span>
                   {m.description}
                 </span>
-                <span className="shrink-0 text-xs tabular-nums">{m.amount.toFixed(2)}{" "}{m.currency}</span>
+                <span className="shrink-0 text-xs tabular-nums">{formatCurrency(m.amount, m.currency)}</span>
               </li>
             ))}
           </ul>

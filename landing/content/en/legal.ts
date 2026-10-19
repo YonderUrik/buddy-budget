@@ -42,7 +42,7 @@ export const PRIVACY_EN: LegalDocument = {
       title: "What data we process",
       items: [
         "Account data: name, email address, currency and the preferences you choose. If you sign in with Google, also your profile photo.",
-        "Financial data you enter or import: accounts, balances, transactions (with description, notes and counterparty), categories, budgets, investments, debts, pension funds and net worth. Descriptions may reveal habits, purchases or personal circumstances: we never ask you to enter data about health, opinions or other special categories, but they may appear in transaction texts.",
+        "Financial data you enter or import: accounts, balances, transactions (with description, notes, counterparty and, when the imported file has it, the category your bank wrote), categories, budgets, investments, debts, pension funds and net worth. Descriptions may reveal habits, purchases or personal circumstances: we never ask you to enter data about health, opinions or other special categories, but they may appear in transaction texts.",
         "Bank data: if you connect an account through Open Banking, we receive through GoCardless the accounts and transactions you authorize. We neither see nor store your bank login details.",
         "Files you upload to import: bank and broker statements (for example CSV files or broker exports). If you choose the AI import, the file is kept encrypted only while it is processed (see the dedicated section).",
         "Category suggestions: if you turn on the assistant, for each merchant we keep the normalized name, the suggested category and whether you confirmed or changed it (never amounts or dates), together with the date of your consent.",
@@ -93,7 +93,17 @@ export const PRIVACY_EN: LegalDocument = {
       title: "Category suggestions with artificial intelligence",
       paragraphs: [
         "If you turn it on in Settings → Category assistant (it is off until you choose it), for new transactions from syncs and imports we send an artificial intelligence model the cleaned-up merchant name, the direction (income or expense) and the list of your categories, with a few examples of your past choices and the personal instructions you choose to enter in Settings. Avoid putting personal or bank data in the instructions. We don't send amounts, dates, IBANs, notes, full transaction descriptions, transfers or names that look like a person's.",
-        "The service is OpenRouter, with a request not to keep the data and not to use it for training. The model suggests a category with a degree of confidence. If in Settings you leave on the option «Lascia che l'app scelga quando è quasi certa» (Let the app choose when it is almost certain), suggestions at least 90% certain apply without asking you: you find them in Categorizza (Categorize) → «Messe dall'app» (Set by the app), marked as coming from artificial intelligence, and you can change them at any time. The other suggestions wait for your confirmation, and a choice becomes a rule only if you ask for it. You can turn off automatic application or withdraw consent at any time: from then on no new requests go out and suggestions already received no longer apply by themselves.",
+        "The service is OpenRouter, in the zero data retention mode described in the next section. The model suggests a category with a degree of confidence. If in Settings you leave on the option «Lascia che l'app scelga quando è abbastanza sicura» (Let the app choose when it is fairly sure), suggestions at least 70% certain apply without asking you: you find them in Categorizza (Categorize) → «Messe dall'app» (Set by the app), marked as coming from artificial intelligence, and you can change them at any time. The other suggestions wait for your confirmation, and a choice becomes a rule only if you ask for it. You can turn off automatic application or withdraw consent at any time: from then on no new requests go out and suggestions already received no longer apply by themselves.",
+      ],
+    },
+    {
+      id: "zero-data-retention",
+      title: "Zero data retention for artificial intelligence",
+      paragraphs: [
+        "Every artificial intelligence request (importing a file, category suggestions, «Chiedi all'AI» (Ask the AI) on a transaction) goes through OpenRouter in zero data retention mode: OpenRouter sends it only to model providers that keep no data after the answer and don't use it to train models. If no provider meets these conditions, the request is rejected and doesn't go out.",
+        "The condition is enforced twice: it is written into every request our servers send and it is turned on in our OpenRouter account settings for all models, so it holds even if one of the two were missing. OpenRouter doesn't keep the text of requests and answers; it keeps technical usage data (model, amount of text processed, cost).",
+        `What it doesn't cover: the mode concerns the providers OpenRouter passes the request to, not what we keep. On our side, as described in the sections above, we keep the result (the file's reading rules, the suggested category) and technical logs without the content of the requests, for ${LOG_DAYS} days. We don't use additional OpenRouter tools such as web search.`,
+        "This applies to the service at buddybudget.io. Whoever installs BuddyBudget on their own servers uses their own OpenRouter key: requests still ask for zero data retention, but the account settings are those of whoever installs it.",
       ],
     },
     {
@@ -107,7 +117,7 @@ export const PRIVACY_EN: LegalDocument = {
         "Cloudflare: traffic routing, DNS and storage (R2) of the database backups.",
         "GoCardless: reading the bank accounts you connect, under PSD2.",
         "Resend: sending service emails and, if you turn them on, summaries and alerts (it uses your email address and the text of the emails, which may contain figures from your budget), and delivering the messages you write to support.",
-        "OpenRouter and the model provider it selects: only if you use the AI import or category suggestions, with your consent (see the dedicated sections).",
+        "OpenRouter and the model provider it selects, always in zero data retention mode: only if you use the AI import or category suggestions, with your consent (see the dedicated sections).",
         "Google: only if you choose to sign in with Google; it acts as an independent controller for authentication.",
         "Monitoring, technical alerting and anonymous statistics tools (Umami), which we run on our own servers and which receive no financial data or content of yours.",
       ],
@@ -161,7 +171,7 @@ export const PRIVACY_EN: LegalDocument = {
       id: "automated-decisions",
       title: "Automated decisions",
       paragraphs: [
-        "BuddyBudget makes no decisions that produce legal effects on you. Transaction categorization uses rules you can see and change, your past choices and, if you turn it on, suggestions from an artificial intelligence model. If you choose, the most certain suggestions apply by themselves: they only concern the label of your transactions, are always marked as applied automatically and you can correct them at any time. Tax estimates, projections and simulations are informational tools, not decisions about you.",
+        "BuddyBudget makes no decisions that produce legal effects on you. Transaction categorization uses rules you can see and change, your past choices, the category your bank wrote in the files you import and, if you turn it on, suggestions from an artificial intelligence model. The bank's category, when it clearly matches one of yours, applies by itself (without artificial intelligence); if you choose, the most certain suggestions apply by themselves too: they only concern the label of your transactions, are always marked as applied automatically and you can correct them at any time. Tax estimates, projections and simulations are informational tools, not decisions about you.",
       ],
     },
     {
@@ -213,7 +223,8 @@ export const TERMS_EN: LegalDocument = {
       paragraphs: [
         "Calculations, estimates, simulations, charts, tax estimates, pension projections and comments on securities are for information only and are based on the data you enter and on simplified assumptions. They are not an investment recommendation or personalized advice, and BuddyBudget is not a financial intermediary. Tax and pension rules change and depend on your situation: before deciding, consult a qualified professional.",
         "Market prices come from third-party sources, may be delayed or wrong and are end-of-day closes, not real-time quotes. The same goes for data received from banks through Open Banking: it depends on the bank and on the connection provider.",
-        "The AI import produces automatically generated reading rules: check that the imported transactions match your documents. The assistant's category suggestions may be wrong: nothing applies without your confirmation, and you are the one who checks that the chosen categories are right.",
+        "The AI import produces automatically generated reading rules: check that the imported transactions match your documents. Categories set by the app (from your rules, from your bank's category in imported files or from the most certain suggestions, if you chose so) may be wrong: they are marked as set by the app, you can change them at any time and you are the one who checks that they are right.",
+        "Artificial intelligence requests go through OpenRouter only to providers that keep no data and don't use it for training (zero data retention, see the privacy policy); if none is available the feature doesn't answer and your data stays as it is.",
       ],
     },
     {

@@ -92,9 +92,9 @@ export function PersonalImportReview({ job, file, listId, onUploadCorrected, onR
   const { data, error, isPending } = useQuery({ queryKey: ["personal-import-preview", job.id], queryFn: () => personalImportApi<Preview>(`/${job.id}`), staleTime: 0 });
 
   const skip = useMutation({
-    mutationFn: () => personalImportApi<{ inserted: number; skipped?: number }>(`/${job.id}`, { action: "import_skipping_errors" }),
+    mutationFn: () => personalImportApi<{ inserted: number; skipped?: number; bankCategorized?: number }>(`/${job.id}`, { action: "import_skipping_errors" }),
     onSuccess: (result) => {
-      track("personal_csv_imported", { rows: result.inserted, skipped: result.skipped ?? 0 });
+      track("personal_csv_imported", { rows: result.inserted, skipped: result.skipped ?? 0, bankCategorized: result.bankCategorized ?? 0 });
       void client.invalidateQueries({ queryKey: ["personal-imports"] });
     },
   });

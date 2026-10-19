@@ -1,4 +1,5 @@
 "use client";
+import { importOverlap } from "@/lib/personal-import/counts";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -15,7 +16,8 @@ import { AlertCircle, Check, X } from "lucide-react";
 import { TextMorph, TextShimmer } from "@/components/motion";
 import { SyncProgressRing } from "@/components/domain/sync/sync-progress-ring";
 import { SPRING_BOUNCY } from "@/lib/motion/springs";
-import { ISLAND_DISMISSED_STORAGE_KEY, islandJobs, islandState, runningImportIds } from "@/lib/personal-import/island";
+import { hasNewlyFinishedImport, importStatuses, ISLAND_DISMISSED_STORAGE_KEY, islandJobs, islandState } from "@/lib/personal-import/island";
+import { markHistoryRefreshPending } from "@/lib/queries/history-refresh-signal";
 import { usePersonalImportsQuery, type PersonalImportListing } from "@/lib/queries/personal-imports";
 import { QUERY_KEYS_CHANGED_BY_CATEGORIZATION } from "@/lib/queries/categorization";
 import { cn } from "@/lib/utils";
@@ -23,7 +25,7 @@ import { cn } from "@/lib/utils";
 type Job = PersonalImportListing["jobs"][number];
 
 /** Dati che un import concluso può aver cambiato: da ricaricare quando l'isola vede la fine del lavoro. */
-const QUERY_KEYS_CHANGED_BY_IMPORT = [["accounts"], ["investments"], ["net-worth-snapshots"], ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION] as const;
+const QUERY_KEYS_CHANGED_BY_IMPORT = [["accounts"], ["investments"], ["net-worth-snapshots"], ["start"], ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION] as const;
 const DISMISS_LABEL = "Chiudi riepilogo importazione";
 const MAX_DISMISSED_IDS = 50;
 
@@ -59,13 +61,18 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
   const failed = state === "failed";
   const review = job.status === "review_failed";
   const results = job.results;
-  const title = running ? tr("{0}: importo il file", { 0: source }) : review ? tr("{0}: da controllare", { 0: source }) : failed ? tr("{0}: non riuscito", { 0: source }) : tr("{0}: completato", { 0: source });
+  const overlap = importOverlap(results);
+  const title = running ? tr("{0}: importo il file", { 0: source }) : review ? tr("{0}: da controllare", { 0: source }) : failed ? tr("{0}: non riuscito", { 0: source }) : overlap === "nothing_new" ? tr("{0}: niente di nuovo", { 0: source }) : tr("{0}: completato", { 0: source });
   const detail = running
     ? tr("Puoi continuare a usare l'app.")
     : review
       ? tr("Vedi quali righe e scegli cosa fare.")
     : failed
       ? tr("Vedi cosa fare.")
+      : results && overlap === "nothing_new"
+        ? tr("I movimenti c'erano già tutti.")
+      : results && overlap === "partial"
+        ? tr("{0} su {1} movimenti importati", { 0: results.rows! - results.alreadyPresent!, 1: results.rows! })
       : results
         ? tr("{0} movimenti · {1} operazioni", { 0: results.cash, 1: results.investments })
         : tr("Dati aggiunti.");
@@ -110,12 +117,14 @@ export function PersonalImportIsland() {
   const [dismissed, setDismissed] = React.useState<Set<string>>(() => (typeof window === "undefined" ? new Set() : readDismissed()));
   const [now] = React.useState(() => Date.now());
 
-  const previous = React.useRef<Set<string>>(new Set());
+  const previous = React.useRef<Map<string, string>>(new Map());
   React.useEffect(() => {
-    const running = runningImportIds(data?.jobs);
-    const finished = [...previous.current].some((id) => !running.has(id));
-    if (finished) for (const key of QUERY_KEYS_CHANGED_BY_IMPORT) void client.invalidateQueries({ queryKey: [...key] });
-    previous.current = running;
+    if (hasNewlyFinishedImport(previous.current, data?.jobs)) {
+      for (const key of QUERY_KEYS_CHANGED_BY_IMPORT) void client.invalidateQueries({ queryKey: [...key] });
+      // The charts say they are updating until the reloaded history arrives.
+      markHistoryRefreshPending();
+    }
+    previous.current = importStatuses(data?.jobs);
   }, [data, client]);
 
   const dismiss = React.useCallback((id: string) => {

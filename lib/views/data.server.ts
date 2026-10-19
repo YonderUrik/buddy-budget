@@ -7,11 +7,19 @@ import { budgets, type Budget } from "@/lib/db/schema/budgets";
 import { categories, type Category } from "@/lib/db/schema/categories";
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
 import { localizeCategory } from "@/lib/localization/categories";
+import { importAccountIds } from "@/lib/net-worth/snapshots";
 import type { LocaleProfile } from "@/lib/localization/config";
 
-/** The user's accounts, oldest first (`GET /api/accounts`). */
-export function loadUserAccounts(userId: string): Promise<Account[]> {
-  return db.select().from(accounts).where(eq(accounts.userId, userId)).orderBy(asc(accounts.createdAt));
+/**
+ * The user's accounts, oldest first (`GET /api/accounts`), each with `followsTransactions`: linked banks and file
+ * imports move their balance with their transactions, so their trend can be drawn day by day.
+ */
+export async function loadUserAccounts(userId: string): Promise<Array<Account & { followsTransactions: boolean }>> {
+  const [rows, imported] = await Promise.all([
+    db.select().from(accounts).where(eq(accounts.userId, userId)).orderBy(asc(accounts.createdAt)),
+    importAccountIds(userId),
+  ]);
+  return rows.map((a) => ({ ...a, followsTransactions: a.source === "auto" || imported.has(a.id) }));
 }
 
 /** The user's monthly budgets (`GET /api/budgets`). */

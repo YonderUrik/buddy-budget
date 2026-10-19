@@ -23,7 +23,7 @@ export interface InstrumentPickerProps {
   onChange: (instrument: Instrument) => void;
   /** Valuta proposta per crypto e strumenti manuali. */
   defaultCurrency: string;
-  /** Strumenti già usati dall'utente, mostrati prima di scrivere e in cima ai risultati. */
+  /** Instruments the user holds today, shown as «I tuoi strumenti» before typing and on top of the results. */
   suggestions?: Instrument[];
   /** Testo del bottone quando nessuno strumento è scelto. */
   placeholder?: string;

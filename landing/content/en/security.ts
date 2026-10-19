@@ -21,6 +21,7 @@ export const SECURITY_SOURCES_EN: SecurityContent["sources"] = {
   gdpr: { label: "Regulation (EU) 2016/679 (GDPR): rights of access, portability and erasure (arts. 15-20)", href: eurLexEn(SECURITY_SOURCES.gdpr.href) },
   r2Security: { label: "Cloudflare R2, data security: objects are encrypted at rest", href: SECURITY_SOURCES.r2Security.href },
   r2Location: { label: "Cloudflare R2, EU jurisdiction: data stays in the European Union", href: SECURITY_SOURCES.r2Location.href },
+  openrouterZdr: { label: "OpenRouter, Zero Data Retention: requests go only to providers that keep no data; it covers routing to the models, not additional tools", href: SECURITY_SOURCES.openrouterZdr.href },
   garante: { label: "Garante per la protezione dei dati personali (the Italian data protection authority): how to file a complaint", href: SECURITY_SOURCES.garante.href },
 };
 
@@ -138,12 +139,12 @@ export const SECURITY_EN: SecurityContent = {
     rows: [
       { label: "When", text: "Only in three places: category suggestions, importing a bank statement in a new format, and importing investments when the normal reader fails." },
       { label: "What it receives", text: "For categories, the cleaned-up merchant name, whether it's income or an expense, your categories and your instructions: never amounts, dates, IBANs, notes or people's names. For an import, the whole file, because it has to work out its layout." },
-      { label: "Where it goes", text: "To OpenRouter, which passes the request to a model provider. With every request we ask for a provider that keeps nothing after the answer and doesn't train on it; if none does, the request doesn't go out." },
-      { label: "What it decides", text: "It suggests, it doesn't decide. Your rules come first. If you leave the option on, only suggestions it is at least 90% sure of apply by themselves, marked as set by the app and easy to change." },
-      { label: "The limit", text: "No retention is a condition we ask OpenRouter for on every request, not a contract we signed with the model providers." },
+      { label: "Where it goes", text: "To OpenRouter in zero data retention mode: it passes the request only to model providers that keep nothing after the answer and don't train on it. If none does, the request doesn't go out. The condition is written into every request and also turned on in BuddyBudget's OpenRouter account, for all models." },
+      { label: "What it decides", text: "It suggests, it doesn't decide. Your rules come first. If you leave the option on, only suggestions it is at least 70% sure of apply by themselves, marked as set by the app and easy to change." },
+      { label: "The limit", text: "Zero data retention is an OpenRouter rule for model providers, not a contract we signed with them. OpenRouter keeps technical usage data (model, amount of text, cost); we keep the result (the category, the file's reading rules) and technical logs without the content for 30 days." },
       { label: "How to turn it off", text: "Withdraw your consent in Settings at any time: from then on no request goes out. If you host BuddyBudget yourself you can leave AI out entirely: the app works the same." },
     ],
-    note: ["Details in the ", { text: "privacy policy", href: `${EN_PATHS.privacy}#ai-categories` }, "."],
+    note: ["Details in the ", { text: "privacy policy", href: `${EN_PATHS.privacy}#zero-data-retention` }, "."],
   },
   analytics: {
     question: "What do the usage statistics count?",

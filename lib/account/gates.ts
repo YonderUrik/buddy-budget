@@ -1,3 +1,4 @@
+import { isSelfHosted } from "@/lib/instance/config";
 import { LEGAL_VERSION, needsLegalAcceptance } from "@/lib/legal/version";
 
 /** Stable code of the 403 the proxy returns to API calls of a deactivated account (deletion pending). */
@@ -19,11 +20,12 @@ export interface GateUser {
 /**
  * First account gate that applies to the user, in the order the proxy enforces them: deactivated account, then the
  * legal re-acceptance (only after onboarding: new users accept during onboarding), then onboarding. Null when the
- * user can use the app. Single source for `proxy.ts` and `GET /api/me/bootstrap`.
+ * user can use the app. Single source for `proxy.ts` and `GET /api/me/bootstrap`. Self-hosted installs are run by
+ * whoever installed them, not under the hosted service's Terms: they never get the legal gate.
  */
-export function accountGate(user: GateUser, currentLegalVersion: string = LEGAL_VERSION): AccountGate | null {
+export function accountGate(user: GateUser, currentLegalVersion: string = LEGAL_VERSION, selfHosted: boolean = isSelfHosted()): AccountGate | null {
   if (user.deletionScheduledAt) return ACCOUNT_DEACTIVATED_CODE;
-  if (user.onboardingCompleted && needsLegalAcceptance(user.legalAcceptedVersion, currentLegalVersion)) return LEGAL_ACCEPTANCE_REQUIRED_CODE;
+  if (user.onboardingCompleted && !selfHosted && needsLegalAcceptance(user.legalAcceptedVersion, currentLegalVersion)) return LEGAL_ACCEPTANCE_REQUIRED_CODE;
   if (!user.onboardingCompleted) return ONBOARDING_REQUIRED_CODE;
   return null;
 }

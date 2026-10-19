@@ -25,8 +25,10 @@ import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
+import { useChartRefreshState } from "@/lib/queries/chart-refresh";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 import { useAttentionQuery } from "@/lib/queries/attention";
 import { AccountChips } from "./account-chips";
 import { useLiquidityActions } from "./liquidity-actions";
@@ -63,6 +65,8 @@ export function LiquidityOverview() {
   const { from: fetchFrom, to: fetchTo } = liquidityFetchWindow(today);
   const transactionsQuery = useTransactionsQuery(fetchFrom, fetchTo, "tutte");
   const transactions = React.useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
+  // The single-account curve comes from transactions, the total from the stored history: wait for whichever is drawn.
+  const refreshState = useChartRefreshState(accountId ? transactionsQuery : snapshotsQuery);
 
   const accounts = React.useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);
   const selected = accounts.find((a) => a.id === accountId) ?? null;
@@ -91,7 +95,7 @@ export function LiquidityOverview() {
     <div className="flex flex-col gap-6">
       <p className={cn("max-w-[62ch] text-lg leading-relaxed text-text-2 sm:text-xl", voiceLoading && VOICE_MIN_HEIGHT_CLASS)}>
         {accounts.length > 0 && (
-          <>{tr("Hai")}{" "}<strong className="font-heading font-medium text-foreground">{new Intl.NumberFormat(formattingLocale, { style: "currency", currency, maximumFractionDigits: 0 }).format(total)}</strong>{" "}{tr("su")}{" "}{accounts.length}{" "}{accounts.length === 1 ? tr("conto") : tr("conti")}{"."}{" "}
+          <>{tr("Hai")}{" "}<strong className="font-heading font-medium text-foreground">{formatCurrency(total, currency, { locale: formattingLocale, maximumFractionDigits: 0 })}</strong>{" "}{tr("su")}{" "}{accounts.length}{" "}{accounts.length === 1 ? tr("conto") : tr("conti")}{"."}{" "}
           </>
         )}
         {lines.map((line) => (
@@ -112,6 +116,7 @@ export function LiquidityOverview() {
         period={period}
         onPeriodChange={setPeriod}
         points={points}
+        refreshState={refreshState}
       />
       {accountsQuery.isPending ? (
         <div className={CHIPS_PLACEHOLDER_CLASS} aria-hidden="true" />

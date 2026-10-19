@@ -41,7 +41,8 @@ export function greetingFor(hour: number): string {
 
 /**
  * Le frasi con cui la Panoramica "parla": come va il mese rispetto al solito, e la prossima scadenza vicina.
- * Una frase compare solo se ha qualcosa da dire; senza storico non si inventa un confronto.
+ * Una frase compare solo se ha qualcosa da dire; senza storico non si inventa un confronto, e senza spese né storico
+ * non si dice nulla del mese.
  */
 export function buildVoiceLines(input: VoiceInput): VoiceLine[] {
   const { pace, monthLabel, currency, nextDue, today } = input;
@@ -54,7 +55,9 @@ export function buildVoiceLines(input: VoiceInput): VoiceLine[] {
 
   const diff = pace.typicalSoFar === null ? null : pace.spentSoFar - pace.typicalSoFar;
   const tolerance = pace.typicalSoFar === null ? 0 : Math.max(pace.typicalSoFar * VOICE_PACE_TOLERANCE, 1);
-  if (diff === null || pace.typicalSoFar === null) {
+  if (pace.typicalSoFar === null && pace.spentSoFar === 0) {
+    // Nothing spent and no history (a new user, or no transactions yet): «finora hai speso 0 €» would say nothing.
+  } else if (diff === null || pace.typicalSoFar === null) {
     lines.push({ key: "pace", segments: [{ text: tr("{month}: finora hai speso ", { month: capitalize(monthLabel) }) }, { text: money(pace.spentSoFar), strong: true }, { text: "." }] });
   } else if (Math.abs(diff) <= tolerance) {
     lines.push({ key: "pace", segments: [{ text: tr("{month} procede in linea con il solito: ", { month: capitalize(monthLabel) }) }, { text: money(pace.spentSoFar), strong: true }, { text: tr(" spesi.") }] });

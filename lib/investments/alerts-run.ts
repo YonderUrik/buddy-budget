@@ -1,6 +1,6 @@
 import "server-only";
 import { and, desc, eq } from "drizzle-orm";
-import { Resend } from "resend";
+import { isEmailConfigured, sendEmail } from "@/lib/email/send";
 import { db } from "@/lib/db/client";
 import { getAppUrl } from "@/lib/env";
 import { authUser } from "@/lib/db/schema/auth";
@@ -28,16 +28,10 @@ export async function latestClose(instrumentId: string): Promise<{ date: string;
 }
 
 async function sendAlertEmail(to: string, content: { subject: string; text: string; html: string }): Promise<boolean> {
-  // Senza Resend (self-hosting) l'avviso scatta lo stesso e resta visibile nell'app, ma non parte nessuna email.
-  if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM) return false;
-  const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
-    from: process.env.RESEND_FROM,
-    to,
-    subject: content.subject,
-    text: content.text,
-    html: content.html,
-  });
-  return !error;
+  // Without email (self-hosting) the alert still fires and stays visible in the app, but no email goes out.
+  if (!isEmailConfigured()) return false;
+  const result = await sendEmail({ to, subject: content.subject, text: content.text, html: content.html });
+  return result.ok;
 }
 
 /**

@@ -12,6 +12,7 @@ function tx(date: string, amount: string, categoryId = "c1"): Transaction {
     description: "x",
     rawDescription: null,
     merchantCategoryCode: null,
+    bankCategory: null,
     note: null,
     amount,
     excludedAmount: "0.00",

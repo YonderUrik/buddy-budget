@@ -16,6 +16,7 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import type { MissingIncome } from "@/lib/investments/dividends";
 import { CircleAlertIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
+import { privateNumberFormat } from "@/lib/format";
 
 /** Proposte mostrate prima di "Mostra tutte". */
 export const MISSING_INCOME_LIMIT = 5;
@@ -56,7 +57,7 @@ export function MissingIncomeCard({
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
   function quantityText(value: number): string {
-  return value.toLocaleString(formattingLocale, { maximumFractionDigits: 4 });
+  return privateNumberFormat(formattingLocale, { maximumFractionDigits: 4 }).format(value);
 }
 
   const { t: tr } = useLocalization();

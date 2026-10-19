@@ -12,7 +12,7 @@ export interface ResolvedCategorization {
 }
 
 /** Regole dell'utente con i dati di categoria necessari al guard di direzione. */
-async function loadRuleCandidates(userId: string): Promise<RuleCandidate[]> {
+export async function loadRuleCandidates(userId: string): Promise<RuleCandidate[]> {
   const rows = await db
     .select({
       id: categorizationRules.id,

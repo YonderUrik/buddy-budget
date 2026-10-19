@@ -40,6 +40,7 @@ export const SECURITY_SOURCES = {
   gdpr: { label: "Regolamento (UE) 2016/679 (GDPR): diritti di accesso, portabilità e cancellazione (artt. 15-20)", href: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32016R0679" },
   r2Security: { label: "Cloudflare R2, sicurezza dei dati: gli oggetti sono cifrati a riposo", href: "https://developers.cloudflare.com/r2/reference/data-security/" },
   r2Location: { label: "Cloudflare R2, giurisdizione UE: i dati restano nell'Unione europea", href: "https://developers.cloudflare.com/r2/reference/data-location/" },
+  openrouterZdr: { label: "OpenRouter, Zero Data Retention: le richieste vanno solo a fornitori che non conservano i dati; vale per l'instradamento verso i modelli, non per gli strumenti aggiuntivi", href: "https://openrouter.ai/docs/guides/features/zdr" },
   garante: { label: "Garante per la protezione dei dati personali: come presentare un reclamo", href: "https://www.garanteprivacy.it/" },
 } as const satisfies Record<string, Source>;
 
@@ -174,7 +175,7 @@ export const ANALYTICS_DATA = {
 /**
  * Where the app uses AI and what it sends: the same three places as «Dove l'app usa l'AI» in the app's Settings
  * (`components/domain/settings/ai-usage-summary.tsx`) and the request in `lib/llm/jev.ts` (merchant name, direction,
- * categories; `zdr: true`, `data_collection: "deny"`).
+ * categories; `OPENROUTER_PRIVACY` in `lib/llm/openrouter.ts`, also enforced for all models in the OpenRouter account).
  */
 export const AI_DATA = {
   question: "Dove entra l'AI, e cosa vede?",
@@ -182,9 +183,9 @@ export const AI_DATA = {
   rows: [
     { label: "Quando", text: "Solo in tre punti: le proposte di categoria, l'importazione di un estratto conto in un formato nuovo e l'importazione degli investimenti quando la lettura normale non riesce." },
     { label: "Cosa riceve", text: "Per le categorie, il nome pulito dell'esercente, se è un'entrata o un'uscita, le tue categorie e le tue istruzioni: mai importi, date, IBAN, note o nomi di persone. Per un'importazione, il file intero, perché deve capire com'è fatto." },
-    { label: "A chi va", text: "A OpenRouter, che passa la richiesta a un fornitore del modello. A ogni richiesta chiediamo un fornitore che non conservi i dati dopo la risposta e non li usi per l'addestramento; se nessuno lo garantisce, la richiesta non parte." },
-    { label: "Cosa decide", text: "Propone, non comanda. Le tue regole vengono prima. Se lasci attiva l'opzione, si applicano da sole solo le proposte sicure almeno al 90%, segnate come messe dall'app e correggibili." },
-    { label: "Il limite", text: "La non conservazione è una condizione che chiediamo a OpenRouter a ogni richiesta, non un contratto firmato con i fornitori dei modelli." },
+    { label: "A chi va", text: "A OpenRouter in modalità zero data retention: passa la richiesta solo a fornitori del modello che non conservano i dati dopo la risposta e non li usano per l'addestramento. Se nessuno lo garantisce, la richiesta non parte. La condizione è scritta in ogni richiesta ed è attiva anche nell'account OpenRouter di BuddyBudget, per tutti i modelli." },
+    { label: "Cosa decide", text: "Propone, non comanda. Le tue regole vengono prima. Se lasci attiva l'opzione, si applicano da sole solo le proposte sicure almeno al 70%, segnate come messe dall'app e correggibili." },
+    { label: "Il limite", text: `Zero data retention è una regola di OpenRouter sui fornitori dei modelli, non un contratto che abbiamo firmato con loro. OpenRouter tiene i dati tecnici dell'uso (modello, quantità di testo, costo); noi teniamo il risultato (la categoria, le regole di lettura del file) e log tecnici senza il contenuto per ${LOG_DAYS} giorni.` },
     { label: "Come spegnerla", text: "Da Impostazioni revochi il consenso quando vuoi: da lì non parte più nessuna richiesta. Chi installa BuddyBudget sul proprio server può non configurare affatto l'AI: l'app funziona lo stesso." },
   ] satisfies readonly FactRow[],
 } as const;
@@ -290,7 +291,7 @@ export const SECURITY_IT: SecurityContent = {
       ", dove trovi i contatti per esercitare i tuoi diritti.",
     ],
   },
-  ai: { ...AI_DATA, note: ["I dettagli sono nell'", { text: "informativa privacy", href: `${LEGAL_PATHS.privacy}#proposte-categorie` }, "."] },
+  ai: { ...AI_DATA, note: ["I dettagli sono nell'", { text: "informativa privacy", href: `${LEGAL_PATHS.privacy}#zero-data-retention` }, "."] },
   analytics: { ...ANALYTICS_DATA, note: ["Tutti i dettagli nella ", { text: "pagina sui cookie", href: LEGAL_PATHS.cookie }, "."] },
   controls: CONTROLS,
   limits: LIMITS,

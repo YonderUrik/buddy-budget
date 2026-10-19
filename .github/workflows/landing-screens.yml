@@ -48,8 +48,9 @@ jobs:
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 5s --health-retries 10
-    # Fake values: no external service is contacted. `sslmode=disable` because in production the app requires TLS,
-    # which the job's Postgres does not have.
+    # Fake values: no external service is contacted, except Logo.dev for the merchant and fund logos when the
+    # `LOGODEV_PUBLISHABLE_KEY` repo secret is set (without it the screens show initials, as before).
+    # `sslmode=disable` because in production the app requires TLS, which the job's Postgres does not have.
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bb_demo?sslmode=disable
       REDIS_URL: redis://localhost:6379
@@ -63,6 +64,7 @@ jobs:
       GOCARDLESS_SECRET_ID: demo
       GOCARDLESS_SECRET_KEY: demo
       CRON_SECRET: ci-only-placeholder-cron-secret-0000000
+      LOGODEV_PUBLISHABLE_KEY: ${{ secrets.LOGODEV_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

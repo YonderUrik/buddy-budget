@@ -1,4 +1,4 @@
-/** Andamento del saldo di un singolo conto, ricostruito all'indietro dal saldo attuale e dai movimenti. Logica pura. */
+/** Balance trend of a single account, rebuilt backwards from the current balance and the transactions. Pure logic. */
 
 import { addDays, toDateKey } from "@/lib/calc/net-worth";
 import { parseDateOnly, startOfDay } from "@/lib/calc/expenses";
@@ -14,16 +14,24 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+/** The account fields the series needs; `followsTransactions` comes from `GET /api/accounts`. */
+export type BalanceSeriesAccount = Pick<Account, "id" | "balance" | "source"> & { followsTransactions?: boolean };
+
+/** True when the account's balance moves with its transactions: a linked bank or a file import. */
+export function accountFollowsTransactions(account: BalanceSeriesAccount): boolean {
+  return account.followsTransactions ?? account.source === "auto";
+}
+
 /**
- * Saldo a fine giornata dal giorno `from` a oggi. Per un conto collegato vale: saldo attuale meno i movimenti
- * successivi (si usa l'importo pieno, la quota "Dividi" non cambia i soldi sul conto). Un conto manuale non registra
- * i movimenti nel saldo: resta una linea piatta sul saldo attuale.
+ * End-of-day balance from `from` to today. For an account whose balance follows its transactions (linked bank, file
+ * import) it is the current balance minus later transactions (full amount: a «Dividi» share does not change the
+ * money on the account). A manual account does not record transactions in its balance: a flat line at today's balance.
  */
-export function buildAccountBalanceSeries(account: Account, transactions: Transaction[], from: Date, today: Date): BalancePoint[] {
+export function buildAccountBalanceSeries(account: BalanceSeriesAccount, transactions: Transaction[], from: Date, today: Date): BalancePoint[] {
   const todayStart = startOfDay(today);
   const fromStart = startOfDay(from);
   const current = Number(account.balance);
-  const mine = account.source === "auto" ? transactions.filter((t) => t.accountId === account.id) : [];
+  const mine = accountFollowsTransactions(account) ? transactions.filter((t) => t.accountId === account.id) : [];
   const byDate = new Map<string, number>();
   let after = 0;
   for (const t of mine) {

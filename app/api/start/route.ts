@@ -2,10 +2,15 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { readJson, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { bindRequestUser, recordStartEvent, requestLogger, withRoute } from "@/lib/observability";
-import { countDoneSteps } from "@/lib/start";
-import { loadStartStatus, setChecklistDismissed } from "@/lib/start/status";
+import { START_FOCUS_IDS, START_STEP_IDS, UNSKIPPABLE_STEPS, countDoneSteps } from "@/lib/start";
+import { loadStartStatus, setChecklistDismissed, setStartFocus, setStepSkipped } from "@/lib/start/status";
 
-const updateSchema = z.object({ dismissed: z.boolean() });
+/** Either closes/reopens the checklist or changes what the user keeps an eye on. */
+const updateSchema = z.union([
+  z.object({ dismissed: z.boolean() }).strict(),
+  z.object({ focus: z.array(z.enum(START_FOCUS_IDS)).max(START_FOCUS_IDS.length) }).strict(),
+  z.object({ step: z.enum(START_STEP_IDS), skipped: z.boolean() }).strict(),
+]);
 
 /** Stato dei primi passi (checklist della Panoramica e dati d'esempio). */
 async function handleGet(request: NextRequest) {
@@ -20,18 +25,33 @@ async function handleGet(request: NextRequest) {
   return Response.json(status);
 }
 
-/** Chiude (`dismissed: true`) o riapre la checklist. */
+/** Closes (`dismissed: true`) or reopens the checklist, saves a new `focus` (which steps it asks for), or skips a step. */
 async function handlePatch(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);
   if (session instanceof Response) return session;
   bindRequestUser(session.user.id);
   const parsed = updateSchema.safeParse(await readJson(request));
   if (!parsed.success) return Response.json({ error: "Dati non validi" }, { status: 400 });
+  if ("focus" in parsed.data) {
+    const focus = [...new Set(parsed.data.focus)];
+    await setStartFocus(session.user.id, focus);
+    recordStartEvent("focus_changed");
+    requestLogger().info("onboarding.focus.updated", { trigger: "checklist", count: focus.length });
+    return new Response(null, { status: 204 });
+  }
+  if ("step" in parsed.data) {
+    const { step, skipped } = parsed.data;
+    if (UNSKIPPABLE_STEPS.includes(step)) return Response.json({ error: "Questo passo non si può saltare" }, { status: 400 });
+    await setStepSkipped(session.user.id, step, skipped);
+    recordStartEvent(skipped ? "step_skipped" : "step_restored");
+    requestLogger().info(skipped ? "onboarding.step.skipped" : "onboarding.step.restored", { reason: step });
+    return new Response(null, { status: 204 });
+  }
   const { dismissed } = parsed.data;
   const status = await loadStartStatus(session.user.id);
   await setChecklistDismissed(session.user.id, dismissed);
   recordStartEvent(dismissed ? "checklist_dismissed" : "checklist_reopened");
-  requestLogger().info(dismissed ? "onboarding.checklist.dismissed" : "onboarding.checklist.reopened", { count: countDoneSteps(status.steps) });
+  requestLogger().info(dismissed ? "onboarding.checklist.dismissed" : "onboarding.checklist.reopened", { count: countDoneSteps(status.steps, status.stepIds) });
   return new Response(null, { status: 204 });
 }
 

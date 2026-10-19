@@ -85,9 +85,9 @@ export function nameInitials(name: string): string {
 }
 
 /**
- * Icona di uno strumento, senza chiamate esterne. Crypto: icona dal nome o dal simbolo; ETF e fondi: emittente
- * riconosciuto dal nome; azioni: marchio dell'azienda se è tra quelli noti. In tutti gli altri casi una sigla
- * colorata dal tipo (`swatch` del tipo di strumento, scelto dal chiamante).
+ * Icon of an instrument, with no external calls. Crypto: icon from the name or symbol; ETFs, ETCs and funds: issuer
+ * recognised from the name; stocks: the company's mark when it is a known one. Anything else gets initials coloured
+ * by type (`swatch` of the instrument type, chosen by the caller).
  */
 export function resolveInstrumentIcon(input: InstrumentIconInput, typeSwatch: string): InstrumentIcon {
   const { type, name } = input;
@@ -97,7 +97,7 @@ export function resolveInstrumentIcon(input: InstrumentIconInput, typeSwatch: st
   } else if (type === "azione") {
     const brand = findBrand(name);
     if (brand) return { kind: "brand", path: brand.path, hex: brand.hex, label: brand.title };
-  } else if (type === "etf" || type === "fondo") {
+  } else if (type === "etf" || type === "etc" || type === "fondo") {
     const issuer = findFundIssuer(name);
     if (issuer) return { kind: "initials", text: issuer.initials, swatch: issuer.swatch, label: issuer.name };
   }

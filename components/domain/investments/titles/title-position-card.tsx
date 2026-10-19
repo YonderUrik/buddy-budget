@@ -14,6 +14,7 @@ import type { TitlePosition } from "@/lib/investments/title-view";
 import { cn } from "@/lib/utils";
 
 import { PanelSection } from "../panel-section";
+import { privateNumberFormat } from "@/lib/format";
 
 
 
@@ -35,7 +36,7 @@ export function TitlePositionCard({ position, currency, action }: TitlePositionC
 
 
   const { formatCurrency } = localizedFormats(formattingLocale);
-  const QUANTITY_FORMAT = new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 6 });
+  const QUANTITY_FORMAT = privateNumberFormat(formattingLocale, { maximumFractionDigits: 6 });
 
   const { t: tr, features } = useLocalization();
   const gain = position.gain;

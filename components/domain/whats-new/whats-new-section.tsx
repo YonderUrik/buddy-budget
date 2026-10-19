@@ -1,10 +1,12 @@
 "use client";
 
+import { authClient } from "@/lib/auth/client";
 import { useWhatsNew } from "@/lib/whats-new/use-whats-new";
 import { WhatsNewChip } from "./whats-new-chip";
 
-/** Etichetta della novità corrente, se c'è e non è stata chiusa; altrimenti non rende nulla. */
+/** Label of the current news item, if any and not dismissed; items older than the user's sign-up are not news. */
 export function WhatsNewSection() {
-  const { entry, dismiss } = useWhatsNew();
+  const createdAt = authClient.useSession().data?.user.createdAt;
+  const { entry, dismiss } = useWhatsNew(undefined, createdAt ? new Date(createdAt) : undefined);
   return entry ? <WhatsNewChip entry={entry} onDismiss={dismiss} /> : null;
 }

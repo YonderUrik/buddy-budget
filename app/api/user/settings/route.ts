@@ -29,6 +29,7 @@ async function handleGet(request: NextRequest) {
     legalAcceptedVersion: user.legalAcceptedVersion ?? null,
     createdAt: new Date(user.createdAt).toISOString(),
     googleLinked: providers.includes("google"),
+    passwordSet: providers.includes("credential"),
     recentLoginUntil: recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),
   });
 }

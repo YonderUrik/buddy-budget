@@ -31,13 +31,13 @@ function subscribe(onChange: () => void) {
  * La novità da mostrare nel riquadro e il modo di chiuderla. Sul server non c'è nulla da mostrare: la voce compare
  * dopo l'idratazione, prima che arrivino i dati della pagina, quindi non sposta niente. Se il localStorage non è
  * disponibile, la voce torna a comparire a ogni visita finché è recente. Le novità di funzioni non disponibili nel
- * paese dell'utente non compaiono.
+ * paese dell'utente non compaiono, e con `since` (l'iscrizione) nemmeno quelle uscite prima.
  */
-export function useWhatsNew(now: Date = new Date()): { entry: WhatsNewEntry | null; dismiss: (id: string) => void } {
+export function useWhatsNew(now: Date = new Date(), since?: Date): { entry: WhatsNewEntry | null; dismiss: (id: string) => void } {
   const { productCountry } = useLocalization();
   const raw = useSyncExternalStore(subscribe, readRaw, () => null);
   const entries = WHATS_NEW_ENTRIES.filter((e) => isCountryPathAvailable(productCountry, e.href.split("?")[0]));
-  const entry = raw === null ? null : pickWhatsNew(entries, raw.split(",").filter(Boolean), now);
+  const entry = raw === null ? null : pickWhatsNew(entries, raw.split(",").filter(Boolean), now, since);
 
   const dismiss = useCallback((id: string) => {
     try {

@@ -86,12 +86,26 @@ describe("API abbonamenti", () => {
     expect(view.items[0].decision).toBe("da-confermare");
   });
 
+  it("conferma anche quando il nome rilevato è una descrizione bancaria lunga", async () => {
+    // The bank description of a card payment easily exceeds the 80 characters of a typed name.
+    const bankText = "PAGAMENTO POS STREAMIX AB STOCKHOLM SWEDEN CARTA DI DEBITO VISA N. ****1234 DEL 05/09/2026 ORE 10:22";
+    const saved = await POST(new NextRequest("http://localhost/api/subscriptions", json({ origin: "rilevato", key: "streamix", status: "confermato", name: bankText, amount: 13.99, cadence: "mensile", categoryId })));
+    expect(saved.status).toBe(200);
+    const row = await saved.json();
+    expect(row.name).toBe(bankText.slice(0, 80).trimEnd());
+    const view = await (await GET(new NextRequest("http://localhost/api/subscriptions"))).json();
+    expect(view.items[0].decision).toBe("confermato");
+    expect(view.totals).toMatchObject({ count: 1, pendingCount: 0 });
+  });
+
   it("aggiunge un abbonamento manuale, rifiuta il doppione e valida l'input", async () => {
     const body = { origin: "manuale", name: "Club del libro", amount: 12, cadence: "mensile", nextDate: today };
     const created = await POST(new NextRequest("http://localhost/api/subscriptions", json(body)));
     expect(created.status).toBe(201);
     expect((await POST(new NextRequest("http://localhost/api/subscriptions", json(body)))).status).toBe(409);
     expect((await POST(new NextRequest("http://localhost/api/subscriptions", json({ ...body, name: "Altro", amount: -1 })))).status).toBe(400);
+    // A typed name still has a limit.
+    expect((await POST(new NextRequest("http://localhost/api/subscriptions", json({ ...body, name: "x".repeat(81) })))).status).toBe(400);
     const view = await (await GET(new NextRequest("http://localhost/api/subscriptions"))).json();
     expect(view.totals).toMatchObject({ count: 1, monthly: 12 });
   });

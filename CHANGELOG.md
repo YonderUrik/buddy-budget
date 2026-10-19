@@ -2,6 +2,58 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.81.0](https://github.com/YonderUrik/buddy-budget/compare/v0.80.1...v0.81.0) (2026-10-19)
+
+
+### Novità
+
+* apply bank categories from imports and let the app categorise more on its own ([#456](https://github.com/YonderUrik/buddy-budget/issues/456)) ([1b2c675](https://github.com/YonderUrik/buddy-budget/commit/1b2c6758319353fc6b4044e40cfc7129e5a060d8))
+* let «Primi passi» tick for any movement and close with skipped steps ([#452](https://github.com/YonderUrik/buddy-budget/issues/452)) ([b6d9541](https://github.com/YonderUrik/buddy-budget/commit/b6d95417a4b894d211316eef47c885d5c2ad8961))
+* open a transaction's detail by tapping it ([#455](https://github.com/YonderUrik/buddy-budget/issues/455)) ([977b8b5](https://github.com/YonderUrik/buddy-budget/commit/977b8b5f4a68aec7d1a912aa8999ffc6e42113cd))
+* tell returning users what happened since their last visit ([#457](https://github.com/YonderUrik/buddy-budget/issues/457)) ([bbc1753](https://github.com/YonderUrik/buddy-budget/commit/bbc175352bff22b79a77b3688dd45493953e9f03))
+
+
+### Correzioni
+
+* confirm detected subscriptions whose bank description is long ([#453](https://github.com/YonderUrik/buddy-budget/issues/453)) ([bab69cd](https://github.com/YonderUrik/buddy-budget/commit/bab69cd2451d6497c98f60acd24a1915294b0cd7))
+* hide every amount when «Nascondi gli importi» is on ([#448](https://github.com/YonderUrik/buddy-budget/issues/448)) ([7995663](https://github.com/YonderUrik/buddy-budget/commit/79956635f0a1c141dc79f0e6e8ae30a3c8ff0564))
+* remove the to-categorise count badge from Liquidità in the navigation ([#451](https://github.com/YonderUrik/buddy-budget/issues/451)) ([bc64d89](https://github.com/YonderUrik/buddy-budget/commit/bc64d89c4b8326d666e08fe44eed10a8604f58fe))
+
+## [0.80.1](https://github.com/YonderUrik/buddy-budget/compare/v0.80.0...v0.80.1) (2026-10-19)
+
+
+### Correzioni
+
+* cash chart follows imported files and says when it is updating ([#447](https://github.com/YonderUrik/buddy-budget/issues/447)) ([4698fe0](https://github.com/YonderUrik/buddy-budget/commit/4698fe0698915a89b8635fd9b087a0030e16e8b3))
+* show only instruments held today under «I tuoi strumenti» ([#445](https://github.com/YonderUrik/buddy-budget/issues/445)) ([a8deb35](https://github.com/YonderUrik/buddy-budget/commit/a8deb35196b26641ba4c5ae8995d8d1e74808a40))
+
+## [0.80.0](https://github.com/YonderUrik/buddy-budget/compare/v0.79.0...v0.80.0) (2026-10-18)
+
+
+### Novità
+
+* guide new users after onboarding ([#444](https://github.com/YonderUrik/buddy-budget/issues/444)) ([d708973](https://github.com/YonderUrik/buddy-budget/commit/d70897344eced0eda8f3dde3077fff43d2482511))
+* self-hosted sign-in with password, SMTP email and a safer setup ([#441](https://github.com/YonderUrik/buddy-budget/issues/441)) ([dfb16f9](https://github.com/YonderUrik/buddy-budget/commit/dfb16f9e635bb86560e3f8e83c8e6f00cba4dcc8))
+
+
+### Correzioni
+
+* **deps:** patch 58 security advisories, one library at a time ([#442](https://github.com/YonderUrik/buddy-budget/issues/442)) ([b2f00c8](https://github.com/YonderUrik/buddy-budget/commit/b2f00c8ad378a8ff458ef9a00ca5dee05273c647))
+
+## [0.79.0](https://github.com/YonderUrik/buddy-budget/compare/v0.78.1...v0.79.0) (2026-10-18)
+
+
+### Novità
+
+* real brand names and logos in the demo data ([#438](https://github.com/YonderUrik/buddy-budget/issues/438)) ([85e532d](https://github.com/YonderUrik/buddy-budget/commit/85e532d4839f548202818b8b46d3917265d9d66c))
+
+## [0.78.1](https://github.com/YonderUrik/buddy-budget/compare/v0.78.0...v0.78.1) (2026-10-18)
+
+
+### Correzioni
+
+* **landing:** footer links under the big wordmark take clicks again ([#436](https://github.com/YonderUrik/buddy-budget/issues/436)) ([d1e19f3](https://github.com/YonderUrik/buddy-budget/commit/d1e19f368c80d1bc21880ffc0ab656e4b3175ed4))
+
 ## [0.78.0](https://github.com/YonderUrik/buddy-budget/compare/v0.77.0...v0.78.0) (2026-10-18)
 
 

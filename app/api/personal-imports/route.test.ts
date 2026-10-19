@@ -10,7 +10,7 @@ vi.mock("@/lib/personal-import/jobs", () => ({ enqueue: vi.fn().mockResolvedValu
 vi.mock("@/lib/personal-import/delete", () => ({ previewPersonalImportDeletion: vi.fn().mockResolvedValue({ token: "a".repeat(64) }), deletePersonalImport: vi.fn().mockResolvedValue({ cashCount: 0, investmentCount: 0 }) }));
 vi.mock("@/lib/personal-import/confirm", () => ({ confirmImport: vi.fn().mockResolvedValue({ inserted: 0 }) }));
 const req = (method = "GET", body?: unknown, path = "", origin = "http://localhost:3000") => new NextRequest(`http://localhost:3000/api/personal-imports${path}`, { method, headers: { Origin: origin, "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: typeof body === "string" ? body : JSON.stringify(body) }) });
-beforeEach(() => { vi.mocked(auth.api.getSession).mockResolvedValue({ user: { id: "owner" } } as never); vi.stubEnv("PERSONAL_CSV_ENCRYPTION_KEY", Buffer.alloc(32).toString("base64")); vi.clearAllMocks(); });
+beforeEach(() => { vi.mocked(auth.api.getSession).mockResolvedValue({ user: { id: "owner" } } as never); vi.stubEnv("PERSONAL_CSV_ENCRYPTION_KEY", Buffer.alloc(32).toString("base64")); vi.stubEnv("OPENROUTER_API_KEY", "test-key"); vi.stubEnv("OPENROUTER_MODEL", "test/model"); vi.clearAllMocks(); });
 afterEach(() => vi.unstubAllEnvs());
 describe("personal import API", () => {
   it("requires authentication on every route", async () => {
@@ -35,6 +35,11 @@ describe("personal import API", () => {
     expect((await confirm(bearer("POST", {}, `/${id}`, "better-auth.session_token=x"))).status).toBe(403);
     const cookieOnly = new NextRequest("http://localhost:3000/api/personal-imports", { method: "POST", headers: { Cookie: "better-auth.session_token=x", "Content-Type": "application/json" }, body: "{}" });
     expect((await POST(cookieOnly)).status).toBe(403);
+  });
+  it("refuses uploads while the AI parser is not configured", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "");
+    expect((await POST(req("POST", { csv: "a,b\nx,y", name: "Test", consent: true, consentVersion: "openrouter-raw-zdr-v3" }))).status).toBe(503);
+    expect(enqueue).not.toHaveBeenCalled();
   });
   it("previews and deletes only under the authenticated owner with the reviewed token", async () => {
     const id = "d42c811b-f061-4a42-8023-0c84c8e1ce85", token = "a".repeat(64);

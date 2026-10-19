@@ -1,38 +1,62 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
-/** Collega la checklist e l'offerta dei dati d'esempio a stato e API (container: nessun markup proprio oltre alle due sezioni). */
+/** Connects the first-steps checklist, its «Cambia» sheet and the sample-data offer to state and API (container). */
 
+import * as React from "react";
 import { track } from "@/lib/analytics";
-import { countDoneSteps, shouldShowChecklist, type StartStatus } from "@/lib/start";
-import { useStartDemoMutation, useStartDismissMutation } from "@/lib/queries/start";
-import { DemoOffer } from "./demo-offer";
+import { isCountryPathAvailable } from "@/lib/localization/config";
+import { countDoneSteps, focusOptionsFor, shouldShowChecklist, startStepDefinitionsFor, type StartStatus } from "@/lib/start";
+import { useRecentSteps } from "@/lib/start/progress";
+import { useStartDemoMutation, useStartDismissMutation, useStartFocusMutation, useStartSkipMutation } from "@/lib/queries/start";
+import { FocusSheet } from "./focus-sheet";
 import { StartChecklist } from "./start-checklist";
 
 export interface StartChecklistSectionProps {
   status: StartStatus;
-  /** Mostra la checklist anche se chiusa (Panoramica ancora senza dati). */
+  /** Shows the checklist even if closed, with the sample-data offer (Panoramica with no data yet). */
   forceVisible?: boolean;
   className?: string;
 }
 
-/** Checklist dei primi passi: sparisce se chiusa, completa o in demo. */
+/** First-steps checklist: hidden when closed, complete or while exploring sample data. */
 export function StartChecklistSection({ status, forceVisible, className }: StartChecklistSectionProps) {
+  const { features, productCountry } = useLocalization();
   const dismiss = useStartDismissMutation();
+  const demo = useStartDemoMutation();
+  const saveFocus = useStartFocusMutation();
+  const skip = useStartSkipMutation();
+  const recent = useRecentSteps();
+  const [focusOpen, setFocusOpen] = React.useState(false);
   const visible = forceVisible ? !status.completed && !status.demoActive : shouldShowChecklist(status);
+
   if (!visible) return null;
   return (
-    <StartChecklist
-      steps={status.steps}
-      className={className}
-      onStepClick={(step) => track("start_step_clicked", { step })}
-      onDismiss={forceVisible ? undefined : () => dismiss.mutate({ dismissed: true, done: countDoneSteps(status.steps) })}
-      dismissing={dismiss.isPending}
-    />
+    <>
+      <StartChecklist
+        steps={status.steps}
+        stepIds={status.stepIds}
+        skipped={status.skipped}
+        definitions={startStepDefinitionsFor({ retirementAvailable: features.retirement })}
+        justDone={recent.filter((id) => status.stepIds.includes(id) && status.steps[id])}
+        demo={forceVisible ? { onStart: () => demo.mutate(), pending: demo.isPending, errorMessage: demo.error?.message } : undefined}
+        className={className}
+        onStepClick={(step, placement) => track("start_step_clicked", { step, placement })}
+        onChangeFocus={() => setFocusOpen(true)}
+        onSkip={(step) => skip.mutate({ step, skipped: true })}
+        onRestore={(step) => skip.mutate({ step, skipped: false })}
+        onDismiss={forceVisible ? undefined : () => dismiss.mutate({ dismissed: true, done: countDoneSteps(status.steps, status.stepIds) })}
+        dismissing={dismiss.isPending}
+      />
+      <FocusSheet
+        open={focusOpen}
+        onOpenChange={setFocusOpen}
+        initial={status.focus ?? []}
+        options={focusOptionsFor(isCountryPathAvailable(productCountry, "/pensione"))}
+        pending={saveFocus.isPending}
+        errorMessage={saveFocus.error?.message}
+        onSave={(focus) => saveFocus.mutate(focus, { onSuccess: () => setFocusOpen(false) })}
+      />
+    </>
   );
-}
-
-/** Offerta «Esplora con dati d'esempio»: avvia la demo e ricarica i dati. */
-export function DemoOfferSection({ className }: { className?: string }) {
-  const start = useStartDemoMutation();
-  return <DemoOffer className={className} onStart={() => start.mutate()} pending={start.isPending} errorMessage={start.error?.message} />;
 }

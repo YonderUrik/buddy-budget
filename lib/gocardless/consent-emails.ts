@@ -1,5 +1,5 @@
 import "server-only";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email/send";
 import { emailLocale, renderEmail } from "@/lib/email";
 import { getAppUrl } from "@/lib/env";
 import type { Language } from "@/lib/localization/config";
@@ -63,10 +63,10 @@ export async function sendConsentEmail(
       appUrl: getAppUrl(),
       language: context.language,
     });
-    const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM!, to, subject, text, html });
-    if (error) {
-      // Solo il tipo d'errore: il messaggio di Resend può contenere l'indirizzo.
-      logger.warn("gocardless.consent_notice.failed", { user: hashUserId(context.userId), reason: `${kind}:${error.name}` });
+    const result = await sendEmail({ to, subject, text, html });
+    if (!result.ok) {
+      // Only the error type: the provider's message can contain the address.
+      logger.warn("gocardless.consent_notice.failed", { user: hashUserId(context.userId), reason: `${kind}:${result.reason}` });
       recordConsentNotice(kind, "failed");
       return false;
     }

@@ -23,6 +23,7 @@ async function handleGet(request: NextRequest) {
   }
   bindRequestUser(session.user.id);
 
+  // Each account carries `followsTransactions` (linked banks and file imports move their balance with their transactions).
   const userAccounts = await loadUserAccounts(session.user.id);
   const include = parseAccountIncludes(new URL(request.url).searchParams.get("include"));
   if (include === null) {

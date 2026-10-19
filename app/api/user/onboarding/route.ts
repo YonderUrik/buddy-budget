@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { isSupportedCurrency } from "@/lib/validation/currency";
+import { isSelfHosted } from "@/lib/instance/config";
 import { isValidLegalAcceptance } from "@/lib/legal";
 import { recordLegalAcceptance } from "@/lib/legal/acceptance";
 import { saveNotificationPreferences } from "@/lib/notifications/server";
@@ -13,6 +14,11 @@ import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { notificationPreferencesSchema } from "@/lib/validation/notifications";
 import { applyCategorySetup } from "@/lib/categories/setup.server";
 import { categorySetupSchema } from "@/lib/validation/categories";
+import { z } from "zod";
+import { START_FOCUS_IDS } from "@/lib/start";
+
+/** Answer to «Cosa vuoi tenere sotto controllo?»: an empty list means skipped (default first steps). */
+const focusSchema = z.array(z.enum(START_FOCUS_IDS)).max(START_FOCUS_IDS.length);
 
 /** Completa l'onboarding: salva la valuta principale (solo tra quelle supportate), applica le categorie scelte (se cambiate), le email facoltative scelte, registra l'accettazione di Termini e Privacy e marca l'utente come onboarded. */
 async function handlePost(request: NextRequest) {
@@ -42,8 +48,10 @@ async function handlePost(request: NextRequest) {
     return Response.json({ error: "Valuta non supportata" }, { status: 400 });
   }
 
+  // Self-hosted installs are not run under the hosted service's Terms: nothing to accept.
+  const selfHosted = isSelfHosted();
   const legal = (body as { legal?: unknown } | null)?.legal;
-  if (!isValidLegalAcceptance(legal)) {
+  if (!selfHosted && !isValidLegalAcceptance(legal)) {
     return Response.json({ error: "Per continuare accetta Termini e Privacy", code: "legal_acceptance_required" }, { status: 400 });
   }
 
@@ -53,18 +61,22 @@ async function handlePost(request: NextRequest) {
 
   // Email facoltative scelte nel passo «Notifiche»: le stesse preferenze di Impostazioni, salvate solo se valide.
   const notifications = notificationPreferencesSchema.safeParse((body as { notifications?: unknown } | null)?.notifications);
+  // What to keep an eye on: an invalid or missing value is ignored (the checklist falls back to the default steps).
+  const focus = focusSchema.safeParse((body as { focus?: unknown } | null)?.focus);
+  const startFocus = focus.success ? [...new Set(focus.data)] : undefined;
 
   await db
     .update(authUser)
-    .set({ currency, productCountry: productCountry as string, language: language as string, onboardingCompleted: true, ...(typeof aiCategorization === "boolean" ? { aiCategorizationConsentAt: aiConsent ? new Date() : null } : {}) })
+    .set({ currency, productCountry: productCountry as string, language: language as string, onboardingCompleted: true, ...(startFocus ? { startFocus } : {}), ...(typeof aiCategorization === "boolean" ? { aiCategorizationConsentAt: aiConsent ? new Date() : null } : {}) })
     .where(eq(authUser.id, session.user.id));
-  await recordLegalAcceptance(session.user.id);
+  if (!selfHosted) await recordLegalAcceptance(session.user.id);
   if (notifications.success) {
     await saveNotificationPreferences(session.user.id, notifications.data);
     const enabled = [notifications.data.digestEnabled, notifications.data.budgetAlertsEnabled, notifications.data.deadlineAlertsEnabled].filter(Boolean).length;
     requestLogger().info("notifications.preferences.updated", { trigger: "onboarding", count: enabled });
   }
-  requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });
+  if (startFocus) requestLogger().info("onboarding.focus.updated", { trigger: "onboarding", count: startFocus.length });
+  if (isValidLegalAcceptance(legal) && !selfHosted) requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });
   await applyOnboardingCategories((body as { categories?: unknown } | null)?.categories, session.user.id);
 
   await localizeStarterCategories(session.user.id, resolveProfile({ productCountry: productCountry as string, language: language as string }));

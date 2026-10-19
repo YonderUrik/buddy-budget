@@ -12,6 +12,7 @@ import * as React from "react";
 import { BellRingIcon, CheckIcon, MoonStarIcon, PlusIcon, RepeatIcon, SearchCheckIcon, TrendingUpIcon, XIcon } from "lucide-react";
 import { MoneyHero } from "@/components/domain/net-worth";
 import { SectionTitle, SoftRow } from "@/components/domain/liquidity";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 import { useCategoriesQuery } from "@/lib/queries/categories";
@@ -123,7 +124,10 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
 
   function quick(item: SubscriptionItem, status: "confermato" | "escluso" | "terminato") {
     if (item.amount === null || item.cadence === null) return open(item);
-    save.mutate({ origin: "rilevato", key: item.key, status, name: item.name, amount: item.amount, cadence: item.cadence, categoryId: item.categoryId });
+    save.mutate(
+      { origin: "rilevato", key: item.key, status, name: item.name, amount: item.amount, cadence: item.cadence, categoryId: item.categoryId },
+      { onError: (error) => toast.error(error.message) }
+    );
   }
 
   const empty = items.length === 0;

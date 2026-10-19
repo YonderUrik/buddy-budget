@@ -10,15 +10,15 @@ import { compactSnapshotRows } from "./compact";
 import { buildDebtHistoryRows } from "./debt-history";
 import { refreshDerivedInvestmentHistory } from "./investments";
 import { buildPensionHistoryRows } from "./pension-history";
-import { backfillDerivedHistory } from "./snapshots";
+import { refreshDerivedCashHistory } from "./snapshots";
 
 /**
  * Net-worth history rows of a user between `from` and `to` (YYYY-MM-DD), as `GET /api/net-worth/snapshots` serves them:
- * stored snapshots (after rebuilding missing or stale derived history) plus the debt and pension history recomputed
+ * stored snapshots (after refreshing the derived cash and investment history) plus the debt and pension history recomputed
  * from plans and fund snapshots. `compact` keeps only the last row of each month beyond the last year.
  */
 export async function loadNetWorthSnapshotRows(userId: string, from: string, to: string, options: { compact?: boolean } = {}) {
-  await backfillDerivedHistory(userId);
+  await refreshDerivedCashHistory(userId);
   await refreshDerivedInvestmentHistory(userId);
   const rows = await db
     .select()

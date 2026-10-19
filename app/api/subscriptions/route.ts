@@ -29,15 +29,21 @@ async function handlePost(request: NextRequest) {
   const userId = session.user.id;
 
   const parsed = createSubscriptionSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return validationError(parsed.error);
+  const log = requestLogger();
+  if (!parsed.success) {
+    log.warn("subscriptions.save.rejected", { reason: "invalid_input", field: parsed.error.issues[0].path.join(".") });
+    return validationError(parsed.error);
+  }
   const input = parsed.data;
 
   if (input.categoryId) {
     const [category] = await db.select({ id: categories.id }).from(categories).where(and(eq(categories.id, input.categoryId), eq(categories.userId, userId)));
-    if (!category) return apiError(404, "category_not_found", "Categoria non trovata");
+    if (!category) {
+      log.warn("subscriptions.save.rejected", { reason: "category_not_found" });
+      return apiError(404, "category_not_found", "Categoria non trovata");
+    }
   }
 
-  const log = requestLogger();
   if (input.origin === "rilevato") {
     const values = { userId, key: input.key, status: input.status, origin: "rilevato" as const, name: input.name, amount: input.amount.toFixed(2), cadence: input.cadence, categoryId: input.categoryId ?? null };
     const [row] = await db

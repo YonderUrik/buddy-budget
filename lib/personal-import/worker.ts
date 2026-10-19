@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq, lte, inArray, sql } from "drizzle-orm";
-import { Resend } from "resend";
+import { isEmailConfigured, sendEmail } from "@/lib/email/send";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { personalImportJobs as jobs, personalParsers as parsers, personalFormats as formats } from "@/lib/db/schema/personal-imports";
@@ -17,11 +17,13 @@ import { resolveFxRates } from "@/lib/investments/import/execute";
 import { updateFxRates } from "@/lib/market-data/update";
 import { marketDataDeps } from "@/lib/market-data/runtime";
 import { personalImportEmailContent } from "./emails";
+import { importCounts } from "./counts";
 import { resolveProfile } from "@/lib/localization/config";
 import { generateParser, ModelInputError } from "./generate";
 import { analyzeWithFallback } from "./analysis";
 import { saveFormatMetadata } from "@/lib/imports/store";
 import { notifyImportSupport } from "./support-report";
+import { fillBankCategories } from "./bank-category-column";
 
 export async function processOne() {
   const lease = randomUUID();
@@ -52,7 +54,8 @@ export async function processOne() {
         logger.warn("personal_import.fallback.started", { jobId: job.id, reason: failureReport.reason });
       },
     });
-    const { outcomes } = generated;
+    // The bank's own category column is read from the file too, for parsers that do not return it.
+    const outcomes = fillBankCategories(generated.outcomes, table);
     if (generated.parser.kind === "javascript" && generated.parser.metadata) {
       try { await saveFormatMetadata(job.userId, "ai", generated.parser.metadata, outcomes.filter(o => o.kind === "cash" || o.kind === "investment")); }
       catch { logger.warn("import.metadata.failed", { jobId: job.id, reason: "persistence_failed" }); }
@@ -80,7 +83,7 @@ export async function processOne() {
       const preview: Preview = { headers: table.headers, currency, records, parser: errors.length && !parserId ? generated.parser : undefined };
       await tx.update(jobs).set({ status: errors.length ? "review_failed" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: errors.length ? describeRowErrors(errors.length, outcomes.length) : null, failureReport: current.failureReport ?? (errors.length ? { phase: "parse", reason: "unrecognized_rows", rows: errors.slice(0, 100).map(o => o.row + 1), count: errors.length, fallback: false } : null), lease: null, leaseUntil: null }).where(owned);
     });
-    logger.info("personal_import.completed", { jobId: job.id, count: outcomes.length, rejected: errors.length });
+    logger.info("personal_import.completed", { jobId: job.id, count: outcomes.length, rejected: errors.length, bankCategories: outcomes.filter(o => o.kind === "cash" && o.bankCategory).length });
   } catch (error) {
     const terminal = job.attempts >= 3 || error instanceof ModelInputError;
     await db.update(jobs).set({ status: terminal ? "failed" : "queued", error: error instanceof ModelInputError ? error.message : "Analisi non riuscita. Verifica il CSV e riprova; nessun movimento è stato importato.", availableAt: new Date(Date.now() + job.attempts * 60000), encryptedCsv: terminal ? null : job.encryptedCsv, lease: null, leaseUntil: null }).where(owned);
@@ -98,7 +101,7 @@ export async function maintainJobs() {
   if (ready) {
     try {
       const result = await confirmImport(ready.userId, ready.id);
-      logger.info("personal_import.saved", { jobId: ready.id, count: result.inserted });
+      logger.info("personal_import.saved", { jobId: ready.id, count: result.inserted, ...("rows" in result ? { total: result.rows, skipped: result.alreadyPresent } : {}) });
       await categorizeNewMovementsSafely(ready.userId);
     } catch (error) {
       await db.update(jobs).set(error instanceof ImportError
@@ -117,13 +120,13 @@ export async function maintainJobs() {
   });
   if (!pending) return;
   try {
-    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM || !process.env.APP_URL) throw new Error("Email non configurata");
+    if (!isEmailConfigured() || !process.env.APP_URL) throw new Error("Email non configurata");
     const [user] = await db.select({ email: authUser.email, productCountry: authUser.productCountry, language: authUser.language }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
-    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL, language: resolveProfile(user).language });
-    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject, text, html }, { idempotencyKey: `personal-csv-${pending.id}` });
-    if (result.error) throw new Error("Invio fallito");
+    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL, language: resolveProfile(user).language, counts: importCounts(pending.importLedger) });
+    const result = await sendEmail({ to: user.email, subject, text, html, idempotencyKey: `personal-csv-${pending.id}` });
+    if (!result.ok) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));
   } catch { logger.warn("personal_import.email_failed", { jobId: pending.id, reason: "delivery_failed" }); }
 }

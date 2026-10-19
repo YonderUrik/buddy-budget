@@ -24,6 +24,7 @@ import { parseAmount } from "@/lib/validation/accounts";
 import { OperationFormField as Field } from "../operation-form-field";
 import { CalculatorIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
+import { privateNumberFormat } from "@/lib/format";
 
 
 export interface SaleSimulatorCardProps {
@@ -103,7 +104,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
               </SelectContent>
             </Select>
           </Field>
-          <Field label={tr("Quote (di {0})", {0: position.quantity.toLocaleString(formattingLocale, { maximumFractionDigits: 4 })})} htmlFor={`${id}-qty`}>
+          <Field label={tr("Quote (di {0})", {0: privateNumberFormat(formattingLocale, { maximumFractionDigits: 4 }).format(position.quantity)})} htmlFor={`${id}-qty`}>
             <Input
               id={`${id}-qty`}
               inputMode="decimal"

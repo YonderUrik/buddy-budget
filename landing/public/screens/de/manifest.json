@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-18T12:19:48.952Z",
+  "capturedAt": "2026-10-19T11:13:20.193Z",
   "app": "http://localhost:3300",
   "language": "de",
   "viewport": {
@@ -42,7 +42,7 @@
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1865,
+      "height": 1880,
       "phone": true
     },
     {
@@ -58,7 +58,7 @@
       "theme": "light",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1803,
+      "height": 1947,
       "phone": true
     },
     {
@@ -90,7 +90,7 @@
       "theme": "light",
       "route": "/investimenti/diversificazione",
       "width": 1920,
-      "height": 1962,
+      "height": 2112,
       "phone": true
     },
     {
@@ -154,7 +154,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1865,
+      "height": 1880,
       "phone": true
     },
     {
@@ -170,7 +170,7 @@
       "theme": "dark",
       "route": "/liquidita/categorie",
       "width": 1920,
-      "height": 1803,
+      "height": 1947,
       "phone": true
     },
     {
@@ -202,7 +202,7 @@
       "theme": "dark",
       "route": "/investimenti/diversificazione",
       "width": 1920,
-      "height": 1962,
+      "height": 2112,
       "phone": true
     },
     {

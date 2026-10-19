@@ -17,6 +17,13 @@ const VALID_ENV = {
 };
 
 describe("parseServerEnv", () => {
+  it("accepts the self-hosting switches and SMTP, refuses malformed values", () => {
+    expect(() => parseServerEnv({ ...VALID_ENV, SELF_HOSTED: "true", AUTH_PASSWORD: "", ALLOW_SIGNUPS: "false", SMTP_URL: "smtps://u:p@mail.example.com:465", EMAIL_FROM: "bb@example.com" })).not.toThrow();
+    expect(() => parseServerEnv({ ...VALID_ENV, SMTP_URL: "" })).not.toThrow();
+    expect(() => parseServerEnv({ ...VALID_ENV, SMTP_URL: "mail.example.com:465" })).toThrow("SMTP_URL");
+    expect(() => parseServerEnv({ ...VALID_ENV, SELF_HOSTED: "si" })).toThrow("SELF_HOSTED");
+  });
+
   it("accetta un env completo e ignora le variabili estranee", () => {
     const env = parseServerEnv({ ...VALID_ENV, PATH: "/usr/bin" });
     expect(env.APP_URL).toBe("http://localhost:3000");

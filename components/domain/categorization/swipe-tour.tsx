@@ -33,7 +33,7 @@ interface TourStep {
 }
 
 const STEPS: readonly TourStep[] = [
-  { gesture: "carta", title: "Una carta per esercente", text: "In alto l'esercente con il totale e le date, sotto la categoria proposta e perché. Qui arrivano solo i dubbi: quando è quasi certa l'app mette la categoria da sola, e la trovi in «Messe dall'app»." },
+  { gesture: "carta", title: "Una carta per esercente", text: "In alto l'esercente con il totale e le date, sotto la categoria proposta e perché. Qui arrivano solo i dubbi: quando è abbastanza sicura l'app mette la categoria da sola, e la trovi in «Messe dall'app»." },
   { gesture: "destra", title: "A destra: è questa", text: "Trascina la carta a destra per confermare la categoria proposta.", keys: "→ o Invio" },
   { gesture: "sinistra", title: "A sinistra: un'altra", text: "Trascinala a sinistra per scegliere tu la categoria giusta.", keys: "←" },
   { gesture: "alto", title: "In alto: salta", text: "Non sei sicuro? Trascinala in alto: torna in fondo al mazzo.", keys: "↓" },

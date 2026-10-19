@@ -32,7 +32,7 @@ export function AiCategorizationSection() {
       title={tr("Assistente per le categorie")}
       icon={Sparkles}
       preview={<CategoryProposalPreview />}
-      description={tr("Propone una categoria per i movimenti nuovi di sincronizzazioni e importazioni. Quelle in dubbio le scegli tu; se vuoi, quando è quasi certa l'app la mette da sola e la ritrovi in Categorizza.")}
+      description={tr("Propone una categoria per i movimenti nuovi di sincronizzazioni e importazioni. Quelle in dubbio le scegli tu; se vuoi, quando è abbastanza sicura l'app la mette da sola e la ritrovi in Categorizza.")}
     >
       <AiUsageSummary />
       {isLoading ? (
@@ -45,7 +45,7 @@ export function AiCategorizationSection() {
           label={tr("Proponi le categorie con l'AI")}
           hint={
             data.available
-              ? tr("Se attivo, il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone) viene inviato a un servizio esterno insieme alle categorie e alle tue eventuali istruzioni, con conservazione dei dati disattivata. Puoi revocare in ogni momento.")
+              ? tr("Se attivo, il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone) viene inviato a OpenRouter insieme alle categorie e alle tue eventuali istruzioni, solo verso fornitori che non conservano i dati (zero data retention). Puoi revocare in ogni momento.")
               : tr("Il servizio non è configurato su questo server.")
           }
           htmlFor="assistente-categorie"
@@ -63,8 +63,8 @@ export function AiCategorizationSection() {
       )}
       {data && (
         <SettingsRow
-          label={tr("Lascia che l'app scelga quando è quasi certa")}
-          hint={tr("Non usa l'AI da sola. Le tue regole valgono sempre. Se attivo, l'app mette da sola anche le categorie di cui è quasi certa (almeno al {0}%, dalle tue scelte passate o, se lo hai attivato, dall'assistente). Le ritrovi in Categorizza → «Messe dall'app», dove puoi cambiarle.", {0: confidencePercent(AUTO_APPLY_THRESHOLD)})}
+          label={tr("Lascia che l'app scelga quando è abbastanza sicura")}
+          hint={tr("Non usa l'AI da sola. Le tue regole valgono sempre. Se attivo, l'app mette da sola anche le categorie di cui è abbastanza sicura (almeno al {0}%, dalle tue scelte passate o, se lo hai attivato, dall'assistente). Le ritrovi in Categorizza → «Messe dall'app», dove puoi cambiarle.", {0: confidencePercent(AUTO_APPLY_THRESHOLD)})}
           htmlFor="categorie-sicure-da-sole"
         >
           <Switch
@@ -77,7 +77,7 @@ export function AiCategorizationSection() {
                 { onSuccess: () => track("categorization_auto_apply_toggled", { enabled: checked, from: "impostazioni" }) }
               )
             }
-            aria-label={tr("Lascia che l'app scelga quando è quasi certa")}
+            aria-label={tr("Lascia che l'app scelga quando è abbastanza sicura")}
           />
         </SettingsRow>
       )}

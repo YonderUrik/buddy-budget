@@ -13,6 +13,26 @@ const eslintConfig = defineConfig([
     ignores: ["lib/db/**", "**/*.test.ts", "**/*.test.tsx"],
     rules: { "no-console": "error" },
   },
+  // Hide amounts (docs/architecture/overview.md §4.13): screens format money only through lib/format, whose
+  // formatters show the mask while the user hides amounts. A currency formatted by hand or a number printed with
+  // toLocaleString would skip it.
+  {
+    files: ["app/**/*.tsx", "components/**/*.{ts,tsx}"],
+    ignores: ["components/ui/**", "**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "NewExpression[callee.property.name='NumberFormat'] Property[key.name='style'][value.value='currency']",
+          message: "Format money with formatCurrency (lib/format or localizedFormats): it hides the amount when the user asks to.",
+        },
+        {
+          selector: "CallExpression[callee.property.name='toLocaleString']",
+          message: "Use privateNumberFormat (lib/format) for numbers about the user's money, Intl.NumberFormat/DateTimeFormat for anything else.",
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

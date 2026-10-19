@@ -6,6 +6,9 @@ export async function register() {
     // Una riga a ogni avvio del pod: versione e commit arrivano dal logger (campi `version` e `commit`).
     const { logger } = await import("@/lib/observability");
     logger.info("app.process.started");
+    // What a self-hoster most often needs to check: which sign-in methods and which email transport are on.
+    const { describeInstance } = await import("@/lib/instance/config");
+    logger.info("app.instance.configured", { instance: describeInstance() });
   }
 }
 

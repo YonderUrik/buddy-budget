@@ -25,7 +25,7 @@ BuddyBudget is one Next.js App Router application that turns a user's bank data,
                                                           ├──► Postgres (CloudNativePG)   via postgres.js + Drizzle
                                                           ├──► Redis                       via ioredis
                                                           └──► external: GoCardless, Yahoo and other price sources,
-                                                               Resend, OpenRouter, Logo.dev, Umami
+                                                               Resend or SMTP, OpenRouter, Logo.dev, Umami
  k8s CronJobs ── curl + CRON_SECRET ──► /api/cron/*
  csv-worker pod ── polls personal_import_jobs in Postgres
  ArgoCD PreSync Job ── pnpm db:migrate ──► Postgres, before each rollout
@@ -47,7 +47,7 @@ BuddyBudget is one Next.js App Router application that turns a user's bank data,
 
 **P7 — Country and language are independent.** `productCountry` decides which financial features exist. `language` changes only text and number formatting. One central function, `isCountryPathAvailable`, gates routes for both pages and APIs.
 
-**P8 — Optional integrations degrade, they do not break.** [`lib/env.ts`](../../lib/env.ts) requires only `DATABASE_URL`, `REDIS_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL` and `CRON_SECRET`. Without Google the Google button does not work, without Resend the magic link is logged, without GoCardless only manual accounts and imports exist, without `DATA_ENCRYPTION_KEY` fields are stored in plain text.
+**P8 — Optional integrations degrade, they do not break.** [`lib/env.ts`](../../lib/env.ts) requires only `DATABASE_URL`, `REDIS_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL` and `CRON_SECRET`. Without Google the Google button is hidden, without an email service sign-in uses a password (see §4.3), without GoCardless only manual accounts and imports exist, without `DATA_ENCRYPTION_KEY` fields are stored in plain text.
 
 ## 3. Data model
 
@@ -88,13 +88,13 @@ The dependency direction is enforced by convention, not by a lint rule. As of to
 
 Providers mounted in [`app/layout.tsx`](../../app/layout.tsx), outermost first: `LocalizationProvider` (profile from `getLocaleProfile`), `QueryProvider` (one `QueryClient` per browser session, default options), `ThemeProvider` (`next-themes`, class strategy, system default), `MotionProvider`. The Umami script is loaded from `/stats/script.js`.
 
-[`app/(app)/layout.tsx`](../../app/(app)/layout.tsx) adds `PrivacyProvider` (hide amounts, initial value from `session.user.hideAmounts`), `QuickReportProvider` (the «Scrivici» — "Write to us" — support sheet), `BackHistoryRecorder`, `AttentionShell` (sidebar, bottom nav and badges), `DemoBannerContainer`, and the global `SyncProgressIndicator` with `PersonalImportIsland`.
+[`app/(app)/layout.tsx`](../../app/(app)/layout.tsx) adds `PrivacyProvider` (hide amounts, initial value from `session.user.hideAmounts`), `QuickReportProvider` (the «Scrivici» — "Write to us" — support sheet), `BackHistoryRecorder`, `AttentionShell` (sidebar and bottom nav; no count badge on Liquidità since 2026-10-19, transactions to decide show only inside the section), `DemoBannerContainer`, `StartProgressWatcher` (the «done, next» toast of the first steps, §4.12), and the global `SyncProgressIndicator` with `PersonalImportIsland`.
 
 ### 4.2 Request lifecycle
 
 1. **[`proxy.ts`](../../proxy.ts)** runs on every path except static assets (`_next/static`, `_next/image`, icons, manifest, brand and instrument icons). In order:
    - `/login` with a valid session redirects to `safeRedirectPath(?redirect)`.
-   - Public prefixes pass: `/login`, `/api/auth`, `/api/health`, `/api/cron`, `/api/metrics`, `/api/email`, `/disiscrizione`, `/_next`, `/favicon.ico`. Cron and metrics routes check their own bearer token.
+   - Public prefixes pass: `/login`, `/reimposta-password`, `/api/auth`, `/api/health`, `/api/cron`, `/api/metrics`, `/api/email`, `/disiscrizione`, `/_next`, `/favicon.ico`. Cron and metrics routes check their own bearer token.
    - No session: APIs get 401, pages redirect to `/login?redirect=<path>`.
    - `deletionScheduledAt` set: only `/account-disattivato` and `POST /api/user/reactivate` are reachable; other APIs get 403.
    - Onboarding done but legal version outdated (`needsLegalAcceptance`): only `/accetta-termini` and the APIs for acceptance, export and account deletion are reachable.
@@ -112,14 +112,18 @@ Worked example. A user with `productCountry = "DE"` requests `GET /api/pension`.
 
 | Aspect | Behaviour |
 |---|---|
-| Methods | Magic link (plugin `magicLink`, expires after `MAGIC_LINK_EXPIRES_MINUTES` = 10), Google OAuth (only when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set) and, for the native apps, a 6-digit emailed code (plugin `emailOTP`, `SIGN_IN_OTP_EXPIRES_MINUTES` = 10, stored hashed, 3 attempts; `POST /api/auth/email-otp/send-verification-otp` then `POST /api/auth/sign-in/email-otp`) |
+| Methods | Chosen per instance by `authMethods()` in [`lib/instance/config.ts`](../../lib/instance/config.ts) and passed to the browser by `InstanceProvider` (root layout). Email and password (`AUTH_PASSWORD`; default on when `SELF_HOSTED=true` or when no email transport exists; at least `PASSWORD_MIN_LENGTH` = 10 characters, no email verification). Magic link (plugin `magicLink`, 10 minutes) whenever emails can be sent, and as the only method when password is off. Google OAuth only when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. The hosted version: magic link + Google. For the native apps, a 6-digit emailed code (plugin `emailOTP`, `SIGN_IN_OTP_EXPIRES_MINUTES` = 10, stored hashed, 3 attempts; `POST /api/auth/email-otp/send-verification-otp` then `POST /api/auth/sign-in/email-otp`), sent with `sendEmail()` and refused for unknown addresses while signups are closed |
 | Native sessions | Plugin `bearer`: `Authorization: Bearer <token>` works wherever `getSession` runs; sign-in responses return the token in `set-auth-token` |
-| Email | Resend when `RESEND_API_KEY` is set; otherwise `logMagicLink` writes the link to the server log (self-hosting). A Resend error throws, so the UI does not claim the email was sent. Sign-in codes: outside production, when Resend is missing or fails, `logDevOtp` writes the code in the `auth.otp.dev_code` event (field `devCode`); in production the code is never logged (`auth.otp.undeliverable` / `auth.otp.failed`). Metrics `auth_events_total{event="otp_sent"\|"otp_failed"}` |
+| Signups | `ALLOW_SIGNUPS`; default open on the hosted version, first account only when self-hosted. Enforced in the `user.create.before` hook for every method (and before sending a magic link to an unknown address) by `canCreateAccount()` in [`lib/auth/signup-gate.ts`](../../lib/auth/signup-gate.ts); refusals return `SIGNUPS_CLOSED` and count as `auth_events_total{event="signup_refused"}`. The login page opens on «Crea il primo account» while no account exists |
+| Password reset | With email: better-auth's `requestPasswordReset` emails a 30-minute link to `/reimposta-password`; sessions are revoked on reset. Without email: `pnpm auth:reset-password <email>` ([`lib/db/user-admin.ts`](../../lib/db/user-admin.ts), run in the `migrate` image) prints a new password and deletes the sessions; `pnpm auth:create-user` adds an account while signups are closed. Adding a password to a link/Google account (`POST /api/user/password`) needs a recent sign-in |
+| Email | `sendEmail()` in [`lib/email/send.ts`](../../lib/email/send.ts) for every email of the app: Resend when `RESEND_API_KEY` is set, otherwise SMTP from `SMTP_URL` (nodemailer); sender `EMAIL_FROM` (or the older `RESEND_FROM`). Errors come back as a short type, never the provider's message. Without a transport and with password off, `logMagicLink` writes the link to the server log. A failed send throws, so the UI does not claim the email was sent |
+| Self-hosted | `SELF_HOSTED=true` (set by `docker-compose.yml`) also skips the Terms acceptance (onboarding and proxy gate), the Umami script and, without `SUPPORT_EMAIL_TO`, the in-app reports. The boot line `app.instance.configured` lists the active methods |
+| Sign-in codes | Outside production, when no email transport exists or the send fails, `logDevOtp` writes the code in the `auth.otp.dev_code` event (field `devCode`); in production the code is never logged (`auth.otp.undeliverable` / `auth.otp.failed`). Metrics `auth_events_total{event="otp_sent"\|"otp_failed"}` |
 | Last method | Plugin `lastLoginMethod` sets a cookie the login page reads |
 | Sessions | `expiresIn` 7 days, `updateAge` 1 day (`SESSION_EXPIRES_IN_DAYS`, `SESSION_UPDATE_AGE_DAYS`) |
 | OAuth tokens | `encryptOAuthTokens: true` (encrypted with `BETTER_AUTH_SECRET`); account linking enabled |
 | Hooks | Session create: IP truncated (`truncateIp`), `auth_events_total{event="sign_in"}`, `touchLastActive`. Session update: `touchLastActive` (feeds the inactive-accounts cron). User create: default categories inserted |
-| Rate limiting | better-auth's built-in limiter. `app/api/auth/[...all]/route.ts` counts its 429 responses as `auth_events_total{event="rate_limited"}`. No Redis storage is configured for it |
+| Rate limiting | better-auth's built-in limiter. `app/api/auth/[...all]/route.ts` counts its 429 responses as `auth_events_total{event="rate_limited"}` and wrong passwords as `password_sign_in_failed`. No Redis storage is configured for it |
 
 ### 4.4 Postgres, Drizzle and migrations
 
@@ -233,19 +237,50 @@ The app is a responsive web app. Native iOS/Android apps are specified in the se
 | Dialogs | Popovers, dialogs and alert dialogs render as draggable bottom sheets on the phone | [`lib/motion/sheet.ts`](../../lib/motion/sheet.ts), `components/ui/{dialog,alert-dialog,popover}.tsx` |
 | Safe areas | `viewportFit: "cover"` | [`app/layout.tsx`](../../app/layout.tsx) |
 
-### 4.12 Route groups
+### 4.12 First steps after onboarding
+
+Onboarding ends on Panoramica. Until the user has data, Panoramica shows «Primi passi» ([`components/domain/start/`](../../components/domain/start/), [`lib/start/`](../../lib/start/)).
+
+| Piece | How it works | Where |
+|---|---|---|
+| Steps asked | `startStepsFor(focus)`: account first, target last (category budget where Analitiche is hidden), the others from the onboarding answer «Cosa vuoi tenere sotto controllo?» (`auth_user.start_focus`). No answer = account, import, investment, target. The pension step is dropped where `/pensione` is hidden | [`lib/start/steps.ts`](../../lib/start/steps.ts) |
+| Done or not | `GET /api/start` checks real data only (non-demo account, any non-demo transaction: bank sync, CSV import or typed by hand, investment operations, debts, pension funds, budgets, goals or saved Analitiche assumptions); `completed` covers the user's own steps: done or skipped. Skipped steps are in `auth_user.start_skipped` (`PATCH /api/start {step, skipped}`; the account step cannot be skipped); the block offers «Non mi serve» and the list «Rimetti» | [`lib/start/status.ts`](../../lib/start/status.ts) |
+| Next step | The first step not done in a filled block with one action; sample data beside it while nothing real exists; the rest as a list | [`start-checklist.tsx`](../../components/domain/start/start-checklist.tsx) |
+| Done, next | `StartProgressWatcher` (app layout) compares the steps with those seen on this device (localStorage) and shows a toast with the next step, or the «done» line on the block in Panoramica. Every successful mutation, finished import and finished sync refetches the steps while incomplete, and so does a 15 s poll while the tab is visible | [`start-progress-watcher.tsx`](../../components/domain/start/start-progress-watcher.tsx), [`lib/start/progress.ts`](../../lib/start/progress.ts), [`query-provider.tsx`](../../components/query-provider.tsx) |
+| Empty tabs | Movimenti, Analisi and Abbonamenti without accounts show what they will hold and «Aggiungi un conto» | [`liquidity-no-accounts.tsx`](../../components/domain/liquidity/liquidity-no-accounts.tsx) |
+
+Example: a user answers «Mutuo e prestiti» only. The steps are account, loan, target. After adding a current account in Liquidità a toast says «Conto aggiunto · Prossimo passo: Aggiungi il mutuo o un prestito» with the button to Debiti. If they then skip the loan and the target, the checklist is complete and disappears.
+
+### 4.13 Hide amounts
+
+The eye in the sidebar (and in «Altro» on the phone) hides every figure about the user's money. The choice is saved on the profile (`auth_user.hide_amounts`) and read on the server, so the first render is already masked.
+
+| Piece | How it works | Where |
+|---|---|---|
+| Mask switch | `PrivacyProvider` calls `setAmountsMasked` during render, in the browser only (on the server the flag would be shared between users), and sets `<html data-privacy>`; `PrivacyBoundary` remounts the page when the choice changes, so strings formatted earlier are redone | [`privacy-provider.tsx`](../../components/privacy-provider.tsx) |
+| Amounts | `formatCurrency` (and everything built on it: `localizedFormats`, `formatSignedCurrency`, `formatPrice`) returns `AMOUNT_MASK` («••••») | [`lib/format.ts`](../../lib/format.ts) |
+| Rolling numbers | `AnimatedNumber` with a currency `format` shows the mask (`isAmountsMasked`) | [`animated-number.tsx`](../../components/motion/animated-number.tsx) |
+| Numbers without a currency | `privateNumberFormat(locale, options)` for quantities held, prices paid, fees and figures read from an import file: an `Intl.NumberFormat` whose `format` returns the mask | [`lib/format.ts`](../../lib/format.ts) |
+| Charts | Recharts charts and hand-drawn SVG charts marked `data-amount-chart` are blurred by CSS and stop reacting to the pointer | [`globals.css`](../../app/globals.css) |
+| Guard | ESLint, in `app/**/*.tsx` and `components/**`: `new Intl.NumberFormat` with `style: "currency"` and any `toLocaleString` are errors, so a new figure cannot skip the mask. A fixed sample (the language chooser) disables the rule on that line with the reason | [`eslint.config.mjs`](../../eslint.config.mjs) |
+
+What stays visible: percentages and ratios (returns, weights, Sharpe), counts, dates, public market data about a company (market cap, financial statements, TER), sample figures in tours and previews, and values already typed into a form field.
+
+Example: with amounts hidden, Liquidità reads «Hai •••• su 4 conti» and an investment operation «•••• × •••• EUR · commissioni ••••», while «+9,2% sul costo» stays.
+
+### 4.14 Route groups
 
 | Group | Path | Shell | Contents |
 |---|---|---|---|
 | `app/(app)` | `/`, `/panoramica`, `/liquidita` (+ `analisi`, `conti`, `categorie`, `regole`, `abbonamenti`), `/categorizza`, `/conti/collega/[connectionId]`, `/investimenti` (+ `operazioni`, `performance`, `diversificazione`, `proventi`, `tasse`, `rendiconti`, `rendiconti/importazioni`, `titoli`, `titoli/[id]`), `/pensione` (+ `andamento`, `dati`, `proiezione`, `scenari`), `/debiti` (+ `finanziamenti`, `simulatore`), `/analitiche` (+ `costi`, `crescita`, `prelievi`, `rischio`, `simulazione`, `obiettivi`, `obiettivi/[id]`), `/importazioni`, `/impostazioni`, `/aiuto`, `/country-unavailable`, `/style-guide` | `AttentionShell` with sidebar, bottom nav, sync panel | Authenticated product screens |
-| `app/(auth)` | `/login`, `/onboarding`, `/accetta-termini`, `/account-disattivato` | `AuthFrame` with the language picker; preview panel hidden on `/onboarding` | Sign-in, onboarding and account gates |
+| `app/(auth)` | `/login`, `/reimposta-password`, `/onboarding`, `/accetta-termini`, `/account-disattivato` | `AuthFrame` with the language picker; preview panel hidden on `/onboarding` | Sign-in, onboarding and account gates |
 | `app/disiscrizione` | `/disiscrizione` | Root layout only | Public email unsubscribe page |
 | `app/api` | `/api/*` (118 handlers in 28 top-level folders) | None | Route Handlers, including `/api/cron/*` and `/api/auth/[...all]` |
 | Root files | `manifest.webmanifest`, `robots.txt`, `icon.svg`, `global-error.tsx` | n/a | Metadata routes and the global error boundary |
 
 Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths working: `/spese`, `/transazioni`, `/movimenti` → `/liquidita`; `/cash-flow` → `/liquidita/analisi`; `/categorie` → `/liquidita/categorie`; `/movimenti/{analisi,categorie,regole}` → `/liquidita/...`; `/conti` → `/liquidita/conti`. The same file sets security headers (HSTS, `nosniff`, `X-Frame-Options: DENY`, referrer and permissions policies) and `output: "standalone"`.
 
-### 4.13 Map of `lib/`
+### 4.15 Map of `lib/`
 
 | Folder | Responsibility |
 |---|---|
@@ -253,17 +288,18 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `analitiche/` | Analitiche ("Analytics") assumptions, data period, scenarios, simulations, plan |
 | `analytics/` | Umami `track()` and the `ProductEvents` type, opt-out |
 | `app-version/` | Build version, commit and time baked into the bundle |
-| `attention/` | Badge counts and labels for items that need the user's attention |
-| `auth/` | better-auth server config, client, magic link email, returning-user memory |
+| `attention/` | Counts and labels for items that need the user's attention (shown inside Liquidità) |
+| `auth/` | better-auth server config, client, sign-in and reset emails, signup gate, returning-user memory |
+| `instance/` | Hosted or self-hosted, sign-in methods (`instanceConfig`, `InstanceProvider`) |
 | `calc/` | Pure calculation engines (cash flow, expenses, returns, FX, FIRE, Monte Carlo, amortisation, early repayment, debt plan, pension, net worth, costs) |
 | `categories/` | Default categories, spending groups (Dovute/Volute/Te futuro/Saltuarie — needs, wants, future you, occasional), seeding, picker |
-| `categorization/` | Rules, merchant names and keys, AI suggestions, auto-apply at 90%, recategorise, merchant logos |
+| `categorization/` | Rules, merchant names and keys, AI suggestions, auto-apply at 70%, recategorise, merchant logos |
 | `client-errors/` | Browser error reports and their per-user quota |
 | `cron/` | `isAuthorizedCronRequest` |
 | `crypto/` | Field encryption |
 | `db/` | Drizzle client, schema, migrations, migration and maintenance scripts |
 | `debts/` | Debt data loading, events, views, forms |
-| `email/` | Shared email HTML template |
+| `email/` | Shared email HTML template and `sendEmail()` (Resend or SMTP) |
 | `dev/` | Guards for dev-only tools (local database, test addresses) |
 | `env.ts`, `format.ts`, `utils.ts` | Env validation, number/date formatting, class-name helper |
 | `features/` | Feature catalog |
@@ -277,7 +313,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `investments/` | Positions, returns, allocation, exposure, dividends, alerts, broker imports, instrument icons and logos |
 | `legal/` | Legal document links, version, acceptance |
 | `liquidity/` | Liquidità ("Cash") view helpers: split, day groups, account series, spend curve, paged and filtered transaction feed |
-| `llm/` | OpenRouter decision client used by categorisation |
+| `llm/` | OpenRouter decision client used by categorisation, and `OPENROUTER_PRIVACY`, the zero data retention routing every OpenRouter request sends (a test fails if a caller leaves it out) |
 | `localization/` | Country and language profile, route policy, translation catalogs, formatting |
 | `market-data/` | Price, FX, inflation, rate, profile and dividend providers and their stores |
 | `motion/` | Springs, dialog origin, bottom-sheet gestures |
@@ -300,7 +336,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `views/` | Server-computed views for the native apps (Overview, Liquidità month and analysis, Investimenti tabs, Pensione, account extras): pure builders over the web's own calc functions, loaders in `views/server`, zod response schemas |
 | `whats-new/` | «Novità» ("What's new") entries |
 
-### 4.14 Architecture documents by domain
+### 4.16 Architecture documents by domain
 
 | Area | Document |
 |---|---|
@@ -315,14 +351,29 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | Categories, rules, AI suggestions | [categorisation.md](categorisation.md) |
 | Analitiche, FIRE, goals | [analytics-and-goals.md](analytics-and-goals.md) |
 
+### 4.17 «Dall'ultima visita» (since your last visit)
+
+When a returning user opens the app, on whatever page, one toast says what happened while they were away and what waits for them, with one action ([`components/domain/welcome/`](../../components/domain/welcome/), [`lib/welcome/`](../../lib/welcome/)). It is shown once per visit and never to a user on their first visit, so it does not compete with «Primi passi».
+
+| Piece | How it works | Where |
+|---|---|---|
+| Visit | `WelcomeToast` (app layout) posts `POST /api/visits` on load, when the tab or installed app comes back to the foreground and every 5 minutes while visible. One conditional UPDATE on `auth_user` (migration 0046): a heartbeat more than 30 minutes after the last one (`app_seen_at`) starts a visit (`visit_started_at = now`) and moves the old `app_seen_at` into `visit_since_at`; heartbeats within a minute only read. The first heartbeat ever has no `visit_since_at`, so nothing is said | [`lib/welcome/visit.ts`](../../lib/welcome/visit.ts), [`visit.server.ts`](../../lib/welcome/visit.server.ts) |
+| Summary | `GET /api/welcome` records the visit first (so it never reads the previous visit's state), then counts (counts only: no amounts or names) in the away window `(visit_since_at, visit_started_at]`: movements created (any source), price alerts triggered, subscription price rises first seen after the previous visit. What waits is current state: movements in the fallback category (the «Da decidere» count of Liquidità), detected subscriptions not yet confirmed, file imports stopped on rows to check (`review_failed`, not expired). `summary` is null when there is nothing, on the first visit, once shown in this visit, and for the shared demo account | [`lib/welcome/summary.server.ts`](../../lib/welcome/summary.server.ts), [`app/api/welcome/route.ts`](../../app/api/welcome/route.ts) |
+| Once per visit | When the toast appears the client sends `PATCH /api/welcome {shown: true}` (`welcome_shown_at`): no toast again while it is later than `visit_started_at`, on any device | same |
+| Toast | A title of up to two lines and no description: what happened, then what waits, each list joined in the user's language (`Intl.ListFormat`): «Mentre eri via: 12 movimenti nuovi e 1 avviso di prezzo scattato» / «Da sistemare: 7 movimenti senza categoria». Action: the first thing that waits («Decidi» opens Categorizza, «Controlla» Abbonamenti, «Apri» the import) or «Vedi» on the first thing that happened. 10 seconds, sonner like every other toast. No amounts, so nothing for «Nascondi importi» to mask | [`welcome-lines.ts`](../../components/domain/welcome/welcome-lines.ts), [`welcome-toast.tsx`](../../components/domain/welcome/welcome-toast.tsx) |
+| Signals | Logs `app.visit.started` (`trigger`, `ageDays` away), `welcome.summary.built` (`count` happened, `pending` waiting), `welcome.toast.shown`; Umami `welcome_summary_shown`, `welcome_summary_item_clicked` (`item`). No metric: no background work | [`lib/analytics/track.ts`](../../lib/analytics/track.ts) |
+
+Example: Daniele closes the app on Thursday at 18:40. The bank sync adds 12 movements overnight (4 without a category) and his Ferrari alert at 380 € goes off. On Friday at 9:00 the first heartbeat starts a visit with `visit_since_at` = Thursday 18:40, and a toast says «Mentre eri via: 12 movimenti nuovi e 1 avviso di prezzo scattato» and, on the next line, «Da sistemare: 7 movimenti senza categoria e 1 abbonamento da confermare», with «Decidi» opening Categorizza. A reload at 9:10 shows nothing; after a pause of more than 30 minutes, a new toast comes only if something new happened or still waits.
+
 ## 5. Limits and out of scope
 
 - The layer rule is a convention; no lint rule enforces it, and `components/ui/` depends on `components/motion/` and `lib/`.
 - No offline support and no push notifications: the PWA is installable only.
+- «Dall'ultima visita» is a toast that leaves after 10 seconds: what waits stays where it lives (Liquidità, Abbonamenti, Importazioni). Bank connections about to expire keep their own banner, upcoming instalments «Prossime rate».
 - better-auth's rate limiter is not backed by Redis, so its counters are per pod.
 - `resolveDbSsl` can throw on multi-host Postgres URLs, and the migrator image does not force TLS (CLAUDE.md "Known technical debt").
 - better-auth writes its internal errors to the console, outside `logger`.
-- The "hide amounts" mask covers only values formatted with `formatCurrency`.
+- The "hide amounts" mask covers what goes through `lib/format` (§4.13); text the server renders (emails) and form fields keep the real value. The lint guard does not see `lib/` helpers that build their own strings.
 - No Content Security Policy header is set (comment in `next.config.ts`).
 - Only strings passed through `translate` (server `getTranslator`, client `useLocalization`) change with the language; anything rendered as a literal stays Italian.
 
@@ -340,6 +391,7 @@ Tests run with Vitest against `DATABASE_URL` (a migrated database; CI runs `pnpm
 | [`lib/db/ssl.test.ts`](../../lib/db/ssl.test.ts), [`baseline.test.ts`](../../lib/db/baseline.test.ts) | TLS resolution, baseline marking |
 | [`lib/localization/config.test.ts`](../../lib/localization/config.test.ts), [`completeness.test.ts`](../../lib/localization/completeness.test.ts), [`guard.test.ts`](../../lib/localization/guard.test.ts) | Allowed country/language pairs, German route policy, catalog parity and interpolation, guard behaviour |
 | [`lib/features/catalog.test.ts`](../../lib/features/catalog.test.ts) | Catalog integrity and sidebar consistency |
+| [`lib/format.test.ts`](../../lib/format.test.ts) | Currency formatting, the hide-amounts mask on `formatCurrency` and `privateNumberFormat` |
 | [`lib/cron/auth.test.ts`](../../lib/cron/auth.test.ts) | Bearer check for crons and metrics |
 | [`lib/health/readiness.test.ts`](../../lib/health/readiness.test.ts) | Readiness timeouts and per-dependency status |
 

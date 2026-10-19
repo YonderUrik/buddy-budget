@@ -68,6 +68,8 @@ export const investmentsViewSchema = z.object({
   byType: z.array(z.looseObject({ key: z.string(), value: z.number(), share: z.number() })),
   byCurrency: z.array(z.looseObject({ key: z.string(), value: z.number(), share: z.number() })),
   instruments: z.array(instrument),
+  heldInstrumentIds: z.array(z.string()),
+  /** Deprecated alias of `heldInstrumentIds`. */
   usedInstrumentIds: z.array(z.string()),
   breakdown: z.object({ paid: z.number(), market: z.number(), value: z.number(), marketShare: z.number(), cashedIn: z.number() }),
   concentration: z.object({ kind: z.enum(["single", "dominant", "spread"]), name: z.string().nullable(), share: z.number() }).nullable(),

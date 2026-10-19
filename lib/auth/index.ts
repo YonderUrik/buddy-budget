@@ -3,24 +3,29 @@ import 'server-only';
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer, emailOTP, lastLoginMethod, magicLink } from "better-auth/plugins";
-import { Resend } from "resend";
+import { APIError } from "better-auth/api";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
 import { categories } from "@/lib/db/schema/categories";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { recordAuthEvent, requestLogger } from "@/lib/observability";
 import { eq } from "drizzle-orm";
-import { magicLinkEmailContent, magicLinkLanguage, signInCodeEmailContent } from "./emails";
+import { sendEmail } from "@/lib/email/send";
+import { authMethods } from "@/lib/instance/config";
+import { magicLinkEmailContent, magicLinkLanguage, passwordResetEmailContent, signInCodeEmailContent } from "./emails";
 import { logMagicLink } from "./magic-link-log";
 import { logDevOtp } from "./otp-dev-log";
+import { canCreateAccount, SIGNUPS_CLOSED_CODE } from "./signup-gate";
 import {
   MAGIC_LINK_EXPIRES_MINUTES,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_RESET_EXPIRES_MINUTES,
   SESSION_EXPIRES_IN_DAYS,
   SESSION_UPDATE_AGE_DAYS,
   SIGN_IN_OTP_EXPIRES_MINUTES,
   SIGN_IN_OTP_LENGTH,
 } from "./constants";
-import type { Language } from "@/lib/localization/config";
 import { getAppUrl } from "@/lib/env";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
@@ -28,30 +33,29 @@ import { touchLastActive } from "@/lib/account/last-active";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { publicDemo } from "./public-demo-plugin";
 
-/** Client Resend creato al primo uso: senza RESEND_API_KEY (self-hosting) il costruttore lancerebbe già all'import. */
-function getResend(): Resend | null {
-  return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+/** Sign-in methods of this instance (password, magic link, Google), from the environment: see lib/instance/config.ts. */
+const methods = authMethods();
+
+/** Google is on only with both credentials. */
+const googleProvider = methods.google
+  ? { google: { clientId: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET! } }
+  : {};
+
+/** Refusal for a new account when signups are closed (only the first account of the instance can be created). */
+function signupsClosed(): APIError {
+  return new APIError("FORBIDDEN", { code: SIGNUPS_CLOSED_CODE, message: "Su questa installazione non si possono creare nuovi account." });
 }
 
-/**
- * Language of a sign-in email (link or code): the account's saved language, or the language of the sign-in page for
- * a new address. A failed lookup only costs the saved language: the email still goes out.
- */
-async function signInEmailLanguage(email: string, headers: Headers | null | undefined): Promise<Language> {
+/** Saved language of the account with this email, if any (a failed lookup only costs the saved language). */
+async function accountByEmail(email: string) {
   const [user] = await db
-    .select({ productCountry: authUser.productCountry, language: authUser.language })
+    .select({ id: authUser.id, productCountry: authUser.productCountry, language: authUser.language })
     .from(authUser)
     .where(eq(authUser.email, email.toLowerCase()))
     .limit(1)
     .catch(() => []);
-  return magicLinkLanguage({ user, headers });
+  return user;
 }
-
-/** Google è attivo solo con entrambe le credenziali; altrimenti resta solo il magic link. */
-const googleProvider =
-  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-    ? { google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET } }
-    : {};
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -67,26 +71,30 @@ export const auth = betterAuth({
     magicLink({
       expiresIn: MAGIC_LINK_EXPIRES_MINUTES * 60,
       sendMagicLink: async ({ email, url }, ctx) => {
-        const resend = getResend();
-        if (!resend) {
-          // Self-hosting senza email: il link compare nei log del container (`docker compose logs app`).
+        const user = await accountByEmail(email);
+        // Closed signups: say so now, instead of a link that would fail when opened.
+        if (!user && !(await canCreateAccount())) {
+          recordAuthEvent("signup_refused");
+          throw signupsClosed();
+        }
+        if (!methods.emailDelivery) {
+          // No email service and password sign-in turned off: the link appears in the container log (`docker compose logs app`).
           logMagicLink(url);
           recordAuthEvent("magic_link_sent");
           return;
         }
-        // Resend non lancia in caso di errore: restituisce `{ error }`. Lo trasformiamo in eccezione
-        // così better-auth risponde con errore e la UI non mostra "controlla la tua email" a vuoto.
-        const language = await signInEmailLanguage(email, ctx?.headers ?? ctx?.request?.headers);
-        const { error } = await resend.emails.send({
-          from: process.env.RESEND_FROM!,
+        // Written in the account's saved language, or in the language of the sign-in page for a new address.
+        const language = magicLinkLanguage({ user, headers: ctx?.headers ?? ctx?.request?.headers });
+        const result = await sendEmail({
           to: email,
           ...magicLinkEmailContent({ url, expiresInMinutes: MAGIC_LINK_EXPIRES_MINUTES, appUrl: new URL(url).origin, language }),
         });
-        if (error) {
+        // A failed send becomes an error, so the page never shows "check your email" for nothing.
+        if (!result.ok) {
           recordAuthEvent("magic_link_failed");
-          // Solo il tipo d'errore di Resend: il messaggio può contenere l'indirizzo email.
-          requestLogger().error("auth.magic_link.failed", { reason: error.name });
-          throw new Error(`Invio magic link non riuscito (${error.name})`);
+          // Only the error type: the provider's message can contain the address.
+          requestLogger().error("auth.magic_link.failed", { reason: result.reason });
+          throw new Error(`Invio magic link non riuscito (${result.reason})`);
         }
         recordAuthEvent("magic_link_sent");
       },
@@ -103,17 +111,14 @@ export const auth = betterAuth({
         // Only sign-in codes exist here: no password, email verification or email change flows.
         if (type !== "sign-in") return;
         const log = requestLogger();
-        const resend = getResend();
-        if (!resend) {
-          // Development without email: the code goes to the dev log. In production nothing is logged and the code
-          // can't be delivered (self-hosters without Resend keep the magic link, which prints its URL).
-          if (!logDevOtp(otp, { log })) log.warn("auth.otp.undeliverable", { reason: "email_not_configured" });
-          recordAuthEvent("otp_failed");
-          return;
+        const user = await accountByEmail(email);
+        // Closed signups: an unknown address gets no code, as with the magic link.
+        if (!user && !(await canCreateAccount())) {
+          recordAuthEvent("signup_refused");
+          throw signupsClosed();
         }
-        const language = await signInEmailLanguage(email, ctx?.headers ?? ctx?.request?.headers);
-        const { error } = await resend.emails.send({
-          from: process.env.RESEND_FROM!,
+        const language = magicLinkLanguage({ user, headers: ctx?.headers ?? ctx?.request?.headers });
+        const result = await sendEmail({
           to: email,
           ...signInCodeEmailContent({
             otp,
@@ -122,11 +127,16 @@ export const auth = betterAuth({
             language,
           }),
         });
-        if (error) {
+        if (!result.ok) {
           recordAuthEvent("otp_failed");
-          // Only Resend's error type: the message can contain the address.
-          log.error("auth.otp.failed", { reason: error.name });
-          logDevOtp(otp, { log });
+          // Development without email (or a failed send): the code goes to the dev log. In production nothing is
+          // logged and the code can't be delivered. Only the error type: the provider's message can contain the address.
+          if (result.reason === "email_not_configured") {
+            if (!logDevOtp(otp, { log })) log.warn("auth.otp.undeliverable", { reason: result.reason });
+          } else {
+            log.error("auth.otp.failed", { reason: result.reason });
+            logDevOtp(otp, { log });
+          }
           return;
         }
         recordAuthEvent("otp_sent");
@@ -144,6 +154,40 @@ export const auth = betterAuth({
     bearer(),
   ],
   socialProviders: googleProvider,
+  // Email and password: on for self-hosted installs (no email service needed), off on the hosted version.
+  emailAndPassword: {
+    enabled: methods.password,
+    minPasswordLength: PASSWORD_MIN_LENGTH,
+    maxPasswordLength: PASSWORD_MAX_LENGTH,
+    // There may be no email service to verify the address: whoever runs the instance decides who signs up.
+    requireEmailVerification: false,
+    autoSignIn: true,
+    resetPasswordTokenExpiresIn: PASSWORD_RESET_EXPIRES_MINUTES * 60,
+    revokeSessionsOnPasswordReset: true,
+    // Without an email service the reset is done by whoever runs the instance (`pnpm auth:reset-password`).
+    ...(methods.emailDelivery
+      ? {
+          sendResetPassword: async ({ user, url }: { user: { email: string }; url: string }, request?: Request) => {
+            const account = await accountByEmail(user.email);
+            const language = magicLinkLanguage({ user: account, headers: request?.headers });
+            const result = await sendEmail({
+              to: user.email,
+              ...passwordResetEmailContent({ url, expiresInMinutes: PASSWORD_RESET_EXPIRES_MINUTES, appUrl: new URL(url).origin, language }),
+            });
+            if (!result.ok) {
+              recordAuthEvent("password_reset_failed");
+              requestLogger().error("auth.password_reset.failed", { reason: result.reason });
+              throw new Error(`Invio email non riuscito (${result.reason})`);
+            }
+            recordAuthEvent("password_reset_sent");
+          },
+          onPasswordReset: async () => {
+            recordAuthEvent("password_reset_completed");
+            requestLogger().info("auth.password_reset.completed");
+          },
+        }
+      : {}),
+  },
   // Espliciti (sono anche i default di better-auth) perché la pagina Impostazioni li mostra all'utente.
   session: {
     expiresIn: SESSION_EXPIRES_IN_DAYS * 24 * 60 * 60,
@@ -226,6 +270,15 @@ export const auth = betterAuth({
     },
     user: {
       create: {
+        /** Every new account, whatever the method (password, link, Google), passes here: closed signups stop it. */
+        before: async (user) => {
+          if (!(await canCreateAccount())) {
+            recordAuthEvent("signup_refused");
+            requestLogger().warn("auth.signup.refused");
+            throw signupsClosed();
+          }
+          return { data: user };
+        },
         /** Semina le categorie di default quando un nuovo utente viene creato via auth. */
         after: async (user) => {
           await db.insert(categories).values(defaultCategoryRows(user.id));

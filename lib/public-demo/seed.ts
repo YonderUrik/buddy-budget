@@ -1,6 +1,7 @@
 /**
  * Sample account used by the landing screenshots and by the public demo: accounts, a year of transactions, budgets,
  * subscriptions, investments (`seed-investments.ts`), goals, debts and a pension fund, all invented and deterministic (fixed-seed generator).
+ * Merchants and securities carry real brand names, so the screens show the logos people know; amounts stay invented.
  * User-facing texts come in the account's language (`texts.ts`); German also gets the German product rules.
  * Re-running it re-creates the account from scratch (the user row is deleted first and everything cascades).
  */
@@ -53,22 +54,26 @@ interface Recurring {
   max: number;
   day: number;
   perMonth?: number;
+  /** Second shop used for every other transaction of the month (same category and amounts). */
+  alternate?: { description: string; raw: string };
 }
 
+// Merchants: well-known brands where a real person would shop (the app shows their logos), local shops with no logo
+// for the rest. Brands are names only: amounts and dates stay invented.
 const EXPENSES: Recurring[] = [
   { category: "Affitto & Mutuo", description: "Rata mutuo", raw: "ADDEBITO SDD RATA MUTUO N. 4471", min: 742.18, max: 742.18, day: 5 },
-  { category: "Bollette & Telefono", description: "Luce e gas", raw: "SDD ENERGIA PIU SPA FATT 2291", min: 68, max: 135, day: 12 },
-  { category: "Bollette & Telefono", description: "Fibra e mobile", raw: "ADDEBITO TELCO SRL CANONE", min: 34.9, max: 34.9, day: 9 },
-  { category: "Spesa", description: "Supermercato", raw: "PAGAMENTO POS SUPERMERCATO CENTRO 0412", min: 18, max: 96, day: 3, perMonth: 7 },
-  { category: "Trasporti", description: "Carburante", raw: "PAGAMENTO POS STAZIONE DI SERVIZIO", min: 35, max: 62, day: 8, perMonth: 2 },
-  { category: "Ristoranti & Bar", description: "Ristorante", raw: "PAGAMENTO POS TRATTORIA DA MARIO", min: 22, max: 78, day: 15, perMonth: 4 },
-  { category: "Abbonamenti", description: "Streaming video", raw: "PAGAMENTO ONLINE STREAMINGCO", min: 13.99, max: 13.99, day: 17 },
-  { category: "Abbonamenti", description: "Musica", raw: "PAGAMENTO ONLINE MUSICAPP", min: 10.99, max: 10.99, day: 19 },
-  { category: "Sport & Benessere", description: "Palestra", raw: "ADDEBITO SDD FITNESS CLUB", min: 39, max: 39, day: 7 },
-  { category: "Shopping", description: "Acquisto online", raw: "PAGAMENTO ONLINE MARKETPLACE", min: 24, max: 140, day: 21, perMonth: 1 },
-  { category: "Shopping", description: "Negozio abbigliamento", raw: "PAGAMENTO POS MODA STORE", min: 30, max: 120, day: 23, perMonth: 1 },
-  { category: "Salute", description: "Farmacia", raw: "PAGAMENTO POS FARMACIA COMUNALE", min: 9, max: 38, day: 11, perMonth: 1 },
-  { category: "Viaggi", description: "Viaggio", raw: "PAGAMENTO ONLINE AGENZIA VIAGGI", min: 120, max: 420, day: 24, perMonth: 1 },
+  { category: "Bollette & Telefono", description: "Enel Energia", raw: "SDD ENEL ENERGIA FATT 2291", min: 68, max: 135, day: 12 },
+  { category: "Bollette & Telefono", description: "TIM", raw: "ADDEBITO SDD TIM FIBRA E MOBILE", min: 34.9, max: 34.9, day: 9 },
+  { category: "Spesa", description: "Esselunga", raw: "PAGAMENTO POS ESSELUNGA 0412", min: 18, max: 96, day: 3, perMonth: 7, alternate: { description: "Conad", raw: "PAGAMENTO POS CONAD 0187" } },
+  { category: "Trasporti", description: "Eni", raw: "PAGAMENTO POS ENI STATION 1187", min: 35, max: 62, day: 8, perMonth: 2 },
+  { category: "Ristoranti & Bar", description: "Trattoria da Mario", raw: "PAGAMENTO POS TRATTORIA DA MARIO", min: 22, max: 78, day: 15, perMonth: 4 },
+  { category: "Abbonamenti", description: "Netflix", raw: "PAGAMENTO ONLINE NETFLIX.COM", min: 13.99, max: 13.99, day: 17 },
+  { category: "Abbonamenti", description: "Spotify", raw: "PAGAMENTO ONLINE SPOTIFY P2B71C", min: 10.99, max: 10.99, day: 19 },
+  { category: "Sport & Benessere", description: "Palestra Olimpia", raw: "ADDEBITO SDD PALESTRA OLIMPIA", min: 39, max: 39, day: 7 },
+  { category: "Shopping", description: "Amazon", raw: "PAGAMENTO ONLINE AMAZON EU SARL", min: 24, max: 140, day: 21, perMonth: 1 },
+  { category: "Shopping", description: "Zara", raw: "PAGAMENTO POS ZARA 0233", min: 30, max: 120, day: 23, perMonth: 1 },
+  { category: "Salute", description: "Farmacia Comunale", raw: "PAGAMENTO POS FARMACIA COMUNALE", min: 9, max: 38, day: 11, perMonth: 1 },
+  { category: "Viaggi", description: "Booking.com", raw: "PAGAMENTO ONLINE BOOKING.COM", min: 120, max: 420, day: 24, perMonth: 1 },
 ];
 
 
@@ -116,8 +121,8 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
   await db.delete(instruments).where(and(isNull(instruments.createdByUserId), inArray(instruments.isin, DEMO_ISINS)));
   // Re-seeding (e.g. in another language) creates new ids: the cached fingerprint of the old investment history must go.
   if (process.env.REDIS_URL) {
-    const [{ redis }, { investmentHistoryFingerprintKey }] = await Promise.all([import("@/lib/redis/client"), import("@/lib/net-worth/redis-history-state")]);
-    await redis.del(investmentHistoryFingerprintKey(userId));
+    const [{ redis }, { investmentHistoryFingerprintKey, cashHistoryFingerprintKey }] = await Promise.all([import("@/lib/redis/client"), import("@/lib/net-worth/redis-history-state")]);
+    await redis.del(investmentHistoryFingerprintKey(userId), cashHistoryFingerprintKey(userId));
   }
 
   await db.insert(authUser).values({
@@ -181,16 +186,17 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
     push(dayOfMonth(back, 27), "Stipendio", "Stipendio", "BONIFICO A VOSTRO FAVORE ACME SRL STIPENDIO", 2480);
     if (back % 4 === 1) push(dayOfMonth(back, 14), "Altre entrate", "Consulenza", "BONIFICO FATT 12/26", round2(between(380, 720)));
     // For «Abbonamenti»: a price increase, a service that stopped 5 months ago and a yearly insurance.
-    push(dayOfMonth(back, 6), "Abbonamenti", "Archivio cloud", "PAGAMENTO ONLINE CLOUDBOX STORAGE", -2.99);
+    push(dayOfMonth(back, 6), "Abbonamenti", "iCloud+", "PAGAMENTO ONLINE APPLE.COM/BILL", -2.99);
     if (back >= 5) push(dayOfMonth(back, 12), "Abbonamenti", "Giornale online", "PAGAMENTO ONLINE IL QUOTIDIANO DIGITALE", -7.99);
-    if (back === 12 || back === 0) push(dayOfMonth(back, 2), "Assicurazioni", "Assicurazione auto", "ADDEBITO SDD ASSICURAZIONI SICURA RCA", back === 12 ? -412 : -428);
+    if (back === 12 || back === 0) push(dayOfMonth(back, 2), "Assicurazioni", "UnipolSai", "ADDEBITO SDD UNIPOLSAI RCA", back === 12 ? -412 : -428);
     for (const e of EXPENSES) {
       const times = e.perMonth ?? 1;
       for (let i = 0; i < times; i++) {
         const day = Math.min(28, e.day + i * 4 + Math.floor(between(0, 3)));
-        // Music cost €9.99 until 4 months ago: the increase shows in «Abbonamenti».
-        const amount = e.description === "Musica" && back >= 4 ? 9.99 : round2(between(e.min, e.max));
-        push(dayOfMonth(back, day), e.category, e.description, e.raw, -amount);
+        // Spotify cost €9.99 until 4 months ago: the increase shows in «Abbonamenti».
+        const amount = e.description === "Spotify" && back >= 4 ? 9.99 : round2(between(e.min, e.max));
+        const shop = e.alternate && i % 2 === 1 ? e.alternate : e;
+        push(dayOfMonth(back, day), e.category, shop.description, shop.raw, -amount);
       }
     }
     if (back % 3 === 0) push(dayOfMonth(back, 20), "Investimenti", "Versamento PAC", "BONIFICO PAC ETF AZIONARIO", -300);
@@ -222,10 +228,10 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
   if (fallback) {
     // Messe dall'app: same as already categorised transactions (your choices, 100%) and a confident AI suggestion.
     const applied = [
-      ["Supermercato", "PAGAMENTO POS SUPERMERCATO CENTRO 0412", -23.4, "Spesa", "storico", 1],
-      ["Supermercato", "PAGAMENTO POS SUPERMERCATO CENTRO 0412", -41.7, "Spesa", "storico", 1],
-      ["Ristorante", "PAGAMENTO POS TRATTORIA DA MARIO", -34, "Ristoranti & Bar", "storico", 1],
-      ["Carburante", "PAGAMENTO POS STAZIONE DI SERVIZIO", -48.2, "Trasporti", "storico", 1],
+      ["Esselunga", "PAGAMENTO POS ESSELUNGA 0412", -23.4, "Spesa", "storico", 1],
+      ["Esselunga", "PAGAMENTO POS ESSELUNGA 0412", -41.7, "Spesa", "storico", 1],
+      ["Trattoria da Mario", "PAGAMENTO POS TRATTORIA DA MARIO", -34, "Ristoranti & Bar", "storico", 1],
+      ["Eni", "PAGAMENTO POS ENI STATION 1187", -48.2, "Trasporti", "storico", 1],
       ["Libreria del Corso", "PAGAMENTO POS LIBRERIA DEL CORSO", -18.9, "Svago", "assistente", 0.94],
     ] as const;
     applied.forEach(([description, raw, amount, categoryName, origin, confidence], i) => {
@@ -293,11 +299,11 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
 
   // Abbonamenti: Giulia confirmed hers and discarded the mortgage; the insurance and the (stopped) newspaper are left to decide.
   await db.insert(subscriptions).values([
-    { userId: userId, key: subscriptionKey(text("Streaming video")), status: "confermato", origin: "rilevato", name: text("Streaming video"), amount: "13.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
-    { userId: userId, key: subscriptionKey(text("Musica")), status: "confermato", origin: "rilevato", name: text("Musica"), amount: "10.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
-    { userId: userId, key: subscriptionKey(text("Archivio cloud")), status: "confermato", origin: "rilevato", name: text("Archivio cloud"), amount: "2.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
-    { userId: userId, key: subscriptionKey(text("Palestra")), status: "confermato", origin: "rilevato", name: text("Palestra"), amount: "39.00", cadence: "mensile", categoryId: cat("Sport & Benessere") },
-    { userId: userId, key: subscriptionKey(text("Fibra e mobile")), status: "confermato", origin: "rilevato", name: text("Fibra e mobile"), amount: "34.90", cadence: "mensile", categoryId: cat("Bollette & Telefono") },
+    { userId: userId, key: subscriptionKey(text("Netflix")), status: "confermato", origin: "rilevato", name: text("Netflix"), amount: "13.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
+    { userId: userId, key: subscriptionKey(text("Spotify")), status: "confermato", origin: "rilevato", name: text("Spotify"), amount: "10.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
+    { userId: userId, key: subscriptionKey(text("iCloud+")), status: "confermato", origin: "rilevato", name: text("iCloud+"), amount: "2.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
+    { userId: userId, key: subscriptionKey(text("Palestra Olimpia")), status: "confermato", origin: "rilevato", name: text("Palestra Olimpia"), amount: "39.00", cadence: "mensile", categoryId: cat("Sport & Benessere") },
+    { userId: userId, key: subscriptionKey(text("TIM")), status: "confermato", origin: "rilevato", name: text("TIM"), amount: "34.90", cadence: "mensile", categoryId: cat("Bollette & Telefono") },
     { userId: userId, key: subscriptionKey(text("Rata mutuo")), status: "escluso", origin: "rilevato", name: text("Rata mutuo"), amount: "742.18", cadence: "mensile", categoryId: cat("Affitto & Mutuo") },
   ]);
 

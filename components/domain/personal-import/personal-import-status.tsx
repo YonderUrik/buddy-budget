@@ -1,6 +1,7 @@
 "use client";
 
 
+import { importOverlap } from "@/lib/personal-import/counts";
 import { useLocalization } from "@/lib/localization/provider";
 import { translateServerMessage } from "@/lib/localization/messages";
 
@@ -51,7 +52,7 @@ export function PersonalImportProgress({ job }: PersonalImportProgressProps) {
       <DialogSteps steps={STEPS} current={step} ariaLabel={tr("Avanzamento dell'importazione")} className="max-sm:hidden" />
       <div role="status" className="flex flex-col gap-1.5 text-sm">
         <p className="font-medium text-foreground sm:font-normal">{tr("Puoi chiudere questa pagina: ti scriviamo un'email appena abbiamo finito.")}</p>
-        <p className="text-muted-foreground">{tr("Stima: circa 1 ora, entro il")}{" "}{new Date(job.estimatedAt).toLocaleString(formattingLocale, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}{tr(". È una stima, non una scadenza garantita.")}</p>
+        <p className="text-muted-foreground">{tr("Stima: circa 1 ora, entro il")}{" "}{new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(job.estimatedAt))}{tr(". È una stima, non una scadenza garantita.")}</p>
         {late ? <p className="text-foreground">{tr("Sta richiedendo più tempo del previsto. Ti avvisiamo appena è pronto.")}</p> : null}
       </div>
     </PanelSection>
@@ -73,7 +74,11 @@ export function describeImportJob(job: Job): { message: string; values?: Record<
     case "processing": return { message: "Analisi in corso", action: null };
     case "ready": return { message: "Salvataggio in corso", action: null };
     case "imported": return job.results
-      ? { message: "{0} movimenti · {1} operazioni", values: { 0: job.results.cash, 1: job.results.investments }, action: "Dettaglio" }
+      ? importOverlap(job.results) === "nothing_new"
+        ? { message: "Niente di nuovo: {0} movimenti c'erano già", values: { 0: job.results.alreadyPresent! }, action: "Dettaglio" }
+        : importOverlap(job.results) === "partial"
+          ? { message: "{0} su {1} movimenti importati", values: { 0: job.results.rows! - job.results.alreadyPresent!, 1: job.results.rows! }, action: "Dettaglio" }
+          : { message: "{0} movimenti · {1} operazioni", values: { 0: job.results.cash, 1: job.results.investments }, action: "Dettaglio" }
       : { message: "Importato", action: "Dettaglio" };
     case "review_failed": return { message: job.error ?? "Qualche riga da correggere", action: "Controlla" };
     case "failed": return { message: job.error ?? "Formato non riconosciuto", action: "Riprova" };

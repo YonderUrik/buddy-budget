@@ -13,11 +13,10 @@ vi.mock("@/lib/auth", () => ({
 
 import { auth } from "@/lib/auth";
 import { GET } from "./route";
-import { POST as markSeen } from "./seen/route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
 
-describe("«Messe dall'app»: GET /api/transactions/auto-categorized e POST …/seen", () => {
+describe("«Messe dall'app»: GET /api/transactions/auto-categorized", () => {
   let userId: string;
   let accountId: string;
   let svagoId: string;
@@ -50,7 +49,6 @@ describe("«Messe dall'app»: GET /api/transactions/auto-categorized e POST …/
         email: `test-auto-categorized-${crypto.randomUUID()}@example.com`,
         emailVerified: false,
         currency: "EUR",
-        autoCategorizedSeenAt: new Date("2026-10-01T00:00:00Z"),
       })
       .returning();
     userId = user.id;
@@ -74,11 +72,13 @@ describe("«Messe dall'app»: GET /api/transactions/auto-categorized e POST …/
     expect((await GET(new NextRequest("http://localhost/api/transactions/auto-categorized"))).status).toBe(401);
   });
 
-  it("mostra solo le categorie automatiche arrivate dopo l'ultimo controllo, raggruppate per esercente", async () => {
-    await insertAuto("NETFLIX.COM", new Date("2026-10-05T08:00:00Z"));
-    await insertAuto("NETFLIX.COM", new Date("2026-10-06T08:00:00Z"));
-    await insertAuto("SPOTIFY AB", new Date("2026-09-20T08:00:00Z"));
-    await insertAuto("BAR DA MARIO", new Date("2026-10-06T08:00:00Z"), "utente");
+  const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000);
+
+  it("shows the automatic categories of the last 30 days grouped by merchant, never the user's own choices", async () => {
+    await insertAuto("NETFLIX.COM", daysAgo(2));
+    await insertAuto("NETFLIX.COM", daysAgo(1));
+    await insertAuto("SPOTIFY AB", daysAgo(31));
+    await insertAuto("BAR DA MARIO", daysAgo(1), "utente");
 
     const body = await list();
 
@@ -89,28 +89,9 @@ describe("«Messe dall'app»: GET /api/transactions/auto-categorized e POST …/
     expect(body.groups[0].confidence).toBeCloseTo(0.96);
   });
 
-  it("«Va tutto bene» toglie quelle viste ma non quelle arrivate dopo", async () => {
-    await insertAuto("NETFLIX.COM", new Date("2026-10-05T08:00:00Z"));
-    const { groups } = await list();
-
-    await insertAuto("SPOTIFY AB", new Date("2026-10-07T08:00:00Z"), "regola");
-    const response = await markSeen(
-      new NextRequest("http://localhost/api/transactions/auto-categorized/seen", {
-        method: "POST",
-        body: JSON.stringify({ until: groups[0].lastCategorizedAt, count: 1 }),
-      })
-    );
-    expect(response.status).toBe(200);
-
-    const after = await list();
-    expect(after.total).toBe(1);
-    expect(after.groups[0].source).toBe("regola");
-  });
-
-  it("rifiuta una data non valida", async () => {
-    const response = await markSeen(
-      new NextRequest("http://localhost/api/transactions/auto-categorized/seen", { method: "POST", body: JSON.stringify({ until: "ieri" }) })
-    );
-    expect(response.status).toBe(400);
+  it("keeps a category in the history after it was listed: nothing waits for a confirmation", async () => {
+    await insertAuto("NETFLIX.COM", daysAgo(3), "regola");
+    expect((await list()).total).toBe(1);
+    expect((await list()).total).toBe(1);
   });
 });

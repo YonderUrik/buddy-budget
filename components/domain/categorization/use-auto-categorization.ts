@@ -5,7 +5,7 @@ import type { Language } from "@/lib/localization/config";
 
 /**
  * Stato e azioni delle categorie applicate da sole in Categorizza: applica subito le proposte sicure che la pagina trova
- * pronte (e lo dice con un toast), corregge un gruppo di «Messe dall'app», segna tutto come visto, accende l'opzione.
+ * pronte (e lo dice con un toast), corregge un gruppo di «Messe dall'app», accende l'opzione.
  */
 
 import * as React from "react";
@@ -16,7 +16,6 @@ import {
   useApplyCategorizationMutation,
   useAutoApplyMutation,
   useAutoCategorizedQuery,
-  useMarkAutoCategorizedSeenMutation,
   type CategorizeSuggestionsResponse,
 } from "@/lib/queries/categorization";
 import { useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
@@ -41,7 +40,6 @@ export function useAutoCategorization({ suggestions, dataUpdatedAt, onShowApplie
   const autoQuery = useAutoCategorizedQuery();
   const applyMutation = useApplyCategorizationMutation();
   const autoApplyMutation = useAutoApplyMutation();
-  const markSeenMutation = useMarkAutoCategorizedSeenMutation();
   const settingsMutation = useUpdateAiCategorizationMutation();
   const [correctingKey, setCorrectingKey] = React.useState<string | null>(null);
   const onShowRef = React.useRef(onShowApplied);
@@ -91,27 +89,6 @@ export function useAutoCategorization({ suggestions, dataUpdatedAt, onShowApplie
     [applyMutation, tr]
   );
 
-  const autoGroups = autoQuery.data?.groups;
-  const autoTotal = autoQuery.data?.total ?? 0;
-  /** «Va tutto bene»: segna come viste le categorie mostrate (fino all'ultima applicata), non quelle arrivate dopo. */
-  const markAllSeen = React.useCallback(
-    (onDone?: () => void) => {
-      const until = (autoGroups ?? []).reduce((latest, group) => (group.lastCategorizedAt > latest ? group.lastCategorizedAt : latest), "");
-      if (!until) return;
-      markSeenMutation.mutate(
-        { until, count: autoTotal },
-        {
-          onSuccess: () => {
-            toast.success(tr("Fatto, le hai controllate tutte"));
-            onDone?.();
-          },
-          onError: (error) => errorToast(error.message, "movimento"),
-        }
-      );
-    },
-    [autoGroups, autoTotal, markSeenMutation, tr]
-  );
-
   const enableAutoApply = React.useCallback(() => {
     settingsMutation.mutate(
       { autoApply: true },
@@ -127,8 +104,6 @@ export function useAutoCategorization({ suggestions, dataUpdatedAt, onShowApplie
     autoData: autoQuery.data,
     correct,
     correctingKey,
-    markAllSeen,
-    markingSeen: markSeenMutation.isPending,
     enableAutoApply,
     enabling: settingsMutation.isPending,
     saveChoices: applyMutation.mutateAsync,

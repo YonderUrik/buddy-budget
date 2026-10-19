@@ -12,6 +12,7 @@ import { AlertTriangleIcon } from "lucide-react";
 import type { ImportRow } from "@/lib/investments/import/normalize";
 import { translateImportMessage } from "@/lib/investments/import/messages";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
+import { privateNumberFormat } from "@/lib/format";
 
 export interface ImportRowsPreviewProps {
   rows: ImportRow[];
@@ -25,7 +26,7 @@ const MAX_LISTED_PROBLEMS = 5;
 
 export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
   const { locale: formattingLocale } = useLocalization();
-  const NUMBER_FORMAT = new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 8 });
+  const NUMBER_FORMAT = privateNumberFormat(formattingLocale, { maximumFractionDigits: 8 });
 
   const { t: tr, language } = useLocalization();
   const ok = rows.filter((r) => r.status === "ok");

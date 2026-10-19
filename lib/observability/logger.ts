@@ -15,6 +15,8 @@ export const LOG_SERVICE_NAME = "buddy-budget";
 export interface LogFields {
   requestId?: string;
   route?: string;
+  /** Instance setup at boot (hosted or self-hosted, sign-in methods, email transport): flags only, never values. */
+  instance?: string;
   method?: string;
   status?: number;
   durationMs?: number;
@@ -50,6 +52,8 @@ export interface LogFields {
   host?: string;
   withContext?: boolean;
   reason?: string;
+  /** Input field a validation rejected (the schema key, never its value). */
+  field?: string;
   inserted?: number;
   deleted?: number;
   /** Esiti di un import in blocco (conteggi di righe): nuove, aggiornate, saltate perché già presenti, rifiutate. */
@@ -57,6 +61,12 @@ export interface LogFields {
   updated?: number;
   skipped?: number;
   rejected?: number;
+  /** Bank categories in an imported file: rows that carried one, and how they mapped (counts only, never the labels). */
+  bankCategories?: number;
+  bankLearned?: number;
+  bankByName?: number;
+  bankByDictionary?: number;
+  bankUnmapped?: number;
   categorized?: number;
   uncategorized?: number;
   processed?: number;

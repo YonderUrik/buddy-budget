@@ -5,12 +5,17 @@ import type { SidebarModuleId } from "@/lib/sidebar/modules";
 import type { ReportErrorArea, ReportSource } from "@/lib/support/constants";
 import type { GoalKind } from "@/lib/goals/constants";
 import type { Attribution } from "./attribution";
+import type { WelcomeItemKind } from "@/lib/welcome/types";
+import type { SingleSuggestionStatus } from "@/lib/categorization/ai/single-suggestion";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import" | "goal";
 /** Screens whose period selector offers a custom range, for the calendar events. */
 export type PeriodSurface = "investimenti" | "performance" | "analitiche";
 /** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
+/** Where the detail of a transaction was opened from. */
+export type TransactionDetailSource = "movimenti" | "categorizza" | "abbonamenti" | "esercente";
+
 export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
 /**
@@ -29,10 +34,12 @@ export interface ProductEvents {
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
   support_faq_opened: { id: string };
   personal_csv_requested: { reuse: boolean };
+  /** File già importato: rifiutato al caricamento (stesso file) o, dopo l'analisi, senza nessun movimento nuovo. */
+  personal_csv_already_imported: { stage: "caricamento" | "analisi" };
   investments_import_ai_fallback: Record<string, never>;
   personal_csv_deleted: { cash: number; investments: number };
   /** Import confermato; `skipped`: righe non riconosciute saltate per scelta dell'utente. */
-  personal_csv_imported: { rows: number; skipped?: number };
+  personal_csv_imported: { rows: number; skipped?: number; bankCategorized?: number };
   /** Scelta nella schermata «Righe da controllare» dell'import personale. */
   personal_csv_review_action: { action: "importa_saltando" | "rianalizza" | "file_corretto" };
   /** Azione scelta nella schermata «File ricevuto» dell'import personale. */
@@ -44,13 +51,30 @@ export interface ProductEvents {
   /** Interruttore «Rimetti costi/imposte nel portafoglio» in Investimenti; `reinvested`: acceso o spento. */
   investment_reinvest_toggled: { kind: "costi" | "imposte"; reinvested: boolean };
   investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
-  /** Clic sull'azione di un passo della checklist «Primi passi» della Panoramica. */
-  start_step_clicked: { step: "conto" | "import" | "investimento" | "obiettivo" };
-  /** Checklist chiusa; `done`: quanti passi su quattro erano già fatti. */
+  /**
+   * Action of a «Primi passi» step pressed; `placement`: the big «next step» block in Panoramica, the list under it, or
+   * the «done, next» toast shown elsewhere in the app.
+   */
+  start_step_clicked: { step: "conto" | "import" | "investimento" | "debito" | "pensione" | "obiettivo"; placement?: "hero" | "list" | "toast" };
+  /** A step of the user's checklist became done (seen by the app, once per step and device). */
+  start_step_completed: { step: "conto" | "import" | "investimento" | "debito" | "pensione" | "obiettivo" };
+  /** «Cosa vuoi tenere sotto controllo?» answered at the end of onboarding; `count` 0 = skipped (default steps). */
+  onboarding_focus_chosen: { count: number; spese: boolean; investimenti: boolean; debiti: boolean; pensione: boolean };
+  /** The same choice changed later from the checklist's «Cambia». */
+  start_focus_changed: { count: number };
+  /** A first step skipped («Non mi serve») or brought back from the list. */
+  start_step_skipped: { step: "import" | "investimento" | "debito" | "pensione" | "obiettivo"; skipped: boolean };
+  /** Action pressed in the «no account yet» state of a Liquidità tab (`area`). */
+  empty_state_action_clicked: { area: "movimenti" | "analisi" | "abbonamenti"; action: "conto" | "import" };
+  /** Checklist closed; `done`: how many of the user's steps were already done. */
   start_checklist_dismissed: { done: number };
   start_checklist_reopened: undefined;
   /** Tutti i passi fatti, registrato una sola volta per utente. */
   start_checklist_completed: undefined;
+  /** «Dall'ultima visita» toast shown on opening the app; counts of what happened and of what waits for the user. */
+  welcome_summary_shown: { happened: number; waiting: number };
+  /** The toast's action pressed (`item`: the line it leads to). */
+  welcome_summary_item_clicked: { item: WelcomeItemKind };
   /** «Esplora con dati d'esempio» avviato. */
   demo_started: undefined;
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
@@ -100,6 +124,16 @@ export interface ProductEvents {
   categorization_applied: { groups: number };
   categorization_rule_saved: { matchType: "merchant" | "contains"; applied: number };
   transaction_split: undefined;
+  /** Dettaglio di un movimento aperto; `from`: dove (elenco Movimenti, Categorizza, un abbonamento, un altro movimento dello stesso esercente). */
+  transaction_detail_opened: { from: TransactionDetailSource };
+  /** Nota di un movimento salvata; `cleared`: la nota è stata tolta. */
+  transaction_note_saved: { cleared: boolean };
+  /** Movimento aggiunto a mano eliminato. */
+  transaction_deleted: undefined;
+  /** «Chiedi all'AI» nel dettaglio di un movimento; `outcome`: risposta (ok) o perché non c'è (spento, trasferimento, limite, errore). */
+  transaction_ai_asked: { outcome: SingleSuggestionStatus };
+  /** Categoria proposta dall'AI per un movimento usata con «Usa questa». */
+  transaction_ai_used: undefined;
   /** Su telefono: foglio delle viste aperto toccando il titolo della sezione. */
   section_views_opened: { section: SectionViewsKey };
   /** Su telefono: vista scelta dal foglio aperto dal titolo (diversa da quella corrente). */
@@ -254,14 +288,12 @@ export interface ProductEvents {
   categorize_tour: { action: "avanti" | "salta" | "fine" | "riapri"; step: number };
   /** Carta della categorizzazione rapida: scelta dell'utente; `source` = da dove veniva la proposta. */
   categorize_card_decided: { action: "conferma" | "cambia" | "salta" | "annulla"; source: "regola" | "storico" | "assistente" | "nessuna"; remember: boolean };
-  /** Interruttore «Lascia che l'app scelga quando è quasi certa»; `from` = dove l'utente l'ha cambiato. */
+  /** Interruttore «Lascia che l'app scelga quando è abbastanza sicura»; `from` = dove l'utente l'ha cambiato. */
   categorization_auto_apply_toggled: { enabled: boolean; from: "categorizza" | "impostazioni" };
   /** Movimenti categorizzati da soli quando la pagina Categorizza ha trovato proposte sicure pronte. */
   categorization_auto_applied: { count: number; groups: number };
-  /** «Va tutto bene» in «Messe dall'app»: movimenti controllati in un colpo. */
-  categorization_auto_reviewed: { count: number };
   /** L'utente ha cambiato una categoria applicata da sola; `source` = da dove veniva. */
-  categorization_auto_corrected: { source: "regola" | "storico" | "assistente"; count: number; remember: boolean; from: "categorizza" | "movimenti" };
+  categorization_auto_corrected: { source: "regola" | "storico" | "assistente" | "banca"; count: number; remember: boolean; from: "categorizza" | "movimenti" | "dettaglio" };
   /** Anteprima di «Ricategorizza» aperta; `scope` = tutto (Categorizza) o una regola appena salvata, `changes` = movimenti che cambierebbero. */
   recategorize_previewed: { scope: "tutto" | "regola"; changes: number };
   /** «Ricategorizza» applicata: movimenti spostati e gruppi scelti; `legacy` = inclusi i movimenti categorizzati prima che se ne segnasse l'origine. */
@@ -284,6 +316,12 @@ export interface ProductEvents {
   login_link_requested: { entry: "signup" | "login" } & Attribution;
   /** «Continua con Google» on the sign-in page; same props as `login_link_requested`. */
   google_login_started: { entry: "signup" | "login" } & Attribution;
+  /** Signed in with email and password (instances with password sign-in, i.e. self-hosted ones). */
+  password_login_completed: undefined;
+  /** Account created with email and password; `first` = the first account of the instance. */
+  password_signup_completed: { first: boolean };
+  /** Password changed or set from Impostazioni → Account. */
+  password_changed: { kind: "change" | "set" };
   /** «Rientra in BuddyBudget» on the login page: the one-tap way back in was used (link sent or Google opened). */
   returning_login_used: { method: "email" | "google" };
   /** «Non sei tu?» on the login page: the remembered account was forgotten on this device. */

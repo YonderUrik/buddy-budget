@@ -27,12 +27,24 @@ export const authUser = pgTable("auth_user", {
   startChecklistDismissedAt: timestamp("start_checklist_dismissed_at", { withTimezone: true }),
   /** Quando la checklist «Primi passi» è risultata completa per la prima volta (serve a registrarlo una sola volta). */
   startChecklistCompletedAt: timestamp("start_checklist_completed_at", { withTimezone: true }),
+  /** What the user wants to keep an eye on (`START_FOCUS_IDS`), chosen at the end of onboarding; null = never chosen (default steps). */
+  startFocus: text("start_focus").array(),
+  /** First steps the user chose not to do («Non mi serve»): they count as settled, so the checklist can finish. */
+  startSkipped: text("start_skipped").array(),
+  /** Last time the app was open (heartbeat from the app layout, at most once a minute): a gap longer than `VISIT_GAP_MS` starts a new visit. Null = never seen since the field exists. */
+  appSeenAt: timestamp("app_seen_at", { withTimezone: true }),
+  /** When the current visit started (see `lib/welcome/visit.ts`). */
+  visitStartedAt: timestamp("visit_started_at", { withTimezone: true }),
+  /** End of the previous visit (its last heartbeat): the «Dall'ultima visita» toast counts what happened after it. Null = no previous visit. */
+  visitSinceAt: timestamp("visit_since_at", { withTimezone: true }),
+  /** When the «Dall'ultima visita» toast was last shown: once per visit, so not again while it is later than `visitStartedAt`. */
+  welcomeShownAt: timestamp("welcome_shown_at", { withTimezone: true }),
   /** Quando l'utente ha acconsentito all'assistente per le categorie (invio del nome pulito dell'esercente a un servizio esterno). Null = spento. */
   aiCategorizationInstructions: text("ai_categorization_instructions").notNull().default(""),
   aiCategorizationConsentAt: timestamp("ai_categorization_consent_at", { withTimezone: true }),
-  /** Le proposte di categoria sicure (dal 90%) si applicano da sole. Spento per chi aveva acconsentito all'AI prima che esistesse. */
+  /** Le proposte di categoria sicure (dal 70%) si applicano da sole. Spento per chi aveva acconsentito all'AI prima che esistesse. */
   categorizationAutoApply: boolean("categorization_auto_apply").notNull().default(true),
-  /** Ultima volta che l'utente ha controllato le categorie applicate da sole: quelle dopo restano in «Messe dall'app». */
+  /** Unused since «Messe dall'app» became a 30-day history (2026-10-19); kept so pods still running the previous release keep working during a rollout. Drop in a later migration. */
   autoCategorizedSeenAt: timestamp("auto_categorized_seen_at", { withTimezone: true }).notNull().defaultNow(),
   /** Ultimo accesso dell'utente (creazione o rinnovo di una sessione): sopravvive alla pulizia delle sessioni scadute. Base del calcolo dell'inattività. */
   lastActiveAt: timestamp("last_active_at", { withTimezone: true }).notNull().defaultNow(),

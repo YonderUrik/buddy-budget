@@ -32,6 +32,7 @@ export function OverviewVoice({ firstName, dateLabel, dateAside, ...input }: Ove
           {dateAside}
         </div>
       </div>
+      {lines.length > 0 ? (
       <p className="max-w-[60ch] text-lg leading-relaxed text-text-2 sm:text-xl">
         {lines.map((line) => (
           <span key={line.key}>
@@ -47,6 +48,7 @@ export function OverviewVoice({ firstName, dateLabel, dateAside, ...input }: Ove
           </span>
         ))}
       </p>
+      ) : null}
     </header>
   );
 }

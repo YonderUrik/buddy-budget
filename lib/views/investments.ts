@@ -73,7 +73,7 @@ export function buildInvestmentsViewData(input: InvestmentsViewInputs) {
   const todayKey = toDateKey(input.today);
   const resolved = resolvePeriod(input.period, input.customRange, todayKey);
   const view = compute(input, resolved.range, resolved.calculationPeriod);
-  const { instrumentsById, priceIndex, usedInstruments, costImpact, analysis, ...rest } = view;
+  const { instrumentsById, priceIndex, heldInstruments, costImpact, analysis, ...rest } = view;
   void instrumentsById;
   void priceIndex;
   const positions = localizedPositionFormats(input.language);
@@ -98,7 +98,9 @@ export function buildInvestmentsViewData(input: InvestmentsViewInputs) {
     brokers: investmentBrokerGroups(input.all).map((group) => ({ ...group, label: translate(input.language, group.label), excluded: input.excludedBrokers.has(group.id) })),
     brokerCash,
     cashTotal: brokerCash.reduce((sum, cash) => sum + cash.balance, 0),
-    usedInstrumentIds: usedInstruments.map((instrument) => instrument.id),
+    // Instruments held today (web #445). `usedInstrumentIds` is the earlier name, kept with the same values for older app builds.
+    heldInstrumentIds: heldInstruments.map((instrument) => instrument.id),
+    usedInstrumentIds: heldInstruments.map((instrument) => instrument.id),
     breakdown,
     concentration,
     concentrationText: positions.concentrationText(concentration),

@@ -3,6 +3,7 @@ import { useId, type ReactNode } from "react";
 import { useLocalization } from "@/lib/localization/provider";
 import { Input } from "@/components/ui/input";
 import { SECTION_TITLE } from "@/components/domain/shared";
+import { formatCurrency } from "@/lib/format";
 
 export interface NumberFieldProps { label: string; value: number; onChange: (value: number) => void; min?: number; max?: number; step?: number }
 /** Labelled numeric input for explicit financial assumptions. */
@@ -24,7 +25,7 @@ export function Panel({ title, children, literalTitle = false }: { title: string
 /** Locale-aware EUR amount; unavailable estimates are explicit. */
 export function Amount({ value }: { value: number | null }) {
   const { locale, t } = useLocalization();
-  return <span className="tabular-nums">{value === null ? t("More information needed") : new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(value)}</span>;
+  return <span className="tabular-nums">{value === null ? t("More information needed") : formatCurrency(value, "EUR", { locale })}</span>;
 }
 /** Label and amount for a scenario result. */
 export function Result({ label, value }: { label: string; value: number | null }) {

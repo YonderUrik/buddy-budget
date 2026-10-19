@@ -30,6 +30,11 @@ async function handlePost(request: NextRequest) {
     userEmail: session.user.email,
     userAgent: request.headers.get("user-agent"),
   });
+  if (!result.ok && (result.reason === "support_not_configured" || result.reason === "email_not_configured")) {
+    recordSupportReport(parsed.data.kind, "failed");
+    log.warn("support.report.not_configured", { reportKind: parsed.data.kind, reason: result.reason });
+    return Response.json({ error: "Su questa installazione le segnalazioni non sono attive. Apri una segnalazione su GitHub: github.com/YonderUrik/buddy-budget/issues" }, { status: 503 });
+  }
   if (!result.ok) {
     recordSupportReport(parsed.data.kind, "failed");
     log.error("support.report.failed", { reportKind: parsed.data.kind, reason: result.reason, reference });

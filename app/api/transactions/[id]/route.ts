@@ -9,6 +9,9 @@ import { updateTransactionSchema } from "@/lib/validation/transactions";
 import { countAutoCorrections } from "@/lib/categorization/auto-corrections";
 import { isAutomaticCategorySource } from "@/lib/categorization/category-source";
 import { bindRequestUser, recordCategorizationAutoCorrected, requestLogger, withRoute } from "@/lib/observability";
+import { loadTransactionDetail } from "@/lib/transactions/load-detail";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Recupera una transazione solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedTransaction(userId: string, transactionId: string) {
@@ -17,6 +20,28 @@ async function getOwnedTransaction(userId: string, transactionId: string) {
     .from(transactions)
     .where(and(eq(transactions.id, transactionId), eq(transactions.userId, userId)));
   return transaction ?? null;
+}
+
+/**
+ * GET /api/transactions/[id] — the detail of one of the user's transactions: the row with its merchant logo, account,
+ * origin (bank, file import, broker statement, sample data or typed by hand), the rule that set its category and the
+ * same merchant over the last year. 404 when it does not exist or belongs to someone else.
+ */
+async function handleGet(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session) {
+    return new Response(null, { status: 401 });
+  }
+  bindRequestUser(session.user.id);
+
+  const { id } = await params;
+  const detail = UUID.test(id) ? await loadTransactionDetail(session.user.id, id) : null;
+  if (!detail) {
+    requestLogger().info("transactions.detail.not_found");
+    return new Response(null, { status: 404 });
+  }
+  requestLogger().info("transactions.detail.loaded", { outcome: detail.origin.kind });
+  return Response.json(detail);
 }
 
 const MANUAL_ONLY_FIELDS = ["description", "amount", "date"] as const;
@@ -181,5 +206,6 @@ async function handleDelete(
   return new Response(null, { status: 204 });
 }
 
+export const GET = withRoute("transactions.detail", handleGet);
 export const PATCH = withRoute("transactions.update", handlePatch);
 export const DELETE = withRoute("transactions.delete", handleDelete);

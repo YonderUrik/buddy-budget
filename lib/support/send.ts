@@ -1,8 +1,19 @@
 import "server-only";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email/send";
+import { isSelfHosted } from "@/lib/instance/config";
 import { redis } from "@/lib/redis/client";
 import { REPORT_RATE_LIMIT, REPORT_RATE_WINDOW_SECONDS, SUPPORT_EMAIL } from "./constants";
 import { reportEmailContent, type ReportInput } from "./report";
+
+/**
+ * Address the reports go to: `SUPPORT_EMAIL_TO`, else the project's support mailbox on the hosted version. A self-hosted
+ * install without `SUPPORT_EMAIL_TO` sends nothing: its users' reports are for whoever runs it, not for the project.
+ */
+export function supportRecipient(): string | null {
+  const configured = process.env.SUPPORT_EMAIL_TO?.trim();
+  if (configured) return configured;
+  return isSelfHosted() ? null : SUPPORT_EMAIL;
+}
 
 /** Conta la segnalazione dell'utente nella finestra e dice se ne ha ancora a disposizione. Se Redis non risponde lascia passare. */
 export async function consumeReportQuota(userId: string): Promise<boolean> {
@@ -24,13 +35,7 @@ export async function sendSupportReport(params: {
   userAgent: string | null;
 }): Promise<{ ok: true } | { ok: false; reason: string }> {
   const { subject, text } = reportEmailContent(params);
-  if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM) return { ok: false, reason: "email_not_configured" };
-  const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
-    from: process.env.RESEND_FROM,
-    to: process.env.SUPPORT_EMAIL_TO ?? SUPPORT_EMAIL,
-    replyTo: params.userEmail,
-    subject,
-    text,
-  });
-  return error ? { ok: false, reason: error.name } : { ok: true };
+  const to = supportRecipient();
+  if (!to) return { ok: false, reason: "support_not_configured" };
+  return sendEmail({ to, replyTo: params.userEmail, subject, text });
 }

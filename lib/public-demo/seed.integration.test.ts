@@ -46,7 +46,7 @@ describe("demo account investments", () => {
     expect(open).toHaveLength(13);
     expect(new Set(open.map((row) => row.instrument.currency))).toEqual(new Set(["EUR", "USD", "CHF"]));
     expect(investmentBrokerGroups(data).map((group) => group.id).sort()).toEqual([broker, "manual"].sort());
-    expect(view.benchmark?.name).toBe("ETF MSCI World Demo");
+    expect(view.benchmark?.name).toBe("iShares Core MSCI World UCITS ETF Acc");
 
     expect(await db.select().from(userWatchlistItems).where(eq(userWatchlistItems.userId, userId))).toHaveLength(2);
     expect(await db.select().from(userPriceAlerts).where(eq(userPriceAlerts.userId, userId))).toHaveLength(2);

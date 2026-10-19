@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { magicLinkEmailContent, magicLinkLanguage, signInCodeEmailContent } from "./emails";
+import { magicLinkEmailContent, magicLinkLanguage, passwordResetEmailContent, signInCodeEmailContent } from "./emails";
 
 const PARAMS = { url: "https://app.example.test/api/auth/verify?token=t", expiresInMinutes: 10, appUrl: "https://app.example.test" };
 
@@ -45,6 +45,20 @@ describe("signInCodeEmailContent", () => {
     const de = signInCodeEmailContent({ ...CODE, language: "de" });
     expect(de.subject).toBe("482913 ist dein Anmeldecode für BuddyBudget");
     expect(de.html).toContain('<html lang="de">');
+  });
+});
+
+describe("passwordResetEmailContent", () => {
+  it("carries the reset link and its validity, in every language", () => {
+    const it_ = passwordResetEmailContent({ ...PARAMS, expiresInMinutes: 30 });
+    expect(it_.subject).toBe("Reimposta la password di BuddyBudget");
+    expect(it_.text).toContain("30 minuti");
+    expect(it_.text).toContain(PARAMS.url);
+    const en = passwordResetEmailContent({ ...PARAMS, expiresInMinutes: 30, language: "en" });
+    expect(en.subject).toBe("Reset your BuddyBudget password");
+    expect(en.text).toContain("30 minutes");
+    const de = passwordResetEmailContent({ ...PARAMS, expiresInMinutes: 30, language: "de" });
+    expect(de.subject).toBe("Setze dein BuddyBudget-Passwort zurück");
   });
 });
 

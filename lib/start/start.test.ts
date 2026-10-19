@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { buildDemoData, DEMO_TEXTS, translateDemoText } from "./demo-data";
-import { countDoneSteps, shouldShowChecklist } from "./steps";
+import {
+  allStepsSettled,
+  countDoneSteps,
+  focusOptionsFor,
+  newlyDoneSteps,
+  nextStartStep,
+  shouldShowChecklist,
+  startStepDefinitionsFor,
+  startStepsFor,
+  UNSKIPPABLE_STEPS,
+  type StartStepId,
+} from "./steps";
+
+const none: Record<StartStepId, boolean> = { conto: false, import: false, investimento: false, debito: false, pensione: false, obiettivo: false };
 
 describe("buildDemoData", () => {
   const today = new Date(2026, 9, 10);
@@ -49,12 +62,62 @@ describe("buildDemoData", () => {
 
 describe("checklist", () => {
   it("conta i passi fatti", () => {
-    expect(countDoneSteps({ conto: true, import: false, investimento: true, obiettivo: false })).toBe(2);
+    const steps = { ...none, conto: true, investimento: true, debito: true };
+    expect(countDoneSteps(steps)).toBe(3);
+    expect(countDoneSteps(steps, ["conto", "import", "obiettivo"])).toBe(1);
   });
   it("si nasconde se chiusa, completa o in demo", () => {
     expect(shouldShowChecklist({ dismissed: false, completed: false, demoActive: false })).toBe(true);
     expect(shouldShowChecklist({ dismissed: true, completed: false, demoActive: false })).toBe(false);
     expect(shouldShowChecklist({ dismissed: false, completed: true, demoActive: false })).toBe(false);
     expect(shouldShowChecklist({ dismissed: false, completed: false, demoActive: true })).toBe(false);
+  });
+});
+
+describe("startStepsFor", () => {
+  const it_ = { pensionAvailable: true };
+  it("keeps the original four when nothing was chosen", () => {
+    expect(startStepsFor(null, it_)).toEqual(["conto", "import", "investimento", "obiettivo"]);
+    expect(startStepsFor([], it_)).toEqual(["conto", "import", "investimento", "obiettivo"]);
+  });
+  it("follows the focus, with the account first and the target last", () => {
+    expect(startStepsFor(["debiti"], it_)).toEqual(["conto", "debito", "obiettivo"]);
+    expect(startStepsFor(["pensione", "spese"], it_)).toEqual(["conto", "import", "pensione", "obiettivo"]);
+    expect(startStepsFor(["spese", "investimenti", "debiti", "pensione"], it_)).toEqual(["conto", "import", "investimento", "debito", "pensione", "obiettivo"]);
+  });
+  it("never asks for the pension where that section is hidden", () => {
+    expect(startStepsFor(["pensione", "debiti"], { pensionAvailable: false })).toEqual(["conto", "debito", "obiettivo"]);
+    expect(focusOptionsFor(false).map((o) => o.id)).toEqual(["spese", "investimenti", "debiti"]);
+  });
+});
+
+describe("next step and acknowledgement", () => {
+  const ids: StartStepId[] = ["conto", "import", "obiettivo"];
+  it("picks the first step not done", () => {
+    expect(nextStartStep(none, ids)).toBe("conto");
+    expect(nextStartStep({ ...none, conto: true }, ids)).toBe("import");
+    expect(nextStartStep({ ...none, conto: true, import: true, obiettivo: true }, ids)).toBeNull();
+  });
+  it("ignores skipped steps when picking the next one", () => {
+    expect(nextStartStep({ ...none, conto: true }, ids, ["import"])).toBe("obiettivo");
+    expect(nextStartStep({ ...none, conto: true }, ids, ["import", "obiettivo"])).toBeNull();
+  });
+  it("settles when every step is done or skipped, but never skips the account", () => {
+    expect(allStepsSettled({ ...none, conto: true }, ids, ["import", "obiettivo"])).toBe(true);
+    expect(allStepsSettled({ ...none, conto: true }, ids, ["import"])).toBe(false);
+    expect(allStepsSettled(none, ids, ["import", "obiettivo"])).toBe(false);
+    expect(UNSKIPPABLE_STEPS).toContain("conto");
+  });
+  it("lists only steps of the user's list that just became done", () => {
+    expect(newlyDoneSteps({ conto: true }, { ...none, conto: true, import: true, debito: true }, ids)).toEqual(["import"]);
+    expect(newlyDoneSteps({ conto: true }, { ...none, conto: true }, ids)).toEqual([]);
+  });
+});
+
+describe("startStepDefinitionsFor", () => {
+  it("asks for a category budget instead of the target where Analitiche is hidden", () => {
+    const de = startStepDefinitionsFor({ retirementAvailable: false }).find((s) => s.id === "obiettivo");
+    expect(de?.href).toBe("/liquidita/categorie");
+    expect(startStepDefinitionsFor({ retirementAvailable: true }).find((s) => s.id === "obiettivo")?.href).toBe("/analitiche?traguardo=1");
   });
 });

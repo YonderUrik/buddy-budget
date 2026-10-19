@@ -11,6 +11,7 @@ import { authClient } from "@/lib/auth/client";
 import { useLocalization } from "@/lib/localization/provider";
 import { parseLocaleNumber } from "@/lib/localization/format";
 import { useBudgetsQuery, useRemoveBudgetMutation, useUpsertBudgetMutation } from "@/lib/queries/budgets";
+import { getCurrencySymbol } from "@/lib/format";
 
 export interface CategoryBudgetFieldProps {
   categoryId: string;
@@ -24,8 +25,7 @@ function toInputText(amount: number | null, locale: string): string {
 }
 
 function currencySymbol(currency: string, locale: string): string {
-  const parts = new Intl.NumberFormat(locale, { style: "currency", currency }).formatToParts(0);
-  return parts.find((part) => part.type === "currency")?.value ?? currency;
+  return getCurrencySymbol(currency, locale) || currency;
 }
 
 export function CategoryBudgetField({ categoryId, categoryName }: CategoryBudgetFieldProps) {

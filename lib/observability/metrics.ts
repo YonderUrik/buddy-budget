@@ -15,7 +15,18 @@ export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
 export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications" | "inactive_accounts" | "public_demo";
 export type CronOutcome = "success" | "error";
-export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "otp_sent" | "otp_failed" | "sign_in" | "rate_limited";
+export type AuthEvent =
+  | "magic_link_sent"
+  | "magic_link_failed"
+  | "otp_sent"
+  | "otp_failed"
+  | "sign_in"
+  | "rate_limited"
+  | "signup_refused"
+  | "password_reset_sent"
+  | "password_reset_failed"
+  | "password_reset_completed"
+  | "password_sign_in_failed";
 export type SupportReportKind = "problema" | "domanda" | "idea";
 export type SupportReportOutcome = "sent" | "failed" | "rate_limited";
 /** Esito della ricezione di un errore del browser: registrato o scartato per il limite per utente. */
@@ -39,7 +50,7 @@ export interface UsageSnapshot {
   activation: Record<ActivationStep, number>;
 }
 export type ActivationStep = "conto" | "import" | "investimento" | "obiettivo" | "completa" | "chiusa" | "demo_attiva";
-export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed";
+export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed" | "focus_changed" | "step_skipped" | "step_restored";
 /** Public demo (`/demo`): a visitor opened it, it was unavailable (off or not seeded yet), a write was blocked, the data was rebuilt. */
 export type PublicDemoEvent = "session_started" | "unavailable" | "write_blocked" | "reset";
 export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions" | "goals";
@@ -297,7 +308,7 @@ function createState(): MetricsState {
   });
   state.categorizationAuto = new Counter({
     name: `${METRIC_PREFIX}categorization_auto_total`,
-    help: "Movimenti categorizzati da soli (regole e proposte sicure dal 90%), poi corretti dall'utente, ricategorizzati con «Ricategorizza» e riportati indietro con l'annulla, per origine.",
+    help: "Movimenti categorizzati da soli (regole, proposte sicure dal 70% e categorie della banca negli import), poi corretti dall'utente, ricategorizzati con «Ricategorizza» e riportati indietro con l'annulla, per origine.",
     labelNames: ["source", "event"],
     registers: r,
   });
@@ -361,7 +372,7 @@ function createState(): MetricsState {
   });
   state.startEvents = new Counter({
     name: `${METRIC_PREFIX}start_events_total`,
-    help: "Eventi dei primi passi: dati d'esempio avviati o azzerati, checklist chiusa, riaperta o completata.",
+    help: "First-steps events: sample data started or cleared, checklist closed, reopened or completed, focus changed, step skipped or restored.",
     labelNames: ["event"],
     registers: r,
   });
@@ -627,8 +638,8 @@ export function recordCategorizationAiRequest(outcome: "ok" | "error", durationM
   m.categorizationAiDuration.observe(durationMs / 1000);
 }
 
-/** Origine di una categoria applicata da sola (enum chiuso, come `AUTOMATIC_CATEGORY_SOURCES`). */
-export type AutoCategorySource = "regola" | "storico" | "assistente";
+/** Origin of a category applied without the user (closed enum, like `AUTOMATIC_CATEGORY_SOURCES`). */
+export type AutoCategorySource = "regola" | "storico" | "assistente" | "banca";
 
 /** Registra `count` movimenti categorizzati da soli per origine. */
 export function recordCategorizationAutoApplied(source: AutoCategorySource, count: number): void {

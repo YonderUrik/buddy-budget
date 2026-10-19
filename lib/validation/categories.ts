@@ -14,7 +14,7 @@ export const CATEGORY_ICONS = [
   "wallet", "credit-card", "piggy-bank", "banknote", "landmark", "receipt",
   "trending-up", "coins", "flame", "sofa", "hammer", "paintbrush",
   "laptop", "headphones", "camera", "printer", "train-front", "ship",
-  "map-pin", "luggage", "coffee", "pizza", "wine", "cake", "pill",
+  "map-pin", "luggage", "coffee", "pizza", "wine", "cake", "pill", "cross",
   "activity", "glasses", "book-open", "palette", "bike", "calculator",
   "watch",
 ] as const;

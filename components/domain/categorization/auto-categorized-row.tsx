@@ -90,7 +90,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
             <span className="truncate">{category?.name ?? tr("Categoria")}</span>
             <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
           </button>
-          <AutoOriginBadge source={group.source} confidence={group.confidence} />
+          <AutoOriginBadge source={group.source} confidence={group.confidence} bankCategory={group.bankCategory} />
         </div>
 
         {expanded ? (
@@ -100,6 +100,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
               dates={group.transactionDates}
               amounts={group.transactionAmounts}
               descriptions={group.transactionDescriptions}
+              ids={group.transactionIds}
               currency={currency}
               limit={count}
             />

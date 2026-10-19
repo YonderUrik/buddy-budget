@@ -25,7 +25,7 @@ This document describes how BuddyBudget runs work that does not fit inside one H
                                syncAccountLink(onProgress) ──────────► updateAccount ───────► insert 50 rows
  GET /api/sync-jobs (1 s) ─►  listJobs + toJobView      ◄───────────── read keys
             ◄── jobs[]
- job finished → invalidate ["accounts"], ["net-worth-snapshots"], categorisation keys
+ job finished → invalidate ["accounts"], ["net-worth-snapshots"], sidebar summary, categorisation keys; charts say they are updating
 
  k8s CronJob (curl) ── GET /api/cron/x ──► isAuthorizedCronRequest → run → recordCronRun ──► ops:heartbeat:cron:x
 ```
@@ -149,7 +149,7 @@ On k3s the app runs as a standalone Node server. The usual cause of an interrupt
 
 `useSyncJobsQuery` reads `GET /api/sync-jobs` (non-dismissed jobs only, already converted with `toJobView`). `refetchInterval` is `SYNC_JOBS_POLL_INTERVAL_MS` (1000 ms) while at least one job is `running`, and `false` otherwise.
 
-`SyncProgressIndicator` is mounted once in [`app/(app)/layout.tsx`](../../app/(app)/layout.tsx), so progress survives navigation. It calls `useInvalidateOnSyncJobFinish`, which invalidates `["accounts"]`, `["gocardless", "connections", "status"]`, `["net-worth-snapshots"]` and the categorisation keys when:
+`SyncProgressIndicator` is mounted once in [`app/(app)/layout.tsx`](../../app/(app)/layout.tsx), so progress survives navigation. It calls `useInvalidateOnSyncJobFinish`, which invalidates `["accounts"]`, `["gocardless", "connections", "status"]`, `["net-worth-snapshots"]`, `["investments", "sidebar-summary"]` and the categorisation keys, and marks the history charts as reloading (`markHistoryRefreshPending`, see [net-worth.md](net-worth.md) §4.13), when:
 
 - a job id that was `running` at the previous poll is no longer running (`hasFinishedSince`), or
 - a job never seen before is already finished and started after the panel mounted (`hasNewlyFinishedJob`). This covers jobs that finish before the first poll.
@@ -191,7 +191,7 @@ The personal CSV import is a durable queue in Postgres, processed by a separate 
 | Notify | `maintainJobs` | Claims one finished job with `notified_at IS NULL` and `notify_after <= now()`, pushes `notify_after` by 15 min before sending |
 | Expire | `maintainJobs` | Clears encrypted CSV and preview of jobs past `expires_at` |
 
-The loop in [`scripts/personal-csv-worker.ts`](../../scripts/personal-csv-worker.ts) runs `maintainJobs()` then `processOne()`; it sleeps 5 s when there is nothing to do and stops on `SIGTERM`. It runs as the `csv-worker` Docker target, deployed as `buddy-budget-csv-worker` in the infra repo with `terminationGracePeriodSeconds: 360`. The client polls `usePersonalImportsQuery` every 3 s (`PERSONAL_IMPORT_POLL_INTERVAL_MS`) while a job is `queued`, `processing` or `ready`; `PersonalImportIsland` shows it next to the sync panel in the app layout. Details are in [`docs/personal-csv-import.md`](../personal-csv-import.md).
+The loop in [`scripts/personal-csv-worker.ts`](../../scripts/personal-csv-worker.ts) runs `maintainJobs()` then `processOne()`; it sleeps 5 s when there is nothing to do and stops on `SIGTERM`. It runs as the `csv-worker` Docker target, deployed as `buddy-budget-csv-worker` in the infra repo with `terminationGracePeriodSeconds: 360`. The client polls `usePersonalImportsQuery` every 3 s (`PERSONAL_IMPORT_POLL_INTERVAL_MS`) while a job is `queued`, `processing` or `ready`; `PersonalImportIsland` shows it next to the sync panel in the app layout. When an import it has seen ends (`hasNewlyFinishedImport` in [`lib/personal-import/island.ts`](../../lib/personal-import/island.ts): a running status turned into another, or any status turned into `imported`, which covers «Importa saltando le righe» from the review screen) it invalidates accounts, investments (with the sidebar summary), net worth history, first steps and categorisation keys, and marks the history charts as reloading ([net-worth.md](net-worth.md) §4.13). Details are in [`docs/personal-csv-import.md`](../personal-csv-import.md).
 
 ### 4.8 Crons
 

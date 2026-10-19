@@ -367,8 +367,9 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
-/* Importi nascosti: le cifre sono già mascherate da `formatCurrency`, i grafici mostrerebbero ancora le proporzioni. */
-:root[data-privacy="hidden"] .recharts-wrapper {
+/* Hidden amounts: figures are already masked by `formatCurrency`, charts would still show the proportions. Hand-drawn
+   SVG charts of the user's money carry `data-amount-chart`. */
+:root[data-privacy="hidden"] :is(.recharts-wrapper, [data-amount-chart]) {
   filter: blur(10px);
   pointer-events: none;
 }

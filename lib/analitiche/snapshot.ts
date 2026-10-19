@@ -19,6 +19,7 @@ import { resolveExpectedReturn, withExpectedReturn } from "./historical-return";
 import { resolvePlan, type AnalyticsPlan } from "./plan";
 import { essentialSpendingFrom, type EssentialSpending } from "@/lib/goals/essential";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
+import { refreshDerivedCashHistory } from "@/lib/net-worth/snapshots";
 
 /** Conto come serve a chi legge la fotografia: nome, tipo e saldo di oggi. */
 export interface SnapshotAccount {
@@ -53,6 +54,8 @@ export async function loadAnalyticsSnapshot(userId: string, now = new Date()): P
   const todayKey = toDateKey(today);
   // Le ipotesi servono prima: il periodo scelto dice quali movimenti leggere.
   const { assumptions } = await loadAssumptions(userId);
+  // Stored cash rows feed the history: bring them up to date first (a no-op unless transactions changed).
+  await refreshDerivedCashHistory(userId, now);
   const { from, to } = analyticsTransactionsRange(assumptions.dataPeriod, today);
   const [[user], accountRows, txs, cats, snapshots, investments, pension, debtData] = await Promise.all([
     db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId)),

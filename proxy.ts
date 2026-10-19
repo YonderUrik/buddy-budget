@@ -13,7 +13,8 @@ import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemo
 // /api/legal serves the current legal version and document links, needed before sign-in and while legal-gated.
 // /api/gocardless/callback/native and /banca/ritorno hand the system browser back to the native app after bank consent:
 // that browser has no session, and neither touches any state (the app completes the link with its bearer token).
-const PUBLIC_PATH_PREFIXES = ["/login", "/demo", "/api/auth", "/api/health", "/api/legal", "/api/meta", "/api/cron", "/api/metrics", "/api/email", "/api/gocardless/callback/native", "/banca/ritorno", "/disiscrizione", "/_next", "/favicon.ico"];
+// /reimposta-password receives the emailed password reset link (the token in the address is the authorisation).
+const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/legal", "/api/meta", "/api/cron", "/api/metrics", "/api/email", "/api/gocardless/callback/native", "/banca/ritorno", "/disiscrizione", "/_next", "/favicon.ico"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";
@@ -95,7 +96,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Existing accounts must accept the current version of the legal documents (new version or older users).
-  // Users who have not finished onboarding accept them there.
+  // Users who have not finished onboarding accept them there. Self-hosted installs skip it (see accountGate).
   if (gate === LEGAL_ACCEPTANCE_REQUIRED_CODE) {
     if (pathname.startsWith("/api/")) {
       return LEGAL_GATE_ALLOWED_API_PATHS.includes(pathname) || GATE_EXEMPT_API_PATHS.includes(pathname)

@@ -245,6 +245,26 @@ Example: 9.99 charged on the 5th of three consecutive months: `0.45 + 0.21 + 0.1
 
 `buildSubscriptionsView` ([`lib/subscriptions/view.ts`](../../lib/subscriptions/view.ts)) merges detection with the stored decisions and manual rows. Totals count only `confermato` and active items; detected items without a decision appear as «da confermare» and are totalled separately. Upcoming charges cover 30 days; price rises are shown for 365 days. Nothing detected is stored.
 
+### 4.13 Transaction detail
+
+Tapping a transaction opens its detail: a bottom sheet on the phone, a window on desktop. It opens from the Movimenti list (anywhere on the row except the category icon, «Dividi» and «⋯»), from the transaction lines under a group in Categorizza (cards, list and «Messe dall'app») and from «Ultimi addebiti» in a subscription. The dialog is [`movement-detail-dialog.tsx`](../../components/domain/liquidity/movement-detail-dialog.tsx), loaded with `next/dynamic` and exported from the light barrel [`liquidity/light.ts`](../../components/domain/liquidity/light.ts).
+
+`GET /api/transactions/[id]` ([`load-detail.ts`](../../lib/transactions/load-detail.ts)) returns, for the owner only (404 otherwise, also for a malformed id):
+
+| Field | How |
+| --- | --- |
+| `transaction` | the row with `logoPath`, as in the list |
+| `account` | id and name |
+| `origin` | `banca` (source `auto`, with the linked bank's name), `file` (external id `personal:<formatId>:…`, with the format's name), `broker` (`trade-republic:…`), `esempio` (sample-data account) or `manuale` ([`detail.ts`](../../lib/transactions/detail.ts)) |
+| `rule` | only when `categorySource = regola`: the user's rule that matches the description (or the bank text) today, if it still gives the same category |
+| `merchant` | the same `merchantKey` and direction over the last 365 days: count, total of the counted amounts and the five most recent others; null when the merchant appears once |
+
+The list row is shown at once as placeholder data; origin and merchant summary fill in when the response arrives. Inside the detail the user changes the category (same flow as the row, `useTransactionCategory`), splits, writes the note (saved on blur), and for hand-typed transactions edits or deletes. A line of the merchant summary opens that transaction in the same window. Amounts go through `formatCurrency`, so «Nascondi importi» hides them.
+
+Example: a bank transaction «PAGAMENTO POS ESSELUNGA 0412», −60,40 €, with the rule «esselunga». The detail shows «Messa dalla tua regola per «esselunga»», «Dalla banca collegata, Intesa Sanpaolo», the bank text, and «51 movimenti nell'ultimo anno, −2.749,65 € in tutto» with the last five.
+
+Signals: log `transactions.detail.loaded` (`outcome` = origin kind) and `transactions.detail.not_found`; Umami `transaction_detail_opened` (`from`: movimenti, categorizza, abbonamenti, esercente), `transaction_note_saved`, `transaction_deleted`, and `categorization_auto_corrected` with `from: dettaglio`.
+
 ## 5. Limits and out of scope
 
 - The 90% threshold is fixed; it is not adjustable by the user.
@@ -267,6 +287,7 @@ Example: 9.99 charged on the 5th of three consecutive months: `0.45 + 0.21 + 0.1
 - [`merchant-name/*.test.ts`](../../lib/categorization/merchant-name), [`merchant-logo/merchant-logo.test.ts`](../../lib/categorization/merchant-logo/merchant-logo.test.ts): name extraction, dictionary logos, domains in text, name search gating.
 - [`lib/categories/*.test.ts`](../../lib/categories): groups, picker order, onboarding setup (unit and integration), spending sums.
 - [`lib/calc/subscriptions.test.ts`](../../lib/calc/subscriptions.test.ts), [`lib/subscriptions/view.test.ts`](../../lib/subscriptions/view.test.ts): cadences, price changes, clustering, totals of confirmed items only.
+- [`lib/transactions/detail.test.ts`](../../lib/transactions/detail.test.ts), [`transactions/[id]/route.test.ts`](../../app/api/transactions/[id]/route.test.ts): origin of a transaction, merchant summary, detail texts, detail route ownership.
 - [`eval-metrics.test.ts`](../../lib/categorization/eval-metrics.test.ts) supports the offline evaluation script [`scripts/eval-categorization.ts`](../../scripts/eval-categorization.ts).
 
 ## 7. Related

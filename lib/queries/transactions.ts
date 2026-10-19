@@ -5,6 +5,7 @@ import type { Transaction } from "@/lib/db/schema/transactions";
 import type { CreateTransactionInput, UpdateTransactionInput } from "@/lib/validation/transactions";
 import { track } from "@/lib/analytics";
 import { pageText } from "@/lib/localization/page-text";
+import type { TransactionDetailData } from "@/lib/transactions/detail";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
@@ -36,6 +37,31 @@ export function useTransactionsQuery(from: string, to: string, type: Transaction
     queryFn: () => fetchTransactions(from, to, type),
     enabled: options.enabled ?? true,
     placeholderData: options.keepPrevious ? keepPreviousData : undefined,
+  });
+}
+
+/** Detail of one transaction as `GET /api/transactions/[id]` returns it. */
+export type TransactionDetail = TransactionDetailData<ListedTransaction>;
+
+/** Thrown when the transaction no longer exists (deleted, or a link to someone else's). */
+export class TransactionNotFoundError extends Error {}
+
+/**
+ * Detail of one transaction (origin, rule, same merchant). `placeholder` is the row already in a list, shown at once
+ * while the rest arrives. The key sits under `["transactions"]`, so every transaction mutation refreshes it too.
+ */
+export function useTransactionDetailQuery(id: string | null, placeholder?: ListedTransaction) {
+  return useQuery({
+    queryKey: ["transactions", "detail", id] as const,
+    enabled: id !== null,
+    queryFn: async (): Promise<TransactionDetail> => {
+      const response = await fetch(`/api/transactions/${id}`);
+      if (response.status === 404) throw new TransactionNotFoundError(pageText("Questo movimento non c'è più"));
+      if (!response.ok) throw new Error(pageText("Impossibile caricare il movimento"));
+      return response.json();
+    },
+    placeholderData: placeholder && placeholder.id === id ? { transaction: placeholder, account: null, origin: { kind: "manuale" }, rule: null, merchant: null } : undefined,
+    retry: (count, error) => !(error instanceof TransactionNotFoundError) && count < 2,
   });
 }
 
@@ -82,6 +108,7 @@ export function useUpdateTransactionMutation() {
     onSuccess: (_transaction, { input }) => {
       if (input.categoryId !== undefined) track("transaction_category_changed", { source: "row" });
       if (input.excludedAmount !== undefined) track("transaction_split");
+      if (input.note !== undefined) track("transaction_note_saved", { cleared: !input.note?.trim() });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["attention"] });
     },
@@ -99,7 +126,10 @@ export function useDeleteTransactionMutation() {
         throw new Error(body?.error ?? pageText("Impossibile eliminare la transazione"));
       }
     },
-    onSuccess: () => {
+    onSuccess: (_result, id) => {
+      track("transaction_deleted");
+      // The deleted row's detail would only answer 404: drop it instead of refetching.
+      queryClient.removeQueries({ queryKey: ["transactions", "detail", id] });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["attention"] });
     },

@@ -11,6 +11,9 @@ export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operat
 /** Screens whose period selector offers a custom range, for the calendar events. */
 export type PeriodSurface = "investimenti" | "performance" | "analitiche";
 /** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
+/** Where the detail of a transaction was opened from. */
+export type TransactionDetailSource = "movimenti" | "categorizza" | "abbonamenti" | "esercente";
+
 export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
 /**
@@ -111,6 +114,12 @@ export interface ProductEvents {
   categorization_applied: { groups: number };
   categorization_rule_saved: { matchType: "merchant" | "contains"; applied: number };
   transaction_split: undefined;
+  /** Dettaglio di un movimento aperto; `from`: dove (elenco Movimenti, Categorizza, un abbonamento, un altro movimento dello stesso esercente). */
+  transaction_detail_opened: { from: TransactionDetailSource };
+  /** Nota di un movimento salvata; `cleared`: la nota è stata tolta. */
+  transaction_note_saved: { cleared: boolean };
+  /** Movimento aggiunto a mano eliminato. */
+  transaction_deleted: undefined;
   /** Su telefono: foglio delle viste aperto toccando il titolo della sezione. */
   section_views_opened: { section: SectionViewsKey };
   /** Su telefono: vista scelta dal foglio aperto dal titolo (diversa da quella corrente). */
@@ -272,7 +281,7 @@ export interface ProductEvents {
   /** «Va tutto bene» in «Messe dall'app»: movimenti controllati in un colpo. */
   categorization_auto_reviewed: { count: number };
   /** L'utente ha cambiato una categoria applicata da sola; `source` = da dove veniva. */
-  categorization_auto_corrected: { source: "regola" | "storico" | "assistente"; count: number; remember: boolean; from: "categorizza" | "movimenti" };
+  categorization_auto_corrected: { source: "regola" | "storico" | "assistente"; count: number; remember: boolean; from: "categorizza" | "movimenti" | "dettaglio" };
   /** Anteprima di «Ricategorizza» aperta; `scope` = tutto (Categorizza) o una regola appena salvata, `changes` = movimenti che cambierebbero. */
   recategorize_previewed: { scope: "tutto" | "regola"; changes: number };
   /** «Ricategorizza» applicata: movimenti spostati e gruppi scelti; `legacy` = inclusi i movimenti categorizzati prima che se ne segnasse l'origine. */

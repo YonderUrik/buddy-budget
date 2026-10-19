@@ -184,6 +184,7 @@ export function CategorizeGroupRow({
               dates={group.transactionDates}
               amounts={group.transactionAmounts}
               descriptions={group.transactionDescriptions}
+              ids={group.transactionIds}
               currency={currency}
               limit={group.transactionIds.length}
             />

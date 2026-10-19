@@ -100,6 +100,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
               dates={group.transactionDates}
               amounts={group.transactionAmounts}
               descriptions={group.transactionDescriptions}
+              ids={group.transactionIds}
               currency={currency}
               limit={count}
             />

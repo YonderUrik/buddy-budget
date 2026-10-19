@@ -9,7 +9,7 @@ import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
 import { clearDemo, localizeDemo, rejectIfDemoActive, startDemo } from "./demo";
 import { localizeStarterCategories } from "@/lib/localization/categories.server";
-import { hasDemoData, loadStartStatus, setChecklistDismissed, setStartFocus } from "./status";
+import { hasDemoData, loadStartStatus, setChecklistDismissed, setStartFocus, setStepSkipped } from "./status";
 
 const userIds: string[] = [];
 
@@ -89,6 +89,42 @@ describe("dati d'esempio", () => {
     expect((await loadStartStatus(userId)).dismissed).toBe(true);
     await setChecklistDismissed(userId, false);
     expect((await loadStartStatus(userId)).dismissed).toBe(false);
+  });
+});
+
+describe("import step", () => {
+  it("ticks for any real transaction (typed by hand or imported), never for sample ones", async () => {
+    const userId = await makeUser();
+    await startDemo(userId);
+    expect((await loadStartStatus(userId)).steps.import).toBe(false);
+    await clearDemo(userId);
+
+    const [account] = await db.insert(accounts).values({ userId, name: "Vero", type: "Conto corrente", balance: "10" }).returning();
+    expect((await loadStartStatus(userId)).steps.import).toBe(false);
+    const [category] = await db.select({ id: categories.id }).from(categories).where(eq(categories.userId, userId)).limit(1);
+    await db.insert(transactions).values({ userId, accountId: account.id, categoryId: category.id, description: "CSV", date: "2026-10-01", amount: "-5.00", source: "manuale", externalId: "personal:test:1" });
+    expect((await loadStartStatus(userId)).steps.import).toBe(true);
+  });
+});
+
+describe("skipped steps", () => {
+  it("lets the checklist complete without the skipped steps and restores them", async () => {
+    const userId = await makeUser();
+    await setStartFocus(userId, ["debiti"]);
+    await db.insert(accounts).values({ userId, name: "Conto", type: "Conto corrente", balance: "10" });
+    await setStepSkipped(userId, "debito", true);
+    let status = await loadStartStatus(userId);
+    expect(status.skipped).toEqual(["debito"]);
+    expect(status.completed).toBe(false);
+    await setStepSkipped(userId, "obiettivo", true);
+    await setStepSkipped(userId, "conto", true);
+    status = await loadStartStatus(userId);
+    expect(status.skipped).toEqual(["debito", "obiettivo"]);
+    expect(status.completed).toBe(true);
+    await setStepSkipped(userId, "obiettivo", false);
+    status = await loadStartStatus(userId);
+    expect(status.skipped).toEqual(["debito"]);
+    expect(status.completed).toBe(false);
   });
 });
 

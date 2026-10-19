@@ -88,7 +88,7 @@ The dependency direction is enforced by convention, not by a lint rule. As of to
 
 Providers mounted in [`app/layout.tsx`](../../app/layout.tsx), outermost first: `LocalizationProvider` (profile from `getLocaleProfile`), `QueryProvider` (one `QueryClient` per browser session, default options), `ThemeProvider` (`next-themes`, class strategy, system default), `MotionProvider`. The Umami script is loaded from `/stats/script.js`.
 
-[`app/(app)/layout.tsx`](../../app/(app)/layout.tsx) adds `PrivacyProvider` (hide amounts, initial value from `session.user.hideAmounts`), `QuickReportProvider` (the «Scrivici» — "Write to us" — support sheet), `BackHistoryRecorder`, `AttentionShell` (sidebar, bottom nav and badges), `DemoBannerContainer`, `StartProgressWatcher` (the «done, next» toast of the first steps, §4.12), and the global `SyncProgressIndicator` with `PersonalImportIsland`.
+[`app/(app)/layout.tsx`](../../app/(app)/layout.tsx) adds `PrivacyProvider` (hide amounts, initial value from `session.user.hideAmounts`), `QuickReportProvider` (the «Scrivici» — "Write to us" — support sheet), `BackHistoryRecorder`, `AttentionShell` (sidebar and bottom nav; no count badge on Liquidità since 2026-10-19, transactions to decide show only inside the section), `DemoBannerContainer`, `StartProgressWatcher` (the «done, next» toast of the first steps, §4.12), and the global `SyncProgressIndicator` with `PersonalImportIsland`.
 
 ### 4.2 Request lifecycle
 
@@ -242,12 +242,12 @@ Onboarding ends on Panoramica. Until the user has data, Panoramica shows «Primi
 | Piece | How it works | Where |
 |---|---|---|
 | Steps asked | `startStepsFor(focus)`: account first, target last (category budget where Analitiche is hidden), the others from the onboarding answer «Cosa vuoi tenere sotto controllo?» (`auth_user.start_focus`). No answer = account, import, investment, target. The pension step is dropped where `/pensione` is hidden | [`lib/start/steps.ts`](../../lib/start/steps.ts) |
-| Done or not | `GET /api/start` checks real data only (non-demo account, `auto` transactions, investment operations, debts, pension funds, budgets, goals or saved Analitiche assumptions); `completed` covers the user's own steps | [`lib/start/status.ts`](../../lib/start/status.ts) |
+| Done or not | `GET /api/start` checks real data only (non-demo account, any non-demo transaction: bank sync, CSV import or typed by hand, investment operations, debts, pension funds, budgets, goals or saved Analitiche assumptions); `completed` covers the user's own steps: done or skipped. Skipped steps are in `auth_user.start_skipped` (`PATCH /api/start {step, skipped}`; the account step cannot be skipped); the block offers «Non mi serve» and the list «Rimetti» | [`lib/start/status.ts`](../../lib/start/status.ts) |
 | Next step | The first step not done in a filled block with one action; sample data beside it while nothing real exists; the rest as a list | [`start-checklist.tsx`](../../components/domain/start/start-checklist.tsx) |
-| Done, next | `StartProgressWatcher` (app layout) compares the steps with those seen on this device (localStorage) and shows a toast with the next step, or the «done» line on the block in Panoramica. Every successful mutation, finished import and finished sync refetches the steps while incomplete | [`start-progress-watcher.tsx`](../../components/domain/start/start-progress-watcher.tsx), [`lib/start/progress.ts`](../../lib/start/progress.ts), [`query-provider.tsx`](../../components/query-provider.tsx) |
+| Done, next | `StartProgressWatcher` (app layout) compares the steps with those seen on this device (localStorage) and shows a toast with the next step, or the «done» line on the block in Panoramica. Every successful mutation, finished import and finished sync refetches the steps while incomplete, and so does a 15 s poll while the tab is visible | [`start-progress-watcher.tsx`](../../components/domain/start/start-progress-watcher.tsx), [`lib/start/progress.ts`](../../lib/start/progress.ts), [`query-provider.tsx`](../../components/query-provider.tsx) |
 | Empty tabs | Movimenti, Analisi and Abbonamenti without accounts show what they will hold and «Aggiungi un conto» | [`liquidity-no-accounts.tsx`](../../components/domain/liquidity/liquidity-no-accounts.tsx) |
 
-Example: a user answers «Mutuo e prestiti» only. The steps are account, loan, target. After adding a current account in Liquidità a toast says «Conto aggiunto · Prossimo passo: Aggiungi il mutuo o un prestito» with the button to Debiti.
+Example: a user answers «Mutuo e prestiti» only. The steps are account, loan, target. After adding a current account in Liquidità a toast says «Conto aggiunto · Prossimo passo: Aggiungi il mutuo o un prestito» with the button to Debiti. If they then skip the loan and the target, the checklist is complete and disappears.
 
 ### 4.13 Hide amounts
 
@@ -286,7 +286,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `analitiche/` | Analitiche ("Analytics") assumptions, data period, scenarios, simulations, plan |
 | `analytics/` | Umami `track()` and the `ProductEvents` type, opt-out |
 | `app-version/` | Build version, commit and time baked into the bundle |
-| `attention/` | Badge counts and labels for items that need the user's attention |
+| `attention/` | Counts and labels for items that need the user's attention (shown inside Liquidità) |
 | `auth/` | better-auth server config, client, sign-in and reset emails, signup gate, returning-user memory |
 | `instance/` | Hosted or self-hosted, sign-in methods (`instanceConfig`, `InstanceProvider`) |
 | `calc/` | Pure calculation engines (cash flow, expenses, returns, FX, FIRE, Monte Carlo, amortisation, early repayment, debt plan, pension, net worth, costs) |

@@ -1,5 +1,5 @@
 {
-  "id": "6e39e2c5-18ed-4f28-8ea7-fb4b406a0b62",
+  "id": "cfec39aa-219b-40b4-b9c2-183b2fdae373",
   "prevId": "c87a5ba4-bfed-4fc3-8322-ef0a445c5524",
   "version": "7",
   "dialect": "postgresql",
@@ -318,6 +318,12 @@
         },
         "start_focus": {
           "name": "start_focus",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_skipped": {
+          "name": "start_skipped",
           "type": "text[]",
           "primaryKey": false,
           "notNull": false
@@ -691,12 +697,6 @@
         },
         "merchant_category_code": {
           "name": "merchant_category_code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "bank_category": {
-          "name": "bank_category",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -5805,8 +5805,7 @@
         "regola",
         "storico",
         "assistente",
-        "utente",
-        "banca"
+        "utente"
       ]
     },
     "public.bank_connection_status": {

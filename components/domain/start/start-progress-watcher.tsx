@@ -44,7 +44,7 @@ export function StartProgressWatcher() {
 
     const definitions = startStepDefinitionsFor({ retirementAvailable: features.retirement });
     const doneText = fresh.map((id) => tr(definitions.find((d) => d.id === id)?.done ?? "")).join(" · ");
-    const nextId = nextStartStep(status.steps, status.stepIds);
+    const nextId = nextStartStep(status.steps, status.stepIds, status.skipped);
     if (!nextId) {
       toast.success(tr("Primi passi completati"), {
         description: doneText,

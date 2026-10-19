@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const PARSED_FIELDS = ["date", "currency", "description", "amount", "transfer", "type", "name", "isin", "symbol", "instrumentType", "quantity", "price", "grossAmount", "fees", "taxes", "note", "sourceCurrency", "costCurrency", "brokerFxToEur"] as const;
+export const PARSED_FIELDS = ["date", "currency", "description", "amount", "transfer", "type", "name", "isin", "symbol", "instrumentType", "quantity", "price", "grossAmount", "fees", "taxes", "note", "sourceCurrency", "costCurrency", "brokerFxToEur", "bankCategory"] as const;
 const label = z.string().trim().min(1).max(200);
 /** Describes a file layout, never example values, account identifiers or transaction contents. */
 export const formatMetadataSchema = z.object({

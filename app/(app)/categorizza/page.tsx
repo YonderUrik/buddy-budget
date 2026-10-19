@@ -61,10 +61,9 @@ export default function CategorizzaPage() {
   const toDecide = React.useMemo(() => groups.filter((group) => !auto.readyKeys.has(group.groupKey)), [groups, auto.readyKeys]);
   const groupByKey = React.useMemo(() => new Map(groups.map((group) => [group.groupKey, group])), [groups]);
   const toDecideTotal = toDecide.reduce((sum, group) => sum + group.transactionIds.length, 0);
-  const autoGroups = auto.autoData?.groups ?? [];
   const autoApplyEnabled = suggestions?.autoApply.enabled ?? true;
-  // Senza una scelta dell'utente si apre la scheda con qualcosa dentro: «Da decidere» se c'è, altrimenti «Messe dall'app».
-  const tab: Tab = chosenTab ?? (!isLoading && toDecide.length === 0 && autoGroups.length > 0 ? "fatte" : "da-decidere");
+  // Always opens on «Da decidere»: «Messe dall'app» is a history to look at on request, not work waiting for the user.
+  const tab: Tab = chosenTab ?? "da-decidere";
   const generation = useAiGeneration({ groups: toDecide, refetch });
   const { saveChoices } = auto;
 
@@ -109,7 +108,7 @@ export default function CategorizzaPage() {
     ) : null;
   const tabOptions: readonly SegmentedControlOption<Tab>[] = [
     { value: "da-decidere", label: isLoading ? tr("Da decidere") : tr("Da decidere · {0}", { 0: toDecideTotal }) },
-    { value: "fatte", label: auto.autoData ? tr("Messe dall'app · {0}", { 0: auto.autoData.total }) : tr("Messe dall'app") },
+    { value: "fatte", label: tr("Messe dall'app") },
   ];
 
   return (
@@ -119,7 +118,7 @@ export default function CategorizzaPage() {
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h1 className={PAGE_TITLE}>{tr("Categorizza")}</h1>
           <p className="text-sm text-muted-foreground max-md:hidden">
-            {tr("Quando è quasi certa l'app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.")}</p>
+            {tr("Quando è abbastanza sicura l'app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.")}</p>
         </div>
         {!isDesktop ? banner : null}
         {/* Strumento per chi cambia le regole: in un menu, così la pagina mostra solo le due schede. */}
@@ -181,8 +180,6 @@ export default function CategorizzaPage() {
           categoryUsage={categoryUsage}
           correctingKey={auto.correctingKey}
           onCorrect={auto.correct}
-          onAllGood={() => auto.markAllSeen(() => setChosenTab("da-decidere"))}
-          allGoodPending={auto.markingSeen}
           autoApplyEnabled={autoApplyEnabled}
         />
       )}

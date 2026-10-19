@@ -139,7 +139,7 @@ export const SECURITY_EN: SecurityContent = {
       { label: "When", text: "Only in three places: category suggestions, importing a bank statement in a new format, and importing investments when the normal reader fails." },
       { label: "What it receives", text: "For categories, the cleaned-up merchant name, whether it's income or an expense, your categories and your instructions: never amounts, dates, IBANs, notes or people's names. For an import, the whole file, because it has to work out its layout." },
       { label: "Where it goes", text: "To OpenRouter, which passes the request to a model provider. With every request we ask for a provider that keeps nothing after the answer and doesn't train on it; if none does, the request doesn't go out." },
-      { label: "What it decides", text: "It suggests, it doesn't decide. Your rules come first. If you leave the option on, only suggestions it is at least 90% sure of apply by themselves, marked as set by the app and easy to change." },
+      { label: "What it decides", text: "It suggests, it doesn't decide. Your rules come first. If you leave the option on, only suggestions it is at least 70% sure of apply by themselves, marked as set by the app and easy to change." },
       { label: "The limit", text: "No retention is a condition we ask OpenRouter for on every request, not a contract we signed with the model providers." },
       { label: "How to turn it off", text: "Withdraw your consent in Settings at any time: from then on no request goes out. If you host BuddyBudget yourself you can leave AI out entirely: the app works the same." },
     ],

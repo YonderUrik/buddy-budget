@@ -1,5 +1,5 @@
 {
-  "id": "7ddbeeed-3ac6-47c9-91dd-fd646e5ab6a1",
+  "id": "1ded6035-a1d3-474e-b93e-ac2bc8625ea0",
   "prevId": "cfec39aa-219b-40b4-b9c2-183b2fdae373",
   "version": "7",
   "dialect": "postgresql",
@@ -325,30 +325,6 @@
         "start_skipped": {
           "name": "start_skipped",
           "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "app_seen_at": {
-          "name": "app_seen_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "visit_started_at": {
-          "name": "visit_started_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "visit_since_at": {
-          "name": "visit_since_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "welcome_shown_at": {
-          "name": "welcome_shown_at",
-          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -721,6 +697,12 @@
         },
         "merchant_category_code": {
           "name": "merchant_category_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_category": {
+          "name": "bank_category",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -5829,7 +5811,8 @@
         "regola",
         "storico",
         "assistente",
-        "utente"
+        "utente",
+        "banca"
       ]
     },
     "public.bank_connection_status": {

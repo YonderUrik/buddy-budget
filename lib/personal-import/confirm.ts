@@ -15,6 +15,9 @@ import { digest, seal, unseal } from "./crypto";
 import { ImportError, readRawFile, validateOutcomes, type Outcome, type PersonalParser } from "./contract";
 import { RAW_PARSER_VERSION } from "./jobs";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
+import { buildRuleResolver } from "@/lib/categorization/resolve";
+import { loadBankCategoryMapper } from "@/lib/categorization/load-bank-category-mapper";
+import { logger, recordCategorizationAutoApplied } from "@/lib/observability";
 export type PreviewRecord = { key: string; source: string[]; line?: number; outcome: Outcome; rate: number | null };
 /** `parser`: solo lato server, per le analisi con righe da controllare il cui parser non è ancora salvato (vedi `confirmImport`). */
 export type Preview = { headers: string[]; currency: string; records: PreviewRecord[]; parser?: PersonalParser };
@@ -32,14 +35,23 @@ export function skipErrorRecords(records: PreviewRecord[]): { records: PreviewRe
   });
   return { records: next, skippedKeys };
 }
+/**
+ * Identity of a row's interpretation, to tell an already imported row from a reinterpreted one. The bank category is
+ * left out: a format that starts reading it must not make every row imported before look reinterpreted.
+ */
 export function outcomeHash(outcome: Outcome) {
   const { row: _row, ...fields } = outcome;
   void _row;
+  if ("bankCategory" in fields) delete fields.bankCategory;
   return digest(JSON.stringify(fields));
 }
 export async function confirmImport(userId: string, id: string, options: ConfirmOptions = {}) {
   const currency = await getUserCurrency(userId);
-  return db.transaction(async tx => {
+  // User rules win over the bank's category: a row a rule takes stays on the fallback and the rule categorises it
+  // right after the import (`categorizeNewMovementsSafely`), with its own origin and hit count.
+  const rules = await buildRuleResolver(userId);
+  const now = new Date();
+  const result = await db.transaction(async tx => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 91473)`);
     const [job] = await tx.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId))).for("update");
     if (!job) throw new ImportError("Importazione non disponibile");
@@ -110,6 +122,8 @@ export async function confirmImport(userId: string, id: string, options: Confirm
     }
     let deltaCents = 0;
     const cashValues: (typeof transactions.$inferInsert)[] = [];
+    const bank = { carried: 0, learned: 0, name: 0, dictionary: 0 };
+    const bankMapper = financial.some(r => r.outcome.kind === "cash" && r.outcome.bankCategory) ? await loadBankCategoryMapper(userId, tx) : null;
     for (const r of financial) {
       const o = r.outcome;
       if (o.kind !== "cash" && o.kind !== "investment") continue;
@@ -120,7 +134,15 @@ export async function confirmImport(userId: string, id: string, options: Confirm
       const excluded = o.kind === "investment" || o.transfer;
       // Nome pulito come nella sync della banca (il testo originale resta in rawDescription per le regole già scritte su di esso).
       const description = o.kind === "cash" && !o.transfer ? extractMerchantName({ rawText: o.description, counterpartyName: null }).name : o.description;
-      cashValues.push({ id: randomUUID(), userId, accountId: accountId!, categoryId: excluded && transferCategoryId ? transferCategoryId : categoryId!, description, rawDescription: o.description, date: o.date, amount: (cents / 100).toFixed(2), excludedAmount: excluded ? (cents / 100).toFixed(2) : "0", source: "manuale", externalId: `personal:${format.id}:${r.key}` });
+      const bankCategory = o.kind === "cash" ? o.bankCategory ?? null : null;
+      // The bank's category, mapped to one of the user's, is applied without asking (`categorySource = banca`); the
+      // row stays editable and lists under «Messe dall'app». Unmapped labels fall back to the usual flow.
+      const signed = cents / 100;
+      const byRule = rules.resolve({ description, amount: signed }) ?? rules.resolve({ description: o.description, amount: signed });
+      const fromBank = !excluded && bankCategory && !byRule ? bankMapper?.map(bankCategory, signed) ?? null : null;
+      if (bankCategory && !excluded) bank.carried += 1;
+      if (fromBank) bank[fromBank.kind] += 1;
+      cashValues.push({ id: randomUUID(), userId, accountId: accountId!, categoryId: excluded && transferCategoryId ? transferCategoryId : fromBank?.categoryId ?? categoryId!, description, rawDescription: o.description, bankCategory, ...(fromBank ? { categorySource: "banca" as const, categorizedAt: now } : {}), date: o.date, amount: signed.toFixed(2), excludedAmount: excluded ? signed.toFixed(2) : "0", source: "manuale", externalId: `personal:${format.id}:${r.key}` });
     }
     for (let i = 0; i < tradeValues.length; i += 500) await tx.insert(investmentTransactions).values(tradeValues.slice(i, i + 500));
     for (let i = 0; i < cashValues.length; i += 500) await tx.insert(transactions).values(cashValues.slice(i, i + 500));
@@ -133,7 +155,13 @@ export async function confirmImport(userId: string, id: string, options: Confirm
       const [version] = await tx.insert(parsers).values({ formatId: format.id, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(stored.parser), userId), model: "accepted-with-skips" }).returning();
       parserId = version.id;
     }
-    await tx.update(jobs).set({ status: "imported", error: null, parserId, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), skipped: skippedKeys.size } }).where(eq(jobs.id, id));
-    return { inserted: financial.length, duplicates: preview.records.length - fresh.length - skippedKeys.size, skipped: skippedKeys.size };
+    await tx.update(jobs).set({ status: "imported", error: null, parserId, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), skipped: skippedKeys.size, bankCategorized: bank.learned + bank.name + bank.dictionary } }).where(eq(jobs.id, id));
+    return { inserted: financial.length, duplicates: preview.records.length - fresh.length - skippedKeys.size, skipped: skippedKeys.size, bankCategorized: bank.learned + bank.name + bank.dictionary, bank };
   });
+  if ("bank" in result && result.bank && result.bank.carried > 0) {
+    const { carried, learned, name, dictionary } = result.bank;
+    recordCategorizationAutoApplied("banca", learned + name + dictionary);
+    logger.info("categorization.bank.mapped", { jobId: id, bankCategories: carried, bankLearned: learned, bankByName: name, bankByDictionary: dictionary, bankUnmapped: carried - learned - name - dictionary });
+  }
+  return result;
 }

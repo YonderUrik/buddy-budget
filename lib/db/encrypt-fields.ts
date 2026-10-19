@@ -17,6 +17,7 @@ export const ENCRYPTED_COLUMNS: readonly { table: string; column: string }[] = [
   { table: "transactions", column: "description" },
   { table: "transactions", column: "raw_description" },
   { table: "transactions", column: "note" },
+  { table: "transactions", column: "bank_category" },
   { table: "debt_events", column: "note" },
   { table: "investment_transactions", column: "note" },
   { table: "investment_tax_carryforwards", column: "note" },

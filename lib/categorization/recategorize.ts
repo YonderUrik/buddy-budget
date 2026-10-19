@@ -135,7 +135,7 @@ export async function applyRecategorize(
   const { plan, rowsById } = await loadAndPlan(userId, scope);
   const wanted = groupKeys ? new Set(groupKeys) : null;
   const selected = wanted ? plan.groups.filter((group) => wanted.has(group.key)) : plan.groups;
-  const bySource: Record<AutomaticCategorySource, number> = { regola: 0, storico: 0, assistente: 0 };
+  const bySource: Record<AutomaticCategorySource, number> = { regola: 0, storico: 0, assistente: 0, banca: 0 };
   if (selected.length === 0) return { runId: null, changed: 0, groups: 0, bySource };
 
   const ruleHits: string[] = [];

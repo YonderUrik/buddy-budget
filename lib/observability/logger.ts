@@ -61,6 +61,12 @@ export interface LogFields {
   updated?: number;
   skipped?: number;
   rejected?: number;
+  /** Bank categories in an imported file: rows that carried one, and how they mapped (counts only, never the labels). */
+  bankCategories?: number;
+  bankLearned?: number;
+  bankByName?: number;
+  bankByDictionary?: number;
+  bankUnmapped?: number;
   categorized?: number;
   uncategorized?: number;
   processed?: number;

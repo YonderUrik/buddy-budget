@@ -75,7 +75,7 @@ describe("autoApplyCategories", () => {
 
     const result = await autoApplyCategories(userId, { now });
 
-    expect(result.applied).toEqual({ regola: 1, storico: 1, assistente: 0 });
+    expect(result.applied).toEqual({ regola: 1, storico: 1, assistente: 0, banca: 0 });
     const rule = await reload(netflix.id);
     expect(rule.categoryId).toBe(svagoId);
     expect(rule.categorySource).toBe("regola");
@@ -133,7 +133,7 @@ describe("autoApplyCategories", () => {
     expect(Number(row.categoryConfidence)).toBeCloseTo(0.95);
   });
 
-  it("lascia da decidere una proposta dell'AI sotto il 90%", async () => {
+  it("lascia da decidere una proposta dell'AI sotto la soglia", async () => {
     await db.update(authUser).set({ aiCategorizationConsentAt: new Date() }).where(eq(authUser.id, userId));
     const shop = await insertMovement("NEGOZIO XYZ", fallbackId);
     await db.insert(categorizationSuggestions).values({
@@ -141,7 +141,7 @@ describe("autoApplyCategories", () => {
       merchantKey: merchantKey("NEGOZIO XYZ"),
       direction: "uscita",
       categoryId: svagoId,
-      confidence: "0.8000",
+      confidence: "0.6000",
       model: "test",
       promptVersion: 1,
     });

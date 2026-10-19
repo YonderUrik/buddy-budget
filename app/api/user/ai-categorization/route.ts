@@ -16,7 +16,7 @@ const updateSchema = z.object({
 
 /**
  * Stato del consenso alle proposte dell'assistente; `available` dice se il servizio è configurato sul server.
- * `autoApply`: le proposte sicure (dal 90%) si applicano da sole; vale anche senza assistente (scelte passate).
+ * `autoApply`: le proposte sicure (dal 70%) si applicano da sole; vale anche senza assistente (scelte passate).
  */
 async function handleGet(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);

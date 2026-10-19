@@ -73,6 +73,14 @@ describe("planRecategorize", () => {
     expect(plan.groups[0].transactionIds).toEqual([rows[0].id]);
   });
 
+  it("changes a category taken from the bank only through a rule, never through a proposal", () => {
+    const chosen = [1, 2, 3].map(() => row({ description: "Bar Roma", categoryId: "casa", categorySource: "utente" }));
+    const fromBank = row({ description: "Bar Roma", categoryId: "spesa", categorySource: "banca" });
+    expect(planRecategorize(input([...chosen, fromBank], { resolveRule: () => null })).changes).toBe(0);
+    const byRule = planRecategorize(input([row({ categorySource: "banca" })]));
+    expect(byRule.groups[0]).toMatchObject({ toCategoryId: "casa", source: "regola" });
+  });
+
   it("usa le scelte dell'utente come prove, solo con l'applicazione automatica attiva", () => {
     const chosen = [1, 2, 3].map(() => row({ description: "Bar Roma", categoryId: "casa", categorySource: "utente" }));
     const auto = row({ description: "Bar Roma", categoryId: "spesa", categorySource: "storico" });

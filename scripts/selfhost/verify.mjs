@@ -8,7 +8,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { readConfig, mergeConfig, validateConfig, saveConfig, prepareConfig } from './config.mjs';
 import { checkService } from './checks.mjs';
-import { runSetup } from './setup.mjs';
+import { runSetup, terminalPrompts } from './setup.mjs';
+import { PassThrough, Writable } from 'node:stream';
 
 async function temporary(run) {
   const dir = await mkdtemp(join(tmpdir(), 'buddybudget-setup-'));
@@ -60,74 +61,134 @@ test('validazione URL, coppie credenziali e nomi modelli', () => {
   assert(validateConfig(mergeConfig({}, { GOCARDLESS_SECRET_KEY: 'secret' })).length);
   assert(validateConfig(mergeConfig({}, { OPENROUTER_API_KEY: 'key', OPENROUTER_MODEL: 'missing-provider' })).length);
   assert.equal(prepareConfig(mergeConfig({}, {})).NOTIFICATIONS_MODE, 'off');
+  assert.equal(mergeConfig({ OPENROUTER_MODEL: '' }, {}).OPENROUTER_MODEL, 'deepseek/deepseek-v4.1-flash');
 });
 
-test('wizard completo: input nascosto, verifiche senza generazioni, riepilogo senza segreti', async () => temporary(async path => {
-  const output = [], questions = [], requests = [];
-  const secret = 'sk-or-wizard-test';
-  const prompts = {
+function scriptedPrompts(answer) {
+  const output = [], questions = [];
+  return {
+    output, questions,
     write: text => output.push(text),
-    async ask(question, hidden) {
-      questions.push({ question, hidden });
-      if (question.startsWith('Chiave API OpenRouter')) return secret;
-      if (question.startsWith('Configurare ')) return question.includes('Assistente AI') ? 's' : 'n';
-      return '';
-    },
+    async ask(question, hidden) { questions.push({ question, hidden }); return answer(question, hidden); },
   };
-  const result = await runSetup({ path, prompts, check: async id => { requests.push(id); return { status: 'ok', message: 'Verificato senza generazioni.' }; } });
-  assert.equal(result, true);
-  assert(questions.find(item => item.question.startsWith('Chiave API OpenRouter')).hidden);
-  assert.deepEqual(requests, ['openrouter', 'yahoo']);
-  assert(!output.join('\n').includes(secret));
-  const values = (await readConfig(path)).values;
-  assert.equal(values.OPENROUTER_API_KEY, secret);
-  assert.equal(values.COMPOSE_PROFILES, 'ai');
-  assert(output.join('\n').includes('docker compose up -d --remove-orphans'));
+}
+
+const skipService = question => question.includes(': choose an option') ? '2' : '';
+
+test('English setup: skip services without model prompts, credential checks or optional-service questions', async () => temporary(async path => {
+  const calls = [];
+  const prompts = scriptedPrompts(skipService);
+  assert.equal(await runSetup({ path, prompts, check: async id => { calls.push(id); return { status: 'ok', message: 'Prices available.' }; } }), true);
+  assert.deepEqual(calls, ['yahoo']);
+  assert(!prompts.questions.some(item => /API key|model|Sender email|Secret ID/.test(item.question)));
+  assert(!prompts.questions.some(item => item.question.startsWith('Bank sync:')));
+  const transcript = prompts.output.join('\n');
+  for (let step = 1; step <= 6; step++) assert(transcript.includes(`Step ${step} of 6`));
+  assert(transcript.includes('Skip for now'));
+  assert(transcript.includes('AI will be off'));
+  assert(!/[àèìòù]/.test(transcript));
+  assert.equal((await readConfig(path)).values.COMPOSE_PROFILES, '');
 }));
 
-test('annullare il riepilogo non crea .env', async () => temporary(async path => {
-  const prompts = { write() {}, async ask(question) { return question.startsWith('Salvare') || question.startsWith('Configurare') || question.startsWith('Verificare Yahoo') ? 'n' : ''; } };
-  assert.equal(await runSetup({ path, prompts }), false);
+test('entering no new AI key skips models and OpenRouter checks', async () => temporary(async path => {
+  const prompts = scriptedPrompts(question => question.startsWith('Sign-in emails and notifications: choose') ? '2' : '');
+  const checks = [];
+  await runSetup({ path, prompts, check: async id => { checks.push(id); return { status: 'ok', message: 'Checked.' }; } });
+  assert(!checks.includes('openrouter'));
+  assert(!prompts.questions.some(item => item.question.startsWith('Customize AI models')));
+  assert(!(await readConfig(path)).values.OPENROUTER_API_KEY);
+}));
+
+test('provide an AI key: hide input, keep recommended models, check the key and enable the worker', async () => temporary(async path => {
+  const secret = 'sk-or-wizard-test';
+  const prompts = scriptedPrompts(question => {
+    if (question.startsWith('OpenRouter API key')) return secret;
+    if (question.startsWith('Sign-in emails and notifications: choose')) return '2';
+    return '';
+  });
+  const checks = [];
+  await runSetup({ path, prompts, check: async id => { checks.push(id); return { status: 'ok', message: 'Verified without paid requests.' }; } });
+  assert(prompts.questions.find(item => item.question.startsWith('OpenRouter API key')).hidden);
+  assert.deepEqual(checks, ['openrouter', 'yahoo']);
+  assert(!prompts.questions.some(item => item.question.startsWith('CSV import model')));
+  assert(!prompts.output.join('\n').includes(secret));
+  const values = (await readConfig(path)).values;
+  assert.equal(values.OPENROUTER_API_KEY, secret);
+  assert.equal(values.OPENROUTER_MODEL, 'deepseek/deepseek-v4.1-flash');
+  assert.equal(values.COMPOSE_PROFILES, 'ai');
+}));
+
+test('blank sender cancels the email step without leaving a partial key', async () => temporary(async path => {
+  const prompts = scriptedPrompts(question => {
+    if (question.startsWith('AI features: choose')) return '2';
+    if (question.startsWith('Resend API key')) return 're_partial';
+    return '';
+  });
+  const checks = [];
+  await runSetup({ path, prompts, check: async id => { checks.push(id); return { status: 'ok', message: 'Checked.' }; } });
+  const values = (await readConfig(path)).values;
+  assert(!values.RESEND_API_KEY);
+  assert(!values.RESEND_FROM);
+  assert.equal(values.NOTIFICATIONS_MODE, 'off');
+  assert(!checks.includes('resend'));
+}));
+
+test('cancelling the final summary does not create .env', async () => temporary(async path => {
+  const prompts = scriptedPrompts(question => question.startsWith('Save these settings') ? 'n' : skipService(question));
+  assert.equal(await runSetup({ path, prompts, check: async () => ({ status: 'ok', message: 'Checked.' }) }), false);
   assert.equal((await readConfig(path)).source, '');
 }));
 
-test('non cambiare un segreto conserva il valore senza mostrarlo nel prompt', async () => temporary(async path => {
-  await saveConfig(path, { OPENROUTER_API_KEY: 'sk-or-preserve' });
+test('rerunning setup keeps secrets and optional integrations without showing or requesting them', async () => temporary(async path => {
+  await saveConfig(path, { OPENROUTER_API_KEY: 'sk-or-preserve', GOOGLE_CLIENT_ID: 'client', GOOGLE_CLIENT_SECRET: 'saved-secret' });
   const original = (await readConfig(path)).values;
-  const transcript = [];
-  const prompts = {
-    write: text => transcript.push(text),
-    async ask(question) {
-      transcript.push(question);
-      if (question.startsWith('Configurare ')) return question.includes('Assistente AI') ? 's' : 'n';
-      if (question.startsWith('Verificare')) return 'n';
-      return '';
-    },
-  };
-  await runSetup({ path, prompts });
+  const prompts = scriptedPrompts(question => question.startsWith('Sign-in emails and notifications: choose') ? '2' : '');
+  await runSetup({ path, prompts, check: async () => ({ status: 'ok', message: 'Checked.' }) });
   const updated = (await readConfig(path)).values;
-  assert.equal(updated.OPENROUTER_API_KEY, original.OPENROUTER_API_KEY);
-  assert.equal(updated.PERSONAL_CSV_ENCRYPTION_KEY, original.PERSONAL_CSV_ENCRYPTION_KEY);
-  assert(!transcript.join('\n').includes('sk-or-preserve'));
+  for (const name of ['OPENROUTER_API_KEY', 'PERSONAL_CSV_ENCRYPTION_KEY', 'GOOGLE_CLIENT_SECRET']) assert.equal(updated[name], original[name]);
+  assert(!prompts.questions.some(item => item.question.startsWith('OpenRouter API key')));
+  assert(!prompts.output.join('\n').includes('sk-or-preserve'));
+  assert(!prompts.output.join('\n').includes('saved-secret'));
 }));
 
-test('disabilitare AI dal wizard conserva la cifratura e indica come fermare il vecchio worker', async () => temporary(async path => {
+test('disabling AI keeps its encryption key and explains how to stop the old worker', async () => temporary(async path => {
   await saveConfig(path, { OPENROUTER_API_KEY: 'sk-or-old' });
   const original = (await readConfig(path)).values;
-  const output = [];
-  const prompts = {
-    write: text => output.push(text),
-    async ask(question) {
-      if (question.startsWith('Configurare') || question.startsWith('Conservare') || question.startsWith('Verificare')) return 'n';
-      return '';
-    },
-  };
-  assert.equal(await runSetup({ path, prompts }), true);
+  const prompts = scriptedPrompts(question => question.startsWith('AI features: choose') ? '3' : question.startsWith('Sign-in emails and notifications: choose') ? '2' : '');
+  await runSetup({ path, prompts, check: async () => ({ status: 'ok', message: 'Checked.' }) });
   const updated = (await readConfig(path)).values;
   assert.equal(updated.OPENROUTER_API_KEY, '');
   assert.equal(updated.COMPOSE_PROFILES, '');
   assert.equal(updated.PERSONAL_CSV_ENCRYPTION_KEY, original.PERSONAL_CSV_ENCRYPTION_KEY);
-  assert(output.join('\n').includes('docker compose --profile ai stop csv-worker'));
+  assert(prompts.output.join('\n').includes('docker compose --profile ai stop csv-worker'));
+}));
+
+test('only selected optional services are requested, with a concrete Google callback URL', async () => temporary(async path => {
+  const prompts = scriptedPrompts(question => {
+    if (question.includes(': choose an option')) return question.startsWith('Google sign-in') ? '1' : '2';
+    if (question.startsWith('Optional services')) return '2';
+    if (question.startsWith('Google Client ID')) return 'google-client';
+    if (question.startsWith('Google Client secret')) return 'google-secret';
+    return '';
+  });
+  await runSetup({ path, prompts, check: async () => ({ status: 'ok', message: 'Checked.' }) });
+  assert.equal((await readConfig(path)).values.GOOGLE_CLIENT_SECRET, 'google-secret');
+  assert(prompts.output.join('\n').includes('http://localhost:3000/api/auth/callback/google'));
+  assert(!prompts.questions.some(item => item.question.startsWith('GoCardless Secret')));
+}));
+
+test('rejected credentials are discarded by default without losing other setup steps', async () => temporary(async path => {
+  const prompts = scriptedPrompts(question => {
+    if (question.startsWith('Public URL')) return 'http://localhost:8080';
+    if (question.startsWith('OpenRouter API key')) return 'invalid-key';
+    if (question.startsWith('Sign-in emails and notifications: choose')) return '2';
+    return '';
+  });
+  await runSetup({ path, prompts, check: async id => id === 'openrouter' ? { status: 'error', message: 'Key rejected.' } : { status: 'ok', message: 'Checked.' } });
+  const values = (await readConfig(path)).values;
+  assert(!values.OPENROUTER_API_KEY);
+  assert.equal(values.APP_URL, 'http://localhost:8080');
+  assert.equal(values.APP_PORT, '8080');
 }));
 
 test('verifiche distinguono autenticazione, credito esaurito e servizio indisponibile', async () => {
@@ -171,3 +232,23 @@ test('Compose passa le stesse credenziali ad app e worker senza interpolare i do
   assert.equal(config.services.app.environment.NOTIFICATIONS_MODE, 'execute');
   assert.equal(config.services.cron.environment.NOTIFICATIONS_MODE, 'execute');
 }));
+
+
+test('terminal regression: visible questions survive redraws and secret input stays hidden', async () => {
+  const input = new PassThrough();
+  let rendered = '';
+  const output = new Writable({ write(chunk, encoding, done) { rendered += chunk.toString(); done(); } });
+  const prompts = terminalPrompts(input, output);
+  try {
+    const normal = prompts.ask('Public URL [Enter uses http://localhost:3000]: ');
+    assert(rendered.lastIndexOf('Public URL') > rendered.lastIndexOf('\x1b[0J'), 'readline must redraw the question after clearing the line');
+    input.write('http://localhost:8080\r');
+    assert.equal(await normal, 'http://localhost:8080');
+    rendered = '';
+    const secret = prompts.ask('API key (input hidden): ', true);
+    input.write('test-secret-value\r');
+    assert.equal(await secret, 'test-secret-value');
+    assert(rendered.includes('API key (input hidden)'));
+    assert(!rendered.includes('test-secret-value'));
+  } finally { prompts.close(); }
+});

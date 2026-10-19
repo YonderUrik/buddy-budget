@@ -2,6 +2,8 @@
 
 BuddyBudget si installa con Docker Compose. L’installer ti guida nel terminale: indirizzo pubblico, servizi consigliati, integrazioni facoltative e riepilogo. Il compose avvia app, Postgres, Redis e lavori periodici; con OpenRouter include anche il worker AI.
 
+L’installer è in inglese e ha sei passi: indirizzo, AI, prezzi, email, integrazioni facoltative e riepilogo. Ogni servizio propone `Set up this service now` oppure `Skip for now`. Senza una chiave non chiede modelli né avvia verifiche del servizio saltato; i modelli consigliati si possono cambiare solo scegliendo l’opzione avanzata. Le integrazioni facoltative si scelgono da un unico elenco: Invio le salta tutte.
+
 > **Versione e architettura**: i tag pubblici dipendono dalla pubblicazione dei manutentori (sezione in fondo). Su ARM verifica che il tag contenga `linux/arm64`, oppure costruisci dal sorgente. Per modifiche non ancora rilasciate usa sempre la build dal sorgente.
 
 ## Avvio in 5 minuti
@@ -29,7 +31,7 @@ Le verifiche non inviano dati finanziari, non generano risposte AI a pagamento e
 
 ### Modificare la configurazione
 
-Rilancia `./scripts/selfhost-init.sh`: Invio conserva il valore, `-` rimuove un campo. I segreti esistenti non vengono mostrati; password database, segreto di accesso e cifratura non vengono rigenerati. Annullando al riepilogo non si modifica `.env`.
+Rilancia `./scripts/selfhost-init.sh`: i servizi già configurati propongono `Keep existing settings`, `Edit settings` e `Disable this service`. Invio conserva il valore suggerito o già salvato; per disabilitare un servizio usa il menu esplicito. Saltare un servizio a metà non salva credenziali incomplete e conserva l’eventuale configurazione precedente. I segreti esistenti non vengono mostrati; password database, segreto di accesso e cifratura non vengono rigenerati. Annullando al riepilogo non si modifica `.env`.
 
 Dopo il salvataggio esegui `docker compose up -d --remove-orphans`. Se disabiliti l’AI, prima esegui `docker compose --profile ai stop csv-worker`, come indicato dall’installer: Compose non ferma da solo un container di un profilo disabilitato. La chiave di cifratura CSV viene conservata. Impostazioni → Account mostra i servizi configurati; solo chi amministra il server cambia le chiavi con l’installer.
 

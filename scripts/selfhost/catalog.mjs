@@ -1,44 +1,44 @@
-/** Catalogo del setup: priorità, istruzioni e campi segreti da nascondere nel terminale. */
+/** Setup copy and field metadata; secret fields are never shown in the terminal. */
 export const SECTIONS = [
-  { id: 'address', title: 'La tua installazione', level: 'Necessario', description: 'L’indirizzo con cui aprirai BuddyBudget. Serve anche ai link di accesso e alle connessioni bancarie.', fields: [
-    { name: 'APP_URL', label: 'Indirizzo di BuddyBudget', default: 'http://localhost:3000', type: 'url', help: 'Su un server usa il tuo dominio con HTTPS. In locale va bene http://localhost:3000.' },
-    { name: 'APP_PORT', label: 'Porta locale dell’app', default: '3000', help: 'Se apri http://localhost:8080, usa 8080 anche qui. Dietro un reverse proxy HTTPS puoi lasciare 3000. L’app resta raggiungibile solo da questa macchina; per la rete locale vedi APP_BIND nella guida.' },
+  { id: 'address', title: 'Your address', description: 'Where will you open BuddyBudget? This is also used for sign-in links and bank callbacks.', fields: [
+    { name: 'APP_URL', label: 'Public URL', required: true, default: 'http://localhost:3000', help: 'Testing on this computer? Press Enter for http://localhost:3000. On a server, enter your HTTPS address, e.g. https://budget.example.com.' },
+    { name: 'APP_PORT', label: 'Local port', required: true, default: '3000', help: 'The port Docker will use on this computer. Keep the suggested value for local testing; behind an HTTPS reverse proxy, 3000 is usually fine.' },
   ] },
-  { id: 'openrouter', title: 'Assistente AI', level: 'Fortemente consigliato', description: 'OpenRouter abilita le proposte di categoria e la lettura dei CSV di banche e broker non ancora supportati. Senza chiave restano regole, categorie manuali e import standard.', link: 'https://openrouter.ai/settings/keys', linkLabel: 'Crea una chiave OpenRouter', check: true, fields: [
-    { name: 'OPENROUTER_API_KEY', label: 'Chiave API OpenRouter', secret: true, help: 'Aggiungi credito all’account e scegli un limite di spesa. Le chiamate AI possono avere un costo.' },
-    { name: 'OPENROUTER_MODEL', label: 'Modello per i CSV', default: 'deepseek/deepseek-v4.1-flash', help: 'Deve supportare JSON e un provider con conservazione zero dei dati (ZDR). La verifica della chiave non esegue un import né consuma generazioni.' },
-    { name: 'CATEGORIZATION_MODEL', label: 'Modello per le categorie', default: 'typesafe/jev-1.13', help: 'Le proposte AI richiedono anche il consenso di ogni persona nelle proprie Impostazioni.' },
+  { id: 'openrouter', title: 'AI features', level: 'Recommended', description: 'Get AI category suggestions and import CSV files from unsupported banks and brokers.', needed: 'One OpenRouter API key from an account with credit. AI requests may have a cost.', skip: 'AI will be off. Manual categories, rules and standard imports will still work.', link: 'https://openrouter.ai/settings/keys', linkLabel: 'Create your API key', check: true, fields: [
+    { name: 'OPENROUTER_API_KEY', label: 'OpenRouter API key', secret: true, required: true },
+    { name: 'OPENROUTER_MODEL', label: 'CSV import model', default: 'deepseek/deepseek-v4.1-flash', advanced: true, help: 'Use a provider/model that supports JSON and zero data retention (ZDR).' },
+    { name: 'CATEGORIZATION_MODEL', label: 'Category suggestion model', default: 'typesafe/jev-1.13', advanced: true },
   ] },
-  { id: 'yahoo', title: 'Prezzi di mercato', level: 'Consigliato per gli investimenti', description: 'Yahoo Finance è già configurato: non richiede una chiave API. Verifichiamo che risponda da questa macchina. Le altre fonti gratuite e i cambi BCE restano disponibili.', check: true, fields: [] },
-  { id: 'resend', title: 'Email', level: 'Consigliato', description: 'Resend invia i link di accesso, i riepiloghi e gli avvisi. Senza email il link di accesso si legge nei log dell’app; le notifiche non partono.', link: 'https://resend.com/api-keys', linkLabel: 'Configura Resend', check: true, fields: [
-    { name: 'RESEND_API_KEY', label: 'Chiave API Resend', secret: true, help: 'Per controllare anche il dominio serve una chiave con accesso completo. Una chiave di solo invio si può salvare, ma va provata con un accesso reale.' },
-    { name: 'RESEND_FROM', label: 'Mittente delle email', help: 'Per esempio BuddyBudget <budget@tuodominio.it>. Verifica prima il dominio in Resend.' },
+  { id: 'yahoo', title: 'Market prices', description: 'Yahoo Finance is already included. You do not need an account or an API key.', check: true, fields: [] },
+  { id: 'resend', title: 'Sign-in emails and notifications', level: 'Recommended', description: 'Receive sign-in links by email, plus the summaries and alerts you choose in Settings.', needed: 'A Resend API key and a sender email address on a domain you have verified in Resend.', skip: 'Sign-in links will be available in the app logs. Email notifications will be off.', link: 'https://resend.com/api-keys', linkLabel: 'Create your API key', check: true, fields: [
+    { name: 'RESEND_API_KEY', label: 'Resend API key', secret: true, required: true },
+    { name: 'RESEND_FROM', label: 'Sender email address', required: true, help: 'Example: BuddyBudget <budget@example.com>. Use a domain verified in your Resend account.' },
   ] },
-  { id: 'gocardless', title: 'Collegamento alle banche', level: 'Facoltativo', description: 'GoCardless Bank Account Data sincronizza i conti bancari. Senza, puoi usare conti manuali e CSV. Le credenziali vengono controllate come coppia; il collegamento reale si verifica dall’app.', link: 'https://bankaccountdata.gocardless.com/', linkLabel: 'Ottieni le credenziali GoCardless', fields: [
-    { name: 'GOCARDLESS_SECRET_ID', label: 'Secret ID', secret: true },
-    { name: 'GOCARDLESS_SECRET_KEY', label: 'Secret key', secret: true },
+  { id: 'gocardless', title: 'Bank sync', level: 'Optional', description: 'Automatically sync your bank balances and transactions.', needed: 'A Secret ID and Secret key from GoCardless Bank Account Data.', skip: 'Use manual accounts and CSV imports instead.', link: 'https://bankaccountdata.gocardless.com/', linkLabel: 'Get your bank API credentials', fields: [
+    { name: 'GOCARDLESS_SECRET_ID', label: 'GoCardless Secret ID', secret: true, required: true },
+    { name: 'GOCARDLESS_SECRET_KEY', label: 'GoCardless Secret key', secret: true, required: true },
   ] },
-  { id: 'google', title: 'Accesso con Google', level: 'Facoltativo', description: 'Un’alternativa al link di accesso. In Google Cloud registra <indirizzo di BuddyBudget>/api/auth/callback/google come URI di reindirizzamento. La coppia è controllata localmente; completa un accesso per verificare OAuth.', link: 'https://console.cloud.google.com/apis/credentials', linkLabel: 'Configura Google OAuth', fields: [
-    { name: 'GOOGLE_CLIENT_ID', label: 'Client ID' },
-    { name: 'GOOGLE_CLIENT_SECRET', label: 'Client secret', secret: true },
+  { id: 'google', title: 'Google sign-in', level: 'Optional', description: 'Sign in with Google instead of using a sign-in link.', needed: 'An OAuth Client ID and Client secret from Google Cloud.', skip: 'Sign in with a link instead.', link: 'https://console.cloud.google.com/apis/credentials', linkLabel: 'Create OAuth credentials', fields: [
+    { name: 'GOOGLE_CLIENT_ID', label: 'Google Client ID', required: true },
+    { name: 'GOOGLE_CLIENT_SECRET', label: 'Google Client secret', secret: true, required: true },
   ] },
-  { id: 'logos', title: 'Loghi', level: 'Facoltativo', description: 'Logo.dev aggiunge i loghi degli strumenti e degli esercenti. Senza chiavi usiamo le icone locali.', link: 'https://www.logo.dev/', linkLabel: 'Configura Logo.dev', fields: [
-    { name: 'LOGODEV_PUBLISHABLE_KEY', label: 'Chiave pubblica (pk_…)' },
-    { name: 'LOGODEV_SECRET_KEY', label: 'Chiave segreta per la ricerca (sk_…)', secret: true },
+  { id: 'logos', title: 'Merchant and investment logos', level: 'Optional', description: 'Show logos from Logo.dev instead of local icons.', needed: 'A Logo.dev public key (pk_…). A secret key (sk_…) is optional for merchant searches.', skip: 'Local icons will still be available.', link: 'https://www.logo.dev/', linkLabel: 'Get your Logo.dev keys', fields: [
+    { name: 'LOGODEV_PUBLISHABLE_KEY', label: 'Logo.dev public key (pk_…)', required: true },
+    { name: 'LOGODEV_SECRET_KEY', label: 'Logo.dev search key (sk_…)', secret: true },
   ] },
-  { id: 'prices', title: 'Altre fonti finanziarie', level: 'Facoltativo', description: 'Fonti aggiuntive per la catena di riserva. Non servono per avviare gli investimenti. Le chiavi sono salvate senza effettuare chiamate che consumano quote.', fields: [
-    { name: 'ALPHAVANTAGE_API_KEY', label: 'Alpha Vantage', secret: true, link: 'https://www.alphavantage.co/support/#api-key' },
-    { name: 'TWELVEDATA_API_KEY', label: 'Twelve Data', secret: true, link: 'https://twelvedata.com/account/api-keys' },
-    { name: 'STOOQ_API_KEY', label: 'Stooq', secret: true, link: 'https://stooq.com/' },
-    { name: 'COINGECKO_API_KEY', label: 'CoinGecko', secret: true, link: 'https://www.coingecko.com/en/developers/dashboard' },
-    { name: 'OPENFIGI_API_KEY', label: 'OpenFIGI', secret: true, link: 'https://www.openfigi.com/api' },
+  { id: 'prices', title: 'Additional price providers', level: 'Optional', description: 'Add backup providers. Yahoo and the other included sources already work without these keys.', needed: 'Only the keys for providers you already use. Press Enter to skip any provider.', fields: [
+    { name: 'ALPHAVANTAGE_API_KEY', label: 'Alpha Vantage API key', secret: true, link: 'https://www.alphavantage.co/support/#api-key' },
+    { name: 'TWELVEDATA_API_KEY', label: 'Twelve Data API key', secret: true, link: 'https://twelvedata.com/account/api-keys' },
+    { name: 'STOOQ_API_KEY', label: 'Stooq API key', secret: true, link: 'https://stooq.com/' },
+    { name: 'COINGECKO_API_KEY', label: 'CoinGecko API key', secret: true, link: 'https://www.coingecko.com/en/developers/dashboard' },
+    { name: 'OPENFIGI_API_KEY', label: 'OpenFIGI API key', secret: true, link: 'https://www.openfigi.com/api' },
   ] },
-  { id: 'ollama', title: 'Commenti agli investimenti', level: 'Facoltativo', description: 'Ollama genera commenti al portafoglio e può girare sulla tua macchina. Non sostituisce OpenRouter per categorie e CSV. L’indirizzo deve essere raggiungibile dal container dell’app, non solo dal terminale.', link: 'https://ollama.com/', linkLabel: 'Configura Ollama', fields: [
-    { name: 'OLLAMA_BASE_URL', label: 'Indirizzo del server Ollama', type: 'url' },
-    { name: 'OLLAMA_MODEL', label: 'Modello Ollama', default: 'llama3.2' },
+  { id: 'ollama', title: 'Local AI portfolio comments', level: 'Optional', description: 'Use your own Ollama server for portfolio commentary. This does not replace OpenRouter for categories or CSV imports.', needed: 'An Ollama server URL reachable from the app container and an installed model name.', link: 'https://ollama.com/', linkLabel: 'Set up Ollama', fields: [
+    { name: 'OLLAMA_BASE_URL', label: 'Ollama server URL', required: true },
+    { name: 'OLLAMA_MODEL', label: 'Installed Ollama model', default: 'llama3.2' },
   ] },
-  { id: 'support', title: 'Segnalazioni dell’installazione', level: 'Facoltativo', description: 'Se vuoi ricevere segnalazioni e report tecnici dell’istanza, indica una casella email. Richiede Resend. Se la lasci vuota, nessun report viene inviato al supporto BuddyBudget.', fields: [
-    { name: 'SUPPORT_EMAIL_TO', label: 'Destinatario delle segnalazioni' },
+  { id: 'support', title: 'Instance support reports', level: 'Optional', description: 'Receive reports from people using your installation. Nothing is sent to BuddyBudget support by default.', needed: 'An email inbox you manage. Requires email delivery from step 4.', requiresEmail: true, fields: [
+    { name: 'SUPPORT_EMAIL_TO', label: 'Email address to receive reports', required: true },
   ] },
 ];
 

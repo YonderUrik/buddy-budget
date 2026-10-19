@@ -7,7 +7,7 @@ import { DEFAULTS, FIELDS } from './catalog.mjs';
 export async function readConfig(path) {
   try {
     const stat = await lstat(path);
-    if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Il file .env deve essere un file normale.');
+    if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('The .env path must be a regular file, not a symbolic link.');
     const source = await readFile(path, 'utf8');
     return { source, values: parseEnv(source) };
   } catch (error) {
@@ -18,13 +18,14 @@ export async function readConfig(path) {
 
 /** Un campo omesso conserva il valore; null rimuove esplicitamente una chiave. */
 export function mergeConfig(current, patch) {
-  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw new Error('Configurazione non valida.');
+  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw new Error('Invalid configuration.');
   const next = { ...DEFAULTS, ...current };
+  for (const [name, value] of Object.entries(DEFAULTS)) if (!next[name]) next[name] = value;
   for (const [name, value] of Object.entries(patch)) {
-    if (!FIELDS.some(field => field.name === name)) throw new Error('Campo di configurazione sconosciuto.');
+    if (!FIELDS.some(field => field.name === name)) throw new Error('Unknown configuration field.');
     // Le virgolette singole rendono letterali anche i dollari in Docker Compose.
     if (value !== null && (typeof value !== 'string' || value.length > 4096 || /[\r\n\0'\\]/.test(value))) {
-      throw new Error('Un campo contiene caratteri non supportati.');
+      throw new Error('A field contains unsupported characters.');
     }
     next[name] = value === null ? '' : value.trim();
   }
@@ -38,22 +39,22 @@ export function validateConfig(values, only) {
   try {
     const url = new URL(values.APP_URL);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash || url.pathname !== '/') throw new Error();
-  } catch { add(['APP_URL'], 'APP_URL: usa un indirizzo http:// o https:// senza percorso, credenziali o parametri.'); }
-  if (!/^\d+$/.test(values.APP_PORT ?? '') || Number(values.APP_PORT) < 1 || Number(values.APP_PORT) > 65535) add(['APP_PORT'], 'APP_PORT: usa una porta fra 1 e 65535.');
+  } catch { add(['APP_URL'], 'Public URL: enter an http:// or https:// address without a path, credentials or query parameters.'); }
+  if (!/^\d+$/.test(values.APP_PORT ?? '') || Number(values.APP_PORT) < 1 || Number(values.APP_PORT) > 65535) add(['APP_PORT'], 'Local port: enter a number between 1 and 65535.');
   for (const [first, second, label] of [
-    ['RESEND_API_KEY', 'RESEND_FROM', 'Email: inserisci sia la chiave Resend sia il mittente.'],
-    ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'Google: inserisci sia Client ID sia Client secret.'],
-    ['GOCARDLESS_SECRET_ID', 'GOCARDLESS_SECRET_KEY', 'GoCardless: inserisci entrambe le credenziali.'],
+    ['RESEND_API_KEY', 'RESEND_FROM', 'Email: provide both a Resend API key and a sender address.'],
+    ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'Google: provide both a Client ID and Client secret.'],
+    ['GOCARDLESS_SECRET_ID', 'GOCARDLESS_SECRET_KEY', 'GoCardless: provide both a Secret ID and Secret key.'],
   ]) if (Boolean(values[first]) !== Boolean(values[second])) add([first, second], label);
-  if (values.RESEND_FROM && !/^(?:[^<>]+<)?[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>?$/.test(values.RESEND_FROM)) add(['RESEND_FROM'], 'Email: il mittente non è un indirizzo valido.');
-  if (values.SUPPORT_EMAIL_TO && !/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(values.SUPPORT_EMAIL_TO)) add(['SUPPORT_EMAIL_TO'], 'Segnalazioni: il destinatario non è un indirizzo valido.');
+  if (values.RESEND_FROM && !/^(?:[^<>]+<)?[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>?$/.test(values.RESEND_FROM)) add(['RESEND_FROM'], 'Sender: enter a valid email address, e.g. BuddyBudget <budget@example.com>.');
+  if (values.SUPPORT_EMAIL_TO && !/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(values.SUPPORT_EMAIL_TO)) add(['SUPPORT_EMAIL_TO'], 'Support reports: enter a valid recipient email address.');
   if (values.OLLAMA_BASE_URL) {
     try { if (!['http:', 'https:'].includes(new URL(values.OLLAMA_BASE_URL).protocol)) throw new Error(); }
-    catch { add(['OLLAMA_BASE_URL'], 'Ollama: usa un indirizzo http:// o https://.'); }
+    catch { add(['OLLAMA_BASE_URL'], 'Ollama: enter an http:// or https:// address.'); }
   }
   if (values.OPENROUTER_API_KEY) {
     for (const name of ['OPENROUTER_MODEL', 'CATEGORIZATION_MODEL']) {
-      if (!/^[\w.-]+\/[\w.\/:+-]+$/.test(values[name] ?? '')) add([name, 'OPENROUTER_API_KEY'], `${name}: usa il nome completo fornitore/modello.`);
+      if (!/^[\w.-]+\/[\w.\/:+-]+$/.test(values[name] ?? '')) add([name, 'OPENROUTER_API_KEY'], `${name}: enter the complete provider/model name.`);
     }
   }
   return errors;
@@ -62,16 +63,16 @@ export function validateConfig(values, only) {
 /** Riassume ciò che la configurazione abilita, senza confonderlo con una verifica del servizio. */
 export function readiness(values) {
   return [
-    { id: 'core', label: 'Conti manuali, movimenti, budget e import standard', configured: true },
-    { id: 'yahoo', label: 'Prezzi e cambi: fonti automatiche, senza chiave Yahoo', configured: true },
-    { id: 'openrouter', label: 'Categorie AI e CSV personali (worker incluso)', configured: Boolean(values.OPENROUTER_API_KEY) },
-    { id: 'resend', label: 'Link via email, riepiloghi e avvisi', configured: Boolean(values.RESEND_API_KEY && values.RESEND_FROM) },
-    { id: 'gocardless', label: 'Sincronizzazione bancaria', configured: Boolean(values.GOCARDLESS_SECRET_ID && values.GOCARDLESS_SECRET_KEY) },
-    { id: 'google', label: 'Accesso con Google', configured: Boolean(values.GOOGLE_CLIENT_ID && values.GOOGLE_CLIENT_SECRET) },
-    { id: 'logos', label: 'Loghi da Logo.dev', configured: Boolean(values.LOGODEV_PUBLISHABLE_KEY) },
-    { id: 'prices', label: 'Fonti finanziarie con chiave aggiuntiva', configured: ['ALPHAVANTAGE_API_KEY', 'TWELVEDATA_API_KEY', 'STOOQ_API_KEY', 'COINGECKO_API_KEY', 'OPENFIGI_API_KEY'].some(name => Boolean(values[name])) },
-    { id: 'ollama', label: 'Commenti al portafoglio con Ollama', configured: Boolean(values.OLLAMA_BASE_URL) },
-    { id: 'support', label: 'Segnalazioni alla casella dell’istanza', configured: Boolean(values.SUPPORT_EMAIL_TO && values.RESEND_API_KEY && values.RESEND_FROM) },
+    { id: 'core', label: 'Manual accounts, transactions, budgets and standard imports', configured: true },
+    { id: 'yahoo', label: 'Market prices and exchange rates (no Yahoo key needed)', configured: true },
+    { id: 'openrouter', label: 'AI categories and custom CSV imports (worker included)', configured: Boolean(values.OPENROUTER_API_KEY) },
+    { id: 'resend', label: 'Sign-in emails, summaries and alerts', configured: Boolean(values.RESEND_API_KEY && values.RESEND_FROM) },
+    { id: 'gocardless', label: 'Bank sync', configured: Boolean(values.GOCARDLESS_SECRET_ID && values.GOCARDLESS_SECRET_KEY) },
+    { id: 'google', label: 'Google sign-in', configured: Boolean(values.GOOGLE_CLIENT_ID && values.GOOGLE_CLIENT_SECRET) },
+    { id: 'logos', label: 'Logo.dev logos', configured: Boolean(values.LOGODEV_PUBLISHABLE_KEY) },
+    { id: 'prices', label: 'Additional financial data providers', configured: ['ALPHAVANTAGE_API_KEY', 'TWELVEDATA_API_KEY', 'STOOQ_API_KEY', 'COINGECKO_API_KEY', 'OPENFIGI_API_KEY'].some(name => Boolean(values[name])) },
+    { id: 'ollama', label: 'Portfolio commentary with Ollama', configured: Boolean(values.OLLAMA_BASE_URL) },
+    { id: 'support', label: 'Support reports to your own inbox', configured: Boolean(values.SUPPORT_EMAIL_TO && values.RESEND_API_KEY && values.RESEND_FROM) },
   ];
 }
 
@@ -114,7 +115,7 @@ export async function saveConfig(path, patch, template = '') {
   // Le variabili avanzate non gestite dal wizard rimangono byte per byte nel file.
   const managedNames = new Set([...FIELDS.map(f => f.name), 'SELF_HOSTED', 'POSTGRES_PASSWORD', 'BETTER_AUTH_SECRET', 'CRON_SECRET', 'PERSONAL_CSV_ENCRYPTION_KEY', 'COMPOSE_PROFILES', 'NOTIFICATIONS_MODE']);
   const managed = Object.fromEntries(Object.entries(prepared).filter(([name]) => managedNames.has(name)));
-  if (Object.values(managed).some(value => /[\r\n\0'\\]/.test(value))) throw new Error('Un valore esistente usa caratteri non supportati.');
+  if (Object.values(managed).some(value => /[\r\n\0'\\]/.test(value))) throw new Error('An existing value contains unsupported characters.');
   const temporary = `${path}.${randomBytes(8).toString('hex')}.tmp`;
   try {
     await writeFile(temporary, renderConfig(source || template, managed), { mode: 0o600, flag: 'wx' });

@@ -23,3 +23,4 @@ export * from "./categorization-runs";
 export * from "./financial-plans";
 export * from "./goals";
 export * from "./import-format-profiles";
+export * from "./billing";

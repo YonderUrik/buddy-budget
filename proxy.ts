@@ -6,13 +6,16 @@ import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { isSelfHosted } from "@/lib/instance/config";
 import { needsLegalAcceptance } from "@/lib/legal";
-import { recordPublicDemoEvent } from "@/lib/observability";
+import { recordPlanBlock, recordPublicDemoEvent } from "@/lib/observability";
+import { PLAN_REQUIRED_CODE, PRO_PAGE_PATH, isPlanPathAvailable, proAreaOf } from "@/lib/billing";
+import { planForUser } from "@/lib/billing/plan-for-user";
 import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemoUserId, isReadOnlyMethod, publicDemoSessionProfile } from "@/lib/public-demo/config";
 
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
 // /demo opens the read-only public demo (it decides itself whether a session exists).
 // /reimposta-password receives the emailed password reset link (the token in the address is the authorisation).
-const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/_next", "/favicon.ico"];
+// /api/stripe/webhook is called by Stripe and authenticated by its signature.
+const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/api/email", "/api/stripe/webhook", "/disiscrizione", "/_next", "/favicon.ico"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";
@@ -114,6 +117,20 @@ export async function proxy(request: NextRequest) {
   if (!isCountryPathAvailable(profile.productCountry, pathname)) {
     if (pathname.startsWith("/api/")) return NextResponse.json({ code: "country_feature_unavailable", error: translate(profile.language, "Questa funzione non è ancora disponibile per la Germania.") }, { status: 403 });
     return NextResponse.redirect(appUrl(request, "/country-unavailable"));
+  }
+
+  // Free plan (where billing applies): Liquidità stays open, the Pro areas lead to the plans page. After the country
+  // check on purpose: a screen hidden in a country is never offered as Pro.
+  if (!isPlanPathAvailable(planForUser(session.user).tier, pathname)) {
+    const area = proAreaOf(pathname);
+    if (pathname.startsWith("/api/")) {
+      recordPlanBlock("api", "api");
+      return NextResponse.json({ code: PLAN_REQUIRED_CODE, error: translate(profile.language, "Questa funzione fa parte di BuddyBudget Pro.") }, { status: 402 });
+    }
+    recordPlanBlock(area ?? "other", "page");
+    const target = appUrl(request, PRO_PAGE_PATH);
+    if (area) target.searchParams.set("da", area);
+    return NextResponse.redirect(target);
   }
   return NextResponse.next();
 }

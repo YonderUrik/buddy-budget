@@ -1,0 +1,11 @@
+import { PlansScreen } from "@/components/domain/billing";
+import { parseProArea } from "@/lib/billing";
+
+/** Plans page: Free and Pro, the 14-day trial, the subscription status and access codes (`?da=` = the locked area). */
+export default async function ProPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams;
+  const value = (key: string) => (typeof params[key] === "string" ? (params[key] as string) : null);
+  const from = value("da") === "impostazioni" ? "impostazioni" : parseProArea(value("da"));
+  const checkout = value("checkout") === "success" ? "success" : value("checkout") === "cancel" ? "cancel" : null;
+  return <PlansScreen from={from} checkout={checkout} />;
+}

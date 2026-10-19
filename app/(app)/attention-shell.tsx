@@ -12,7 +12,7 @@ const renderTopBarBack = (fallback: React.ReactNode) => <TopBarBack fallback={fa
  * AppShell with the «Scrivici» button and the app-wide «‹» back button (top bar on the phone, above the page on desktop).
  * Liquidità has no count badge in the navigation: transactions to decide are shown inside the section («Da decidere»).
  */
-export function AttentionShell({ children, sidebarExtra }: { children: React.ReactNode; sidebarExtra?: React.ReactNode }) {
+export function AttentionShell({ children, sidebarExtra, lockedHrefs }: { children: React.ReactNode; sidebarExtra?: React.ReactNode; lockedHrefs?: readonly string[] }) {
   const openReport = useQuickReport();
   return (
     <AppShell
@@ -20,6 +20,7 @@ export function AttentionShell({ children, sidebarExtra }: { children: React.Rea
       onOpenSupport={() => openReport({ source: "pulsante" })}
       topbarLeading={renderTopBarBack}
       contentHeader={<PageBackBar />}
+      lockedHrefs={lockedHrefs}
     >
       {children}
     </AppShell>

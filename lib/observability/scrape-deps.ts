@@ -36,6 +36,14 @@ export function createScrapeDeps(): AsyncGaugeDeps {
         users_over_limit: snapshot.usersOverLimit,
       };
     },
+    plans: async () => {
+      const [row] = await client`select
+        count(*) filter (where pro_source = 'trial')::int as trial,
+        count(*) filter (where pro_source = 'subscription')::int as subscription,
+        count(*) filter (where pro_source = 'grant')::int as granted
+        from auth_user where pro_until > now()`;
+      return { trial: row.trial, subscription: row.subscription, grant: row.granted };
+    },
     personalImports: async () => {
       const [row] = await client`select
         count(*) filter (where status in ('queued','processing','ready'))::int as pending,

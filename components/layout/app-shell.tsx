@@ -61,12 +61,15 @@ interface InnerShellProps {
   sidebarExtra?: React.ReactNode;
   navBadges?: Record<string, NavBadge>;
   onOpenSupport?: () => void;
+  lockedHrefs?: readonly string[];
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, lockedHrefs }: InnerShellProps) {
   const { t: tr } = useLocalization();
   const { productCountry } = useLocalization();
-  const navigation = NAV_ITEMS.filter(item => isCountryPathAvailable(productCountry, item.href));
+  const navigation = NAV_ITEMS.filter(item => isCountryPathAvailable(productCountry, item.href)).map((item) =>
+    lockedHrefs?.includes(item.href) ? { ...item, locked: true } : item,
+  );
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -117,7 +120,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} />
+          <AppSidebar items={navigation} activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -191,6 +194,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
         >
           <AppSidebar
             forceExpanded
+            items={navigation}
             activeHref={activeHref}
             onClose={closeMobile}
             badges={navBadges}
@@ -221,16 +225,18 @@ interface AppShellProps {
   topbarLeading?: (fallback: React.ReactNode) => React.ReactNode;
   /** Shown at the top of the scrolling content, above the page (e.g. a desktop back button). */
   contentHeader?: React.ReactNode;
+  /** Hrefs of the items that need a higher plan: they keep their link and show a lock (sidebar, bottom bar, «Altro»). */
+  lockedHrefs?: readonly string[];
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, lockedHrefs }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader} lockedHrefs={lockedHrefs}>
         {children}
       </InnerShell>
     </SidebarProvider>

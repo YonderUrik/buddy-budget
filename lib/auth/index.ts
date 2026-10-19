@@ -193,6 +193,9 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      // Pro access, written only by lib/billing (Stripe webhooks, grants): read with the session by the proxy.
+      proUntil: { type: "date", required: false, input: false },
+      proSource: { type: "string", required: false, input: false },
     },
   },
   databaseHooks: {

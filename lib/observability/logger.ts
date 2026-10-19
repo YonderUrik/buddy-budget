@@ -88,6 +88,14 @@ export interface LogFields {
   provider?: string;
   /** Simbolo di uno strumento comune a tutti gli utenti: mai insieme a quantità o importi dell'utente. */
   symbol?: string;
+  /** Billing: plan after a change (`free`/`pro`), Stripe subscription status, interval (`month`/`year`), webhook event type,
+   * grant source and plan area of a locked request (all closed enums, never ids or amounts). */
+  plan?: string;
+  billingStatus?: string;
+  planInterval?: string;
+  stripeEventType?: string;
+  grantSource?: string;
+  proArea?: string;
   /** Versione dei documenti legali (data, `LEGAL_VERSION`): non è un dato personale. */
   legalVersion?: string;
   /** Sessioni e token di verifica scaduti eliminati dal cron di conservazione (conteggi). */

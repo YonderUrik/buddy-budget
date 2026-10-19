@@ -77,6 +77,16 @@ export interface ProductEvents {
   welcome_summary_item_clicked: { item: WelcomeItemKind };
   /** «Esplora con dati d'esempio» avviato. */
   demo_started: undefined;
+  /** Plans page opened; `from`: the locked Pro area the user came from, `none` when opened directly. */
+  pro_page_viewed: { from: "panoramica" | "investimenti" | "pensione" | "debiti" | "analitiche" | "impostazioni" | "none" };
+  /** Stripe Checkout opened for Pro; `trial`: the 14 free days apply. */
+  pro_checkout_started: { interval: "month" | "year"; trial: boolean };
+  /** Back from Checkout with Pro active. */
+  pro_activated: { source: "subscription" | "trial" | "grant" };
+  /** Stripe Customer Portal opened (change plan, card, cancel). */
+  pro_portal_opened: undefined;
+  /** Access code redeemed; `forGood`: the code gives Pro without an end. */
+  access_code_redeemed: { forGood: boolean };
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
   demo_cleared: { from: "banner" | "panoramica" };
   /** Public demo (`/demo`) opened, once per browser session; `language` and `country` are the demo's. */

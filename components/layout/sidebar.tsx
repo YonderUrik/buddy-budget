@@ -40,6 +40,7 @@ import {
   LifeBuoy,
   Eye,
   MessageCircleQuestion,
+  Lock,
 } from "lucide-react";
 import { LayoutGroup, motion } from "motion/react";
 
@@ -72,7 +73,12 @@ export interface NavItem {
   icon: React.ElementType;
   /** Se true la voce è mostrata disabilitata con badge "Presto" (schermata non ancora disponibile). */
   comingSoon?: boolean;
+  /** True when the section needs a higher plan: the item still links (the page explains how to unlock it) and shows a lock. */
+  locked?: boolean;
 }
+
+/** Accessible label of the lock beside a locked item. */
+const LOCKED_LABEL = "Richiede Pro";
 
 /** Badge con contatore accanto a una voce di navigazione (es. i movimenti da sistemare su Liquidità), mostrato solo con `count > 0`. */
 export interface NavBadge {
@@ -187,6 +193,9 @@ function NavLink({
           )}
           aria-hidden="true"
         />
+        {item.locked && collapsed ? (
+          <Lock className="absolute -right-1.5 -bottom-1 size-3 rounded-full bg-sidebar text-sidebar-foreground/60" aria-label={tr(LOCKED_LABEL)} />
+        ) : null}
         {showBadge && collapsed && (
           <span
             className="absolute -right-1 -top-1 size-2 rounded-full bg-sidebar-primary ring-2 ring-sidebar"
@@ -197,6 +206,9 @@ function NavLink({
       {!collapsed && (
         <span className="relative z-10 truncate leading-none">{tr(item.label)}</span>
       )}
+      {item.locked && !collapsed ? (
+        <Lock className="relative z-10 ml-auto size-3.5 shrink-0 text-sidebar-foreground/50" aria-label={tr(LOCKED_LABEL)} />
+      ) : null}
       {showBadge && !collapsed && (
         <span
           aria-label={tr(badge.ariaLabel)}

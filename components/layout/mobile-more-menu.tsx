@@ -19,7 +19,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { ChevronDown, ChevronRight, EyeOff, LifeBuoy, LogOut, Settings, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronRight, EyeOff, LifeBuoy, Lock, LogOut, Settings, SlidersHorizontal, X } from "lucide-react";
 
 import { usePrivacy } from "@/components/privacy-provider";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
@@ -222,6 +222,7 @@ export function MobileMoreMenu({
                               {badge.countLabel ?? badge.count}
                             </span>
                           ) : null}
+                          {item.locked ? <Lock className="size-4 shrink-0 text-text-3" aria-label={tr("Richiede Pro")} /> : null}
                           <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
                         </Link>
                       </li>

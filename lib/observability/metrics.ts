@@ -51,6 +51,30 @@ export type ActivationStep = "conto" | "import" | "investimento" | "obiettivo" |
 export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed" | "focus_changed" | "step_skipped" | "step_restored";
 /** Public demo (`/demo`): a visitor opened it, it was unavailable (off or not seeded yet), a write was blocked, the data was rebuilt. */
 export type PublicDemoEvent = "session_started" | "unavailable" | "write_blocked" | "reset";
+/** Stripe webhook event types we act on; anything else is counted as `other`. */
+export type BillingWebhookType =
+  | "checkout.session.completed"
+  | "customer.subscription.created"
+  | "customer.subscription.updated"
+  | "customer.subscription.deleted"
+  | "customer.subscription.paused"
+  | "customer.subscription.resumed"
+  | "customer.subscription.trial_will_end"
+  | "invoice.paid"
+  | "invoice.payment_failed"
+  | "other";
+export type BillingWebhookOutcome = "processed" | "duplicate" | "ignored" | "invalid_signature" | "failed";
+/** Billing actions of a user or an admin script, by outcome. */
+export type BillingAction = "checkout_started" | "portal_opened" | "code_redeemed" | "grant_added" | "grant_revoked" | "refreshed" | "trial_email" | "ended_email" | "canceled_on_delete";
+export type BillingActionOutcome = "ok" | "rejected" | "failed";
+/** Requests to a Pro area from a Free account: a page (sent to the plans page) or an API (402). */
+export type PlanBlockKind = "page" | "api";
+/** Pro accounts by where the access comes from, read at scrape time. */
+export interface PlanSnapshot {
+  trial: number;
+  subscription: number;
+  grant: number;
+}
 export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions" | "goals";
 export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts" | "pension_snapshots";
 
@@ -145,6 +169,7 @@ export interface AsyncGaugeDeps {
   syncJobs?: () => Promise<{ active: number; stale: number }>;
   usage?: () => Promise<UsageSnapshot>;
   gocardlessCapacity?: () => Promise<GoCardlessCapacityReading>;
+  plans?: () => Promise<PlanSnapshot>;
 }
 
 interface MetricsState {
@@ -180,6 +205,9 @@ interface MetricsState {
   consentNotices: Counter<"kind" | "outcome">;
   startEvents: Counter<"event">;
   publicDemoEvents: Counter<"event" | "language" | "country">;
+  billingWebhooks: Counter<"type" | "outcome">;
+  billingActions: Counter<"action" | "outcome">;
+  planBlocks: Counter<"area" | "kind">;
   notificationEmails: Counter<"kind" | "outcome">;
   notificationDigestSections: Counter<"section" | "outcome">;
   notificationUnsubscribes: Counter<"kind" | "source">;
@@ -379,6 +407,40 @@ function createState(): MetricsState {
     help: "Demo pubblica: sessioni aperte, demo non disponibile, scritture bloccate e ricostruzioni dei dati, per lingua e paese.",
     labelNames: ["event", "language", "country"],
     registers: r,
+  });
+  state.billingWebhooks = new Counter({
+    name: `${METRIC_PREFIX}billing_webhook_events_total`,
+    help: "Stripe webhook events by type and outcome (processed, duplicate, ignored, invalid_signature, failed).",
+    labelNames: ["type", "outcome"],
+    registers: r,
+  });
+  state.billingActions = new Counter({
+    name: `${METRIC_PREFIX}billing_actions_total`,
+    help: "Billing actions (checkout started, portal opened, access code redeemed, grants, refresh from Stripe, emails) by outcome.",
+    labelNames: ["action", "outcome"],
+    registers: r,
+  });
+  state.planBlocks = new Counter({
+    name: `${METRIC_PREFIX}plan_blocks_total`,
+    help: "Requests to a Pro area from a Free account, by area and kind (page sent to the plans page, API answered 402).",
+    labelNames: ["area", "kind"],
+    registers: r,
+  });
+  new Gauge({
+    name: `${METRIC_PREFIX}accounts_pro`,
+    help: "Accounts with Pro access now, by source (trial, subscription, grant).",
+    labelNames: ["source"],
+    registers: r,
+    async collect() {
+      this.reset();
+      const read = state.deps.plans;
+      if (!read) return;
+      try {
+        for (const [source, n] of Object.entries(await read())) this.set({ source }, n);
+      } catch {
+        // no sample for this scrape
+      }
+    },
   });
   state.consentNotices = new Counter({
     name: `${METRIC_PREFIX}gocardless_consent_notices_total`,
@@ -751,4 +813,33 @@ export function recordStartEvent(event: StartEvent): void {
 /** Public demo events; `language` (it/en/de) and `country` (IT/DE) are the demo's profile, both closed enums. */
 export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "en" | "de", country: "IT" | "DE"): void {
   metrics().publicDemoEvents.inc({ event, language, country });
+}
+
+/** Counts a Stripe webhook event; `type` outside the known set is counted as `other`. */
+export function recordBillingWebhook(type: string, outcome: BillingWebhookOutcome): void {
+  const known: readonly string[] = BILLING_WEBHOOK_TYPES;
+  metrics().billingWebhooks.inc({ type: known.includes(type) ? type : "other", outcome });
+}
+
+/** Stripe webhook event types counted by name (the rest is `other`). */
+export const BILLING_WEBHOOK_TYPES: readonly BillingWebhookType[] = [
+  "checkout.session.completed",
+  "customer.subscription.created",
+  "customer.subscription.updated",
+  "customer.subscription.deleted",
+  "customer.subscription.paused",
+  "customer.subscription.resumed",
+  "customer.subscription.trial_will_end",
+  "invoice.paid",
+  "invoice.payment_failed",
+];
+
+/** Counts a billing action by outcome. */
+export function recordBillingAction(action: BillingAction, outcome: BillingActionOutcome): void {
+  metrics().billingActions.inc({ action, outcome });
+}
+
+/** Counts a request to a Pro area from a Free account (`area` is a closed `ProAreaId` or `api`). */
+export function recordPlanBlock(area: string, kind: PlanBlockKind): void {
+  metrics().planBlocks.inc({ area, kind });
 }

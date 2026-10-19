@@ -59,6 +59,8 @@ export interface ProductEvents {
   onboarding_focus_chosen: { count: number; spese: boolean; investimenti: boolean; debiti: boolean; pensione: boolean };
   /** The same choice changed later from the checklist's «Cambia». */
   start_focus_changed: { count: number };
+  /** A first step skipped («Non mi serve») or brought back from the list. */
+  start_step_skipped: { step: "import" | "investimento" | "debito" | "pensione" | "obiettivo"; skipped: boolean };
   /** Action pressed in the «no account yet» state of a Liquidità tab (`area`). */
   empty_state_action_clicked: { area: "movimenti" | "analisi" | "abbonamenti"; action: "conto" | "import" };
   /** Checklist closed; `done`: how many of the user's steps were already done. */

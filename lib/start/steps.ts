@@ -77,7 +77,7 @@ export const START_STEPS: readonly StartStepDef[] = [
     description: "Carica il CSV o l'estratto conto della tua banca, oppure collega la banca.",
     href: "/importazioni",
     cta: "Importa un file",
-    done: "Movimenti importati",
+    done: "Movimenti aggiunti",
   },
   {
     id: "investimento",
@@ -135,6 +135,8 @@ export interface StartStatus {
   stepIds: StartStepId[];
   /** What the user chose to keep an eye on (`null`: never chosen). */
   focus: StartFocus[] | null;
+  /** Steps the user chose to skip («Non mi serve»): they no longer block the end of the checklist. */
+  skipped: StartStepId[];
   /** L'utente ha chiuso la checklist. */
   dismissed: boolean;
   /** Tutti i passi sono fatti. */
@@ -150,9 +152,17 @@ export function countDoneSteps(steps: Record<StartStepId, boolean>, ids: readonl
   return ids.filter((id) => steps[id]).length;
 }
 
-/** The first step of the list not done yet (`null` when all are done). */
-export function nextStartStep(steps: Record<StartStepId, boolean>, ids: readonly StartStepId[]): StartStepId | null {
-  return ids.find((id) => !steps[id]) ?? null;
+/** The first step of the list neither done nor skipped (`null` when all are settled). */
+export function nextStartStep(steps: Record<StartStepId, boolean>, ids: readonly StartStepId[], skipped: readonly StartStepId[] = []): StartStepId | null {
+  return ids.find((id) => !steps[id] && !skipped.includes(id)) ?? null;
+}
+
+/** The account is what everything else hangs on: it can be postponed but never skipped. */
+export const UNSKIPPABLE_STEPS: readonly StartStepId[] = ["conto"];
+
+/** True when every step asked is done or skipped. */
+export function allStepsSettled(steps: Record<StartStepId, boolean>, ids: readonly StartStepId[], skipped: readonly StartStepId[]): boolean {
+  return ids.every((id) => steps[id] || skipped.includes(id));
 }
 
 /** Steps of `ids` that are done now and were not in `before`: they drive the «done, next» acknowledgement. */

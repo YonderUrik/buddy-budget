@@ -8,7 +8,7 @@ import { track } from "@/lib/analytics";
 import { isCountryPathAvailable } from "@/lib/localization/config";
 import { countDoneSteps, focusOptionsFor, shouldShowChecklist, startStepDefinitionsFor, type StartStatus } from "@/lib/start";
 import { useRecentSteps } from "@/lib/start/progress";
-import { useStartDemoMutation, useStartDismissMutation, useStartFocusMutation } from "@/lib/queries/start";
+import { useStartDemoMutation, useStartDismissMutation, useStartFocusMutation, useStartSkipMutation } from "@/lib/queries/start";
 import { FocusSheet } from "./focus-sheet";
 import { StartChecklist } from "./start-checklist";
 
@@ -25,6 +25,7 @@ export function StartChecklistSection({ status, forceVisible, className }: Start
   const dismiss = useStartDismissMutation();
   const demo = useStartDemoMutation();
   const saveFocus = useStartFocusMutation();
+  const skip = useStartSkipMutation();
   const recent = useRecentSteps();
   const [focusOpen, setFocusOpen] = React.useState(false);
   const visible = forceVisible ? !status.completed && !status.demoActive : shouldShowChecklist(status);
@@ -35,12 +36,15 @@ export function StartChecklistSection({ status, forceVisible, className }: Start
       <StartChecklist
         steps={status.steps}
         stepIds={status.stepIds}
+        skipped={status.skipped}
         definitions={startStepDefinitionsFor({ retirementAvailable: features.retirement })}
         justDone={recent.filter((id) => status.stepIds.includes(id) && status.steps[id])}
         demo={forceVisible ? { onStart: () => demo.mutate(), pending: demo.isPending, errorMessage: demo.error?.message } : undefined}
         className={className}
         onStepClick={(step, placement) => track("start_step_clicked", { step, placement })}
         onChangeFocus={() => setFocusOpen(true)}
+        onSkip={(step) => skip.mutate({ step, skipped: true })}
+        onRestore={(step) => skip.mutate({ step, skipped: false })}
         onDismiss={forceVisible ? undefined : () => dismiss.mutate({ dismissed: true, done: countDoneSteps(status.steps, status.stepIds) })}
         dismissing={dismiss.isPending}
       />

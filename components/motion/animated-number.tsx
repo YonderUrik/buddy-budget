@@ -5,12 +5,14 @@
  * NumberFlow (MIT); formats with `Intl.NumberFormat`, so currencies, percentages and years keep their usual options.
  * The roll starts once the page has finished rendering the new data and lasts as long as `SPRING_SOFT`, so it does
  * not stop halfway. With reduced motion the number changes without animation; screen readers read the whole value.
+ * A currency amount shows `AMOUNT_MASK` while the user hides amounts, like `formatCurrency`.
  */
 
 import { useLocalization } from "@/lib/localization/provider";
 import { SPRING_SOFT, springEasing } from "@/lib/motion/springs";
 import NumberFlow, { type Format } from "@number-flow/react";
 import { cn } from "@/lib/utils";
+import { AMOUNT_MASK, isAmountsMasked } from "@/lib/format";
 import { useSettledValue } from "./use-settled-value";
 
 export interface AnimatedNumberProps {
@@ -49,6 +51,7 @@ export function AnimatedNumber({
 }: AnimatedNumberProps) {
   const { locale } = useLocalization();
   const shown = useSettledValue(value);
+  if (format?.style === "currency" && isAmountsMasked()) return <span className={cn("tabular-nums", className)}>{AMOUNT_MASK}</span>;
   return (
     <NumberFlow
       value={shown}

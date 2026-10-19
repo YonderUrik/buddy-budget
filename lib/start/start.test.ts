@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildDemoData, DEMO_TEXTS, translateDemoText } from "./demo-data";
 import {
+  allStepsSettled,
   countDoneSteps,
   focusOptionsFor,
   newlyDoneSteps,
@@ -8,6 +9,7 @@ import {
   shouldShowChecklist,
   startStepDefinitionsFor,
   startStepsFor,
+  UNSKIPPABLE_STEPS,
   type StartStepId,
 } from "./steps";
 
@@ -95,6 +97,16 @@ describe("next step and acknowledgement", () => {
     expect(nextStartStep(none, ids)).toBe("conto");
     expect(nextStartStep({ ...none, conto: true }, ids)).toBe("import");
     expect(nextStartStep({ ...none, conto: true, import: true, obiettivo: true }, ids)).toBeNull();
+  });
+  it("ignores skipped steps when picking the next one", () => {
+    expect(nextStartStep({ ...none, conto: true }, ids, ["import"])).toBe("obiettivo");
+    expect(nextStartStep({ ...none, conto: true }, ids, ["import", "obiettivo"])).toBeNull();
+  });
+  it("settles when every step is done or skipped, but never skips the account", () => {
+    expect(allStepsSettled({ ...none, conto: true }, ids, ["import", "obiettivo"])).toBe(true);
+    expect(allStepsSettled({ ...none, conto: true }, ids, ["import"])).toBe(false);
+    expect(allStepsSettled(none, ids, ["import", "obiettivo"])).toBe(false);
+    expect(UNSKIPPABLE_STEPS).toContain("conto");
   });
   it("lists only steps of the user's list that just became done", () => {
     expect(newlyDoneSteps({ conto: true }, { ...none, conto: true, import: true, debito: true }, ids)).toEqual(["import"]);

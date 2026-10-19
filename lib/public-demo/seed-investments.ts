@@ -72,6 +72,8 @@ const BOND_MATURITY = "2030-08-15";
 const DOMESTIC_DIVIDEND_TAX: Record<ProductCountry, { rate: number; creditedForeign: number | null }> = {
   IT: { rate: 0.26, creditedForeign: null },
   DE: { rate: 0.26375, creditedForeign: 0.15 },
+  // No local rules modelled: only the foreign withholding.
+  OTHER: { rate: 0, creditedForeign: null },
 };
 
 /** Per-country parts of the portfolio: second broker, bonds and the hand-priced fund. */
@@ -91,6 +93,14 @@ const COUNTRY_PARTS: Record<ProductCountry, { broker: string; brokerCash: string
     bond: { isin: "DE00DEMO0003", name: "Bund tedesco 2030" },
     bill: { isin: "DE00DEMO0013", name: "Titolo di Stato tedesco 12 mesi" },
     fund: { isin: "DE00DEMO0014", name: "Fondo Misto" },
+  },
+  OTHER: {
+    broker: "interactive-brokers",
+    brokerCash: "Interactive Brokers · liquidità",
+    accountKey: "U0001DEMO",
+    bond: { isin: "XS00DEMO0003", name: "Titolo di Stato europeo 2030" },
+    bill: { isin: "XS00DEMO0013", name: "Titolo di Stato europeo 12 mesi" },
+    fund: { isin: "XS00DEMO0014", name: "Fondo Bilanciato" },
   },
 };
 

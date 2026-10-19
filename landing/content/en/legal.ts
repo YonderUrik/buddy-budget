@@ -295,6 +295,7 @@ export const COOKIES_EN: LegalDocument = {
         `App session cookie (app.buddybudget.io): keeps you signed in, expires after ${SESSION_DAYS} days without use and is removed when you sign out.`,
         "Temporary security cookies during sign-in (for example when you choose Google), needed to complete it.",
         "Browser local storage: remembers light or dark theme, sidebar state, collapsed sections, the choice to hide amounts, the statistics choice and screen preferences.",
+        "Language and country: an app cookie remembers the language you chose (one year); on the website a one-day cookie holds only the country you connect from, which Cloudflare derives from your IP address, to propose the right language and not show features that are not available in your country yet. The IP address is not stored; the website keeps the language you pick in local storage.",
         "To let you back in faster, the app remembers on that device the email of the last account that signed in (in local storage) and the method used for the last sign-in (a cookie that lasts 30 days). They stay only in your browser: \"Non sei tu?\" (Not you?) on the sign-in page clears them.",
         "These tools deliver what you ask for: for technical cookies the Garante (Guidelines, par. 5) requires only information, not consent.",
       ],

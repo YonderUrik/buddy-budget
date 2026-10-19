@@ -14,7 +14,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Lock, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { motion } from "motion/react";
 
 import type { NavBadge, NavItem } from "@/components/layout/sidebar";
@@ -70,7 +70,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
   const { t: tr } = useLocalization();
   const pathname = usePathname();
   const [pendingHref, startNav] = usePendingNavHref();
-  const primary = primaryHrefs.flatMap((href) => items.filter((i) => i.href === href && !i.comingSoon));
+  const primary = primaryHrefs.flatMap((href) => items.filter((i) => i.href === href && !i.comingSoon && !i.locked));
   const current = pendingHref ?? activeHref ?? pathname;
   const inPrimary = primary.some((i) => isActivePath(current, i.href));
 
@@ -99,9 +99,6 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
             {active ? <ActivePill /> : null}
             <span className="relative flex h-7 w-10 items-center justify-center">
               <Icon className="relative z-10 size-6" aria-hidden="true" />
-              {item.locked ? (
-                <Lock className="absolute -right-1 -bottom-0.5 z-10 size-3.5 rounded-full bg-sidebar p-px text-sidebar-foreground/70" aria-label={tr("Richiede Pro")} />
-              ) : null}
               {showBadge ? (
                 <span
                   aria-label={tr(badge.ariaLabel)}

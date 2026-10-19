@@ -5,11 +5,12 @@ import { rise } from "@/lib/motion/rise";
 /**
  * «Il netto, prima di vendere»: the one section on the brand yellow field. Two figures set huge side by side, what
  * the sample ETF brings in today and what is left after the tax on the sale, each with its sentence under it, so
- * the difference reads in the digits, not in colour (taste-skill section «Two giant words compared»).
+ * the difference reads in the digits, not in colour (taste-skill section «Two giant words compared»). Italian tax
+ * rules: hidden for visitors from a country without rules yet (`data-needs`).
  */
 export function TaxCompare({ text }: { text: TaxText }) {
   return (
-    <section className="tax" aria-labelledby="tasse-t" data-field="sun">
+    <section className="tax" aria-labelledby="tasse-t" data-field="sun" data-needs="taxes">
       <div className="wrap">
         <div className="tax-head">
           <h2 id="tasse-t" data-rise>{text.title}</h2>

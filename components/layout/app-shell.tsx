@@ -1,6 +1,6 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
-import { isCountryPathAvailable } from "@/lib/localization/config";
+import { withCountryLocks } from "@/components/layout/country-locks";
 
 /**
  * AppShell
@@ -30,7 +30,7 @@ import { isCountryPathAvailable } from "@/lib/localization/config";
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
+import { AppSidebar, NAV_ITEMS, type NavBadge, type NavLock } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
 import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
@@ -61,14 +61,15 @@ interface InnerShellProps {
   sidebarExtra?: React.ReactNode;
   navBadges?: Record<string, NavBadge>;
   onOpenSupport?: () => void;
-  lockedHrefs?: readonly string[];
+  navLocks?: Record<string, NavLock>;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, lockedHrefs }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, navLocks }: InnerShellProps) {
   const { t: tr } = useLocalization();
   const { productCountry } = useLocalization();
-  const navigation = NAV_ITEMS.filter(item => isCountryPathAvailable(productCountry, item.href)).map((item) =>
-    lockedHrefs?.includes(item.href) ? { ...item, locked: true } : item,
+  // The country lock comes first (no plan unlocks rules the app does not have), then the caller's locks (e.g. the plan).
+  const navigation = withCountryLocks(NAV_ITEMS, productCountry).map((item) =>
+    item.locked || !navLocks?.[item.href] ? item : { ...item, locked: navLocks[item.href] },
   );
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
@@ -225,18 +226,21 @@ interface AppShellProps {
   topbarLeading?: (fallback: React.ReactNode) => React.ReactNode;
   /** Shown at the top of the scrolling content, above the page (e.g. a desktop back button). */
   contentHeader?: React.ReactNode;
-  /** Hrefs of the items that need a higher plan: they keep their link and show a lock (sidebar, bottom bar, «Altro»). */
-  lockedHrefs?: readonly string[];
+  /**
+   * Extra locks by item `href` (e.g. the sections of a higher plan): the item stays in the menu, dimmed with the lock's
+   * badge, and opens the lock's page. An item the country already locks keeps the country lock.
+   */
+  navLocks?: Record<string, NavLock>;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, lockedHrefs }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, navLocks }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader} lockedHrefs={lockedHrefs}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader} navLocks={navLocks}>
         {children}
       </InnerShell>
     </SidebarProvider>

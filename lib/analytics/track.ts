@@ -79,6 +79,8 @@ export interface ProductEvents {
   demo_started: undefined;
   /** Plans page opened; `from`: the locked Pro area the user came from, `none` when opened directly. */
   pro_page_viewed: { from: "panoramica" | "investimenti" | "pensione" | "debiti" | "analitiche" | "impostazioni" | "none" };
+  /** A Pro section tapped in the menu by a Free account (locked entry «Pro»). */
+  pro_lock_opened: { area: "panoramica" | "investimenti" | "pensione" | "debiti" | "analitiche" };
   /** Stripe Checkout opened for Pro; `trial`: the 14 free days apply. */
   pro_checkout_started: { interval: "month" | "year"; trial: boolean };
   /** Back from Checkout with Pro active. */
@@ -90,14 +92,15 @@ export interface ProductEvents {
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
   demo_cleared: { from: "banner" | "panoramica" };
   /** Public demo (`/demo`) opened, once per browser session; `language` and `country` are the demo's. */
-  public_demo_viewed: { language: "it" | "en" | "de"; country: "IT" | "DE" };
+  public_demo_viewed: { language: "it" | "en" | "de"; country: "IT" | "DE" | "OTHER" };
   /** «Crea il tuo account» pressed in the public demo's strip. */
-  public_demo_signup_clicked: { language: "it" | "en" | "de"; country: "IT" | "DE" };
+  public_demo_signup_clicked: { language: "it" | "en" | "de"; country: "IT" | "DE" | "OTHER" };
   /** Country or language changed in the public demo's footer (`changed`); `language` and `country` are the new ones. */
-  public_demo_profile_changed: { changed: "country" | "language"; language: "it" | "en" | "de"; country: "IT" | "DE" };
+  public_demo_profile_changed: { changed: "country" | "language"; language: "it" | "en" | "de"; country: "IT" | "DE" | "OTHER" };
   /** `languageKept`: the language proposed on arrival (picked on the sign-in page or detected from the browser) was not changed. */
   /** `source`/`medium`/`campaign`/`content`: the campaign the visitor arrived from (slugs from `utm_*`), when the link carried one. */
-  onboarding_completed: { currency: SupportedCurrency; language: "it" | "en" | "de"; languageKept: boolean } & Attribution;
+  /** `country`: product rules chosen (`OTHER` = a country without local rules yet); `countryKept`: the country proposed from the visitor's location was not changed. */
+  onboarding_completed: { currency: SupportedCurrency; language: "it" | "en" | "de"; languageKept: boolean; country: "IT" | "DE" | "OTHER"; countryKept: boolean } & Attribution;
   /** Foglio «Personalizza» aperto nel passo «Categorie» dell'onboarding. */
   onboarding_categories_opened: undefined;
   /**
@@ -279,6 +282,10 @@ export interface ProductEvents {
   theme_changed: { choice: "chiaro" | "scuro" | "sistema"; source: "menu_utente" };
   /** Interface language chosen from the sign-in footer (cookie) or from Impostazioni (account). Onboarding is counted by `onboarding_completed`. */
   language_changed: { from: "login" | "settings"; language: "it" | "en" | "de" };
+  /** Product country changed in Impostazioni. */
+  country_changed: { from: "settings"; country: "IT" | "DE" | "OTHER" };
+  /** A section the user's country does not have yet was tapped (menu entry marked «Presto nel tuo paese»): how many people want it there. */
+  country_feature_requested: { section: "pensione" | "analitiche"; country: "DE" | "OTHER" };
   settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
   more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */

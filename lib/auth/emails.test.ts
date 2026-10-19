@@ -53,4 +53,10 @@ describe("magicLinkLanguage", () => {
     expect(magicLinkLanguage({ user: null, headers: headers({ cookie: "bb-language=fr" }) })).toBe("it");
     expect(magicLinkLanguage({ user: undefined, headers: null })).toBe("it");
   });
+
+  it("for a new address from abroad, the visitor's country decides before the browser language", () => {
+    expect(magicLinkLanguage({ user: null, headers: headers({ "cf-ipcountry": "US", "accept-language": "it-IT" }) })).toBe("en");
+    expect(magicLinkLanguage({ user: null, headers: headers({ "cf-ipcountry": "AT", "accept-language": "en-US" }) })).toBe("de");
+    expect(magicLinkLanguage({ user: null, headers: headers({ "cf-ipcountry": "US", cookie: "bb-language=it" }) })).toBe("it");
+  });
 });

@@ -12,6 +12,12 @@ export const messages: Record<string, readonly [english: string, german: string]
   "Il paese determina le funzioni finanziarie disponibili. La lingua cambia solo i testi e i formati.": ["The country determines which financial features are available. Language only changes text and formatting.", "Das Land bestimmt, welche Finanzfunktionen verfügbar sind. Die Sprache ändert nur Texte und Formate."],
   "Per la Germania, tasse, pensione, previsioni dei dividendi e pianificazione del pensionamento non sono ancora disponibili. I dati esistenti vengono conservati.": ["For Germany, tax estimates, pensions, dividend forecasts and retirement planning are not available yet. Existing data is preserved.", "Für Deutschland sind Steuerschätzungen, Altersvorsorge, Dividendenprognosen und Ruhestandsplanung noch nicht verfügbar. Bestehende Daten bleiben erhalten."],
   "Questa funzione non è ancora disponibile per la Germania.": ["This feature is not available for Germany yet.", "Diese Funktion ist für Deutschland noch nicht verfügbar."],
+  "Altro paese": ["Another country", "Anderes Land"],
+  "Tasse, pensione, previsioni dei dividendi e pianificazione del pensionamento seguono le regole italiane e tedesche: per il tuo paese arriveranno presto. Tutto il resto funziona.": ["Taxes, pension, dividend forecasts and retirement planning follow Italian and German rules: they are coming soon for your country. Everything else works.", "Steuern, Altersvorsorge, Dividendenprognosen und Ruhestandsplanung folgen italienischen und deutschen Regeln: Für dein Land kommen sie bald. Alles andere funktioniert."],
+  "Non ancora disponibile nel tuo paese. Arriverà presto.": ["Not available in your country yet. Coming soon.", "In deinem Land noch nicht verfügbar. Kommt bald."],
+  "Il paese si cambia in Impostazioni.": ["You can change the country in Settings.", "Das Land änderst du in den Einstellungen."],
+  "Non ancora disponibile nel tuo paese": ["Not available in your country yet", "In deinem Land noch nicht verfügbar"],
+  "Con le funzioni che non dipendono dalle regole di un paese": ["With the features that don't depend on a country's rules", "Mit den Funktionen, die nicht von Landesregeln abhängen"],
   "Imposte registrate": ["Recorded taxes", "Erfasste Steuern"],
   "Stime fiscali non disponibili per la Germania": ["Tax estimates are not available for Germany", "Steuerschätzungen sind für Deutschland noch nicht verfügbar"],
 };

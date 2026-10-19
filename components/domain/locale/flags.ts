@@ -5,4 +5,4 @@ import type { FlagCode } from "./flag";
 export const LANGUAGE_FLAGS: Record<Language, FlagCode> = { it: "IT", en: "GB", de: "DE" };
 
 /** Flag shown next to each product country. */
-export const COUNTRY_FLAGS: Record<ProductCountry, FlagCode> = { IT: "IT", DE: "DE" };
+export const COUNTRY_FLAGS: Record<ProductCountry, FlagCode> = { IT: "IT", DE: "DE", OTHER: "WORLD" };

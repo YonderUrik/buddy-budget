@@ -1,4 +1,4 @@
-import { isCountryPathAvailable, resolveProfile } from "@/lib/localization/config";
+import { COUNTRY_UNAVAILABLE_MESSAGE, LANGUAGES, LANGUAGE_COOKIE, isCountryPathAvailable, resolveProfile } from "@/lib/localization/config";
 import { translate } from "@/lib/localization/messages";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { isSelfHosted } from "@/lib/instance/config";
 import { needsLegalAcceptance } from "@/lib/legal";
-import { recordPlanBlock, recordPublicDemoEvent } from "@/lib/observability";
+import { logger, recordPlanBlock, recordPublicDemoEvent } from "@/lib/observability";
 import { PLAN_REQUIRED_CODE, PRO_PAGE_PATH, isPlanPathAvailable, proAreaOf } from "@/lib/billing";
 import { planForUser } from "@/lib/billing/plan-for-user";
 import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemoUserId, isReadOnlyMethod, publicDemoSessionProfile } from "@/lib/public-demo/config";
@@ -50,6 +50,17 @@ export async function proxy(request: NextRequest) {
     if (existing) {
       const target = safeRedirectPath(request.nextUrl.searchParams.get("redirect"));
       return NextResponse.redirect(appUrl(request, target));
+    }
+    // `?lang=` from the landing (a language the visitor picked there) becomes the page's language choice.
+    const chosen = LANGUAGES.find((language) => language === request.nextUrl.searchParams.get("lang"));
+    if (chosen) {
+      const clean = appUrl(request, pathname);
+      request.nextUrl.searchParams.forEach((value, key) => {
+        if (key !== "lang") clean.searchParams.append(key, value);
+      });
+      const response = NextResponse.redirect(clean);
+      response.cookies.set(LANGUAGE_COOKIE, chosen, { path: "/", maxAge: 31536000, sameSite: "lax", secure: clean.protocol === "https:" });
+      return response;
     }
     return NextResponse.next();
   }
@@ -115,7 +126,8 @@ export async function proxy(request: NextRequest) {
 
   const profile = resolveProfile(session.user);
   if (!isCountryPathAvailable(profile.productCountry, pathname)) {
-    if (pathname.startsWith("/api/")) return NextResponse.json({ code: "country_feature_unavailable", error: translate(profile.language, "Questa funzione non è ancora disponibile per la Germania.") }, { status: 403 });
+    logger.info("country.feature.blocked", { country: profile.productCountry });
+    if (pathname.startsWith("/api/")) return NextResponse.json({ code: "country_feature_unavailable", error: translate(profile.language, COUNTRY_UNAVAILABLE_MESSAGE) }, { status: 403 });
     return NextResponse.redirect(appUrl(request, "/country-unavailable"));
   }
 
@@ -123,6 +135,7 @@ export async function proxy(request: NextRequest) {
   // check on purpose: a screen hidden in a country is never offered as Pro.
   if (!isPlanPathAvailable(planForUser(session.user).tier, pathname)) {
     const area = proAreaOf(pathname);
+    logger.info("billing.plan.blocked", { proArea: area ?? "api" });
     if (pathname.startsWith("/api/")) {
       recordPlanBlock("api", "api");
       return NextResponse.json({ code: PLAN_REQUIRED_CODE, error: translate(profile.language, "Questa funzione fa parte di BuddyBudget Pro.") }, { status: 402 });

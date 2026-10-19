@@ -6,6 +6,7 @@
  * person, «Giulia Demo»). `ITALY` (the Italian rules already in the calculations) feeds `llms.txt` and the Tasse tab.
  */
 import type { Locale } from "@/lib/i18n";
+import type { ByRules, RuleNeed } from "@/lib/visitor-country";
 import type { ScreenId } from "./screens";
 import { CONTENT_PATHS, SOURCES, type Source } from "./seo-pages";
 import { FIELD_ENCRYPTION_LIVE, SECURITY_SOURCES } from "./security";
@@ -24,7 +25,8 @@ export type HomeIcon =
 export interface HeroText {
   /** The statement, as two lines (each line is set on its own row, never a third). */
   title: readonly [string, string];
-  lede: string;
+  /** Changes with the visitor's rules: no pension outside Italy, no taxes where no rules exist yet. */
+  lede: ByRules;
   cta: string;
   /** Secondary button towards the public demo of the app. */
   demo: string;
@@ -33,7 +35,11 @@ export interface HeroText {
 /** The opening: one promise in two lines, one sentence, the button and the demo. */
 export const HERO = {
   title: ["Tutti i tuoi soldi,", "in un numero solo."],
-  lede: "Conto, investimenti, pensione e mutuo insieme. Aggiornato ogni giorno, tasse comprese.",
+  lede: {
+    full: "Conto, investimenti, pensione e mutuo insieme. Aggiornato ogni giorno, tasse comprese.",
+    de: "Conto, investimenti e mutuo insieme. Aggiornato ogni giorno, tasse comprese.",
+    none: "Conto, investimenti e mutuo insieme. Aggiornato ogni giorno.",
+  },
   cta: "Inizia gratis",
   demo: "Prova la demo",
 } as const satisfies HeroText;
@@ -48,6 +54,8 @@ export interface SumRow {
   /** Rounded value in euro, as the Panoramica sidebar shows it. */
   value: number;
   tone?: SumTone;
+  /** Hidden, with its place, for visitors whose country lacks these rules; the total then leaves it out. */
+  needs?: RuleNeed;
 }
 
 export interface SumText {
@@ -73,7 +81,7 @@ export const SUM = {
   rows: [
     { label: "Conti in banca", detail: "3 conti", value: 22595 },
     { label: "Investimenti", detail: "3 titoli", value: 35389 },
-    { label: "Fondo pensione", detail: "1 fondo", value: 11082 },
+    { label: "Fondo pensione", detail: "1 fondo", value: 11082, needs: "pension" },
     { label: "Mutuo e prestiti", detail: "3 debiti", value: -39937, tone: "neg" },
   ] satisfies readonly SumRow[],
   cents: ",53 €",
@@ -96,7 +104,8 @@ export interface SourceItem {
 }
 
 export interface PlacesText {
-  title: string;
+  /** «Da quattro posti», or three where the pension fund is hidden. */
+  title: ByRules;
   intro: string;
   items: readonly SourceItem[];
   /** Countries whose banks can be linked (flags), with the name in the page language. */
@@ -110,7 +119,7 @@ export interface PlacesText {
 
 /** «Da quattro posti, un numero»: how each place gets in, once; the rows carry the amounts of `SUM`, in the same order. */
 export const PLACES = {
-  title: "Da quattro posti, un numero.",
+  title: { full: "Da quattro posti, un numero.", de: "Da tre posti, un numero." },
   intro: "Ogni cosa entra una volta. Poi l'app la tiene aggiornata da sola.",
   items: [
     {
@@ -159,6 +168,8 @@ export interface ShowcaseTab {
   figure: { value: string; small?: string; tone?: "pos" | "neg"; caption: string };
   shot: ScreenId;
   more?: { href: string; label: string };
+  /** Tab and panel hidden for visitors whose country lacks these rules. */
+  needs?: RuleNeed;
 }
 
 export interface ShowcaseText {
@@ -208,6 +219,7 @@ export const SHOWCASE = {
       text: "Parte da quanto risparmi e spendi davvero, non da un'ipotesi. Muovi un cursore e l'anno cambia.",
       figure: { value: "2046", caption: "tra 19,2 anni, ai ritmi di oggi" },
       shot: "analitiche",
+      needs: "pension",
     },
   ] satisfies readonly ShowcaseTab[],
   tabsLabel: "Schermate",

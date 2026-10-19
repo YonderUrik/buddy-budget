@@ -4,6 +4,7 @@ import { getAppUrl } from "@/lib/env";
 import { requestLogger, withRoute } from "@/lib/observability";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { isPublicDemoUserId, pickPublicDemoProfile } from "@/lib/public-demo/config";
+import { detectCountry } from "@/lib/localization/config";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ function publicUrl(path: string): URL {
 }
 
 /**
- * `GET /demo[?country=IT|DE][&lang=it|en|de][&next=/path]`: opens the read-only public demo in one hop, from the landing's
+ * `GET /demo[?country=IT|DE|OTHER][&lang=it|en|de][&next=/path]`: opens the read-only public demo in one hop, from the landing's
  * «Prova la demo» and from the demo's own language and country chooser (`next` keeps the page the visitor was on).
  * A real signed-in user is never signed out: they just go to their own app.
  */
@@ -31,7 +32,7 @@ async function handleGet(request: NextRequest) {
     return NextResponse.redirect(publicUrl(DEMO_HOME_PATH));
   }
   const params = request.nextUrl.searchParams;
-  const { language, productCountry } = pickPublicDemoProfile(params.get("country"), params.get("lang"), request.headers.get("accept-language"));
+  const { language, productCountry } = pickPublicDemoProfile(params.get("country"), params.get("lang"), request.headers.get("accept-language"), detectCountry(request.headers));
   const landing = params.get("next") ? safeRedirectPath(params.get("next")) : DEMO_HOME_PATH;
   try {
     const { headers } = await auth.api.signInPublicDemo({ body: { language, productCountry }, headers: request.headers, returnHeaders: true });

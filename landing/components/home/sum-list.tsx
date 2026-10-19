@@ -6,6 +6,9 @@ import { track } from "@/lib/analytics";
 import { groupThousandsIn } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
 import { rise } from "@/lib/motion/rise";
+import { hiddenIn, needsAttr, RULES_VARIANTS, type RulesVariant } from "@/lib/visitor-country";
+import { RULES_NOTES } from "@/content/rules-needs";
+import { ByRulesText, RulesNote } from "../by-rules";
 import { TrackedSection } from "../tracked-section";
 import { BrokerLogo } from "./broker-logo";
 
@@ -62,6 +65,8 @@ export interface SumListProps {
  * amount, closed by a thick bar and the net worth. The amounts are fields prefilled with sample figures: a
  * visitor types their own and the total redoes itself on the spot (nothing is sent anywhere; `sum_edited` counts the
  * first edit). A tap on a place opens how it gets into the app. Without script the list reads as the sample sum.
+ * A place on rules the visitor's country lacks (the pension fund) is hidden and left out of the total: one total is
+ * rendered per rules variant and the CSS shows the visitor's one, so the sum always adds up to the rows on screen.
  */
 export function SumList({ places, sum, locale }: SumListProps) {
   const sample = sum.rows.map((row) => groupThousandsIn(Math.abs(row.value), locale));
@@ -69,11 +74,23 @@ export function SumList({ places, sum, locale }: SumListProps) {
   const [open, setOpen] = useState(0);
   const [edited, setEdited] = useState(false);
 
-  const total = sum.rows.reduce((acc, row, i) => acc + Math.sign(row.value) * parseAmount(values[i], locale), 0);
   const isSample = values.every((v, i) => v === sample[i]);
-  // The sample rows are rounded: with the sample figures the total keeps the screenshot's decimals.
-  const split = splitTotal(total, locale);
-  const shown = isSample ? { sign: "", whole: groupThousandsIn(total, locale), cents: sum.cents } : { ...split, cents: `${split.cents}${sum.suffix ?? ""}` };
+  // One total per rules variant; variants that show the same rows share one rendering.
+  const totals: { key: string; variants: RulesVariant[]; sign: string; whole: string; cents: string }[] = [];
+  for (const variant of RULES_VARIANTS) {
+    const kept = sum.rows.map((row, i) => ({ row, i })).filter(({ row }) => !hiddenIn(row.needs, variant));
+    const key = kept.map(({ i }) => i).join();
+    const same = totals.find((t) => t.key === key);
+    if (same) {
+      same.variants.push(variant);
+      continue;
+    }
+    const total = kept.reduce((acc, { row, i }) => acc + Math.sign(row.value) * parseAmount(values[i], locale), 0);
+    const split = splitTotal(total, locale);
+    // The sample rows are rounded: with every sample row the total keeps the screenshot's decimals.
+    const shown = isSample && kept.length === sum.rows.length ? { sign: "", whole: groupThousandsIn(total, locale), cents: sum.cents } : { ...split, cents: `${split.cents}${sum.suffix ?? ""}` };
+    totals.push({ key, variants: [variant], ...shown });
+  }
 
   const onChange = (index: number, raw: string) => {
     setValues((prev) => prev.map((v, i) => (i === index ? raw : v)));
@@ -90,7 +107,7 @@ export function SumList({ places, sum, locale }: SumListProps) {
   return (
     <TrackedSection id="come" section="come" className="sec sums" field="light" aria-labelledby="come-t">
       <div className="wrap">
-        <h2 id="come-t" data-rise>{places.title}</h2>
+        <h2 id="come-t" data-rise><ByRulesText text={places.title} /></h2>
         <div className="sum-list" data-ui>
           <ul>
             {places.items.map((item, i) => {
@@ -98,7 +115,7 @@ export function SumList({ places, sum, locale }: SumListProps) {
               const isOpen = open === i;
               const fieldId = `somma-${i}`;
               return (
-                <li key={item.name} className={`sum-row${isOpen ? " open" : ""}${row.tone === "neg" ? " neg" : ""}`} data-rise style={rise(i + 1)}>
+                <li key={item.name} className={`sum-row${isOpen ? " open" : ""}${row.tone === "neg" ? " neg" : ""}`} data-rise style={rise(i + 1)} data-needs={needsAttr(row.needs)}>
                   <div className="sum-line">
                     <button type="button" className="sum-name" aria-expanded={isOpen} aria-controls={`${fieldId}-d`} onClick={() => setOpen(isOpen ? -1 : i)}>
                       {row.label}
@@ -133,12 +150,14 @@ export function SumList({ places, sum, locale }: SumListProps) {
           </ul>
           <p className="sum-total" aria-live="polite" data-rise style={rise(5)}>
             <span className="sum-total-t">{sum.title}</span>
-            <span className="sum-total-v">
-              {shown.sign}
-              {sum.prefix}
-              {shown.whole}
-              <small>{shown.cents}</small>
-            </span>
+            {totals.map((t) => (
+              <span key={t.key} className="sum-total-v" data-variant={totals.length > 1 ? t.variants.join(" ") : undefined}>
+                {t.sign}
+                {sum.prefix}
+                {t.whole}
+                <small>{t.cents}</small>
+              </span>
+            ))}
           </p>
         </div>
         <p className="sum-foot">
@@ -149,6 +168,7 @@ export function SumList({ places, sum, locale }: SumListProps) {
             </button>
           )}
         </p>
+        <RulesNote text={RULES_NOTES[locale].home} />
       </div>
     </TrackedSection>
   );

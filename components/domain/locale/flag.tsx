@@ -2,8 +2,8 @@ import { useId } from "react";
 
 import { cn } from "@/lib/utils";
 
-/** Flags drawn by the app (emoji flags show as two letters on Windows). */
-export type FlagCode = "IT" | "DE" | "GB";
+/** Flags drawn by the app (emoji flags show as two letters on Windows); `WORLD` is a globe for «another country». */
+export type FlagCode = "IT" | "DE" | "GB" | "WORLD";
 
 export type FlagSize = "sm" | "md" | "lg";
 
@@ -26,7 +26,16 @@ const GB = { blue: "#012169", red: "#c8102e", white: "#ffffff" } as const;
 export function Flag({ code, size = "md", className }: FlagProps) {
   const id = useId();
   return (
-    <svg viewBox="0 0 30 20" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style={FLAG_SIZES[size]} className={cn("shrink-0 overflow-hidden rounded-[3px] ring-1 ring-foreground/15", className)}>
+    <svg viewBox="0 0 30 20" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style={FLAG_SIZES[size]} className={cn("shrink-0 overflow-hidden rounded-[3px] ring-1 ring-foreground/15", code === "WORLD" && "text-muted-foreground", className)}>
+      {code === "WORLD" && (
+        // Not a flag: a small globe in the theme's muted colour, so it follows light and dark mode.
+        <g fill="none" stroke="currentColor" strokeWidth="1.4">
+          <rect width="30" height="20" fill="currentColor" fillOpacity="0.12" stroke="none" />
+          <circle cx="15" cy="10" r="7" />
+          <ellipse cx="15" cy="10" rx="3" ry="7" />
+          <path d="M8,10 h14" />
+        </g>
+      )}
       {code === "IT" && IT.map((fill, index) => <rect key={fill} x={index * 10} width="10" height="20" fill={fill} />)}
       {code === "DE" && DE.map((fill, index) => <rect key={fill} y={(index * 20) / 3} width="30" height={20 / 3 + 0.01} fill={fill} />)}
       {code === "GB" && (

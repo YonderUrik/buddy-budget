@@ -19,7 +19,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { ChevronDown, ChevronRight, EyeOff, LifeBuoy, Lock, LogOut, Settings, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronRight, EyeOff, LifeBuoy, LogOut, Settings, SlidersHorizontal, X } from "lucide-react";
 
 import { usePrivacy } from "@/components/privacy-provider";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
@@ -198,6 +198,31 @@ export function MobileMoreMenu({
                     const Icon = item.icon;
                     const active = activeHref ? activeHref === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
                     const badge = badges?.[item.href];
+                    if (item.locked) {
+                      const lock = item.locked;
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={lock.href}
+                            replace
+                            onClick={() => {
+                              lock.onOpen?.();
+                              go("sezione");
+                            }}
+                            className={ROW_CLASS}
+                          >
+                            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-text-3">
+                              <Icon className="size-5" aria-hidden="true" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-[15px] font-semibold leading-tight text-text-2">{tr(item.label)}</span>
+                              <span className="block text-xs leading-snug text-text-2">{tr(lock.hint)}</span>
+                            </span>
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-text-2">{tr(lock.badge)}</span>
+                          </Link>
+                        </li>
+                      );
+                    }
                     return (
                       <li key={item.href}>
                         <Link
@@ -222,7 +247,6 @@ export function MobileMoreMenu({
                               {badge.countLabel ?? badge.count}
                             </span>
                           ) : null}
-                          {item.locked ? <Lock className="size-4 shrink-0 text-text-3" aria-label={tr("Richiede Pro")} /> : null}
                           <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
                         </Link>
                       </li>

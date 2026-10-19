@@ -8,15 +8,13 @@ import { Flag } from "@/components/domain/locale/flag";
 import { COUNTRY_FLAGS } from "@/components/domain/locale/flags";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { track } from "@/lib/analytics";
-import { LANGUAGE_NAMES, type Language, type ProductCountry } from "@/lib/localization/config";
+import { LANGUAGE_NAMES, PRODUCT_COUNTRY_NAMES as COUNTRY_NAMES, type Language, type ProductCountry } from "@/lib/localization/config";
 import { useLocalization } from "@/lib/localization/provider";
 import { PUBLIC_DEMO_PROFILES } from "@/lib/public-demo/config";
 import { cn } from "@/lib/utils";
 
-/** Country names, Italian source keys translated by the catalog. */
-const COUNTRY_NAMES: Record<ProductCountry, string> = { IT: "Italia", DE: "Germania" };
 /** What choosing a country changes, so the same language under two countries reads as two different demos. */
-const COUNTRY_HINTS: Record<ProductCountry, string> = { IT: "Con tasse e regole italiane", DE: "Con tasse e regole tedesche" };
+const COUNTRY_HINTS: Record<ProductCountry, string> = { IT: "Con tasse e regole italiane", DE: "Con tasse e regole tedesche", OTHER: "Con le funzioni che non dipendono dalle regole di un paese" };
 /** Path of the route that opens the demo of a country and language. */
 const DEMO_PATH = "/demo";
 

@@ -102,6 +102,7 @@ export function PreferencesSection({ settings }: PreferencesSectionProps) {
         disabled={update.isPending}
         onChange={profile => {
           if (profile.language !== settings.language) track("language_changed", { from: "settings", language: profile.language });
+          if (profile.productCountry !== settings.productCountry) track("country_changed", { from: "settings", country: profile.productCountry });
           update.mutate(profile);
         }}
       />

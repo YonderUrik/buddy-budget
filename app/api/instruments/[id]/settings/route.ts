@@ -35,7 +35,7 @@ async function handlePut(request: NextRequest, { params }: { params: Promise<{ i
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
   const input = parsed.data;
   const taxesEnabled = countryFeatures(resolveProfile(session.user).productCountry).taxes;
-  if (!taxesEnabled && (parsed.data.taxRate != null || parsed.data.taxHarmonized != null)) return Response.json({ code: "country_feature_unavailable", error: "Tax settings are not available for Germany" }, { status: 403 });
+  if (!taxesEnabled && (parsed.data.taxRate != null || parsed.data.taxHarmonized != null)) return Response.json({ code: "country_feature_unavailable", error: "Tax settings are not available in this country yet" }, { status: 403 });
   if (input.couponRate !== null && instrument.type !== "obbligazione") {
     return Response.json({ error: "Le cedole si inseriscono solo per le obbligazioni" }, { status: 400 });
   }

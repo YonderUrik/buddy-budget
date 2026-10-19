@@ -4,6 +4,7 @@
  * vengono dal catalogo condiviso (`catalog.generated.ts`): qui c'è solo il contorno.
  */
 import type { Locale } from "@/lib/i18n";
+import type { ByRules } from "@/lib/visitor-country";
 import { FEATURE_AREA_LABELS_EN, type FeatureArea } from "./catalog.generated";
 import type { HomeIcon } from "./home";
 import { EN_PATHS } from "./locales";
@@ -16,7 +17,8 @@ export interface AreaMeta {
   /** Ancora della sezione (`/funzioni#liquidita`). */
   slug: string;
   icon: HomeIcon;
-  intro: string;
+  /** Changes with the visitor's rules where it names taxes or the pension fund. */
+  intro: ByRules;
   shot?: { id: ScreenId };
   more?: { href: string; label: string };
 }
@@ -33,7 +35,11 @@ export const AREA_META: Record<FeatureArea, AreaMeta> = {
     name: "Investimenti",
     slug: "investimenti",
     icon: "trending",
-    intro: "Il rendimento calcolato dalle tue operazioni, il confronto con un indice, il rischio e le tasse secondo le regole italiane.",
+    intro: {
+      full: "Il rendimento calcolato dalle tue operazioni, il confronto con un indice, il rischio e le tasse secondo le regole italiane.",
+      de: "Il rendimento calcolato dalle tue operazioni, il confronto con un indice, il rischio e una stima parziale delle tasse tedesche.",
+      none: "Il rendimento calcolato dalle tue operazioni, il confronto con un indice e il rischio.",
+    },
     shot: { id: "investimenti" },
     more: { href: CONTENT_PATHS.funzioneInvestimenti, label: "Gli investimenti nel dettaglio" },
   },
@@ -49,7 +55,10 @@ export const AREA_META: Record<FeatureArea, AreaMeta> = {
     name: "Patrimonio",
     slug: "patrimonio",
     icon: "dashboard",
-    intro: "Il quadro d'insieme: il patrimonio netto giorno per giorno, il fondo pensione e l'anno in cui puoi smettere di lavorare.",
+    intro: {
+      full: "Il quadro d'insieme: il patrimonio netto giorno per giorno, il fondo pensione e l'anno in cui puoi smettere di lavorare.",
+      de: "Il quadro d'insieme: il patrimonio netto giorno per giorno e gli obiettivi di risparmio.",
+    },
     shot: { id: "panoramica" },
   },
   Account: {
@@ -73,7 +82,11 @@ export const AREA_META_EN: Record<FeatureArea, AreaMeta> = {
     name: FEATURE_AREA_LABELS_EN.Investimenti,
     slug: "investments",
     icon: "trending",
-    intro: "Returns worked out from your own trades, a comparison with an index, risk, and taxes under the Italian rules (partly for Germany).",
+    intro: {
+      full: "Returns worked out from your own trades, a comparison with an index, risk, and taxes under the Italian rules (partly for Germany).",
+      de: "Returns worked out from your own trades, a comparison with an index, risk, and partial estimates of German taxes.",
+      none: "Returns worked out from your own trades, a comparison with an index, and risk.",
+    },
     shot: { id: "investimenti" },
     more: { href: EN_PATHS.featureInvestments, label: "Investments in detail" },
   },
@@ -89,7 +102,10 @@ export const AREA_META_EN: Record<FeatureArea, AreaMeta> = {
     name: FEATURE_AREA_LABELS_EN.Patrimonio,
     slug: "net-worth",
     icon: "dashboard",
-    intro: "The whole picture: net worth day by day, the pension fund and the year you could stop working.",
+    intro: {
+      full: "The whole picture: net worth day by day, the pension fund and the year you could stop working.",
+      de: "The whole picture: net worth day by day and your savings goals.",
+    },
     shot: { id: "panoramica" },
   },
   Account: {

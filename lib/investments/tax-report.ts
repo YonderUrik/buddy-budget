@@ -5,7 +5,7 @@ import { toTaxInstruments } from "./tax-settings";
 
 /** Single tax calculation shared by the Taxes tab and portfolio simulations, including settings and loss carryforwards. */
 export function investmentTaxReport(data: InvestmentData, transactions: InvestmentTransactionInput[], todayKey: string): TaxReport {
-  if (data.productCountry === "DE") throw new Error("German tax calculations are not available");
+  if ((data.productCountry ?? "IT") !== "IT") throw new Error("Tax calculations exist only for the Italian rules");
   return computeTaxReport({ transactions, instruments: toTaxInstruments(data.instruments, data.instrumentSettings),
     regime: data.portfolios[0]?.taxRegime ?? "amministrato",
     manualLosses: data.taxCarryforwards.map((c) => ({ year: c.year, amount: Number(c.amount) })), todayKey });

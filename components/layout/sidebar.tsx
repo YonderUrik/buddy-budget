@@ -1,6 +1,6 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
-import { isCountryPathAvailable } from "@/lib/localization/config";
+import { withCountryLocks } from "@/components/layout/country-locks";
 
 /**
  * AppSidebar
@@ -40,7 +40,6 @@ import {
   LifeBuoy,
   Eye,
   MessageCircleQuestion,
-  Lock,
 } from "lucide-react";
 import { LayoutGroup, motion } from "motion/react";
 
@@ -73,12 +72,24 @@ export interface NavItem {
   icon: React.ElementType;
   /** Se true la voce è mostrata disabilitata con badge "Presto" (schermata non ancora disponibile). */
   comingSoon?: boolean;
-  /** True when the section needs a higher plan: the item still links (the page explains how to unlock it) and shows a lock. */
-  locked?: boolean;
+  /** The section exists but is closed to this user (e.g. not in their country yet): shown dimmed with a badge, it opens `locked.href`. */
+  locked?: NavLock;
 }
 
-/** Accessible label of the lock beside a locked item. */
-const LOCKED_LABEL = "Richiede Pro";
+/**
+ * Why a section is closed and where its explanation lives. Gates (country rules, a subscription plan) build one each;
+ * texts are Italian source keys translated by the catalogs.
+ */
+export interface NavLock {
+  /** Page explaining why the section is closed. */
+  href: string;
+  /** Short badge next to the name (e.g. «Presto»). */
+  badge: string;
+  /** One line said by screen readers and tooltips, and under the name in the «Altro» menu. */
+  hint: string;
+  /** Called when the user opens the locked section (e.g. to count the demand for it). */
+  onOpen?: () => void;
+}
 
 /** Badge con contatore accanto a una voce di navigazione (es. i movimenti da sistemare su Liquidità), mostrato solo con `count > 0`. */
 export interface NavBadge {
@@ -135,6 +146,36 @@ function NavLink({
   const { t: tr } = useLocalization();
   const Icon = item.icon;
   const showBadge = badge !== undefined && badge.count > 0;
+
+  if (item.locked) {
+    const lock = item.locked;
+    return (
+      <Link
+        href={lock.href}
+        title={collapsed ? `${tr(item.label)} · ${tr(lock.hint)}` : tr(lock.hint)}
+        aria-label={`${tr(item.label)}: ${tr(lock.hint)}`}
+        onClick={() => {
+          lock.onOpen?.();
+          onNavigate?.();
+        }}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+          "text-sidebar-foreground/45 hover:bg-sidebar-accent hover:text-sidebar-foreground/70",
+          collapsed && "justify-center px-2"
+        )}
+      >
+        <Icon className={cn("shrink-0", collapsed ? "size-5" : "size-4")} aria-hidden="true" />
+        {!collapsed && (
+          <>
+            <span className="truncate leading-none">{tr(item.label)}</span>
+            <span className="ml-auto rounded-full bg-sidebar-accent px-1.5 py-0.5 text-[10px] leading-none text-sidebar-foreground/60">
+              {tr(lock.badge)}
+            </span>
+          </>
+        )}
+      </Link>
+    );
+  }
 
   if (item.comingSoon) {
     return (
@@ -193,9 +234,6 @@ function NavLink({
           )}
           aria-hidden="true"
         />
-        {item.locked && collapsed ? (
-          <Lock className="absolute -right-1.5 -bottom-1 size-3 rounded-full bg-sidebar text-sidebar-foreground/60" aria-label={tr(LOCKED_LABEL)} />
-        ) : null}
         {showBadge && collapsed && (
           <span
             className="absolute -right-1 -top-1 size-2 rounded-full bg-sidebar-primary ring-2 ring-sidebar"
@@ -206,9 +244,6 @@ function NavLink({
       {!collapsed && (
         <span className="relative z-10 truncate leading-none">{tr(item.label)}</span>
       )}
-      {item.locked && !collapsed ? (
-        <Lock className="relative z-10 ml-auto size-3.5 shrink-0 text-sidebar-foreground/50" aria-label={tr(LOCKED_LABEL)} />
-      ) : null}
       {showBadge && !collapsed && (
         <span
           aria-label={tr(badge.ariaLabel)}
@@ -376,7 +411,7 @@ export function AppSidebar({
       <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label={tr("Menu")}>
         <LayoutGroup id={navGroupId}>
           <ul className="flex flex-col gap-0.5" role="list">
-            {items.filter(item => isCountryPathAvailable(productCountry, item.href)).map((item) => {
+            {withCountryLocks(items, productCountry).map((item) => {
               return (
                 <li key={item.href}>
                   <NavLink

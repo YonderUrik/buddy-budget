@@ -11,7 +11,7 @@ import { QuickReportProvider } from "@/components/domain/support";
 import { RememberReturningUser } from "@/components/domain/auth/remember-returning-user";
 import { PlanProvider } from "@/components/domain/billing";
 import { auth } from "@/lib/auth";
-import { OPEN_PLAN, PRO_AREAS } from "@/lib/billing";
+import { OPEN_PLAN } from "@/lib/billing";
 import { planForUser } from "@/lib/billing/plan-for-user";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { AttentionShell } from "./attention-shell";
@@ -22,14 +22,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await auth.api.getSession({ headers: await headers() });
   const isPublicDemo = isPublicDemoUserId(session?.user.id);
   const plan = session ? planForUser(session.user) : OPEN_PLAN;
-  // Free plan: the Pro sections keep their place in the navigation with a lock, and the sidebar summary (Pro data) is off.
-  const lockedHrefs = plan.tier === "free" ? PRO_AREAS.map((area) => area.path) : undefined;
+  // Free plan: the Pro sections stay in the menu, locked, and the sidebar summary (Pro data) is off.
+  const free = plan.tier === "free";
   return (
     <PrivacyProvider initialHidden={session?.user.hideAmounts === true}>
       <PlanProvider plan={plan}>
       <QuickReportProvider>
       <BackHistoryRecorder />
-      <AttentionShell sidebarExtra={plan.tier === "free" ? undefined : <SidebarInsightsSlot />} lockedHrefs={lockedHrefs}>
+      <AttentionShell sidebarExtra={free ? undefined : <SidebarInsightsSlot />} planLocked={free}>
         <PrivacyBoundary>
           {isPublicDemo ? (
             <div className="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6">

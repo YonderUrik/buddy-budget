@@ -36,8 +36,8 @@ export default function Page() {
       <h2>Same payment, less interest each month</h2>
       <p>In a French schedule the payment stays the same, but at the start almost all of it goes to interest; over time the share that pays off the principal grows. That&apos;s why paying off part of the loan early saves more than doing it near the end.</p>
       <p>The penalty field follows Italian rules: in Italy a home mortgage can be paid off early with no fees or penalties. For other loans, check your contract.</p>
-      <h2>Other tools</h2>
-      <div className="related">
+      <h2 data-needs="taxes">Other tools</h2>
+      <div className="related" data-needs="taxes">
         <Link href={EN_PATHS.zainetto}>Zainetto fiscale<span>Capital losses, their expiry and the tax on a gain.</span></Link>
         <Link href={EN_PATHS.featureInvestments}>Investments with Italian taxes<span>How BuddyBudget works out returns, the zainetto and bollo (stamp duty).</span></Link>
       </div>

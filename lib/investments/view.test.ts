@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { InvestmentData } from "./data";
-import { buildInvestmentsView, usedInstruments } from "./view";
+import { buildInvestmentsView, heldInstruments } from "./view";
 
 const NOW = new Date("2026-09-20T12:00:00Z");
 
@@ -71,20 +71,26 @@ describe("buildInvestmentsView", () => {
     expect(view.hasTransactions).toBe(true);
   });
 
-  it("propone gli strumenti già usati, dal più recente", () => {
+  it("offers only the instruments held today, most recently traded first", () => {
     const base = data().instruments[0];
-    const byId = new Map(["a", "b", "c"].map((id) => [id, { ...base, id }]));
-    const used = usedInstruments(
+    const byId = new Map(["a", "b", "c", "venduto"].map((id) => [id, { ...base, id }]));
+    const op = (instrumentId: string, date: string, type: "acquisto" | "vendita" = "acquisto") => ({
+      id: `${instrumentId}-${date}`, instrumentId, type, date, quantity: "1", price: "10", fxRate: "1", fees: "0", taxes: "0", grossAmount: null,
+    });
+    const held = heldInstruments(
       [
-        { instrumentId: "a", date: "2026-01-10" },
-        { instrumentId: "b", date: "2026-09-01" },
-        { instrumentId: "a", date: "2026-03-01" },
-        { instrumentId: "sparito", date: "2026-09-10" },
+        op("a", "2026-01-10"),
+        op("b", "2026-09-01"),
+        op("a", "2026-03-01"),
+        op("venduto", "2026-02-01"),
+        op("venduto", "2026-09-20", "vendita"),
+        op("sparito", "2026-09-10"),
       ],
-      byId
+      byId,
+      "2026-10-01"
     );
-    expect(used.map((i) => i.id)).toEqual(["b", "a"]);
-    expect(buildInvestmentsView(data(), "1mese", NOW).usedInstruments.map((i) => i.id)).toEqual(["etf"]);
+    expect(held.map((i) => i.id)).toEqual(["b", "a"]);
+    expect(buildInvestmentsView(data(), "1mese", NOW).heldInstruments.map((i) => i.id)).toEqual(["etf"]);
   });
 });
 

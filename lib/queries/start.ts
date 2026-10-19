@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
-import type { StartFocus, StartStatus } from "@/lib/start";
+import type { StartFocus, StartStatus, StartStepId } from "@/lib/start";
 import { pageText } from "@/lib/localization/page-text";
 
 import { START_QUERY_KEY } from "./start-key";
@@ -15,9 +15,23 @@ async function fetchStart(): Promise<StartStatus> {
   return status;
 }
 
-/** Stato dei primi passi e dei dati d'esempio; si aggiorna da solo quando l'utente torna sulla pagina. */
+/** How often the steps are re-read while some are missing and the tab is open (imports and syncs finish out of band). */
+const START_POLL_MS = 15_000;
+
+/**
+ * State of the first steps and of the sample data. It refreshes on its own: when the user comes back to the page,
+ * after any write (see `QueryProvider`), and every few seconds while a step is still missing and the tab is visible.
+ */
 export function useStartQuery() {
-  return useQuery({ queryKey: START_QUERY_KEY, queryFn: fetchStart, staleTime: 0 });
+  return useQuery({
+    queryKey: START_QUERY_KEY,
+    queryFn: fetchStart,
+    staleTime: 0,
+    refetchInterval: (query) => {
+      const status = query.state.data;
+      return status && !status.completed && !status.dismissed ? START_POLL_MS : false;
+    },
+  });
 }
 
 /** Chiude o riapre la checklist dei primi passi. */
@@ -53,6 +67,25 @@ export function useStartFocusMutation() {
     },
     onSuccess: (_data, focus) => {
       track("start_focus_changed", { count: focus.length });
+      queryClient.invalidateQueries({ queryKey: START_QUERY_KEY });
+    },
+  });
+}
+
+/** Skips a first step («Non mi serve») or brings it back; the checklist can then finish without it. */
+export function useStartSkipMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ step, skipped }: { step: StartStepId; skipped: boolean }) => {
+      const response = await fetch("/api/start", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ step, skipped }),
+      });
+      if (!response.ok) throw new Error(pageText("Impossibile aggiornare i primi passi"));
+    },
+    onSuccess: (_data, { step, skipped }) => {
+      if (step !== "conto") track("start_step_skipped", { step, skipped });
       queryClient.invalidateQueries({ queryKey: START_QUERY_KEY });
     },
   });

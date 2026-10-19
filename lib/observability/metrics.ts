@@ -48,7 +48,7 @@ export interface UsageSnapshot {
   activation: Record<ActivationStep, number>;
 }
 export type ActivationStep = "conto" | "import" | "investimento" | "obiettivo" | "completa" | "chiusa" | "demo_attiva";
-export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed" | "focus_changed";
+export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed" | "focus_changed" | "step_skipped" | "step_restored";
 /** Public demo (`/demo`): a visitor opened it, it was unavailable (off or not seeded yet), a write was blocked, the data was rebuilt. */
 export type PublicDemoEvent = "session_started" | "unavailable" | "write_blocked" | "reset";
 export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions" | "goals";
@@ -370,7 +370,7 @@ function createState(): MetricsState {
   });
   state.startEvents = new Counter({
     name: `${METRIC_PREFIX}start_events_total`,
-    help: "First-steps events: sample data started or cleared, checklist closed, reopened or completed, focus changed.",
+    help: "First-steps events: sample data started or cleared, checklist closed, reopened or completed, focus changed, step skipped or restored.",
     labelNames: ["event"],
     registers: r,
   });

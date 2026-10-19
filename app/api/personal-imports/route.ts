@@ -26,5 +26,11 @@ export const POST = withRoute("personal_import.enqueue", async (request: NextReq
   const parsed = inputSchema.safeParse(body);
   if (!parsed.success) return Response.json({ error: "Nome, CSV e consenso sono obbligatori" }, { status: 400 });
   try { const job = await enqueue(session.user.id, parsed.data); requestLogger().info("personal_import.queued", { jobId: job.id }); return Response.json(job, { status: 202 }); }
-  catch (error) { return Response.json({ error: error instanceof ImportError ? error.message : "Impossibile caricare il CSV" }, { status: 400 }); }
+  catch (error) {
+    if (error instanceof ImportError && error.code === "already_imported") {
+      requestLogger().info("personal_import.already_imported", { reason: "same_file" });
+      return Response.json({ error: error.message, code: error.code }, { status: 409 });
+    }
+    return Response.json({ error: error instanceof ImportError ? error.message : "Impossibile caricare il CSV" }, { status: 400 });
+  }
 });

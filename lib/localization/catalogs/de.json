@@ -5207,5 +5207,16 @@
   "Lascia così": "So lassen",
   "Chiedo all'AI…": "Frage die KI…",
   "Chiedi all'AI": "KI fragen",
-  "Accendilo in Impostazioni": "In den Einstellungen einschalten"
+  "Accendilo in Impostazioni": "In den Einstellungen einschalten",
+  "Questo file è già stato importato: i suoi movimenti ci sono già tutti.": "Diese Datei wurde bereits importiert: Alle ihre Umsätze sind schon da.",
+  "Il movimento del file c'era già: non abbiamo aggiunto niente.": "Der Umsatz der Datei war schon da: Wir haben nichts hinzugefügt.",
+  "Tutti i {0} movimenti del file c'erano già: non abbiamo aggiunto niente.": "Alle {0} Umsätze der Datei waren schon da: Wir haben nichts hinzugefügt.",
+  "{0} su {1} movimenti importati: gli altri c'erano già.": "{0} von {1} Umsätzen importiert: Die anderen waren schon da.",
+  "Niente di nuovo: {0} movimenti c'erano già": "Nichts Neues: {0} Umsätze waren schon da",
+  "{0} su {1} movimenti importati": "{0} von {1} Umsätzen importiert",
+  "{0}: niente di nuovo": "{0}: nichts Neues",
+  "I movimenti c'erano già tutti.": "Alle Umsätze waren schon da.",
+  "Il tuo CSV non aveva movimenti nuovi": "Deine CSV enthielt keine neuen Umsätze",
+  "Tutti i movimenti del tuo CSV c'erano già: non abbiamo aggiunto niente.": "Alle Umsätze deiner CSV waren schon da: Wir haben nichts hinzugefügt.",
+  "{0} su {1} movimenti importati: gli altri c'erano già. Trovi i dati in **Liquidità** e **Investimenti**.": "{0} von {1} Umsätzen importiert: Die anderen waren schon da. Du findest die Daten unter **Liquidität** und **Anlagen**."
 }

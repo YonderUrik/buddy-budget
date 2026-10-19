@@ -276,7 +276,7 @@ A decision («È un abbonamento», «Non lo è», «È terminato») is an upsert
 ## 5. Limits and out of scope
 
 - The 70% threshold is fixed; it is not adjustable by the user.
-- Bank categories are read only from personal CSV imports (GoCardless does not send a usable category). The dictionary covers common Italian, English and German labels and is maintained by hand; a bank label it does not know falls back to the usual flow until the user's corrections teach it. The Terms of service still say proposals are never applied without the user: to be aligned at the professional legal review, together with the automatic threshold (the Privacy policy and Terms still say 90%).
+- Bank categories are read only from personal CSV imports (GoCardless does not send a usable category). The dictionary covers common Italian, English and German labels and is maintained by hand; a bank label it does not know falls back to the usual flow until the user's corrections teach it. Privacy policy and Terms describe the 70% threshold and the bank's category since `LEGAL_VERSION` 2026-10-19; they still await the professional legal review.
 - A rule-similarity proposal reaches 0.70 only when most tokens match, so most automatic decisions come from exact rules, history or the AI.
 - Ricategorizza runs synchronously in the request (no background job) and loads all of the user's transactions; very large accounts are a known risk. Undo covers only the latest run.
 - The AI never sees amounts or dates and never proposes transfer categories. Blocked names (people, transfers) stay for the user to decide.

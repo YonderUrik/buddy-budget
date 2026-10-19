@@ -2,6 +2,19 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.80.0](https://github.com/YonderUrik/buddy-budget/compare/v0.79.0...v0.80.0) (2026-10-18)
+
+
+### Novità
+
+* guide new users after onboarding ([#444](https://github.com/YonderUrik/buddy-budget/issues/444)) ([d708973](https://github.com/YonderUrik/buddy-budget/commit/d70897344eced0eda8f3dde3077fff43d2482511))
+* self-hosted sign-in with password, SMTP email and a safer setup ([#441](https://github.com/YonderUrik/buddy-budget/issues/441)) ([dfb16f9](https://github.com/YonderUrik/buddy-budget/commit/dfb16f9e635bb86560e3f8e83c8e6f00cba4dcc8))
+
+
+### Correzioni
+
+* **deps:** patch 58 security advisories, one library at a time ([#442](https://github.com/YonderUrik/buddy-budget/issues/442)) ([b2f00c8](https://github.com/YonderUrik/buddy-budget/commit/b2f00c8ad378a8ff458ef9a00ca5dee05273c647))
+
 ## [0.79.0](https://github.com/YonderUrik/buddy-budget/compare/v0.78.1...v0.79.0) (2026-10-18)
 
 

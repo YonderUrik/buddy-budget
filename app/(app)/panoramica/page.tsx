@@ -44,6 +44,7 @@ import { usePensionQuery } from "@/lib/queries/pension";
 
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
+import { useChartRefreshState } from "@/lib/queries/chart-refresh";
 import { NEW_ACCOUNT_HREF, shouldShowChecklist } from "@/lib/start";
 import { useStartQuery } from "@/lib/queries/start";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
@@ -91,6 +92,7 @@ export default function PanoramicaPage() {
 
   const accountsQuery = useAccountsQuery();
   const snapshotsQuery = useNetWorthSnapshotsQuery(NET_WORTH_FETCH_FROM, toDateKey(today), { compact: true });
+  const refreshState = useChartRefreshState(snapshotsQuery);
   const monthTransactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
   // I budget sono opzionali: senza, la tessera del mese salta la barra.
   const budgetsQuery = useBudgetsQuery();
@@ -198,6 +200,7 @@ export default function PanoramicaPage() {
             currency={currency}
             pensionIncluded={pensionIncluded}
             onPensionIncludedChange={setPensionIncluded}
+            refreshState={refreshState}
           />
           <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
             <div className="flex flex-col gap-10 lg:col-span-3">

@@ -1,6 +1,7 @@
 /**
- * Impronta dei dati da cui si ricostruisce lo storico "investimenti" di un utente (operazioni, prezzi, cambi): se
- * non è cambiata dall'ultima ricostruzione non si ricalcola nulla. Perderla costa solo un ricalcolo in più.
+ * Fingerprint of the data a user's reconstructed history comes from (investments: operations, prices, FX; cash:
+ * accounts and transactions): if it has not changed since the last reconstruction nothing is recomputed. Losing it
+ * only costs one extra recomputation. Used by both histories, each with its own key.
  */
 export interface InvestmentHistoryStateStore {
   get(userId: string): Promise<string | null>;

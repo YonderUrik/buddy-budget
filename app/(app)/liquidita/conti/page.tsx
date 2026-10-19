@@ -24,7 +24,7 @@ import { authClient } from "@/lib/auth/client";
 import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { computeConnectionHealth, needsRenewal } from "@/lib/gocardless/connection-health";
-import { buildAccountBalanceSeries } from "@/lib/liquidity/account-series";
+import { accountFollowsTransactions, buildAccountBalanceSeries } from "@/lib/liquidity/account-series";
 
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
@@ -124,7 +124,7 @@ export default function LiquiditaContiPage() {
                     currency={currency}
                     status={status.label}
                     statusTone={status.tone}
-                    trend={account.source === "auto" ? buildAccountBalanceSeries(account, transactions, from, today).map((p) => p.value) : undefined}
+                    trend={accountFollowsTransactions(account) ? buildAccountBalanceSeries(account, transactions, from, today).map((p) => p.value) : undefined}
                     onOpen={() => {
                       track("account_details_opened", { kind: account.source === "auto" ? "collegato" : "manuale" });
                       setOpenId(account.id);

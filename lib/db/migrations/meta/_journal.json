@@ -288,6 +288,13 @@
       "when": 1792348173297,
       "tag": "0042_start_focus",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1792404988033,
+      "tag": "0043_cash_ledger_amount",
+      "breakpoints": true
     }
   ]
 }

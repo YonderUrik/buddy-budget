@@ -33,7 +33,20 @@ export function hasRunningImport(jobs: Job[] | undefined): boolean {
   return (jobs ?? []).some((job) => islandState(job) === "running");
 }
 
-/** Id delle importazioni in corso. */
-export function runningImportIds(jobs: Job[] | undefined): Set<string> {
-  return new Set((jobs ?? []).filter((job) => islandState(job) === "running").map((job) => job.id));
+
+/** Status of each import as last seen, to spot the ones that just ended. */
+export function importStatuses(jobs: Job[] | undefined): Map<string, string> {
+  return new Map((jobs ?? []).map((job) => [job.id, job.status]));
+}
+
+/**
+ * True when an import seen before has just ended: it was running and now is not, or it became `imported` from any
+ * other status (a file imported from «Righe da controllare» never passes through the running states).
+ */
+export function hasNewlyFinishedImport(previous: ReadonlyMap<string, string>, jobs: Job[] | undefined): boolean {
+  return (jobs ?? []).some((job) => {
+    const before = previous.get(job.id);
+    if (before === undefined || before === job.status) return false;
+    return (islandState({ status: before }) === "running" && islandState(job) !== "running") || job.status === "imported";
+  });
 }

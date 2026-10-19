@@ -121,8 +121,8 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
   await db.delete(instruments).where(and(isNull(instruments.createdByUserId), inArray(instruments.isin, DEMO_ISINS)));
   // Re-seeding (e.g. in another language) creates new ids: the cached fingerprint of the old investment history must go.
   if (process.env.REDIS_URL) {
-    const [{ redis }, { investmentHistoryFingerprintKey }] = await Promise.all([import("@/lib/redis/client"), import("@/lib/net-worth/redis-history-state")]);
-    await redis.del(investmentHistoryFingerprintKey(userId));
+    const [{ redis }, { investmentHistoryFingerprintKey, cashHistoryFingerprintKey }] = await Promise.all([import("@/lib/redis/client"), import("@/lib/net-worth/redis-history-state")]);
+    await redis.del(investmentHistoryFingerprintKey(userId), cashHistoryFingerprintKey(userId));
   }
 
   await db.insert(authUser).values({

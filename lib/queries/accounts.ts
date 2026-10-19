@@ -8,7 +8,10 @@ import { pageText } from "@/lib/localization/page-text";
 
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
 
-async function fetchAccounts(): Promise<Account[]> {
+/** An account as `GET /api/accounts` returns it: `followsTransactions` is true for linked banks and file imports. */
+export type AccountListItem = Account & { followsTransactions: boolean };
+
+async function fetchAccounts(): Promise<AccountListItem[]> {
   const response = await fetch("/api/accounts");
   if (!response.ok) {
     throw new Error(pageText("Impossibile caricare i conti"));

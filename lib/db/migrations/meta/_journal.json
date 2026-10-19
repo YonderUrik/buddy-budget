@@ -295,6 +295,13 @@
       "when": 1792404988033,
       "tag": "0043_cash_ledger_amount",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1792412175546,
+      "tag": "0044_bank_category",
+      "breakpoints": true
     }
   ]
 }

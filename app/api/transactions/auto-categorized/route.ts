@@ -12,7 +12,7 @@ import { withRoute } from "@/lib/observability";
 const AUTO_CATEGORIZED_LIMIT = 1000;
 
 /**
- * GET /api/transactions/auto-categorized — movimenti categorizzati da soli (regole e proposte sicure) che l'utente non ha
+ * GET /api/transactions/auto-categorized — movimenti categorizzati da soli (regole, proposte sicure e categorie della banca) che l'utente non ha
  * ancora controllato, raggruppati per esercente e categoria: la sezione «Messe dall'app» di Categorizza.
  */
 async function handleGet(request: NextRequest) {
@@ -34,6 +34,7 @@ async function handleGet(request: NextRequest) {
       source: transactions.categorySource,
       confidence: transactions.categoryConfidence,
       categorizedAt: transactions.categorizedAt,
+      bankCategory: transactions.bankCategory,
     })
     .from(transactions)
     .where(
@@ -57,6 +58,7 @@ async function handleGet(request: NextRequest) {
       source: row.source as AutomaticCategorySource,
       confidence: row.confidence === null ? null : Number(row.confidence),
       categorizedAt: (row.categorizedAt ?? user.seenAt).toISOString(),
+      bankCategory: row.bankCategory,
     }))
   );
   const groups = await withMerchantLogos(

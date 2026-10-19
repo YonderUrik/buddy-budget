@@ -61,7 +61,7 @@ function invalidateCategorized(queryClient: ReturnType<typeof useQueryClient>) {
 export interface AutoApplyResponse {
   applied: number;
   groups: number;
-  bySource: { regola: number; storico: number; assistente: number };
+  bySource: { regola: number; storico: number; assistente: number; banca: number };
 }
 
 /** Applica subito regole e proposte sicure ai movimenti in attesa (la pagina lo chiede quando ne trova di pronte). */

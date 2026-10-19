@@ -75,7 +75,7 @@ describe("autoApplyCategories", () => {
 
     const result = await autoApplyCategories(userId, { now });
 
-    expect(result.applied).toEqual({ regola: 1, storico: 1, assistente: 0 });
+    expect(result.applied).toEqual({ regola: 1, storico: 1, assistente: 0, banca: 0 });
     const rule = await reload(netflix.id);
     expect(rule.categoryId).toBe(svagoId);
     expect(rule.categorySource).toBe("regola");

@@ -1,6 +1,6 @@
 # Categorisation
 
-This part turns a bank transaction into a category and a counted amount. A transaction arrives on the fallback category («Da categorizzare», to be categorised); user rules, past choices and an optional AI assistant then propose a category, and only proposals that are certain enough are applied without the user. Each transaction records where its category came from. The same data feeds budgets per category, the «Dividi» (split) exclusion and subscription detection. The code lives in [`lib/categorization`](../../lib/categorization), [`lib/categories`](../../lib/categories), [`lib/llm`](../../lib/llm), [`lib/subscriptions`](../../lib/subscriptions) and [`lib/calc/subscriptions.ts`](../../lib/calc/subscriptions.ts).
+This part turns a bank transaction into a category and a counted amount. A transaction arrives on the fallback category («Da categorizzare», to be categorised), or, from an imported file that carries the bank's own category, already in the matching category of the user; user rules, past choices and an optional AI assistant then propose a category, and only proposals that are certain enough are applied without the user. Each transaction records where its category came from. The same data feeds budgets per category, the «Dividi» (split) exclusion and subscription detection. The code lives in [`lib/categorization`](../../lib/categorization), [`lib/categories`](../../lib/categories), [`lib/llm`](../../lib/llm), [`lib/subscriptions`](../../lib/subscriptions) and [`lib/calc/subscriptions.ts`](../../lib/calc/subscriptions.ts).
 
 > This is a living document: it describes the code as it is. Change it in the same PR that changes the behaviour it describes.
 
@@ -13,6 +13,7 @@ This part turns a bank transaction into a category and a counted amount. A trans
 | Rules | key, sign, user rules | category, excluded amount | [`match-rule.ts`](../../lib/categorization/match-rule.ts), [`resolve.ts`](../../lib/categorization/resolve.ts) |
 | AI proposals | uncategorised merchant groups | rows in `categorization_suggestions` | [`ai/suggest-for-user.ts`](../../lib/categorization/ai/suggest-for-user.ts), [`lib/llm/jev.ts`](../../lib/llm/jev.ts) |
 | Proposals | uncategorised rows, history, rules, stored AI rows | one proposal per merchant group | [`suggest.ts`](../../lib/categorization/suggest.ts), [`load-groups.ts`](../../lib/categorization/load-groups.ts) |
+| Bank category | label the bank wrote in an imported file | one of the user's categories, `categorySource = banca` | [`bank-category.ts`](../../lib/categorization/bank-category.ts), [`load-bank-category-mapper.ts`](../../lib/categorization/load-bank-category-mapper.ts) |
 | Auto-apply | proposals at 90% or more | category with origin and confidence | [`auto-apply.ts`](../../lib/categorization/auto-apply.ts) |
 | Review | user choices | `categorySource = utente`, optional learned rule | [`categorize-apply/route.ts`](../../app/api/transactions/categorize-apply/route.ts) |
 | Ricategorizza | categorised rows | changes with undo | [`recategorize-plan.ts`](../../lib/categorization/recategorize-plan.ts), [`recategorize.ts`](../../lib/categorization/recategorize.ts) |
@@ -21,6 +22,7 @@ This part turns a bank transaction into a category and a counted amount. A trans
 
 ```text
 new rows (sync, CSV, manual) ─> fallback category
+   CSV row with a bank category that maps (no rule takes it) ──> categorySource = banca
                 │
                 ├─ rules (always) ─────────────────────────> categorySource = regola
                 ├─ AI proposals stored (consent only)
@@ -37,9 +39,11 @@ new rows (sync, CSV, manual) ─> fallback category
 
 **P3 — Only certain proposals act alone.** A proposal is applied without the user only at confidence 0.90 or more (`AUTO_APPLY_THRESHOLD`), only if the user's `categorizationAutoApply` is on, only if no other transaction of the same group points elsewhere and, for AI proposals, only while the consent is active.
 
-**P4 — Automatic writes touch only the fallback.** Auto-apply updates a row only if it is still on a fallback category at write time. Ricategorizza never touches rows with `categorySource = utente`.
+**P4 — Automatic writes touch only the fallback.** Auto-apply updates a row only if it is still on a fallback category at write time. Ricategorizza never touches rows with `categorySource = utente`, and changes rows with `categorySource = banca` only through a rule.
 
-**P5 — Every category has an origin.** `transactions.categorySource` is `regola`, `storico`, `assistente`, `utente` or null (older rows, or back to the fallback), with `categoryConfidence` and `categorizedAt`.
+**P4b — The bank's own category is applied without asking.** When an imported file carries the bank's category for a row and it maps clearly to one of the user's categories, the row is inserted there (`categorySource = banca`), whatever the auto-apply setting: it is data from the file, not a guess of the app. User rules still win, generic labels («Altro», «Other») never map, transfers are never targets, and every such row lists in «Messe dall'app» and stays editable.
+
+**P5 — Every category has an origin.** `transactions.categorySource` is `regola`, `storico`, `assistente`, `banca`, `utente` or null (older rows, or back to the fallback), with `categoryConfidence` and `categorizedAt`.
 
 **P6 — Direction is enforced.** `entrata` categories accept only positive amounts, spending groups only negative ones; the fallback and `trasferimento` accept both (`isDirectionCompatible`).
 
@@ -59,7 +63,7 @@ new rows (sync, CSV, manual) ─> fallback category
 | `subscriptions` | only the user's decisions (`confermato`, `escluso`, `terminato`) and manual subscriptions, keyed by `key` | [`subscriptions.ts`](../../lib/db/schema/subscriptions.ts) |
 | `auth_user` columns | `aiCategorizationConsentAt`, `aiCategorizationInstructions`, `categorizationAutoApply` (default true), `autoCategorizedSeenAt` | [`auth.ts`](../../lib/db/schema/auth.ts) |
 
-On `transactions`: `categoryId`, `excludedAmount` (same sign as `amount`, magnitude not above it), `categorySource`, `categoryConfidence`, `categorizedAt`, `description` (cleaned name), `rawDescription` (bank text) and `merchantCategoryCode`.
+On `transactions`: `categoryId`, `excludedAmount` (same sign as `amount`, magnitude not above it), `categorySource`, `categoryConfidence`, `categorizedAt`, `description` (cleaned name), `rawDescription` (bank text), `merchantCategoryCode` and `bankCategory` (the bank's own label from an imported file, encrypted, kept also when it did not map).
 
 Always computed, never stored: proposals from rules and history, merchant groups, the «Messe dall'app» list, the recategorise plan, spending per category and group, budget remaining, and detected subscriptions.
 
@@ -151,7 +155,29 @@ If a rule proposal is already confident, history is skipped; otherwise the bette
 
 A model error stops the run without throwing; the rows stay uncategorised. Saving new instructions deletes the pending AI rows. Revoking the consent stops new requests, and stored AI proposals stop being applied automatically. When the user decides a group, `recordSuggestionDecisions` marks the stored row `confermata` (same category) or `corretta` (different category, `source = utente`, confidence 1).
 
-### 4.6 Automatic pass
+### 4.6 Bank categories in imported files
+
+Many bank exports carry their own category column (Intesa Sanpaolo «Categoria», N26 «Category», Fineco «Moneymap», German «Kategorie»). The personal CSV import keeps it as `bankCategory` on each cash row (see [bank-sync-and-imports.md](bank-sync-and-imports.md) §4.8) and `confirmImport` maps it while inserting, with no AI and no confirmation:
+
+1. A user rule that takes the row (on the cleaned name, then on the bank text) wins: the row stays on the fallback and the rule categorises it right after the import, with origin `regola`.
+2. **Learned**: if at least 2 of the user's own choices (`categorySource = utente`) on rows with the same normalised label agree on one category, and it is the clear winner (`learnFromCorrections`), that category.
+3. **Name**: a category of the user whose name, in any language or any part of a «Ristoranti & Bar» name, equals the label after normalisation and a light plural stem. Two matches are ambiguous and give nothing.
+4. **Dictionary**: a list of Italian, English and German bank terms per default category key (`DICTIONARY` in [`bank-category.ts`](../../lib/categorization/bank-category.ts)), first entry whose category exists for the user wins. Defaults are found by `defaultKey`, or by a default name for older rows, so a renamed default still matches.
+
+For «Casa > Bollette» labels each level is tried from the most specific. Candidates exclude the fallback, transfer categories and categories of the wrong direction (P6). Generic labels never map. An unmapped row stays on the fallback with its label stored and goes through the usual pass.
+
+```text
+normalise("Bar & Ristoranti") = "bar ristoranti"
+"Ristorazione", -25.00 → dictionary "ristor" → Ristoranti & Bar      (banca)
+"Supermercati", -40.00 + rule "esselunga" → fallback → rule after the import (regola)
+"Ristorazione", +15.00 → no expense category for an income → fallback
+"Altro" → generic → fallback
+user moved two «Ristorazione» rows to Svago → next «Ristorazione» row → Svago (banca, learned)
+```
+
+The receipt of the import says how many rows took the bank's category (`importLedger.bankCategorized`). Origin label «Banca»; the tooltip quotes the bank's label. Moving such a row counts as a correction with source `banca`, and that choice teaches later imports.
+
+### 4.7 Automatic pass
 
 `categorizeNewMovementsSafely` runs after bank sync, personal CSV confirmation, broker statement imports and the manual AI run. It calls the AI step, then `autoApplyCategories`:
 
@@ -161,7 +187,7 @@ A model error stops the run without throwing; the rows stay uncategorised. Savin
 
 Every write is conditional on the row still being on a fallback category. The pass is idempotent and never throws. Turning auto-apply on in Impostazioni runs it once in `after()`.
 
-### 4.7 «Da decidere» and «Messe dall'app»
+### 4.8 «Da decidere» and «Messe dall'app»
 
 The Categorizza page (`/categorizza`) has two lists:
 
@@ -172,22 +198,22 @@ The Categorizza page (`/categorizza`) has two lists:
 
 «Va tutto bene» moves `autoCategorizedSeenAt` forward. Applying a choice (`POST /api/transactions/categorize-apply`, in batches of 5 groups from the client) checks ownership and direction of every row first, then in one transaction sets the category, the excluded amount, `categorySource = utente`, and optionally upserts the learned rule. Moving rows that had an automatic origin is counted as a correction (metric `categorization_auto_total` and log `categorization.auto.corrected`): this measures the errors of the 90% threshold.
 
-Origin labels ([`origin.ts`](../../lib/categorization/origin.ts)): «Regola», «Le tue scelte» (history) and «AI». The percentage appears only in the tooltip text. A manual edit of the category, or of the split of an automatic row, makes the row `utente`; moving it back to the fallback clears the origin.
+Origin labels ([`origin.ts`](../../lib/categorization/origin.ts)): «Regola», «Le tue scelte» (history), «AI» and «Banca». The percentage appears only in the tooltip text. A manual edit of the category, or of the split of an automatic row, makes the row `utente`; moving it back to the fallback clears the origin.
 
-### 4.8 Ricategorizza
+### 4.9 Ricategorizza
 
 `planRecategorize` decides what BuddyBudget would choose today for rows that are already categorised. Candidates are rows with an automatic origin; with `includeLegacy`, also rows with no origin that were not split by hand (0 < |excluded| < |amount|). Rows chosen by the user are never candidates.
 
 | Scope | Uses |
 |---|---|
-| `tutto` | rules first; then, with auto-apply on, confident proposals from history (only `utente` and legacy rows as history) and stored AI rows with consent |
+| `tutto` | rules first; then, with auto-apply on, confident proposals from history (only `utente` and legacy rows as history) and stored AI rows with consent; rows with the bank's category change only through a rule |
 | `regola` | only the given rule; legacy rows always included |
 
 Only rows whose category would change are kept, grouped by merchant, direction, from, to, source and percentage. `previewRecategorize` returns the groups without transaction ids (plus how many legacy rows would change if included). `applyRecategorize` recomputes the plan, writes the selected groups in one transaction only where the row is still in its original category and not `utente`, and stores one `categorization_run_items` row per change.
 
 Undo: `undoRecategorize` acts only on the most recent run that is not undone and is less than 7 days old (`RECATEGORIZE_UNDO_DAYS`). It restores category, excluded amount, origin, confidence and time only where the row still has the category and `categorizedAt` written by the run and the previous category still exists. Runs older than 30 days are deleted at the next apply.
 
-### 4.9 Split («Dividi») and exclusions
+### 4.10 Split («Dividi») and exclusions
 
 `excludedAmount` is the part of a transaction that does not count as the user's own. It has the same sign as `amount` and a magnitude not above it (`isValidExcludedAmount`). [`lib/liquidity/split.ts`](../../lib/liquidity/split.ts) offers the presets Tutta, Metà, Un terzo, Un quarto (1, 2, 3, 4 parts).
 
@@ -199,7 +225,7 @@ effective = |amount| - |excluded|
 
 Example: a 60.00 dinner split in half: `excludedAmount = -30.00`, effective spend 30.00. Transfers are always excluded in full, so they never count as income or spending. Personal CSV rows marked `transfer` and the cash legs of investment trades are stored fully excluded and placed in the user's transfer category when one exists.
 
-### 4.10 Budgets per category
+### 4.11 Budgets per category
 
 The user sets a budget in the detail window of an expense category (Liquidità → Categorie, `CategoryBudgetField`): the amount is saved on blur and an empty field removes it. The tile on the board shows it as «420 €/mese», and Liquidità → Analisi draws each budgeted category's bar against its budget for the period («restano 101 € su 420 € di budget»). `PUT /api/budgets/[categoryId]` upserts a `monthlyAmount` (transfer categories are refused) and `DELETE` removes it. Spending per category is `sumByCategory` (effective amounts). In [`lib/calc/expenses.ts`](../../lib/calc/expenses.ts) `scaleBudgetForPeriod` scales the monthly total to the selected period (week = month / 30 * 7, quarter = month * 3, year = month * 12), and `budgetRimanente` (budget remaining) compares only categories that have a budget.
 
@@ -207,7 +233,7 @@ Budget alert emails ([`lib/notifications/alerts.ts`](../../lib/notifications/ale
 
 Example: budget 300.00 on Ristoranti, spent 245.00. 80% is 240.00, so the 80% alert is sent once; the 100% alert waits for 300.00.
 
-### 4.11 Merchant logos
+### 4.12 Merchant logos
 
 `resolveMerchantLogo` picks, in order of reliability:
 
@@ -217,7 +243,7 @@ Example: budget 300.00 on Ristoranti, spent 245.00. 80% is 240.00, so the 80% al
 
 `merchantLogoPath` builds `/api/merchant-logos/<domain>` (dictionary, unsigned) or a path signed with an HMAC derived from `BETTER_AUTH_SECRET`, so the server only fetches what it found in the user's own rows. Logos come from Logo.dev with the publishable key and a Redis cache (browser cache one day, misses one hour). A name is searched on Logo.dev (`/v2/search`, `LOGODEV_SECRET_KEY`) only if at least 3 different users have it (`MIN_USERS_FOR_NAME_SEARCH`, counted with hashed user ids), within 100 searches per day, and only an exact name match is accepted. Found domains are cached 30 days, misses 7 days.
 
-### 4.12 Subscription detection
+### 4.13 Subscription detection
 
 `detectSubscriptions` ([`lib/calc/subscriptions.ts`](../../lib/calc/subscriptions.ts)) reads expenses of the last 26 months, excluding categories of type `futuro`, `entrata` and `trasferimento`. It groups them by `subscriptionKey` (the merchant key without tokens that contain digits) and tries each cadence from the most frequent:
 
@@ -248,6 +274,7 @@ Example: 9.99 charged on the 5th of three consecutive months: `0.45 + 0.21 + 0.1
 ## 5. Limits and out of scope
 
 - The 90% threshold is fixed; it is not adjustable by the user.
+- Bank categories are read only from personal CSV imports (GoCardless does not send a usable category). The dictionary covers common Italian, English and German labels and is maintained by hand; a bank label it does not know falls back to the usual flow until the user's corrections teach it. The Terms of service still say proposals are never applied without the user: to be aligned at the professional legal review, together with the 90% threshold.
 - A rule-similarity proposal reaches 0.90 only when token sets are almost identical, so most automatic decisions come from exact rules, history or the AI.
 - Ricategorizza runs synchronously in the request (no background job) and loads all of the user's transactions; very large accounts are a known risk. Undo covers only the latest run.
 - The AI never sees amounts or dates and never proposes transfer categories. Blocked names (people, transfers) stay for the user to decide.
@@ -262,7 +289,8 @@ Example: 9.99 charged on the 5th of three consecutive months: `0.45 + 0.21 + 0.1
 - [`suggest.test.ts`](../../lib/categorization/suggest.test.ts): rule and history proposals, confidence, grouping by direction, divergence, AI merge.
 - [`auto-apply.test.ts`](../../lib/categorization/auto-apply.test.ts): rules and safe history applied with origin and confidence; rules only when the option is off; no history with fewer than 3 agreeing rows.
 - [`auto-review.test.ts`](../../lib/categorization/auto-review.test.ts), [`origin.test.ts`](../../lib/categorization/origin.test.ts): «Messe dall'app» grouping, correction counts, origin labels and date ranges.
-- [`recategorize-plan.test.ts`](../../lib/categorization/recategorize-plan.test.ts): user choices and fallback rows untouched, legacy rows only on request and never if split by hand.
+- [`recategorize-plan.test.ts`](../../lib/categorization/recategorize-plan.test.ts): user choices and fallback rows untouched, legacy rows only on request and never if split by hand, bank categories changed only by rules.
+- [`bank-category.test.ts`](../../lib/categorization/bank-category.test.ts): name, dictionary and learned matches, hierarchical labels, direction, generic labels, renamed and deleted defaults; [`personal-import/bank-category-column.test.ts`](../../lib/personal-import/bank-category-column.test.ts) and the «bank categories» cases of [`import.integration.test.ts`](../../lib/personal-import/import.integration.test.ts): reading the column, rules winning, corrections learned, re-imports staying duplicates.
 - [`privacy-filter.test.ts`](../../lib/categorization/privacy-filter.test.ts), [`ai/groups.test.ts`](../../lib/categorization/ai/groups.test.ts), [`ai/suggest-for-user.test.ts`](../../lib/categorization/ai/suggest-for-user.test.ts), [`lib/llm/jev.test.ts`](../../lib/llm/jev.test.ts): blocked persons and transfers, batches of five, instructions, in-flight responses dropped, direction-limited options.
 - [`merchant-name/*.test.ts`](../../lib/categorization/merchant-name), [`merchant-logo/merchant-logo.test.ts`](../../lib/categorization/merchant-logo/merchant-logo.test.ts): name extraction, dictionary logos, domains in text, name search gating.
 - [`lib/categories/*.test.ts`](../../lib/categories): groups, picker order, onboarding setup (unit and integration), spending sums.
@@ -272,5 +300,5 @@ Example: 9.99 charged on the 5th of three consecutive months: `0.45 + 0.21 + 0.1
 ## 7. Related
 
 - [overview.md](overview.md), [bank-sync-and-imports.md](bank-sync-and-imports.md), [background-jobs.md](background-jobs.md), [analytics-and-goals.md](analytics-and-goals.md), [net-worth.md](net-worth.md)
-- Decisions: [`2026-10-12-categorizzazione-soglia-90.md`](../decisioni/2026-10-12-categorizzazione-soglia-90.md), [`2026-10-11-categorizzazione-llm-fase-0.md`](../decisioni/2026-10-11-categorizzazione-llm-fase-0.md), [`2026-10-11-categorizzazione-llm-fase-1.md`](../decisioni/2026-10-11-categorizzazione-llm-fase-1.md), [`2026-10-11-categorie-di-default-e-onboarding.md`](../decisioni/2026-10-11-categorie-di-default-e-onboarding.md), [`2026-10-10-abbonamenti.md`](../decisioni/2026-10-10-abbonamenti.md), [`2026-10-10-email-riepilogo-e-avvisi.md`](../decisioni/2026-10-10-email-riepilogo-e-avvisi.md), [`2026-10-11-trasferimenti-e-istruzioni-ai.md`](../decisioni/2026-10-11-trasferimenti-e-istruzioni-ai.md); archive [`decision-log.md`](../decision-log.md) (2026-09-20 rules, 2026-09-23 spending groups)
+- Decisions: [`2026-10-19-categorie-della-banca-negli-import.md`](../decisioni/2026-10-19-categorie-della-banca-negli-import.md), [`2026-10-12-categorizzazione-soglia-90.md`](../decisioni/2026-10-12-categorizzazione-soglia-90.md), [`2026-10-11-categorizzazione-llm-fase-0.md`](../decisioni/2026-10-11-categorizzazione-llm-fase-0.md), [`2026-10-11-categorizzazione-llm-fase-1.md`](../decisioni/2026-10-11-categorizzazione-llm-fase-1.md), [`2026-10-11-categorie-di-default-e-onboarding.md`](../decisioni/2026-10-11-categorie-di-default-e-onboarding.md), [`2026-10-10-abbonamenti.md`](../decisioni/2026-10-10-abbonamenti.md), [`2026-10-10-email-riepilogo-e-avvisi.md`](../decisioni/2026-10-10-email-riepilogo-e-avvisi.md), [`2026-10-11-trasferimenti-e-istruzioni-ai.md`](../decisioni/2026-10-11-trasferimenti-e-istruzioni-ai.md); archive [`decision-log.md`](../decision-log.md) (2026-09-20 rules, 2026-09-23 spending groups)
 - Specs: [`2026-09-10-categorizzazione-regole-design.md`](../superpowers/specs/2026-09-10-categorizzazione-regole-design.md), [`2026-09-22-categorie-gruppi-spesa-design.md`](../superpowers/specs/2026-09-22-categorie-gruppi-spesa-design.md), [`2026-07-28-cashflow-entrate-dividi-design.md`](../superpowers/specs/2026-07-28-cashflow-entrate-dividi-design.md)

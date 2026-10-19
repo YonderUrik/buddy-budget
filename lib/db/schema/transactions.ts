@@ -32,6 +32,10 @@ export const transactions = pgTable(
     // Codice di categoria dell'esercente (MCC, 4 cifre) fornito dalla banca: solo un'etichetta
     // informativa, non entra nel matching delle regole.
     merchantCategoryCode: text("merchant_category_code"),
+    // The category the bank itself gave the transaction in an imported file (e.g. «Ristorazione»), verbatim. It maps
+    // to one of the user's categories on import (`categorySource = banca`) and teaches later imports from the user's
+    // corrections; encrypted like the description, since a label such as «Farmacia» says something about the user.
+    bankCategory: encryptedText("bank_category"),
     // Nota libera dell'utente, editabile su transazioni auto e manuali.
     note: encryptedText("note"),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),

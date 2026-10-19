@@ -164,7 +164,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
         description={transaction.description}
         rawDescription={hasRaw ? (transaction.rawDescription ?? undefined) : undefined}
         categoryName={category?.name ?? "Senza categoria"}
-        categoryOrigin={autoSource && !uncategorized ? <AutoOriginBadge source={autoSource} confidence={autoConfidence} compact className="align-[-0.15em]" /> : undefined}
+        categoryOrigin={autoSource && !uncategorized ? <AutoOriginBadge source={autoSource} confidence={autoConfidence} bankCategory={transaction.bankCategory} compact className="align-[-0.15em]" /> : undefined}
         uncategorized={uncategorized}
         accountName={accountName}
         amount={full - excluded}

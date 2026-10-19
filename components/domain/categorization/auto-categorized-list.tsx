@@ -61,10 +61,16 @@ export function AutoCategorizedList({
     );
   }
 
+  // The bank's file is named only when some of these rows took their category from it.
+  const fromBank = groups.some((group) => group.source === "banca");
+  const reasonText = autoApplyEnabled
+    ? fromBank ? tr(", con le tue regole, con la categoria della banca o perché era quasi certa") : tr(", con le tue regole o perché era quasi certa")
+    : fromBank ? tr(", con le tue regole o con la categoria della banca") : tr(", con le tue regole");
+
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">
-        {total === 1 ? tr("1 movimento ha") : tr("{0} movimenti hanno", {0: total})}{" "}{tr("la categoria messa dall'app")}{autoApplyEnabled ? tr(", con le tue regole o perché era quasi certa") : tr(", con le tue regole")}{tr(". Se una non va, toccala e cambiala.")}</p>
+        {total === 1 ? tr("1 movimento ha") : tr("{0} movimenti hanno", {0: total})}{" "}{tr("la categoria messa dall'app")}{reasonText}{tr(". Se una non va, toccala e cambiala.")}</p>
       <ul className="flex flex-col">
         {groups.map((group) => (
           <AutoCategorizedRow

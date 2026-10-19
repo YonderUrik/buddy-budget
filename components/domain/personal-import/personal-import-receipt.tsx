@@ -131,6 +131,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
           <li>{plural(results.cash, tr("movimento aggiunto"), tr("movimenti aggiunti"))}{" "}{tr("a Liquidità.")}</li>
           <li>{plural(results.investments, tr("operazione aggiunta"), tr("operazioni aggiunte"))}{" "}{tr("a Investimenti.")}</li>
           {results.skipped > 0 ? <li>{results.skipped === 1 ? tr("1 riga non riconosciuta è stata saltata, come hai scelto: non entra nei conti.") : tr("{0} righe non riconosciute sono state saltate, come hai scelto: non entrano nei conti.", { 0: results.skipped })}</li> : null}
+          {results.bankCategorized > 0 ? <li>{results.bankCategorized === 1 ? tr("1 movimento ha già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.") : tr("{0} movimenti hanno già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.", { 0: results.bankCategorized })}</li> : null}
           <li>{tr("Le righe già presenti sono state saltate, senza doppioni.")}</li>
         </ul>
       ) : null}

@@ -15,12 +15,12 @@ export interface AutoApplyResult {
 }
 
 function emptyResult(): AutoApplyResult {
-  return { applied: { regola: 0, storico: 0, assistente: 0 }, groups: 0 };
+  return { applied: { regola: 0, storico: 0, assistente: 0, banca: 0 }, groups: 0 };
 }
 
 /** Totale dei movimenti categorizzati da un'esecuzione. */
 export function totalApplied(result: AutoApplyResult): number {
-  return result.applied.regola + result.applied.storico + result.applied.assistente;
+  return result.applied.regola + result.applied.storico + result.applied.assistente + result.applied.banca;
 }
 
 /** Quota esclusa come espressione SQL: la percentuale dell'importo, con lo stesso segno. */

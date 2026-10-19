@@ -22,6 +22,7 @@ import { generateParser, ModelInputError } from "./generate";
 import { analyzeWithFallback } from "./analysis";
 import { saveFormatMetadata } from "@/lib/imports/store";
 import { notifyImportSupport } from "./support-report";
+import { fillBankCategories } from "./bank-category-column";
 
 export async function processOne() {
   const lease = randomUUID();
@@ -52,7 +53,8 @@ export async function processOne() {
         logger.warn("personal_import.fallback.started", { jobId: job.id, reason: failureReport.reason });
       },
     });
-    const { outcomes } = generated;
+    // The bank's own category column is read from the file too, for parsers that do not return it.
+    const outcomes = fillBankCategories(generated.outcomes, table);
     if (generated.parser.kind === "javascript" && generated.parser.metadata) {
       try { await saveFormatMetadata(job.userId, "ai", generated.parser.metadata, outcomes.filter(o => o.kind === "cash" || o.kind === "investment")); }
       catch { logger.warn("import.metadata.failed", { jobId: job.id, reason: "persistence_failed" }); }
@@ -80,7 +82,7 @@ export async function processOne() {
       const preview: Preview = { headers: table.headers, currency, records, parser: errors.length && !parserId ? generated.parser : undefined };
       await tx.update(jobs).set({ status: errors.length ? "review_failed" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: errors.length ? describeRowErrors(errors.length, outcomes.length) : null, failureReport: current.failureReport ?? (errors.length ? { phase: "parse", reason: "unrecognized_rows", rows: errors.slice(0, 100).map(o => o.row + 1), count: errors.length, fallback: false } : null), lease: null, leaseUntil: null }).where(owned);
     });
-    logger.info("personal_import.completed", { jobId: job.id, count: outcomes.length, rejected: errors.length });
+    logger.info("personal_import.completed", { jobId: job.id, count: outcomes.length, rejected: errors.length, bankCategories: outcomes.filter(o => o.kind === "cash" && o.bankCategory).length });
   } catch (error) {
     const terminal = job.attempts >= 3 || error instanceof ModelInputError;
     await db.update(jobs).set({ status: terminal ? "failed" : "queued", error: error instanceof ModelInputError ? error.message : "Analisi non riuscita. Verifica il CSV e riprova; nessun movimento è stato importato.", availableAt: new Date(Date.now() + job.attempts * 60000), encryptedCsv: terminal ? null : job.encryptedCsv, lease: null, leaseUntil: null }).where(owned);

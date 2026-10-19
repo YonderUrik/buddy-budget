@@ -6,7 +6,7 @@
 import { localizedFormats } from "@/lib/localization/format";
 import type { CategorizeSuggestion } from "./suggest";
 
-export type CategoryOrigin = "regola" | "storico" | "assistente";
+export type CategoryOrigin = "regola" | "storico" | "assistente" | "banca";
 import { translate, type MessageValues } from "@/lib/localization/messages";
 import { LANGUAGE_LOCALES, type Language } from "@/lib/localization/config";
 
@@ -19,6 +19,7 @@ const ORIGIN_NAMES: Record<CategoryOrigin, string> = {
   regola: "Regola",
   storico: tr("Le tue scelte"),
   assistente: "AI",
+  banca: tr("Banca"),
 };
 
 /** Percentuale intera di una sicurezza 0-1. */
@@ -47,9 +48,13 @@ function autoOriginLabel(source: CategoryOrigin): string {
   return ORIGIN_NAMES[source];
 }
 
-/** Spiegazione estesa dell'origine di una categoria messa dall'app, con la sicurezza (per tooltip e lettori di schermo). */
-function autoOriginDescription(source: CategoryOrigin, confidence: number | null): string {
+/**
+ * Spiegazione estesa dell'origine di una categoria messa dall'app, con la sicurezza (per tooltip e lettori di schermo).
+ * `bankCategory`: the label the bank wrote in the imported file, quoted when known.
+ */
+function autoOriginDescription(source: CategoryOrigin, confidence: number | null, bankCategory?: string | null): string {
   if (source === "regola") return tr("Messa dall'app con una tua regola");
+  if (source === "banca") return bankCategory ? tr("Messa dall'app: nel file la banca la chiama «{0}»", { 0: bankCategory }) : tr("Messa dall'app con la categoria scritta dalla banca nel file");
   const percent = confidence === null ? "" : tr(" (sicura al {0}%)", { 0: confidencePercent(confidence) });
   return source === "assistente"
     ? tr("Messa dall'app: proposta dell'AI{0}", { 0: percent })

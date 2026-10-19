@@ -306,7 +306,7 @@ function createState(): MetricsState {
   });
   state.categorizationAuto = new Counter({
     name: `${METRIC_PREFIX}categorization_auto_total`,
-    help: "Movimenti categorizzati da soli (regole e proposte sicure dal 90%), poi corretti dall'utente, ricategorizzati con «Ricategorizza» e riportati indietro con l'annulla, per origine.",
+    help: "Movimenti categorizzati da soli (regole, proposte sicure dal 90% e categorie della banca negli import), poi corretti dall'utente, ricategorizzati con «Ricategorizza» e riportati indietro con l'annulla, per origine.",
     labelNames: ["source", "event"],
     registers: r,
   });
@@ -636,8 +636,8 @@ export function recordCategorizationAiRequest(outcome: "ok" | "error", durationM
   m.categorizationAiDuration.observe(durationMs / 1000);
 }
 
-/** Origine di una categoria applicata da sola (enum chiuso, come `AUTOMATIC_CATEGORY_SOURCES`). */
-export type AutoCategorySource = "regola" | "storico" | "assistente";
+/** Origin of a category applied without the user (closed enum, like `AUTOMATIC_CATEGORY_SOURCES`). */
+export type AutoCategorySource = "regola" | "storico" | "assistente" | "banca";
 
 /** Registra `count` movimenti categorizzati da soli per origine. */
 export function recordCategorizationAutoApplied(source: AutoCategorySource, count: number): void {

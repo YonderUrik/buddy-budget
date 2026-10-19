@@ -32,7 +32,7 @@ export interface ProductEvents {
   investments_import_ai_fallback: Record<string, never>;
   personal_csv_deleted: { cash: number; investments: number };
   /** Import confermato; `skipped`: righe non riconosciute saltate per scelta dell'utente. */
-  personal_csv_imported: { rows: number; skipped?: number };
+  personal_csv_imported: { rows: number; skipped?: number; bankCategorized?: number };
   /** Scelta nella schermata «Righe da controllare» dell'import personale. */
   personal_csv_review_action: { action: "importa_saltando" | "rianalizza" | "file_corretto" };
   /** Azione scelta nella schermata «File ricevuto» dell'import personale. */
@@ -272,7 +272,7 @@ export interface ProductEvents {
   /** «Va tutto bene» in «Messe dall'app»: movimenti controllati in un colpo. */
   categorization_auto_reviewed: { count: number };
   /** L'utente ha cambiato una categoria applicata da sola; `source` = da dove veniva. */
-  categorization_auto_corrected: { source: "regola" | "storico" | "assistente"; count: number; remember: boolean; from: "categorizza" | "movimenti" };
+  categorization_auto_corrected: { source: "regola" | "storico" | "assistente" | "banca"; count: number; remember: boolean; from: "categorizza" | "movimenti" };
   /** Anteprima di «Ricategorizza» aperta; `scope` = tutto (Categorizza) o una regola appena salvata, `changes` = movimenti che cambierebbero. */
   recategorize_previewed: { scope: "tutto" | "regola"; changes: number };
   /** «Ricategorizza» applicata: movimenti spostati e gruppi scelti; `legacy` = inclusi i movimenti categorizzati prima che se ne segnasse l'origine. */

@@ -107,6 +107,7 @@ interface Target {
  * Cosa deciderebbe oggi BuddyBudget per i movimenti già categorizzati da solo: prima le regole (come negli import),
  * poi, solo per `tutto` e con l'applicazione automatica attiva, le proposte sicure dal 90% ricavate dalle scelte
  * dell'utente (mai dalle categorie messe da sole, che si confermerebbero da sé) e dall'assistente con il consenso.
+ * Rows categorised with the bank's own category change only through a rule.
  * Tiene solo i movimenti la cui categoria cambierebbe; quelli senza una proposta sicura restano come sono. Non scrive
  * nulla e non chiama l'assistente.
  */
@@ -131,7 +132,8 @@ export function planRecategorize(input: RecategorizeInput): RecategorizePlan {
       (row.rawDescription ? input.resolveRule({ description: row.rawDescription, amount: row.amount }) : null);
     const category = resolved ? categoryById.get(resolved.categoryId) : undefined;
     if (!resolved || !category || category.isFallback) {
-      withoutRule.push(row);
+      // The bank's own category gives way only to a rule of the user, never to a proposal.
+      if (row.categorySource !== "banca") withoutRule.push(row);
       continue;
     }
     if (input.scope.kind === "regola" && resolved.ruleId !== input.scope.ruleId) continue;

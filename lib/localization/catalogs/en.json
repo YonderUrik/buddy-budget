@@ -5147,5 +5147,12 @@
   "Hai già una password: cambiala con quella attuale.": "You already have a password: change it using the current one.",
   "Su questa installazione le segnalazioni non sono attive. Apri una segnalazione su GitHub: github.com/YonderUrik/buddy-budget/issues": "Reports are not set up on this install. Open an issue on GitHub: github.com/YonderUrik/buddy-budget/issues",
   "Sto aggiungendo i nuovi movimenti: il grafico si aggiorna da solo appena finisco.": "Adding the new transactions: the chart updates by itself as soon as I'm done.",
-  "Aggiorno il grafico con i nuovi movimenti…": "Updating the chart with the new transactions…"
+  "Aggiorno il grafico con i nuovi movimenti…": "Updating the chart with the new transactions…",
+  "Banca": "Bank",
+  "Messa dall'app: nel file la banca la chiama «{0}»": "Assigned by the app: in the file your bank calls it «{0}»",
+  "Messa dall'app con la categoria scritta dalla banca nel file": "Assigned by the app with the category your bank wrote in the file",
+  "1 movimento ha già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.": "1 account transaction already has the category your bank wrote in the file: you can change it any time.",
+  "{0} movimenti hanno già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.": "{0} account transactions already have the category your bank wrote in the file: you can change it any time.",
+  ", con le tue regole, con la categoria della banca o perché era quasi certa": ", using your rules, your bank's category or because confidence was high",
+  ", con le tue regole o con la categoria della banca": ", using your rules or your bank's category"
 }

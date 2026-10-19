@@ -346,10 +346,25 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | Categories, rules, AI suggestions | [categorisation.md](categorisation.md) |
 | Analitiche, FIRE, goals | [analytics-and-goals.md](analytics-and-goals.md) |
 
+### 4.17 «Dall'ultima visita» (since your last visit)
+
+When a returning user opens the app, on whatever page, one toast says what happened while they were away and what waits for them, with one action ([`components/domain/welcome/`](../../components/domain/welcome/), [`lib/welcome/`](../../lib/welcome/)). It is shown once per visit and never to a user on their first visit, so it does not compete with «Primi passi».
+
+| Piece | How it works | Where |
+|---|---|---|
+| Visit | `WelcomeToast` (app layout) posts `POST /api/visits` on load, when the tab or installed app comes back to the foreground and every 5 minutes while visible. One conditional UPDATE on `auth_user` (migration 0046): a heartbeat more than 30 minutes after the last one (`app_seen_at`) starts a visit (`visit_started_at = now`) and moves the old `app_seen_at` into `visit_since_at`; heartbeats within a minute only read. The first heartbeat ever has no `visit_since_at`, so nothing is said | [`lib/welcome/visit.ts`](../../lib/welcome/visit.ts), [`visit.server.ts`](../../lib/welcome/visit.server.ts) |
+| Summary | `GET /api/welcome` records the visit first (so it never reads the previous visit's state), then counts (counts only: no amounts or names) in the away window `(visit_since_at, visit_started_at]`: movements created (any source), price alerts triggered, subscription price rises first seen after the previous visit. What waits is current state: movements in the fallback category (the «Da decidere» count of Liquidità), detected subscriptions not yet confirmed, file imports stopped on rows to check (`review_failed`, not expired). `summary` is null when there is nothing, on the first visit, once shown in this visit, and for the shared demo account | [`lib/welcome/summary.server.ts`](../../lib/welcome/summary.server.ts), [`app/api/welcome/route.ts`](../../app/api/welcome/route.ts) |
+| Once per visit | When the toast appears the client sends `PATCH /api/welcome {shown: true}` (`welcome_shown_at`): no toast again while it is later than `visit_started_at`, on any device | same |
+| Toast | A title of up to two lines and no description: what happened, then what waits, each list joined in the user's language (`Intl.ListFormat`): «Mentre eri via: 12 movimenti nuovi e 1 avviso di prezzo scattato» / «Da sistemare: 7 movimenti senza categoria». Action: the first thing that waits («Decidi» opens Categorizza, «Controlla» Abbonamenti, «Apri» the import) or «Vedi» on the first thing that happened. 10 seconds, sonner like every other toast. No amounts, so nothing for «Nascondi importi» to mask | [`welcome-lines.ts`](../../components/domain/welcome/welcome-lines.ts), [`welcome-toast.tsx`](../../components/domain/welcome/welcome-toast.tsx) |
+| Signals | Logs `app.visit.started` (`trigger`, `ageDays` away), `welcome.summary.built` (`count` happened, `pending` waiting), `welcome.toast.shown`; Umami `welcome_summary_shown`, `welcome_summary_item_clicked` (`item`). No metric: no background work | [`lib/analytics/track.ts`](../../lib/analytics/track.ts) |
+
+Example: Daniele closes the app on Thursday at 18:40. The bank sync adds 12 movements overnight (4 without a category) and his Ferrari alert at 380 € goes off. On Friday at 9:00 the first heartbeat starts a visit with `visit_since_at` = Thursday 18:40, and a toast says «Mentre eri via: 12 movimenti nuovi e 1 avviso di prezzo scattato» and, on the next line, «Da sistemare: 7 movimenti senza categoria e 1 abbonamento da confermare», with «Decidi» opening Categorizza. A reload at 9:10 shows nothing; after a pause of more than 30 minutes, a new toast comes only if something new happened or still waits.
+
 ## 5. Limits and out of scope
 
 - The layer rule is a convention; no lint rule enforces it, and `components/ui/` depends on `components/motion/` and `lib/`.
 - No offline support and no push notifications: the PWA is installable only.
+- «Dall'ultima visita» is a toast that leaves after 10 seconds: what waits stays where it lives (Liquidità, Abbonamenti, Importazioni). Bank connections about to expire keep their own banner, upcoming instalments «Prossime rate».
 - better-auth's rate limiter is not backed by Redis, so its counters are per pod.
 - `resolveDbSsl` can throw on multi-host Postgres URLs, and the migrator image does not force TLS (CLAUDE.md "Known technical debt").
 - better-auth writes its internal errors to the console, outside `logger`.

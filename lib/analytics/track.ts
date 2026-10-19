@@ -5,6 +5,7 @@ import type { SidebarModuleId } from "@/lib/sidebar/modules";
 import type { ReportErrorArea, ReportSource } from "@/lib/support/constants";
 import type { GoalKind } from "@/lib/goals/constants";
 import type { Attribution } from "./attribution";
+import type { WelcomeItemKind } from "@/lib/welcome/types";
 import type { SingleSuggestionStatus } from "@/lib/categorization/ai/single-suggestion";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
@@ -68,6 +69,10 @@ export interface ProductEvents {
   start_checklist_reopened: undefined;
   /** Tutti i passi fatti, registrato una sola volta per utente. */
   start_checklist_completed: undefined;
+  /** «Dall'ultima visita» toast shown on opening the app; counts of what happened and of what waits for the user. */
+  welcome_summary_shown: { happened: number; waiting: number };
+  /** The toast's action pressed (`item`: the line it leads to). */
+  welcome_summary_item_clicked: { item: WelcomeItemKind };
   /** «Esplora con dati d'esempio» avviato. */
   demo_started: undefined;
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */

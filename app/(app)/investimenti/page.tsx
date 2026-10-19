@@ -82,7 +82,7 @@ export default function InvestimentiPage() {
                   action={
                     <TitleSearch
                       currency={currency}
-                      suggestions={view.instruments}
+                      suggestions={view.heldInstruments}
                       onSelect={(instrument) => track("investment_title_searched", { type: instrument.type })}
                     />
                   }

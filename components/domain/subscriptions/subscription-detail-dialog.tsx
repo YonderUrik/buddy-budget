@@ -10,7 +10,8 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import * as React from "react";
-import { CheckIcon, HistoryIcon, InfoIcon, RepeatIcon, Trash2Icon, UndoIcon, XIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+import { CheckIcon, ChevronRightIcon, HistoryIcon, InfoIcon, RepeatIcon, Trash2Icon, UndoIcon, XIcon } from "lucide-react";
 import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments/light";
 import { FormDialogContent } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,9 @@ import { useDeleteSubscriptionMutation, useSaveSubscriptionMutation, useUpdateSu
 import type { SubscriptionItem } from "@/lib/subscriptions/view";
 import { localizedSubscriptionFormats } from "./subscriptions-format";
 import { CadenceSelect, Field, Input, SubscriptionCategoryField } from "./subscription-fields";
+
+// A charge opens its transaction's detail on a tap: the code loads then.
+const MovementDetailDialog = dynamic(() => import("@/components/domain/liquidity/light").then((m) => m.MovementDetailDialog), { ssr: false });
 
 /** Quanti addebiti dello storico si mostrano (i più recenti). */
 const HISTORY_LIMIT = 12;
@@ -54,6 +58,7 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
   const [nextDate, setNextDate] = React.useState(item.nextDate ?? today);
   const [categoryId, setCategoryId] = React.useState(item.categoryId ?? "");
   const [error, setError] = React.useState<string | null>(null);
+  const [openCharge, setOpenCharge] = React.useState<string | null>(null);
   const busy = save.isPending || update.isPending || remove.isPending;
   const fail = (e: Error) => setError(e.message);
 
@@ -103,14 +108,22 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
         ) : null}
         {history.length > 0 ? (
           <DialogSection title={tr("Ultimi addebiti")} icon={HistoryIcon}>
-            <ul className="flex flex-col divide-y divide-border/60 text-sm">
+            <ul className="flex flex-col text-sm">
               {history.map((charge) => (
-                <li key={charge.id} className="flex min-h-9 items-center justify-between gap-3">
-                  <span className="text-text-2">{formatDateWithYear(charge.date)}</span>
-                  <span className="tabular-nums">{formatCurrency(charge.amount, currency)}</span>
+                <li key={charge.id}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenCharge(charge.id)}
+                    className="-mx-2 flex min-h-11 w-[calc(100%+1rem)] items-center gap-3 rounded-xl px-2 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+                  >
+                    <span className="flex-1 text-text-2">{formatDateWithYear(charge.date)}</span>
+                    <span className="tabular-nums">{formatCurrency(charge.amount, currency)}</span>
+                    <ChevronRightIcon className="size-4 text-text-3" aria-hidden="true" />
+                  </button>
                 </li>
               ))}
             </ul>
+            <MovementDetailDialog transactionId={openCharge} onOpenChange={(open) => !open && setOpenCharge(null)} from="abbonamenti" />
           </DialogSection>
         ) : null}
         {item.id ? (

@@ -8,9 +8,8 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { PencilIcon, SplitIcon, Trash2Icon } from "lucide-react";
-import { toast } from "sonner";
 import { CategoryAvatar } from "@/components/domain/categories";
-import { AutoOriginBadge, MerchantLogo, useRuleSavedFeedback } from "@/components/domain/categorization";
+import { AutoOriginBadge, MerchantLogo } from "@/components/domain/categorization";
 import { TransactionEditPanel, TransactionNotePopover } from "@/components/domain/expenses";
 import { InlineOrSheet } from "@/components/domain/shared";
 import {
@@ -24,18 +23,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { track } from "@/lib/analytics";
-import { merchantKey } from "@/lib/categorization/merchant-key";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { Category } from "@/lib/db/schema/categories";
-import { isAutomaticCategorySource } from "@/lib/categorization/category-source";
-import { useCreateRuleMutation } from "@/lib/queries/categorization";
-import { useDeleteTransactionMutation, useUpdateTransactionMutation, type ListedTransaction } from "@/lib/queries/transactions";
+import { useDeleteTransactionMutation, type ListedTransaction } from "@/lib/queries/transactions";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { cn } from "@/lib/utils";
 import { CategorySheet } from "./category-sheet";
 import { MovementRow } from "./movement-row";
 import { SplitPanel } from "./split-panel";
+import { useTransactionCategory } from "./use-transaction-category";
 
 export interface MovementItemProps {
   /** Il movimento, con `logoPath` se il server ha trovato il logo dell'esercente. */
@@ -46,26 +42,21 @@ export interface MovementItemProps {
   currency: string;
   /** Chiamata quando la riga mostra il logo dell'esercente (per citare la fonte dei loghi sotto l'elenco). */
   onRemoteLogo?: () => void;
+  /** Opens the transaction's detail (tap on the row). */
+  onOpen?: () => void;
 }
 
 type Panel = "none" | "split" | "edit";
-
-/** Message after «Ricordala» when the rule already sorted other transactions to categorise, in the user's language. */
-function rememberedMessage(applied: number, categoryName: string, tr: (source: string, values?: Record<string, string | number>) => string): string {
-  return applied === 1 ? tr("Messo in {0} anche un altro movimento", { 0: categoryName }) : tr("Messi in {0} anche altri {1} movimenti", { 0: categoryName, 1: applied });
-}
 
 /** Icona della categoria alla misura richiesta. */
 function categoryAvatar(category: Category, className: string, iconSize: number) {
   return <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={iconSize} className={className} />;
 }
 
-export function MovementItem({ transaction, categories, usage, accountName, currency, onRemoteLogo }: MovementItemProps) {
+export function MovementItem({ transaction, categories, usage, accountName, currency, onRemoteLogo, onOpen }: MovementItemProps) {
   const { t: tr } = useLocalization();
-  const update = useUpdateTransactionMutation();
   const remove = useDeleteTransactionMutation();
-  const createRule = useCreateRuleMutation();
-  const notifyRuleSaved = useRuleSavedFeedback();
+  const { selectable, choose: chooseCategory, update, autoSource } = useTransactionCategory(transaction, categories);
   const [panel, setPanel] = React.useState<Panel>("none");
   const [actionsOpen, setActionsOpen] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
@@ -77,38 +68,9 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
   const isAuto = transaction.source === "auto";
   const category = categories.find((c) => c.id === transaction.categoryId);
   const uncategorized = category?.isFallback ?? false;
-  const selectable = React.useMemo(
-    () => categories.filter((c) => c.isFallback || (c.type === "trasferimento" || (isIncome ? c.type === "entrata" : c.type !== "entrata"))),
-    [categories, isIncome]
-  );
   const hasRaw = transaction.rawDescription && transaction.rawDescription !== transaction.description;
-  // Categoria messa da sola (regola, scelte passate, AI): lo si dice accanto al nome, così si sa cosa controllare.
-  const autoSource = isAutomaticCategorySource(transaction.categorySource) ? transaction.categorySource : undefined;
+  // Category set by the app (rule, past choices, AI): said next to the name, so the user knows what to check.
   const autoConfidence = transaction.categoryConfidence === null ? null : Number(transaction.categoryConfidence);
-
-  function chooseCategory(categoryId: string, remember: boolean) {
-    const previous = transaction.categoryId;
-    const name = categories.find((c) => c.id === categoryId)?.name ?? "";
-    update.mutate(
-      { id: transaction.id, input: { categoryId } },
-      {
-        onSuccess: () => {
-          track("liquidity_category_remembered", { remembered: remember });
-          if (autoSource) track("categorization_auto_corrected", { source: autoSource, count: 1, remember, from: "movimenti" });
-          // Se c'è già una regola per questo esercente, prende la categoria nuova: altrimenti i prossimi tornerebbero nella vecchia.
-          if (remember) {
-            createRule.mutate(
-              { matchType: "merchant", pattern: merchantKey(transaction.description), categoryId, replaceExisting: true },
-              { onSuccess: (rule) => notifyRuleSaved(rule, rule.applied > 0 ? rememberedMessage(rule.applied, name, tr) : undefined) }
-            );
-          }
-          toast.success(tr("Spostata in {0}", { 0: name }), {
-            action: { label: tr("Annulla"), onClick: () => update.mutate({ id: transaction.id, input: { categoryId: previous } }) },
-          });
-        },
-      }
-    );
-  }
 
   function saveSplit(nextExcluded: number) {
     update.mutate(
@@ -179,6 +141,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
         actionsOpen={actionsOpen}
         actionsId={`azioni-${transaction.id}`}
         onToggleActions={() => setActionsOpen((o) => !o)}
+        onOpen={onOpen}
         statusMessage={update.isPending ? "Salvataggio…" : update.isError ? "Salvataggio non riuscito, riprova." : undefined}
       />
       {actionsOpen && (

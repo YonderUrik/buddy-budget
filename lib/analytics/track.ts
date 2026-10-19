@@ -5,12 +5,16 @@ import type { SidebarModuleId } from "@/lib/sidebar/modules";
 import type { ReportErrorArea, ReportSource } from "@/lib/support/constants";
 import type { GoalKind } from "@/lib/goals/constants";
 import type { Attribution } from "./attribution";
+import type { SingleSuggestionStatus } from "@/lib/categorization/ai/single-suggestion";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import" | "goal";
 /** Screens whose period selector offers a custom range, for the calendar events. */
 export type PeriodSurface = "investimenti" | "performance" | "analitiche";
 /** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
+/** Where the detail of a transaction was opened from. */
+export type TransactionDetailSource = "movimenti" | "categorizza" | "abbonamenti" | "esercente";
+
 export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
 /**
@@ -113,6 +117,16 @@ export interface ProductEvents {
   categorization_applied: { groups: number };
   categorization_rule_saved: { matchType: "merchant" | "contains"; applied: number };
   transaction_split: undefined;
+  /** Dettaglio di un movimento aperto; `from`: dove (elenco Movimenti, Categorizza, un abbonamento, un altro movimento dello stesso esercente). */
+  transaction_detail_opened: { from: TransactionDetailSource };
+  /** Nota di un movimento salvata; `cleared`: la nota è stata tolta. */
+  transaction_note_saved: { cleared: boolean };
+  /** Movimento aggiunto a mano eliminato. */
+  transaction_deleted: undefined;
+  /** «Chiedi all'AI» nel dettaglio di un movimento; `outcome`: risposta (ok) o perché non c'è (spento, trasferimento, limite, errore). */
+  transaction_ai_asked: { outcome: SingleSuggestionStatus };
+  /** Categoria proposta dall'AI per un movimento usata con «Usa questa». */
+  transaction_ai_used: undefined;
   /** Su telefono: foglio delle viste aperto toccando il titolo della sezione. */
   section_views_opened: { section: SectionViewsKey };
   /** Su telefono: vista scelta dal foglio aperto dal titolo (diversa da quella corrente). */
@@ -272,7 +286,7 @@ export interface ProductEvents {
   /** Movimenti categorizzati da soli quando la pagina Categorizza ha trovato proposte sicure pronte. */
   categorization_auto_applied: { count: number; groups: number };
   /** L'utente ha cambiato una categoria applicata da sola; `source` = da dove veniva. */
-  categorization_auto_corrected: { source: "regola" | "storico" | "assistente" | "banca"; count: number; remember: boolean; from: "categorizza" | "movimenti" };
+  categorization_auto_corrected: { source: "regola" | "storico" | "assistente" | "banca"; count: number; remember: boolean; from: "categorizza" | "movimenti" | "dettaglio" };
   /** Anteprima di «Ricategorizza» aperta; `scope` = tutto (Categorizza) o una regola appena salvata, `changes` = movimenti che cambierebbero. */
   recategorize_previewed: { scope: "tutto" | "regola"; changes: number };
   /** «Ricategorizza» applicata: movimenti spostati e gruppi scelti; `legacy` = inclusi i movimenti categorizzati prima che se ne segnasse l'origine. */

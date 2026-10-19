@@ -152,6 +152,7 @@ export function SwipeCard({
             dates={group.transactionDates}
             amounts={group.transactionAmounts}
             descriptions={group.transactionDescriptions}
+            ids={group.transactionIds}
             currency={currency}
             className="rounded-xl bg-muted/50 px-3 py-2 max-md:hidden"
           />
@@ -160,6 +161,7 @@ export function SwipeCard({
             dates={group.transactionDates}
             amounts={group.transactionAmounts}
             descriptions={group.transactionDescriptions}
+            ids={group.transactionIds}
             currency={currency}
             limit={MOBILE_PREVIEW_LIMIT}
             className="rounded-xl bg-muted/50 px-3 py-2 md:hidden"

@@ -3,9 +3,13 @@ import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
-/** Elenco dei movimenti a giorni: intestazione con etichetta e totale del giorno, poi i movimenti. Mostra a blocchi, con "Mostra altri". */
+/**
+ * Transactions grouped by day: a heading with the day's label and total, then the transactions, shown in blocks with
+ * "Mostra altri". Tapping a transaction opens its detail.
+ */
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import { LogoCredit } from "@/components/domain/categorization";
@@ -13,6 +17,9 @@ import type { ListedTransaction } from "@/lib/queries/transactions";
 
 import { groupByDay } from "@/lib/liquidity/day-groups";
 import { MovementItem } from "./movement-item";
+
+// Opened only on a tap: its code loads then, not with the list.
+const MovementDetailDialog = dynamic(() => import("./movement-detail-dialog").then((m) => m.MovementDetailDialog), { ssr: false });
 
 /** Quanti giorni compaiono prima di "Mostra altri", e quanti se ne aggiungono a ogni clic. */
 const DAYS_PER_PAGE = 10;
@@ -35,6 +42,7 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
   const { t: tr } = useLocalization();
   const [days, setDays] = React.useState(DAYS_PER_PAGE);
   const [logosShown, setLogosShown] = React.useState(false);
+  const [openId, setOpenId] = React.useState<string | null>(null);
   const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
   const groups = React.useMemo(() => groupByDay([...transactions], today, formattingLocale), [transactions, today, formattingLocale]);
   if (groups.length === 0) return <p className="py-10 text-center text-text-2">{tr(emptyMessage)}</p>;
@@ -59,6 +67,7 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
                 accountName={accountNames?.get(transaction.accountId)}
                 currency={currency}
                 onRemoteLogo={showLogoCredit}
+                onOpen={() => setOpenId(transaction.id)}
               />
             ))}
           </ul>
@@ -70,6 +79,12 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
         </div>
       )}
       <LogoCredit visible={logosShown} className="pt-4" />
+      <MovementDetailDialog
+        transactionId={openId}
+        onOpenChange={(open) => !open && setOpenId(null)}
+        from="movimenti"
+        placeholder={openId ? transactions.find((t) => t.id === openId) : undefined}
+      />
     </div>
   );
 }

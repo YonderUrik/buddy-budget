@@ -20,7 +20,7 @@ export const AI_USAGES: readonly AiUsageItem[] = [
   {
     title: "Proposte di categoria",
     sent: "Invia il nome pulito dell'esercente, se è un'entrata o un'uscita, le tue categorie e le tue istruzioni: mai importi, date, IBAN, note o nomi di persone.",
-    where: "Lo attivi qui sotto, con «Proponi le categorie con l'AI».",
+    where: "Lo attivi qui sotto, con «Proponi le categorie con l'AI»; vale anche per «Chiedi all'AI» nel dettaglio di un movimento.",
   },
   {
     title: "Importazione di un estratto conto in un formato nuovo",

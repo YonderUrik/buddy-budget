@@ -17,6 +17,7 @@ import { resolveFxRates } from "@/lib/investments/import/execute";
 import { updateFxRates } from "@/lib/market-data/update";
 import { marketDataDeps } from "@/lib/market-data/runtime";
 import { personalImportEmailContent } from "./emails";
+import { importCounts } from "./counts";
 import { resolveProfile } from "@/lib/localization/config";
 import { generateParser, ModelInputError } from "./generate";
 import { analyzeWithFallback } from "./analysis";
@@ -100,7 +101,7 @@ export async function maintainJobs() {
   if (ready) {
     try {
       const result = await confirmImport(ready.userId, ready.id);
-      logger.info("personal_import.saved", { jobId: ready.id, count: result.inserted });
+      logger.info("personal_import.saved", { jobId: ready.id, count: result.inserted, ...("rows" in result ? { total: result.rows, skipped: result.alreadyPresent } : {}) });
       await categorizeNewMovementsSafely(ready.userId);
     } catch (error) {
       await db.update(jobs).set(error instanceof ImportError
@@ -123,7 +124,7 @@ export async function maintainJobs() {
     const [user] = await db.select({ email: authUser.email, productCountry: authUser.productCountry, language: authUser.language }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
-    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL, language: resolveProfile(user).language });
+    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL, language: resolveProfile(user).language, counts: importCounts(pending.importLedger) });
     const result = await sendEmail({ to: user.email, subject, text, html, idempotencyKey: `personal-csv-${pending.id}` });
     if (!result.ok) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));

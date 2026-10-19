@@ -1,7 +1,7 @@
 import { validateBitpandaSettlements } from "./validate-bitpanda";
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { personalFormats as formats, personalImportJobs as jobs, personalImportReceipts as receipts, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
 import { accounts } from "@/lib/db/schema/accounts";
@@ -45,6 +45,17 @@ export function outcomeHash(outcome: Outcome) {
   if ("bankCategory" in fields) delete fields.bankCategory;
   return digest(JSON.stringify(fields));
 }
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+/** Keys among `keys` already imported under another of the user's sources, with the source that holds each. */
+async function importedElsewhere(tx: Tx, userId: string, formatId: string, keys: string[]) {
+  const found = new Map<string, string>();
+  for (let i = 0; i < keys.length; i += 1000) {
+    const rows = await tx.select({ key: receipts.recordKey, formatId: receipts.formatId }).from(receipts).innerJoin(formats, eq(formats.id, receipts.formatId))
+      .where(and(eq(formats.userId, userId), ne(receipts.formatId, formatId), inArray(receipts.recordKey, keys.slice(i, i + 1000))));
+    for (const r of rows) found.set(r.key, r.formatId);
+  }
+  return found;
+}
 export async function confirmImport(userId: string, id: string, options: ConfirmOptions = {}) {
   const currency = await getUserCurrency(userId);
   // User rules win over the bank's category: a row a rule takes stays on the fallback and the rule categorises it
@@ -73,9 +84,15 @@ export async function confirmImport(userId: string, id: string, options: Confirm
     if (!format) throw new ImportError("Formato non disponibile");
     const prior = new Map((await tx.select().from(receipts).where(eq(receipts.formatId, format.id))).map(r => [r.recordKey, r.outcomeHash]));
     for (const r of preview.records) if (prior.has(r.key) && prior.get(r.key) !== outcomeHash(r.outcome)) throw new ImportError("Una riga già importata ha una nuova interpretazione: verifica lo storico prima di proseguire");
+    // A row's key is its raw content, the same whatever format read it: a row already imported under another of the
+    // user's sources (the same bank chosen again as a new one) is a duplicate too. It leaves no receipt here, so
+    // deleting the original import makes it new again.
+    const elsewhere = await importedElsewhere(tx, userId, format.id, preview.records.filter(r => !prior.has(r.key)).map(r => r.key));
     // Le righe saltate non lasciano ricevuta: corrette e ricaricate, o lette da un formato rianalizzato, tornano nuove.
-    const fresh = preview.records.filter(r => !prior.has(r.key) && !skippedKeys.has(r.key));
+    const fresh = preview.records.filter(r => !prior.has(r.key) && !elsewhere.has(r.key) && !skippedKeys.has(r.key));
     const financial = fresh.filter(r => r.outcome.kind === "cash" || r.outcome.kind === "investment");
+    const fileRows = preview.records.filter(r => (r.outcome.kind === "cash" || r.outcome.kind === "investment") && !skippedKeys.has(r.key)).length;
+    const alreadyPresent = fileRows - financial.length;
     if (job.brokerProvider && financial.length) {
       const [native] = await tx.select({ id: brokerStatements.id }).from(brokerStatements).where(and(eq(brokerStatements.userId, userId), job.brokerProvider === "generic" ? undefined : sql`coalesce(${brokerStatements.statement}->>'provider', 'interactive-brokers') = ${job.brokerProvider}`)).limit(1);
       const dates = financial.flatMap(r => r.outcome.kind === "cash" || r.outcome.kind === "investment" ? [r.outcome.date] : []).sort();
@@ -84,6 +101,13 @@ export async function confirmImport(userId: string, id: string, options: Confirm
     }
     if (financial.some(r => !r.rate || !Number.isFinite(r.rate) || r.rate <= 0)) throw new ImportError("Cambio storico non disponibile: ricarica il CSV più tardi");
     let portfolioId = format.portfolioId, accountId = format.accountId;
+    // A new source whose file overlaps one already imported adds its new rows to that source's account and portfolio,
+    // not to a second copy of the same account.
+    const origins = new Set(elsewhere.values());
+    if (origins.size === 1 && !accountId && !portfolioId) {
+      const [origin] = await tx.select({ accountId: formats.accountId, portfolioId: formats.portfolioId }).from(formats).where(and(eq(formats.id, [...origins][0]), eq(formats.userId, userId)));
+      accountId = origin?.accountId ?? null; portfolioId = origin?.portfolioId ?? null;
+    }
     if (financial.length && !accountId) {
       const [account] = await tx.insert(accounts).values({ userId, name: `${format.name} · CSV`, type: "conto", source: "manuale", balance: "0" }).returning(); accountId = account.id;
     }
@@ -155,8 +179,8 @@ export async function confirmImport(userId: string, id: string, options: Confirm
       const [version] = await tx.insert(parsers).values({ formatId: format.id, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(stored.parser), userId), model: "accepted-with-skips" }).returning();
       parserId = version.id;
     }
-    await tx.update(jobs).set({ status: "imported", error: null, parserId, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), skipped: skippedKeys.size, bankCategorized: bank.learned + bank.name + bank.dictionary } }).where(eq(jobs.id, id));
-    return { inserted: financial.length, duplicates: preview.records.length - fresh.length - skippedKeys.size, skipped: skippedKeys.size, bankCategorized: bank.learned + bank.name + bank.dictionary, bank };
+    await tx.update(jobs).set({ status: "imported", error: null, parserId, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), skipped: skippedKeys.size, bankCategorized: bank.learned + bank.name + bank.dictionary, rows: fileRows, alreadyPresent } }).where(eq(jobs.id, id));
+    return { inserted: financial.length, duplicates: preview.records.length - fresh.length - skippedKeys.size, rows: fileRows, alreadyPresent, skipped: skippedKeys.size, bankCategorized: bank.learned + bank.name + bank.dictionary, bank };
   });
   if ("bank" in result && result.bank && result.bank.carried > 0) {
     const { carried, learned, name, dictionary } = result.bank;

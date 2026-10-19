@@ -5207,5 +5207,16 @@
   "Lascia così": "Leave it",
   "Chiedo all'AI…": "Asking the AI…",
   "Chiedi all'AI": "Ask the AI",
-  "Accendilo in Impostazioni": "Turn it on in Settings"
+  "Accendilo in Impostazioni": "Turn it on in Settings",
+  "Questo file è già stato importato: i suoi movimenti ci sono già tutti.": "This file has already been imported: all its movements are already here.",
+  "Il movimento del file c'era già: non abbiamo aggiunto niente.": "The file's movement was already here: we added nothing.",
+  "Tutti i {0} movimenti del file c'erano già: non abbiamo aggiunto niente.": "All {0} movements in the file were already here: we added nothing.",
+  "{0} su {1} movimenti importati: gli altri c'erano già.": "{0} of {1} movements imported: the others were already here.",
+  "Niente di nuovo: {0} movimenti c'erano già": "Nothing new: {0} movements were already here",
+  "{0} su {1} movimenti importati": "{0} of {1} movements imported",
+  "{0}: niente di nuovo": "{0}: nothing new",
+  "I movimenti c'erano già tutti.": "All movements were already here.",
+  "Il tuo CSV non aveva movimenti nuovi": "Your CSV had no new movements",
+  "Tutti i movimenti del tuo CSV c'erano già: non abbiamo aggiunto niente.": "All movements in your CSV were already here: we added nothing.",
+  "{0} su {1} movimenti importati: gli altri c'erano già. Trovi i dati in **Liquidità** e **Investimenti**.": "{0} of {1} movements imported: the others were already here. You'll find the data in **Cash** and **Investments**."
 }

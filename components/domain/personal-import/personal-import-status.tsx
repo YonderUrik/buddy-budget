@@ -1,6 +1,7 @@
 "use client";
 
 
+import { importOverlap } from "@/lib/personal-import/counts";
 import { useLocalization } from "@/lib/localization/provider";
 import { translateServerMessage } from "@/lib/localization/messages";
 
@@ -73,7 +74,11 @@ export function describeImportJob(job: Job): { message: string; values?: Record<
     case "processing": return { message: "Analisi in corso", action: null };
     case "ready": return { message: "Salvataggio in corso", action: null };
     case "imported": return job.results
-      ? { message: "{0} movimenti · {1} operazioni", values: { 0: job.results.cash, 1: job.results.investments }, action: "Dettaglio" }
+      ? importOverlap(job.results) === "nothing_new"
+        ? { message: "Niente di nuovo: {0} movimenti c'erano già", values: { 0: job.results.alreadyPresent! }, action: "Dettaglio" }
+        : importOverlap(job.results) === "partial"
+          ? { message: "{0} su {1} movimenti importati", values: { 0: job.results.rows! - job.results.alreadyPresent!, 1: job.results.rows! }, action: "Dettaglio" }
+          : { message: "{0} movimenti · {1} operazioni", values: { 0: job.results.cash, 1: job.results.investments }, action: "Dettaglio" }
       : { message: "Importato", action: "Dettaglio" };
     case "review_failed": return { message: job.error ?? "Qualche riga da correggere", action: "Controlla" };
     case "failed": return { message: job.error ?? "Formato non riconosciuto", action: "Riprova" };

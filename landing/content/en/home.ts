@@ -14,7 +14,7 @@ import { SECURITY_SOURCES_EN } from "./security";
 /** Title and description of the English pages (root layout and home). */
 export const SITE_TITLE_EN = "BuddyBudget: open-source personal finance, all in one number";
 export const SITE_DESCRIPTION_EN =
-  "Bank accounts, investments, pension and debts in one net worth, updated every day, with Italian taxes worked out. Read-only bank connection or file upload. Open source and self-hostable, free during the beta.";
+  "Bank accounts, investments, pension and debts in one net worth, updated every day, with Italian taxes worked out. Read-only bank connection or file upload. Open source and self-hostable; Cash is free, the rest is Pro.";
 export const OG_ALT_EN = "BuddyBudget: all your money, in one number";
 
 /** Countries whose banks can be linked, with English names (same codes as `SUPPORTED.countries`). */
@@ -24,7 +24,7 @@ const BANK_LIST_EN = `${BANKS_EN.slice(0, -1).map((c) => c.name).join(", ")} and
 
 /** Frequently asked questions of the English home, also the FAQPage structured data of `/en`. */
 export const FAQ_EN: readonly FaqItem[] = [
-  { question: "Is it free?", answer: "Yes, during the beta. If that changes we'll say so first, and you can take everything with you in a ZIP file." },
+  { question: "Is it free?", answer: "The Cash section is, with no end date. Pro unlocks everything else for €1.99 a month or €20 a year, with a 14-day free trial; until Pro starts, everything is unlocked. If you install it on your own servers everything is free, and your data comes with you in a ZIP file." },
   {
     question: "Which countries and languages?",
     answer: `Two products: Italy, in Italian and English, and Germany, in German and English. You pick the currency. Italy has every feature. Germany has the essentials: accounts, portfolio, dividends and partial 2026 tax estimates, with the limits written out; pension and the advanced simulators stay hidden until they have been reviewed. Banks can be connected in ${BANK_LIST_EN}.`,

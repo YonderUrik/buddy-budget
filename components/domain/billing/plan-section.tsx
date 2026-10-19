@@ -15,7 +15,7 @@ export function PlanSection() {
   const status = useBillingStatusQuery({ enabled: plan.enforced });
   if (!plan.enforced) return null;
   return (
-    <SettingsSection id="impostazioni-piano" title={tr("Piano")} icon={Sparkles} description={tr("Liquidità è gratis; Pro sblocca tutte le altre sezioni.")}>
+    <SettingsSection id="impostazioni-piano" title={tr("Piano")} icon={Sparkles}>
       {status.data ? <PlanStatusCard status={status.data} canManage={false} managing={false} onManage={() => {}} /> : <div className="h-16 animate-pulse rounded-2xl bg-muted" aria-busy="true" />}
       <Link href="/pro?da=impostazioni" className="w-fit text-sm font-medium underline underline-offset-4">
         {plan.tier === "pro" ? tr("Gestisci il piano") : tr("Scopri Pro")}

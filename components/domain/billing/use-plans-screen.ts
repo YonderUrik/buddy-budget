@@ -11,9 +11,9 @@ import { useLocalization } from "@/lib/localization/provider";
 import { useBillingStatusQuery, useOpenPortalMutation, useRedeemCodeMutation, useStartCheckoutMutation } from "@/lib/queries/billing";
 import { usePlan } from "./plan-provider";
 
-/** How often and how many times the page re-reads the plan after Checkout, while the webhook is on its way. */
+/** How often and for how long the page re-reads the plan after Checkout, while the webhook is on its way. */
 const ACTIVATION_POLL_MS = 2_000;
-const ACTIVATION_POLL_LIMIT = 15;
+const ACTIVATION_TIMEOUT_MS = 30_000;
 
 /** The shell is fixed for the page's life: nothing to subscribe to. */
 const subscribeNoop = () => () => {};
@@ -29,10 +29,10 @@ export function usePlansScreen({ from, checkout }: UsePlansScreenOptions) {
   const router = useRouter();
   const plan = usePlan();
   const native = React.useSyncExternalStore(subscribeNoop, () => nativePlatform() !== null, () => false);
-  const [polls, setPolls] = React.useState(0);
+  const [late, setLate] = React.useState(false);
   const activated = React.useRef(false);
-  const waiting = checkout === "success" && !activated.current && polls < ACTIVATION_POLL_LIMIT;
-  const status = useBillingStatusQuery({ enabled: plan.enforced, refresh: checkout === "success", refetchInterval: waiting ? ACTIVATION_POLL_MS : false });
+  const waiting = checkout === "success" && !late;
+  const status = useBillingStatusQuery({ enabled: plan.enforced, refresh: checkout === "success", pollUntilPro: waiting ? ACTIVATION_POLL_MS : false });
   const startCheckout = useStartCheckoutMutation();
   const openPortal = useOpenPortalMutation();
   const redeem = useRedeemCodeMutation();
@@ -42,21 +42,22 @@ export function usePlansScreen({ from, checkout }: UsePlansScreenOptions) {
   }, [from]);
 
   // Back from Checkout: the plan turns Pro when the webhook arrives (or the refresh reads Stripe); then the layout is
-  // re-rendered so the locks go away.
+  // re-rendered so the locks go away. After ACTIVATION_TIMEOUT_MS the page stops asking and says so.
   const tier = status.data?.plan.tier;
   const source = status.data?.plan.source;
   React.useEffect(() => {
-    if (checkout !== "success" || activated.current) return;
-    if (tier === "pro") {
-      activated.current = true;
-      track("pro_activated", { source: source ?? "subscription" });
-      toast.success(tr("Pro è attivo: è tutto sbloccato."));
-      router.replace("/pro");
-      router.refresh();
-    } else if (status.dataUpdatedAt) {
-      setPolls((count) => count + 1);
-    }
-  }, [checkout, tier, source, status.dataUpdatedAt, router, tr]);
+    if (checkout !== "success") return;
+    const timer = window.setTimeout(() => setLate(true), ACTIVATION_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [checkout]);
+  React.useEffect(() => {
+    if (checkout !== "success" || tier !== "pro" || activated.current) return;
+    activated.current = true;
+    track("pro_activated", { source: source ?? "subscription" });
+    toast.success(tr("Pro è attivo: è tutto sbloccato."));
+    router.replace("/pro");
+    router.refresh();
+  }, [checkout, tier, source, router, tr]);
 
   const start = (interval: BillingInterval) =>
     startCheckout.mutate(interval, {
@@ -85,8 +86,8 @@ export function usePlansScreen({ from, checkout }: UsePlansScreenOptions) {
     plan,
     native,
     status,
-    activating: checkout === "success" && waiting && tier !== "pro",
-    activationLate: checkout === "success" && !activated.current && polls >= ACTIVATION_POLL_LIMIT && tier !== "pro",
+    activating: waiting && tier !== "pro",
+    activationLate: checkout === "success" && late && tier !== "pro",
     start,
     starting: startCheckout.isPending || startCheckout.isSuccess,
     startError: startCheckout.error?.message ?? null,

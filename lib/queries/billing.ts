@@ -14,13 +14,16 @@ async function errorOf(response: Response, fallback: string): Promise<Error> {
   return new Error(body?.error ?? pageText(fallback));
 }
 
-/** Plan and subscription of the account; `refresh` re-reads Stripe first (back from Checkout). */
-export function useBillingStatusQuery(options: { enabled?: boolean; refresh?: boolean; refetchInterval?: number | false } = {}) {
-  const { enabled = true, refresh = false, refetchInterval = false } = options;
+/**
+ * Plan and subscription of the account; `refresh` re-reads Stripe first (back from Checkout), `pollUntilPro` re-asks
+ * every so many milliseconds until the plan is Pro.
+ */
+export function useBillingStatusQuery(options: { enabled?: boolean; refresh?: boolean; pollUntilPro?: number | false } = {}) {
+  const { enabled = true, refresh = false, pollUntilPro = false } = options;
   return useQuery({
     queryKey: [...BILLING_STATUS_KEY, refresh] as const,
     enabled,
-    refetchInterval,
+    refetchInterval: (query) => (pollUntilPro && query.state.data?.plan.tier !== "pro" ? pollUntilPro : false),
     queryFn: async (): Promise<BillingStatus> => {
       const response = await fetch(`/api/billing/status${refresh ? "?refresh=1" : ""}`, { cache: "no-store" });
       if (!response.ok) throw await errorOf(response, "Impossibile caricare il tuo piano.");

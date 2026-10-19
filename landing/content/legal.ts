@@ -5,7 +5,7 @@
  */
 
 /** Versione dei documenti (data dell'ultima modifica sostanziale). */
-export const LEGAL_VERSION = "2026-10-20";
+export const LEGAL_VERSION = "2026-10-22";
 
 export const LEGAL_OWNER = {
   name: "Daniele Roccaforte",
@@ -28,6 +28,16 @@ export const LOG_DAYS = 30;
 export const CSV_PREVIEW_DAYS = 7;
 /** Registro degli invii delle email di riepilogo e avviso (`NOTIFICATION_LOG_RETENTION_DAYS` nell'app). */
 export const NOTIFICATION_LOG_DAYS = 90;
+
+/** Piano Pro (`lib/billing/plans.ts`): prova gratuita, prezzi in euro, giorni di tolleranza su un pagamento rifiutato. */
+export const PRO_TRIAL_DAYS = 14;
+export const PRO_PRICE_MONTH = "1,99 €";
+export const PRO_PRICE_YEAR = "20 €";
+export const PRO_PAST_DUE_DAYS = 7;
+/** Conservazione delle fatture imposta dalla legge (art. 2220 c.c.). */
+export const INVOICE_YEARS = 10;
+/** Indirizzo per il supporto e il recesso. */
+export const SUPPORT_EMAIL = "support@buddybudget.io";
 
 /** Segnalazioni al supporto: tempo massimo di conservazione dopo la chiusura. */
 export const SUPPORT_MONTHS = 12;
@@ -58,7 +68,7 @@ export const PRIVACY: LegalDocument = {
       id: "titolare",
       title: "Chi è il titolare del trattamento",
       paragraphs: [
-        `Il titolare è ${LEGAL_OWNER.name}, persona fisica, che gestisce BuddyBudget a titolo gratuito. Indirizzo: ${LEGAL_OWNER.address}.`,
+        `Il titolare è ${LEGAL_OWNER.name}, persona fisica, che gestisce BuddyBudget. Indirizzo: ${LEGAL_OWNER.address}.`,
         `Per qualunque richiesta sulla privacy scrivi a ${LEGAL_OWNER.email}. Non è stato nominato un responsabile della protezione dei dati (DPO): non è obbligatorio per il livello attuale del trattamento. Non c'è un indirizzo PEC.`,
       ],
     },
@@ -74,6 +84,7 @@ export const PRIVACY: LegalDocument = {
         "Messaggi al supporto: se scrivi dalla pagina Aiuto, riceviamo il testo, l'indirizzo email dell'account e, se non lo togli, un contesto tecnico (pagina, versione dell'app, dimensioni e tema dello schermo, tipo di browser).",
         `Dati tecnici di accesso: data, indirizzo IP troncato (l'ultima parte viene azzerata) e tipo di dispositivo delle sessioni, visibili in Impostazioni, per proteggere l'account.`,
         "Registro dell'accettazione: la data e la versione dei Termini e dell'informativa che hai accettato.",
+        "Abbonamento Pro, se lo scegli: il piano, le date di prova, rinnovo e fine, l'esito dei pagamenti, l'identificativo cliente di Stripe e gli eventuali codici di accesso usati. I dati della carta e dell'indirizzo di fatturazione li raccoglie e li tratta Stripe: noi non li vediamo.",
         "Registri tecnici (log) pseudonimizzati: eventi e errori dell'app, collegati a te solo da un codice che non contiene email, nome, importi o descrizioni.",
         "Statistiche d'uso anonime: pagine viste e azioni compiute (per esempio \"transazione aggiunta\"), senza importi né testi tuoi.",
       ],
@@ -92,7 +103,9 @@ export const PRIVACY: LegalDocument = {
         "Sicurezza, prevenzione degli abusi, diagnosi di errori e continuità del servizio (sessioni, log, backup): legittimo interesse, art. 6.1.f, bilanciato dal fatto che i log sono pseudonimizzati e di breve durata.",
         "Capire quali funzioni vengono usate per migliorare il prodotto, con statistiche anonime: legittimo interesse, art. 6.1.f. Puoi disattivarle in qualunque momento (vedi la pagina sui cookie).",
         "Conservare la prova della tua accettazione di Termini e informativa: legittimo interesse, art. 6.1.f, a poterla dimostrare.",
-        "Rispettare obblighi di legge, se e quando applicabili: art. 6.1.c.",
+        "Gestire l'abbonamento Pro (prova, pagamenti, rinnovi, annullamento, email sulla fine della prova o dell'abbonamento): esecuzione del contratto, art. 6.1.b.",
+        `Tenere le fatture e i dati dei pagamenti per gli obblighi fiscali e contabili: obbligo di legge, art. 6.1.c (${INVOICE_YEARS} anni).`,
+        "Rispettare gli altri obblighi di legge, se e quando applicabili: art. 6.1.c.",
       ],
     },
     {
@@ -144,6 +157,7 @@ export const PRIVACY: LegalDocument = {
         "Resend: invio delle email di servizio e, se le attivi, di riepilogo e avvisi (usa il tuo indirizzo email e il testo delle email, che può contenere cifre del tuo budget) e consegna dei messaggi che scrivi al supporto.",
         "OpenRouter e il fornitore del modello che questo seleziona, sempre in modalità zero data retention: solo se usi l'import con intelligenza artificiale o le proposte di categoria, con il tuo consenso (vedi le sezioni dedicate).",
         "Google: solo se scegli di accedere con Google; agisce come titolare autonomo per l'autenticazione.",
+        "Stripe: solo se scegli Pro, per incassare i pagamenti, emettere le ricevute e gestire l'abbonamento (riceve la tua email, il paese e i dati di pagamento che inserisci nella sua pagina, mai i tuoi dati finanziari). Per la prevenzione delle frodi e gli obblighi antiriciclaggio agisce come titolare autonomo.",
         "Strumenti di monitoraggio, avvisi tecnici e statistiche anonime (Umami), che gestiamo sui nostri server e che non ricevono dati finanziari né contenuti tuoi.",
       ],
     },
@@ -151,7 +165,7 @@ export const PRIVACY: LegalDocument = {
       id: "extra-ue",
       title: "Trasferimenti fuori dallo Spazio economico europeo",
       paragraphs: [
-        "Cloudflare, Google, Resend e OpenRouter (con il fornitore del modello) sono società che possono trattare dati anche fuori dallo SEE (per esempio negli Stati Uniti). In questi casi il trasferimento avviene con una decisione di adeguatezza (EU-US Data Privacy Framework) o con le clausole contrattuali standard della Commissione europea.",
+        "Cloudflare, Google, Resend, Stripe e OpenRouter (con il fornitore del modello) sono società che possono trattare dati anche fuori dallo SEE (per esempio negli Stati Uniti). In questi casi il trasferimento avviene con una decisione di adeguatezza (EU-US Data Privacy Framework) o con le clausole contrattuali standard della Commissione europea.",
       ],
     },
     {
@@ -169,6 +183,7 @@ export const PRIVACY: LegalDocument = {
         `Messaggi al supporto: nella casella di posta del titolare, il tempo necessario a rispondere e comunque non oltre ${SUPPORT_MONTHS} mesi dalla chiusura della richiesta. Eliminando l'account non vengono cancellati in automatico: puoi chiederne la cancellazione scrivendo a ${LEGAL_OWNER.email}.`,
         `Email di riepilogo e avvisi: le preferenze finché l'account esiste; il registro degli invii (solo chiavi tecniche per non ripetere lo stesso avviso, senza importi) ${NOTIFICATION_LOG_DAYS} giorni.`,
         "Registro dell'accettazione dei Termini: finché l'account esiste.",
+        `Abbonamento Pro: lo stato dell'abbonamento nel nostro database si cancella con l'account (eliminandolo l'abbonamento si chiude subito). Le fatture e i dati dei pagamenti restano presso Stripe e nella nostra contabilità per ${INVOICE_YEARS} anni, come impone la legge.`,
         "Statistiche d'uso anonime: non sono dati personali, quindi non hanno scadenza legata al tuo account.",
       ],
     },
@@ -233,7 +248,27 @@ export const TERMINI: LegalDocument = {
       title: "Che cos'è BuddyBudget",
       paragraphs: [
         `BuddyBudget è un'applicazione di gestione finanziaria personale offerta da ${LEGAL_OWNER.name}, persona fisica (${LEGAL_OWNER.address}): raccoglie e organizza conti, spese, investimenti, debiti e pensione per darti un quadro del tuo patrimonio.`,
-        "Per ora è gratuita e in versione beta: può cambiare, avere errori o essere interrotta, e non ci sono livelli di servizio garantiti. Se in futuro introduciamo piani a pagamento lo comunicheremo in anticipo.",
+        "È in versione beta: può cambiare, avere errori o essere interrotta, e non ci sono livelli di servizio garantiti.",
+      ],
+    },
+    {
+      id: "piani",
+      title: "Piani, prezzi e rinnovo",
+      paragraphs: [
+        `BuddyBudget ha due piani. Gratis, senza scadenza: la sezione Liquidità (conti, movimenti, analisi, categorie, regole, abbonamenti e import). Pro: tutte le sezioni, a ${PRO_PRICE_MONTH} al mese o ${PRO_PRICE_YEAR} all'anno, IVA inclusa se dovuta. Il piano Pro si attiva per il tuo account quando lo rendiamo disponibile; fino ad allora hai tutto sbloccato.`,
+        `La prima volta che scegli Pro hai ${PRO_TRIAL_DAYS} giorni di prova gratuita, una sola volta per persona: ti chiediamo un metodo di pagamento, durante la prova non addebitiamo nulla e ti scriviamo qualche giorno prima della fine. Se non annulli entro la fine della prova parte l'abbonamento che hai scelto.`,
+        "L'abbonamento si rinnova da solo alla fine di ogni mese o anno finché non lo annulli. Puoi annullarlo, o passare da mensile ad annuale, in qualunque momento da «Gestisci abbonamento»: resta attivo fino alla fine del periodo già pagato e poi torni al piano Gratis. Fuori dai casi del diritto di recesso non rimborsiamo le frazioni di periodo.",
+        `Se un pagamento non va a buon fine Stripe riprova per qualche giorno e Pro resta aperto per ${PRO_PAST_DUE_DAYS} giorni; se il pagamento non riesce l'abbonamento si sospende e torni al piano Gratis. Tornando a Gratis non cancelliamo nulla: le sezioni Pro restano chiuse finché non riattivi Pro. Se disattivi l'account l'abbonamento non si rinnova più; se lo elimini si chiude subito.`,
+        "Possiamo cambiare i prezzi avvisandoti via email almeno 30 giorni prima: il nuovo prezzo vale dal rinnovo successivo e puoi annullare prima che si applichi. Possiamo dare Pro gratuito a singole persone o con codici di accesso, per il tempo indicato: un codice non ha valore in denaro e non si può cedere.",
+        "I pagamenti passano da Stripe: i dati della carta li tratta Stripe e noi non li vediamo. Nell'app per telefono non si acquista nulla; un abbonamento fatto sul sito vale anche lì. Chi installa BuddyBudget sui propri server ha tutte le funzioni senza pagare: questi piani valgono solo per il servizio su buddybudget.io.",
+      ],
+    },
+    {
+      id: "recesso",
+      title: "Diritto di recesso",
+      paragraphs: [
+        `Se sei un consumatore puoi recedere dall'abbonamento entro 14 giorni dalla sottoscrizione, senza dare motivazioni (artt. 52 e seguenti del Codice del consumo), scrivendo a ${SUPPORT_EMAIL} o annullando da «Gestisci abbonamento» e chiedendo il rimborso allo stesso indirizzo. Durante la prova gratuita non paghi nulla: per recedere basta annullare.`,
+        "Attivando Pro chiedi che il servizio inizi subito, durante il periodo di recesso: se recedi dopo un pagamento ti rimborsiamo l'importo pagato meno la parte proporzionale ai giorni in cui hai usato Pro, entro 14 giorni e con lo stesso metodo di pagamento.",
       ],
     },
     {

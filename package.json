@@ -21,6 +21,11 @@
     "db:encrypt-fields": "tsx --env-file-if-exists=.env.local lib/db/encrypt-fields.ts",
     "auth:reset-password": "tsx --env-file-if-exists=.env.local lib/db/user-admin.ts reset-password",
     "auth:create-user": "tsx --env-file-if-exists=.env.local lib/db/user-admin.ts create-user",
+    "billing:stripe-setup": "tsx --env-file-if-exists=.env.local --conditions=react-server lib/db/billing-admin.ts stripe-setup",
+    "billing:grant": "tsx --env-file-if-exists=.env.local --conditions=react-server lib/db/billing-admin.ts grant",
+    "billing:revoke": "tsx --env-file-if-exists=.env.local --conditions=react-server lib/db/billing-admin.ts revoke",
+    "billing:code": "tsx --env-file-if-exists=.env.local --conditions=react-server lib/db/billing-admin.ts code",
+    "billing:grant-existing": "tsx --env-file-if-exists=.env.local --conditions=react-server lib/db/billing-admin.ts grant-existing",
     "eval:categorization": "tsx --env-file-if-exists=.env.local scripts/eval-categorization.ts",
     "worker:csv": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/personal-csv-worker.ts"
   },

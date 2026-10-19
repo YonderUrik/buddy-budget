@@ -29,6 +29,7 @@ Start from the [architecture overview](architecture/overview.md), then open the 
 | Debts: amortisation, APR, early repayment, simulator | [architecture/debts.md](architecture/debts.md) |
 | Net worth over time | [architecture/net-worth.md](architecture/net-worth.md) |
 | Analitiche (FIRE, Monte Carlo) and savings goals | [architecture/analytics-and-goals.md](architecture/analytics-and-goals.md) |
+| Free and Pro plans, Stripe billing, access codes | [architecture/billing.md](architecture/billing.md) |
 
 Rules every contributor follows (component layers, observability, background jobs, performance, design tokens) are in [`CLAUDE.md`](../CLAUDE.md). Infrastructure, monitoring and runbooks are in the [infra repository](https://github.com/YonderUrik/buddy-budget-infra).
 

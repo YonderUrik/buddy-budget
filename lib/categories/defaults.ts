@@ -24,7 +24,7 @@ export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   { key: "bollette", name: "Bollette & Telefono", type: "dovuta", icon: "zap", color: "yellow", description: "Luce, gas, acqua, internet, cellulare" },
   { key: "spesa", name: "Spesa", type: "dovuta", icon: "shopping-cart", color: "green", description: "Supermercato, alimentari, casalinghi" },
   { key: "trasporti", name: "Trasporti", type: "dovuta", icon: "car", color: "blue", description: "Carburante, mezzi pubblici, pedaggi, parcheggi, officina" },
-  { key: "salute", name: "Salute", type: "dovuta", icon: "pill", color: "rose", description: "Farmacia, visite, dentista, analisi" },
+  { key: "salute", name: "Salute", type: "dovuta", icon: "cross", color: "rose", description: "Farmacia, visite, dentista, analisi" },
   { key: "assicurazioni", name: "Assicurazioni", type: "dovuta", icon: "shield", color: "indigo", description: "Auto, casa, vita, salute" },
   { key: "rate", name: "Rate & Prestiti", type: "dovuta", icon: "credit-card", color: "red", description: "Finanziamenti, prestiti, acquisti a rate" },
 

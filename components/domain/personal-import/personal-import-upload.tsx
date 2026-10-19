@@ -2,6 +2,7 @@
 
 
 import { useLocalization } from "@/lib/localization/provider";
+import { translateServerMessage } from "@/lib/localization/messages";
 
 /**
  * Modulo di caricamento di un CSV o Excel personale, in tre passi: da dove arriva, il file, il consenso all'analisi AI.
@@ -10,7 +11,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileSpreadsheetIcon, UploadIcon, XIcon } from "lucide-react";
+import { FileSpreadsheetIcon, InfoIcon, UploadIcon, XIcon } from "lucide-react";
 import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,7 +19,7 @@ import { track } from "@/lib/analytics";
 import { gridToCsv } from "@/lib/investments/import/fineco";
 import { readXlsx, XLSX_MAX_FILE_BYTES } from "@/lib/pension/import/xlsx";
 import { cn } from "@/lib/utils";
-import { personalImportApi } from "./personal-import-api";
+import { PersonalImportApiError, personalImportApi } from "./personal-import-api";
 import type { PersonalImportReceiptFile } from "./personal-import-receipt";
 import { ErrorWithReport } from "@/components/domain/support";
 
@@ -80,7 +81,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
   return { name: file.name, size: file.size, csv: await file.text() };
 }
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const id = React.useId();
   const flow = useStepFlow(PERSONAL_IMPORT_STEPS);
   const client = useQueryClient();
@@ -99,6 +100,9 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
       if (!file) throw new Error(tr("Scegli un file da importare."));
       const source = formats.find((f) => f.id === formatId)?.name ?? name.trim();
       return personalImportApi<{ id: string }>("", { name: source, csv: file.csv, formatId: isNew ? undefined : formatId, regenerate, consent, consentVersion: CONSENT_VERSION });
+    },
+    onError: (error) => {
+      if (error instanceof PersonalImportApiError && error.code === "already_imported") track("personal_csv_already_imported", { stage: "caricamento" });
     },
     onSuccess: (result) => {
       track("personal_csv_requested", { reuse: !isNew });
@@ -247,7 +251,12 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
           disabled={!stepReady}
         />
         {!stepReady ? <p id={`${id}-missing`} className="text-sm text-muted-foreground">{tr("Per continuare:")}{" "}{stepMissing.map((message) => tr(message)).join(", ")}{"."}</p> : null}
-        {upload.error ? <ErrorWithReport area="import_movimenti" error={upload.error.message} /> : null}
+        {upload.error instanceof PersonalImportApiError && upload.error.code === "already_imported" ? (
+          <p role="status" className="flex items-start gap-2 rounded-xl bg-muted/50 p-3 text-sm text-foreground">
+            <InfoIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            {translateServerMessage(language, upload.error.message)}
+          </p>
+        ) : upload.error ? <ErrorWithReport area="import_movimenti" error={upload.error.message} /> : null}
       </div>
     </form>
   );

@@ -34,6 +34,8 @@ export interface ProductEvents {
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
   support_faq_opened: { id: string };
   personal_csv_requested: { reuse: boolean };
+  /** File già importato: rifiutato al caricamento (stesso file) o, dopo l'analisi, senza nessun movimento nuovo. */
+  personal_csv_already_imported: { stage: "caricamento" | "analisi" };
   investments_import_ai_fallback: Record<string, never>;
   personal_csv_deleted: { cash: number; investments: number };
   /** Import confermato; `skipped`: righe non riconosciute saltate per scelta dell'utente. */

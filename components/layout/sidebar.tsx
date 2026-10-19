@@ -319,34 +319,45 @@ export function AppSidebar({
       )}
       aria-label={tr("Navigazione principale")}
     >
-      {/* ── Header: Logo / Brand ── */}
+      {/* ── Header: Logo / Brand (torna alla pagina iniziale) ── */}
       <div
         className={cn(
           "flex h-16 shrink-0 items-center border-b border-sidebar-border",
           isCollapsed ? "justify-center px-2" : "px-5"
         )}
       >
-        {isCollapsed ? (
-          <Image
-            src="/brand/logo-mark.svg"
-            alt={tr("BuddyBudget")}
-            width={28}
-            height={34}
-            className="h-8 w-auto"
-          />
-        ) : (
-          <span className="flex items-center gap-2 min-w-0">
+        <Link
+          href="/"
+          onClick={onClose}
+          aria-label={tr("BuddyBudget: torna alla pagina iniziale")}
+          className={cn(
+            "flex min-w-0 items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            isCollapsed ? "justify-center p-1" : "gap-2"
+          )}
+        >
+          {isCollapsed ? (
             <Image
               src="/brand/logo-mark.svg"
               alt={""}
-              width={24}
-              height={29}
-              className="h-6 w-auto shrink-0"
+              width={28}
+              height={34}
+              className="h-8 w-auto"
               aria-hidden="true"
             />
-            <span className="font-heading text-base font-bold text-sidebar-foreground truncate">{tr("BuddyBudget")}</span>
-          </span>
-        )}
+          ) : (
+            <>
+              <Image
+                src="/brand/logo-mark.svg"
+                alt={""}
+                width={24}
+                height={29}
+                className="h-6 w-auto shrink-0"
+                aria-hidden="true"
+              />
+              <span className="font-heading text-base font-bold text-sidebar-foreground truncate">{tr("BuddyBudget")}</span>
+            </>
+          )}
+        </Link>
       </div>
 
       {/* ── Navigazione ── */}

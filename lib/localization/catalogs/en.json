@@ -4173,7 +4173,7 @@
   "Dove l'app usa l'AI": "Where the app uses AI",
   "Proposte di categoria": "Category suggestions",
   "Invia il nome pulito dell'esercente, se è un'entrata o un'uscita, le tue categorie e le tue istruzioni: mai importi, date, IBAN, note o nomi di persone.": "Sends the cleaned merchant name, whether it is income or an expense, your categories and your instructions: never amounts, dates, IBANs, notes or people's names.",
-  "Lo attivi qui sotto, con «Proponi le categorie con l'AI».": "You turn it on below, with «Suggest categories with AI».",
+  "Lo attivi qui sotto, con «Proponi le categorie con l'AI»; vale anche per «Chiedi all'AI» nel dettaglio di un movimento.": "You turn it on below, with «Suggest categories with AI»; it also covers «Ask the AI» in a transaction's detail.",
   "Importazione di un estratto conto in un formato nuovo": "Importing a statement in a new format",
   "Invia il file intero, per capire come sono fatte le colonne. Con un formato già salvato lo invia solo se la lettura non riesce.": "Sends the whole file to understand its columns. With a format already saved it is sent only if reading fails.",
   "Te lo chiede a ogni file, nell'ultimo passo dell'importazione in Liquidità.": "It asks you for every file, in the last step of the import in Cash.",
@@ -5174,5 +5174,17 @@
   "Scrivi qualcosa da ricordare su questo movimento": "Write something to remember about this transaction",
   "Testo della banca": "Bank's text",
   "in tutto": "in total",
-  "{0} movimenti nell'ultimo anno": "{0} transactions in the last year"
+  "{0} movimenti nell'ultimo anno": "{0} transactions in the last year",
+  "Sembra un trasferimento o un pagamento a una persona: per riservatezza non lo mandiamo all'AI.": "It looks like a transfer or a payment to a person: for privacy we don't send it to the AI.",
+  "Hai chiesto molte volte nell'ultima ora: riprova più tardi.": "You've asked many times in the last hour: try again later.",
+  "L'assistente per le categorie è spento.": "The category assistant is off.",
+  "L'AI non ha risposto. Riprova tra poco.": "The AI didn't answer. Try again in a moment.",
+  "L'AI è d'accordo con questa categoria": "The AI agrees with this category",
+  "L'AI la metterebbe in": "The AI would put it in",
+  "Sicura al {0}%": "{0}% sure",
+  "Usa questa": "Use this",
+  "Lascia così": "Leave it",
+  "Chiedo all'AI…": "Asking the AI…",
+  "Chiedi all'AI": "Ask the AI",
+  "Accendilo in Impostazioni": "Turn it on in Settings"
 }

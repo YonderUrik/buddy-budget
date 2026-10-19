@@ -2,7 +2,7 @@
 
 /**
  * Everything about one transaction, as its detail shows it: amount, day and account, the category with who chose it
- * (tap «Cambia» to change it), where it came from, the bank's own text, the note and the same merchant over the last
+ * (tap «Cambia» to change it, or «Chiedi all'AI» for a second opinion), where it came from, the bank's own text, the note and the same merchant over the last
  * year. The actions under the amount (Dividi, and for those typed by hand Modifica and Elimina) come from the dialog.
  */
 
@@ -21,6 +21,7 @@ import { localizedDetailText, longDateWithWeekday } from "@/lib/transactions/det
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { cn } from "@/lib/utils";
 import { CategorySheet } from "./category-sheet";
+import { MovementDetailAi } from "./movement-detail-ai";
 import { MovementDetailMerchant } from "./movement-detail-merchant";
 import { MovementDetailNote } from "./movement-detail-note";
 import { useTransactionCategory } from "./use-transaction-category";
@@ -97,20 +98,25 @@ export function MovementDetailView({ detail, partial, categories, usage, currenc
         <div className="flex flex-wrap gap-2">{actions}</div>
       </header>
 
-      <div className={cn("flex items-center gap-3 rounded-2xl p-3.5", uncategorized ? "bg-neg-soft/60" : "bg-foreground/[0.05]")}>
-        {category ? <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={18} className="size-10" /> : null}
-        <div className="min-w-0 flex-1">
-          <p className={cn("font-semibold", uncategorized && "text-neg")}>{category?.name ?? tr("Senza categoria")}</p>
-          {categoryOrigin ? <p className="text-sm text-text-2">{categoryOrigin}</p> : null}
+      <div className="flex flex-col gap-3">
+        <div className={cn("flex items-center gap-3 rounded-2xl p-3.5", uncategorized ? "bg-neg-soft/60" : "bg-foreground/[0.05]")}>
+          {category ? <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={18} className="size-10" /> : null}
+          <div className="min-w-0 flex-1">
+            <p className={cn("font-semibold", uncategorized && "text-neg")}>{category?.name ?? tr("Senza categoria")}</p>
+            {categoryOrigin ? <p className="text-sm text-text-2">{categoryOrigin}</p> : null}
+          </div>
+          <CategorySheet
+            categories={selectable}
+            value={transaction.categoryId}
+            usage={usage}
+            rememberLabel={uncategorized || transaction.source === "auto" ? transaction.description : undefined}
+            onSelect={choose}
+            trigger={<Button type="button" variant="outline" className="h-11 shrink-0 px-4">{tr("Cambia")}</Button>}
+          />
         </div>
-        <CategorySheet
-          categories={selectable}
-          value={transaction.categoryId}
-          usage={usage}
-          rememberLabel={uncategorized || transaction.source === "auto" ? transaction.description : undefined}
-          onSelect={choose}
-          trigger={<Button type="button" variant="outline" className="h-11 shrink-0 px-4">{tr("Cambia")}</Button>}
-        />
+        {isTransfer ? null : (
+          <MovementDetailAi key={transaction.id} transactionId={transaction.id} currentCategoryId={transaction.categoryId} categories={selectable} onUse={(categoryId) => choose(categoryId, false)} />
+        )}
       </div>
 
       <dl className="flex flex-col gap-4">

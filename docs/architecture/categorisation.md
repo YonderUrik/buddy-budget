@@ -261,9 +261,11 @@ Tapping a transaction opens its detail: a bottom sheet on the phone, a window on
 
 The list row is shown at once as placeholder data; origin and merchant summary fill in when the response arrives. Inside the detail the user changes the category (same flow as the row, `useTransactionCategory`), splits, writes the note (saved on blur), and for hand-typed transactions edits or deletes. A line of the merchant summary opens that transaction in the same window. Amounts go through `formatCurrency`, so «Nascondi importi» hides them.
 
+«Chiedi all'AI», under the category card (not for transfers, hidden when the server has no `OPENROUTER_API_KEY`), asks the model about this one transaction: `POST /api/transactions/[id]/ai-suggestion` ([`suggest-one.ts`](../../lib/categorization/ai/suggest-one.ts)). It sends what the batch run sends for a merchant (cleaned name, MCC, direction, the user's categories, instructions and examples), with the examples of the same merchant left out so the answer is a second opinion rather than the user's own choice echoed back. It runs inside the request (one call, 30 s timeout, an exception to the job standard), writes nothing and returns `ok` with category and confidence, or `disabled` (no consent: the detail links to the setting), `no_key`, `blocked` (privacy filter: transfers, people), `limited` (30 questions per user per hour, Redis counter) or `failed`. «Usa questa» saves the category through the normal PATCH, so its source becomes `utente`; the answer is not stored in `categorization_suggestions`.
+
 Example: a bank transaction «PAGAMENTO POS ESSELUNGA 0412», −60,40 €, with the rule «esselunga». The detail shows «Messa dalla tua regola per «esselunga»», «Dalla banca collegata, Intesa Sanpaolo», the bank text, and «51 movimenti nell'ultimo anno, −2.749,65 € in tutto» with the last five.
 
-Signals: log `transactions.detail.loaded` (`outcome` = origin kind) and `transactions.detail.not_found`; Umami `transaction_detail_opened` (`from`: movimenti, categorizza, abbonamenti, esercente), `transaction_note_saved`, `transaction_deleted`, and `categorization_auto_corrected` with `from: dettaglio`.
+Signals: log `transactions.detail.loaded` (`outcome` = origin kind) and `transactions.detail.not_found`; for «Chiedi all'AI» `categorization.ai.single.suggested` or `categorization.ai.single.skipped` (`outcome` = status), `categorization.ai.single.failed` on a model error, and the existing `buddybudget_categorization_ai_requests_total`; Umami `transaction_detail_opened` (`from`: movimenti, categorizza, abbonamenti, esercente), `transaction_note_saved`, `transaction_deleted`, `transaction_ai_asked` (`outcome`), `transaction_ai_used`, and `categorization_auto_corrected` with `from: dettaglio`.
 
 ## 5. Limits and out of scope
 
@@ -288,6 +290,7 @@ Signals: log `transactions.detail.loaded` (`outcome` = origin kind) and `transac
 - [`lib/categories/*.test.ts`](../../lib/categories): groups, picker order, onboarding setup (unit and integration), spending sums.
 - [`lib/calc/subscriptions.test.ts`](../../lib/calc/subscriptions.test.ts), [`lib/subscriptions/view.test.ts`](../../lib/subscriptions/view.test.ts): cadences, price changes, clustering, totals of confirmed items only.
 - [`lib/transactions/detail.test.ts`](../../lib/transactions/detail.test.ts), [`transactions/[id]/route.test.ts`](../../app/api/transactions/[id]/route.test.ts): origin of a transaction, merchant summary, detail texts, detail route ownership.
+- [`lib/categorization/ai/suggest-one.test.ts`](../../lib/categorization/ai/suggest-one.test.ts), [`ai-suggestion/route.test.ts`](../../app/api/transactions/[id]/ai-suggestion/route.test.ts): «Chiedi all'AI» answer, same merchant left out of the examples, consent/key/privacy/limit checks, ownership.
 - [`eval-metrics.test.ts`](../../lib/categorization/eval-metrics.test.ts) supports the offline evaluation script [`scripts/eval-categorization.ts`](../../scripts/eval-categorization.ts).
 
 ## 7. Related

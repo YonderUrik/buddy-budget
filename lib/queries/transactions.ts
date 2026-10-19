@@ -6,6 +6,7 @@ import type { CreateTransactionInput, UpdateTransactionInput } from "@/lib/valid
 import { track } from "@/lib/analytics";
 import { pageText } from "@/lib/localization/page-text";
 import type { TransactionDetailData } from "@/lib/transactions/detail";
+import type { SingleSuggestion } from "@/lib/categorization/ai/single-suggestion";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
@@ -62,6 +63,18 @@ export function useTransactionDetailQuery(id: string | null, placeholder?: Liste
     },
     placeholderData: placeholder && placeholder.id === id ? { transaction: placeholder, account: null, origin: { kind: "manuale" }, rule: null, merchant: null } : undefined,
     retry: (count, error) => !(error instanceof TransactionNotFoundError) && count < 2,
+  });
+}
+
+/** «Chiedi all'AI» for one transaction: the category the model would give it. Writes nothing. */
+export function useAiSuggestionMutation() {
+  return useMutation({
+    mutationFn: async (id: string): Promise<SingleSuggestion> => {
+      const response = await fetch(`/api/transactions/${id}/ai-suggestion`, { method: "POST" });
+      if (!response.ok) throw new Error(pageText("L'AI non ha risposto. Riprova tra poco."));
+      return response.json();
+    },
+    onSuccess: (result) => track("transaction_ai_asked", { outcome: result.status }),
   });
 }
 

@@ -5,6 +5,7 @@ import type { SidebarModuleId } from "@/lib/sidebar/modules";
 import type { ReportErrorArea, ReportSource } from "@/lib/support/constants";
 import type { GoalKind } from "@/lib/goals/constants";
 import type { Attribution } from "./attribution";
+import type { SingleSuggestionStatus } from "@/lib/categorization/ai/single-suggestion";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import" | "goal";
@@ -120,6 +121,10 @@ export interface ProductEvents {
   transaction_note_saved: { cleared: boolean };
   /** Movimento aggiunto a mano eliminato. */
   transaction_deleted: undefined;
+  /** «Chiedi all'AI» nel dettaglio di un movimento; `outcome`: risposta (ok) o perché non c'è (spento, trasferimento, limite, errore). */
+  transaction_ai_asked: { outcome: SingleSuggestionStatus };
+  /** Categoria proposta dall'AI per un movimento usata con «Usa questa». */
+  transaction_ai_used: undefined;
   /** Su telefono: foglio delle viste aperto toccando il titolo della sezione. */
   section_views_opened: { section: SectionViewsKey };
   /** Su telefono: vista scelta dal foglio aperto dal titolo (diversa da quella corrente). */

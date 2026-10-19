@@ -4173,7 +4173,7 @@
   "Dove l'app usa l'AI": "Wo die App KI nutzt",
   "Proposte di categoria": "Kategorienvorschläge",
   "Invia il nome pulito dell'esercente, se è un'entrata o un'uscita, le tue categorie e le tue istruzioni: mai importi, date, IBAN, note o nomi di persone.": "Sendet den bereinigten Händlernamen, ob es eine Einnahme oder Ausgabe ist, deine Kategorien und deine Anweisungen: niemals Beträge, Daten, IBANs, Notizen oder Namen von Personen.",
-  "Lo attivi qui sotto, con «Proponi le categorie con l'AI».": "Du schaltest es unten ein, mit «Kategorien mit KI vorschlagen».",
+  "Lo attivi qui sotto, con «Proponi le categorie con l'AI»; vale anche per «Chiedi all'AI» nel dettaglio di un movimento.": "Du schaltest es unten ein, mit «Kategorien mit KI vorschlagen»; das gilt auch für «KI fragen» im Detail einer Buchung.",
   "Importazione di un estratto conto in un formato nuovo": "Import eines Kontoauszugs in einem neuen Format",
   "Invia il file intero, per capire come sono fatte le colonne. Con un formato già salvato lo invia solo se la lettura non riesce.": "Sendet die ganze Datei, um ihre Spalten zu verstehen. Bei einem bereits gespeicherten Format nur, wenn das Lesen fehlschlägt.",
   "Te lo chiede a ogni file, nell'ultimo passo dell'importazione in Liquidità.": "Es fragt dich bei jeder Datei, im letzten Schritt des Imports unter Liquidität.",
@@ -5174,5 +5174,17 @@
   "Scrivi qualcosa da ricordare su questo movimento": "Schreib etwas, das du dir zu diesem Umsatz merken willst",
   "Testo della banca": "Text der Bank",
   "in tutto": "insgesamt",
-  "{0} movimenti nell'ultimo anno": "{0} Umsätze im letzten Jahr"
+  "{0} movimenti nell'ultimo anno": "{0} Umsätze im letzten Jahr",
+  "Sembra un trasferimento o un pagamento a una persona: per riservatezza non lo mandiamo all'AI.": "Das sieht nach einer Überweisung oder einer Zahlung an eine Person aus: Aus Datenschutzgründen senden wir es nicht an die KI.",
+  "Hai chiesto molte volte nell'ultima ora: riprova più tardi.": "Du hast in der letzten Stunde oft gefragt: Versuche es später noch einmal.",
+  "L'assistente per le categorie è spento.": "Der Kategorie-Assistent ist ausgeschaltet.",
+  "L'AI non ha risposto. Riprova tra poco.": "Die KI hat nicht geantwortet. Versuche es gleich noch einmal.",
+  "L'AI è d'accordo con questa categoria": "Die KI stimmt dieser Kategorie zu",
+  "L'AI la metterebbe in": "Die KI würde es hier einordnen",
+  "Sicura al {0}%": "Zu {0} % sicher",
+  "Usa questa": "Diese verwenden",
+  "Lascia così": "So lassen",
+  "Chiedo all'AI…": "Frage die KI…",
+  "Chiedi all'AI": "KI fragen",
+  "Accendilo in Impostazioni": "In den Einstellungen einschalten"
 }

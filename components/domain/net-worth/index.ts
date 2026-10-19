@@ -25,5 +25,5 @@ export {
 } from "./asset-classes";
 export { ChartRefreshNote, CHART_REFRESH_MESSAGES } from "./chart-refresh-note";
 export type { ChartRefreshNoteProps } from "./chart-refresh-note";
-export { MoneyHero, splitMoney } from "./money-hero";
+export { MoneyHero } from "./money-hero";
 export type { MoneyHeroProps } from "./money-hero";

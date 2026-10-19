@@ -50,7 +50,7 @@ export interface ReturnsChartProps {
 export function ReturnsChart({ series, benchmarkName, onInspect, onSelectRange }: ReturnsChartProps) {
   const { locale: formattingLocale } = useLocalization();
   const AXIS_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "short", year: "2-digit" });
-  const axisPct = (value: number) => `${(value * 100).toLocaleString(formattingLocale, { maximumFractionDigits: 1 })}%`;
+  const axisPct = (value: number) => `${new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 1 }).format(value * 100)}%`;
 
   const { t: tr } = useLocalization();
   const start = React.useRef<string | null>(null);

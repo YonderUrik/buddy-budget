@@ -4,6 +4,7 @@
 import { useLocalization } from "@/lib/localization/provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 
 
 
@@ -16,13 +17,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, subtitle, className }: StatCardProps) {
   const { locale: formattingLocale } = useLocalization();
-  function formatAmount(value: number) {
-  return new Intl.NumberFormat(formattingLocale, {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+  const formatAmount = (amount: number) => formatCurrency(amount, "EUR", { locale: formattingLocale, maximumFractionDigits: 0 });
 
   const { t: tr } = useLocalization();
   const isNegative = value < 0;

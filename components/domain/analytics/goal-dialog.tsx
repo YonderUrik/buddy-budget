@@ -57,7 +57,7 @@ function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSav
 
   const { t: tr, locale } = useLocalization();
   const dataSpending = plan.spendingSource === "dati" ? plan.spending : null;
-  const [text, setText] = React.useState(plan.spending !== null ? Math.round(plan.spending).toLocaleString(locale) : "");
+  const [text, setText] = React.useState(plan.spending !== null ? new Intl.NumberFormat(locale).format(Math.round(plan.spending)) : "");
   const [localError, setLocalError] = React.useState<string | null>(null);
   const value = parseNumber(text, locale);
   const valid = value !== null && value > 0 && value <= ASSUMPTION_LIMITS.amount.max;

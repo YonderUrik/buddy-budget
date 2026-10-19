@@ -107,7 +107,7 @@ function simulationSteps(result: MonteCarloResult, input: MonteCarloInput, a: An
       title: tr("Perché non basta un calcolo solo"),
       text: [
         tr("Un calcolo con un rendimento «medio» ogni anno dà una linea liscia, ma i mercati non vanno così: un brutto inizio pensione pesa molto più di una brutta fine."),
-        tr("La simulazione genera {0} futuri possibili, ognuno con rendimenti che oscillano a caso attorno al {1} annuo con una volatilità del {2}, e guarda come va il tuo patrimonio in ciascuno.", { 0: result.paths.toLocaleString(locale), 1: pct(a.expectedReturn), 2: pct(a.volatility, 0) }),
+        tr("La simulazione genera {0} futuri possibili, ognuno con rendimenti che oscillano a caso attorno al {1} annuo con una volatilità del {2}, e guarda come va il tuo patrimonio in ciascuno.", { 0: new Intl.NumberFormat(locale).format(result.paths), 1: pct(a.expectedReturn), 2: pct(a.volatility, 0) }),
       ],
     },
     {

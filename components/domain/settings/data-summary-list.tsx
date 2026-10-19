@@ -16,7 +16,7 @@ export function DataSummaryList({ summary }: { summary: UserDataSummary }) {
       {dataSummaryItems(summary).map((item) => (
         <div key={item.label} className="flex items-baseline justify-between gap-3 pb-1.5">
           <dt className="text-muted-foreground">{tr(item.label)}</dt>
-          <dd className="font-heading font-medium tabular-nums text-foreground">{item.value.toLocaleString(formattingLocale)}</dd>
+          <dd className="font-heading font-medium tabular-nums text-foreground">{new Intl.NumberFormat(formattingLocale).format(item.value)}</dd>
         </div>
       ))}
     </dl>

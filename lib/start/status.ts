@@ -11,7 +11,7 @@ import { investmentTransactions } from "@/lib/db/schema/investments";
 import { pensionFunds } from "@/lib/db/schema/pension";
 import { transactions } from "@/lib/db/schema/transactions";
 import { isCountryPathAvailable } from "@/lib/localization/config";
-import { START_FOCUS_IDS, START_STEP_IDS, startStepsFor, type StartFocus, type StartStatus, type StartStepId } from "./steps";
+import { START_FOCUS_IDS, START_STEP_IDS, UNSKIPPABLE_STEPS, allStepsSettled, startStepsFor, type StartFocus, type StartStatus, type StartStepId } from "./steps";
 
 /** True se l'account contiene conti di esempio (e quindi, per costruzione, nessun conto vero). */
 export async function hasDemoData(userId: string): Promise<boolean> {
@@ -29,6 +29,20 @@ export function parseStartFocus(raw: readonly string[] | null | undefined): Star
   return START_FOCUS_IDS.filter((id) => raw.includes(id));
 }
 
+/** Keeps only known, skippable step ids from the database. */
+export function parseSkippedSteps(raw: readonly string[] | null | undefined): StartStepId[] {
+  return START_STEP_IDS.filter((id) => raw?.includes(id) && !UNSKIPPABLE_STEPS.includes(id));
+}
+
+/** Marks a step as skipped («Non mi serve») or brings it back. */
+export async function setStepSkipped(userId: string, step: StartStepId, skipped: boolean): Promise<void> {
+  const [row] = await db.select({ skipped: authUser.startSkipped }).from(authUser).where(eq(authUser.id, userId));
+  const current = new Set(parseSkippedSteps(row?.skipped));
+  if (skipped && !UNSKIPPABLE_STEPS.includes(step)) current.add(step);
+  else current.delete(step);
+  await db.update(authUser).set({ startSkipped: START_STEP_IDS.filter((id) => current.has(id)) }).where(eq(authUser.id, userId));
+}
+
 /**
  * First-steps state, computed from real data (sample accounts and transactions do not count). The steps asked follow
  * the focus chosen in onboarding. The first time all of them are done it records the moment and flags `justCompleted`.
@@ -39,6 +53,7 @@ export async function loadStartStatus(userId: string): Promise<StartStatus> {
       dismissedAt: authUser.startChecklistDismissedAt,
       completedAt: authUser.startChecklistCompletedAt,
       focus: authUser.startFocus,
+      skipped: authUser.startSkipped,
       productCountry: authUser.productCountry,
     })
     .from(authUser)
@@ -63,13 +78,14 @@ export async function loadStartStatus(userId: string): Promise<StartStatus> {
   const steps = Object.fromEntries(START_STEP_IDS.map((id) => [id, row[id as StartStepId] === true])) as Record<StartStepId, boolean>;
   const focus = parseStartFocus(user?.focus);
   const stepIds = startStepsFor(focus, { pensionAvailable: isCountryPathAvailable(user?.productCountry ?? "IT", "/pensione") });
-  const completed = stepIds.every((id) => steps[id]);
+  const skipped = parseSkippedSteps(user?.skipped);
+  const completed = allStepsSettled(steps, stepIds, skipped);
   let justCompleted = false;
   if (completed && !user?.completedAt) {
     await db.update(authUser).set({ startChecklistCompletedAt: new Date() }).where(eq(authUser.id, userId));
     justCompleted = true;
   }
-  return { steps, stepIds, focus, dismissed: user?.dismissedAt != null, completed, demoActive: row.demo === true, ...(justCompleted ? { justCompleted } : {}) };
+  return { steps, stepIds, focus, skipped, dismissed: user?.dismissedAt != null, completed, demoActive: row.demo === true, ...(justCompleted ? { justCompleted } : {}) };
 }
 
 /** Saves what the user wants to keep an eye on (onboarding or the checklist's «Cambia»). */

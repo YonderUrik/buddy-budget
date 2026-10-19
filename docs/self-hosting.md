@@ -101,6 +101,26 @@ Pianifica il backup con `cron` del sistema e copia i file fuori dalla macchina. 
 
 Conserva anche `PERSONAL_CSV_ENCRYPTION_KEY` nei backup privati del file `.env`: senza, i file e i parser AI già cifrati non sono recuperabili. I dati strutturati importati restano nel database.
 
+## Disinstallare o ripartire da zero
+
+Dallo stesso checkout usato per l’installazione, con Docker avviato:
+
+```bash
+./scripts/selfhost-uninstall.sh
+```
+
+Rimuove i container (anche il worker AI) e la rete dell’installazione, conservando database e `.env`, incluse le chiavi di cifratura. Per reinstallare con gli stessi dati: `./scripts/selfhost-start.sh` (oppure `--build` per il sorgente).
+
+Per eliminare definitivamente anche tutti gli account, transazioni, database e configurazione:
+
+```bash
+./scripts/selfhost-uninstall.sh --purge
+```
+
+Il comando chiede di digitare `DELETE`; Invio annulla senza modifiche. Fai prima il backup del database e di `.env` se vuoi recuperarli. Per automazioni già autorizzate usa `--purge --yes`. Se Docker segnala un errore, `.env` viene conservato e puoi riprovare. Funziona anche quando `.env` è già assente.
+
+La pulizia riguarda il progetto Compose dell’installazione: non modifica `.env.local`, altri progetti Docker o database esterni. Sorgenti, immagini scaricate e cache di build restano disponibili; non viene eseguito alcun prune globale. Dopo `--purge`, `./scripts/selfhost-init.sh --build` permette una prova da zero.
+
 ## Postgres esterno
 
 Rimuovi il servizio `postgres` e le sue dipendenze, e metti in `DATABASE_URL` (nei servizi `app` e `migrate`) l'URL del tuo database. Con TLS usa `?sslmode=require`: senza `sslmode` in produzione l'app pretende TLS.

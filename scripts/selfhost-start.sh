@@ -57,6 +57,6 @@ if (email) {
   lines.push("   Enter your email address on the login page and request a sign-in link.", "   Email delivery is off. In this terminal, run:", "     docker compose logs --since=5m app", "   Copy the latest sign-in link from the logs into your browser.");
 }
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) lines.push("   You can also choose Continue with Google.");
-lines.push("", "3. Complete your profile in the app.", "   You can enable AI suggestions and email notifications in Settings.", "", "You can close this terminal. BuddyBudget will keep running in Docker.", "To change your API keys later: ./scripts/selfhost-init.sh");
+lines.push("", "3. Complete your profile in the app.", "   You can enable AI suggestions and email notifications in Settings.", "", "You can close this terminal. BuddyBudget will keep running in Docker.", "To change your API keys later: ./scripts/selfhost-init.sh", "To uninstall: ./scripts/selfhost-uninstall.sh (keeps your data)");
 process.stdout.write(lines.join("\n") + "\n");
 '

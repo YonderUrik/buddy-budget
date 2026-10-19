@@ -3,7 +3,7 @@ import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { investmentTransactions } from "@/lib/db/schema/investments";
-import { backfillDerivedHistory, writeDailySnapshot } from "./snapshots";
+import { refreshDerivedCashHistory, writeDailySnapshot } from "./snapshots";
 import { refreshDerivedInvestmentHistory, writeInvestmentSnapshot } from "./investments";
 import { hashUserId, logger } from "@/lib/observability";
 
@@ -22,11 +22,11 @@ export async function findUsersWithAccounts(): Promise<string[]> {
 }
 
 /**
- * Snapshot di un utente: ricostruzione della liquidità (una tantum, solo se manca) e dello storico investimenti (se
- * operazioni o prezzi sono cambiati), poi snapshot reali del giorno. Gli investimenti usano i prezzi scritti poco prima dal cron market-prices.
+ * One user's snapshot: cash history (if accounts or transactions changed) and investment history (if operations or
+ * prices changed), then today's real snapshots. Investments use the prices written shortly before by the market-prices cron.
  */
 export async function snapshotUser(userId: string, today: Date = new Date()): Promise<void> {
-  await backfillDerivedHistory(userId, today);
+  await refreshDerivedCashHistory(userId, today);
   await writeDailySnapshot(userId, today);
   await refreshDerivedInvestmentHistory(userId, today);
   await writeInvestmentSnapshot(userId, today);

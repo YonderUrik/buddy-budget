@@ -74,7 +74,7 @@ export default function DiversificazionePage() {
             targets={view.analysis.targets}
             positions={view.summary.rows.map((r) => ({ instrumentId: r.instrument.id, value: r.value }))}
             instrumentsById={view.instrumentsById}
-            suggestions={view.usedInstruments}
+            suggestions={view.heldInstruments}
             currency={currency}
             onRegister={(instrumentId, amount) => registerPurchase({ instrumentId, amount: String(amount) })}
           />

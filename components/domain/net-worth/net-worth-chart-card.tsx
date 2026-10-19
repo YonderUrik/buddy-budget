@@ -24,6 +24,8 @@ import { countedClasses, PENSION_CLASS, toggleHiddenClass, visibleClasses } from
 import { NetWorthChartTooltip } from "./net-worth-chart-tooltip";
 import { MoneyHero } from "./money-hero";
 import { NetWorthPeriodSelector } from "./net-worth-period-selector";
+import { ChartRefreshNote, CHART_REFRESH_MESSAGES } from "./chart-refresh-note";
+import type { ChartRefreshState } from "@/lib/net-worth/refresh-status";
 
 const STACK_ID = "net-worth";
 /** Classe mostrata quando la serie è tutta a zero (nessuna classe con valori). */
@@ -72,6 +74,8 @@ export interface NetWorthChartCardProps {
   /** Se la previdenza conta nel totale (la serie e `change` sono già calcolati di conseguenza). Con `onPensionIncludedChange` mostra l'interruttore. */
   pensionIncluded?: boolean;
   onPensionIncludedChange?: (included: boolean) => void;
+  /** Imported data on its way into the chart (see `useChartRefreshState`): shows a note and dims the old curve. */
+  refreshState?: ChartRefreshState;
 }
 
 export function NetWorthChartCard({
@@ -82,6 +86,7 @@ export function NetWorthChartCard({
   currency,
   pensionIncluded = true,
   onPensionIncludedChange,
+  refreshState = null,
 }: NetWorthChartCardProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency, formatPct } = localizedFormats(formattingLocale);
@@ -154,7 +159,7 @@ export function NetWorthChartCard({
               {pctText}{" "}<span className="font-sans text-muted-foreground">{tr(PERIOD_CHANGE_LABELS[period])}</span>
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground">{tr(NO_HISTORY_MESSAGE)}</p>
+            <p className="text-sm text-muted-foreground" role="status" aria-live="polite">{tr(refreshState ? CHART_REFRESH_MESSAGES[refreshState] : NO_HISTORY_MESSAGE)}</p>
           )}
         </div>
         {hasHistory && allClasses.length > 1 ? (
@@ -172,8 +177,9 @@ export function NetWorthChartCard({
       {hasHistory ? (
         <div className="flex flex-col gap-4">
           <p className="sr-only">{chartSummary}</p>
-          <div className="-mx-4 sm:-mx-6">
-            <ChartContainer config={buildChartConfig(allClasses)} className="aspect-auto h-60 w-full sm:h-80">
+          <div className="relative -mx-4 sm:-mx-6">
+            <ChartRefreshNote state={refreshState} />
+            <ChartContainer config={buildChartConfig(allClasses)} className={cn("aspect-auto h-60 w-full transition-opacity duration-200 sm:h-80", refreshState && "opacity-50")}>
               {isTotalView ? (
                 <ComposedChart data={series} accessibilityLayer margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
                   <XAxis dataKey="label" hide />

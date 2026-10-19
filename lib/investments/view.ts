@@ -7,6 +7,7 @@ import {
   buildPortfolioSeries,
   buildPriceIndex,
   computeComposition,
+  computePositions,
   computePortfolioSummary,
   type CompositionSlice,
   type InstrumentInput,
@@ -40,8 +41,8 @@ export interface InvestmentsView {
   hasTransactions: boolean;
   /** Operazioni per mese, dal più recente, con l'esito di ciascuna. */
   operationMonths: OperationMonthGroup<InvestmentTransaction>[];
-  /** Strumenti già usati, dal più recente: il selettore li propone senza doverli cercare. */
-  usedInstruments: Instrument[];
+  /** Instruments the user holds today, most recently traded first: the picker offers them as «I tuoi strumenti». */
+  heldInstruments: Instrument[];
   /** Rendimenti del periodo (TWR, money-weighted, reale, benchmark), null senza operazioni. */
   returns: PortfolioReturns | null;
   /** Strumento di confronto scelto, o null. */
@@ -71,15 +72,18 @@ export function toTransactionInputs(data: InvestmentData): InvestmentTransaction
 }
 
 /**
- * Strumenti già usati dall'utente, per sceglierli senza cercarli: prima quelli delle operazioni più recenti, poi
- * quelli delle operazioni. Gli id senza strumento corrispondente si saltano.
+ * Instruments the user holds today (quantity above zero), most recently traded first, for picking them without a
+ * search. Sold-out positions, target-only and benchmark instruments are left out: under «I tuoi strumenti» they
+ * looked like someone else's. Ids without a matching instrument are skipped.
  */
-export function usedInstruments(
-  transactions: Pick<InvestmentTransaction, "instrumentId" | "date">[],
-  instrumentsById: Map<string, Instrument>
+export function heldInstruments(
+  transactions: InvestmentTransactionInput[],
+  instrumentsById: Map<string, Instrument>,
+  todayKey: string
 ): Instrument[] {
+  const positions = computePositions(transactions, [...instrumentsById.values()], todayKey);
   const byRecent = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).map((t) => t.instrumentId);
-  const ids = [...new Set(byRecent)];
+  const ids = [...new Set(byRecent)].filter((id) => (positions.get(id)?.quantity ?? 0) > 0);
   return ids.map((id) => instrumentsById.get(id)).filter((i): i is Instrument => i !== undefined);
 }
 
@@ -130,7 +134,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     priceIndex,
     hasTransactions: transactions.length > 0,
     operationMonths,
-    usedInstruments: usedInstruments(data.transactions, instrumentsById),
+    heldInstruments: heldInstruments(transactions, instrumentsById, todayKey),
     returns,
     periodGain: computePeriodGain({ ...common, period, today, range: chartRange }),
     costImpact: computeCostImpact({ ...common, period, today }, summary.unpricedCount > 0, countryFeatures(data.productCountry ?? "IT").taxes ? investmentTaxReport(data, transactions, todayKey) : null),

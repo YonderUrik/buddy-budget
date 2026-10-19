@@ -50,6 +50,8 @@ The Investimenti (Investments) page runs the whole pipeline in the browser: [`us
 
 **P7 — Statement imports are all-or-nothing.** [`runStatementImport`](../../lib/investments/import/execute-statement.ts) validates cash continuity and positions first, then writes everything in one database transaction under a per-user advisory lock.
 
+**P8 — «I tuoi strumenti» means held today.** The pickers' suggestion list (search a title, register an operation, target allocation) comes from [`heldInstruments`](../../lib/investments/view.ts): instruments with a quantity above zero today, most recently traded first. Sold-out positions, target-only instruments and the benchmark stay out of it, though typing still finds them under «Già aggiunti» ([`searchKnownInstruments`](../../lib/investments/instruments.ts), limited to instruments linked to the user). The shared `instruments` catalog is never listed.
+
 ## 3. Data model
 
 Tables are in [`lib/db/schema/investments.ts`](../../lib/db/schema/investments.ts) and [`lib/db/schema/broker-statements.ts`](../../lib/db/schema/broker-statements.ts).

@@ -3,7 +3,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Ricerca di un titolo per nome, ticker o ISIN: trova quelli già noti (anche venduti, se hanno operazioni) e quelli di
- * mercato. Scegliere un risultato apre la pagina del titolo. `suggestions` propone i titoli del portafoglio prima di scrivere.
+ * mercato. Scegliere un risultato apre la pagina del titolo. `suggestions` are the titles held today, offered before typing.
  */
 
 import { useRouter } from "next/navigation";

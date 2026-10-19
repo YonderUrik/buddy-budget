@@ -21,6 +21,7 @@ import { ResetInvestments } from "./reset-investments";
 import { Disclosure } from "./disclosure";
 import { PanelSection } from "./panel-section";
 import { useInvestmentsActions } from "./investments-actions";
+import { markHistoryRefreshPending } from "@/lib/queries/history-refresh-signal";
 
 type DeletionPreview = { token: string; name: string; cashCount: number; investmentCount: number; uploads: { id: string; createdAt: string }[] };
 async function personalRequest(id: string, token?: string): Promise<DeletionPreview> {
@@ -38,7 +39,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
   const client = useQueryClient();
   const [personalSelection, setPersonalSelection] = useState<{ id: string; preview: DeletionPreview } | null>(null);
   const personalDeletion = useMutation({ mutationFn: ({ id, token }: { id: string; token: string }) => personalRequest(id, token), onSuccess: result => {
-    setPersonalSelection(null); void client.invalidateQueries(); track("personal_csv_deleted", { cash: result.cashCount, investments: result.investmentCount });
+    setPersonalSelection(null); void client.invalidateQueries(); markHistoryRefreshPending(); track("personal_csv_deleted", { cash: result.cashCount, investments: result.investmentCount });
   } });
   const deletionPreview = useMutation({ mutationFn: (id: string) => personalRequest(id), onSuccess: (preview, id) => { personalDeletion.reset(); setPersonalSelection({ id, preview }); } });
   const deletion = useDeleteStatementImportMutation();

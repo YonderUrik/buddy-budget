@@ -25,6 +25,7 @@ import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
+import { useChartRefreshState } from "@/lib/queries/chart-refresh";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
@@ -64,6 +65,8 @@ export function LiquidityOverview() {
   const { from: fetchFrom, to: fetchTo } = liquidityFetchWindow(today);
   const transactionsQuery = useTransactionsQuery(fetchFrom, fetchTo, "tutte");
   const transactions = React.useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
+  // The single-account curve comes from transactions, the total from the stored history: wait for whichever is drawn.
+  const refreshState = useChartRefreshState(accountId ? transactionsQuery : snapshotsQuery);
 
   const accounts = React.useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);
   const selected = accounts.find((a) => a.id === accountId) ?? null;
@@ -113,6 +116,7 @@ export function LiquidityOverview() {
         period={period}
         onPeriodChange={setPeriod}
         points={points}
+        refreshState={refreshState}
       />
       {accountsQuery.isPending ? (
         <div className={CHIPS_PLACEHOLDER_CLASS} aria-hidden="true" />

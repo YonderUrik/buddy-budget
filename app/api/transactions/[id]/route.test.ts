@@ -6,17 +6,18 @@ import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
+import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: vi.fn() } },
 }));
 
 import { auth } from "@/lib/auth";
-import { PATCH, DELETE } from "./route";
+import { GET, PATCH, DELETE } from "./route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
 
-describe("PATCH/DELETE /api/transactions/[id]", () => {
+describe("GET/PATCH/DELETE /api/transactions/[id]", () => {
   let userId: string;
   let otherUserId: string;
   let accountId: string;
@@ -546,5 +547,41 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
     );
 
     expect(response.status).toBe(400);
+  });
+
+  it("GET restituisce il dettaglio: conto, origine, regola e stesso esercente nell'ultimo anno", async () => {
+    await db.insert(categorizationRules).values({ userId, matchType: "merchant", pattern: "esselunga", categoryId });
+    const today = new Date().toISOString().slice(0, 10);
+    const [current] = await db
+      .insert(transactions)
+      .values({ userId, accountId, categoryId, description: "ESSELUNGA", amount: "-40.00", date: today, source: "manuale", categorySource: "regola" })
+      .returning();
+    const [earlier] = await db
+      .insert(transactions)
+      .values({ userId, accountId, categoryId, description: "Esselunga", amount: "-20.00", date: today, source: "manuale", externalId: "personal:00000000-0000-0000-0000-000000000000:r1" })
+      .returning();
+
+    const response = await GET(new NextRequest(`http://localhost/api/transactions/${current.id}`), { params: Promise.resolve({ id: current.id }) });
+
+    expect(response.status).toBe(200);
+    const detail = await response.json();
+    expect(detail.transaction.id).toBe(current.id);
+    expect(detail.account).toEqual({ id: accountId, name: "Contanti" });
+    expect(detail.origin).toEqual({ kind: "manuale" });
+    expect(detail.rule).toMatchObject({ matchType: "merchant", pattern: "esselunga" });
+    expect(detail.merchant).toEqual({ count: 2, total: -60, recent: [{ id: earlier.id, date: today, amount: -20 }] });
+  });
+
+  it("GET risponde 404 per un movimento di un altro utente o un id non valido", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({ userId: otherUserId, accountId, categoryId, description: "Altrui", amount: "-5.00", date: "2026-02-10" })
+      .returning();
+
+    const foreign = await GET(new NextRequest(`http://localhost/api/transactions/${transaction.id}`), { params: Promise.resolve({ id: transaction.id }) });
+    const invalid = await GET(new NextRequest("http://localhost/api/transactions/abc"), { params: Promise.resolve({ id: "abc" }) });
+
+    expect(foreign.status).toBe(404);
+    expect(invalid.status).toBe(404);
   });
 });

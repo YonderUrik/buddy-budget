@@ -10,7 +10,7 @@ case "${1:-}" in
       exec node scripts/selfhost/setup.mjs
     fi
     if ! command -v docker >/dev/null 2>&1; then
-      echo "Serve Docker oppure Node.js 24 o successivo per la configurazione." >&2
+      echo "Setup requires Docker or Node.js 24 or later." >&2
       exit 1
     fi
     # Nessun socket Docker, servizio web o software da installare sulla macchina host.
@@ -19,11 +19,11 @@ case "${1:-}" in
       -v "$(pwd):/workspace" -w /workspace \
       node:24-alpine node scripts/selfhost/setup.mjs
     ;;
-  *) echo "Uso: ./scripts/selfhost-init.sh [--defaults]" >&2; exit 1 ;;
+  *) echo "Usage: ./scripts/selfhost-init.sh [--defaults]" >&2; exit 1 ;;
 esac
 
 if [ -e .env ]; then
-  echo ".env esiste già: non lo tocco." >&2
+  echo ".env already exists. No changes made. Run without --defaults to edit it." >&2
   exit 0
 fi
 
@@ -37,4 +37,4 @@ sed \
   -e "s|^CRON_SECRET=.*|CRON_SECRET=$(random)|" \
   .env.selfhost.example > .env
 chmod 600 .env
-echo "Creato .env con segreti casuali. Controlla APP_URL, poi: docker compose up -d"
+echo "Created .env with generated secrets. Check APP_URL, then run: docker compose up -d"

@@ -30,32 +30,32 @@ export async function checkService(id, values, request = requestJson) {
     if (id === 'yahoo') {
       const { status, data } = await request('https://query2.finance.yahoo.com/v8/finance/chart/AAPL?range=5d&interval=1d');
       const prices = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
-      if (status === 200 && prices?.some(price => typeof price === 'number' && price > 0)) return { status: 'ok', message: 'Yahoo risponde con prezzi validi. Nessuna chiave necessaria.' };
-      return { status: 'warning', message: 'Yahoo non restituisce prezzi adesso (rete, blocco o limite del servizio). Puoi continuare e riprovare; non serve una chiave Yahoo.' };
+      if (status === 200 && prices?.some(price => typeof price === 'number' && price > 0)) return { status: 'ok', message: 'Yahoo returned valid prices. No API key needed.' };
+      return { status: 'warning', message: 'Yahoo is unavailable right now (network issue, blocking or rate limit). You can continue and retry later; no API key is needed.' };
     }
     if (id === 'openrouter') {
-      if (!values.OPENROUTER_API_KEY) return { status: 'missing', message: 'Senza chiave: categorie manuali e import standard disponibili, AI disattivata.' };
+      if (!values.OPENROUTER_API_KEY) return { status: 'missing', message: 'AI is off: manual categories and standard imports are still available.' };
       const { status, data } = await request('https://openrouter.ai/api/v1/key', { Authorization: `Bearer ${values.OPENROUTER_API_KEY}` });
-      if ([401, 403].includes(status)) return { status: 'error', message: 'Chiave OpenRouter rifiutata. Controllala o creane una nuova.' };
-      if (status !== 200 || !data?.data) return { status: 'warning', message: 'OpenRouter non è verificabile adesso. Riprova tra poco.' };
-      if (typeof data.data.limit_remaining === 'number' && data.data.limit_remaining <= 0) return { status: 'warning', message: 'Chiave riconosciuta, ma il limite di spesa è esaurito. Aumentalo nel tuo account OpenRouter.' };
-      if (data.data.is_free_tier) return { status: 'warning', message: 'Chiave riconosciuta su un account gratuito. Aggiungi credito per i modelli configurati. Modelli e compatibilità ZDR si verificano al primo utilizzo.' };
-      return { status: 'ok', message: 'Chiave riconosciuta. Non abbiamo eseguito generazioni a pagamento. Modelli, credito disponibile e compatibilità ZDR si verificano al primo utilizzo.' };
+      if ([401, 403].includes(status)) return { status: 'error', message: 'OpenRouter rejected this key. Check it or create a new key.' };
+      if (status !== 200 || !data?.data) return { status: 'warning', message: 'OpenRouter cannot be checked right now. Try again later.' };
+      if (typeof data.data.limit_remaining === 'number' && data.data.limit_remaining <= 0) return { status: 'warning', message: 'Key accepted, but its spending limit is exhausted. Increase the limit in your OpenRouter account.' };
+      if (data.data.is_free_tier) return { status: 'warning', message: 'Key accepted on a free account. Add credit for the configured models. Model availability and zero data retention are checked on first use.' };
+      return { status: 'ok', message: 'Key accepted. No paid AI requests were made. Model availability, account credit and zero data retention are checked on first use.' };
     }
     if (id === 'resend') {
-      if (!values.RESEND_API_KEY || !values.RESEND_FROM) return { status: 'missing', message: 'Configura chiave e mittente. Senza, i link di accesso vanno nei log e le notifiche non partono.' };
+      if (!values.RESEND_API_KEY || !values.RESEND_FROM) return { status: 'missing', message: 'Email is off. Provide both a Resend key and a sender address to enable it. Sign-in links remain available in the app logs.' };
       const { status, data } = await request('https://api.resend.com/domains', { Authorization: `Bearer ${values.RESEND_API_KEY}` });
-      if (status === 401) return { status: 'error', message: 'Chiave Resend rifiutata.' };
-      if (status === 403) return { status: 'warning', message: 'Questa chiave non permette di controllare i domini (può essere di solo invio). Salvala e prova un accesso reale; nessuna email è stata inviata.' };
-      if (status !== 200 || !Array.isArray(data?.data)) return { status: 'warning', message: 'Resend non è verificabile adesso. Nessuna email è stata inviata.' };
+      if (status === 401) return { status: 'error', message: 'Resend rejected this key.' };
+      if (status === 403) return { status: 'warning', message: 'This key cannot list domains (it may be send-only). Try signing in after setup to verify delivery. No email was sent.' };
+      if (status !== 200 || !Array.isArray(data?.data)) return { status: 'warning', message: 'Resend cannot be checked right now. No email was sent.' };
       const domain = values.RESEND_FROM.match(/@([^\s<>]+)>?$/)?.[1]?.toLowerCase();
       const verified = data.data.some(item => item.name?.toLowerCase() === domain && item.status === 'verified');
       return verified
-        ? { status: 'ok', message: 'Chiave riconosciuta e dominio del mittente verificato. La consegna si prova con il primo accesso; nessuna email è stata inviata.' }
-        : { status: 'warning', message: 'Chiave riconosciuta, ma il dominio del mittente non risulta verificato in questa pagina di risultati. Controllalo in Resend prima di usare le email.' };
+        ? { status: 'ok', message: 'Key accepted and sender domain verified. Try signing in after setup to check delivery. No email was sent.' }
+        : { status: 'warning', message: 'Key accepted, but the sender domain was not found among the verified domains returned. Check the domain in Resend before using email.' };
     }
     throw new Error('unknown_check');
   } catch {
-    return { status: 'warning', message: 'Verifica non riuscita: controlla la connessione e riprova. Nessun segreto viene mostrato nei messaggi di errore.' };
+    return { status: 'warning', message: 'Could not complete the check. Check your connection and try again. No credentials are included in error messages.' };
   }
 }

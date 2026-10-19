@@ -7,4 +7,4 @@
 
 export { WelcomeToast } from "./welcome-toast";
 export { WELCOME_HREFS, happenedLine, waitingLine, welcomeToastContent } from "./welcome-lines";
-export type { WelcomeFormatters, WelcomeLine, WelcomeToastContent } from "./welcome-lines";
+export type { WelcomeLine, WelcomeToastContent } from "./welcome-lines";

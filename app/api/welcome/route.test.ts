@@ -103,8 +103,8 @@ describe("GET/PATCH /api/welcome and POST /api/visits", () => {
     const { summary } = await welcome();
     expect(summary?.since).toBe(seen.toISOString());
     expect(summary?.happened).toEqual([
-      { kind: "movements", count: 2, income: 1200, expenses: 20 },
-      { kind: "price_alerts", count: 1, first: { name: "Enel", direction: "sopra", price: 7.2, currency: "EUR" } },
+      { kind: "movements", count: 2 },
+      { kind: "price_alerts", count: 1 },
     ]);
     expect(summary?.waiting).toEqual([{ kind: "to_decide", count: 1 }]);
 

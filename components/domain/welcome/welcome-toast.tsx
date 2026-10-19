@@ -1,5 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -15,7 +14,7 @@ import { track } from "@/lib/analytics";
 import { markWelcomeShown, useVisitHeartbeat, useWelcomeQuery } from "@/lib/queries/welcome";
 import { happenedLine, waitingLine, welcomeToastContent } from "./welcome-lines";
 
-/** Long enough to read two lines, short enough not to sit on the page. */
+/** Long enough to read the sentence, short enough not to sit on the page. */
 const WELCOME_TOAST_MS = 10_000;
 
 export function WelcomeToast() {
@@ -29,19 +28,19 @@ export function WelcomeToast() {
     const summary = data?.summary;
     if (!summary || shownSince.current === summary.since) return;
     shownSince.current = summary.since;
-    const { formatCurrency, formatPrice } = localizedFormats(locale);
-    const currency = data.currency;
-    const fmt = {
-      money: (value: number) => formatCurrency(value, currency, { maximumFractionDigits: Math.abs(value) < 100 ? 2 : 0 }),
-      price: formatPrice,
-    };
-    const happened = summary.happened.map((item) => happenedLine(item, tr, fmt));
+    const happened = summary.happened.map((item) => happenedLine(item, tr));
     const waiting = summary.waiting.map((item) => waitingLine(item, tr));
-    const content = welcomeToastContent(happened, waiting, tr);
+    const list = new Intl.ListFormat(locale, { type: "conjunction" });
+    const content = welcomeToastContent(happened, waiting, tr, (items) => list.format(items));
     if (!content) return;
-    toast(content.title, {
+    // One line per group, a little apart so «Da sistemare» starts its own block.
+    const title = content.lines.map((line, index) => (
+      <span key={line} className={index > 0 ? "mt-1.5 block" : "block"}>
+        {line}
+      </span>
+    ));
+    toast(title, {
       id: "welcome",
-      description: content.description,
       duration: WELCOME_TOAST_MS,
       action: {
         label: content.action.label,

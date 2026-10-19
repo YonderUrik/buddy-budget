@@ -3,21 +3,16 @@
 import type { WelcomeHappened, WelcomeItemKind, WelcomeWaiting } from "@/lib/welcome";
 
 type Translate = (source: string, values?: Record<string, string | number>) => string;
-
-/** Formatters the lines need (from `localizedFormats`, so «Nascondi importi» masks the amounts). */
-export interface WelcomeFormatters {
-  money: (value: number) => string;
-  price: (value: number, currency: string) => string;
-}
+/** Joins labels the way the language does («a, b e c»): `Intl.ListFormat` in the user's locale. */
+type JoinList = (items: string[]) => string;
 
 export interface WelcomeLine {
   kind: WelcomeItemKind;
-  /** The count shown big on the left. */
+  /** How many: written before the words, never apart from them. */
   figure: number;
   title: string;
-  detail: string;
   href: string;
-  /** Pill button label: only lines that wait for the user have one. */
+  /** Button label: only lines that wait for the user have one. */
   action?: string;
 }
 
@@ -32,56 +27,25 @@ export const WELCOME_HREFS = {
 } as const satisfies Record<WelcomeItemKind, string>;
 
 /** One line for something that happened while the user was away. */
-export function happenedLine(item: WelcomeHappened, tr: Translate, fmt: WelcomeFormatters): WelcomeLine {
-  switch (item.kind) {
-    case "movements": {
-      const parts = [
-        item.income > 0 ? tr("entrate {0}", { 0: fmt.money(item.income) }) : null,
-        item.expenses > 0 ? tr("uscite {0}", { 0: fmt.money(item.expenses) }) : null,
-      ].filter((part): part is string => part !== null);
-      return {
-        kind: item.kind,
-        figure: item.count,
-        title: item.count === 1 ? tr("movimento nuovo") : tr("movimenti nuovi"),
-        detail: parts.length > 0 ? parts.join(" · ") : tr("Esclusi da entrate e uscite"),
-        href: WELCOME_HREFS.movements,
-      };
-    }
-    case "price_alerts": {
-      const { name, direction, price, currency } = item.first;
-      const level = fmt.price(price, currency);
-      const what = direction === "sopra" ? tr("{0} è salito sopra {1}", { 0: name, 1: level }) : tr("{0} è sceso sotto {1}", { 0: name, 1: level });
-      return {
-        kind: item.kind,
-        figure: item.count,
-        title: item.count === 1 ? tr("avviso di prezzo scattato") : tr("avvisi di prezzo scattati"),
-        detail: item.count === 1 ? what : tr("L'ultimo: {0}", { 0: what }),
-        href: WELCOME_HREFS.price_alerts,
-      };
-    }
-    case "price_rises": {
-      const { name, from, to } = item.first;
-      const what = tr("{0} da {1} a {2}", { 0: name, 1: fmt.money(from), 2: fmt.money(to) });
-      return {
-        kind: item.kind,
-        figure: item.count,
-        title: item.count === 1 ? tr("abbonamento costa di più") : tr("abbonamenti costano di più"),
-        detail: item.count === 1 ? what : tr("L'ultimo: {0}", { 0: what }),
-        href: WELCOME_HREFS.price_rises,
-      };
-    }
-  }
+export function happenedLine(item: WelcomeHappened, tr: Translate): WelcomeLine {
+  const one = item.count === 1;
+  const title = {
+    movements: one ? tr("movimento nuovo") : tr("movimenti nuovi"),
+    price_alerts: one ? tr("avviso di prezzo scattato") : tr("avvisi di prezzo scattati"),
+    price_rises: one ? tr("abbonamento costa di più") : tr("abbonamenti costano di più"),
+  }[item.kind];
+  return { kind: item.kind, figure: item.count, title, href: WELCOME_HREFS[item.kind] };
 }
 
 /** One line for something that waits for the user, with its action. */
 export function waitingLine(item: WelcomeWaiting, tr: Translate): WelcomeLine {
+  const one = item.count === 1;
   switch (item.kind) {
     case "to_decide":
       return {
         kind: item.kind,
         figure: item.count,
-        title: item.count === 1 ? tr("movimento senza categoria") : tr("movimenti senza categoria"),
-        detail: tr("Scegli dove vanno: poi l'app li riconosce da sola"),
+        title: one ? tr("movimento senza categoria") : tr("movimenti senza categoria"),
         href: WELCOME_HREFS.to_decide,
         action: tr("Decidi"),
       };
@@ -89,8 +53,7 @@ export function waitingLine(item: WelcomeWaiting, tr: Translate): WelcomeLine {
       return {
         kind: item.kind,
         figure: item.count,
-        title: item.count === 1 ? tr("abbonamento da confermare") : tr("abbonamenti da confermare"),
-        detail: tr("Addebiti che tornano ogni mese o ogni anno"),
+        title: one ? tr("abbonamento da confermare") : tr("abbonamenti da confermare"),
         href: WELCOME_HREFS.subscriptions,
         action: tr("Controlla"),
       };
@@ -99,32 +62,36 @@ export function waitingLine(item: WelcomeWaiting, tr: Translate): WelcomeLine {
         kind: item.kind,
         figure: item.count,
         title: tr("import da controllare"),
-        detail: tr("Alcune righe del file non sono state riconosciute"),
         href: `${WELCOME_HREFS.import_review}?job=${item.jobId}`,
         action: tr("Apri"),
       };
   }
 }
 
-/** What the «Dall'ultima visita» toast says: one line per group and the most useful action. */
+/** What the «Dall'ultima visita» toast says: up to two lines (what happened, what waits) and the most useful action. */
 export interface WelcomeToastContent {
-  title: string;
-  description: string;
+  lines: string[];
   action: { label: string; href: string; kind: WelcomeItemKind };
 }
 
 /**
- * Packs the summary into one toast: what happened as the title («Mentre eri via: 12 movimenti nuovi · …»), what waits
- * as the description («Da sistemare: 7 movimenti senza categoria»), and the action of the first thing that waits (or
- * a way to see the first thing that happened). With one group only, the description is that group's first detail.
+ * Packs the summary into the toast title, one line per group («Mentre eri via: 12 movimenti nuovi e 1 avviso di prezzo
+ * scattato», «Da sistemare: 7 movimenti senza categoria»), with the action of the first thing that waits (or «Vedi» on
+ * the first thing that happened). No description: the title says it all.
  */
-export function welcomeToastContent(happened: readonly WelcomeLine[], waiting: readonly WelcomeLine[], tr: Translate): WelcomeToastContent | null {
+export function welcomeToastContent(
+  happened: readonly WelcomeLine[],
+  waiting: readonly WelcomeLine[],
+  tr: Translate,
+  join: JoinList,
+): WelcomeToastContent | null {
   // The count never ends a line apart from its words.
-  const label = (lines: readonly WelcomeLine[]) => lines.map((line) => `${line.figure}\u00a0${line.title}`).join(" · ");
+  const label = (lines: readonly WelcomeLine[]) => join(lines.map((line) => `${line.figure}\u00a0${line.title}`));
   const first = waiting[0] ?? happened[0];
   if (!first) return null;
-  const title = happened.length > 0 ? tr("Mentre eri via: {0}", { 0: label(happened) }) : tr("Da sistemare: {0}", { 0: label(waiting) });
-  const description =
-    happened.length > 0 && waiting.length > 0 ? tr("Da sistemare: {0}", { 0: label(waiting) }) : first.detail;
-  return { title, description, action: { label: first.action ?? tr("Vedi"), href: first.href, kind: first.kind } };
+  const lines = [
+    happened.length > 0 ? tr("Mentre eri via: {0}", { 0: label(happened) }) : null,
+    waiting.length > 0 ? tr("Da sistemare: {0}", { 0: label(waiting) }) : null,
+  ].filter((part): part is string => part !== null);
+  return { lines, action: { label: first.action ?? tr("Vedi"), href: first.href, kind: first.kind } };
 }

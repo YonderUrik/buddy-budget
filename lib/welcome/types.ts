@@ -1,13 +1,13 @@
-/** What the «Dall'ultima visita» toast says when a returning user opens the app. Amounts are in the user's currency, prices in the instrument's. */
+/** What the «Dall'ultima visita» toast says when a returning user opens the app: counts only, no amounts or names. */
 
 /** Something that happened while the user was away (between the end of the previous visit and the start of this one). */
 export type WelcomeHappened =
-  /** Movements added while away (bank sync, imports finished in the background). `income`/`expenses` are net of excluded parts, both positive. */
-  | { kind: "movements"; count: number; income: number; expenses: number }
-  /** Price alerts that went off while away; `first` is the most recent one. */
-  | { kind: "price_alerts"; count: number; first: { name: string; direction: "sopra" | "sotto"; price: number; currency: string } }
-  /** Subscriptions whose price went up while away; `first` is the most recent rise. */
-  | { kind: "price_rises"; count: number; first: { name: string; from: number; to: number } };
+  /** Movements added while away (bank sync, imports finished in the background). */
+  | { kind: "movements"; count: number }
+  /** Price alerts that went off while away. */
+  | { kind: "price_alerts"; count: number }
+  /** Subscriptions whose price went up while away. */
+  | { kind: "price_rises"; count: number };
 
 /** Something that is waiting for the user now, whenever it arrived. */
 export type WelcomeWaiting =
@@ -32,5 +32,4 @@ export interface WelcomeSummary {
 /** Response of `GET /api/welcome`: null when there is nothing to say (first visit, already shown this visit, nothing new). */
 export interface WelcomeResponse {
   summary: WelcomeSummary | null;
-  currency: string;
 }

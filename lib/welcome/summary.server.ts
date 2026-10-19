@@ -1,8 +1,7 @@
 import "server-only";
 import { and, desc, eq, gt, inArray, lte, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { authUser } from "@/lib/db/schema/auth";
-import { instruments, userPriceAlerts } from "@/lib/db/schema/investments";
+import { userPriceAlerts } from "@/lib/db/schema/investments";
 import { personalImportJobs } from "@/lib/db/schema/personal-imports";
 import { transactions } from "@/lib/db/schema/transactions";
 import { computeAttentionSummary } from "@/lib/attention/summary";
@@ -16,31 +15,22 @@ export interface AwayWindow {
   until: Date;
 }
 
-/** Movements created while away, with income and spending net of their excluded parts. */
-async function awayMovements(userId: string, { since, until }: AwayWindow): Promise<WelcomeHappened | null> {
+/** Movements created while away. */
+async function awayMovements(userId: string, { since, until }: AwayWindow): Promise<number> {
   const [row] = await db
-    .select({
-      count: sql<number>`count(*)::int`,
-      income: sql<string>`coalesce(sum(${transactions.amount} - ${transactions.excludedAmount}) filter (where ${transactions.amount} > 0), 0)`,
-      expenses: sql<string>`coalesce(sum(abs(${transactions.amount}) - abs(${transactions.excludedAmount})) filter (where ${transactions.amount} < 0), 0)`,
-    })
+    .select({ count: sql<number>`count(*)::int` })
     .from(transactions)
     .where(and(eq(transactions.userId, userId), gt(transactions.createdAt, since), lte(transactions.createdAt, until)));
-  if (!row || row.count === 0) return null;
-  return { kind: "movements", count: row.count, income: Number(row.income), expenses: Number(row.expenses) };
+  return row?.count ?? 0;
 }
 
 /** Price alerts that went off while away (the evening price check sets `triggeredAt`). */
-async function awayPriceAlerts(userId: string, { since, until }: AwayWindow): Promise<WelcomeHappened | null> {
-  const rows = await db
-    .select({ name: instruments.name, currency: instruments.currency, direction: userPriceAlerts.direction, price: userPriceAlerts.triggeredPrice })
+async function awayPriceAlerts(userId: string, { since, until }: AwayWindow): Promise<number> {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
     .from(userPriceAlerts)
-    .innerJoin(instruments, eq(instruments.id, userPriceAlerts.instrumentId))
-    .where(and(eq(userPriceAlerts.userId, userId), gt(userPriceAlerts.triggeredAt, since), lte(userPriceAlerts.triggeredAt, until)))
-    .orderBy(desc(userPriceAlerts.triggeredAt));
-  const first = rows[0];
-  if (!first) return null;
-  return { kind: "price_alerts", count: rows.length, first: { name: first.name, direction: first.direction, price: Number(first.price ?? 0), currency: first.currency } };
+    .where(and(eq(userPriceAlerts.userId, userId), gt(userPriceAlerts.triggeredAt, since), lte(userPriceAlerts.triggeredAt, until)));
+  return row?.count ?? 0;
 }
 
 /** File imports stopped on rows to check, still open (not expired). */
@@ -68,18 +58,13 @@ export async function computeWelcomeSummary(userId: string, window: AwayWindow, 
     importsToReview(userId, now),
   ]);
 
-  // A rise counts if it was first seen after the previous visit, most recent first.
-  const rises = recentPriceRises(subscriptions.view.items, subscriptions.today)
-    .filter((item) => item.priceChange && item.priceChange.since > sinceDay)
-    .sort((a, b) => (b.priceChange?.since ?? "").localeCompare(a.priceChange?.since ?? ""));
-  const firstRise = rises[0];
+  // A rise counts if it was first seen after the previous visit.
+  const rises = recentPriceRises(subscriptions.view.items, subscriptions.today).filter((item) => item.priceChange && item.priceChange.since > sinceDay).length;
 
   const happened: WelcomeHappened[] = [
-    ...(movements ? [movements] : []),
-    ...(alerts ? [alerts] : []),
-    ...(firstRise?.priceChange
-      ? [{ kind: "price_rises" as const, count: rises.length, first: { name: firstRise.name, from: firstRise.priceChange.from, to: firstRise.priceChange.to } }]
-      : []),
+    ...(movements > 0 ? [{ kind: "movements" as const, count: movements }] : []),
+    ...(alerts > 0 ? [{ kind: "price_alerts" as const, count: alerts }] : []),
+    ...(rises > 0 ? [{ kind: "price_rises" as const, count: rises }] : []),
   ];
   const waiting: WelcomeWaiting[] = [
     ...(attention.uncategorizedCount > 0 ? [{ kind: "to_decide" as const, count: attention.uncategorizedCount }] : []),
@@ -89,8 +74,3 @@ export async function computeWelcomeSummary(userId: string, window: AwayWindow, 
   return { since: window.since.toISOString(), happened, waiting };
 }
 
-/** The user's currency, for formatting the amounts of the summary. */
-export async function userCurrency(userId: string): Promise<string> {
-  const [row] = await db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId)).limit(1);
-  return row?.currency ?? "EUR";
-}

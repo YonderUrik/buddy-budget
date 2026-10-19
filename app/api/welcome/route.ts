@@ -4,7 +4,7 @@ import { readJson, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { requestLogger, withRoute } from "@/lib/observability";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { hasWelcomeContent, isWelcomeShown, type WelcomeResponse } from "@/lib/welcome";
-import { computeWelcomeSummary, userCurrency } from "@/lib/welcome/summary.server";
+import { computeWelcomeSummary } from "@/lib/welcome/summary.server";
 import { markWelcomeShown, touchVisit } from "@/lib/welcome/visit.server";
 import { logVisitStart } from "@/lib/welcome/visit-log.server";
 
@@ -19,8 +19,7 @@ async function handleGet(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);
   if (session instanceof Response) return session;
   const userId = session.user.id;
-  const currency = await userCurrency(userId);
-  const empty: WelcomeResponse = { summary: null, currency };
+  const empty: WelcomeResponse = { summary: null };
   if (isPublicDemoUserId(userId)) return Response.json(empty);
 
   const touch = await touchVisit(userId);
@@ -32,7 +31,7 @@ async function handleGet(request: NextRequest) {
   const summary = await computeWelcomeSummary(userId, { since: visitSinceAt, until: visitStartedAt });
   if (!hasWelcomeContent(summary)) return Response.json(empty);
   requestLogger().info("welcome.summary.built", { count: summary.happened.length, pending: summary.waiting.length });
-  return Response.json({ summary, currency } satisfies WelcomeResponse);
+  return Response.json({ summary } satisfies WelcomeResponse);
 }
 
 /** PATCH /api/welcome `{ shown: true }` — the toast appeared: not again until the next visit, on any device. */

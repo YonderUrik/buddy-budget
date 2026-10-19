@@ -5,7 +5,7 @@
  */
 
 /** Versione dei documenti (data dell'ultima modifica sostanziale). */
-export const LEGAL_VERSION = "2026-10-19";
+export const LEGAL_VERSION = "2026-10-20";
 
 export const LEGAL_OWNER = {
   name: "Daniele Roccaforte",
@@ -118,7 +118,17 @@ export const PRIVACY: LegalDocument = {
       title: "Proposte di categoria con intelligenza artificiale",
       paragraphs: [
         "Se lo attivi in Impostazioni → Assistente per le categorie (è spento finché non lo scegli), per i movimenti nuovi di sincronizzazioni e importazioni inviamo a un modello di intelligenza artificiale il nome pulito dell'esercente, la direzione (entrata o uscita) e l'elenco delle tue categorie, con qualche esempio di tue scelte passate e le istruzioni personali che scegli di inserire nelle Impostazioni. Evita di inserire dati personali o bancari nelle istruzioni. Non inviamo importi, date, IBAN, note, descrizioni complete dei movimenti, bonifici né nomi che sembrano di persona.",
-        "Il servizio è OpenRouter, con richiesta di non conservazione dei dati e di non uso per l'addestramento. Il modello propone una categoria con un grado di sicurezza. Se in Impostazioni lasci attiva l'opzione «Lascia che l'app scelga quando è abbastanza sicura», le proposte sicure almeno al 70% si applicano senza chiederti conferma: le ritrovi in Categorizza → «Messe dall'app», con l'indicazione che vengono dall'intelligenza artificiale, e puoi cambiarle in ogni momento. Le altre proposte restano da confermare, e una scelta diventa una regola solo se lo chiedi tu. Puoi spegnere l'applicazione automatica o revocare il consenso in ogni momento: da quel momento non partono nuove richieste e le proposte già ricevute non si applicano più da sole.",
+        "Il servizio è OpenRouter, con la modalità zero data retention descritta nella sezione seguente. Il modello propone una categoria con un grado di sicurezza. Se in Impostazioni lasci attiva l'opzione «Lascia che l'app scelga quando è abbastanza sicura», le proposte sicure almeno al 70% si applicano senza chiederti conferma: le ritrovi in Categorizza → «Messe dall'app», con l'indicazione che vengono dall'intelligenza artificiale, e puoi cambiarle in ogni momento. Le altre proposte restano da confermare, e una scelta diventa una regola solo se lo chiedi tu. Puoi spegnere l'applicazione automatica o revocare il consenso in ogni momento: da quel momento non partono nuove richieste e le proposte già ricevute non si applicano più da sole.",
+      ],
+    },
+    {
+      id: "zero-data-retention",
+      title: "Zero data retention per l'intelligenza artificiale",
+      paragraphs: [
+        "Ogni richiesta all'intelligenza artificiale (import di un file, proposte di categoria, «Chiedi all'AI» su un movimento) passa da OpenRouter con la modalità zero data retention: OpenRouter la manda solo a fornitori del modello che non conservano i dati dopo la risposta e non li usano per addestrare i modelli. Se nessun fornitore rispetta queste condizioni, la richiesta viene rifiutata e non parte.",
+        "La condizione è imposta due volte: è scritta in ogni richiesta che parte dai nostri server ed è attiva nelle impostazioni del nostro account OpenRouter per tutti i modelli, così vale anche se una delle due venisse a mancare. OpenRouter non conserva il testo delle richieste e delle risposte; tiene i dati tecnici dell'uso (modello, quantità di testo elaborata, costo).",
+        `Cosa non copre: la modalità riguarda i fornitori a cui OpenRouter passa la richiesta, non quello che conserviamo noi. Da noi restano, come descritto nelle sezioni sopra, il risultato (le regole di lettura del file, la categoria proposta) e registri tecnici senza il contenuto delle richieste, per ${LOG_DAYS} giorni. Non usiamo strumenti aggiuntivi di OpenRouter come la ricerca sul web.`,
+        "Vale per il servizio su buddybudget.io. Chi installa BuddyBudget sui propri server usa una propria chiave OpenRouter: le richieste continuano a chiedere la zero data retention, ma le impostazioni dell'account sono quelle di chi installa.",
       ],
     },
     {
@@ -132,7 +142,7 @@ export const PRIVACY: LegalDocument = {
         "Cloudflare: instradamento del traffico, DNS e archiviazione (R2) delle copie di sicurezza del database.",
         "GoCardless: lettura dei conti bancari che colleghi, ai sensi di PSD2.",
         "Resend: invio delle email di servizio e, se le attivi, di riepilogo e avvisi (usa il tuo indirizzo email e il testo delle email, che può contenere cifre del tuo budget) e consegna dei messaggi che scrivi al supporto.",
-        "OpenRouter e il fornitore del modello che questo seleziona: solo se usi l'import con intelligenza artificiale o le proposte di categoria, con il tuo consenso (vedi le sezioni dedicate).",
+        "OpenRouter e il fornitore del modello che questo seleziona, sempre in modalità zero data retention: solo se usi l'import con intelligenza artificiale o le proposte di categoria, con il tuo consenso (vedi le sezioni dedicate).",
         "Google: solo se scegli di accedere con Google; agisce come titolare autonomo per l'autenticazione.",
         "Strumenti di monitoraggio, avvisi tecnici e statistiche anonime (Umami), che gestiamo sui nostri server e che non ricevono dati finanziari né contenuti tuoi.",
       ],
@@ -240,6 +250,7 @@ export const TERMINI: LegalDocument = {
         "Calcoli, stime, simulazioni, grafici, stime fiscali, proiezioni pensionistiche e commenti sui titoli hanno solo scopo informativo e si basano sui dati che inserisci e su ipotesi semplificate. Non sono una raccomandazione di investimento né una consulenza personalizzata e BuddyBudget non è un intermediario finanziario. Le regole fiscali e previdenziali cambiano e dipendono dalla tua situazione: prima di decidere rivolgiti a un professionista abilitato.",
         "I prezzi di mercato provengono da fonti di terzi, possono essere in ritardo o errati e sono chiusure di fine giornata, non quotazioni in tempo reale. Lo stesso vale per i dati ricevuti dalle banche tramite Open Banking: dipendono dalla banca e dal fornitore del collegamento.",
         "L'import con intelligenza artificiale produce regole di lettura generate automaticamente: controlla che i movimenti importati corrispondano ai tuoi documenti. Le categorie messe dall'app (dalle tue regole, dalla categoria della banca nei file importati o dalle proposte più sicure, se lo hai scelto) possono essere sbagliate: le trovi indicate come messe dall'app, puoi cambiarle in ogni momento e sei tu a verificare che siano giuste.",
+        "Le richieste all'intelligenza artificiale passano da OpenRouter solo verso fornitori che non conservano i dati e non li usano per l'addestramento (zero data retention, vedi l'informativa sulla privacy); se nessuno è disponibile la funzione non risponde e i tuoi dati restano come sono.",
       ],
     },
     {

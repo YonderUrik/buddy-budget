@@ -47,6 +47,8 @@ Everything that is about your data: accounts and transactions, categories and ru
 | Banks (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | No linked bank accounts: manual accounts and CSV import |
 | In-app reports | `SUPPORT_EMAIL_TO` (needs email) | «Scrivici» answers that reports are off on this install |
 
+Every OpenRouter request asks for zero data retention endpoints only (`provider.zdr`), so a model with no such endpoint fails instead of falling back to one that keeps data. You can also turn ZDR on for all models in your OpenRouter account (Settings → Privacy); the two combine, either one is enough.
+
 GoCardless stopped accepting new Bank Account Data sign-ups in July 2025: bank sync works only if you already have keys.
 
 **SMTP examples** (special characters in the password must be URL-encoded, `@` → `%40`):

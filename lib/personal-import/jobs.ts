@@ -6,18 +6,29 @@ import { seal, unseal, digest } from "./crypto";
 import { brokerFallbackSource } from "./broker-fallback";
 import { ImportError, readRawFile } from "./contract";
 import type { Preview } from "./confirm";
+import { importCounts } from "./counts";
 // Raw-file parsers are selected only within the source explicitly chosen by this user.
 export const RAW_PARSER_VERSION = "raw-csv-v1";
+/** Shown when the exact same file was already imported: nothing is analysed or saved again. */
+export const ALREADY_IMPORTED_MESSAGE = "Questo file è già stato importato: i suoi movimenti ci sono già tutti.";
+/** Identity of an uploaded file, the same whatever the line endings, BOM or trailing blank lines. */
+export function fileFingerprint(csv: string) {
+  return digest(csv.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").replace(/\s+$/, ""));
+}
 export async function enqueue(userId: string, input: { csv: string; name: string; formatId?: string; regenerate?: boolean; brokerFallback?: boolean }) {
   readRawFile(input.csv);
   const broker = input.brokerFallback ? brokerFallbackSource(input.csv) : null;
-  const sourceFingerprint = broker ? digest(input.csv) : null;
+  // Every upload carries its fingerprint, whatever source the user picked: the same file chosen again as a «new bank»
+  // would otherwise be read with a fresh format and no receipts, and every movement would enter twice.
+  const sourceFingerprint = fileFingerprint(input.csv);
   const signature = RAW_PARSER_VERSION;
   return db.transaction(async tx => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 81234)`);
-    if (sourceFingerprint && !input.regenerate) {
-      const [existing] = await tx.select({ id: jobs.id }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.sourceFingerprint, sourceFingerprint), sql`${jobs.status} not in ('failed', 'expired')`)).limit(1);
-      if (existing) return existing;
+    if (!input.regenerate) {
+      // A file already imported is refused before any analysis; a broker file still on its way returns its own job.
+      const same = await tx.select({ id: jobs.id, status: jobs.status }).from(jobs).where(and(eq(jobs.userId, userId), sql`${jobs.sourceFingerprint} in (${sourceFingerprint}, ${digest(input.csv)})`, sql`${jobs.status} not in ('failed', 'expired')`));
+      if (same.some(j => j.status === "imported")) throw new ImportError(ALREADY_IMPORTED_MESSAGE, "already_imported");
+      if (broker && same[0]) return same[0];
     }
     const recent = await tx.select({ status: jobs.status }).from(jobs).where(and(eq(jobs.userId, userId), gte(jobs.createdAt, new Date(Date.now() - 86400000))));
     if (recent.length >= 10 || recent.filter(j => ["queued", "processing"].includes(j.status)).length >= 2) throw new ImportError("Limite raggiunto: massimo 2 analisi in corso e 10 caricamenti al giorno");
@@ -37,7 +48,7 @@ export async function listImports(userId: string) {
     db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
   ]);
   // Del registro dell'importazione esce solo il conteggio (movimenti e operazioni creati), mai gli id.
-  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0 } : null })) };
+  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0, ...importCounts(ledger) } : null })) };
 }
 /** Anteprima per il client: il parser generato (se presente) resta sul server. */
 export async function getPreview(userId: string, id: string): Promise<Omit<Preview, "parser"> | null> {

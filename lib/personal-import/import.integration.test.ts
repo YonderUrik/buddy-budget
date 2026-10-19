@@ -11,7 +11,8 @@ import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { instruments, investmentTransactions, investmentPortfolios } from "@/lib/db/schema/investments";
 import { personalFormats as formats, personalImportJobs as jobs, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
-import { enqueue, getPreview, listImports, reanalyze } from "./jobs";
+import { ALREADY_IMPORTED_MESSAGE, enqueue, getPreview, listImports, reanalyze } from "./jobs";
+import { ImportError } from "./contract";
 import { deletePersonalImport, previewPersonalImportDeletion } from "./delete";
 import { confirmImport } from "./confirm";
 import { processOne, maintainJobs } from "./worker";
@@ -27,6 +28,8 @@ vi.mock("resend", () => ({ Resend: class { emails = { send }; } }));
 vi.mock("./generate", async importOriginal => ({ ...await importOriginal<typeof import("./generate")>(), generateParser: vi.fn() }));
 const code = `function(t){return t.rows.map((line,row)=>{const r=line[0].split(',');return r[0]==='Date'?{row,kind:'ignore',reason:'Header'}:r[1]==='ERROR'?{row,kind:'error',reason:'Unknown operation'}:r[1]==='NOTE'?{row,kind:'ignore',reason:'Metadata'}:r[1]==='CASH'?{row,kind:'cash',date:r[0],amount:Number(r[2]),description:r[3],currency:'EUR',transfer:false}:{row,kind:'investment',date:r[0],currency:'EUR',description:r[3],type:r[1]==='BUY'?'acquisto':'vendita',name:r[3],isin:null,instrumentType:'azione',quantity:Number(r[2]),price:100,grossAmount:null,fees:0,taxes:0}})}`;
 const csv = 'Date,Type,Value,Description\n2024-01-01,CASH,1000,Deposit\n2024-01-02,BUY,1,Example shares\n2024-01-03,CASH,-5,Shop';
+// The same movements in a different file (an extra note line): the exact same file is refused before any analysis.
+const csvAgain = `${csv}\n2024-01-05,NOTE,0,Metadata`;
 const metadata: FormatMetadata = { version: 1, institution: { name: "Synthetic Bank", evidence: "document" }, delimiter: ",", columns: [{ section: null, index: 0, name: "Date", mapsTo: ["date"] }, { section: null, index: 2, name: "Value", mapsTo: ["amount", "quantity"] }] };
 let userId: string; const users: string[] = [];
 beforeEach(async () => {
@@ -103,7 +106,7 @@ describe("personal CSV durable flow", () => {
     const first = await prepare(); await confirmImport(userId, first);
     const old = await readJob(first);
     await db.update(parsers).set({ encryptedParser: seal(JSON.stringify({kind:"javascript",code:"function(){throw Error('private text')}"}), userId) }).where(eq(parsers.id, old.parserId!));
-    const second = await prepare(csv, old.formatId);
+    const second = await prepare(csvAgain, old.formatId);
     const job = await readJob(second);
     expect(job.status).toBe("ready"); expect(job.parserId).not.toBe(old.parserId);
     expect(job.failureReport).toMatchObject({ fallback:true, reason:"invalid_saved_parser" });
@@ -273,12 +276,48 @@ describe("personal CSV durable flow", () => {
     const reimport = await prepare(csv, formatId); expect(await confirmImport(userId, reimport)).toMatchObject({ inserted: 3 });
     expect(await cash()).toHaveLength(4);
   });
+  describe("files with movements already imported", () => {
+    it("refuses the exact same file before any analysis, whatever source is chosen", async () => {
+      const first = await prepare(); await confirmImport(userId, first);
+      const formatId = (await readJob(first)).formatId;
+      for (const input of [{ csv, name: "Synthetic Bank" }, { csv: `\uFEFF${csv.replaceAll("\n", "\r\n")}\r\n`, name: "Another name" }, { csv, name: "Synthetic Bank", formatId }]) {
+        const error = await enqueue(userId, input).catch(e => e);
+        expect(error).toBeInstanceOf(ImportError); expect(error).toMatchObject({ code: "already_imported", message: ALREADY_IMPORTED_MESSAGE });
+      }
+      expect((await listImports(userId)).jobs).toHaveLength(1);
+      expect(generateParser).toHaveBeenCalledTimes(1);
+      expect(await cash()).toHaveLength(3);
+    });
+    it("adds nothing from a different file whose movements are all there, and says so", async () => {
+      const first = await prepare(); await confirmImport(userId, first);
+      const again = await prepare(csvAgain);
+      expect(await confirmImport(userId, again)).toMatchObject({ inserted: 0, rows: 3, alreadyPresent: 3 });
+      expect(await cash()).toHaveLength(3);
+      expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toHaveLength(1);
+      expect((await listImports(userId)).jobs.find(j => j.id === again)?.results).toMatchObject({ cash: 0, investments: 0, rows: 3, alreadyPresent: 3 });
+    });
+    it("imports only the new movements of an overlapping file, into the same account, even as a new source", async () => {
+      const first = await prepare(); await confirmImport(userId, first);
+      const overlapping = 'Date,Type,Value,Description\n2024-01-03,CASH,-5,Shop\n2024-01-04,CASH,-7,Bakery\n2024-01-05,CASH,-2,Kiosk';
+      const next = await prepare(overlapping);
+      expect((await readJob(next)).formatId).not.toBe((await readJob(first)).formatId);
+      expect(await confirmImport(userId, next)).toMatchObject({ inserted: 2, rows: 3, alreadyPresent: 1 });
+      const rows = await cash();
+      expect(rows).toHaveLength(5); expect(new Set(rows.map(r => r.accountId)).size).toBe(1);
+      expect((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance).toBe("886.00");
+      expect((await listImports(userId)).jobs.find(j => j.id === next)?.results).toMatchObject({ cash: 2, rows: 3, alreadyPresent: 1 });
+      // Deleting the first import makes its rows new again for the second source.
+      await deletePersonalImport(userId, first, (await previewPersonalImportDeletion(userId, first)).token);
+      const replay = await prepare(csvAgain, (await readJob(next)).formatId);
+      expect(await confirmImport(userId, replay)).toMatchObject({ inserted: 3, rows: 3, alreadyPresent: 0 });
+    });
+  });
   it("deleting a duplicate-only upload leaves the original movements and receipts intact", async () => {
     const first = await prepare(); await confirmImport(userId, first); const formatId = (await readJob(first)).formatId;
-    const duplicate = await prepare(csv, formatId); await confirmImport(userId, duplicate);
+    const duplicate = await prepare(csvAgain, formatId); await confirmImport(userId, duplicate);
     const plan = await previewPersonalImportDeletion(userId, duplicate); expect(plan).toMatchObject({ cashCount: 0, investmentCount: 0 });
     await deletePersonalImport(userId, duplicate, plan.token); expect(await cash()).toHaveLength(3);
-    const next = await prepare(csv, formatId); expect(await confirmImport(userId, next)).toMatchObject({ inserted: 0, duplicates: 4 });
+    const next = await prepare(csvAgain, formatId); expect(await confirmImport(userId, next)).toMatchObject({ inserted: 0, duplicates: 4 });
   });
   it("rejects a stale confirmation and prevents deleting purchases needed by later sales", async () => {
     const first = await prepare(); await confirmImport(userId, first);

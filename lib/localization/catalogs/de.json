@@ -215,6 +215,7 @@
   "Broker inclusi nei numeri": "In den Zahlen berücksichtigte Broker",
   "BuddyBudget": "BuddyBudget",
   "BuddyBudget è open source: puoi seguire e segnalare anche da lì.": "BuddyBudget ist Open Source: Du kannst auch dort die Entwicklung verfolgen und Probleme melden.",
+  "BuddyBudget: torna alla pagina iniziale": "BuddyBudget: zurück zur Startseite",
   "Budget": "Budget",
   "CSV o Excel, oppure trascinalo qui.": "CSV oder Excel, oder ziehe die Datei hierher.",
   "CVaR 95% (giorno)": "CVaR 95 % (täglich)",
@@ -1803,6 +1804,7 @@
   "{0}: cosa significa": "{0}: Bedeutung",
   "Spesa nel tempo · {0}": "Ausgaben im Zeitverlauf · {0}",
   "{0}: torna al sito": "{0}: zurück zur Website",
+  "{0}: torna alla pagina iniziale": "{0}: zurück zur Startseite",
   "Non siamo riusciti a registrare l'accettazione. Riprova.": "Zustimmung konnte nicht gespeichert werden. Versuche es erneut.",
   "Accesso con Google non riuscito. Riprova o usa l'email.": "Google-Anmeldung fehlgeschlagen. Versuche es erneut oder nutze E-Mail.",
   "Invia di nuovo tra {0}s": "Erneut senden in {0}s",
@@ -5208,5 +5210,16 @@
   "Lascia così": "So lassen",
   "Chiedo all'AI…": "Frage die KI…",
   "Chiedi all'AI": "KI fragen",
-  "Accendilo in Impostazioni": "In den Einstellungen einschalten"
+  "Accendilo in Impostazioni": "In den Einstellungen einschalten",
+  "Questo file è già stato importato: i suoi movimenti ci sono già tutti.": "Diese Datei wurde bereits importiert: Alle ihre Umsätze sind schon da.",
+  "Il movimento del file c'era già: non abbiamo aggiunto niente.": "Der Umsatz der Datei war schon da: Wir haben nichts hinzugefügt.",
+  "Tutti i {0} movimenti del file c'erano già: non abbiamo aggiunto niente.": "Alle {0} Umsätze der Datei waren schon da: Wir haben nichts hinzugefügt.",
+  "{0} su {1} movimenti importati: gli altri c'erano già.": "{0} von {1} Umsätzen importiert: Die anderen waren schon da.",
+  "Niente di nuovo: {0} movimenti c'erano già": "Nichts Neues: {0} Umsätze waren schon da",
+  "{0} su {1} movimenti importati": "{0} von {1} Umsätzen importiert",
+  "{0}: niente di nuovo": "{0}: nichts Neues",
+  "I movimenti c'erano già tutti.": "Alle Umsätze waren schon da.",
+  "Il tuo CSV non aveva movimenti nuovi": "Deine CSV enthielt keine neuen Umsätze",
+  "Tutti i movimenti del tuo CSV c'erano già: non abbiamo aggiunto niente.": "Alle Umsätze deiner CSV waren schon da: Wir haben nichts hinzugefügt.",
+  "{0} su {1} movimenti importati: gli altri c'erano già. Trovi i dati in **Liquidità** e **Investimenti**.": "{0} von {1} Umsätzen importiert: Die anderen waren schon da. Du findest die Daten unter **Liquidität** und **Anlagen**."
 }

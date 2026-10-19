@@ -215,6 +215,7 @@
   "Broker inclusi nei numeri": "Brokers included in the figures",
   "BuddyBudget": "BuddyBudget",
   "BuddyBudget è open source: puoi seguire e segnalare anche da lì.": "BuddyBudget is open source: you can also follow development and report issues there.",
+  "BuddyBudget: torna alla pagina iniziale": "BuddyBudget: back to the home page",
   "Budget": "Budget",
   "CSV o Excel, oppure trascinalo qui.": "CSV or Excel, or drag it here.",
   "CVaR 95% (giorno)": "CVaR 95% (daily)",
@@ -1803,6 +1804,7 @@
   "{0}: cosa significa": "{0}: what it means",
   "Spesa nel tempo · {0}": "Spending over time · {0}",
   "{0}: torna al sito": "{0}: back to website",
+  "{0}: torna alla pagina iniziale": "{0}: back to the home page",
   "Non siamo riusciti a registrare l'accettazione. Riprova.": "Could not record acceptance. Try again.",
   "Accesso con Google non riuscito. Riprova o usa l'email.": "Google sign-in failed. Try again or use email.",
   "Invia di nuovo tra {0}s": "Resend in {0}s",
@@ -5208,5 +5210,16 @@
   "Lascia così": "Leave it",
   "Chiedo all'AI…": "Asking the AI…",
   "Chiedi all'AI": "Ask the AI",
-  "Accendilo in Impostazioni": "Turn it on in Settings"
+  "Accendilo in Impostazioni": "Turn it on in Settings",
+  "Questo file è già stato importato: i suoi movimenti ci sono già tutti.": "This file has already been imported: all its movements are already here.",
+  "Il movimento del file c'era già: non abbiamo aggiunto niente.": "The file's movement was already here: we added nothing.",
+  "Tutti i {0} movimenti del file c'erano già: non abbiamo aggiunto niente.": "All {0} movements in the file were already here: we added nothing.",
+  "{0} su {1} movimenti importati: gli altri c'erano già.": "{0} of {1} movements imported: the others were already here.",
+  "Niente di nuovo: {0} movimenti c'erano già": "Nothing new: {0} movements were already here",
+  "{0} su {1} movimenti importati": "{0} of {1} movements imported",
+  "{0}: niente di nuovo": "{0}: nothing new",
+  "I movimenti c'erano già tutti.": "All movements were already here.",
+  "Il tuo CSV non aveva movimenti nuovi": "Your CSV had no new movements",
+  "Tutti i movimenti del tuo CSV c'erano già: non abbiamo aggiunto niente.": "All movements in your CSV were already here: we added nothing.",
+  "{0} su {1} movimenti importati: gli altri c'erano già. Trovi i dati in **Liquidità** e **Investimenti**.": "{0} of {1} movements imported: the others were already here. You'll find the data in **Cash** and **Investments**."
 }

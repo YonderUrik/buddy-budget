@@ -11,13 +11,14 @@ import { translateServerMessage } from "@/lib/localization/messages";
 
 import Link from "next/link";
 import * as React from "react";
-import { AlertCircleIcon, CheckCircle2Icon, CheckIcon, CircleDashedIcon, FileSpreadsheetIcon, LoaderCircleIcon } from "lucide-react";
+import { AlertCircleIcon, CheckCircle2Icon, CheckIcon, CircleDashedIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { TextShimmer } from "@/components/motion";
 import { ProgressBar } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import type { PersonalImportListing } from "@/lib/queries/personal-imports";
 import { cn } from "@/lib/utils";
+import { importOverlap } from "@/lib/personal-import/counts";
 import { formatFileSize } from "./personal-import-upload";
 import { ReportErrorLink } from "@/components/domain/support";
 
@@ -53,6 +54,19 @@ export function receiptStage(status: string | undefined): number {
   if (status === "ready") return 2;
   if (status === "processing" || status === "queued") return 1;
   return 1;
+}
+
+/**
+ * The line under the title of a finished import: how many movements were new out of how many in the file, or that
+ * none was. Older imports, without the counts, keep the generic line.
+ */
+export function importSummary(tr: (source: string, values?: Record<string, string | number>) => string, results: Job["results"] | undefined): string {
+  const counts = results ?? undefined;
+  switch (importOverlap(counts)) {
+    case "nothing_new": return counts!.rows === 1 ? tr("Il movimento del file c'era già: non abbiamo aggiunto niente.") : tr("Tutti i {0} movimenti del file c'erano già: non abbiamo aggiunto niente.", { 0: counts!.rows! });
+    case "partial": return tr("{0} su {1} movimenti importati: gli altri c'erano già.", { 0: counts!.rows! - counts!.alreadyPresent!, 1: counts!.rows! });
+    default: return tr("I dati sono già nel tuo conto.");
+  }
 }
 
 function plural(n: number, one: string, many: string): string {
@@ -95,18 +109,23 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
   const failed = !!job && FAILED.includes(job.status);
   const stage = receiptStage(job?.status);
   const results = job?.results;
-  const title = imported ? tr("Importazione completata") : failed ? tr("Non siamo riusciti a importare il file") : tr("File ricevuto");
-  const Icon = failed ? AlertCircleIcon : CheckCircle2Icon;
+  const overlap = imported ? importOverlap(results) : "unknown";
+  const nothingNew = overlap === "nothing_new";
+  React.useEffect(() => {
+    if (nothingNew) track("personal_csv_already_imported", { stage: "analisi" });
+  }, [nothingNew]);
+  const title = nothingNew ? tr("Niente di nuovo da importare") : imported ? tr("Importazione completata") : failed ? tr("Non siamo riusciti a importare il file") : tr("File ricevuto");
+  const Icon = failed ? AlertCircleIcon : nothingNew ? InfoIcon : CheckCircle2Icon;
 
   return (
     <section aria-labelledby={`${listId}-receipt`} className="flex flex-col gap-5 rounded-2xl bg-card p-4 sm:p-6">
       <div className="flex items-start gap-3">
-        <Icon className={cn("mt-0.5 size-6 shrink-0", failed ? "text-destructive" : "text-pos")} aria-hidden="true" />
+        <Icon className={cn("mt-0.5 size-6 shrink-0", failed ? "text-destructive" : nothingNew ? "text-muted-foreground" : "text-pos")} aria-hidden="true" />
         <div className="flex min-w-0 flex-col gap-1">
           <h2 id={`${listId}-receipt`} ref={headingRef} tabIndex={-1} className="font-heading text-2xl font-medium tracking-tight outline-none">{tr(title)}</h2>
           <p role="status" className="text-sm text-muted-foreground">
             {imported
-              ? tr("I dati sono già nel tuo conto.")
+              ? importSummary(tr, results)
               : failed
                 ? (job?.error ? translateServerMessage(language, job.error) : null) ?? tr("Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista.")
                 : tr("L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando.")}
@@ -126,13 +145,13 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
       <Stages stage={stage} failed={failed} />
       {!imported && !failed ? <ProgressBar state={{ kind: "indeterminate" }} label={tr("Importazione in corso")} /> : null}
 
-      {imported && results ? (
+      {imported && results && !nothingNew ? (
         <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
           <li>{plural(results.cash, tr("movimento aggiunto"), tr("movimenti aggiunti"))}{" "}{tr("a Liquidità.")}</li>
           <li>{plural(results.investments, tr("operazione aggiunta"), tr("operazioni aggiunte"))}{" "}{tr("a Investimenti.")}</li>
           {results.skipped > 0 ? <li>{results.skipped === 1 ? tr("1 riga non riconosciuta è stata saltata, come hai scelto: non entra nei conti.") : tr("{0} righe non riconosciute sono state saltate, come hai scelto: non entrano nei conti.", { 0: results.skipped })}</li> : null}
           {results.bankCategorized > 0 ? <li>{results.bankCategorized === 1 ? tr("1 movimento ha già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.") : tr("{0} movimenti hanno già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.", { 0: results.bankCategorized })}</li> : null}
-          <li>{tr("Le righe già presenti sono state saltate, senza doppioni.")}</li>
+          {overlap === "unknown" ? <li>{tr("Le righe già presenti sono state saltate, senza doppioni.")}</li> : null}
         </ul>
       ) : null}
 

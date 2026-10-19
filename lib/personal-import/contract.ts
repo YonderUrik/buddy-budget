@@ -4,7 +4,10 @@ import { parseDate } from "@/lib/investments/import/values";
 import { isValidIsin } from "@/lib/validation/investments";
 import { cleanBankCategory } from "@/lib/categorization/bank-category";
 
-export class ImportError extends Error {}
+export class ImportError extends Error {
+  /** Stable reason for the client, when it shows the error differently (`already_imported` is a notice, not a fault). */
+  constructor(message: string, readonly code?: "already_imported") { super(message); }
+}
 export const MAX_BYTES = 25 * 1024 * 1024;
 export const MAX_ROWS = 50000;
 const money = z.number().finite().min(-999999999).max(999999999);

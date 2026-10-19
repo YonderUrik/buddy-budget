@@ -1,9 +1,13 @@
 "use client";
+import { legalHref } from "@/lib/legal";
+import { useInstance } from "@/lib/instance/provider";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * «Dove l'app usa l'AI»: the three places where data can reach an AI model, what is sent each time and the switch or
- * checkbox that allows it. Everything not listed here (calculations, rules, bank sync, alerts) never uses AI.
+ * checkbox that allows it. Everything not listed here (calculations, rules, bank sync, alerts) never uses AI. Every request
+ * asks OpenRouter for zero data retention (`OPENROUTER_PRIVACY` in lib/llm), so the closing line holds on self-hosted installs too;
+ * only the link to the privacy policy is hosted-only.
  */
 
 import { AiBadge } from "./ai-badge";
@@ -36,6 +40,7 @@ export const AI_USAGES: readonly AiUsageItem[] = [
 
 export function AiUsageSummary({ items = AI_USAGES }: { items?: readonly AiUsageItem[] }) {
   const { t: tr } = useLocalization();
+  const { selfHosted } = useInstance();
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-muted/50 p-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -51,7 +56,18 @@ export function AiUsageSummary({ items = AI_USAGES }: { items?: readonly AiUsage
         ))}
       </ul>
       <p className="text-xs text-muted-foreground">
-        {tr("Senza il tuo sì non parte niente. I dati vanno al servizio OpenRouter, a cui chiediamo di non conservarli. Tutto il resto dell'app (calcoli, regole, sincronizzazione con la banca, avvisi) non usa l'AI.")}
+        {tr("Senza il tuo sì non parte niente. Tutto il resto dell'app (calcoli, regole, sincronizzazione con la banca, avvisi) non usa l'AI.")}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {tr("Zero data retention: i dati passano da OpenRouter solo verso fornitori che non li conservano dopo la risposta e non li usano per l'addestramento. Se nessuno è disponibile, la richiesta non parte.")}
+        {!selfHosted && (
+          <>
+            {" "}
+            <a href={`${legalHref("privacy")}#zero-data-retention`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">
+              {tr("Come funziona")}
+            </a>
+          </>
+        )}
       </p>
     </div>
   );

@@ -309,7 +309,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `investments/` | Positions, returns, allocation, exposure, dividends, alerts, broker imports, instrument icons and logos |
 | `legal/` | Legal document links, version, acceptance |
 | `liquidity/` | Liquidità ("Cash") view helpers: split, day groups, account series, spend curve |
-| `llm/` | OpenRouter decision client used by categorisation |
+| `llm/` | OpenRouter decision client used by categorisation, and `OPENROUTER_PRIVACY`, the zero data retention routing every OpenRouter request sends (a test fails if a caller leaves it out) |
 | `localization/` | Country and language profile, route policy, translation catalogs, formatting |
 | `market-data/` | Price, FX, inflation, rate, profile and dividend providers and their stores |
 | `motion/` | Springs, dialog origin, bottom-sheet gestures |

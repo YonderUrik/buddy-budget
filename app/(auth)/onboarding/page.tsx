@@ -142,7 +142,7 @@ export default function OnboardingPage() {
               <div className="flex flex-col gap-3 text-sm text-muted-foreground">
                 <p>{tr("Quando arrivano movimenti nuovi dalla banca o da un file, un assistente basato su intelligenza artificiale propone una categoria per ogni esercente.")}</p>
                 <p>{tr("Quando l'app è abbastanza sicura mette la categoria da sola, e la ritrovi in Categorizza, sotto «Messe dall'app», dove puoi cambiarla. Le altre le scegli tu, una carta alla volta. Se preferisci scegliere sempre tu, lo spegni in Impostazioni.")}</p>
-                <p>{tr("Per farlo inviamo a un servizio esterno solo il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone), con richiesta di non conservare i dati.")}</p>
+                <p>{tr("Per farlo inviamo a OpenRouter solo il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone), in modalità zero data retention: lo ricevono solo fornitori che non conservano i dati e non li usano per l'addestramento.")}</p>
               </div>
               <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border p-4 text-sm font-medium text-foreground">{tr("Proponi le categorie")}<Switch checked={assistantEnabled} onCheckedChange={setAssistantEnabled} disabled={loading} aria-label={tr("Proponi le categorie")} />
               </label>

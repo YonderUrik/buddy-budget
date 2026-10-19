@@ -25,6 +25,20 @@ export function setAmountsMasked(masked: boolean): void {
   amountsMasked = masked;
 }
 
+/** True while the user has chosen to hide amounts: for amounts that cannot go through `formatCurrency` (rolling numbers, split parts). */
+export function isAmountsMasked(): boolean {
+  return amountsMasked;
+}
+
+/**
+ * `Intl.NumberFormat` for numbers that tell the user's money without a currency style (quantities held, prices paid,
+ * fees, amounts read from an import file): `format` returns `AMOUNT_MASK` while amounts are hidden, like `formatCurrency`.
+ */
+export function privateNumberFormat(locale: string, options: Intl.NumberFormatOptions = {}): { format: (value: number) => string } {
+  const formatter = new Intl.NumberFormat(locale, options);
+  return { format: (value) => (amountsMasked ? AMOUNT_MASK : formatter.format(value)) };
+}
+
 /** Formatta un valore numerico come valuta, secondo la valuta e il locale dell'utente. Con gli importi nascosti restituisce `AMOUNT_MASK`. */
 export function formatCurrency(
   value: number,

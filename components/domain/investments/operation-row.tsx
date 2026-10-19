@@ -19,6 +19,7 @@ import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 import { useBrokerStatementsQuery } from "@/lib/queries/investments";
 import { GainText } from "./gain-text";
 import { InstrumentIcon } from "./instrument-icon";
+import { privateNumberFormat } from "@/lib/format";
 
 
 
@@ -55,7 +56,7 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
     return tr("{0} lordi", { 0: formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR") });
   }
   const unit = instrument?.priceUnit === "percentuale_nominale" ? "% " : " ";
-  return tr("{0} × {1}{2}{3}", { 0: QUANTITY_FORMAT.format(Number(t.quantity)), 1: Number(t.price).toLocaleString(formattingLocale), 2: unit, 3: currency });
+  return tr("{0} × {1}{2}{3}", { 0: QUANTITY_FORMAT.format(Number(t.quantity)), 1: PRICE_FORMAT.format(Number(t.price)), 2: unit, 3: currency });
 }
   function remainingNote(insight: OperationInsight<InvestmentTransaction>): string | null {
   const t = insight.transaction;
@@ -64,8 +65,9 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
   if (bought - insight.remainingQuantity <= QUANTITY_EPSILON) return null;
   return tr("ne restano {0}", { 0: REMAINING_FORMAT.format(insight.remainingQuantity) });
 }
-  const QUANTITY_FORMAT = new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 6 });
-  const REMAINING_FORMAT = new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 4 });
+  const QUANTITY_FORMAT = privateNumberFormat(formattingLocale, { maximumFractionDigits: 6 });
+  const REMAINING_FORMAT = privateNumberFormat(formattingLocale, { maximumFractionDigits: 4 });
+  const PRICE_FORMAT = privateNumberFormat(formattingLocale);
 
   const { t: tr } = useLocalization();
   const t = insight.transaction;
@@ -76,7 +78,7 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
   const details = [
     formatDateWithYear(t.date),
     describe(t, instrument),
-    Number(t.fees) > 0 ? tr("commissioni {0}", {0: Number(t.fees).toLocaleString(formattingLocale)}) : null,
+    Number(t.fees) > 0 ? tr("commissioni {0}", {0: PRICE_FORMAT.format(Number(t.fees))}) : null,
     remainingNote(insight),
   ].filter(Boolean);
   return (

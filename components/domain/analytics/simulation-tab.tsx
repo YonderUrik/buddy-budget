@@ -96,7 +96,7 @@ export function SimulationTab({ assumptions, plan, currency, compact = false }: 
           </ComposedChart>
         </ChartContainer>
         <p className="text-xs text-muted-foreground">
-          {result.paths.toLocaleString(formattingLocale)}{" "}{tr("scenari. Asse orizzontale: anni da oggi")}{retireYear > 0 ? tr("; la pensione inizia dopo {0} anni, versando {1} l'anno", {0: retireYear, 1: money(input.annualSavings, currency)}) : ""}{tr(". Tutto in euro di oggi.")}</p>
+          {new Intl.NumberFormat(formattingLocale).format(result.paths)}{" "}{tr("scenari. Asse orizzontale: anni da oggi")}{retireYear > 0 ? tr("; la pensione inizia dopo {0} anni, versando {1} l'anno", {0: retireYear, 1: money(input.annualSavings, currency)}) : ""}{tr(". Tutto in euro di oggi.")}</p>
       </AnalyticsCard>
     </div>
   );

@@ -52,6 +52,8 @@ export interface LogFields {
   host?: string;
   withContext?: boolean;
   reason?: string;
+  /** Input field a validation rejected (the schema key, never its value). */
+  field?: string;
   inserted?: number;
   deleted?: number;
   /** Esiti di un import in blocco (conteggi di righe): nuove, aggiornate, saltate perché già presenti, rifiutate. */

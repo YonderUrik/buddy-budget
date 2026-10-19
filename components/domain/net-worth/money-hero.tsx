@@ -19,16 +19,6 @@ export interface MoneyHeroProps {
   className?: string;
 }
 
-/** Divide l'importo formattato in parte intera (con separatori) e coda (decimali e valuta). */
-export function splitMoney(value: number, currency: string, locale = "it-IT"): { main: string; tail: string } {
-  const parts = new Intl.NumberFormat(locale, { style: "currency", currency }).formatToParts(value);
-  const decimalIndex = parts.findIndex((part) => part.type === "decimal");
-  if (decimalIndex < 0) return { main: parts.map((p) => p.value).join(""), tail: "" };
-  const head = parts.slice(0, decimalIndex);
-  const tail = parts.slice(decimalIndex);
-  return { main: head.map((p) => p.value).join(""), tail: tail.map((p) => p.value).join("") };
-}
-
 export function MoneyHero({ value, currency, locale, className }: MoneyHeroProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);

@@ -10,7 +10,7 @@ const MAX_DISMISSED = 100;
 /**
  * GET /api/whats-new?dismissed=id1,id2 — the «Novità» entries for the user's country and language (gaps.md G14): the
  * recent ones and `current`, the one the Overview card shows. Dismissals stay on the device, as on the web
- * (`bb:whats-new-dismissed`): pass them in `dismissed`. Entries carry web `href`s for the app to map to its routes.
+ * (`bb:whats-new-dismissed`): pass them in `dismissed`. Entries released before the user's sign-up are left out (web #444). Entries carry web `href`s for the app to map to its routes.
  */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -18,7 +18,8 @@ async function handleGet(request: NextRequest) {
   bindRequestUser(session.user.id);
   const { productCountry, language } = resolveProfile(session.user);
   const dismissed = (request.nextUrl.searchParams.get("dismissed") ?? "").split(",").map((id) => id.trim()).filter(Boolean).slice(0, MAX_DISMISSED);
-  return Response.json(buildWhatsNew({ language, productCountry, dismissed, now: new Date() }));
+  const since = session.user.createdAt ? new Date(session.user.createdAt) : undefined;
+  return Response.json(buildWhatsNew({ language, productCountry, dismissed, now: new Date(), since }));
 }
 
 export const GET = withRoute("whats_new.get", handleGet);

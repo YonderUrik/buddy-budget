@@ -12,6 +12,7 @@ import { buildLiquidityAnalysis } from "./liquidity-analysis";
 import { buildLiquidityMonth } from "./liquidity-month";
 import { buildOverviewView } from "./overview";
 import { sampleIndexes } from "./investments";
+import { buildWhatsNew } from "./meta";
 import { accountExtrasSchema, liquidityAnalysisSchema, liquidityMonthSchema, overviewViewSchema } from "./schemas";
 
 const TODAY = new Date(2026, 9, 18);
@@ -143,5 +144,16 @@ describe("sampleIndexes", () => {
     expect(sampled).toHaveLength(160);
     expect(sampled[0]).toBe(0);
     expect(sampled.at(-1)).toBe(999);
+  });
+});
+
+describe("buildWhatsNew", () => {
+  it("leaves out the entries released before the user's sign-up (web #444)", () => {
+    const now = new Date("2026-10-20T12:00:00Z");
+    const all = buildWhatsNew({ language: "it", productCountry: "IT", dismissed: [], now });
+    const fresh = buildWhatsNew({ language: "it", productCountry: "IT", dismissed: [], now, since: new Date("2026-10-19T08:00:00Z") });
+    expect(fresh.entries.every((entry) => entry.date > "2026-10-19")).toBe(true);
+    expect(fresh.entries.length).toBeLessThanOrEqual(all.entries.length);
+    if (fresh.current) expect(fresh.current.date > "2026-10-19").toBe(true);
   });
 });

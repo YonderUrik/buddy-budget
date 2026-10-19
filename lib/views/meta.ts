@@ -129,6 +129,8 @@ export interface WhatsNewInputs {
   /** Entry ids the device has dismissed (kept on the device, as on the web). */
   dismissed: readonly string[];
   now: Date;
+  /** The user's sign-up: entries released before it are skipped. */
+  since?: Date;
 }
 
 /**
@@ -139,8 +141,9 @@ export function buildWhatsNew(input: WhatsNewInputs) {
   const tr = (source: string) => translate(input.language, source);
   const available = WHATS_NEW_ENTRIES.filter((entry) => isCountryPathAvailable(input.productCountry, entry.href.split("?")[0]));
   const localize = (entry: (typeof WHATS_NEW_ENTRIES)[number]) => ({ ...entry, title: tr(entry.title), summary: tr(entry.summary), ctaLabel: tr(entry.ctaLabel) });
-  const fresh = available.filter((entry) => pickWhatsNew([entry], [], input.now) !== null);
-  const current = pickWhatsNew(available, input.dismissed, input.now);
+  // Entries released before the user's sign-up are not news to them (web #444).
+  const fresh = available.filter((entry) => pickWhatsNew([entry], [], input.now, input.since) !== null);
+  const current = pickWhatsNew(available, input.dismissed, input.now, input.since);
   return { maxAgeDays: WHATS_NEW_MAX_AGE_DAYS, entries: fresh.map(localize), current: current ? localize(current) : null };
 }
 

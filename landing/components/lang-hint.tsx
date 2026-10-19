@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import "./lang-hint.css";
 import { track } from "@/lib/analytics";
 import { LANG_HINT_STORAGE_KEY } from "@/lib/lang-hint";
+import { rememberLanguageChoice } from "@/lib/visitor-country";
 
 export interface LangHintProps {
   /** The English page to suggest. */
@@ -32,7 +33,10 @@ export function LangHint({ href, text, dismiss }: LangHintProps) {
   return (
     <div className="lang-hint" lang="en">
       <div className="wrap">
-        <a href={href} hrefLang="en" onClick={() => track("language_switch_click", { from: "it", to: "en", location: "hint" })}>
+        <a href={href} hrefLang="en" onClick={() => {
+            rememberLanguageChoice("en");
+            track("language_switch_click", { from: "it", to: "en", location: "hint" });
+          }}>
           {text} <span aria-hidden="true">→</span>
         </a>
         <button type="button" onClick={close} aria-label={dismiss}>

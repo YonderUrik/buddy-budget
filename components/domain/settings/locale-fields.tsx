@@ -3,12 +3,10 @@ import { useId } from "react";
 
 import { Flag, COUNTRY_FLAGS, LanguageSelect } from "@/components/domain/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { COUNTRY_LANGUAGES, PRODUCT_COUNTRIES, isSupportedProfile, type LocaleProfile, type ProductCountry, type Language } from "@/lib/localization/config";
+import { COUNTRY_LANGUAGES, COUNTRY_UNAVAILABLE_NOTES, PRODUCT_COUNTRIES, PRODUCT_COUNTRY_NAMES as COUNTRY_NAMES, isSupportedProfile, type LocaleProfile, type ProductCountry, type Language } from "@/lib/localization/config";
 import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
 import { SettingsRow } from "./settings-section";
-
-const COUNTRY_NAMES: Record<ProductCountry, string> = { IT: "Italia", DE: "Germania" };
 
 export interface LocaleFieldsProps {
   value: LocaleProfile;
@@ -52,6 +50,6 @@ export function LocaleFields({ value, onChange, disabled = false, divided = fals
         onChange={language => onChange({ ...value, language })}
       />
     </SettingsRow>
-    {value.productCountry === "DE" ? <p role="status" className="text-sm text-muted-foreground">{t("Per la Germania, tasse, pensione, previsioni dei dividendi e pianificazione del pensionamento non sono ancora disponibili. I dati esistenti vengono conservati.")}</p> : null}
+    {COUNTRY_UNAVAILABLE_NOTES[value.productCountry] ? <p role="status" className="text-sm text-muted-foreground">{t(COUNTRY_UNAVAILABLE_NOTES[value.productCountry])}</p> : null}
   </fieldset>;
 }

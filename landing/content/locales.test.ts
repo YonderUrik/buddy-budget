@@ -101,8 +101,9 @@ describe("English texts", () => {
 });
 
 describe("demo links", () => {
-  it("go to the app's public demo, in English from the English pages", () => {
+  it("go to the app's public demo, without forcing a language (the app picks it from the country)", () => {
     expect(LOCALE_APP_LINKS.it.demo).toBe(`${APP_URL}/demo`);
-    expect(LOCALE_APP_LINKS.en.demo).toBe(`${APP_URL}/demo?lang=en`);
+    expect(LOCALE_APP_LINKS.en).toEqual(LOCALE_APP_LINKS.it);
+    expect(LOCALE_APP_LINKS.en.signup).not.toMatch(/lang=/);
   });
 });

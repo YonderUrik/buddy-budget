@@ -33,6 +33,7 @@ export default function OnboardingPage() {
   const { productCountry, language, setProfile } = useLocalization();
   // Language proposed on arrival (sign-in choice or browser language): the completion event says whether it was kept.
   const [proposedLanguage] = useState(language);
+  const [proposedCountry] = useState(productCountry);
   const [currency, setCurrency] = useState<SupportedCurrency>(DEFAULT_CURRENCY);
   const { consent, setConsent, complete, payload } = useLegalConsent();
   // Consenso al trattamento con AI: spento finché l'utente non lo accende (art. 7 GDPR, nessuna casella pre-selezionata).
@@ -84,7 +85,7 @@ export default function OnboardingPage() {
       });
 
       if (response.ok) {
-        track("onboarding_completed", { currency, language, languageKept: language === proposedLanguage, ...loadAttribution() });
+        track("onboarding_completed", { currency, language, languageKept: language === proposedLanguage, country: productCountry, countryKept: productCountry === proposedCountry, ...loadAttribution() });
         if (assistant?.available) track("ai_categorization_toggled", { enabled: assistantEnabled });
         track("terms_accepted", { context: "onboarding" });
         track("onboarding_categories_chosen", {

@@ -4,12 +4,20 @@ import { useRef, useState } from "react";
 import "./screen-gallery.css";
 import { SCREEN_AREAS, screenAreaName, screenText } from "@/content/screen-text";
 import { SCREENS, type ScreenId } from "@/content/screens";
+import { SCREEN_NEEDS } from "@/content/rules-needs";
+import { needsAttr } from "@/lib/visitor-country";
 import { track } from "@/lib/analytics";
 import type { Locale } from "@/lib/i18n";
 import { EASE_OUT, gsap, MOTION_OK, useGSAP } from "@/lib/motion/gsap";
 import { AppShot } from "./app-shot";
 import { PhoneShot } from "./phone-shot";
 import { TrackedSection } from "./tracked-section";
+
+/** `data-needs` of an area whose screens all need the same rules (Pensione, Analitiche), so the whole group hides. */
+function areaNeeds(area: string): string | undefined {
+  const needs = SCREENS.filter((s) => s.area === area).map((s) => SCREEN_NEEDS[s.id]);
+  return needs.every((n) => n && n === needs[0]) ? needsAttr(needs[0]) : undefined;
+}
 
 export interface ScreenGalleryProps {
   /** On the phone, shows the phone-size version inside the phone frame (for the screens that have one) instead of the shrunken full screenshot. */
@@ -23,6 +31,7 @@ export interface ScreenGalleryProps {
 /**
  * Galleria di tutte le schermate dell'app: sono screenshot veri (vedi `docs/landing-screens.md`), non disegni, sempre
  * interi. Si sceglie la schermata dalle schede raggruppate per area, sopra l'immagine; la didascalia dice cosa mostra.
+ * Screens on rules the visitor's country lacks (`SCREEN_NEEDS`) are hidden, with their area when it has nothing else.
  */
 export function ScreenGallery({ phoneOnMobile = false, locale = "it", label = "Schermate dell'app" }: ScreenGalleryProps) {
   const [selected, setSelected] = useState<ScreenId>("panoramica");
@@ -58,11 +67,11 @@ export function ScreenGallery({ phoneOnMobile = false, locale = "it", label = "S
     <TrackedSection id="schermate" section="schermate" className={`gal${phoneOnMobile ? " gal-pm" : ""}`}>
       <nav className="gal-nav" aria-label={label}>
         {SCREEN_AREAS.map((area) => (
-          <div key={area} className="gal-area" role="group" aria-label={screenAreaName(area, locale)}>
+          <div key={area} className="gal-area" role="group" aria-label={screenAreaName(area, locale)} data-needs={areaNeeds(area)}>
             <span className="gal-area-t">{screenAreaName(area, locale)}</span>
             <div className="gal-area-b">
               {SCREENS.filter((s) => s.area === area).map((s) => (
-                <button key={s.id} type="button" className="gal-tab" aria-pressed={s.id === selected} onClick={() => select(s.id)}>
+                <button key={s.id} type="button" className="gal-tab" aria-pressed={s.id === selected} onClick={() => select(s.id)} data-needs={needsAttr(SCREEN_NEEDS[s.id])}>
                   {screenText(s.id, locale).label}
                 </button>
               ))}

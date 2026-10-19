@@ -321,6 +321,7 @@ export const COOKIE: LegalDocument = {
       items: [
         `Cookie di sessione dell'app (app.buddybudget.io): ti tiene collegato dopo l'accesso, scade dopo ${SESSION_DAYS} giorni senza utilizzo e sparisce all'uscita.`,
         "Cookie di sicurezza temporanei durante l'accesso (per esempio quando scegli Google), necessari a completarlo.",
+        "Lingua e paese: un cookie dell'app ricorda la lingua scelta (un anno); sul sito un cookie di un giorno contiene solo il paese da cui ti colleghi, che Cloudflare ricava dall'indirizzo IP, e serve a proporti la lingua giusta e a non mostrarti funzioni che nel tuo paese non ci sono ancora. L'indirizzo IP non viene salvato; il sito ricorda nell'archivio locale la lingua che scegli.",
         "Archivio locale del browser: ricorda tema chiaro o scuro, stato della barra laterale, sezioni chiuse, scelta di nascondere gli importi, la scelta sulle statistiche e le preferenze delle schermate.",
         "Per farti rientrare più in fretta, l'app ricorda su quel dispositivo l'email dell'ultimo account entrato (nell'archivio locale) e il metodo usato per l'ultimo accesso (un cookie che dura 30 giorni). Restano solo nel tuo browser: \"Non sei tu?\" nella pagina di accesso li cancella.",
         "Questi strumenti servono a erogare ciò che chiedi: per i cookie tecnici il Garante (Linee guida, par. 5) richiede solo l'informativa e non il consenso.",

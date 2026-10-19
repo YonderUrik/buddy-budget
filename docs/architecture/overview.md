@@ -195,22 +195,34 @@ Account reset deletes the user's sync-job keys and investment fingerprint ([`lib
 
 | Setting | Values | Decides |
 |---|---|---|
-| `productCountry` | `IT`, `DE` | Which financial models and routes exist (`FINANCIAL_COUNTRIES` in [`financial-country.ts`](../../lib/localization/financial-country.ts), `PLANNING_AVAILABILITY` in [`planning-availability.ts`](../../lib/localization/planning-availability.ts)) |
+| `productCountry` | `IT`, `DE`, `OTHER` | Which financial models and routes exist (`FINANCIAL_COUNTRIES` in [`financial-country.ts`](../../lib/localization/financial-country.ts), `PLANNING_AVAILABILITY` in [`planning-availability.ts`](../../lib/localization/planning-availability.ts)) |
 | `language` | `it`, `en`, `de` | Text and formatting locale (`it-IT`, `en-GB`, `de-DE`) |
 
-Allowed pairs (`COUNTRY_LANGUAGES`): `IT` with `it` or `en`, `DE` with `en` or `de`. `resolveProfile` maps unknown stored values to `IT`/`it`, and a `DE` account with an unsupported language to `en`. Signed-out pages read the `bb-language` cookie; the country is then always `IT`.
+`OTHER` is every country whose rules the app does not model: it gets everything that does not depend on local rules (cash, investments without tax estimates, debts, goals off, net worth). Allowed pairs (`COUNTRY_LANGUAGES`): `IT` with `it` or `en`, `DE` with `en` or `de`, `OTHER` with any language. `resolveProfile` maps unknown stored values to `IT`/`it`, and a `DE` or `OTHER` account with an unsupported language to `en`.
+
+**Proposed profile (signed out, onboarding not finished)**: `getLocaleProfile` in [`server.ts`](../../lib/localization/server.ts) calls `proposedProfile` with three inputs, in this order:
+
+1. The `bb-language` cookie (picked by hand on the sign-in page, or written by the provider): it wins for the language.
+2. The visitor's country, `detectCountry(headers)`: the `CF-IPCountry` header Cloudflare adds in front of the hosted service (`XX` and `T1` ignored). Italy, San Marino and the Vatican get Italian; Germany, Austria and Liechtenstein German; Switzerland German or Italian following the browser; every other country English. The product country is `IT` or `DE` for those two, `OTHER` for the rest.
+3. Without a country (self-hosted, local development) the browser's `Accept-Language` decides, as before (`detectLanguage`).
+
+Example: a visitor in the US with an Italian browser and no cookie lands on the sign-in page in English and, after onboarding, has `productCountry = OTHER`, `language = en`; picking «Italiano» on the sign-in page gives `OTHER`/`it`. The same rule picks the language of the sign-in email for a new address (`magicLinkLanguage`) and the public demo (`pickPublicDemoProfile`: `US` → the `OTHER`/`en` demo). Once onboarding is done, the saved account values win and travelling never changes them: the country only changes in Impostazioni.
 
 Country capabilities today:
 
-| Capability | IT | DE |
-|---|---|---|
-| Taxes engine (`features.taxes`) | Yes | No |
-| Pension, retirement, income forecasts | Yes | No |
-| Inflation | Yes (area `IT`) | Yes (area `DE`) |
-| Stamp duty rate on investments | 0.2% | 0 |
-| Dedicated German planning screens: tax, income | n/a | Yes (`/investimenti/tasse`, `/investimenti/proventi`, `/api/financial-planning`) |
-| Dedicated German screens: pension, retirement, simulations | n/a | Hidden (`false` in `PLANNING_AVAILABILITY`) |
-| Blocked prefixes | None | `/pensione`, `/analitiche`, `/investimenti/tasse` and `/investimenti/proventi` subpages, `/api/pension`, `/api/analytics`, `/api/goals`, `/api/sidebar/fire`, `/api/investments/tax-carryforwards` |
+| Capability | IT | DE | OTHER |
+|---|---|---|---|
+| Taxes engine (`features.taxes`) | Yes | No | No |
+| Pension, retirement, income forecasts | Yes | No | No |
+| Inflation | Yes (area `IT`) | Yes (area `DE`) | No |
+| Stamp duty rate on investments | 0.2% | 0 | 0 |
+| Dedicated German planning screens: tax, income | n/a | Yes (`/investimenti/tasse`, `/investimenti/proventi`, `/api/financial-planning`) | No |
+| Dedicated German screens: pension, retirement, simulations | n/a | Hidden (`false` in `PLANNING_AVAILABILITY`) | No |
+| Blocked prefixes | None | `/pensione`, `/analitiche`, `/investimenti/tasse` and `/investimenti/proventi` subpages, `/api/pension`, `/api/analytics`, `/api/goals`, `/api/sidebar/fire`, `/api/investments/tax-carryforwards` | The same plus `/investimenti/tasse`, `/investimenti/proventi` and `/api/financial-planning` |
+
+`isCountryPathAvailable` is the single route policy: the proxy redirects a blocked page to `/country-unavailable` (and answers 403 `country_feature_unavailable` to an API, logging `country.feature.blocked`), `withCountryGuard` repeats the check in handlers. Navigation does not hide blocked sections: `withCountryLocks` in [`components/layout/country-locks.ts`](../../components/layout/country-locks.ts) marks them `locked`, so Pensione and Analitiche stay in the sidebar and in «Altro», dimmed with a «Presto» badge, and open `/country-unavailable`, which says what the country lacks (`COUNTRY_UNAVAILABLE_NOTES`); the tap sends `country_feature_requested` to Umami to count the demand. Investment tabs of a blocked route are left out. Other gates (a subscription plan) can add their own `NavLock` on the same items: an item keeps the first lock, and the country lock comes first because no plan unlocks rules the app does not have.
+
+The landing does the same on its own: nginx turns `CF-IPCountry` into a short `bb-country` cookie (never for crawlers), and a pre-paint script sends a visitor outside Italy from an Italian page to its English counterpart (unless they picked a language) and hides the pension and tax blocks for countries without those rules (see [`landing/`](../../landing/)).
 
 Strings: Italian is the source language. `translate(language, source)` in [`messages.ts`](../../lib/localization/messages.ts) looks the Italian source string up in [`catalogs/en.json`](../../lib/localization/catalogs/en.json) and [`catalogs/de.json`](../../lib/localization/catalogs/de.json) (German falls back to English, then to the source) and fills `{name}` placeholders. Server code uses `getTranslator()`; client code uses `useLocalization()` from [`provider.tsx`](../../lib/localization/provider.tsx). User-entered names and imported descriptions are never translated. German planning models live in [`lib/financial-planning/`](../../lib/financial-planning/).
 
@@ -370,6 +382,8 @@ Example: Daniele closes the app on Thursday at 18:40. The bank sync adds 12 move
 - better-auth writes its internal errors to the console, outside `logger`.
 - The "hide amounts" mask covers what goes through `lib/format` (§4.13); text the server renders (emails) and form fields keep the real value. The lint guard does not see `lib/` helpers that build their own strings.
 - No Content Security Policy header is set (comment in `next.config.ts`).
+- The visitor's country comes only from Cloudflare (`CF-IPCountry`, the zone's IP geolocation): without it (self-hosted, local development) the browser language decides, as before. A country is a guess from the IP address, so a VPN or travel can propose the wrong language; the user's choice always wins and is kept.
+- `OTHER` is one bucket: the app does not store which country it was, so adding a country's rules later means asking those users to pick it in Impostazioni.
 - Only strings passed through `translate` (server `getTranslator`, client `useLocalization`) change with the language; anything rendered as a literal stays Italian.
 
 ## 6. Tests

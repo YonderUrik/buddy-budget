@@ -7,13 +7,14 @@ import { REAUTH_REQUIRED_CODE } from "@/lib/account/constants";
 import type { HomePagePath } from "@/lib/account/home-pages";
 import type { UpdateUserSettingsInput } from "@/lib/validation/user-settings";
 import type { SupportedCurrency } from "@/lib/validation/currency";
+import type { ProductCountry } from "@/lib/localization/config";
 import { pageText } from "@/lib/localization/page-text";
 
 export type { UserDataSummary, UserSessionView };
 
 /** Profilo e preferenze come li restituisce `GET /api/user/settings`. */
 export interface UserSettings {
-  productCountry: "IT" | "DE";
+  productCountry: ProductCountry;
   language: "it" | "en" | "de";
   name: string;
   email: string;

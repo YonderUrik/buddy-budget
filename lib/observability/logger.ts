@@ -32,7 +32,7 @@ export interface LogFields {
   outcome?: string;
   /** Interface language of a public demo account (closed enum it/en/de): never a user's own preference. */
   language?: string;
-  /** Product country of a public demo account (closed enum IT/DE). */
+  /** Product country of an account or public demo account (closed enum IT/DE/OTHER). */
   country?: string;
   /** Tipo di una segnalazione di supporto (enum chiuso `ReportKind`) e codice di riferimento `SUP-XXXXXX` (non personale). */
   reportKind?: string;

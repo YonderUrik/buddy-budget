@@ -32,6 +32,7 @@ export const FAQ_EN: readonly FaqItem[] = [
   { question: "Do I have to connect my bank?", answer: "No. You can add accounts by hand or upload a file. The connection only saves you typing transactions, and it can only read." },
   {
     question: "Are the taxes real?",
+    needs: "taxes",
     answer: "They are estimates. For Italy: 26% on gains, 12.5% on government bonds, losses carried forward for four years (the zainetto fiscale) and stamp duty (bollo). For Germany, partial 2026 estimates. They are for making decisions; the final figure comes from your bank, your broker or your accountant.",
   },
   { question: "What doesn't it do?", answer: "It doesn't tell you what to buy or sell. It doesn't move money or place orders with your broker. Prices are end-of-day, not real time." },
@@ -49,7 +50,11 @@ export const HOME_EN: HomeContent = {
   locale: "en",
   hero: {
     title: ["All your money,", "in one number."],
-    lede: "Bank accounts, investments, pension and mortgage, added up. Updated every day, with the taxes worked out.",
+    lede: {
+      full: "Bank accounts, investments, pension and mortgage, added up. Updated every day, with the taxes worked out.",
+      de: "Bank accounts, investments and mortgage, added up. Updated every day, with the taxes worked out.",
+      none: "Bank accounts, investments and mortgage, added up. Updated every day.",
+    },
     cta: "Get started free",
     demo: "Try the demo",
   },
@@ -58,7 +63,7 @@ export const HOME_EN: HomeContent = {
     rows: [
       { label: "Bank accounts", detail: "3 accounts", value: 22595 },
       { label: "Investments", detail: "3 holdings", value: 35389 },
-      { label: "Pension fund", detail: "1 fund", value: 11082 },
+      { label: "Pension fund", detail: "1 fund", value: 11082, needs: "pension" },
       { label: "Mortgage and loans", detail: "3 debts", value: -39937, tone: "neg" },
     ],
     prefix: "€",
@@ -68,7 +73,7 @@ export const HOME_EN: HomeContent = {
     fieldLabel: "Amount for {place}",
   },
   places: {
-    title: "Four places, one number.",
+    title: { full: "Four places, one number.", de: "Three places, one number." },
     intro: "Each one goes in once. After that, the app keeps it up to date.",
     items: [
       {
@@ -139,6 +144,7 @@ export const HOME_EN: HomeContent = {
         text: "It starts from what you really save and spend, not from a guess. Move a slider and the year moves.",
         figure: { value: "2046", caption: "in 19.2 years, at today's pace" },
         shot: "analitiche",
+        needs: "pension",
       },
     ],
     tabsLabel: "Screens",

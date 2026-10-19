@@ -6,7 +6,10 @@ import { TOOLS_EN, TOOLS_PAGE_EN } from "@/content/en/tools";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
+import { RulesNote } from "@/components/by-rules";
+import { RULES_NOTES } from "@/content/rules-needs";
 import { pageMetadata } from "@/lib/page-metadata";
+import { needsAttr } from "@/lib/visitor-country";
 
 export const metadata: Metadata = pageMetadata("en", {
   title: TOOLS_PAGE_EN.title,
@@ -31,11 +34,12 @@ export default function Page() {
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: TOOLS_PAGE_EN.h1, url: `${SITE_URL}${EN_PATHS.calculators}`, inLanguage: "en", description: TOOLS_PAGE_EN.description, isPartOf: { "@id": `${SITE_URL}/#website` }, hasPart: TOOLS_EN.map((t) => ({ "@type": "WebPage", name: t.name, url: `${SITE_URL}${t.href}` })) }} />
       <div className="related">
         {TOOLS_EN.map((t) => (
-          <Link key={t.id} href={t.href}>{t.name}<span>{t.text}</span></Link>
+          <Link key={t.id} href={t.href} data-needs={needsAttr(t.needs)}>{t.name}<span>{t.text}</span></Link>
         ))}
       </div>
-      <h2>Want to understand the logic?</h2>
-      <div className="related">
+      <RulesNote text={RULES_NOTES.en.taxes} />
+      <h2 data-needs="taxes">Want to understand the logic?</h2>
+      <div className="related" data-needs="taxes">
         <Link href={EN_PATHS.guideZainetto}>Guide to the zainetto fiscale<span>What it is and how the four years work, with examples and sources.</span></Link>
         <Link href={EN_PATHS.featureInvestments}>Investments with Italian taxes<span>How BuddyBudget works out returns, the zainetto and bollo (stamp duty).</span></Link>
       </div>

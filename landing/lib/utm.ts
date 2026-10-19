@@ -17,6 +17,17 @@ export function pickUtm(search: string): Record<string, string> {
   return picked;
 }
 
+/** App pages that honour `?lang=` as an explicit language choice. */
+export const LANGUAGE_AWARE_PATHS: readonly string[] = ["/login", "/demo"];
+
+/** Same address with `lang=<choice>` when it points to an app page that honours it; other addresses unchanged. */
+export function withLanguage(href: string, lang: string): string {
+  const url = new URL(href);
+  if (!LANGUAGE_AWARE_PATHS.includes(url.pathname)) return href;
+  url.searchParams.set("lang", lang);
+  return url.toString();
+}
+
 /**
  * Same address with the visitor's campaign parameters in place of the landing's defaults (`utm_source=landing`):
  * parameters the visitor did not bring are left as they are.

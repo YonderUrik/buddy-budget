@@ -1,6 +1,7 @@
 import { SOURCES_CHECKED, type Source } from "@/content/seo-pages";
 import { UI } from "@/content/ui";
 import type { Locale } from "@/lib/i18n";
+import { needsAttr, type RuleNeed } from "@/lib/visitor-country";
 
 export interface SourcesProps {
   items: readonly Source[];
@@ -8,13 +9,15 @@ export interface SourcesProps {
   checked?: string;
   summary?: string;
   locale?: Locale;
+  /** Hides the box for visitors whose country lacks these rules (`data-needs`). */
+  needs?: RuleNeed;
 }
 
 /** Legal sources cited on a page, in a folding box (opens with keyboard or click) with the date of the last check. */
-export function Sources({ items, checked = SOURCES_CHECKED, summary, locale = "it" }: SourcesProps) {
+export function Sources({ items, checked = SOURCES_CHECKED, summary, locale = "it", needs }: SourcesProps) {
   const t = UI[locale].sources;
   return (
-    <details className="sources sources-box">
+    <details className="sources sources-box" data-needs={needsAttr(needs)}>
       <summary>{summary ?? t.summary} ({items.length})</summary>
       <ul>
         {items.map((s) => (

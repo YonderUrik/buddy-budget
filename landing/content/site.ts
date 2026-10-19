@@ -1,5 +1,6 @@
 /** Addresses and site-wide texts of the landing. URLs come from the environment, with production defaults. */
 import type { Locale } from "@/lib/i18n";
+import type { RuleNeed } from "@/lib/visitor-country";
 import { FIELD_ENCRYPTION_LIVE } from "./security";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
@@ -25,6 +26,8 @@ export const OG_IMAGE = { url: "/og.png", width: 1200, height: 630, alt: "BuddyB
 export interface FaqItem {
   question: string;
   answer: string;
+  /** Hidden on the page for visitors whose country lacks these rules (it stays in the structured data). */
+  needs?: RuleNeed;
 }
 
 /** Address of the support: a person answers. */
@@ -37,7 +40,7 @@ export const SUPPORT_EMAIL = "support@buddybudget.io";
 export const FAQ: readonly FaqItem[] = [
   { question: "È gratis?", answer: "Sì, durante la beta. Se cambierà lo diremo prima, e potrai portare via tutto in un file ZIP." },
   { question: "Devo collegare la banca?", answer: "No. Puoi aggiungere i conti a mano o caricare un file. Il collegamento serve solo a non scrivere i movimenti, e può solo leggere." },
-  { question: "Le tasse sono quelle vere?", answer: "Sono stime con le regole italiane: 26% sui guadagni, 12,5% sui titoli di Stato, perdite da scalare per quattro anni, bollo. Servono per decidere. Il conto finale lo fa la banca o il commercialista." },
+  { question: "Le tasse sono quelle vere?", needs: "taxes", answer: "Sono stime con le regole italiane: 26% sui guadagni, 12,5% sui titoli di Stato, perdite da scalare per quattro anni, bollo. Servono per decidere. Il conto finale lo fa la banca o il commercialista." },
   { question: "Cosa non fa?", answer: "Non ti dice cosa comprare o vendere. Non sposta soldi e non fa ordini al broker. I prezzi sono di fine giornata, non in tempo reale." },
   {
     question: "Dove stanno i miei dati?",
@@ -65,8 +68,8 @@ const SIGNUP_URL = `${LOGIN_URL}&${SIGNUP_FLAG}`;
 export const DEMO_URL = `${APP_URL}/demo`;
 export const APP_LINKS = { signup: SIGNUP_URL, login: LOGIN_URL, demo: DEMO_URL } as const satisfies AppLinks;
 
-/** The same destinations per language: the English pages ask the app for English with `lang=en`. */
-export const LOCALE_APP_LINKS: Record<Locale, AppLinks> = {
-  it: APP_LINKS,
-  en: { signup: `${SIGNUP_URL}&lang=en`, login: `${LOGIN_URL}&lang=en`, demo: `${DEMO_URL}?lang=en` },
-};
+/**
+ * The destinations per language: the same on every page, because the app picks the language from the visitor's
+ * country. Only an explicit choice on the landing adds `lang=` (client-side, `UtmPassthrough`).
+ */
+export const LOCALE_APP_LINKS: Record<Locale, AppLinks> = { it: APP_LINKS, en: APP_LINKS };

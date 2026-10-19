@@ -1,6 +1,6 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
-import { isCountryPathAvailable } from "@/lib/localization/config";
+import { withCountryLocks } from "@/components/layout/country-locks";
 
 /**
  * AppShell
@@ -66,7 +66,7 @@ interface InnerShellProps {
 function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: InnerShellProps) {
   const { t: tr } = useLocalization();
   const { productCountry } = useLocalization();
-  const navigation = NAV_ITEMS.filter(item => isCountryPathAvailable(productCountry, item.href));
+  const navigation = withCountryLocks(NAV_ITEMS, productCountry);
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);

@@ -6,7 +6,10 @@ import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 import { TOOLS, TOOLS_PAGE } from "@/content/tools";
+import { RulesNote } from "@/components/by-rules";
+import { RULES_NOTES } from "@/content/rules-needs";
 import { pageMetadata } from "@/lib/page-metadata";
+import { needsAttr } from "@/lib/visitor-country";
 
 export const metadata: Metadata = pageMetadata("it", {
   title: TOOLS_PAGE.title,
@@ -22,11 +25,12 @@ export default function Page() {
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: TOOLS_PAGE.h1, url: `${SITE_URL}${CONTENT_PATHS.strumenti}`, inLanguage: "it-IT", description: TOOLS_PAGE.description, isPartOf: { "@id": `${SITE_URL}/#website` }, hasPart: TOOLS.map((t) => ({ "@type": "WebPage", name: t.name, url: `${SITE_URL}${t.href}` })) }} />
       <div className="related">
         {TOOLS.map((t) => (
-          <Link key={t.id} href={t.href}>{t.name}<span>{t.text}</span></Link>
+          <Link key={t.id} href={t.href} data-needs={needsAttr(t.needs)}>{t.name}<span>{t.text}</span></Link>
         ))}
       </div>
-      <h2>Vuoi capire la logica?</h2>
-      <div className="related">
+      <RulesNote text={RULES_NOTES.it.taxes} />
+      <h2 data-needs="taxes">Vuoi capire la logica?</h2>
+      <div className="related" data-needs="taxes">
         <Link href={CONTENT_PATHS.guidaZainetto}>Guida allo zainetto fiscale<span>Cos&apos;è, come funzionano i quattro anni, con esempi e fonti.</span></Link>
         <Link href={CONTENT_PATHS.funzioneInvestimenti}>Investimenti con le tasse italiane<span>Come BuddyBudget calcola rendimento, zainetto e bollo.</span></Link>
       </div>

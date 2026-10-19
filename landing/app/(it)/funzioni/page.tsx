@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { ContentPage } from "@/components/content-page";
-import { FeatureAreas } from "@/components/feature-areas";
+import { ByRulesText } from "@/components/by-rules";
+import { FeatureAreas, featureCountByRules } from "@/components/feature-areas";
 import { JsonLd } from "@/components/json-ld";
-import { FEATURE_AREAS, featureCounts } from "@/content/catalog.generated";
+import { FEATURE_AREAS, FEATURES } from "@/content/catalog.generated";
 import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
@@ -19,9 +20,8 @@ export const metadata: Metadata = pageMetadata("it", {
 });
 
 export default function Page() {
-  const { total } = featureCounts();
   return (
-    <ContentPage title="Tutte le funzioni" lead={<>{total} funzioni in {FEATURE_AREAS.length} aree. L&apos;elenco è lo stesso che usa l&apos;app: quando ne aggiungiamo una, compare anche qui.</>} current={CONTENT_PATHS.funzioni}
+    <ContentPage title="Tutte le funzioni" lead={<><ByRulesText text={featureCountByRules(FEATURES)} /> funzioni in {FEATURE_AREAS.length} aree. L&apos;elenco è lo stesso che usa l&apos;app: quando ne aggiungiamo una, compare anche qui.</>} current={CONTENT_PATHS.funzioni}
       wide
       disclaimer={false}
       crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Funzioni" }]}

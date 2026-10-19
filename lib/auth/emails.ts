@@ -1,5 +1,5 @@
 import { emailLocale, renderEmail } from "@/lib/email";
-import { LANGUAGE_COOKIE, LANGUAGES, detectLanguage, resolveProfile, type Language } from "@/lib/localization/config";
+import { LANGUAGE_COOKIE, detectCountry, proposedProfile, resolveProfile, type Language } from "@/lib/localization/config";
 
 /** Subject, text and HTML of the email with the sign-in link, in `language` (Italian by default). Pure, so it can be tested. */
 export function magicLinkEmailContent(params: { url: string; expiresInMinutes: number; appUrl: string; language?: Language }): { subject: string; text: string; html: string } {
@@ -48,10 +48,14 @@ function cookieValue(header: string | null | undefined, name: string): string | 
 
 /**
  * Language of the sign-in email: the saved language of an existing account wins; otherwise (new address) the language
- * picked on the sign-in page (`bb-language` cookie), then the browser's `Accept-Language`, as the pages do.
+ * picked on the sign-in page (`bb-language` cookie), then the visitor's country, then the browser's `Accept-Language`,
+ * as the pages do.
  */
 export function magicLinkLanguage(input: { user?: { productCountry?: string | null; language?: string | null } | null; headers?: Headers | null }): Language {
   if (input.user) return resolveProfile(input.user).language;
-  const chosen = cookieValue(input.headers?.get("cookie"), LANGUAGE_COOKIE);
-  return LANGUAGES.includes(chosen as Language) ? (chosen as Language) : detectLanguage(input.headers?.get("accept-language"));
+  return proposedProfile({
+    chosenLanguage: cookieValue(input.headers?.get("cookie"), LANGUAGE_COOKIE),
+    country: detectCountry(input.headers),
+    acceptLanguage: input.headers?.get("accept-language"),
+  }).language;
 }

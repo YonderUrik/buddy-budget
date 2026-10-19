@@ -31,11 +31,11 @@ export function localizedDetailText(language: Language) {
   }
 
   /**
-   * Who chose the category: one of the user's rules (named when it still matches), the app from past choices or the AI,
-   * or the user. Null when nothing is known (transactions from before the origin was tracked) or there is no category
+   * Who chose the category: one of the user's rules (named when it still matches), the bank's category in an imported file
+   * (`bankCategory` quotes it), the app from past choices or the AI, or the user. Null when nothing is known (transactions from before the origin was tracked) or there is no category
    * yet, since its name «Da categorizzare» already says so.
    */
-  function categoryOriginText(source: CategorySource | null, confidence: number | null, rule: DetailRule | null, uncategorized: boolean): string | null {
+  function categoryOriginText(source: CategorySource | null, confidence: number | null, rule: DetailRule | null, uncategorized: boolean, bankCategory: string | null = null): string | null {
     if (uncategorized) return null;
     if (source === "utente") return tr("Scelta da te");
     if (source === "regola") {
@@ -44,6 +44,7 @@ export function localizedDetailText(language: Language) {
         ? tr("Messa dalla tua regola: il testo contiene «{0}»", { 0: rule.pattern })
         : tr("Messa dalla tua regola per «{0}»", { 0: rule.pattern });
     }
+    if (source === "banca") return autoOriginDescription("banca", null, bankCategory);
     if (source === "storico" || source === "assistente") return autoOriginDescription(source, confidence);
     return null;
   }

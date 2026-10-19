@@ -1,6 +1,9 @@
 import type { AutomaticCategorySource } from "./category-source";
 import { merchantKey } from "./merchant-key";
 
+/** «Messe dall'app» is a history, not a to-do list: it shows what the app categorised on its own in the last days. */
+export const AUTO_CATEGORIZED_RECENT_DAYS = 30;
+
 /** Movimento categorizzato da solo, nella forma che serve a «Messe dall'app». */
 export interface AutoCategorizedTransaction {
   id: string;
@@ -12,6 +15,8 @@ export interface AutoCategorizedTransaction {
   /** Sicurezza della proposta applicata (0-1); null per le regole. */
   confidence: number | null;
   categorizedAt: string;
+  /** For `banca`: the label the bank wrote in the file. */
+  bankCategory?: string | null;
 }
 
 /** Movimenti dello stesso esercente, direzione, categoria e origine, applicati da soli. */
@@ -24,6 +29,8 @@ export interface AutoCategorizedGroup {
   source: AutomaticCategorySource;
   /** La sicurezza più bassa fra i movimenti del gruppo (null per le regole). */
   confidence: number | null;
+  /** For `banca`: the bank's label on the most recent transaction of the group. */
+  bankCategory: string | null;
   transactionIds: string[];
   transactionDescriptions: string[];
   transactionDates: string[];
@@ -61,6 +68,7 @@ export function groupAutoCategorized(rows: readonly AutoCategorizedTransaction[]
       categoryId: items[0].categoryId,
       source: items[0].source,
       confidence: confidences.length > 0 ? Math.min(...confidences) : null,
+      bankCategory: items[0].bankCategory ?? null,
       transactionIds: items.map((item) => item.id),
       transactionDescriptions: items.map((item) => item.description),
       transactionDates: items.map((item) => item.date),

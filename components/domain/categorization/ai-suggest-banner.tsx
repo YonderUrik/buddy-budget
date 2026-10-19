@@ -103,7 +103,7 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
             <DialogDescription>
               {tr("Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati.")}{" "}
               {autoApplyEnabled
-                ? tr("Quando è quasi certa l'app mette la categoria da sola, e la ritrovi in «Messe dall'app», dove puoi cambiarla; le altre le scegli tu.")
+                ? tr("Quando è abbastanza sicura l'app mette la categoria da sola, e la ritrovi in «Messe dall'app», dove puoi cambiarla; le altre le scegli tu.")
                 : tr("Le proposte restano da confermare.")}{" "}
               {tr("Puoi disattivarlo quando vuoi in Impostazioni.")}</DialogDescription>
           </DialogHeader>

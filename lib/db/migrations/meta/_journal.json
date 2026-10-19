@@ -302,6 +302,13 @@
       "when": 1792413773320,
       "tag": "0044_start_skipped",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1792414385403,
+      "tag": "0045_bank_category",
+      "breakpoints": true
     }
   ]
 }

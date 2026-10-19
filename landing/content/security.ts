@@ -183,7 +183,7 @@ export const AI_DATA = {
     { label: "Quando", text: "Solo in tre punti: le proposte di categoria, l'importazione di un estratto conto in un formato nuovo e l'importazione degli investimenti quando la lettura normale non riesce." },
     { label: "Cosa riceve", text: "Per le categorie, il nome pulito dell'esercente, se è un'entrata o un'uscita, le tue categorie e le tue istruzioni: mai importi, date, IBAN, note o nomi di persone. Per un'importazione, il file intero, perché deve capire com'è fatto." },
     { label: "A chi va", text: "A OpenRouter, che passa la richiesta a un fornitore del modello. A ogni richiesta chiediamo un fornitore che non conservi i dati dopo la risposta e non li usi per l'addestramento; se nessuno lo garantisce, la richiesta non parte." },
-    { label: "Cosa decide", text: "Propone, non comanda. Le tue regole vengono prima. Se lasci attiva l'opzione, si applicano da sole solo le proposte sicure almeno al 90%, segnate come messe dall'app e correggibili." },
+    { label: "Cosa decide", text: "Propone, non comanda. Le tue regole vengono prima. Se lasci attiva l'opzione, si applicano da sole solo le proposte sicure almeno al 70%, segnate come messe dall'app e correggibili." },
     { label: "Il limite", text: "La non conservazione è una condizione che chiediamo a OpenRouter a ogni richiesta, non un contratto firmato con i fornitori dei modelli." },
     { label: "Come spegnerla", text: "Da Impostazioni revochi il consenso quando vuoi: da lì non parte più nessuna richiesta. Chi installa BuddyBudget sul proprio server può non configurare affatto l'AI: l'app funziona lo stesso." },
   ] satisfies readonly FactRow[],

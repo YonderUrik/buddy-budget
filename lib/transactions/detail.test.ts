@@ -65,6 +65,7 @@ describe("localizedDetailText", () => {
   it("names the rule that set the category", () => {
     expect(it_.categoryOriginText("regola", null, { id: "r", matchType: "merchant", pattern: "esselunga" }, false)).toBe("Messa dalla tua regola per «esselunga»");
     expect(it_.categoryOriginText("utente", null, null, false)).toBe("Scelta da te");
+    expect(it_.categoryOriginText("banca", null, null, false, "Ristorazione")).toBe("Messa dall'app: nel file la banca la chiama «Ristorazione»");
     expect(it_.categoryOriginText("regola", null, null, true)).toBeNull();
     expect(it_.categoryOriginText(null, null, null, false)).toBeNull();
   });

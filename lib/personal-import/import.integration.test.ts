@@ -1,11 +1,14 @@
 import { readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { transactions } from "@/lib/db/schema/transactions";
+import { categories } from "@/lib/db/schema/categories";
+import { categorizationRules } from "@/lib/db/schema/categorization-rules";
+import { defaultCategoryRows } from "@/lib/categories/seed";
 import { instruments, investmentTransactions, investmentPortfolios } from "@/lib/db/schema/investments";
 import { personalFormats as formats, personalImportJobs as jobs, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
 import { enqueue, getPreview, listImports, reanalyze } from "./jobs";
@@ -301,5 +304,58 @@ describe("personal CSV durable flow", () => {
     await enqueue(userId, { csv, name: 'One' }); await enqueue(userId, { csv, name: 'Two' });
     await expect(enqueue(userId, { csv, name: 'Three' })).rejects.toThrow("Limite");
     await db.update(jobs).set({ status: "expired", encryptedCsv: null }).where(eq(jobs.userId, userId));
+  });
+  describe("bank categories", () => {
+    // Semicolon bank export with the bank's own category; the parser ignores that column, so the importer reads it.
+    const bankCsv = 'Data;Descrizione;Categoria;Importo\n2024-02-01;PAGAMENTO POS PIZZERIA DA MARIO;Ristorazione;-20\n2024-02-02;ESSELUNGA MILANO;Supermercati;-40\n2024-02-03;BONIFICO VARIO;Altro;-5\n2024-02-04;STIPENDIO ACME;Stipendio;1500';
+    const bankCode = (withCategory: boolean) => `function(t){return t.rows.map((line,row)=>{const r=line[0].split(';');return row===0?{row,kind:'ignore',reason:'Header'}:{row,kind:'cash',date:r[0],amount:Number(r[3]),description:r[1],currency:'EUR',transfer:false${withCategory ? ",bankCategory:r[2]" : ""}}})}`;
+    const categoryOf = async (description: string) => {
+      const rows = await db.select().from(transactions).where(eq(transactions.userId, userId));
+      const row = rows.find(r => r.rawDescription === description)!;
+      const [category] = await db.select().from(categories).where(eq(categories.id, row.categoryId));
+      return { ...row, defaultKey: category.defaultKey, isFallback: category.isFallback };
+    };
+    beforeEach(async () => {
+      await db.insert(categories).values(defaultCategoryRows(userId));
+      vi.mocked(generateParser).mockResolvedValue({ parser: { kind: "javascript", code: bankCode(false) }, model: "synthetic/bank" });
+    });
+
+    it("applies the bank's category without asking, except where a user rule decides, and keeps the label", async () => {
+      const [svago] = await db.select().from(categories).where(and(eq(categories.userId, userId), eq(categories.defaultKey, "svago")));
+      await db.insert(categorizationRules).values({ userId, matchType: "contains", pattern: "esselunga", categoryId: svago.id, source: "manuale" });
+      const id = await prepare(bankCsv);
+      const result = await confirmImport(userId, id);
+      expect(result).toMatchObject({ inserted: 4, bankCategorized: 2 });
+      expect(await categoryOf("PAGAMENTO POS PIZZERIA DA MARIO")).toMatchObject({ defaultKey: "ristoranti", categorySource: "banca", bankCategory: "Ristorazione" });
+      expect(await categoryOf("STIPENDIO ACME")).toMatchObject({ defaultKey: "stipendio", categorySource: "banca" });
+      // The rule takes Esselunga after the import; the generic «Altro» goes through the usual flow.
+      expect(await categoryOf("ESSELUNGA MILANO")).toMatchObject({ isFallback: true, bankCategory: "Supermercati" });
+      expect(await categoryOf("BONIFICO VARIO")).toMatchObject({ isFallback: true, categorySource: null, bankCategory: "Altro" });
+      expect((await listImports(userId)).jobs.find(j => j.id === id)!.results).toMatchObject({ bankCategorized: 2 });
+    });
+
+    it("follows the user's corrections on later imports", async () => {
+      await confirmImport(userId, await prepare(bankCsv));
+      const [svago] = await db.select().from(categories).where(and(eq(categories.userId, userId), eq(categories.defaultKey, "svago")));
+      const pizzeria = await categoryOf("PAGAMENTO POS PIZZERIA DA MARIO");
+      await db.update(transactions).set({ categoryId: svago.id, categorySource: "utente" }).where(eq(transactions.id, pizzeria.id));
+      await confirmImport(userId, await prepare(bankCsv.replace("2024-02-04;STIPENDIO ACME;Stipendio;1500", "2024-02-05;OSTERIA;Ristorazione;-30")));
+      expect(await categoryOf("OSTERIA")).toMatchObject({ defaultKey: "ristoranti", categorySource: "banca" });
+      await db.update(transactions).set({ categoryId: svago.id, categorySource: "utente" }).where(eq(transactions.id, (await categoryOf("OSTERIA")).id));
+      await confirmImport(userId, await prepare(bankCsv.replace("2024-02-04;STIPENDIO ACME;Stipendio;1500", "2024-02-06;TRATTORIA;Ristorazione;-35")));
+      expect(await categoryOf("TRATTORIA")).toMatchObject({ defaultKey: "svago", categorySource: "banca" });
+    });
+
+    it("re-importing rows imported before the bank category was read finds duplicates, not new interpretations", async () => {
+      const first = await prepare(bankCsv);
+      const stored = JSON.parse(unseal((await readJob(first)).encryptedPreview!, userId));
+      for (const record of stored.records) delete record.outcome.bankCategory;
+      await db.update(jobs).set({ encryptedPreview: seal(JSON.stringify(stored), userId) }).where(eq(jobs.id, first));
+      await confirmImport(userId, first);
+      vi.mocked(generateParser).mockResolvedValue({ parser: { kind: "javascript", code: bankCode(true) }, model: "synthetic/bank-v2" });
+      const second = (await enqueue(userId, { csv: bankCsv, name: "Synthetic Bank", formatId: (await readJob(first)).formatId, regenerate: true })).id;
+      await processOne();
+      expect(await confirmImport(userId, second)).toMatchObject({ inserted: 0, duplicates: 5 });
+    });
   });
 });

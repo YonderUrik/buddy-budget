@@ -122,7 +122,7 @@ export function EmailPreview() {
 export function CategoryProposalPreview() {
   const { t: tr } = useLocalization();
   return (
-    <SettingsPreview caption="L'assistente propone: quelle in dubbio le scegli tu, quelle quasi certe può metterle l'app da sola, e restano da controllare.">
+    <SettingsPreview caption="L'assistente propone: quelle in dubbio le scegli tu, quelle abbastanza sicure può metterle l'app da sola, e restano da controllare.">
       <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-lg bg-card p-3">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-semibold text-foreground">{tr("Esercente")}</p>

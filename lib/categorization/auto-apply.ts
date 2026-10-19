@@ -15,12 +15,12 @@ export interface AutoApplyResult {
 }
 
 function emptyResult(): AutoApplyResult {
-  return { applied: { regola: 0, storico: 0, assistente: 0 }, groups: 0 };
+  return { applied: { regola: 0, storico: 0, assistente: 0, banca: 0 }, groups: 0 };
 }
 
 /** Totale dei movimenti categorizzati da un'esecuzione. */
 export function totalApplied(result: AutoApplyResult): number {
-  return result.applied.regola + result.applied.storico + result.applied.assistente;
+  return result.applied.regola + result.applied.storico + result.applied.assistente + result.applied.banca;
 }
 
 /** Quota esclusa come espressione SQL: la percentuale dell'importo, con lo stesso segno. */
@@ -97,7 +97,7 @@ export async function applyRulesToUncategorized(userId: string, options: { log?:
 
 /**
  * Categorizza da sola ciò che non ha bisogno di controllo: prima le regole dell'utente, poi (se l'utente lo ha scelto)
- * le proposte sicure dal 90% in su, da regole simili, scelte passate e, solo con il consenso attivo, assistente. Tocca
+ * le proposte sicure dal 70% in su, da regole simili, scelte passate e, solo con il consenso attivo, assistente. Tocca
  * soltanto movimenti ancora «Da categorizzare» e registra su ognuno origine, sicurezza e quando, così l'utente li
  * ritrova in Categorizza → «Messe dall'app» e in Movimenti, e può cambiarli. Idempotente: rilanciarla non fa danni.
  */

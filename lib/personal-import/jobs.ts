@@ -37,7 +37,7 @@ export async function listImports(userId: string) {
     db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
   ]);
   // Del registro dell'importazione esce solo il conteggio (movimenti e operazioni creati), mai gli id.
-  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0 } : null })) };
+  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0 } : null })) };
 }
 /** Anteprima per il client: il parser generato (se presente) resta sul server. */
 export async function getPreview(userId: string, id: string): Promise<Omit<Preview, "parser"> | null> {

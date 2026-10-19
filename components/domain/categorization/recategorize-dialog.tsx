@@ -2,7 +2,7 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * «Ricategorizza»: rifà le categorie messe dall'app con le regole e le proposte quasi certe di oggi. Mostra prima cosa
+ * «Ricategorizza»: rifà le categorie messe dall'app con le regole e le proposte abbastanza sicure di oggi. Mostra prima cosa
  * cambierebbe, per esercente, e lascia togliere i gruppi che non vanno. I movimenti categorizzati prima che l'app ne
  * segnasse l'origine (forse scelti dall'utente) compaiono nello stesso elenco ma partono senza spunta: nessuna casella
  * in più da capire. Dopo, «Annulla» nel toast o qui dentro per 7 giorni.

@@ -3,7 +3,7 @@
  * `landing/content/legal.ts` (lo controlla `landing/content/legal.test.ts`): cambiandola, tutti gli utenti
  * devono accettare di nuovo al prossimo accesso.
  */
-export const LEGAL_VERSION = "2026-10-12";
+export const LEGAL_VERSION = "2026-10-19";
 
 /** Sezioni dei Termini da approvare in modo specifico (art. 1341 c.c.), mostrate accanto alla casella dedicata. */
 export const SPECIFIC_CLAUSE_SECTIONS = ["Responsabilità", "Sospensione e chiusura", "Modifiche ai termini", "Legge applicabile, foro e contatti"] as const;

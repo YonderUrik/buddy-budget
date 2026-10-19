@@ -316,6 +316,13 @@
       "when": 1792424034896,
       "tag": "0046_welcome_visit",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1792436391597,
+      "tag": "0047_salute_cross_icon",
+      "breakpoints": true
     }
   ]
 }

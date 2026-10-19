@@ -1,4 +1,4 @@
-/** What the «Dall'ultima visita» summary on Panoramica shows. Amounts are in the user's currency, prices in the instrument's. */
+/** What the «Dall'ultima visita» toast says when a returning user opens the app. Amounts are in the user's currency, prices in the instrument's. */
 
 /** Something that happened while the user was away (between the end of the previous visit and the start of this one). */
 export type WelcomeHappened =
@@ -29,7 +29,7 @@ export interface WelcomeSummary {
   waiting: WelcomeWaiting[];
 }
 
-/** Response of `GET /api/welcome`: null when there is nothing to show (first visit, closed for this visit, nothing new). */
+/** Response of `GET /api/welcome`: null when there is nothing to say (first visit, already shown this visit, nothing new). */
 export interface WelcomeResponse {
   summary: WelcomeSummary | null;
   currency: string;

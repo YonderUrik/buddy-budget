@@ -5,7 +5,7 @@ import { PublicDemoBanner, PublicDemoFooter } from "@/components/domain/public-d
 import { BackHistoryRecorder } from "@/components/domain/shared";
 import { PersonalImportIsland } from "@/components/domain/personal-import";
 import { SyncProgressIndicator } from "@/components/domain/sync";
-import { VisitHeartbeat } from "@/components/domain/welcome";
+import { WelcomeToast } from "@/components/domain/welcome";
 import { QuickReportProvider } from "@/components/domain/support";
 // Direct file import: the auth barrel also carries the login preview, which the app layout must not load.
 import { RememberReturningUser } from "@/components/domain/auth/remember-returning-user";
@@ -14,7 +14,7 @@ import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { AttentionShell } from "./attention-shell";
 import { SidebarInsightsSlot } from "./sidebar-insights-slot";
 
-/** Layout of every signed-in app page: AppShell with the sidebar (and its financial summary), the global sync panel, the «Scrivici» sheet, the «‹» history, the "hide amounts" preference, the remembered account for «Rientra in BuddyBudget» and the visit heartbeat for «Dall'ultima visita». */
+/** Layout of every signed-in app page: AppShell with the sidebar (and its financial summary), the global sync panel, the «Scrivici» sheet, the «‹» history, the "hide amounts" preference, the remembered account for «Rientra in BuddyBudget» and the «Dall'ultima visita» toast with its visit heartbeat. */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
   const isPublicDemo = isPublicDemoUserId(session?.user.id);
@@ -32,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <>
               <DemoBannerContainer />
               <StartProgressWatcher />
-              <VisitHeartbeat />
+              <WelcomeToast />
             </>
           )}
           {children}

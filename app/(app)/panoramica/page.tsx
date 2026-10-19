@@ -18,7 +18,6 @@ import { GoalsPanoramicaSection, useGoalFormatters } from "@/components/domain/g
 import { EmptyState, LoadError } from "@/components/domain/shared";
 import { StartChecklistSection } from "@/components/domain/start";
 import { WhatsNewSection } from "@/components/domain/whats-new";
-import { WelcomeSection } from "@/components/domain/welcome";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
@@ -49,7 +48,6 @@ import { useChartRefreshState } from "@/lib/queries/chart-refresh";
 import { NEW_ACCOUNT_HREF, shouldShowChecklist } from "@/lib/start";
 import { useStartQuery } from "@/lib/queries/start";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
-import { useWelcomeQuery } from "@/lib/queries/welcome";
 import { useHydrated } from "@/lib/hooks/use-hydrated";
 
 /** Inizio della finestra di fetch degli snapshot: tutto lo storico, così il cambio periodo non richiede nuove richieste. */
@@ -108,12 +106,10 @@ export default function PanoramicaPage() {
   // I primi passi sono un di più: se non caricano, la Panoramica funziona lo stesso.
   const startQuery = useStartQuery();
   const startStatus = startQuery.data;
-  // «Dall'ultima visita»: optional too; it is waited for on the first load so it does not push the page down.
-  const welcomeQuery = useWelcomeQuery();
   const renewalAlerts = buildRenewalAlerts(connectionsQuery.data ?? [], today);
 
   const isLoading =
-    accountsQuery.isLoading || snapshotsQuery.isLoading || monthTransactionsQuery.isLoading || investmentsQuery.isLoading || welcomeQuery.isLoading;
+    accountsQuery.isLoading || snapshotsQuery.isLoading || monthTransactionsQuery.isLoading || investmentsQuery.isLoading;
   const isError = accountsQuery.isError || snapshotsQuery.isError || monthTransactionsQuery.isError;
   const retry = () => {
     accountsQuery.refetch();
@@ -195,7 +191,6 @@ export default function PanoramicaPage() {
         </div>
       ) : (
         <>
-          <WelcomeSection data={welcomeQuery.data} />
           {startStatus ? <StartChecklistSection status={startStatus} /> : null}
           <NetWorthChartCard
             series={series}

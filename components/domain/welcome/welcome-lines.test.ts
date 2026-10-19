@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { translate } from "@/lib/localization/messages";
-import { happenedLine, sinceLabel, waitingLine } from "./welcome-lines";
+import { happenedLine, waitingLine, welcomeToastContent } from "./welcome-lines";
 
 const it_ = (source: string, values?: Record<string, string | number>) => translate("it", source, values);
 const en = (source: string, values?: Record<string, string | number>) => translate("en", source, values);
@@ -33,11 +33,21 @@ describe("waitingLine", () => {
   });
 });
 
-describe("sinceLabel", () => {
-  const now = new Date(2026, 9, 19, 9, 0);
-  it("says today, yesterday or the day", () => {
-    expect(sinceLabel(new Date(2026, 9, 19, 7, 5), now, "it-IT", it_)).toBe("da oggi alle 7:05");
-    expect(sinceLabel(new Date(2026, 9, 18, 18, 40), now, "it-IT", it_)).toBe("da ieri alle 18:40");
-    expect(sinceLabel(new Date(2026, 9, 15, 18, 40), now, "it-IT", it_)).toBe("da giovedì 15 ottobre alle 18:40");
+describe("welcomeToastContent", () => {
+  const movements = happenedLine({ kind: "movements", count: 12, income: 0, expenses: 315 }, it_, fmt);
+  const toDecide = waitingLine({ kind: "to_decide", count: 7 }, it_);
+
+  it("puts what happened in the title, what waits below with its action", () => {
+    expect(welcomeToastContent([movements], [toDecide], it_)).toEqual({
+      title: "Mentre eri via: 12\u00a0movimenti nuovi",
+      description: "Da sistemare: 7\u00a0movimenti senza categoria",
+      action: { label: "Decidi", href: "/categorizza", kind: "to_decide" },
+    });
+  });
+
+  it("uses the detail and a «Vedi» when only one group has something", () => {
+    expect(welcomeToastContent([movements], [], it_)).toMatchObject({ description: "uscite 315 €", action: { label: "Vedi", href: "/liquidita" } });
+    expect(welcomeToastContent([], [toDecide], it_)?.title).toBe("Da sistemare: 7\u00a0movimenti senza categoria");
+    expect(welcomeToastContent([], [], it_)).toBeNull();
   });
 });

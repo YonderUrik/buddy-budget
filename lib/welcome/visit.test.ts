@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { VISIT_GAP_MS, isWelcomeDismissed, nextVisitState, type VisitState } from "./visit";
+import { VISIT_GAP_MS, isWelcomeShown, nextVisitState, type VisitState } from "./visit";
 
-const empty: VisitState = { appSeenAt: null, visitStartedAt: null, visitSinceAt: null, welcomeDismissedAt: null };
+const empty: VisitState = { appSeenAt: null, visitStartedAt: null, visitSinceAt: null, welcomeShownAt: null };
 const at = (iso: string) => new Date(iso);
 
 describe("nextVisitState", () => {
@@ -35,11 +35,11 @@ describe("nextVisitState", () => {
   });
 });
 
-describe("isWelcomeDismissed", () => {
-  it("is closed only for the visit it was closed in", () => {
+describe("isWelcomeShown", () => {
+  it("counts only a showing during the current visit", () => {
     const visitStartedAt = at("2026-10-19T08:00:00Z");
-    expect(isWelcomeDismissed({ visitStartedAt, welcomeDismissedAt: at("2026-10-19T08:05:00Z") })).toBe(true);
-    expect(isWelcomeDismissed({ visitStartedAt, welcomeDismissedAt: at("2026-10-18T20:00:00Z") })).toBe(false);
-    expect(isWelcomeDismissed({ visitStartedAt, welcomeDismissedAt: null })).toBe(false);
+    expect(isWelcomeShown({ visitStartedAt, welcomeShownAt: at("2026-10-19T08:05:00Z") })).toBe(true);
+    expect(isWelcomeShown({ visitStartedAt, welcomeShownAt: at("2026-10-18T20:00:00Z") })).toBe(false);
+    expect(isWelcomeShown({ visitStartedAt, welcomeShownAt: null })).toBe(false);
   });
 });

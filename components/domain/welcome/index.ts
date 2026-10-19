@@ -1,13 +1,10 @@
 /**
  * components/domain/welcome — barrel file
  *
- * «Dall'ultima visita» on Panoramica (what happened while away, what waits for the user) and the visit heartbeat.
+ * «Dall'ultima visita»: the toast a returning user sees on opening the app (what happened while away, what waits),
+ * which also keeps the visit alive.
  */
 
-export { WelcomeSection } from "./welcome-section";
-export type { WelcomeSectionProps } from "./welcome-section";
-export { WelcomeSummary } from "./welcome-summary";
-export type { WelcomeSummaryProps } from "./welcome-summary";
-export { VisitHeartbeat } from "./visit-heartbeat";
-export { WELCOME_HREFS, happenedLine, sinceLabel, waitingLine } from "./welcome-lines";
-export type { WelcomeFormatters, WelcomeLine } from "./welcome-lines";
+export { WelcomeToast } from "./welcome-toast";
+export { WELCOME_HREFS, happenedLine, waitingLine, welcomeToastContent } from "./welcome-lines";
+export type { WelcomeFormatters, WelcomeLine, WelcomeToastContent } from "./welcome-lines";

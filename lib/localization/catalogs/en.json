@@ -5172,12 +5172,8 @@
   "Addebiti che tornano ogni mese o ogni anno": "Charges that come back every month or year",
   "import da controllare": "import to check",
   "Alcune righe del file non sono state riconosciute": "Some rows of the file were not recognised",
-  "da oggi alle {0}": "since today at {0}",
-  "da ieri alle {0}": "since yesterday at {0}",
-  "da {0} alle {1}": "since {0} at {1}",
-  "Dall'ultima visita": "Since your last visit",
-  "Chiudi fino alla prossima visita": "Close until your next visit",
-  "Mentre eri via": "While you were away",
-  "Ti aspetta": "Waiting for you",
-  "Scegli dove vanno: poi l'app li riconosce da sola": "Choose where they go: then the app recognises them on its own"
+  "Scegli dove vanno: poi l'app li riconosce da sola": "Choose where they go: then the app recognises them on its own",
+  "Mentre eri via: {0}": "While you were away: {0}",
+  "Da sistemare: {0}": "To sort out: {0}",
+  "Vedi": "See"
 }

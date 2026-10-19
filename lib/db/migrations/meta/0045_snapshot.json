@@ -1,5 +1,5 @@
 {
-  "id": "6740fb0c-8804-4c89-8ccc-2cd47b61b8f4",
+  "id": "7ddbeeed-3ac6-47c9-91dd-fd646e5ab6a1",
   "prevId": "cfec39aa-219b-40b4-b9c2-183b2fdae373",
   "version": "7",
   "dialect": "postgresql",
@@ -346,8 +346,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "welcome_dismissed_at": {
-          "name": "welcome_dismissed_at",
+        "welcome_shown_at": {
+          "name": "welcome_shown_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false

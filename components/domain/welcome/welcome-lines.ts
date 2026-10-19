@@ -106,18 +106,25 @@ export function waitingLine(item: WelcomeWaiting, tr: Translate): WelcomeLine {
   }
 }
 
-/** «da ieri alle 18:40», «da giovedì 16 ottobre alle 9:05»: when the previous visit ended, in the user's language. */
-export function sinceLabel(since: Date, now: Date, locale: string, tr: Translate): string {
-  const time = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(since);
-  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const days = Math.round((startOfDay(now) - startOfDay(since)) / 86_400_000);
-  if (days <= 0) return tr("da oggi alle {0}", { 0: time });
-  if (days === 1) return tr("da ieri alle {0}", { 0: time });
-  const day = new Intl.DateTimeFormat(locale, {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    ...(since.getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}),
-  }).format(since);
-  return tr("da {0} alle {1}", { 0: day, 1: time });
+/** What the «Dall'ultima visita» toast says: one line per group and the most useful action. */
+export interface WelcomeToastContent {
+  title: string;
+  description: string;
+  action: { label: string; href: string; kind: WelcomeItemKind };
+}
+
+/**
+ * Packs the summary into one toast: what happened as the title («Mentre eri via: 12 movimenti nuovi · …»), what waits
+ * as the description («Da sistemare: 7 movimenti senza categoria»), and the action of the first thing that waits (or
+ * a way to see the first thing that happened). With one group only, the description is that group's first detail.
+ */
+export function welcomeToastContent(happened: readonly WelcomeLine[], waiting: readonly WelcomeLine[], tr: Translate): WelcomeToastContent | null {
+  // The count never ends a line apart from its words.
+  const label = (lines: readonly WelcomeLine[]) => lines.map((line) => `${line.figure}\u00a0${line.title}`).join(" · ");
+  const first = waiting[0] ?? happened[0];
+  if (!first) return null;
+  const title = happened.length > 0 ? tr("Mentre eri via: {0}", { 0: label(happened) }) : tr("Da sistemare: {0}", { 0: label(waiting) });
+  const description =
+    happened.length > 0 && waiting.length > 0 ? tr("Da sistemare: {0}", { 0: label(waiting) }) : first.detail;
+  return { title, description, action: { label: first.action ?? tr("Vedi"), href: first.href, kind: first.kind } };
 }

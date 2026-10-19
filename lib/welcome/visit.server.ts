@@ -8,12 +8,12 @@ const VISIT_COLUMNS = {
   appSeenAt: authUser.appSeenAt,
   visitStartedAt: authUser.visitStartedAt,
   visitSinceAt: authUser.visitSinceAt,
-  welcomeDismissedAt: authUser.welcomeDismissedAt,
+  welcomeShownAt: authUser.welcomeShownAt,
 };
 
 /**
  * Records that the app is open now and returns the visit state, with `newVisit` when this heartbeat started a visit.
- * One conditional UPDATE (every SET reads the old row), so two tabs or a heartbeat racing the summary request cannot
+ * One conditional UPDATE (every SET reads the old row), so two tabs or a heartbeat racing the welcome request cannot
  * start two visits; heartbeats within `VISIT_TOUCH_THROTTLE_MS` only read. Same rule as `nextVisitState`.
  */
 export async function touchVisit(userId: string, now: Date = new Date()): Promise<{ state: VisitState; newVisit: boolean } | null> {
@@ -36,7 +36,7 @@ export async function touchVisit(userId: string, now: Date = new Date()): Promis
   return current ? { state: current, newVisit: false } : null;
 }
 
-/** Closes the summary until the next visit. */
-export async function dismissWelcome(userId: string, now: Date = new Date()): Promise<void> {
-  await db.update(authUser).set({ welcomeDismissedAt: now }).where(eq(authUser.id, userId));
+/** Records that the toast was shown: not again until the next visit, on any device. */
+export async function markWelcomeShown(userId: string, now: Date = new Date()): Promise<void> {
+  await db.update(authUser).set({ welcomeShownAt: now }).where(eq(authUser.id, userId));
 }

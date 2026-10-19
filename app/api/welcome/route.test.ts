@@ -113,13 +113,13 @@ describe("GET/PATCH /api/welcome and POST /api/visits", () => {
     await db.delete(instruments).where(eq(instruments.id, instrument.id));
   });
 
-  it("stays closed for the rest of the visit once dismissed", async () => {
+  it("is not said again in the same visit once shown", async () => {
     await lastSeen(5);
     await add({ categoryId: foodId, amount: "-5.00", createdAt: new Date(Date.now() - HOUR) });
     expect((await welcome()).summary).not.toBeNull();
-    expect((await PATCH(request("/api/welcome", "PATCH", { dismissed: true }))).status).toBe(204);
+    expect((await PATCH(request("/api/welcome", "PATCH", { shown: true }))).status).toBe(204);
     expect((await welcome()).summary).toBeNull();
-    expect((await PATCH(request("/api/welcome", "PATCH", { dismissed: false }))).status).toBe(400);
+    expect((await PATCH(request("/api/welcome", "PATCH", { shown: false }))).status).toBe(400);
   });
 
   it("starts a new visit from the heartbeat after a pause", async () => {

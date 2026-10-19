@@ -1,6 +1,6 @@
 /**
  * Visits: the app layout sends a heartbeat while the app is open; a gap longer than `VISIT_GAP_MS` since the last one
- * starts a new visit, and the end of the previous visit becomes the point the «Dall'ultima visita» summary counts from.
+ * starts a new visit, and the end of the previous visit becomes the point the «Dall'ultima visita» toast counts from.
  * Pure rules here; the atomic database update is in `visit.server.ts`.
  */
 
@@ -15,7 +15,7 @@ export interface VisitState {
   appSeenAt: Date | null;
   visitStartedAt: Date | null;
   visitSinceAt: Date | null;
-  welcomeDismissedAt: Date | null;
+  welcomeShownAt: Date | null;
 }
 
 /** State after a heartbeat at `now` (the same rule as the SQL in `touchVisit`, kept here to be tested). */
@@ -35,12 +35,12 @@ export function nextVisitState(state: VisitState, now: Date): { state: VisitStat
   };
 }
 
-/** The summary was closed during the current visit. */
-export function isWelcomeDismissed(state: Pick<VisitState, "visitStartedAt" | "welcomeDismissedAt">): boolean {
-  return Boolean(state.welcomeDismissedAt && state.visitStartedAt && state.welcomeDismissedAt >= state.visitStartedAt);
+/** The toast was already shown during the current visit. */
+export function isWelcomeShown(state: Pick<VisitState, "visitStartedAt" | "welcomeShownAt">): boolean {
+  return Boolean(state.welcomeShownAt && state.visitStartedAt && state.welcomeShownAt >= state.visitStartedAt);
 }
 
-/** True when the summary has something to say. */
+/** True when the toast has something to say. */
 export function hasWelcomeContent(summary: { happened: readonly unknown[]; waiting: readonly unknown[] }): boolean {
   return summary.happened.length > 0 || summary.waiting.length > 0;
 }

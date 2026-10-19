@@ -5172,12 +5172,8 @@
   "Addebiti che tornano ogni mese o ogni anno": "Abbuchungen, die jeden Monat oder jedes Jahr wiederkommen",
   "import da controllare": "Import zu prüfen",
   "Alcune righe del file non sono state riconosciute": "Einige Zeilen der Datei wurden nicht erkannt",
-  "da oggi alle {0}": "seit heute um {0}",
-  "da ieri alle {0}": "seit gestern um {0}",
-  "da {0} alle {1}": "seit {0} um {1}",
-  "Dall'ultima visita": "Seit deinem letzten Besuch",
-  "Chiudi fino alla prossima visita": "Bis zum nächsten Besuch schließen",
-  "Mentre eri via": "Während du weg warst",
-  "Ti aspetta": "Wartet auf dich",
-  "Scegli dove vanno: poi l'app li riconosce da sola": "Wähle, wohin sie gehören: danach erkennt die App sie selbst"
+  "Scegli dove vanno: poi l'app li riconosce da sola": "Wähle, wohin sie gehören: danach erkennt die App sie selbst",
+  "Mentre eri via: {0}": "Während du weg warst: {0}",
+  "Da sistemare: {0}": "Zu erledigen: {0}",
+  "Vedi": "Ansehen"
 }

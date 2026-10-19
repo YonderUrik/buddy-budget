@@ -1,22 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { track } from "@/lib/analytics";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { pageText } from "@/lib/localization/page-text";
 import { VISIT_HEARTBEAT_MS, VISIT_TOUCH_THROTTLE_MS, type WelcomeResponse } from "@/lib/welcome";
 
 export const WELCOME_QUERY_KEY = ["welcome"] as const;
 
-/** The summary changes only with a new visit (the heartbeat invalidates it) or with the user's own actions. */
-const WELCOME_STALE_MS = 5 * 60 * 1000;
-
-/** «Dall'ultima visita» summary for Panoramica. An error hides it: it never gets in the way of the page. */
+/** «Dall'ultima visita» summary for the toast: read once per page load and again when a new visit starts. An error shows nothing. */
 export function useWelcomeQuery(enabled = true) {
   return useQuery({
     queryKey: WELCOME_QUERY_KEY,
     enabled,
-    staleTime: WELCOME_STALE_MS,
+    staleTime: Infinity,
     retry: false,
     queryFn: async (): Promise<WelcomeResponse> => {
       const response = await fetch("/api/welcome");
@@ -26,28 +22,13 @@ export function useWelcomeQuery(enabled = true) {
   });
 }
 
-/** Closes the summary until the next visit; the card disappears at once. */
-export function useWelcomeDismissMutation() {
-  const queryClient = useQueryClient();
-  return useMutation<void, Error, { items: number }, { previous: WelcomeResponse | undefined }>({
-    mutationFn: async () => {
-      const response = await fetch("/api/welcome", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dismissed: true }),
-      });
-      if (!response.ok) throw new Error(pageText("Impossibile chiudere il riepilogo"));
-    },
-    onMutate: () => {
-      const previous = queryClient.getQueryData<WelcomeResponse>(WELCOME_QUERY_KEY);
-      if (previous) queryClient.setQueryData<WelcomeResponse>(WELCOME_QUERY_KEY, { ...previous, summary: null });
-      return { previous };
-    },
-    onError: (_error, _vars, context) => {
-      if (context?.previous) queryClient.setQueryData(WELCOME_QUERY_KEY, context.previous);
-    },
-    onSuccess: (_data, { items }) => track("welcome_summary_dismissed", { items }),
-  });
+/** Tells the server the toast appeared, so it is not shown again in this visit. Best-effort. */
+export function markWelcomeShown(): void {
+  void fetch("/api/welcome", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ shown: true }),
+  }).catch(() => {});
 }
 
 /**

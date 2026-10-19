@@ -35,10 +35,10 @@ export const authUser = pgTable("auth_user", {
   appSeenAt: timestamp("app_seen_at", { withTimezone: true }),
   /** When the current visit started (see `lib/welcome/visit.ts`). */
   visitStartedAt: timestamp("visit_started_at", { withTimezone: true }),
-  /** End of the previous visit (its last heartbeat): the «Dall'ultima visita» summary counts what happened after it. Null = no previous visit. */
+  /** End of the previous visit (its last heartbeat): the «Dall'ultima visita» toast counts what happened after it. Null = no previous visit. */
   visitSinceAt: timestamp("visit_since_at", { withTimezone: true }),
-  /** When the user closed the «Dall'ultima visita» summary: hidden while it is later than `visitStartedAt`. */
-  welcomeDismissedAt: timestamp("welcome_dismissed_at", { withTimezone: true }),
+  /** When the «Dall'ultima visita» toast was last shown: once per visit, so not again while it is later than `visitStartedAt`. */
+  welcomeShownAt: timestamp("welcome_shown_at", { withTimezone: true }),
   /** Quando l'utente ha acconsentito all'assistente per le categorie (invio del nome pulito dell'esercente a un servizio esterno). Null = spento. */
   aiCategorizationInstructions: text("ai_categorization_instructions").notNull().default(""),
   aiCategorizationConsentAt: timestamp("ai_categorization_consent_at", { withTimezone: true }),

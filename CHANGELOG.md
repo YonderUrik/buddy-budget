@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.80.1](https://github.com/YonderUrik/buddy-budget/compare/v0.80.0...v0.80.1) (2026-10-19)
+
+
+### Correzioni
+
+* cash chart follows imported files and says when it is updating ([#447](https://github.com/YonderUrik/buddy-budget/issues/447)) ([4698fe0](https://github.com/YonderUrik/buddy-budget/commit/4698fe0698915a89b8635fd9b087a0030e16e8b3))
+* show only instruments held today under «I tuoi strumenti» ([#445](https://github.com/YonderUrik/buddy-budget/issues/445)) ([a8deb35](https://github.com/YonderUrik/buddy-budget/commit/a8deb35196b26641ba4c5ae8995d8d1e74808a40))
+
 ## [0.80.0](https://github.com/YonderUrik/buddy-budget/compare/v0.79.0...v0.80.0) (2026-10-18)
 
 

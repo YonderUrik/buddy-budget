@@ -15,9 +15,23 @@ async function fetchStart(): Promise<StartStatus> {
   return status;
 }
 
-/** Stato dei primi passi e dei dati d'esempio; si aggiorna da solo quando l'utente torna sulla pagina. */
+/** How often the steps are re-read while some are missing and the tab is open (imports and syncs finish out of band). */
+const START_POLL_MS = 15_000;
+
+/**
+ * State of the first steps and of the sample data. It refreshes on its own: when the user comes back to the page,
+ * after any write (see `QueryProvider`), and every few seconds while a step is still missing and the tab is visible.
+ */
 export function useStartQuery() {
-  return useQuery({ queryKey: START_QUERY_KEY, queryFn: fetchStart, staleTime: 0 });
+  return useQuery({
+    queryKey: START_QUERY_KEY,
+    queryFn: fetchStart,
+    staleTime: 0,
+    refetchInterval: (query) => {
+      const status = query.state.data;
+      return status && !status.completed && !status.dismissed ? START_POLL_MS : false;
+    },
+  });
 }
 
 /** Chiude o riapre la checklist dei primi passi. */

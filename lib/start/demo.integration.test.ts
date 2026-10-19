@@ -92,6 +92,21 @@ describe("dati d'esempio", () => {
   });
 });
 
+describe("import step", () => {
+  it("ticks for any real transaction (typed by hand or imported), never for sample ones", async () => {
+    const userId = await makeUser();
+    await startDemo(userId);
+    expect((await loadStartStatus(userId)).steps.import).toBe(false);
+    await clearDemo(userId);
+
+    const [account] = await db.insert(accounts).values({ userId, name: "Vero", type: "Conto corrente", balance: "10" }).returning();
+    expect((await loadStartStatus(userId)).steps.import).toBe(false);
+    const [category] = await db.select({ id: categories.id }).from(categories).where(eq(categories.userId, userId)).limit(1);
+    await db.insert(transactions).values({ userId, accountId: account.id, categoryId: category.id, description: "CSV", date: "2026-10-01", amount: "-5.00", source: "manuale", externalId: "personal:test:1" });
+    expect((await loadStartStatus(userId)).steps.import).toBe(true);
+  });
+});
+
 describe("focus", () => {
   it("asks only for the chosen steps and completes on those", async () => {
     const userId = await makeUser();

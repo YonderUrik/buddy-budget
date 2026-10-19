@@ -48,7 +48,7 @@ export async function loadStartStatus(userId: string): Promise<StartStatus> {
       exists(select 1 from ${accounts} where ${accounts.userId} = ${userId} and not ${accounts.isDemo}) as conto,
       exists(
         select 1 from ${transactions} t join ${accounts} a on a.id = t.account_id
-        where t.user_id = ${userId} and t.source = 'auto' and not a.is_demo
+        where t.user_id = ${userId} and not a.is_demo
       ) as import,
       exists(select 1 from ${investmentTransactions} where ${investmentTransactions.userId} = ${userId}) as investimento,
       exists(select 1 from ${debts} where ${debts.userId} = ${userId}) as debito,

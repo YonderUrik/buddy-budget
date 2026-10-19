@@ -77,7 +77,7 @@ export const START_STEPS: readonly StartStepDef[] = [
     description: "Carica il CSV o l'estratto conto della tua banca, oppure collega la banca.",
     href: "/importazioni",
     cta: "Importa un file",
-    done: "Movimenti importati",
+    done: "Movimenti aggiunti",
   },
   {
     id: "investimento",

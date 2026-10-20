@@ -2,7 +2,7 @@
 // Prerequisites (see docs/landing-screens.md): the app running at DEMO_APP_URL on a database filled by `pnpm demo:seed`
 // (with DEMO_LANGUAGE equal to CAPTURE_LANGUAGE), and the app's BETTER_AUTH_SECRET (it signs the demo session cookie).
 import { createHmac } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,7 +20,9 @@ const SCALE = 1.5;
 // on the phone, and exactly the app area of the landing's `PhoneFrame`.
 const PHONE = { width: 390, height: 751 };
 const PHONE_SCALE = 2;
-const JPEG_QUALITY = 80;
+// WebP at 0.8 weighs about 40% less than the JPEG at 80 used before, at the same look. Playwright only writes PNG and
+// JPEG, so the PNG is encoded to WebP by Chromium itself (no image library to install).
+const WEBP_QUALITY = 0.8;
 const SETTLE_MS = 1500;
 /** Altezza massima (px CSS) di uno screenshot: la pagina si cattura intera fin qui, così non si vede solo la parte alta. */
 const MAX_HEIGHT = 1500;
@@ -48,9 +50,34 @@ const browser = await chromium.launch({
   args: ["--no-sandbox"],
 });
 const host = new URL(APP).hostname;
+const encoder = await browser.newPage();
+/** True as soon as one image differs from the file already there: without it the manifest keeps its `capturedAt`. */
+let imagesChanged = false;
+
+/** Takes a screenshot (Playwright options) and saves it as WebP, leaving the file untouched when the bytes are the same. */
+async function saveShot(page, file, options = {}) {
+  const png = await page.screenshot({ ...options, type: "png" });
+  const encoded = await encoder.evaluate(async ({ data, quality }) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${data}`;
+    await image.decode();
+    const canvas = new OffscreenCanvas(image.naturalWidth, image.naturalHeight);
+    canvas.getContext("2d").drawImage(image, 0, 0);
+    const blob = await canvas.convertToBlob({ type: "image/webp", quality });
+    if (blob.type !== "image/webp") throw new Error(`this Chromium cannot encode WebP (got ${blob.type})`);
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    return btoa(binary);
+  }, { data: png.toString("base64"), quality: WEBP_QUALITY });
+  const webp = Buffer.from(encoded, "base64");
+  if (existsSync(file) && readFileSync(file).equals(webp)) return;
+  writeFileSync(file, webp);
+  imagesChanged = true;
+}
 // ONLY=id1,id2 rigenera solo quelle schermate (utile quando se ne aggiunge una) e conserva il resto del manifest.
 const ONLY = process.env.ONLY?.split(",").map((id) => id.trim()).filter(Boolean);
-// PHONE_ONLY=1 regenerates only the phone versions (`<id>-phone.jpg`) and keeps the full-size dimensions in the manifest.
+// PHONE_ONLY=1 regenerates only the phone versions (`<id>-phone.webp`) and keeps the full-size dimensions in the manifest.
 const PHONE_ONLY = process.env.PHONE_ONLY === "1";
 const manifest = { capturedAt: new Date().toISOString(), app: APP, language: LANGUAGE, viewport: VIEWPORT, scale: SCALE, phone: PHONE, phoneScale: PHONE_SCALE, screens: [] };
 // Screens the demo account cannot open in this language (German product rules) are skipped: the landing falls back.
@@ -91,7 +118,9 @@ async function openScreen(page, screen) {
   if (language !== LANGUAGE) throw new Error(`${target}: the app is in "${language}", not "${LANGUAGE}" (seed the demo with DEMO_LANGUAGE=${LANGUAGE})`);
   if (screen.clickFirst) await page.getByRole("button", { name: tr(screen.clickFirst), exact: true }).first().click();
   // l'indicatore di sviluppo di Next non deve finire nelle immagini se l'app gira con `next dev`
-  await page.addStyleTag({ content: "nextjs-portal,[data-nextjs-toast],[data-next-badge-root]{display:none!important}" });
+  // Same for `data-capture-hidden` (the build version in the sidebar): it changes with every commit, and showing it
+  // made every capture a new image even when the screen had not changed.
+  await page.addStyleTag({ content: "nextjs-portal,[data-nextjs-toast],[data-next-badge-root]{display:none!important}[data-capture-hidden]{visibility:hidden!important}" });
   for (const [label, value] of screen.fill ?? []) await page.getByLabel(tr(label), { exact: true }).first().fill(value);
   await page.waitForTimeout(SETTLE_MS);
 }
@@ -119,14 +148,12 @@ for (const theme of SCREEN_THEMES) {
     await page.setViewportSize({ width: VIEWPORT.width, height });
     if (screen.scrollToText) await page.getByText(tr(screen.scrollToText)).first().scrollIntoViewIfNeeded();
     await page.waitForTimeout(SETTLE_MS / 3);
-    const file = join(screensDir(theme), `${screen.id}.jpg`);
-    await page.screenshot({ path: file, type: "jpeg", quality: JPEG_QUALITY });
+    await saveShot(page, join(screensDir(theme), `${screen.id}.webp`));
     // Versione leggera a 1x (1280 px di larghezza) per i telefoni: un terzo dei pixel da decodificare.
-    await page.screenshot({ path: join(screensDir(theme), `${screen.id}-sm.jpg`), type: "jpeg", quality: JPEG_QUALITY, scale: "css" });
+    await saveShot(page, join(screensDir(theme), `${screen.id}-sm.webp`), { scale: "css" });
     // Versione con solo la parte alta, per i riquadri a proporzione fissa (l'apertura della home).
     if (screen.topCrop) {
-      const top = join(screensDir(theme), `${screen.id}-top.jpg`);
-      await page.screenshot({ path: top, type: "jpeg", quality: JPEG_QUALITY, clip: { x: 0, y: 0, ...VIEWPORT } });
+      await saveShot(page, join(screensDir(theme), `${screen.id}-top.webp`), { clip: { x: 0, y: 0, ...VIEWPORT } });
     }
     await page.setViewportSize(VIEWPORT);
     manifest.screens.push({ id: screen.id, theme, route: screen.route, width: Math.round(VIEWPORT.width * SCALE), height: Math.round(height * SCALE), phone: Boolean(screen.phone) });
@@ -141,7 +168,7 @@ for (const theme of SCREEN_THEMES) {
     const phonePage = await phoneContext.newPage();
     for (const screen of phoneScreens) {
       await openScreen(phonePage, screen);
-      await phonePage.screenshot({ path: join(screensDir(theme), `${screen.id}-phone.jpg`), type: "jpeg", quality: JPEG_QUALITY });
+      await saveShot(phonePage, join(screensDir(theme), `${screen.id}-phone.webp`));
       console.log(`${LANGUAGE}/${theme}/${screen.id}-phone`);
     }
     await phoneContext.close();
@@ -158,5 +185,10 @@ if (PHONE_ONLY) {
   const kept = previous.screens.filter((entry) => !ONLY.includes(entry.id));
   manifest.screens = [...kept, ...manifest.screens];
   manifest.capturedAt = previous.capturedAt;
+}
+// A run that changed no image and no size leaves the manifest as it was, so the workflow has nothing to commit.
+if (!imagesChanged && existsSync(manifestPath)) {
+  const previous = JSON.parse(readFileSync(manifestPath, "utf8"));
+  if (JSON.stringify({ ...previous, capturedAt: null }) === JSON.stringify({ ...manifest, capturedAt: null })) manifest.capturedAt = previous.capturedAt;
 }
 writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");

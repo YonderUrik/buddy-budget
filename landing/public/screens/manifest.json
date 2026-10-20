@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-19T11:06:47.378Z",
+  "capturedAt": "2026-10-20T10:24:19.303Z",
   "app": "http://localhost:3300",
   "language": "it",
   "viewport": {
@@ -66,7 +66,7 @@
       "theme": "light",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1485,
+      "height": 1353,
       "phone": true
     },
     {
@@ -178,7 +178,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1880,
+      "height": 2021,
       "phone": true
     },
     {
@@ -202,7 +202,7 @@
       "theme": "dark",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1485,
+      "height": 1353,
       "phone": true
     },
     {

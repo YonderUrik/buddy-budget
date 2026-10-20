@@ -93,7 +93,7 @@ export default function LiquiditaContiPage() {
         <EmptyState
           icon={LandmarkIcon}
           title={tr("Nessun conto ancora")}
-          description={tr("Collega la banca o aggiungi un conto a mano: bastano un nome e il saldo.")}
+          description={tr("Aggiungi un conto a mano o importa l'estratto conto: bastano un nome e il saldo.")}
           primary={{ label: "Aggiungi il primo conto", onClick: addAccount }}
           secondary={{ label: "Importa un file", href: "/importazioni" }}
         />

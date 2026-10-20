@@ -1,0 +1,350 @@
+{
+  "topic": "costs",
+  "source": "lib/calc/costs.ts, lib/investments/cost-impact.ts",
+  "vectors": [
+    {
+      "id": "costs.summarizeCosts.IT",
+      "function": "summarizeCosts",
+      "input": {
+        "positions": [
+          {
+            "id": "e",
+            "name": "ETF",
+            "value": 10000,
+            "ter": 0.002,
+            "subjectToBollo": true
+          },
+          {
+            "id": "s",
+            "name": "Stock",
+            "value": 5000,
+            "ter": null,
+            "subjectToBollo": true
+          },
+          {
+            "id": "c",
+            "name": "BTC",
+            "value": 2000,
+            "ter": null,
+            "subjectToBollo": false
+          },
+          {
+            "id": "z",
+            "name": "Zero",
+            "value": 0,
+            "ter": 0.01,
+            "subjectToBollo": true
+          }
+        ],
+        "productCountry": "IT"
+      },
+      "expected": {
+        "rows": [
+          {
+            "id": "e",
+            "name": "ETF",
+            "value": 10000,
+            "terCost": 20,
+            "bolloCost": 20,
+            "total": 40,
+            "pct": 0.004
+          },
+          {
+            "id": "s",
+            "name": "Stock",
+            "value": 5000,
+            "terCost": 0,
+            "bolloCost": 10,
+            "total": 10,
+            "pct": 0.002
+          },
+          {
+            "id": "c",
+            "name": "BTC",
+            "value": 2000,
+            "terCost": 0,
+            "bolloCost": 0,
+            "total": 0,
+            "pct": 0
+          }
+        ],
+        "totalValue": 17000,
+        "annualCost": 50,
+        "annualPct": 0.00294117647059,
+        "missingTerValue": 7000
+      },
+      "tolerance": 1e-9,
+      "notes": "IT bollo 0.2% on positions subjectToBollo; positions value<=0 dropped; missingTerValue counts ter===null."
+    },
+    {
+      "id": "costs.summarizeCosts.DE",
+      "function": "summarizeCosts",
+      "input": {
+        "positions": [
+          {
+            "id": "e",
+            "name": "ETF",
+            "value": 10000,
+            "ter": 0.002,
+            "subjectToBollo": true
+          },
+          {
+            "id": "s",
+            "name": "Stock",
+            "value": 5000,
+            "ter": null,
+            "subjectToBollo": true
+          },
+          {
+            "id": "c",
+            "name": "BTC",
+            "value": 2000,
+            "ter": null,
+            "subjectToBollo": false
+          },
+          {
+            "id": "z",
+            "name": "Zero",
+            "value": 0,
+            "ter": 0.01,
+            "subjectToBollo": true
+          }
+        ],
+        "productCountry": "DE"
+      },
+      "expected": {
+        "rows": [
+          {
+            "id": "e",
+            "name": "ETF",
+            "value": 10000,
+            "terCost": 20,
+            "bolloCost": 0,
+            "total": 20,
+            "pct": 0.002
+          },
+          {
+            "id": "s",
+            "name": "Stock",
+            "value": 5000,
+            "terCost": 0,
+            "bolloCost": 0,
+            "total": 0,
+            "pct": 0
+          },
+          {
+            "id": "c",
+            "name": "BTC",
+            "value": 2000,
+            "terCost": 0,
+            "bolloCost": 0,
+            "total": 0,
+            "pct": 0
+          }
+        ],
+        "totalValue": 17000,
+        "annualCost": 20,
+        "annualPct": 0.00117647058824,
+        "missingTerValue": 7000
+      },
+      "tolerance": 1e-9,
+      "notes": "DE annualStampDutyRate = 0."
+    },
+    {
+      "id": "costs.costDrag.basic",
+      "function": "costDrag",
+      "input": {
+        "value": 10000,
+        "grossReturn": 0.06,
+        "annualCostPct": 0.004,
+        "years": 3
+      },
+      "expected": [
+        {
+          "year": 0,
+          "withoutCosts": 10000,
+          "withCosts": 10000,
+          "lost": 0
+        },
+        {
+          "year": 1,
+          "withoutCosts": 10600,
+          "withCosts": 10560,
+          "lost": 40
+        },
+        {
+          "year": 2,
+          "withoutCosts": 11236,
+          "withCosts": 11151.36,
+          "lost": 84.64
+        },
+        {
+          "year": 3,
+          "withoutCosts": 11910.16,
+          "withCosts": 11775.83616,
+          "lost": 134.32384
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "withCosts uses (1 + r - c)^year (arithmetic subtraction, not (1+r)(1-c))."
+    },
+    {
+      "id": "costs.costDrag.zeroYears",
+      "function": "costDrag",
+      "input": {
+        "value": 500,
+        "grossReturn": 0.05,
+        "annualCostPct": 0.01,
+        "years": 0
+      },
+      "expected": [
+        {
+          "year": 0,
+          "withoutCosts": 500,
+          "withCosts": 500,
+          "lost": 0
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "costs.computeCostImpact.noTaxReport",
+      "function": "computeCostImpact",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2026-01-02",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "5",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "E",
+            "type": "vendita",
+            "date": "2026-01-05",
+            "quantity": "5",
+            "price": "110",
+            "fxRate": "1",
+            "fees": "2",
+            "taxes": "10",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "EUR",
+            "priceUnit": "unita"
+          }
+        ],
+        "prices": [
+          {
+            "instrumentId": "E",
+            "date": "2026-01-02",
+            "close": "100",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-03",
+            "close": "102",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-04",
+            "close": "104",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-05",
+            "close": "110",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-06",
+            "close": "115",
+            "source": "yahoo"
+          }
+        ],
+        "priceIndexBuiltWithTransactions": true,
+        "fxRates": [],
+        "userCurrency": "EUR",
+        "today": "2026-01-06",
+        "unpriced": false,
+        "report": null
+      },
+      "expected": {
+        "fees": 7,
+        "taxes": 10,
+        "estimatedTaxes": 0,
+        "additions": {
+          "2026-01-02": {
+            "fees": 5,
+            "taxes": 0,
+            "estimatedTaxes": 0
+          },
+          "2026-01-03": {
+            "fees": 5.1,
+            "taxes": 0,
+            "estimatedTaxes": 0
+          },
+          "2026-01-04": {
+            "fees": 5.2,
+            "taxes": 0,
+            "estimatedTaxes": 0
+          },
+          "2026-01-05": {
+            "fees": 7.44,
+            "taxes": 10,
+            "estimatedTaxes": 0
+          },
+          "2026-01-06": {
+            "fees": 7.77818181818,
+            "taxes": 10.4545454545,
+            "estimatedTaxes": 0
+          }
+        },
+        "available": true
+      },
+      "tolerance": 1e-9,
+      "notes": "Charges paid on day t are added at day t's close after compounding previous savings by (1 + ret_t). ret null → growth 1."
+    },
+    {
+      "id": "costs.reinvestedAmount.feesOnly",
+      "function": "reinvestedAmount",
+      "input": {
+        "impact": "output of costs.computeCostImpact.noTaxReport",
+        "dateKey": "2026-01-06",
+        "includeFees": false,
+        "includeTaxes": true
+      },
+      "expected": 7.77818181818,
+      "tolerance": 1e-9,
+      "notes": "include*=true means the cost stays deducted (real); false means 'pretend it stayed invested' → add it."
+    },
+    {
+      "id": "costs.reinvestmentEffects.basic",
+      "function": "reinvestmentEffects",
+      "input": {
+        "impact": "output of costs.computeCostImpact.noTaxReport"
+      },
+      "expected": {
+        "fees": 7.77818181818,
+        "taxes": 10.4545454545
+      },
+      "tolerance": 1e-9
+    }
+  ]
+}

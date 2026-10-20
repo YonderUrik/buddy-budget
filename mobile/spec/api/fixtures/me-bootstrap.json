@@ -1,0 +1,58 @@
+{
+  "user": {
+    "id": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+    "name": "Giulia Demo",
+    "email": "mobile-dev@buddybudget.test",
+    "emailVerified": true,
+    "image": null
+  },
+  "profile": {
+    "productCountry": "IT",
+    "language": "it",
+    "availableLanguages": [
+      "it",
+      "en"
+    ],
+    "currency": "EUR",
+    "homePage": "/panoramica",
+    "hideAmounts": false
+  },
+  "onboarding": {
+    "completed": true
+  },
+  "legal": {
+    "currentVersion": "2026-10-12",
+    "acceptedVersion": "2026-10-12",
+    "acceptedAt": "2026-10-18T14:45:24.165Z",
+    "needsAcceptance": false
+  },
+  "account": {
+    "deactivated": false,
+    "deletionScheduledAt": null,
+    "readOnlyDemo": false
+  },
+  "gate": null,
+  "capabilities": {
+    "features": {
+      "taxes": true,
+      "pension": true,
+      "retirement": true,
+      "incomeForecasts": true,
+      "inflation": true
+    },
+    "sections": {
+      "pension": true,
+      "analytics": true,
+      "goals": true,
+      "investmentTaxes": true,
+      "investmentIncome": true,
+      "fire": true,
+      "financialPlanning": true
+    }
+  },
+  "session": {
+    "createdAt": "2026-10-18T14:45:24.169Z",
+    "expiresAt": "2026-10-25T14:45:24.169Z",
+    "recentLoginUntil": "2026-10-18T14:55:24.169Z"
+  }
+}

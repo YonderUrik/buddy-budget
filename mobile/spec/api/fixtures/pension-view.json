@@ -1,0 +1,1178 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "funds": [
+    {
+      "id": "2be47c2e-c5f2-4910-9d13-6608d8429d95",
+      "name": "Piano pensione",
+      "adhesionDate": "2022-10-15",
+      "snapshotCount": 16,
+      "lastDate": "2026-10-01"
+    }
+  ],
+  "fund": {
+    "id": "2be47c2e-c5f2-4910-9d13-6608d8429d95",
+    "name": "Piano pensione",
+    "adhesionDate": "2022-10-15",
+    "snapshots": [
+      {
+        "id": "5cf5445a-a9b5-4a1e-9a9e-ea0d5e80fdb6",
+        "date": "2023-01-01",
+        "netContributions": 620,
+        "value": 622.22
+      },
+      {
+        "id": "5561893c-c6fb-44b7-94ee-525505acbe00",
+        "date": "2023-04-01",
+        "netContributions": 1240,
+        "value": 1264.76
+      },
+      {
+        "id": "56cd22bc-6261-4e0f-bd01-e1da791edeab",
+        "date": "2023-07-01",
+        "netContributions": 1860,
+        "value": 1934.49
+      },
+      {
+        "id": "eefddf64-2be7-4eb5-a5ba-96fc76eb9bfd",
+        "date": "2023-10-01",
+        "netContributions": 2480,
+        "value": 2554.03
+      },
+      {
+        "id": "1a60c3e4-9680-4304-a1cc-50d87b5d78f2",
+        "date": "2024-01-01",
+        "netContributions": 3100,
+        "value": 3155.13
+      },
+      {
+        "id": "2d9143b0-a4ff-4049-b00e-cc52cf0b1ff0",
+        "date": "2024-04-01",
+        "netContributions": 3720,
+        "value": 3859.91
+      },
+      {
+        "id": "de6c1f17-e434-4d45-af33-cb5beda0b960",
+        "date": "2024-07-01",
+        "netContributions": 4340,
+        "value": 4475.51
+      },
+      {
+        "id": "d0ed2075-c92f-4181-99a7-bda0f71ed9ab",
+        "date": "2024-10-01",
+        "netContributions": 4960,
+        "value": 5138.57
+      },
+      {
+        "id": "54982c32-c34d-42f6-bbd8-a1341ca56891",
+        "date": "2025-01-01",
+        "netContributions": 5580,
+        "value": 5818.03
+      },
+      {
+        "id": "4ab96ad2-ac14-4c00-ae3e-966afdead776",
+        "date": "2025-04-01",
+        "netContributions": 6200,
+        "value": 6609.54
+      },
+      {
+        "id": "b69c3f11-cdc1-48b0-a20e-323192ae3ca4",
+        "date": "2025-07-01",
+        "netContributions": 6820,
+        "value": 7239.55
+      },
+      {
+        "id": "3a9ad016-7176-4e65-8032-0bea1e4baa30",
+        "date": "2025-10-01",
+        "netContributions": 7440,
+        "value": 7976.82
+      },
+      {
+        "id": "7ec5bae6-727f-4d38-a340-fec06d3e1bc0",
+        "date": "2026-01-01",
+        "netContributions": 8060,
+        "value": 8765.55
+      },
+      {
+        "id": "aa8b79f2-ecf1-4308-93a1-3e98cc426958",
+        "date": "2026-04-01",
+        "netContributions": 8680,
+        "value": 9583.92
+      },
+      {
+        "id": "f47ac7e8-46c6-4539-85c6-d9e8c149d537",
+        "date": "2026-07-01",
+        "netContributions": 9300,
+        "value": 10337.39
+      },
+      {
+        "id": "70df30c2-5af9-452f-8fc0-23c6f9af7c06",
+        "date": "2026-10-01",
+        "netContributions": 9920,
+        "value": 11082.07
+      }
+    ]
+  },
+  "last": {
+    "id": "70df30c2-5af9-452f-8fc0-23c6f9af7c06",
+    "date": "2026-10-01",
+    "netContributions": 9920,
+    "value": 11082.07
+  },
+  "performance": {
+    "value": 11082.07,
+    "netContributions": 9920,
+    "gain": 1162.0699999999997,
+    "gainPct": 0.11714415322580642,
+    "annualReturn": 0.059563010349602985,
+    "approximate": true,
+    "firstDate": "2023-01-01",
+    "lastDate": "2026-10-01"
+  },
+  "contributions": [
+    {
+      "date": "2023-01-01",
+      "amount": 620,
+      "estimated": true
+    },
+    {
+      "date": "2023-04-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2023-07-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2023-10-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2024-01-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2024-04-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2024-07-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2024-10-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2025-01-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2025-04-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2025-07-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2025-10-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2026-01-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2026-04-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2026-07-01",
+      "amount": 620,
+      "estimated": false
+    },
+    {
+      "date": "2026-10-01",
+      "amount": 620,
+      "estimated": false
+    }
+  ],
+  "scenarios": [
+    {
+      "reason": "pensionamento",
+      "rate": 0.15,
+      "netLow": 9419.7595,
+      "netHigh": 9594.07
+    },
+    {
+      "reason": "sanitarie",
+      "rate": 0.15,
+      "netLow": 9419.7595,
+      "netHigh": 9594.07
+    },
+    {
+      "reason": "altri",
+      "rate": 0.23,
+      "netLow": 8533.1939,
+      "netHigh": 8800.47
+    }
+  ],
+  "tfr": {
+    "gross": 10491.780000750687,
+    "net": 10394.57740062307,
+    "annualRate": 0.03
+  },
+  "assumedInflation": 0.02,
+  "quarterly": 620,
+  "yearly": [
+    {
+      "year": 2023,
+      "contributions": 2480,
+      "gain": 74.0300000000002,
+      "endValue": 2554.03,
+      "returnRate": 0.029850806451612984,
+      "partial": false
+    },
+    {
+      "year": 2024,
+      "contributions": 2480,
+      "gain": 104.53999999999951,
+      "endValue": 5138.57,
+      "returnRate": 0.02076666209776253,
+      "partial": false
+    },
+    {
+      "year": 2025,
+      "contributions": 2480,
+      "gain": 358.25,
+      "endValue": 7976.82,
+      "returnRate": 0.04702326027062822,
+      "partial": false
+    },
+    {
+      "year": 2026,
+      "contributions": 2480,
+      "gain": 625.25,
+      "endValue": 11082.07,
+      "returnRate": 0.05979351275053028,
+      "partial": true
+    }
+  ],
+  "projection": {
+    "preview": {
+      "year": 25,
+      "prudent": 73082.07,
+      "base": 98209.75952778509,
+      "optimistic": 134361.406807174
+    },
+    "years": 25,
+    "rates": {
+      "prudent": 0,
+      "base": 0.02,
+      "optimistic": 0.04
+    },
+    "sliders": {
+      "years": {
+        "min": 1,
+        "max": 45,
+        "step": 1,
+        "default": 25
+      },
+      "quarterlyContribution": {
+        "min": 0,
+        "max": 3000,
+        "step": 20,
+        "default": 620
+      }
+    }
+  },
+  "exitTax": {
+    "realYears": 4,
+    "rate": 0.15,
+    "milestones": {
+      "reductionStartsOn": "2037-10-15",
+      "minRateOn": "2057-10-15"
+    },
+    "maxYears": 35,
+    "timeline": [
+      {
+        "years": 0,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 1,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 2,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 3,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 4,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 5,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 6,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 7,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 8,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 9,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 10,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 11,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 12,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 13,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 14,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 15,
+        "rate": 0.15,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.15,
+            "netLow": 9419.7595,
+            "netHigh": 9594.07
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 16,
+        "rate": 0.147,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.147,
+            "netLow": 9453.00571,
+            "netHigh": 9623.83
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.147,
+            "netLow": 9453.00571,
+            "netHigh": 9623.83
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 17,
+        "rate": 0.144,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.144,
+            "netLow": 9486.25192,
+            "netHigh": 9653.59
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.144,
+            "netLow": 9486.25192,
+            "netHigh": 9653.59
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 18,
+        "rate": 0.141,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.141,
+            "netLow": 9519.49813,
+            "netHigh": 9683.35
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.141,
+            "netLow": 9519.49813,
+            "netHigh": 9683.35
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 19,
+        "rate": 0.13799999999999998,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.13799999999999998,
+            "netLow": 9552.74434,
+            "netHigh": 9713.11
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.13799999999999998,
+            "netLow": 9552.74434,
+            "netHigh": 9713.11
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 20,
+        "rate": 0.135,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.135,
+            "netLow": 9585.99055,
+            "netHigh": 9742.869999999999
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.135,
+            "netLow": 9585.99055,
+            "netHigh": 9742.869999999999
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 21,
+        "rate": 0.132,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.132,
+            "netLow": 9619.23676,
+            "netHigh": 9772.63
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.132,
+            "netLow": 9619.23676,
+            "netHigh": 9772.63
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 22,
+        "rate": 0.129,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.129,
+            "netLow": 9652.48297,
+            "netHigh": 9802.39
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.129,
+            "netLow": 9652.48297,
+            "netHigh": 9802.39
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 23,
+        "rate": 0.126,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.126,
+            "netLow": 9685.72918,
+            "netHigh": 9832.15
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.126,
+            "netLow": 9685.72918,
+            "netHigh": 9832.15
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 24,
+        "rate": 0.123,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.123,
+            "netLow": 9718.97539,
+            "netHigh": 9861.91
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.123,
+            "netLow": 9718.97539,
+            "netHigh": 9861.91
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 25,
+        "rate": 0.12,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.12,
+            "netLow": 9752.2216,
+            "netHigh": 9891.67
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.12,
+            "netLow": 9752.2216,
+            "netHigh": 9891.67
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 26,
+        "rate": 0.11699999999999999,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.11699999999999999,
+            "netLow": 9785.46781,
+            "netHigh": 9921.43
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.11699999999999999,
+            "netLow": 9785.46781,
+            "netHigh": 9921.43
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 27,
+        "rate": 0.11399999999999999,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.11399999999999999,
+            "netLow": 9818.71402,
+            "netHigh": 9951.19
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.11399999999999999,
+            "netLow": 9818.71402,
+            "netHigh": 9951.19
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 28,
+        "rate": 0.11099999999999999,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.11099999999999999,
+            "netLow": 9851.96023,
+            "netHigh": 9980.95
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.11099999999999999,
+            "netLow": 9851.96023,
+            "netHigh": 9980.95
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 29,
+        "rate": 0.10799999999999998,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.10799999999999998,
+            "netLow": 9885.20644,
+            "netHigh": 10010.71
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.10799999999999998,
+            "netLow": 9885.20644,
+            "netHigh": 10010.71
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 30,
+        "rate": 0.105,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.105,
+            "netLow": 9918.45265,
+            "netHigh": 10040.47
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.105,
+            "netLow": 9918.45265,
+            "netHigh": 10040.47
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 31,
+        "rate": 0.102,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.102,
+            "netLow": 9951.69886,
+            "netHigh": 10070.23
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.102,
+            "netLow": 9951.69886,
+            "netHigh": 10070.23
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 32,
+        "rate": 0.09899999999999999,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.09899999999999999,
+            "netLow": 9984.94507,
+            "netHigh": 10099.99
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.09899999999999999,
+            "netLow": 9984.94507,
+            "netHigh": 10099.99
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 33,
+        "rate": 0.096,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.096,
+            "netLow": 10018.19128,
+            "netHigh": 10129.75
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.096,
+            "netLow": 10018.19128,
+            "netHigh": 10129.75
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 34,
+        "rate": 0.093,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.093,
+            "netLow": 10051.43749,
+            "netHigh": 10159.51
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.093,
+            "netLow": 10051.43749,
+            "netHigh": 10159.51
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      },
+      {
+        "years": 35,
+        "rate": 0.09,
+        "scenarios": [
+          {
+            "reason": "pensionamento",
+            "rate": 0.09,
+            "netLow": 10084.6837,
+            "netHigh": 10189.27
+          },
+          {
+            "reason": "sanitarie",
+            "rate": 0.09,
+            "netLow": 10084.6837,
+            "netHigh": 10189.27
+          },
+          {
+            "reason": "altri",
+            "rate": 0.23,
+            "netLow": 8533.1939,
+            "netHigh": 8800.47
+          }
+        ]
+      }
+    ]
+  }
+}

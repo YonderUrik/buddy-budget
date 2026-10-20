@@ -5,8 +5,9 @@ const disabled = { taxes: false, pension: false, retirement: false, incomeForeca
 export const FINANCIAL_COUNTRIES = {
   IT: { name: "Italia", features: { taxes: true, pension: true, retirement: true, incomeForecasts: true, inflation: true }, inflation: { area: "IT", currency: "EUR" }, investmentCosts: { annualStampDutyRate: 0.002 } },
   DE: { name: "Germania", features: { ...disabled, inflation: true }, inflation: { area: "DE", currency: "EUR" }, investmentCosts: { annualStampDutyRate: 0 } },
-  // No local rules yet: no taxes, pension, planning or national inflation (the area never matches a currency).
-  OTHER: { name: "Altro paese", features: disabled, inflation: { area: "", currency: "" }, investmentCosts: { annualStampDutyRate: 0 } },
+  // No local rules yet: no taxes, pension or national inflation (the area never matches a currency). Retirement
+  // planning (Analitiche, FIRE, goals) runs on the user's own figures, without capital gains tax.
+  OTHER: { name: "Altro paese", features: { ...disabled, retirement: true }, inflation: { area: "", currency: "" }, investmentCosts: { annualStampDutyRate: 0 } },
 } satisfies Record<ProductCountry, { name: string; features: typeof disabled; inflation: { area: string; currency: string }; investmentCosts: { annualStampDutyRate: number } }>;
 
 export function financialCountry(country: string) {

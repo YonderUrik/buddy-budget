@@ -144,7 +144,7 @@ export const HOME_EN: HomeContent = {
         text: "It starts from what you really save and spend, not from a guess. Move a slider and the year moves.",
         figure: { value: "2046", caption: "in 19.2 years, at today's pace" },
         shot: "analitiche",
-        needs: "pension",
+        needs: "retirement",
       },
     ],
     tabsLabel: "Screens",

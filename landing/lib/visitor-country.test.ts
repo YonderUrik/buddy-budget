@@ -70,6 +70,9 @@ describe("countryRules and variants", () => {
     expect(hiddenIn("taxes", "de")).toBe(false);
     expect(hiddenIn("taxes", "none")).toBe(true);
     expect(hiddenIn(undefined, "none")).toBe(false);
+    expect(hiddenIn("retirement", "full")).toBe(false);
+    expect(hiddenIn("retirement", "de")).toBe(true);
+    expect(hiddenIn("retirement", "none")).toBe(false);
     expect(needsAttr(["pension", "taxes"])).toBe("pension taxes");
     expect(needsAttr(undefined)).toBeUndefined();
   });

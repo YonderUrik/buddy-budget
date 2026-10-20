@@ -24,9 +24,9 @@ describe("independent product countries and languages", () => {
     for (const path of ["/investimenti/tasse", "/investimenti/proventi", "/api/financial-planning", "/investimenti", "/investimenti/performance", "/api/investments/overview", "/api/user/export", "/liquidita", "/debiti", "/api/pension-other"]) expect(isCountryPathAvailable("DE", path)).toBe(true);
   });
   it("gives other countries everything that does not depend on local rules", () => {
-    expect(countryFeatures("OTHER")).toEqual({ taxes: false, pension: false, retirement: false, incomeForecasts: false, inflation: false });
-    for (const path of ["/pensione", "/analitiche", "/investimenti/tasse", "/investimenti/proventi", "/api/financial-planning", "/api/pension/funds", "/api/goals", "/analitiche/obiettivi"]) expect(isCountryPathAvailable("OTHER", path), path).toBe(false);
-    for (const path of ["/panoramica", "/liquidita", "/investimenti", "/investimenti/performance", "/debiti", "/impostazioni", "/api/user/export"]) expect(isCountryPathAvailable("OTHER", path), path).toBe(true);
+    expect(countryFeatures("OTHER")).toEqual({ taxes: false, pension: false, retirement: true, incomeForecasts: false, inflation: false });
+    for (const path of ["/pensione", "/investimenti/tasse", "/investimenti/proventi", "/api/financial-planning", "/api/pension/funds", "/api/investments/tax-carryforwards"]) expect(isCountryPathAvailable("OTHER", path), path).toBe(false);
+    for (const path of ["/panoramica", "/liquidita", "/investimenti", "/investimenti/performance", "/debiti", "/impostazioni", "/api/user/export", "/analitiche", "/analitiche/obiettivi", "/api/analytics/assumptions", "/api/goals", "/api/sidebar/fire"]) expect(isCountryPathAvailable("OTHER", path), path).toBe(true);
   });
   it("has matching catalogs and preserves interpolation values", () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(de).sort());

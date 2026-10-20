@@ -179,5 +179,6 @@ describe("proxy and the visitor's country", async () => {
     expect(api.status).toBe(403);
     expect(await api.json()).toMatchObject({ code: "country_feature_unavailable", error: "Not available in your country yet. Coming soon." });
     expect((await proxy(new NextRequest("http://localhost/liquidita"))).headers.get("location")).toBeNull();
+    expect((await proxy(new NextRequest("http://localhost/analitiche"))).headers.get("location")).toBeNull();
   });
 });

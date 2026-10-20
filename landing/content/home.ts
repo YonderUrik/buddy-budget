@@ -219,7 +219,7 @@ export const SHOWCASE = {
       text: "Parte da quanto risparmi e spendi davvero, non da un'ipotesi. Muovi un cursore e l'anno cambia.",
       figure: { value: "2046", caption: "tra 19,2 anni, ai ritmi di oggi" },
       shot: "analitiche",
-      needs: "pension",
+      needs: "retirement",
     },
   ] satisfies readonly ShowcaseTab[],
   tabsLabel: "Schermate",

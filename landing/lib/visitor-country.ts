@@ -28,14 +28,15 @@ export type CountryRules = "it" | "de" | "none";
 
 /**
  * Which variant of the page a visitor sees: `full` is everything (Italy, or no country known: bots and self-hosted
- * copies), `de` drops the Italian pension fund, `none` also drops the Italian taxes.
+ * copies), `de` drops the Italian pension fund and the retirement planning (not yet reviewed for Germany), `none`
+ * drops the pension fund and the taxes but keeps the retirement planning, which runs on the user's own figures.
  */
 export type RulesVariant = "full" | "de" | "none";
 
 export const RULES_VARIANTS: readonly RulesVariant[] = ["full", "de", "none"];
 
-/** What a block needs to make sense: the Italian pension fund (and the retirement simulators) or tax rules. */
-export type RuleNeed = "pension" | "taxes";
+/** What a block needs to make sense: the Italian pension fund, tax rules, or retirement planning (Analitiche). */
+export type RuleNeed = "pension" | "taxes" | "retirement";
 
 /** A text that changes with the visitor's rules: `de` falls back to `full`, `none` to `de`. */
 export type ByRules = string | { full: string; de?: string; none?: string };
@@ -80,7 +81,7 @@ export function rulesVariant(rules: CountryRules | null | undefined): RulesVaria
 /** Whether a block that needs `needs` is hidden in a variant: pension outside Italy, taxes where no rules exist yet. */
 export function hiddenIn(needs: RuleNeed | readonly RuleNeed[] | undefined, variant: RulesVariant): boolean {
   const list = needs === undefined ? [] : typeof needs === "string" ? [needs] : needs;
-  return list.some((n) => (n === "pension" ? variant !== "full" : variant === "none"));
+  return list.some((n) => (n === "pension" ? variant !== "full" : n === "retirement" ? variant === "de" : variant === "none"));
 }
 
 /** Value of the `data-needs` attribute (space-separated), or undefined when the block is for everyone. */

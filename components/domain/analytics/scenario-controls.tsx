@@ -72,7 +72,7 @@ function deltaText(base: number | null, next: number | null, formatYears: (years
 export function ScenarioControls(props: ScenarioControlsProps) {
   const { money, pct, formatYears } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, features } = useLocalization();
   const { assumptions, plan, returnInfo, currency, overrides, onChange, onCommit, onReset, onSave, onOpenAllAssumptions, onUseHistoryReturn, saving } = props;
   const rows: Row[] = [
     { field: "annualSavings", label: tr("Risparmio annuo"), baseline: plan.savings, format: (v) => money(v, currency), missingHint: tr("servono almeno 3 mesi di movimenti nel periodo scelto") },
@@ -141,7 +141,7 @@ export function ScenarioControls(props: ScenarioControlsProps) {
         })}
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-        <span>{tr("Altre ipotesi: volatilità {0}, inflazione {1}, imposte {2}", {0: pct(assumptions.volatility, 0), 1: pct(assumptions.inflation, 0), 2: assumptions.includeLatentTax ? tr("contate") : tr("non contate")})}</span>
+        <span>{features.taxes ? tr("Altre ipotesi: volatilità {0}, inflazione {1}, imposte {2}", {0: pct(assumptions.volatility, 0), 1: pct(assumptions.inflation, 0), 2: assumptions.includeLatentTax ? tr("contate") : tr("non contate")}) : tr("Altre ipotesi: volatilità {0}, inflazione {1}", {0: pct(assumptions.volatility, 0), 1: pct(assumptions.inflation, 0)})}</span>
         <Button type="button" variant="ghost" size="sm" onClick={onOpenAllAssumptions}>
           <SlidersHorizontal className="size-4" aria-hidden="true" />{tr("Tutte le ipotesi")}</Button>
         {active ? (

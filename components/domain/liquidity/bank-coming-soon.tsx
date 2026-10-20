@@ -5,7 +5,7 @@
  * «Tienimi aggiornato» button that records the request (and can be withdrawn), so we know how many people want it.
  */
 
-import { CheckIcon, Loader2Icon, ZapIcon } from "lucide-react";
+import { BellIcon, CheckIcon, Loader2Icon, ZapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocalization } from "@/lib/localization/provider";
 import { useBankInterestMutation } from "@/lib/queries/gocardless";
@@ -24,21 +24,21 @@ export function BankComingSoon({ interested, canRequest = true }: BankComingSoon
   const save = (value: boolean) =>
     interest.mutate(value, { onError: (error) => errorToast(error.message) });
   return (
-    <div className="flex w-full flex-col gap-3 rounded-xl border bg-muted/30 p-3.5">
+    <div className="flex w-full flex-col gap-3 rounded-xl border border-dashed p-3.5">
       <div className="flex items-center gap-3.5">
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground" aria-hidden="true">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-text-3 opacity-70" aria-hidden="true">
           <ZapIcon className="size-5" />
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <span className="flex items-center gap-2 text-sm font-semibold text-text-3">
             {tr("Collega la tua banca")}
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">{tr("In arrivo")}</span>
+            <span className="rounded-full border border-dashed px-2 py-0.5 text-xs font-medium text-muted-foreground">{tr("In arrivo")}</span>
           </span>
-          <span className="text-sm text-muted-foreground">{tr("Saldi e movimenti che arrivano da soli dalla banca. Intanto usa un conto manuale o importa l'estratto conto.")}</span>
+          <span className="text-sm text-text-3">{tr("Saldi e movimenti che arrivano da soli dalla banca. Intanto usa un conto manuale o importa l'estratto conto.")}</span>
         </span>
       </div>
       {!canRequest ? null : interested ? (
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-[3.625rem] text-sm text-foreground">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-[3.625rem] text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <CheckIcon className="size-4 text-pos" aria-hidden="true" />
             {tr("Ti scriviamo quando è pronto.")}
@@ -49,8 +49,8 @@ export function BankComingSoon({ interested, canRequest = true }: BankComingSoon
         </p>
       ) : (
         <div className="pl-[3.625rem]">
-          <Button type="button" variant="outline" className="h-11 sm:h-9" onClick={() => save(true)} disabled={interest.isPending}>
-            {interest.isPending ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : null}
+          <Button type="button" variant="outline" size="sm" className="h-11 gap-1.5 px-3.5 sm:h-8" onClick={() => save(true)} disabled={interest.isPending}>
+            {interest.isPending ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : <BellIcon aria-hidden="true" />}
             {tr("Tienimi aggiornato")}
           </Button>
         </div>

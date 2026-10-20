@@ -60,8 +60,8 @@ describe("schermate della landing", () => {
   it("falls back to a language where the screen exists", () => {
     expect(screenLanguage("pensione", "de")).toBe("en");
     expect(screenLanguage("panoramica", "de")).toBe("de");
-    expect(screenSrc("pensione", "dark", false, "de")).toBe("/screens/en/dark/pensione.jpg");
-    expect(screenSrc("panoramica", "light")).toBe("/screens/light/panoramica.jpg");
+    expect(screenSrc("pensione", "dark", false, "de")).toBe("/screens/en/dark/pensione.webp");
+    expect(screenSrc("panoramica", "light")).toBe("/screens/light/panoramica.webp");
   });
 
   it("una schermata con segmento dinamico dice come aprirla", () => {

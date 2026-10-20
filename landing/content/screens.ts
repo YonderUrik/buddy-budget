@@ -38,9 +38,9 @@ export interface AppScreen {
   scrollToText?: string;
   /** Altezza massima (px CSS) di questa schermata, se la pagina intera è troppo lunga per la landing. */
   maxHeight?: number;
-  /** Salva anche `<id>-top.jpg`, solo la parte alta a 1280×800, per i riquadri a proporzione fissa. */
+  /** Salva anche `<id>-top.webp`, solo la parte alta a 1280×800, per i riquadri a proporzione fissa. */
   topCrop?: boolean;
-  /** Also saves `<id>-phone.jpg`: the first screen at phone size (390×751 at 2x, an iPhone screen minus status bar and home indicator), for the phone frame (home and gallery on the phone). */
+  /** Also saves `<id>-phone.webp`: the first screen at phone size (390×751 at 2x, an iPhone screen minus status bar and home indicator), for the phone frame (home and gallery on the phone). */
   phone?: boolean;
   /** Pagina con un segmento dinamico (`[id]`): si apre `route` e si clicca il link con questo testo, così l'id non va scritto a mano. */
   open?: { route: string; clickText: string };
@@ -86,12 +86,12 @@ export function screenDir(language: ScreenLanguage, theme: ScreenTheme): string 
 
 /** Percorso pubblico dell'immagine di una schermata nel tema dato (`top`: solo la parte alta, se catturata). */
 export function screenSrc(id: ScreenId, theme: ScreenTheme, top = false, language: ScreenLanguage = DEFAULT_SCREEN_LANGUAGE): string {
-  return `${screenDir(screenLanguage(id, language), theme)}/${id}${top ? "-top" : ""}.jpg`;
+  return `${screenDir(screenLanguage(id, language), theme)}/${id}${top ? "-top" : ""}.webp`;
 }
 
 /** Path of the phone-size version (first screen, 390×751 at 2x), only for screens with `phone`. */
 export function screenPhoneSrc(id: ScreenId, theme: ScreenTheme, language: ScreenLanguage = DEFAULT_SCREEN_LANGUAGE): string {
-  return `${screenDir(screenLanguage(id, language), theme)}/${id}-phone.jpg`;
+  return `${screenDir(screenLanguage(id, language), theme)}/${id}-phone.webp`;
 }
 
 /** Larghezza della versione leggera (`-sm`), catturata a 1x per i telefoni. */
@@ -99,5 +99,5 @@ export const SCREEN_SMALL_WIDTH = 1280;
 
 /** Percorso della versione leggera a 1x di una schermata intera. */
 export function screenSmallSrc(id: ScreenId, theme: ScreenTheme, language: ScreenLanguage = DEFAULT_SCREEN_LANGUAGE): string {
-  return `${screenDir(screenLanguage(id, language), theme)}/${id}-sm.jpg`;
+  return `${screenDir(screenLanguage(id, language), theme)}/${id}-sm.webp`;
 }

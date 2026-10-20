@@ -18,5 +18,5 @@ export function screenSize(id: ScreenId): ScreenSize {
   return entry?.width && entry.height ? { width: entry.width, height: entry.height } : DEFAULT_SIZE;
 }
 
-/** Dimensioni delle versioni a misura di telefono (`-phone.jpg`): viewport del telefono per la densità di cattura. */
+/** Dimensioni delle versioni a misura di telefono (`-phone.webp`): viewport del telefono per la densità di cattura. */
 export const PHONE_SHOT_SIZE: ScreenSize = { width: manifest.phone.width * manifest.phoneScale, height: manifest.phone.height * manifest.phoneScale };

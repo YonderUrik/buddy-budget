@@ -1,6 +1,7 @@
 import "server-only";
 import { and, count, countDistinct, eq, gt, isNotNull, lt, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
+import { countPendingBankInterest, hasBankInterest } from "./interest";
 import { bankAccountLinks, bankConnectionAttempts, bankConnections, type BankConnection } from "@/lib/db/schema/bank-connections";
 import {
   ATTEMPT_WINDOW_DAYS,
@@ -59,17 +60,20 @@ export interface CapacityStatus {
   reason: CapacityBlockReason | null;
   /** Banche già collegate: per queste il rinnovo resta possibile anche a posti finiti (fino al limite del piano). */
   renewableInstitutionIds: string[];
+  /** Whether the person already asked to be told when new connections open («Tienimi aggiornato»). */
+  interested: boolean;
 }
 
 /** Stato per l'interfaccia: il pulsante «Collega la tua banca» e il rinnovo. Nessun numero globale esce verso il client. */
 export async function getCapacityStatus(userId: string, now = new Date()): Promise<CapacityStatus> {
   const limits = currentCapacityLimits();
-  const [user, usage] = await Promise.all([loadUserCapacity(userId, db, now), loadCapacityUsage(db, now)]);
+  const [user, usage, interested] = await Promise.all([loadUserCapacity(userId, db, now), loadCapacityUsage(db, now), hasBankInterest(userId)]);
   const decision = decideCapacity(user, usage, limits);
   return {
     canConnectNew: decision.allowed,
     reason: decision.allowed ? null : decision.reason,
     renewableInstitutionIds: [...new Set(user.linkedInstitutionIds)],
+    interested,
   };
 }
 
@@ -110,6 +114,8 @@ export interface CapacitySnapshot extends CapacityUsage {
   limits: CapacityLimits;
   /** Utenti con più banche collegate del limite per utente (collegate prima del limite: le tengono). */
   usersOverLimit: number;
+  /** People waiting for new connections to open. */
+  interested: number;
 }
 
 /** Numeri per le metriche: posti usati, limiti e utenti oltre il limite per utente. */
@@ -122,8 +128,8 @@ export async function readCapacitySnapshot(now = new Date()): Promise<CapacitySn
     .innerJoin(bankAccountLinks, eq(bankAccountLinks.connectionId, bankConnections.id))
     .groupBy(bankConnections.userId)
     .as("per_user");
-  const [over] = await db.select({ n: count() }).from(perUser).where(gt(perUser.banks, limits.perUser));
-  return { ...usage, limits, usersOverLimit: over.n };
+  const [[over], interested] = await Promise.all([db.select({ n: count() }).from(perUser).where(gt(perUser.banks, limits.perUser)), countPendingBankInterest()]);
+  return { ...usage, limits, usersOverLimit: over.n, interested };
 }
 
 /** Registro dei consensi più vecchio del doppio della finestra: non serve più al conteggio e si elimina. */

@@ -6,13 +6,20 @@ const freshUser = { linkedInstitutionIds: [], recentAttempts: 0 };
 
 describe("parseCapacityLimits", () => {
   it("usa i default senza variabili", () => {
-    expect(parseCapacityLimits({})).toEqual({ perUser: 1, attemptsPerUser: 3, global: 40, provider: 50 });
+    expect(parseCapacityLimits({})).toEqual({ perUser: 1, attemptsPerUser: 3, global: 40, provider: 50, newConnectionsOpen: false });
   });
 
   it("legge i valori validi e scarta quelli non validi", () => {
     expect(
       parseCapacityLimits({ GOCARDLESS_MAX_CONNECTIONS: "30", GOCARDLESS_MAX_CONNECTIONS_PER_USER: "2", GOCARDLESS_MAX_ATTEMPTS_PER_USER: "abc", GOCARDLESS_PROVIDER_LIMIT: "-1" })
-    ).toEqual({ perUser: 2, attemptsPerUser: 3, global: 30, provider: 50 });
+    ).toEqual({ perUser: 2, attemptsPerUser: 3, global: 30, provider: 50, newConnectionsOpen: false });
+  });
+
+  it("opens new connections with BANK_CONNECTIONS_OPEN, and by default on a self-hosted install", () => {
+    expect(parseCapacityLimits({ BANK_CONNECTIONS_OPEN: "true" }).newConnectionsOpen).toBe(true);
+    expect(parseCapacityLimits({ SELF_HOSTED: "true" }).newConnectionsOpen).toBe(true);
+    expect(parseCapacityLimits({ SELF_HOSTED: "true", BANK_CONNECTIONS_OPEN: "false" }).newConnectionsOpen).toBe(false);
+    expect(parseCapacityLimits({ BANK_CONNECTIONS_OPEN: "maybe" }).newConnectionsOpen).toBe(false);
   });
 
   it("non lascia il limite del piano sotto il tetto globale", () => {
@@ -32,6 +39,13 @@ describe("usedSlots", () => {
 });
 
 describe("decideCapacity", () => {
+  it("with new connections closed refuses a new bank and still allows renewing a linked one", () => {
+    const closed = { ...limits, newConnectionsOpen: false };
+    expect(decideCapacity(freshUser, { live: 0, recent: 0 }, closed)).toEqual({ allowed: false, kind: "new", reason: "paused" });
+    const linked = { linkedInstitutionIds: ["INST_A"], recentAttempts: 0 };
+    expect(decideCapacity(linked, { live: 1, recent: 1 }, closed, "INST_A")).toEqual({ allowed: true, kind: "renewal" });
+  });
+
   it("consente la prima banca", () => {
     expect(decideCapacity(freshUser, { live: 0, recent: 0 }, limits, "INST_A")).toEqual({ allowed: true, kind: "new" });
   });

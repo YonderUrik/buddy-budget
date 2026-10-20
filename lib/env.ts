@@ -40,6 +40,8 @@ export const serverEnvSchema = z.object({
   ALLOW_SIGNUPS: optionalFlag,
   GOCARDLESS_SECRET_ID: optionalSecret,
   GOCARDLESS_SECRET_KEY: optionalSecret,
+  // New bank connections (lib/gocardless/capacity.ts): empty = closed when hosted, open when self-hosted.
+  BANK_CONNECTIONS_OPEN: optionalFlag,
   CRON_SECRET: z.string().min(CRON_SECRET_MIN_LENGTH),
   OLLAMA_BASE_URL: z.string().optional(),
   OLLAMA_MODEL: z.string().optional(),

@@ -8,7 +8,7 @@ export interface PlanFeatureLine {
 
 /** The Free plan: Liquidità and what feeds it. */
 export const FREE_FEATURES: readonly PlanFeatureLine[] = [
-  { label: "Conti e movimenti, collegati o importati da file" },
+  { label: "Conti e movimenti, a mano o importati da file" },
   { label: "Analisi delle spese e budget per categoria" },
   { label: "Categorie e regole automatiche" },
   { label: "Abbonamenti ricorrenti" },

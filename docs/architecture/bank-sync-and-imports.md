@@ -59,6 +59,7 @@ Tables in [`lib/db/schema/bank-connections.ts`](../../lib/db/schema/bank-connect
 | `bank_connections` | one consent per user and institution: `requisitionId`, `status` (`pending`, `linked`, `expired`, `error`), `consentExpiresAt`, `expiryWarningSentAt`, `expiredNoticeSentAt`, `orphanedAt` | `requisitionId` is null until GoCardless answers |
 | `bank_account_links` | link between a GoCardless account and an app account: `externalAccountId`, `lastSyncedAt`, `nextSyncEligibleAt`, `syncTimestamps` (last 4 successful syncs) | cascades with the connection and the account |
 | `bank_connection_attempts` | `userId`, `createdAt` per consent started | basis of the 31-day counts |
+| `bank_connection_interest` | one row per user who pressed «Tienimi aggiornato» while new connections are closed: `country` (product country), `createdAt`, `notifiedAt` | deleted with the user or with «Non avvisarmi più»; `notifiedAt` is for the single announcement email |
 | `gocardless_token` | single row with the encrypted application access token | cache only |
 
 Tables in [`lib/db/schema/personal-imports.ts`](../../lib/db/schema/personal-imports.ts) and [`import-format-profiles.ts`](../../lib/db/schema/import-format-profiles.ts):
@@ -91,6 +92,7 @@ Defaults from `DEFAULT_CAPACITY_LIMITS`, overridable by environment (`GOCARDLESS
 A request for an institution the user already has linked is a `renewal`; otherwise it is `new`. It is not documented which count GoCardless uses, so the app takes the larger one.
 
 ```text
+if kind = new and not newConnectionsOpen    -> paused
 used = max(live requisitions, attempts in last 31 days)
 if used >= provider                         -> provider_limit
 if kind = new and used >= global            -> global_limit
@@ -100,6 +102,8 @@ else allowed
 ```
 
 Example: 38 live requisitions and 41 attempts in the window give `used = 41`. A new bank is refused (`global_limit`); a renewal of an already linked bank is allowed while the user has fewer than 3 attempts. If GoCardless itself answers 402, the route marks the connection `error` and returns the same "full" message.
+
+`newConnectionsOpen` comes from `BANK_CONNECTIONS_OPEN` (true/false). Unset, it is closed on the hosted version and open on a self-hosted install (`SELF_HOSTED=true`, which brings its own GoCardless keys). While closed (decision of 2026-10-19: GoCardless takes no new sign-ups and the free plan is nearly full), a new bank is refused with `paused` before any count, and renewals of a bank already linked go through the normal rules, so people who have a connection keep it. In the «Nuovo conto» dialog the bank choice moves below manual account and import, with «In arrivo» and «Tienimi aggiornato» (`BankComingSoon`, `POST`/`DELETE /api/bank-connection-interest`; hidden on self-hosted installs). `GET /api/gocardless/capacity` returns `interested` so the dialog shows «Ti scriviamo quando è pronto.» on later visits. Counted in `buddybudget_gocardless_capacity{measure="interested"}` (people not written to yet) and `{measure="new_connections_open"}` (1/0); no announcement email is sent yet: when connections open again, a one-off send to the rows with `notifiedAt` null sets it.
 
 ### 4.2 Consent, callback and finalize
 
@@ -265,7 +269,7 @@ Investimenti, then Operazioni (Transactions), then «Gestisci importazioni» (Ma
 
 ## 6. Tests
 
-- [`lib/gocardless/capacity.test.ts`](../../lib/gocardless/capacity.test.ts), [`capacity-store.integration.test.ts`](../../lib/gocardless/capacity-store.integration.test.ts): limit parsing, decisions, the cap under concurrent requests, deleted connections still counting.
+- [`lib/gocardless/capacity.test.ts`](../../lib/gocardless/capacity.test.ts), [`capacity-store.integration.test.ts`](../../lib/gocardless/capacity-store.integration.test.ts): limit parsing, decisions, the cap under concurrent requests, deleted connections still counting, closed new connections with renewals still allowed, «Tienimi aggiornato» counted once per person.
 - [`sync-eligibility.test.ts`](../../lib/gocardless/sync-eligibility.test.ts): the 4-hour gap and the 24-hour window, with boundary cases.
 - [`sync.test.ts`](../../lib/gocardless/sync.test.ts), [`scheduler.test.ts`](../../lib/gocardless/scheduler.test.ts), [`rate-limit.test.ts`](../../lib/gocardless/rate-limit.test.ts), [`client.test.ts`](../../lib/gocardless/client.test.ts): names, rules, dedup, due links, token cache.
 - [`connection-health.test.ts`](../../lib/gocardless/connection-health.test.ts), [`consent-notices.test.ts`](../../lib/gocardless/consent-notices.test.ts), [`consent-emails.test.ts`](../../lib/gocardless/consent-emails.test.ts): expiry states and one-time emails.
@@ -278,5 +282,5 @@ Investimenti, then Operazioni (Transactions), then «Gestisci importazioni» (Ma
 ## 7. Related
 
 - [overview.md](overview.md), [background-jobs.md](background-jobs.md), [categorisation.md](categorisation.md), [investments.md](investments.md), [market-data.md](market-data.md), [net-worth.md](net-worth.md)
-- Decisions: [`2026-10-11-limite-collegamenti-bancari.md`](../decisioni/2026-10-11-limite-collegamenti-bancari.md), [`2026-10-12-pulizia-requisition-gocardless.md`](../decisioni/2026-10-12-pulizia-requisition-gocardless.md), [`2026-10-15-import-csv-righe-da-controllare.md`](../decisioni/2026-10-15-import-csv-righe-da-controllare.md), [`2026-10-15-metadati-formati-fallback-import.md`](../decisioni/2026-10-15-metadati-formati-fallback-import.md), [`2026-10-06-importazioni-in-operazioni.md`](../decisioni/2026-10-06-importazioni-in-operazioni.md), [`2026-10-08-csv-personali.md`](../decisioni/2026-10-08-csv-personali.md); archive [`decision-log.md`](../decision-log.md) (2026-10-01 for expiry warnings and cleanup)
+- Decisions: [`2026-10-19-collegamento-banca-in-arrivo.md`](../decisioni/2026-10-19-collegamento-banca-in-arrivo.md), [`2026-10-11-limite-collegamenti-bancari.md`](../decisioni/2026-10-11-limite-collegamenti-bancari.md), [`2026-10-12-pulizia-requisition-gocardless.md`](../decisioni/2026-10-12-pulizia-requisition-gocardless.md), [`2026-10-15-import-csv-righe-da-controllare.md`](../decisioni/2026-10-15-import-csv-righe-da-controllare.md), [`2026-10-15-metadati-formati-fallback-import.md`](../decisioni/2026-10-15-metadati-formati-fallback-import.md), [`2026-10-06-importazioni-in-operazioni.md`](../decisioni/2026-10-06-importazioni-in-operazioni.md), [`2026-10-08-csv-personali.md`](../decisioni/2026-10-08-csv-personali.md); archive [`decision-log.md`](../decision-log.md) (2026-10-01 for expiry warnings and cleanup)
 - Specs: [`2026-07-06-gocardless-open-banking-design.md`](../superpowers/specs/2026-07-06-gocardless-open-banking-design.md), [`2026-09-22-gocardless-sync-job-progress-design.md`](../superpowers/specs/2026-09-22-gocardless-sync-job-progress-design.md)

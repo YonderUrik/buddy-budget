@@ -34,6 +34,8 @@ export function createScrapeDeps(): AsyncGaugeDeps {
         limit_global: snapshot.limits.global,
         limit_provider: snapshot.limits.provider,
         users_over_limit: snapshot.usersOverLimit,
+        new_connections_open: snapshot.limits.newConnectionsOpen ? 1 : 0,
+        interested: snapshot.interested,
       };
     },
     plans: async () => {

@@ -1,6 +1,6 @@
 {
-  "id": "e5b137b6-3edc-443c-a1c1-ee525ed71f79",
-  "prevId": "cb4f6954-034d-4a83-b73f-c154f61196bd",
+  "id": "0af6ef56-5f88-4f15-83ce-6e904c0afd8d",
+  "prevId": "fd718886-a665-44c0-b8ac-ecfb9da19add",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1122,6 +1122,58 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.bank_connection_interest": {
+      "name": "bank_connection_interest",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "notified_at": {
+          "name": "notified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bank_connection_interest_user_id_auth_user_id_fk": {
+          "name": "bank_connection_interest_user_id_auth_user_id_fk",
+          "tableFrom": "bank_connection_interest",
+          "tableTo": "auth_user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

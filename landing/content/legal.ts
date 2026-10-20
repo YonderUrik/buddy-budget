@@ -114,6 +114,7 @@ export const PRIVACY: LegalDocument = {
       paragraphs: [
         `Il collegamento passa da GoCardless Bank Account Data, un fornitore di servizi di informazione sui conti autorizzato ai sensi della direttiva PSD2. Autorizzi l'accesso direttamente presso la tua banca; l'autorizzazione dura al massimo ${BANK_CONSENT_DAYS} giorni, dopo i quali va rinnovata, e puoi revocarla quando vuoi.`,
         "Il consenso che dai alla tua banca e a GoCardless è distinto da questa informativa. Se elimini l'account o fai il reset dei dati revochiamo i collegamenti attivi presso GoCardless. Possiamo rimuovere da GoCardless anche i collegamenti scaduti o non più usati.",
+        "Per ora non si collegano banche nuove: chi ha già un collegamento lo tiene e lo rinnova come prima. Se premi «Tienimi aggiornato» salviamo la richiesta insieme al tuo account e al paese che hai scelto, e ti scriviamo una sola email quando il collegamento torna disponibile: è il tuo consenso, art. 6.1.a. Lo ritiri con «Non avvisarmi più» nello stesso punto dell'app; la richiesta si cancella anche con l'account.",
       ],
     },
     {

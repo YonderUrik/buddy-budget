@@ -16,6 +16,8 @@ export interface CapacityStatus {
   canConnectNew: boolean;
   reason: CapacityBlockReason | null;
   renewableInstitutionIds: string[];
+  /** Already asked to be told when new connections open. */
+  interested: boolean;
 }
 
 export interface Institution {
@@ -62,6 +64,22 @@ export function useBankCapacityQuery(enabled = true) {
       return response.json();
     },
     enabled,
+  });
+}
+
+/** «Tienimi aggiornato» (`interested: true`) or «Non avvisarmi più» (`false`) while new bank connections are closed. */
+export function useBankInterestMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (interested: boolean): Promise<{ interested: boolean }> => {
+      const response = await fetch("/api/bank-connection-interest", { method: interested ? "POST" : "DELETE" });
+      if (!response.ok) throw new Error(pageText("Impossibile salvare la richiesta, riprova"));
+      return response.json();
+    },
+    onSuccess: ({ interested }) => {
+      track(interested ? "bank_connect_interest_registered" : "bank_connect_interest_withdrawn");
+      queryClient.setQueryData<CapacityStatus>(BANK_CAPACITY_QUERY_KEY, (current) => (current ? { ...current, interested } : current));
+    },
   });
 }
 

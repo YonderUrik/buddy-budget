@@ -115,8 +115,12 @@ export interface ProductEvents {
   budget_removed: undefined;
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
-  /** «Collega la tua banca» mostrato come non disponibile nel dialog «Nuovo conto» (una volta per apertura); `reason`: posti finiti o limite per persona. */
-  bank_connect_unavailable_seen: { reason: "user_limit" | "user_attempts" | "global_limit" | "provider_limit" };
+  /** «Collega la tua banca» shown as unavailable in the «Nuovo conto» dialog (once per opening); `reason`: closed for now («In arrivo»), spots gone or one bank per person. */
+  bank_connect_unavailable_seen: { reason: "paused" | "user_limit" | "user_attempts" | "global_limit" | "provider_limit" };
+  /** «Tienimi aggiornato» pressed while new bank connections are closed: how many people want the feature. */
+  bank_connect_interest_registered: undefined;
+  /** «Non avvisarmi più»: the request above withdrawn. */
+  bank_connect_interest_withdrawn: undefined;
   account_sync_manual: undefined;
   /** Modifica di un conto dalla finestra dei dettagli; `field`: cosa è cambiato, `kind`: conto manuale o collegato alla banca. */
   account_updated: { field: "name" | "type" | "balance" | "appearance"; kind: "manuale" | "collegato" };

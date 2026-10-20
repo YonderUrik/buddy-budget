@@ -3,13 +3,15 @@ name: Screenshot landing
 # Regenerates the app screenshots for the landing in every interface language (see docs/landing-screens.md) and opens a
 # PR with the new images.
 # Does not run on every merge: with many PRs close together it was redone each time (~3 minutes, plus CI for the bot's PR).
-# Runs once a day, when the screen definition changes (list, scripts, demo data), and manually.
+# Runs once a week (Monday), when the screen definition changes (list, scripts, demo data), and manually. Every run that
+# changed the images added ~30 MB to the git history (the demo dates move every day): weekly keeps the landing fresh
+# without that weight. Images that did not change are left as they are, and a run with nothing new opens no PR.
 # Whoever visibly changes a screen still regenerates the screenshots in their own PR (CLAUDE.md).
 # With RELEASE_PLEASE_TOKEN (PAT) the PR triggers CI and "Titolo PR" by itself; with GITHUB_TOKEN alone it does not, and a
 # manual "Re-run" is needed (see docs/rilasci.md).
 on:
   schedule:
-    - cron: "30 5 * * *"
+    - cron: "30 5 * * 1"
   push:
     branches: [main]
     paths:

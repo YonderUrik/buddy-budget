@@ -5,13 +5,13 @@ import type { Locale } from "@/lib/i18n";
 import { screenSize } from "@/lib/screen-size";
 import { screenVariants } from "@/lib/screen-variants";
 
-/** Size of the `<id>-top.jpg` captures (the top of the screen at the capture viewport). */
+/** Size of the `<id>-top.webp` captures (the top of the screen at the capture viewport). */
 const TOP_SIZE = { width: 1280, height: 800 } as const;
 
 export interface ScreenCropProps {
   /** Id of a screen in `content/screens.ts`. */
   id: ScreenId;
-  /** Use the `-top.jpg` capture (only for screens with `topCrop`). */
+  /** Use the `-top.webp` capture (only for screens with `topCrop`). */
   top?: boolean;
   /** Aspect ratio of the window (CSS value); the screenshot fills it from the top and the rest is cropped. */
   ratio?: string;

@@ -12,8 +12,9 @@ interface AppVersionLabelProps {
 }
 
 /**
- * Etichetta discreta con versione e commit della build (es. "v0.1.0 · d14089a"), con
- * data di build nel tooltip. Serve a capire a colpo d'occhio se l'app si è aggiornata.
+ * Discreet label with the build version and commit (e.g. "v0.1.0 · d14089a"), build date in the tooltip: shows at a
+ * glance whether the app has updated. Hidden in the landing screenshots (`data-capture-hidden`), where it changed every
+ * image at every commit.
  */
 export function AppVersionLabel({ info = APP_BUILD_INFO, compact = false, className }: AppVersionLabelProps) {
   const { locale } = useLocalization();
@@ -21,6 +22,7 @@ export function AppVersionLabel({ info = APP_BUILD_INFO, compact = false, classN
   return (
     <p
       className={cn("truncate text-[11px] leading-none tabular-nums", className)}
+      data-capture-hidden
       title={details}
       aria-label={details.replaceAll("\n", ", ")}
     >

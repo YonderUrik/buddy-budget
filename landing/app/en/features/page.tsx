@@ -29,7 +29,7 @@ export default function Page() {
       disclaimer={false}
       crumbs={[{ href: EN_PATHS.home, label: "BuddyBudget" }, { label: "Features" }]}
       ctaTitle="Try them with your own data."
-      ctaText="Connect your bank read-only or add an account by hand, and see the whole picture in a few minutes."
+      ctaText="Import your bank statement or add an account by hand, and see the whole picture in a few minutes."
       ctaLocation="funzioni"
     >
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${EN_PATHS.features}`, inLanguage: "en" }} />

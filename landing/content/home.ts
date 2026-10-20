@@ -115,9 +115,9 @@ export const PLACES = {
   items: [
     {
       name: "La banca",
-      hook: "Si collega e legge. Non può muovere soldi.",
-      text: "I movimenti arrivano da soli, con la categoria già messa. La password la scrivi solo sul sito della banca. Oppure carichi un file.",
-      spec: `Open Banking (PSD2) via GoCardless · banche di ${SUPPORTED.countries.map((c) => c.name).join(", ")} · consenso di 90 giorni · aggiornamento ogni 12 ore`,
+      hook: "Carichi l'estratto conto. L'app lo legge.",
+      text: "CSV o Excel di qualsiasi banca, anche in un formato nuovo, con la categoria già messa. Il collegamento diretto alla banca, in sola lettura, arriva presto.",
+      spec: "CSV ed Excel di qualsiasi banca · le categorie della banca, se il file le ha · collegamento Open Banking (PSD2) in arrivo",
       art: "banks",
     },
     {
@@ -143,7 +143,7 @@ export const PLACES = {
   banks: SUPPORTED.countries,
   brokers: SUPPORTED.brokers,
   anyCsv: "qualsiasi CSV",
-  banksLabel: "Paesi delle banche",
+  banksLabel: "Paesi delle banche del collegamento in arrivo",
 } as const satisfies PlacesText;
 
 export type ShowcaseId = "spese" | "investimenti" | "tasse" | "mutuo" | "futuro";
@@ -179,7 +179,7 @@ export const SHOWCASE = {
       id: "spese",
       tab: "Spese",
       title: "Dove vanno i soldi, senza scrivere niente.",
-      text: "I movimenti arrivano dalla banca. L'app li divide in quattro gruppi e ti chiede solo quando ha un dubbio.",
+      text: "Carichi l'estratto conto della banca. L'app divide i movimenti in quattro gruppi e ti chiede solo quando ha un dubbio.",
       figure: { value: "2.164", small: " €", caption: "spesi a ottobre, finora · 5 movimenti da decidere, il resto l'ha messo l'app" },
       shot: "movimenti",
     },
@@ -270,7 +270,7 @@ export const TRUST = {
   facts: [
     {
       title: "La password della banca resta alla banca.",
-      text: "La scrivi solo sul suo sito. Il collegamento può leggere e basta, e lo togli quando vuoi.",
+      text: "Non te la chiediamo mai. Il collegamento alla banca, in arrivo, potrà solo leggere: la password la scriverai solo sul suo sito e lo toglierai quando vuoi.",
       terms: ["Sola lettura", "Revocabile"],
       source: { label: "PSD2, art. 67", href: SECURITY_SOURCES.psd2.href },
     },
@@ -347,7 +347,7 @@ export const UNDER_HOOD = {
     { label: "Licenza", value: "AGPL-3.0" },
     { label: "Stack", value: "TypeScript · Next.js · Postgres · Redis" },
     { label: "A casa tua", value: "Docker Compose: app, database, cron", path: "/blob/main/docs/self-hosting.md" },
-    { label: "Banca", value: "Open Banking (PSD2) via GoCardless, sola lettura" },
+    { label: "Banca", value: "CSV ed Excel oggi; Open Banking (PSD2) in sola lettura in arrivo" },
     ...(FIELD_ENCRYPTION_LIVE ? [{ label: "Nel database", value: "Descrizioni e note cifrate (AES-256)" }] : []),
     { label: "I tuoi dati", value: "Export ZIP in JSON e CSV, cancellazione dall'app" },
     { label: "Accesso", value: "Link via email o Google, nessuna password" },

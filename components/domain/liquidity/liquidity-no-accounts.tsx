@@ -15,7 +15,7 @@ export const NO_ACCOUNT_TABS: Record<string, { icon: LucideIcon; title: string; 
   [LIQUIDITY_HREF]: {
     icon: ArrowLeftRightIcon,
     title: "Prima serve un conto",
-    description: "Collega la banca o crea un conto a mano, poi importa l'estratto conto: qui vedrai entrate e uscite, giorno per giorno.",
+    description: "Crea un conto a mano o importa l'estratto conto: qui vedrai entrate e uscite, giorno per giorno.",
   },
   [`${LIQUIDITY_HREF}/analisi`]: {
     icon: BarChart3,

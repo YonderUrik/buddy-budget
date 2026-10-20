@@ -76,6 +76,7 @@ export const PRIVACY_EN: LegalDocument = {
       paragraphs: [
         `The connection goes through GoCardless Bank Account Data, an account information service provider authorized under the PSD2 directive. You authorize access directly with your bank; the authorization lasts at most ${BANK_CONSENT_DAYS} days, after which it must be renewed, and you can revoke it at any time.`,
         "The consent you give your bank and GoCardless is separate from this policy. If you delete the account or reset your data, we revoke the active connections at GoCardless. We may also remove expired or unused connections from GoCardless.",
+        "For now no new banks can be connected: people who already have a connection keep it and renew it as before. If you press «Tienimi aggiornato» (Keep me posted) we save the request with your account and the country you chose, and we send you a single email when the connection is available again: this is based on your consent, art. 6.1.a. You withdraw it with «Non avvisarmi più» (Stop notifying me) in the same place in the app; the request is also deleted with the account.",
       ],
     },
     {

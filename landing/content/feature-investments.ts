@@ -37,7 +37,7 @@ export const INVESTMENTS_IT: InvestmentsPageContent = {
   kicker: "Funzioni",
   crumbs: [{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.funzioni, label: "Funzioni" }, { label: "Investimenti" }],
   ctaTitle: "Prova gli investimenti con i tuoi dati.",
-  ctaText: "Collega la banca, aggiungi le operazioni o importa un CSV, e vedi il quadro completo con le tasse già dentro.",
+  ctaText: "Aggiungi le operazioni o importa un CSV, e vedi il quadro completo con le tasse già dentro.",
   blocks: [
     { icon: "trending", title: "Rendimento vero", text: "Il rendimento pesato per i tempi dei tuoi versamenti, confrontato con un indice a parità di flussi." },
     { icon: "pie", title: "Rischio e diversificazione", text: "Quanto oscilla il portafoglio e come è distribuito tra strumenti, aree e settori." },
@@ -63,7 +63,7 @@ export const INVESTMENTS_EN: InvestmentsPageContent = {
   kicker: "Features",
   crumbs: [{ href: EN_PATHS.home, label: "BuddyBudget" }, { href: EN_PATHS.features, label: "Features" }, { label: "Investments" }],
   ctaTitle: "Try the investments with your own data.",
-  ctaText: "Connect your bank, add your trades or import a CSV, and see the whole picture with the taxes already in.",
+  ctaText: "Add your trades or import a CSV, and see the whole picture with the taxes already in.",
   blocks: [
     { icon: "trending", title: "Real returns", text: "Your return weighted by when you paid money in, compared with an index fed the same cash flows." },
     { icon: "pie", title: "Risk and diversification", text: "How much the portfolio swings and how it splits across instruments, regions and sectors." },

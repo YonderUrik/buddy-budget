@@ -5,17 +5,26 @@ import { debts } from "@/lib/db/schema/debts";
 import { loadUserDebts } from "@/lib/debts/data";
 import { todayIso } from "@/lib/debts/dates";
 import { buildDebtsView } from "@/lib/debts/view";
+import { buildDebtsInsights } from "@/lib/debts/overview-insights";
+import { apiError } from "@/lib/http";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 import { createDebtSchema } from "@/lib/validation/debts";
 
-/** Vista completa dei debiti dell'utente (piani, totali, scadenze): la usano tutte le schede. */
+/**
+ * The user's full debts view (plans, totals, due dates), used by every tab. `?include=insights` adds the overview
+ * readings the web computes in the browser (interest shares, repaid share, exit plan per slider step; gaps.md G12).
+ */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
 
+  const include = request.nextUrl.searchParams.get("include");
+  if (include !== null && include !== "insights") return apiError(400, "validation_failed", "include ammette solo insights", { field: "include" });
+  const today = todayIso();
   const { debts: rows, events } = await loadUserDebts(session.user.id);
-  return Response.json(buildDebtsView(rows, events, todayIso()));
+  const view = buildDebtsView(rows, events, today);
+  return Response.json(include ? { ...view, insights: buildDebtsInsights(view.debts, today) } : view);
 }
 
 /** Crea un finanziamento (nuovo, ricostruito dall'origine o fotografia di oggi). */

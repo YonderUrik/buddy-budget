@@ -129,7 +129,7 @@ export interface RemoteSweepInput {
   knownRequisitionIds: Set<string>;
   /** Id delle connessioni a DB: la `reference` di ogni requisition creata dall'app è l'id della sua connessione. */
   knownConnectionIds?: Set<string>;
-  /** URL di ritorno che l'app passa a GoCardless (`<APP_URL>/api/gocardless/callback`): distingue le nostre da quelle di altri ambienti. */
+  /** The app's web return URL (`<APP_URL>/api/gocardless/callback`); the native one below it counts too: tells ours from other environments'. */
   ownRedirect?: string;
 }
 
@@ -170,14 +170,32 @@ function redirectHost(redirect: string | undefined): string | null {
   }
 }
 
-/** Origine di una requisition sconosciuta: nostra se la reference è una nostra connessione o l'URL di ritorno è il nostro. */
+/**
+ * True when a requisition's return URL is one of ours: same origin, and the web callback path or a path below it
+ * (the native return `/api/gocardless/callback/native`); query and fragment are ignored. An exact string match would
+ * miss native requisitions and treat them as another environment's.
+ */
+export function isOwnRedirect(redirect: string | undefined, ownRedirect: string | undefined): boolean {
+  if (!redirect || !ownRedirect) return false;
+  try {
+    const candidate = new URL(redirect);
+    const own = new URL(ownRedirect);
+    const ownPath = own.pathname.replace(/\/+$/, "");
+    const path = candidate.pathname.replace(/\/+$/, "");
+    return candidate.origin === own.origin && (path === ownPath || path.startsWith(`${ownPath}/`));
+  } catch {
+    return false;
+  }
+}
+
+/** Origin of an unknown requisition: ours if the reference is one of our connections or the return URL is ours. */
 export function unknownRequisitionOrigin(
   requisition: { reference?: string; redirect?: string },
   knownConnectionIds: Set<string>,
   ownRedirect: string | undefined
 ): UnknownRequisitionOrigin {
   if (requisition.reference && knownConnectionIds.has(requisition.reference)) return "own_superseded";
-  if (ownRedirect && requisition.redirect === ownRedirect) return "own_row_gone";
+  if (isOwnRedirect(requisition.redirect, ownRedirect)) return "own_row_gone";
   return "foreign";
 }
 

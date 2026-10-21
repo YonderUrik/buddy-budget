@@ -11,8 +11,10 @@ import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemo
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
 // /demo opens the read-only public demo (it decides itself whether a session exists).
 // /api/legal serves the current legal version and document links, needed before sign-in and while legal-gated.
+// /api/gocardless/callback/native and /banca/ritorno hand the system browser back to the native app after bank consent:
+// that browser has no session, and neither touches any state (the app completes the link with its bearer token).
 // /reimposta-password receives the emailed password reset link (the token in the address is the authorisation).
-const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/legal", "/api/cron", "/api/metrics", "/api/email", "/disiscrizione", "/_next", "/favicon.ico"];
+const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/legal", "/api/meta", "/api/cron", "/api/metrics", "/api/email", "/api/gocardless/callback/native", "/banca/ritorno", "/disiscrizione", "/_next", "/favicon.ico"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";

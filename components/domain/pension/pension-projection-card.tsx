@@ -1,4 +1,13 @@
 "use client";
+import {
+  defaultQuarterlyContribution as defaultQuarterlyContributionFor,
+  PENSION_CONTRIBUTION_STEP,
+  PENSION_MAX_QUARTERLY_CONTRIBUTION,
+  PENSION_PROJECTION_DEFAULT_YEARS,
+  PENSION_PROJECTION_MAX_YEARS,
+  PENSION_PROJECTION_MIN_YEARS,
+  PENSION_PROJECTION_RATES,
+} from "@/lib/pension/projection";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -25,12 +34,11 @@ export interface PensionProjectionCardProps {
   rates?: ProjectionRates;
 }
 
-const DEFAULT_RATES: ProjectionRates = { prudent: 0, base: 0.02, optimistic: 0.04 };
-const DEFAULT_YEARS = 25;
-const MIN_YEARS = 1;
-const MAX_YEARS = 45;
-const MAX_CONTRIBUTION = 3000;
-const CONTRIBUTION_STEP = 20;
+const DEFAULT_RATES: ProjectionRates = PENSION_PROJECTION_RATES;
+const DEFAULT_YEARS = PENSION_PROJECTION_DEFAULT_YEARS;
+const MIN_YEARS = PENSION_PROJECTION_MIN_YEARS;
+const MAX_YEARS = PENSION_PROJECTION_MAX_YEARS;
+const MAX_CONTRIBUTION = PENSION_MAX_QUARTERLY_CONTRIBUTION;
 const CHART_HEIGHT = 240;
 
 const SCENARIOS = [
@@ -50,7 +58,7 @@ export function PensionProjectionCard({ startValue, defaultQuarterlyContribution
 
   const { t: tr } = useLocalization();
   const [years, setYears] = React.useState(DEFAULT_YEARS);
-  const [contribution, setContribution] = React.useState(Math.round(defaultQuarterlyContribution / CONTRIBUTION_STEP) * CONTRIBUTION_STEP);
+  const [contribution, setContribution] = React.useState(defaultQuarterlyContributionFor(defaultQuarterlyContribution));
   const points = React.useMemo(() => projectPension({ startValue, quarterlyContribution: contribution, years, rates }), [startValue, contribution, years, rates]);
   const end = points.at(-1)!;
   const paidIn = contribution * 4 * years;
@@ -98,7 +106,7 @@ export function PensionProjectionCard({ startValue, defaultQuarterlyContribution
               <span className="text-sm text-text-2">{tr("Versamento ogni trimestre")}</span>
               <span className="font-heading text-lg font-medium tabular-nums text-foreground">{money(contribution, currency)}</span>
             </div>
-            <Slider min={0} max={MAX_CONTRIBUTION} step={CONTRIBUTION_STEP} value={[contribution]} onValueChange={(v) => setContribution(Array.isArray(v) ? v[0] : v)} aria-label={tr("Versamento trimestrale")} />
+            <Slider min={0} max={MAX_CONTRIBUTION} step={PENSION_CONTRIBUTION_STEP} value={[contribution]} onValueChange={(v) => setContribution(Array.isArray(v) ? v[0] : v)} aria-label={tr("Versamento trimestrale")} />
           </div>
         </div>
         <p className="text-sm text-text-2">{tr("Verserai ancora")}{" "}<strong className="font-semibold tabular-nums text-foreground">{money(paidIn, currency)}</strong>{tr(": il resto del valore finale è rendimento. Con meno anni o versamenti più bassi la cifra scende, muovi gli slider per vederlo.")}</p>

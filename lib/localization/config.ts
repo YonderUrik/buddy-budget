@@ -64,5 +64,6 @@ export function isCountryPathAvailable(country: string, path: string): boolean {
   return ![
     "/pensione", "/analitiche", "/investimenti/tasse", "/investimenti/proventi",
     "/api/pension", "/api/analytics", "/api/goals", "/api/sidebar/fire", "/api/investments/tax-carryforwards",
+    "/api/investments/taxes", "/api/investments/income",
   ].some(prefix => within(path, prefix));
 }

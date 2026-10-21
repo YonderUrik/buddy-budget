@@ -1,14 +1,21 @@
 import { resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
-import { asc, eq } from "drizzle-orm";
+import { startOfDay } from "@/lib/calc/expenses";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { createAccountSchema } from "@/lib/validation/accounts";
 import { rejectIfDemoActive } from "@/lib/start/demo";
-import { importAccountIds } from "@/lib/net-worth/snapshots";
 import { bindRequestUser, withRoute } from "@/lib/observability";
+import { apiError, validationError } from "@/lib/http";
+import { loadAccountsWithExtras, loadUserAccounts } from "@/lib/views/server";
+import { parseAccountIncludes, parseTodayParam } from "@/lib/views";
 
+/**
+ * GET /api/accounts — the user's accounts, oldest first. With `include=trend,health` (native apps, gaps.md G5) each
+ * account also has `bankName`, `trend` (30-day balance, linked accounts), `health` (connection) and a localized
+ * `status`; `today=YYYY-MM-DD` sets the client's day for the trend.
+ */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -16,13 +23,17 @@ async function handleGet(request: NextRequest) {
   }
   bindRequestUser(session.user.id);
 
-  const [userAccounts, imported] = await Promise.all([
-    db.select().from(accounts).where(eq(accounts.userId, session.user.id)).orderBy(asc(accounts.createdAt)),
-    importAccountIds(session.user.id),
-  ]);
-
-  // Linked banks and file imports move their balance with their transactions: their trend can be drawn day by day.
-  return Response.json(userAccounts.map((a) => ({ ...a, followsTransactions: a.source === "auto" || imported.has(a.id) })));
+  // Each account carries `followsTransactions` (linked banks and file imports move their balance with their transactions).
+  const userAccounts = await loadUserAccounts(session.user.id);
+  const include = parseAccountIncludes(new URL(request.url).searchParams.get("include"));
+  if (include === null) {
+    return apiError(400, "validation_failed", "include accetta solo trend e health", { field: "include" });
+  }
+  if (include.size === 0) return Response.json(userAccounts);
+  const today = parseTodayParam(request);
+  if (today === null) return apiError(400, "invalid_date", "today deve avere formato YYYY-MM-DD", { field: "today" });
+  // Native apps (gaps.md G5): each account also carries its bank, 30-day trend, connection health and status line.
+  return Response.json(await loadAccountsWithExtras(session.user, userAccounts, { today: today ?? startOfDay(new Date()) }));
 }
 
 async function handlePost(request: NextRequest) {
@@ -37,7 +48,7 @@ async function handlePost(request: NextRequest) {
   const body = await request.json();
   const parsed = createAccountSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    return validationError(parsed.error);
   }
 
   const [account] = await db

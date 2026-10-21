@@ -14,7 +14,7 @@ pnpm build        # generates out/
 - `content/home.ts`: every text of the home («Un numero solo», 2026-10-17): opening and sum card, the four places, the five «Cosa ti dice» tabs with their figures, trust facts and limits, «Sotto il cofano», closing. Figures come from the demo screenshots in `public/screens/` (a made-up person): when the screens are recaptured, check them.
 - `content/site.ts`: title, description, FAQ, addresses. `content/security.ts`: the facts of `/sicurezza` (every sentence verified). `content/sheet.ts`: supported sources and the per-area technical sheet used by `llms.txt`.
 - `content/catalog.generated.ts`: **generated copy** of the shared catalog `../lib/features/catalog.ts`, which is the single list of features (landing, the login's "In arrivo" panel, sidebar test). Do not edit it by hand: change the catalog, then run `pnpm sync:features` and commit. `pnpm check:features` (in CI) fails if the two copies diverge. Why a copy: the Docker image and Turbopack only see `landing/`.
-- `content/screens.ts`: the real screenshots (see `docs/landing-screens.md` in the app repo); `screens.test.ts` checks routes and files exist.
+- `content/screens.ts`: the real screenshots (see `docs/landing-screens.md` in the app repo); `screens.test.ts` checks routes and files exist. The images live on the `screenshots` branch: `pnpm screens:pull` downloads them (dev, build, typecheck and test do it when they are missing).
 - `components/home/`: the home sections; `components/content-page.tsx`: the frame of calculators, guides and feature pages; `DESIGN.md`: the visual rules. With `prefers-reduced-motion: reduce` the page stays static.
 
 ## Environment variables (all public, read at build time)

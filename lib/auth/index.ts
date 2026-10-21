@@ -2,7 +2,7 @@ import 'server-only';
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer, emailOTP, lastLoginMethod, magicLink } from "better-auth/plugins";
+import { bearer, lastLoginMethod, magicLink } from "better-auth/plugins";
 import { APIError } from "better-auth/api";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
@@ -15,6 +15,7 @@ import { authMethods } from "@/lib/instance/config";
 import { magicLinkEmailContent, magicLinkLanguage, passwordResetEmailContent, signInCodeEmailContent } from "./emails";
 import { logMagicLink } from "./magic-link-log";
 import { logDevOtp } from "./otp-dev-log";
+import { emailOTPWithDeliveryErrors } from "./email-otp-plugin";
 import { canCreateAccount, SIGNUPS_CLOSED_CODE } from "./signup-gate";
 import {
   MAGIC_LINK_EXPIRES_MINUTES,
@@ -106,7 +107,7 @@ export const auth = betterAuth({
     // implicit sign-up as the magic link: an unknown address creates the user (and the category seed hook runs).
     // POST /api/auth/email-otp/send-verification-otp { email, type: "sign-in" } → POST /api/auth/sign-in/email-otp
     // { email, otp } → `token` in the body and in `set-auth-token`. Codes are stored hashed.
-    emailOTP({
+    emailOTPWithDeliveryErrors({
       otpLength: SIGN_IN_OTP_LENGTH,
       expiresIn: SIGN_IN_OTP_EXPIRES_MINUTES * 60,
       storeOTP: "hashed",
@@ -132,14 +133,17 @@ export const auth = betterAuth({
         });
         if (!result.ok) {
           recordAuthEvent("otp_failed");
-          // Development without email (or a failed send): the code goes to the dev log. In production nothing is
-          // logged and the code can't be delivered. Only the error type: the provider's message can contain the address.
+          // Development can use a code from the log. Without that fallback, fail the request so the app can
+          // report the delivery problem. Only the error type: the provider's message can contain the address.
           if (result.reason === "email_not_configured") {
-            if (!logDevOtp(otp, { log })) log.warn("auth.otp.undeliverable", { reason: result.reason });
+            log.warn("auth.otp.undeliverable", { reason: result.reason });
           } else {
             log.error("auth.otp.failed", { reason: result.reason });
-            logDevOtp(otp, { log });
           }
+          if (!logDevOtp(otp, { log })) throw new APIError("SERVICE_UNAVAILABLE", {
+            code: "OTP_DELIVERY_FAILED",
+            message: "Non è stato possibile inviare il codice. Riprova più tardi.",
+          });
           return;
         }
         recordAuthEvent("otp_sent");

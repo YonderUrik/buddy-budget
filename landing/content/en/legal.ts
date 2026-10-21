@@ -49,7 +49,7 @@ export const PRIVACY_EN: LegalDocument = {
       items: [
         "Account data: name, email address, currency and the preferences you choose. If you sign in with Google, also your profile photo.",
         "Financial data you enter or import: accounts, balances, transactions (with description, notes, counterparty and, when the imported file has it, the category your bank wrote), categories, budgets, investments, debts, pension funds and net worth. Descriptions may reveal habits, purchases or personal circumstances: we never ask you to enter data about health, opinions or other special categories, but they may appear in transaction texts.",
-        "Bank data: if you connect an account through Open Banking, we receive through GoCardless the accounts and transactions you authorize. We neither see nor store your bank login details.",
+        "Bank data: if you already have an account connected through Open Banking (no new ones can be connected today), we receive through GoCardless the accounts and transactions you authorize. We neither see nor store your bank login details.",
         "Files you upload to import: bank and broker statements (for example CSV files or broker exports). If you choose the AI import, the file is kept encrypted only while it is processed (see the dedicated section).",
         "Category suggestions: if you turn on the assistant, for each merchant we keep the normalized name, the suggested category and whether you confirmed or changed it (never amounts or dates), together with the date of your consent.",
         "Messages to support: if you write from the Help page, we receive the text, the email address of the account and, unless you remove it, technical context (page, app version, screen size and theme, browser type).",
@@ -65,7 +65,7 @@ export const PRIVACY_EN: LegalDocument = {
       title: "Why we process it and on what legal basis",
       paragraphs: ["For each purpose we state the legal basis under article 6 of the GDPR."],
       items: [
-        "To provide the service (account, accounts, transactions, investments, debts, pension, import and bank sync, data export): performance of the contract, art. 6.1.b.",
+        "To provide the service (account, accounts, transactions, investments, debts, pension, import, sync of the bank connections already active, data export): performance of the contract, art. 6.1.b.",
         "To send you service emails (sign-in links, bank connection expiry warnings, import results, deactivation confirmations): performance of the contract, art. 6.1.b. These emails can't be turned off because they are needed to use the account.",
         "To send you, only if you turn them on in Settings → Notifications, the periodic summary (with the income, spending and budget figures you already see in the app) and alerts on budgets and upcoming instalments: your consent, art. 6.1.a. They are off until you choose them, every email has a link to turn it off in one click (without signing in) and you can change your mind at any time. We send no promotional emails and no personalized advice.",
         "To analyse an unrecognized import file with artificial intelligence: your explicit consent, art. 6.1.a, which you give before uploading the file and can withhold by using the other import types or manual entry. Consent is not a condition for using the rest of the service.",
@@ -83,9 +83,9 @@ export const PRIVACY_EN: LegalDocument = {
       id: "open-banking",
       title: "Bank connection (Open Banking)",
       paragraphs: [
-        `The connection goes through GoCardless Bank Account Data, an account information service provider authorized under the PSD2 directive. You authorize access directly with your bank; the authorization lasts at most ${BANK_CONSENT_DAYS} days, after which it must be renewed, and you can revoke it at any time.`,
+        `No new banks can be connected today: people who already have a connection keep it and renew it as before. The connection goes through GoCardless Bank Account Data, an account information service provider authorized under the PSD2 directive. You authorize access directly with your bank; the authorization lasts at most ${BANK_CONSENT_DAYS} days, after which it must be renewed, and you can revoke it at any time.`,
         "The consent you give your bank and GoCardless is separate from this policy. If you delete the account or reset your data, we revoke the active connections at GoCardless. We may also remove expired or unused connections from GoCardless.",
-        "For now no new banks can be connected: people who already have a connection keep it and renew it as before. If you press «Tienimi aggiornato» (Keep me posted) we save the request with your account and the country you chose, and we send you a single email when the connection is available again: this is based on your consent, art. 6.1.a. You withdraw it with «Non avvisarmi più» (Stop notifying me) in the same place in the app; the request is also deleted with the account.",
+        "If you press «Tienimi aggiornato» (Keep me posted) we save the request with your account and the country you chose, and we send you a single email when the connection is available again: this is based on your consent, art. 6.1.a. You withdraw it with «Non avvisarmi più» (Stop notifying me) in the same place in the app; the request is also deleted with the account.",
       ],
     },
     {
@@ -125,7 +125,7 @@ export const PRIVACY_EN: LegalDocument = {
       items: [
         "Hostinger: server (VPS) in Germany, where the app and the database run.",
         "Cloudflare: traffic routing, DNS and storage (R2) of the database backups.",
-        "GoCardless: reading the bank accounts you connect, under PSD2.",
+        "GoCardless: reading the bank accounts already connected (no new ones can be connected today), under PSD2.",
         "Resend: sending service emails and, if you turn them on, summaries and alerts (it uses your email address and the text of the emails, which may contain figures from your budget), and delivering the messages you write to support.",
         "OpenRouter and the model provider it selects, always in zero data retention mode: only if you use the AI import or category suggestions, with your consent (see the dedicated sections).",
         "Google: only if you choose to sign in with Google; it acts as an independent controller for authentication.",
@@ -254,7 +254,7 @@ export const TERMS_EN: LegalDocument = {
       title: "It is not financial, tax or pension advice",
       paragraphs: [
         "Calculations, estimates, simulations, charts, tax estimates, pension projections and comments on securities are for information only and are based on the data you enter and on simplified assumptions. They are not an investment recommendation or personalized advice, and BuddyBudget is not a financial intermediary. Tax and pension rules change and depend on your situation: before deciding, consult a qualified professional.",
-        "Market prices come from third-party sources, may be delayed or wrong and are end-of-day closes, not real-time quotes. The same goes for data received from banks through Open Banking: it depends on the bank and on the connection provider.",
+        "Market prices come from third-party sources, may be delayed or wrong and are end-of-day closes, not real-time quotes. The same goes for data received from banks through the Open Banking connections already active: it depends on the bank and on the connection provider.",
         "The AI import produces automatically generated reading rules: check that the imported transactions match your documents. Categories set by the app (from your rules, from your bank's category in imported files or from the most certain suggestions, if you chose so) may be wrong: they are marked as set by the app, you can change them at any time and you are the one who checks that they are right.",
         "Artificial intelligence requests go through OpenRouter only to providers that keep no data and don't use it for training (zero data retention, see the privacy policy); if none is available the feature doesn't answer and your data stays as it is.",
       ],

@@ -199,7 +199,7 @@ Account reset deletes the user's sync-job keys and investment fingerprint ([`lib
 | `productCountry` | `IT`, `DE`, `OTHER` | Which financial models and routes exist (`FINANCIAL_COUNTRIES` in [`financial-country.ts`](../../lib/localization/financial-country.ts), `PLANNING_AVAILABILITY` in [`planning-availability.ts`](../../lib/localization/planning-availability.ts)) |
 | `language` | `it`, `en`, `de` | Text and formatting locale (`it-IT`, `en-GB`, `de-DE`) |
 
-`OTHER` is every country whose rules the app does not model: it gets everything that does not depend on local rules (cash, investments without tax estimates, debts, goals off, net worth). Allowed pairs (`COUNTRY_LANGUAGES`): `IT` with `it` or `en`, `DE` with `en` or `de`, `OTHER` with any language. `resolveProfile` maps unknown stored values to `IT`/`it`, and a `DE` or `OTHER` account with an unsupported language to `en`.
+`OTHER` is every country whose rules the app does not model: it gets everything except the pension and the investment taxes tab (cash, investments and income before tax, debts, net worth, Analitiche with goals and the FIRE module). Allowed pairs (`COUNTRY_LANGUAGES`): `IT` with `it` or `en`, `DE` with `en` or `de`, `OTHER` with any language. `resolveProfile` maps unknown stored values to `IT`/`it`, and a `DE` or `OTHER` account with an unsupported language to `en`.
 
 **Proposed profile (signed out, onboarding not finished)**: `getLocaleProfile` in [`server.ts`](../../lib/localization/server.ts) calls `proposedProfile` with three inputs, in this order:
 
@@ -214,16 +214,18 @@ Country capabilities today:
 | Capability | IT | DE | OTHER |
 |---|---|---|---|
 | Taxes engine (`features.taxes`) | Yes | No | No |
-| Pension, retirement, income forecasts | Yes | No | No |
+| Pension (`/pensione`, `/api/pension`) | Yes | No | No |
+| Italian loss carry-forward (`/api/investments/tax-carryforwards`) | Yes | No | No |
+| Investment taxes tab (`/investimenti/tasse`) | Italian | German screen (`PLANNING_AVAILABILITY.tax`), Italian subpages closed | No (with `/api/financial-planning`) |
+| Income tab (`/investimenti/proventi`) | Italian, net of Italian tax | German screen (`PLANNING_AVAILABILITY.income`) | Italian screen before tax: `buildIncomeView(..., { taxes: false })` gives every rate 0, no estimated withholding, gross amounts only, no tax fields in the instrument settings |
+| Analitiche, goals, FIRE (`features.retirement`) | Yes | Yes, as for `OTHER` | Yes, without capital gains tax and stamp duty: `buildAnalyticsBase({ capitalGainsTax: false })` gives every position a 0 rate, and the «sell everything today» card, its toggle in the assumptions and the stamp duty lines are not shown |
 | Inflation | Yes (area `IT`) | Yes (area `DE`) | No |
 | Stamp duty rate on investments | 0.2% | 0 | 0 |
-| Dedicated German planning screens: tax, income | n/a | Yes (`/investimenti/tasse`, `/investimenti/proventi`, `/api/financial-planning`) | No |
-| Dedicated German screens: pension, retirement, simulations | n/a | Hidden (`false` in `PLANNING_AVAILABILITY`) | No |
-| Blocked prefixes | None | `/pensione`, `/analitiche`, `/investimenti/tasse` and `/investimenti/proventi` subpages, `/api/pension`, `/api/analytics`, `/api/goals`, `/api/sidebar/fire`, `/api/investments/tax-carryforwards` | The same plus `/investimenti/tasse`, `/investimenti/proventi` and `/api/financial-planning` |
+| Dedicated German screens: pension, retirement, simulations | n/a | Hidden (`false` in `PLANNING_AVAILABILITY`); Analitiche uses the shared screens instead | No |
 
-`isCountryPathAvailable` is the single route policy: the proxy redirects a blocked page to `/country-unavailable` (and answers 403 `country_feature_unavailable` to an API, logging `country.feature.blocked`), `withCountryGuard` repeats the check in handlers. Navigation does not hide blocked sections: `withCountryLocks` in [`components/layout/country-locks.ts`](../../components/layout/country-locks.ts) marks them `locked`, so Pensione and Analitiche stay in the sidebar and in «Altro», dimmed with a «Presto» badge, and open `/country-unavailable`, which says what the country lacks (`COUNTRY_UNAVAILABLE_NOTES`); the tap sends `country_feature_requested` to Umami to count the demand. Investment tabs of a blocked route are left out. Other gates (a subscription plan) can add their own `NavLock` on the same items: an item keeps the first lock, and the country lock comes first because no plan unlocks rules the app does not have.
+`isCountryPathAvailable` is the single route policy: the proxy redirects a blocked page to `/country-unavailable` (and answers 403 `country_feature_unavailable` to an API, logging `country.feature.blocked`), `withCountryGuard` repeats the check in handlers. Navigation does not hide blocked sections: `withCountryLocks` in [`components/layout/country-locks.ts`](../../components/layout/country-locks.ts) marks them `locked`, so Pensione stays in the sidebar and in «Altro», dimmed with a «Presto» badge, and open `/country-unavailable`, which says what the country lacks (`COUNTRY_UNAVAILABLE_NOTES`); the tap sends `country_feature_requested` to Umami to count the demand. Investment tabs of a blocked route are left out. Other gates (a subscription plan) can add their own `NavLock` on the same items: an item keeps the first lock, and the country lock comes first because no plan unlocks rules the app does not have.
 
-The landing does the same on its own: nginx turns `CF-IPCountry` into a short `bb-country` cookie (never for crawlers), and a pre-paint script sends a visitor outside Italy from an Italian page to its English counterpart (unless they picked a language) and hides the pension and tax blocks for countries without those rules (see [`landing/`](../../landing/)).
+The landing does the same on its own: nginx turns `CF-IPCountry` into a short `bb-country` cookie (never for crawlers), and a pre-paint script sends a visitor outside Italy from an Italian page to its English counterpart (unless they picked a language) and hides the pension blocks outside Italy and the tax blocks for countries without tax rules (see [`landing/`](../../landing/)).
 
 Strings: Italian is the source language. `translate(language, source)` in [`messages.ts`](../../lib/localization/messages.ts) looks the Italian source string up in [`catalogs/en.json`](../../lib/localization/catalogs/en.json) and [`catalogs/de.json`](../../lib/localization/catalogs/de.json) (German falls back to English, then to the source) and fills `{name}` placeholders. Server code uses `getTranslator()`; client code uses `useLocalization()` from [`provider.tsx`](../../lib/localization/provider.tsx). User-entered names and imported descriptions are never translated. German planning models live in [`lib/financial-planning/`](../../lib/financial-planning/).
 
@@ -233,7 +235,7 @@ Strings: Italian is the source language. `translate(language, source)` in [`mess
 
 ### 4.10 Landing
 
-[`landing/`](../../landing/) is a separate Next.js project with its own `package.json`, lockfile, tests and Dockerfile. It builds with `output: "export"` and is served by nginx on port 3000 ([`landing/nginx.conf`](../../landing/nginx.conf)), which also serves a Markdown version of each page when the request sends `Accept: text/markdown`. It shares no runtime code with the app: it reads the generated catalog copy and screenshots in `landing/public/screens/`. CI builds and deploys it as its own image (`buddy-budget-landing`).
+[`landing/`](../../landing/) is a separate Next.js project with its own `package.json`, lockfile, tests and Dockerfile. It builds with `output: "export"` and is served by nginx on port 3000 ([`landing/nginx.conf`](../../landing/nginx.conf)), which also serves a Markdown version of each page when the request sends `Accept: text/markdown`. It shares no runtime code with the app: it reads the generated catalog copy and screenshots in `landing/public/screens/`, downloaded from the `screenshots` branch (`pnpm screens:pull`, see [`docs/landing-screens.md`](../landing-screens.md)). CI builds and deploys it as its own image (`buddy-budget-landing`).
 
 ### 4.11 Mobile and PWA
 

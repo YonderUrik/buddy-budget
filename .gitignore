@@ -67,3 +67,6 @@ dump.rdb
 # taste-skill working files (inspector screenshots, direction sheet)
 /.taste-skill/
 /landing/.taste-skill/
+
+# Landing screenshots live on the `screenshots` branch (pnpm screens:pull in landing/)
+/landing/public/screens/

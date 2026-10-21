@@ -6,7 +6,7 @@ import type { NavItem, NavLock } from "./sidebar";
 export const COUNTRY_UNAVAILABLE_PATH = "/country-unavailable";
 
 /** Sections whose demand is counted when a user opens them while closed in their country. */
-const REQUESTABLE_SECTIONS = { "/pensione": "pensione", "/analitiche": "analitiche" } as const;
+const REQUESTABLE_SECTIONS = { "/pensione": "pensione" } as const;
 
 /** Lock of a section the user's country does not have yet: «Presto» badge, explanation page, demand counted in Umami. */
 export function countryLock(country: string, href: string): NavLock {

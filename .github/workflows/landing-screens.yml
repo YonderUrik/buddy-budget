@@ -1,17 +1,14 @@
 name: Screenshot landing
 
-# Regenerates the app screenshots for the landing in every interface language (see docs/landing-screens.md) and opens a
-# PR with the new images.
-# Does not run on every merge: with many PRs close together it was redone each time (~3 minutes, plus CI for the bot's PR).
-# Runs once a week (Monday), when the screen definition changes (list, scripts, demo data), and manually. Every run that
-# changed the images added ~30 MB to the git history (the demo dates move every day): weekly keeps the landing fresh
-# without that weight. Images that did not change are left as they are, and a run with nothing new opens no PR.
-# Whoever visibly changes a screen still regenerates the screenshots in their own PR (CLAUDE.md).
-# With RELEASE_PLEASE_TOKEN (PAT) the PR triggers CI and "Titolo PR" by itself; with GITHUB_TOKEN alone it does not, and a
-# manual "Re-run" is needed (see docs/rilasci.md).
+# Regenerates the app screenshots for the landing in every interface language (see docs/landing-screens.md) and
+# publishes them on the `screenshots` branch as a single commit that replaces the previous one: the repository keeps one
+# copy of the images, never their history (each run used to add ~30 MB to `main`). The landing gets them with
+# `pnpm screens:pull`; the new images go live with the next landing build (next release).
+# Runs once a day, when the screen definition changes (list, scripts, demo data) on `main`, and manually.
+# A run that changes no image publishes nothing.
 on:
   schedule:
-    - cron: "30 5 * * 1"
+    - cron: "30 5 * * *"
   push:
     branches: [main]
     paths:
@@ -27,7 +24,6 @@ concurrency:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   capture:
@@ -83,6 +79,9 @@ jobs:
         run: |
           npm install --no-save --prefix "$RUNNER_TEMP/pw" playwright
           "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+      # The current images: unchanged captures keep the same file, and the manifests keep their `capturedAt`.
+      - name: Scarica gli screenshot attuali
+        run: cd landing && node scripts/pull-screens.mjs
       # Italian first: the other languages reuse its sizes. Each language re-seeds the demo user with its own texts
       # (German also with the German product rules) while the app keeps running.
       - name: Attendi l'app e cattura in ogni lingua
@@ -98,16 +97,21 @@ jobs:
         with:
           name: landing-screens
           path: landing/public/screens
-      - name: Apri o aggiorna la PR con le immagini nuove
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
-          branch: bot/landing-screens
-          add-paths: landing/public/screens
-          commit-message: "chore(landing): aggiorna gli screenshot dall'app"
-          title: "chore(landing): aggiorna gli screenshot dall'app"
-          body: |
-            Screenshot rigenerati automaticamente dall'app su `main` con i dati demo (`pnpm demo:seed`).
-            Controlla a colpo d'occhio le immagini nel diff prima di fare il merge.
-
-            Nessun nuovo segnale di osservabilità: solo immagini statiche.
+      # One orphan commit, force-pushed: the old images become unreachable and leave the repository.
+      - name: Pubblica gli screenshot sul ramo screenshots
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        working-directory: landing/public/screens
+        run: |
+          git init -q -b screenshots
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git add -A
+          if git fetch -q --depth=1 "$remote" screenshots && [ "$(git write-tree)" = "$(git rev-parse 'FETCH_HEAD^{tree}')" ]; then
+            echo "No screenshot changed: nothing to publish."
+            exit 0
+          fi
+          git commit -q -m "chore: landing screenshots from ${GITHUB_SHA::7}"
+          git push -q --force "$remote" HEAD:refs/heads/screenshots

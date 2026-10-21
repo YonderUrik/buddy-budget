@@ -2,18 +2,30 @@
 
 The app images seen on buddybudget.io are not drawn: they are **screenshots of the real app**, taken with sample data. This way the landing cannot show a screen the app does not have.
 
+## Where they live
+
+The images are **not on `main`**. They live on the `screenshots` branch, which always holds a single commit: the
+daily capture replaces it (force-push), so the repository keeps one copy of the screenshots (~25 MB) instead of every
+version of them. Until October 2026 they were committed to `main` and ~500 MB of old versions piled up in the history.
+
+- `pnpm screens:pull` (in `landing/`) downloads them into `landing/public/screens/` (ignored by git). `dev`, `build`,
+  `typecheck` and `test` do it by themselves when the folder is missing; CI does it before building the landing image.
+- `pnpm screens:push` publishes a local capture as a normal commit on top of the branch (no force-push needed): use it
+  in a PR that adds a screen, so its CI finds the new images. The next daily run folds it into a fresh single commit.
+- In the README the images are linked from the branch (`raw.githubusercontent.com/…/screenshots/…`).
+
 ## How it works
 
 1. **Sample data** (`scripts/demo-seed.ts`): creates in an empty database a fictitious user ("Giulia Demo") with accounts, ~300 transactions, a portfolio of 13 positions across two brokers (`lib/public-demo/seed-investments.ts`), a mortgage and two loans. The numbers are deterministic (same result on every run) and the net worth history is calculated by the real code (`snapshotUser`). It refuses to run on a DB that contains other users.
 2. **Real app**: `next build && next start` with `DATABASE_URL` pointing to that DB.
 3. **Capture** (`landing/scripts/capture-screens.mjs`): Playwright opens every screen listed in `landing/content/screens.ts`, with a session cookie signed for the demo user, in light and dark theme, and saves `landing/public/screens/{light,dark}/<id>.webp` plus `manifest.json`. Images are WebP at quality 0.8 (Playwright takes a PNG and Chromium encodes it, no image library needed), about 40% lighter than the JPEGs used until October 2026; a file whose bytes did not change is not rewritten, and a run that changed nothing keeps the manifest's `capturedAt`, so it leaves no diff. The build version in the sidebar is hidden in the captures (`data-capture-hidden`), since it changes at every commit. The window is 1280 px wide at 1.5x and stretches to the page height (capped at 1500 px, or the screen's `maxHeight`); the dimensions go into the manifest and `AppShot` uses them. With `topCrop` it also saves `<id>-top.webp`, only the first 800 px. With `phone` it also saves `<id>-phone.webp`: the first screen at phone size (390×751 at 2x: an iPhone screen minus status bar and home indicator, so `PhoneShot` shows it whole), used by the first picture and the showcase on the phone and by the «Com'è fatta» ("How it looks") gallery on the phone. With `PHONE_ONLY=1` it regenerates only these versions and keeps the full-size dimensions in the manifest. With `open` (dynamic routes, e.g. a security's page) it opens the given page and clicks the link with that text.
-4. **Languages**: the screens exist in every interface language of the app (Italian, English, German). `DEMO_LANGUAGE=en|de pnpm demo:seed` seeds the same data with texts in that language (`lib/public-demo/texts.ts`; German also gets the German product rules, like a real German account), and `CAPTURE_LANGUAGE=en|de` captures into `landing/public/screens/<language>/` with its own `manifest.json`. Italian stays at the root of `public/screens/`. Other languages reuse the Italian heights, so every language of a screen has the same size; buttons, labels and demo names written in Italian in `screens.ts` are translated with the app catalogs before clicking. A screen the German account cannot open (Pension, Analytics: `unavailableIn` in `screens.ts`, checked against the app's country rules by `screens.test.ts`) is not captured in German and the landing shows the English one.
+4. **Languages**: the screens exist in every interface language of the app (Italian, English, German). `DEMO_LANGUAGE=en|de pnpm demo:seed` seeds the same data with texts in that language (`lib/public-demo/texts.ts`; German also gets the German product rules, like a real German account), and `CAPTURE_LANGUAGE=en|de` captures into `landing/public/screens/<language>/` with its own `manifest.json`. Italian stays at the root of `public/screens/`. Other languages reuse the Italian heights, so every language of a screen has the same size; buttons, labels and demo names written in Italian in `screens.ts` are translated with the app catalogs before clicking. A screen the German account cannot open (Pension: `unavailableIn` in `screens.ts`, checked against the app's country rules by `screens.test.ts`) is not captured in German and the landing shows the English one.
 5. **Landing**: the `AppShot`, `PhoneShot` and `ScreenCrop` components render every theme × language version and the CSS shows one: the theme of the page and the visitor's language, which a script picks before the first paint from the browser languages (first supported one; English if none is supported; Italian without JavaScript) and stores in `<html data-screens>`. `?lang=en` or `?lang=de` forces a language, for checking. Hidden lazy images are never downloaded; only the Italian version of an above-the-fold image loads eagerly. The landing texts stay Italian.
 
 ## What prevents them from becoming false
 
 - `landing/content/screens.test.ts` (runs in the landing CI): every screen must point to a route that exists in `app/(app)/` and have its images in every theme and language. If a route is renamed or removed, the test fails.
-- A **visual** change to the app does not make anything fail: the capture must be rerun (below). Rule: whoever visibly changes a screen in the list regenerates the screenshots in the same PR.
+- A **visual** change to the app does not make anything fail: the daily capture picks it up after the merge, or run the workflow by hand to see it sooner.
 
 ## Regenerating the screenshots
 
@@ -36,8 +48,8 @@ Italian goes first (the others take its sizes). One language alone also works, e
 
 `BETTER_AUTH_SECRET` must be the same for the app and the capture (it signs the cookie). Optional variables: `DEMO_APP_URL`, `CHROMIUM_PATH`.
 
-The GitHub workflow `landing-screens.yml` does the same steps on its own, in all three languages: it runs once a week (Monday, 05:30 UTC), when the screen list, capture script or demo data change on `main`, or manually from Actions (not on every merge: with many PRs close together it was redoing everything each time), and opens/updates the `bot/landing-screens` PR with the new images. The PR is opened by `GITHUB_TOKEN`, so CI does not start on its own on it. It requires "Allow GitHub Actions to create and approve pull requests" in Settings → Actions → General. Each run that changes the images adds about 20 MB to the git history (the demo dates move every day, so most images change): that is why it is weekly and not daily.
+The GitHub workflow `landing-screens.yml` does the same steps on its own, in all three languages: it runs once a day (05:30 UTC), when the screen list, capture script or demo data change on `main`, or manually from Actions. It pulls the current images first, captures, and when something changed replaces the `screenshots` branch with one new commit; a run with no change publishes nothing. The landing shows the new images from its next build (the next release).
 
 ## Adding a screen
 
-Add an entry to `SCREENS` in `landing/content/screens.ts` (id, area, real route, caption; `phone` if it is also needed in the home page on mobile, `open` if the route is dynamic, `unavailableIn` if a language's product country hides it), rerun the capture in every language and commit the images. If the screen needs data the seed does not create, extend `lib/public-demo/seed.ts`, with every new user-facing text in `lib/public-demo/texts.ts` (the seed fails on a text without a translation).
+Add an entry to `SCREENS` in `landing/content/screens.ts` (id, area, real route, caption; `phone` if it is also needed in the home page on mobile, `open` if the route is dynamic, `unavailableIn` if a language's product country hides it), rerun the capture in every language and publish it with `pnpm screens:push` before opening the PR (its CI checks the images exist). If the screen needs data the seed does not create, extend `lib/public-demo/seed.ts`, with every new user-facing text in `lib/public-demo/texts.ts` (the seed fails on a text without a translation).

@@ -61,7 +61,7 @@ function SettingsForm({
   const { locale: formattingLocale } = useLocalization();
   const { formatPct } = localizedFormats(formattingLocale);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, features } = useLocalization();
   const id = React.useId();
   const save = useUpdateInstrumentSettingsMutation();
   const isBond = instrument.type === "obbligazione";
@@ -88,8 +88,8 @@ function SettingsForm({
     if (hasCoupons && (!couponPercent || !maturity)) return setError(tr("Per le cedole servono tasso e scadenza"));
     submit({
       instrumentId: instrument.id,
-      taxRate: rate === AUTO ? null : (rate as "0.26" | "0.125"),
-      taxHarmonized: harmonized === AUTO ? null : harmonized === "true",
+      taxRate: !features.taxes || rate === AUTO ? null : (rate as "0.26" | "0.125"),
+      taxHarmonized: !features.taxes || harmonized === AUTO ? null : harmonized === "true",
       couponRate: hasCoupons ? couponPercent! / 100 : null,
       couponFrequency: hasCoupons ? Number(frequency) : null,
       maturityDate: hasCoupons ? maturity : null,
@@ -98,9 +98,9 @@ function SettingsForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <PanelDialogHeader icon={SlidersHorizontalIcon} title={instrument.name} description={tr("Valgono solo per te: servono a stimare tasse e proventi.")} color="var(--swatch-slate)" />
+      <PanelDialogHeader icon={SlidersHorizontalIcon} title={instrument.name} description={features.taxes ? tr("Valgono solo per te: servono a stimare tasse e proventi.") : tr("Valgono solo per te: servono a stimare i proventi.")} color="var(--swatch-slate)" />
       <DialogSections>
-      <DialogSection title={tr("Imposte")} icon={LandmarkIcon} color="var(--neg)">
+      {features.taxes ? <DialogSection title={tr("Imposte")} icon={LandmarkIcon} color="var(--neg)">
       <Field label={tr("Aliquota")}>
         <Select value={rate} onValueChange={(v) => v && setRate(v)}>
           <SelectTrigger className="w-full" aria-label={tr("Aliquota")}>
@@ -127,7 +127,7 @@ function SettingsForm({
           </Select>
         </Field>
       ) : null}
-      </DialogSection>
+      </DialogSection> : null}
       {isBond ? (
         <DialogSection title={tr("Cedole")} icon={CalendarClockIcon} color="var(--swatch-amber)">
           <div className="grid grid-cols-2 gap-3">

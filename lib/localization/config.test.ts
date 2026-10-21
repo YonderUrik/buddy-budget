@@ -14,19 +14,19 @@ describe("independent product countries and languages", () => {
     for (const [country, language] of [["IT", "it"], ["IT", "en"], ["DE", "en"], ["DE", "de"], ["OTHER", "en"], ["OTHER", "it"], ["OTHER", "de"]]) expect(isSupportedProfile(country, language)).toBe(true);
     for (const [country, language] of [["IT", "de"], ["DE", "it"], ["US", "en"], ["DE", "fr"]]) expect(isSupportedProfile(country, language)).toBe(false);
     expect(countryFeatures(resolveProfile({ productCountry: "IT", language: "en" }).productCountry).taxes).toBe(true);
-    expect(countryFeatures("DE")).toEqual({ taxes: false, pension: false, retirement: false, incomeForecasts: false, inflation: true });
+    expect(countryFeatures("DE")).toEqual({ taxes: false, pension: false, retirement: true, incomeForecasts: false, inflation: true });
   });
-  it("keeps legacy Italian APIs and subpages blocked while exposing only essential German screens", () => {
-    for (const path of ["/pensione", "/analitiche", "/pensione/", "/analitiche/", "/pensione/dati", "/analitiche/fire", "/api/pension/funds/123", "/api/analytics/assumptions", "/api/sidebar/fire", "/api/investments/tax-carryforwards"]) {
+  it("closes only the pension and the Italian tax pages in Germany", () => {
+    for (const path of ["/pensione", "/pensione/", "/pensione/dati", "/api/pension/funds/123", "/api/investments/tax-carryforwards", "/investimenti/tasse/dettaglio", "/investimenti/proventi/x"]) {
       expect(isCountryPathAvailable("DE", path), path).toBe(false);
       expect(isCountryPathAvailable("IT", path), path).toBe(true);
     }
-    for (const path of ["/investimenti/tasse", "/investimenti/proventi", "/api/financial-planning", "/investimenti", "/investimenti/performance", "/api/investments/overview", "/api/user/export", "/liquidita", "/debiti", "/api/pension-other"]) expect(isCountryPathAvailable("DE", path)).toBe(true);
+    for (const path of ["/investimenti/tasse", "/investimenti/proventi", "/api/financial-planning", "/investimenti", "/investimenti/performance", "/api/investments/overview", "/api/user/export", "/liquidita", "/debiti", "/api/pension-other", "/analitiche", "/analitiche/obiettivi", "/api/analytics/assumptions", "/api/goals", "/api/sidebar/fire"]) expect(isCountryPathAvailable("DE", path), path).toBe(true);
   });
-  it("gives other countries everything that does not depend on local rules", () => {
-    expect(countryFeatures("OTHER")).toEqual({ taxes: false, pension: false, retirement: false, incomeForecasts: false, inflation: false });
-    for (const path of ["/pensione", "/analitiche", "/investimenti/tasse", "/investimenti/proventi", "/api/financial-planning", "/api/pension/funds", "/api/goals", "/analitiche/obiettivi"]) expect(isCountryPathAvailable("OTHER", path), path).toBe(false);
-    for (const path of ["/panoramica", "/liquidita", "/investimenti", "/investimenti/performance", "/debiti", "/impostazioni", "/api/user/export"]) expect(isCountryPathAvailable("OTHER", path), path).toBe(true);
+  it("closes only the pension and the tax pages in other countries", () => {
+    expect(countryFeatures("OTHER")).toEqual({ taxes: false, pension: false, retirement: true, incomeForecasts: true, inflation: false });
+    for (const path of ["/pensione", "/investimenti/tasse", "/api/financial-planning", "/api/pension/funds", "/api/investments/tax-carryforwards"]) expect(isCountryPathAvailable("OTHER", path), path).toBe(false);
+    for (const path of ["/panoramica", "/liquidita", "/investimenti", "/investimenti/performance", "/investimenti/proventi", "/debiti", "/impostazioni", "/api/user/export", "/analitiche", "/analitiche/obiettivi", "/api/analytics/assumptions", "/api/goals", "/api/sidebar/fire"]) expect(isCountryPathAvailable("OTHER", path), path).toBe(true);
   });
   it("has matching catalogs and preserves interpolation values", () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(de).sort());

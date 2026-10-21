@@ -24,7 +24,7 @@ export default function GlobalNotFound() {
           <Link href="/">Home<span>Tutti i tuoi soldi, in un numero solo.</span></Link>
           <Link href={CONTENT_PATHS.funzioni}>Funzioni<span>L&apos;elenco completo, area per area.</span></Link>
           <Link href={CONTENT_PATHS.strumenti}>Calcolatori<span>Zainetto fiscale, ammortamento, obiettivo di risparmio: senza account.</span></Link>
-          <Link href={CONTENT_PATHS.sicurezza}>Sicurezza<span>Come funziona il collegamento alla banca e cosa salviamo.</span></Link>
+          <Link href={CONTENT_PATHS.sicurezza}>Sicurezza<span>Cosa salviamo, dove sono i server e come cancelli tutto.</span></Link>
           <Link href="/en">In English<span lang="en">The English version of the site.</span></Link>
         </div>
       </ContentPage>

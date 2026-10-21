@@ -65,7 +65,7 @@ export const SCREENS = [
   { id: "pensione-scenari", unavailableIn: ["de"], area: "Pensione", label: "Se ritiri oggi", route: "/pensione/scenari", phone: true, caption: "Quanto ti resterebbe prelevando oggi, tasse tolte, e il confronto con il TFR in azienda.", alt: "Pensione: stima netta di un prelievo oggi e confronto con il TFR lasciato in azienda" },
   { id: "debiti", area: "Debiti", label: "Debiti", route: "/debiti", phone: true, caption: "Le prossime rate, dove paghi più interessi e come chiudere prima.", alt: "Debiti: prossime rate, interessi in un anno per debito e percorso per estinguerli prima" },
   { id: "simulatore", area: "Debiti", label: "Simulazione", route: "/debiti/finanziamenti", phone: true, caption: "Un finanziamento con le prove «E se…»: pagare di più, chiudere prima, cambiare banca.", alt: "Dettaglio di un finanziamento con residuo, anello di avanzamento e simulazione", scrollToText: "E se…", maxHeight: 1000 },
-  { id: "analitiche", unavailableIn: ["de"], area: "Analitiche", label: "E se…", route: "/analitiche", phone: true, caption: "L'anno in cui puoi smettere di lavorare, che si sposta mentre muovi risparmio, spesa e rendimento.", alt: "Analitiche: l'anno del traguardo, quattro cursori per provare le ipotesi e il grafico del patrimonio verso il numero FIRE" },
+  { id: "analitiche", area: "Analitiche", label: "E se…", route: "/analitiche", phone: true, caption: "L'anno in cui puoi smettere di lavorare, che si sposta mentre muovi risparmio, spesa e rendimento.", alt: "Analitiche: l'anno del traguardo, quattro cursori per provare le ipotesi e il grafico del patrimonio verso il numero FIRE" },
 ] as const satisfies readonly AppScreen[];
 
 /** Id di una schermata (tipo chiuso: finisce negli eventi Umami). */

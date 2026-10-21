@@ -7,7 +7,7 @@ it("selects inflation by product country, independently of interface language", 
   expect(inflationAreaForCountry("DE", "USD")).toBeNull();
   expect(inflationAreaForCountry("US", "EUR")).toBeNull();
   expect(INFLATION_AREAS).toEqual(["IT", "DE"]);
-  expect(countryFeatures("DE")).toEqual({ inflation: true, taxes: false, pension: false, retirement: false, incomeForecasts: false });
+  expect(countryFeatures("DE")).toEqual({ inflation: true, taxes: false, pension: false, retirement: true, incomeForecasts: false });
 });
 
 

@@ -28,13 +28,13 @@ export type CountryRules = "it" | "de" | "none";
 
 /**
  * Which variant of the page a visitor sees: `full` is everything (Italy, or no country known: bots and self-hosted
- * copies), `de` drops the Italian pension fund, `none` also drops the Italian taxes.
+ * copies), `de` drops the Italian pension fund, `none` also drops the Italian taxes. Everything else shows everywhere.
  */
 export type RulesVariant = "full" | "de" | "none";
 
 export const RULES_VARIANTS: readonly RulesVariant[] = ["full", "de", "none"];
 
-/** What a block needs to make sense: the Italian pension fund (and the retirement simulators) or tax rules. */
+/** What a block needs to make sense: the Italian pension fund or tax rules. */
 export type RuleNeed = "pension" | "taxes";
 
 /** A text that changes with the visitor's rules: `de` falls back to `full`, `none` to `de`. */

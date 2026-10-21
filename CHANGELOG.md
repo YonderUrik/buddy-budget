@@ -2,6 +2,26 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.82.0](https://github.com/YonderUrik/buddy-budget/compare/v0.81.0...v0.82.0) (2026-10-20)
+
+
+### Novità
+
+* close new bank connections with «In arrivo» and «Tienimi aggiornato» ([#464](https://github.com/YonderUrik/buddy-budget/issues/464)) ([58920f9](https://github.com/YonderUrik/buddy-budget/commit/58920f97e4ed3656b72de1aafbeabfd04039e8b5))
+* cross icon for the Salute category ([#463](https://github.com/YonderUrik/buddy-budget/issues/463)) ([9a769fa](https://github.com/YonderUrik/buddy-budget/commit/9a769fa5f49067076dd5ffea3189296a190b11a7))
+* link the app brand to the home page ([#459](https://github.com/YonderUrik/buddy-budget/issues/459)) ([2e2e5fe](https://github.com/YonderUrik/buddy-budget/commit/2e2e5fe296a91697b30f519ad93d271edba2968b))
+* state and enforce zero data retention on every AI request ([#460](https://github.com/YonderUrik/buddy-budget/issues/460)) ([09423af](https://github.com/YonderUrik/buddy-budget/commit/09423af591afb01d74e6220c4002c6a871e4a496))
+
+
+### Correzioni
+
+* refuse files already imported and count movements already present ([#461](https://github.com/YonderUrik/buddy-budget/issues/461)) ([254ed86](https://github.com/YonderUrik/buddy-budget/commit/254ed862b6b09916c93c4d3cfde5b0aaac06cef1))
+
+
+### Prestazioni
+
+* lighter landing screenshots that stop bloating the repository ([#467](https://github.com/YonderUrik/buddy-budget/issues/467)) ([5f3e1ea](https://github.com/YonderUrik/buddy-budget/commit/5f3e1ea9e847dcc81da585a4f3db84fcbfd2cd67))
+
 ## [0.81.0](https://github.com/YonderUrik/buddy-budget/compare/v0.80.1...v0.81.0) (2026-10-19)
 
 

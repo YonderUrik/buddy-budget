@@ -69,7 +69,7 @@ targets:
           PRODUCT_BUNDLE_IDENTIFIER: io.buddybudget.app.debug
           API_BASE_URL: http://localhost:3001/
         Release:
-          API_BASE_URL: https://buddybudget.io/
+          API_BASE_URL: https://app.buddybudget.io/
 schemes:
   BuddyBudget:
     build:

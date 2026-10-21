@@ -14,7 +14,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
-        buildConfigField("String", "API_BASE_URL", "\"https://buddybudget.io/\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://app.buddybudget.io/\"")
     }
 
     buildTypes {

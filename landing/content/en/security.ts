@@ -30,8 +30,8 @@ export const SECURITY_EN: SecurityContent = {
   page: {
     h1: "What happens to your data",
     title: "Security and privacy: how BuddyBudget handles your data",
-    description: "How the read-only bank connection (PSD2) works, what we store and what we don't, where the servers are and how you delete everything. With official sources.",
-    lead: "The app reads your accounts and can't move money. Here is the path your data takes, what we keep and what we don't, with the sources to check.",
+    description: "What we store and what we don't, where the servers are, how you delete everything and how the read-only bank connection (PSD2) works for people who already have it. With official sources.",
+    lead: "The app can't move money. Here is the path the data takes for people who have a bank connected, what we keep and what we don't, with the sources to check.",
     kicker: "Security and privacy",
     crumb: "Security and privacy",
     ctaTitle: "Try it without connecting anything.",
@@ -47,7 +47,7 @@ export const SECURITY_EN: SecurityContent = {
     ],
   },
   flow: {
-    title: "The path, step by step.",
+    title: "The path, for people with a bank connected.",
     lede: "The bank connection isn't taking new accounts for now and is coming back soon; people who already have it keep it. This is how it works: your login details stay with your bank, and only balances and transactions reach BuddyBudget, read-only.",
     links: ["Login and confirmation", "Read-only consent", "Balances and transactions"],
     neverTitle: "Never.",
@@ -55,8 +55,8 @@ export const SECURITY_EN: SecurityContent = {
       {
         id: "tu",
         label: "You",
-        role: "Pick your bank in the app",
-        sees: ["You choose which bank to connect and which accounts to share.", "You can disconnect the bank whenever you like, from the app or from your bank."],
+        role: "You connected the bank in the app",
+        sees: ["You chose which bank to connect and which accounts to share.", "You can disconnect the bank whenever you like, from the app or from your bank."],
         never: ["You never give BuddyBudget your bank username, password or codes."],
       },
       {
@@ -116,7 +116,7 @@ export const SECURITY_EN: SecurityContent = {
   },
   gocardless: {
     question: "What does GoCardless keep, and for how long?",
-    lede: "GoCardless isn't just a pipe: it's an authorized institution with its own obligations and its own privacy notice. Here is what its terms say.",
+    lede: "This applies to people who already connected a bank. GoCardless isn't just a pipe: it's an authorized institution with its own obligations and its own privacy notice. Here is what its terms say.",
     rows: [
       { label: "What it keeps", text: "The account holder's name, account details and number, balance and transactions for the period you authorize (EU terms, art. 4.1). Not your bank login: it never sees it (art. 4.3)." },
       { label: "What it uses them for", text: "Only to provide the service. The terms also mention preventing fraud on your accounts and internal analysis to improve the service (art. 4.1)." },

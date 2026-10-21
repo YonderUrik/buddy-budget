@@ -5,7 +5,7 @@
  */
 
 /** Versione dei documenti (data dell'ultima modifica sostanziale). */
-export const LEGAL_VERSION = "2026-10-21";
+export const LEGAL_VERSION = "2026-10-22";
 
 export const LEGAL_OWNER = {
   name: "Daniele Roccaforte",
@@ -68,7 +68,7 @@ export const PRIVACY: LegalDocument = {
       items: [
         "Dati dell'account: nome, indirizzo email, valuta e preferenze scelte. Se accedi con Google, anche la foto del profilo.",
         "Dati finanziari che inserisci tu o che importi: conti, saldi, transazioni (con descrizione, note, controparte e, se il file importato la contiene, la categoria scritta dalla tua banca), categorie, budget, investimenti, debiti, fondi pensione e patrimonio netto. Le descrizioni possono contenere informazioni su abitudini, acquisti o contesti personali: non ti chiediamo mai di inserire dati sulla salute, sulle opinioni o altre categorie particolari, ma possono emergere dai testi delle transazioni.",
-        "Dati bancari: se colleghi un conto con Open Banking, tramite GoCardless riceviamo i conti e le transazioni che autorizzi. Non vediamo né conserviamo le credenziali della tua banca.",
+        "Dati bancari: se hai già un conto collegato con Open Banking (oggi non se ne collegano di nuovi), tramite GoCardless riceviamo i conti e le transazioni che autorizzi. Non vediamo né conserviamo le credenziali della tua banca.",
         "File che carichi per l'import: estratti conto e rendiconti (per esempio CSV o file dei broker). Se scegli l'import con intelligenza artificiale, il file viene conservato cifrato solo per il tempo dell'elaborazione (vedi la sezione dedicata).",
         "Proposte di categoria: se attivi l'assistente, per ogni esercente conserviamo il nome normalizzato, la categoria proposta e se l'hai confermata o corretta (mai importi o date), insieme alla data del tuo consenso.",
         "Messaggi al supporto: se scrivi dalla pagina Aiuto, riceviamo il testo, l'indirizzo email dell'account e, se non lo togli, un contesto tecnico (pagina, versione dell'app, dimensioni e tema dello schermo, tipo di browser).",
@@ -83,7 +83,7 @@ export const PRIVACY: LegalDocument = {
       title: "Perché li trattiamo e su quale base",
       paragraphs: ["Per ogni finalità indichiamo la base giuridica prevista dall'articolo 6 del GDPR."],
       items: [
-        "Fornirti il servizio (account, conti, transazioni, investimenti, debiti, pensione, import e sincronizzazione bancaria, export dei dati): esecuzione del contratto, art. 6.1.b.",
+        "Fornirti il servizio (account, conti, transazioni, investimenti, debiti, pensione, import, sincronizzazione dei collegamenti bancari già attivi, export dei dati): esecuzione del contratto, art. 6.1.b.",
         "Inviarti email di servizio (link di accesso, avvisi di scadenza del collegamento bancario, esito degli import, conferme di disattivazione): esecuzione del contratto, art. 6.1.b. Queste email non si possono disattivare perché servono a usare l'account.",
         "Inviarti, solo se li attivi in Impostazioni → Notifiche, il riepilogo periodico (con le cifre di entrate, spese e budget che vedi già nell'app) e gli avvisi sui budget e sulle rate in scadenza: il tuo consenso, art. 6.1.a. Sono spenti finché non li scegli, ogni email ha il link per disattivarla con un clic (senza accedere) e puoi cambiare idea quando vuoi. Non inviamo email promozionali né consigli personalizzati.",
         "Analizzare con l'intelligenza artificiale un file di import non riconosciuto: il tuo consenso esplicito, art. 6.1.a, che dai prima di caricare il file e puoi non dare usando gli altri tipi di import o l'inserimento manuale. Il consenso non è condizione per usare il resto del servizio.",
@@ -99,9 +99,9 @@ export const PRIVACY: LegalDocument = {
       id: "open-banking",
       title: "Collegamento bancario (Open Banking)",
       paragraphs: [
-        `Il collegamento passa da GoCardless Bank Account Data, un fornitore di servizi di informazione sui conti autorizzato ai sensi della direttiva PSD2. Autorizzi l'accesso direttamente presso la tua banca; l'autorizzazione dura al massimo ${BANK_CONSENT_DAYS} giorni, dopo i quali va rinnovata, e puoi revocarla quando vuoi.`,
+        `Oggi non si collegano banche nuove: chi ha già un collegamento lo tiene e lo rinnova come prima. Il collegamento passa da GoCardless Bank Account Data, un fornitore di servizi di informazione sui conti autorizzato ai sensi della direttiva PSD2. Autorizzi l'accesso direttamente presso la tua banca; l'autorizzazione dura al massimo ${BANK_CONSENT_DAYS} giorni, dopo i quali va rinnovata, e puoi revocarla quando vuoi.`,
         "Il consenso che dai alla tua banca e a GoCardless è distinto da questa informativa. Se elimini l'account o fai il reset dei dati revochiamo i collegamenti attivi presso GoCardless. Possiamo rimuovere da GoCardless anche i collegamenti scaduti o non più usati.",
-        "Per ora non si collegano banche nuove: chi ha già un collegamento lo tiene e lo rinnova come prima. Se premi «Tienimi aggiornato» salviamo la richiesta insieme al tuo account e al paese che hai scelto, e ti scriviamo una sola email quando il collegamento torna disponibile: è il tuo consenso, art. 6.1.a. Lo ritiri con «Non avvisarmi più» nello stesso punto dell'app; la richiesta si cancella anche con l'account.",
+        "Se premi «Tienimi aggiornato» salviamo la richiesta insieme al tuo account e al paese che hai scelto, e ti scriviamo una sola email quando il collegamento torna disponibile: è il tuo consenso, art. 6.1.a. Lo ritiri con «Non avvisarmi più» nello stesso punto dell'app; la richiesta si cancella anche con l'account.",
       ],
     },
     {
@@ -141,7 +141,7 @@ export const PRIVACY: LegalDocument = {
       items: [
         "Hostinger: server (VPS) in Germania, dove girano app e database.",
         "Cloudflare: instradamento del traffico, DNS e archiviazione (R2) delle copie di sicurezza del database.",
-        "GoCardless: lettura dei conti bancari che colleghi, ai sensi di PSD2.",
+        "GoCardless: lettura dei conti bancari già collegati (oggi non se ne collegano di nuovi), ai sensi di PSD2.",
         "Resend: invio delle email di servizio e, se le attivi, di riepilogo e avvisi (usa il tuo indirizzo email e il testo delle email, che può contenere cifre del tuo budget) e consegna dei messaggi che scrivi al supporto.",
         "OpenRouter e il fornitore del modello che questo seleziona, sempre in modalità zero data retention: solo se usi l'import con intelligenza artificiale o le proposte di categoria, con il tuo consenso (vedi le sezioni dedicate).",
         "Google: solo se scegli di accedere con Google; agisce come titolare autonomo per l'autenticazione.",
@@ -249,7 +249,7 @@ export const TERMINI: LegalDocument = {
       title: "Non è consulenza finanziaria, fiscale o previdenziale",
       paragraphs: [
         "Calcoli, stime, simulazioni, grafici, stime fiscali, proiezioni pensionistiche e commenti sui titoli hanno solo scopo informativo e si basano sui dati che inserisci e su ipotesi semplificate. Non sono una raccomandazione di investimento né una consulenza personalizzata e BuddyBudget non è un intermediario finanziario. Le regole fiscali e previdenziali cambiano e dipendono dalla tua situazione: prima di decidere rivolgiti a un professionista abilitato.",
-        "I prezzi di mercato provengono da fonti di terzi, possono essere in ritardo o errati e sono chiusure di fine giornata, non quotazioni in tempo reale. Lo stesso vale per i dati ricevuti dalle banche tramite Open Banking: dipendono dalla banca e dal fornitore del collegamento.",
+        "I prezzi di mercato provengono da fonti di terzi, possono essere in ritardo o errati e sono chiusure di fine giornata, non quotazioni in tempo reale. Lo stesso vale per i dati ricevuti dalle banche tramite i collegamenti Open Banking già attivi: dipendono dalla banca e dal fornitore del collegamento.",
         "L'import con intelligenza artificiale produce regole di lettura generate automaticamente: controlla che i movimenti importati corrispondano ai tuoi documenti. Le categorie messe dall'app (dalle tue regole, dalla categoria della banca nei file importati o dalle proposte più sicure, se lo hai scelto) possono essere sbagliate: le trovi indicate come messe dall'app, puoi cambiarle in ogni momento e sei tu a verificare che siano giuste.",
         "Le richieste all'intelligenza artificiale passano da OpenRouter solo verso fornitori che non conservano i dati e non li usano per l'addestramento (zero data retention, vedi l'informativa sulla privacy); se nessuno è disponibile la funzione non risponde e i tuoi dati restano come sono.",
       ],

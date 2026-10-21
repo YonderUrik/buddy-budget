@@ -34,7 +34,7 @@ export const SUPPORTED = {
   ] satisfies readonly SupportedSource[],
   /** Ultima card dei broker: chiarisce che l'elenco sopra non è l'unico modo di importare. */
   moreBrokers: { name: "E tutti gli altri", detail: "Carichi il CSV del tuo broker o della tua banca: lo leggiamo e ricordiamo il formato per le volte dopo." },
-  banksLabel: "Le banche di questi paesi, con l'Open Banking in sola lettura",
+  banksLabel: "Le banche di questi paesi, per il collegamento in arrivo",
   countries: [
     { code: "it", name: "Italia" },
     { code: "de", name: "Germania" },
@@ -77,12 +77,10 @@ export const TOUR = {
       id: "conti", tab: "Conti e spese", icon: "wallet", shot: "analisi",
       title: "Le spese del mese, senza copiare l'estratto conto.",
       before: { formula: '=SOMMA.SE(Movimenti!C:C;"Spesa";Movimenti!D:D)', text: "Scarichi il CSV, incolli, sistemi le colonne e scrivi la categoria riga per riga.", cost: "circa un'ora al mese" },
-      after: { lead: "I movimenti arrivano dalla banca in sola lettura.", strong: "Hai speso 21.088 € quest'anno,", tail: "e vedi subito la voce che pesa di più." },
+      after: { lead: "I movimenti arrivano dal file della banca.", strong: "Hai speso 21.088 € quest'anno,", tail: "e vedi subito la voce che pesa di più." },
       specs: [
-        ["Banche", "Italia, Germania, Francia, Spagna e Regno Unito, con l'Open Banking (PSD2) in sola lettura. Le credenziali le inserisci sul sito della banca, mai da noi."],
-        ["Consenso", "Dura 90 giorni. Sette giorni prima ti avvisiamo per email e in app, e rinnovi con un clic."],
-        ["Aggiornamento", "Ogni 12 ore, più un pulsante per aggiornare subito."],
-        ["Se la banca non c'è", "Conto manuale, oppure carichi il CSV della banca: lo leggiamo anche se il formato è nuovo."],
+        ["Banche", "Carichi il CSV o l'Excel dell'estratto conto di qualsiasi banca: lo leggiamo anche se il formato è nuovo, e i movimenti già presenti non si duplicano. Il collegamento Open Banking in sola lettura arriva presto."],
+        ["Conti a mano", "Per contanti, carte prepagate o qualsiasi banca: il saldo lo aggiorni tu."],
         ["Categorie", "Confermi un negozio e scegli se ricordarlo. Le regole si leggono, si modificano e si cancellano."],
         ["Nomi leggibili", "Da «POS 1234 ESSELUNGA SPA MI» ricava «Esselunga», anche con codici o filiali diversi."],
         ["Assistente AI", "Spento finché non lo attivi. Propone una categoria per i negozi nuovi e riceve solo il nome pulito del negozio."],

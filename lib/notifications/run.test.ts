@@ -192,16 +192,16 @@ describe("runNotifications", () => {
       debtsTotal: 0,
     });
 
-    it("a inizio mese manda il promemoria a chi l'ha acceso, e mai in Germania", async () => {
-      const users = [user({ goalAlertsEnabled: true }), user({ goalAlertsEnabled: true }, { id: "de", productCountry: "DE" })];
+    it("a inizio mese manda il promemoria a chi l'ha acceso, in ogni paese", async () => {
+      const users = [user({ goalAlertsEnabled: true }), user({ goalAlertsEnabled: true }, { id: "de", productCountry: "DE" }), user({ goalAlertsEnabled: true }, { id: "us", productCountry: "OTHER" })];
       const loadGoals = vi.fn(async () => goalsView);
       const { deps, send } = fakeDeps(users, { loadGoals });
       await run(deps);
-      expect(send).toHaveBeenCalledTimes(1);
-      expect(loadGoals).toHaveBeenCalledTimes(1);
+      expect(send).toHaveBeenCalledTimes(3);
+      expect(loadGoals).toHaveBeenCalledTimes(3);
       expect((send.mock.calls[0] as unknown as [string, { subject: string }])[1].subject).toBe("I tuoi obiettivi di risparmio questo mese");
       await run(deps);
-      expect(send).toHaveBeenCalledTimes(1);
+      expect(send).toHaveBeenCalledTimes(3);
     });
 
     it("il riepilogo parla degli obiettivi, e parte lo stesso se il loro calcolo fallisce", async () => {

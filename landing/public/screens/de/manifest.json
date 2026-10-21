@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-21T17:48:43.970Z",
+  "capturedAt": "2026-10-21T18:04:16.656Z",
   "app": "http://localhost:3300",
   "language": "de",
   "viewport": {
@@ -126,6 +126,14 @@
       "phone": true
     },
     {
+      "id": "analitiche",
+      "theme": "light",
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1760,
+      "phone": true
+    },
+    {
       "id": "panoramica",
       "theme": "dark",
       "route": "/panoramica",
@@ -235,14 +243,6 @@
       "route": "/debiti/finanziamenti",
       "width": 1920,
       "height": 1500,
-      "phone": true
-    },
-    {
-      "id": "analitiche",
-      "theme": "light",
-      "route": "/analitiche",
-      "width": 1920,
-      "height": 1760,
       "phone": true
     },
     {

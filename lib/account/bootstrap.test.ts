@@ -40,9 +40,9 @@ describe("buildMeBootstrap", () => {
   it("derives the German capability map from the shared country policy", () => {
     const { capabilities, profile } = buildMeBootstrap(sessionWith({ productCountry: "DE", language: "de" }));
     expect(profile.availableLanguages).toEqual(["en", "de"]);
-    expect(capabilities.features).toEqual({ taxes: false, pension: false, retirement: false, incomeForecasts: false, inflation: true });
+    expect(capabilities.features).toEqual({ taxes: false, pension: false, retirement: true, incomeForecasts: false, inflation: true });
     expect(capabilities.sections).toEqual({
-      pension: false, analytics: false, goals: false, investmentTaxes: true, investmentIncome: true, fire: false, financialPlanning: true,
+      pension: false, analytics: true, goals: true, investmentTaxes: true, investmentIncome: true, fire: true, financialPlanning: true,
     });
   });
 

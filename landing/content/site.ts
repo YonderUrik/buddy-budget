@@ -1,5 +1,6 @@
 /** Addresses and site-wide texts of the landing. URLs come from the environment, with production defaults. */
 import type { Locale } from "@/lib/i18n";
+import type { RuleNeed } from "@/lib/visitor-country";
 import { FIELD_ENCRYPTION_LIVE } from "./security";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
@@ -25,6 +26,8 @@ export const OG_IMAGE = { url: "/og.png", width: 1200, height: 630, alt: "BuddyB
 export interface FaqItem {
   question: string;
   answer: string;
+  /** Hidden on the page for visitors whose country lacks these rules (it stays in the structured data). */
+  needs?: RuleNeed;
 }
 
 /** Address of the support: a person answers. */
@@ -37,14 +40,14 @@ export const SUPPORT_EMAIL = "support@buddybudget.io";
 export const FAQ: readonly FaqItem[] = [
   { question: "È gratis?", answer: "Sì, durante la beta. Se cambierà lo diremo prima, e potrai portare via tutto in un file ZIP." },
   { question: "Si collega alla banca?", answer: "Non ancora: il collegamento in sola lettura con l'Open Banking arriva presto. Intanto carichi l'estratto conto in CSV o Excel, o aggiungi i conti a mano." },
-  { question: "Le tasse sono quelle vere?", answer: "Sono stime con le regole italiane: 26% sui guadagni, 12,5% sui titoli di Stato, perdite da scalare per quattro anni, bollo. Servono per decidere. Il conto finale lo fa la banca o il commercialista." },
+  { question: "Le tasse sono quelle vere?", needs: "taxes", answer: "Sono stime con le regole italiane: 26% sui guadagni, 12,5% sui titoli di Stato, perdite da scalare per quattro anni, bollo. Servono per decidere. Il conto finale lo fa la banca o il commercialista." },
   { question: "Cosa non fa?", answer: "Non ti dice cosa comprare o vendere. Non sposta soldi e non fa ordini al broker. I prezzi sono di fine giornata, non in tempo reale." },
   {
     question: "Dove stanno i miei dati?",
     answer: `${FIELD_ENCRYPTION_LIVE ? "Su un server in Germania, con le connessioni cifrate e descrizioni e note dei movimenti cifrate anche nel database." : "Su un server in Germania, con le connessioni cifrate."} Non vendiamo i dati e non c'è pubblicità. Scarichi tutto in ZIP o elimini l'account quando vuoi.`,
   },
   { question: "Funziona sul telefono?", answer: "Sì, dal browser. Si mette sulla schermata Home come un'app. Non è negli store." },
-  { question: "In quali lingue e paesi?", answer: "Italia in italiano e inglese, Germania in tedesco e inglese. La valuta la scegli tu. Per la Germania ci sono le funzioni essenziali e stime fiscali parziali, con i limiti scritti chiaramente; pensione e simulatori avanzati sono nascosti in attesa di revisione. Questo sito parla del prodotto per l'Italia." },
+  { question: "In quali lingue e paesi?", answer: "Italia in italiano e inglese, Germania in tedesco e inglese, gli altri paesi in una delle tre lingue. La valuta la scegli tu. In Germania le stime fiscali sono parziali, con i limiti scritti chiaramente, e la pensione arriverà dopo una revisione. Negli altri paesi mancano pensione e tasse: tutto il resto funziona. Questo sito parla del prodotto per l'Italia." },
   ...(SOURCE_URL
     ? [{ question: "Posso installarlo su un server mio?", answer: "Sì. Il codice è aperto (AGPL-3.0) e c'è un Docker Compose con app, database e cron. Si entra con email e password, senza bisogno di un server di posta. La guida al self-hosting è nel repository." }]
     : []),
@@ -65,8 +68,8 @@ const SIGNUP_URL = `${LOGIN_URL}&${SIGNUP_FLAG}`;
 export const DEMO_URL = `${APP_URL}/demo`;
 export const APP_LINKS = { signup: SIGNUP_URL, login: LOGIN_URL, demo: DEMO_URL } as const satisfies AppLinks;
 
-/** The same destinations per language: the English pages ask the app for English with `lang=en`. */
-export const LOCALE_APP_LINKS: Record<Locale, AppLinks> = {
-  it: APP_LINKS,
-  en: { signup: `${SIGNUP_URL}&lang=en`, login: `${LOGIN_URL}&lang=en`, demo: `${DEMO_URL}?lang=en` },
-};
+/**
+ * The destinations per language: the same on every page, because the app picks the language from the visitor's
+ * country. Only an explicit choice on the landing adds `lang=` (client-side, `UtmPassthrough`).
+ */
+export const LOCALE_APP_LINKS: Record<Locale, AppLinks> = { it: APP_LINKS, en: APP_LINKS };

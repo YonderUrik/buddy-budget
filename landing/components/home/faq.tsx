@@ -1,10 +1,12 @@
 import "../faq.css";
 import type { HomeContent } from "@/content/home";
+import { needsAttr } from "@/lib/visitor-country";
 import { TrackedSection } from "../tracked-section";
 
 /**
  * «Prima di iscriverti»: a wide heading alone on the left, the questions indented under it as rows that open on tap
- * (the first one already open), the same text as the FAQPage structured data.
+ * (the first one already open), the same text as the FAQPage structured data. Questions on rules the visitor's
+ * country lacks are hidden (`data-needs`).
  */
 export function Faq({ text }: { text: HomeContent["faq"] }) {
   return (
@@ -13,7 +15,7 @@ export function Faq({ text }: { text: HomeContent["faq"] }) {
         <h2 id="domande-t" data-rise>{text.title}</h2>
         <div className="faq-list" data-rise>
           {text.items.map((item, i) => (
-            <details key={item.question} className="faq-item" open={i === 0}>
+            <details key={item.question} className="faq-item" open={i === 0} data-needs={needsAttr(item.needs)}>
               <summary>{item.question}</summary>
               <p>{item.answer}</p>
             </details>

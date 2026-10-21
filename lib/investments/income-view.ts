@@ -38,8 +38,12 @@ export interface IncomeView {
   pendingDividendHistory: number;
 }
 
-/** Calcola la scheda Proventi dai dati dell'overview. */
-export function buildIncomeView(data: InvestmentData, today: Date): IncomeView {
+/**
+ * Builds the Proventi tab from the overview data. `taxes: false` (a country without tax rules) forecasts gross
+ * amounts: every rate is 0 and the missing payments carry no estimated withholding.
+ */
+export function buildIncomeView(data: InvestmentData, today: Date, options: { taxes?: boolean } = {}): IncomeView {
+  const taxes = options.taxes ?? true;
   const todayKey = toDateKey(startOfDay(today));
   const transactions = toTransactionInputs(data);
   const priceIndex = buildPriceIndex(data.prices, data.manualPrices, transactions);
@@ -50,7 +54,7 @@ export function buildIncomeView(data: InvestmentData, today: Date): IncomeView {
   const input: IncomeInput = {
     transactions,
     instruments: data.instruments,
-    taxInstruments: toTaxInstruments(data.instruments, data.instrumentSettings),
+    taxInstruments: toTaxInstruments(data.instruments, data.instrumentSettings).map((i) => (taxes ? i : { ...i, taxRate: 0 })),
     settings: data.instrumentSettings,
     dividends: data.dividends,
     fx,
@@ -67,7 +71,7 @@ export function buildIncomeView(data: InvestmentData, today: Date): IncomeView {
     instrumentsById: new Map(data.instruments.map((i) => [i.id, i])),
     hasTransactions: transactions.length > 0,
     history: computeIncomeHistory(insights, summary.costBasis, todayKey),
-    missing: findMissingIncome(input, data.dismissedDividends),
+    missing: findMissingIncome(input, data.dismissedDividends).map((m) => (taxes ? m : { ...m, estimatedTax: null })),
     forecast,
     byMonth: incomeByMonth(transactions, todayKey),
     byInstrument: incomeByInstrument(input, summary.rows, forecast),

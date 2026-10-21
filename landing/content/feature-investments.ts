@@ -3,6 +3,7 @@
  * The English one links the English calculator and guide.
  */
 import type { Locale } from "@/lib/i18n";
+import type { RuleNeed } from "@/lib/visitor-country";
 import type { HomeIcon } from "./home";
 import { SOURCES_CHECKED_EN, SOURCES_EN } from "./en/tools";
 import { EN_PATHS } from "./locales";
@@ -20,8 +21,10 @@ export interface InvestmentsPageContent {
   crumbs: readonly { href?: string; label: string }[];
   ctaTitle: string;
   ctaText: string;
-  blocks: readonly { icon: HomeIcon; title: string; text: string }[];
+  /** `needs`: hidden for visitors whose country lacks these rules. */
+  blocks: readonly { icon: HomeIcon; title: string; text: string; needs?: RuleNeed }[];
   toolsTitle: string;
+  /** The tools and their sources are about Italian taxes: the whole part hides where no tax rules exist yet. */
   tools: readonly { href: string; title: string; text: string }[];
   sources: readonly Source[];
   sourcesChecked: string;
@@ -41,8 +44,8 @@ export const INVESTMENTS_IT: InvestmentsPageContent = {
   blocks: [
     { icon: "trending", title: "Rendimento vero", text: "Il rendimento pesato per i tempi dei tuoi versamenti, confrontato con un indice a parità di flussi." },
     { icon: "pie", title: "Rischio e diversificazione", text: "Quanto oscilla il portafoglio e come è distribuito tra strumenti, aree e settori." },
-    { icon: "backpack", title: "Fiscalità italiana", text: "Plusvalenze, zaino fiscale a 4 anni e bollo calcolati dalle tue operazioni." },
-    { icon: "calculator", title: "Prima di vendere", text: "L'imposta che pagheresti vendendo oggi, anche con le minusvalenze già nello zainetto." },
+    { icon: "backpack", title: "Fiscalità italiana", text: "Plusvalenze, zaino fiscale a 4 anni e bollo calcolati dalle tue operazioni.", needs: "taxes" },
+    { icon: "calculator", title: "Prima di vendere", text: "L'imposta che pagheresti vendendo oggi, anche con le minusvalenze già nello zainetto.", needs: "taxes" },
   ],
   toolsTitle: "Strumenti gratuiti",
   tools: [
@@ -67,8 +70,8 @@ export const INVESTMENTS_EN: InvestmentsPageContent = {
   blocks: [
     { icon: "trending", title: "Real returns", text: "Your return weighted by when you paid money in, compared with an index fed the same cash flows." },
     { icon: "pie", title: "Risk and diversification", text: "How much the portfolio swings and how it splits across instruments, regions and sectors." },
-    { icon: "backpack", title: "Italian taxation", text: "Capital gains, the four-year zainetto fiscale (tax-loss carryforward) and bollo (stamp duty), worked out from your trades." },
-    { icon: "calculator", title: "Before you sell", text: "The tax you'd pay if you sold today, counting the losses already in your zainetto." },
+    { icon: "backpack", title: "Italian taxation", text: "Capital gains, the four-year zainetto fiscale (tax-loss carryforward) and bollo (stamp duty), worked out from your trades.", needs: "taxes" },
+    { icon: "calculator", title: "Before you sell", text: "The tax you'd pay if you sold today, counting the losses already in your zainetto.", needs: "taxes" },
   ],
   toolsTitle: "Free tools",
   tools: [

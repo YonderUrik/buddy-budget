@@ -11,6 +11,7 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { loadUserDebts } from "@/lib/debts/data";
 import { buildDebtsView } from "@/lib/debts/view";
 import { loadInvestmentData } from "@/lib/investments/data";
+import { countryFeatures } from "@/lib/localization/config";
 import { loadUserPension } from "@/lib/pension/data";
 import type { AnalyticsAssumptions } from "./assumptions";
 import { analyticsTransactionsRange, buildAnalyticsBase, type AnalyticsBase } from "./base";
@@ -58,7 +59,7 @@ export async function loadAnalyticsSnapshot(userId: string, now = new Date()): P
   await refreshDerivedCashHistory(userId, now);
   const { from, to } = analyticsTransactionsRange(assumptions.dataPeriod, today);
   const [[user], accountRows, txs, cats, snapshots, investments, pension, debtData] = await Promise.all([
-    db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId)),
+    db.select({ currency: authUser.currency, productCountry: authUser.productCountry }).from(authUser).where(eq(authUser.id, userId)),
     db.select({ id: accounts.id, name: accounts.name, type: accounts.type, balance: accounts.balance, color: accounts.color, icon: accounts.icon }).from(accounts).where(eq(accounts.userId, userId)),
     db.select().from(transactions).where(and(eq(transactions.userId, userId), gte(transactions.date, from), lte(transactions.date, to))),
     db.select().from(categories).where(eq(categories.userId, userId)),
@@ -81,6 +82,7 @@ export async function loadAnalyticsSnapshot(userId: string, now = new Date()): P
     pensionFunds: pension.funds,
     debtsTotal,
     snapshots,
+    capitalGainsTax: countryFeatures(user?.productCountry ?? "IT").taxes,
   });
   // Come in Analitiche: il rendimento in automatico viene dallo storico, non dal valore di riserva salvato.
   const used = withExpectedReturn(assumptions, resolveExpectedReturn(assumptions, base.historicalReturn));

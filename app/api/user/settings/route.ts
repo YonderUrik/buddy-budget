@@ -52,6 +52,7 @@ async function handlePatch(request: NextRequest) {
     .update(authUser)
     .set({ ...parsed.data, updatedAt: new Date() })
     .where(eq(authUser.id, session.user.id));
+  if (country !== current.productCountry || language !== current.language) requestLogger().info("user.locale.updated", { country, language });
   // The example data follows the interface language, so it is rewritten when the language changes.
   if (language !== current.language) {
     const localized = await localizeDemo(session.user.id, language);

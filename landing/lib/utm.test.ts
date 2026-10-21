@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pickUtm, withUtm } from "./utm";
+import { pickUtm, withLanguage, withUtm } from "./utm";
 
 describe("utm", () => {
   it("keeps only campaign parameters, trimmed and capped", () => {
@@ -14,5 +14,13 @@ describe("utm", () => {
     expect(out.searchParams.get("utm_medium")).toBe("cta");
     expect(out.searchParams.get("utm_campaign")).toBe("lancio");
     expect(out.searchParams.get("signup")).toBe("1");
+  });
+
+  it("adds the language choice only to the app pages that honour it", () => {
+    const login = new URL(withLanguage("https://app.buddybudget.io/login?utm_source=landing&signup=1", "it"));
+    expect(login.searchParams.get("lang")).toBe("it");
+    expect(login.searchParams.get("signup")).toBe("1");
+    expect(new URL(withLanguage("https://app.buddybudget.io/demo", "en")).search).toBe("?lang=en");
+    expect(withLanguage("https://app.buddybudget.io/stats/script.js", "en")).toBe("https://app.buddybudget.io/stats/script.js");
   });
 });

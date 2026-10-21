@@ -13,7 +13,13 @@ const SKIP = new Set(["404.html", "_not-found.html"]);
 
 const td = new TurndownService({ headingStyle: "atx", bulletListMarker: "-", codeBlockStyle: "fenced", linkStyle: "inlined" });
 td.remove(["script", "style", "noscript", "svg", "button", "form", "template", "nav"]);
-td.addRule("hidden", { filter: (n) => n.getAttribute?.("aria-hidden") === "true" || n.hasAttribute?.("hidden"), replacement: () => "" });
+// Agents read the full page (like a visitor without a country): only the `full` version of texts that change with
+// the visitor's rules, and no «coming soon» notes (`lib/visitor-country.ts`).
+const otherVariant = (n) => {
+  const v = n.getAttribute?.("data-variant");
+  return v != null && !v.split(" ").includes("full");
+};
+td.addRule("hidden", { filter: (n) => n.getAttribute?.("aria-hidden") === "true" || n.hasAttribute?.("hidden") || otherVariant(n), replacement: () => "" });
 td.addRule("abs", {
   filter: (n) => n.nodeName === "A" && /^\//.test(n.getAttribute("href") ?? ""),
   replacement: (content, n) => `[${content.trim()}](${SITE_URL}${n.getAttribute("href")})`,

@@ -24,7 +24,7 @@ export interface CostsSectionProps extends QuestionSectionData {
 export function CostsSection({ question, base, assumptions, plan, saving, error, onSaveTer }: CostsSectionProps) {
   const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr, productCountry, language } = useLocalization();
+  const { t: tr, productCountry, language, features } = useLocalization();
   const { currency } = base;
   const summary = summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })), productCountry);
   const drag = summary.annualPct !== null ? costDrag(summary.totalValue, assumptions.expectedReturn, summary.annualPct, COST_DRAG_YEARS) : [];
@@ -44,10 +44,10 @@ export function CostsSection({ question, base, assumptions, plan, saving, error,
         ))}
       </div>
       {summary.totalValue > 0 ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className={features.taxes ? "grid grid-cols-1 gap-3 sm:grid-cols-3" : "grid grid-cols-1 gap-3 sm:grid-cols-2"}>
           <Metric term="ter" label={tr("Costo annuo")} value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? tr("{0} del portafoglio", {0: pct(summary.annualPct, 2)}) : undefined} />
           <Metric term="erosione" label={tr("Persi in {0} anni", {0: COST_DRAG_YEARS})} value={drag.length ? money(drag.at(-1)!.lost, currency) : "—"} tone="neg" sub="a parità di rendimento" />
-          <Metric term="imposte-latenti" label={tr("Imposte se vendessi tutto")} value={money(plan.liquidation.latentTax, currency)} sub={plan.liquidation.taxRatio !== null ? tr("{0} del valore", {0: pct(plan.liquidation.taxRatio)}) : undefined} />
+          {features.taxes ? <Metric term="imposte-latenti" label={tr("Imposte se vendessi tutto")} value={money(plan.liquidation.latentTax, currency)} sub={plan.liquidation.taxRatio !== null ? tr("{0} del valore", {0: pct(plan.liquidation.taxRatio)}) : undefined} /> : null}
         </div>
       ) : null}
     </QuestionSection>

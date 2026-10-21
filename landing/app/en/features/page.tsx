@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { ContentPage } from "@/components/content-page";
-import { FeatureAreas } from "@/components/feature-areas";
+import { ByRulesText } from "@/components/by-rules";
+import { FeatureAreas, featureCountByRules } from "@/components/feature-areas";
 import { JsonLd } from "@/components/json-ld";
-import { FEATURE_AREAS, featureCounts } from "@/content/catalog.generated";
+import { FEATURE_AREAS, FEATURES } from "@/content/catalog.generated";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/page-metadata";
@@ -18,11 +19,10 @@ export const metadata: Metadata = pageMetadata("en", {
 
 /** English features page: the shared catalog with its English texts (`en` of each entry in `lib/features/catalog.ts`). */
 export default function Page() {
-  const { total } = featureCounts();
   return (
     <ContentPage
       title="All the features"
-      lead={`${total} features in ${FEATURE_AREAS.length} areas. It's the same list the app uses: when we add one, it shows up here too.`}
+      lead={<><ByRulesText text={featureCountByRules(FEATURES)} /> features in {FEATURE_AREAS.length} areas. It&apos;s the same list the app uses: when we add one, it shows up here too.</>}
       current={EN_PATHS.features}
       locale="en"
       wide

@@ -208,3 +208,16 @@ img { max-width: 100%; }
 }
 /* text for screen readers only */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ---------- country rules: `html[data-rules]` is set before paint from the `bb-country` cookie (`lib/visitor-country.ts`);
+   without it (bots, self-hosted copies) the whole page shows. `data-needs` hides blocks built on Italian rules
+   (pension: Italy only; taxes: Italy and Germany); `data-variant` picks the one version of a text, figure or note
+   meant for the visitor (`full`, `de`, `none`). ---------- */
+html[data-rules="de"] [data-needs~="pension"],
+html[data-rules="none"] [data-needs~="pension"],
+html[data-rules="none"] [data-needs~="taxes"],
+html:not([data-rules="de"]):not([data-rules="none"]) [data-variant]:not([data-variant~="full"]),
+html[data-rules="de"] [data-variant]:not([data-variant~="de"]),
+html[data-rules="none"] [data-variant]:not([data-variant~="none"]) { display: none !important; }
+/* the one line that says what is missing in the visitor's country */
+.rules-note { margin-top: 20px; color: var(--ink2); font-size: 15px; }

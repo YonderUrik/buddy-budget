@@ -4,7 +4,10 @@ import type { ProductCountry } from "./config";
 const disabled = { taxes: false, pension: false, retirement: false, incomeForecasts: false, inflation: false };
 export const FINANCIAL_COUNTRIES = {
   IT: { name: "Italia", features: { taxes: true, pension: true, retirement: true, incomeForecasts: true, inflation: true }, inflation: { area: "IT", currency: "EUR" }, investmentCosts: { annualStampDutyRate: 0.002 } },
-  DE: { name: "Germania", features: { ...disabled, inflation: true }, inflation: { area: "DE", currency: "EUR" }, investmentCosts: { annualStampDutyRate: 0 } },
+  DE: { name: "Germania", features: { ...disabled, retirement: true, inflation: true }, inflation: { area: "DE", currency: "EUR" }, investmentCosts: { annualStampDutyRate: 0 } },
+  // No local rules yet: no taxes, pension or national inflation (the area never matches a currency). Retirement
+  // planning (Analitiche, FIRE, goals) and income forecasts run on the user's own figures, without taxes.
+  OTHER: { name: "Altro paese", features: { ...disabled, retirement: true, incomeForecasts: true }, inflation: { area: "", currency: "" }, investmentCosts: { annualStampDutyRate: 0 } },
 } satisfies Record<ProductCountry, { name: string; features: typeof disabled; inflation: { area: string; currency: string }; investmentCosts: { annualStampDutyRate: number } }>;
 
 export function financialCountry(country: string) {

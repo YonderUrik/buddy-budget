@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { apiError, validationError } from "@/lib/http";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
@@ -31,7 +32,7 @@ async function handlePost(request: NextRequest) {
   const log = requestLogger();
   if (!parsed.success) {
     log.warn("subscriptions.save.rejected", { reason: "invalid_input", field: parsed.error.issues[0].path.join(".") });
-    return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    return validationError(parsed.error);
   }
   const input = parsed.data;
 
@@ -39,7 +40,7 @@ async function handlePost(request: NextRequest) {
     const [category] = await db.select({ id: categories.id }).from(categories).where(and(eq(categories.id, input.categoryId), eq(categories.userId, userId)));
     if (!category) {
       log.warn("subscriptions.save.rejected", { reason: "category_not_found" });
-      return Response.json({ error: "Categoria non trovata" }, { status: 404 });
+      return apiError(404, "category_not_found", "Categoria non trovata");
     }
   }
 
@@ -57,9 +58,9 @@ async function handlePost(request: NextRequest) {
   }
 
   const key = subscriptionKey(input.name);
-  if (key.length === 0) return Response.json({ error: "Il nome non è valido" }, { status: 400 });
+  if (key.length === 0) return apiError(400, "validation_failed", "Il nome non è valido", { field: "name" });
   const [existing] = await db.select({ id: subscriptions.id }).from(subscriptions).where(and(eq(subscriptions.userId, userId), eq(subscriptions.key, key)));
-  if (existing) return Response.json({ error: "Hai già un abbonamento con questo nome" }, { status: 409 });
+  if (existing) return apiError(409, "subscription_exists", "Hai già un abbonamento con questo nome");
   const [row] = await db
     .insert(subscriptions)
     .values({ userId, key, status: "confermato", origin: "manuale", name: input.name, amount: input.amount.toFixed(2), cadence: input.cadence, nextDate: input.nextDate, categoryId: input.categoryId ?? null })

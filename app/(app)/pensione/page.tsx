@@ -7,10 +7,10 @@ import { PensionNoSnapshots } from "@/components/domain/pension";
 import { projectPension } from "@/lib/calc/pension";
 
 import { usePensionView } from "@/lib/pension/pension-context";
+import { PENSION_PROJECTION_DEFAULT_YEARS, PENSION_PROJECTION_RATES } from "@/lib/pension/projection";
 
-/** Anni della proiezione mostrata nell'anteprima. */
-const OVERVIEW_PROJECTION_YEARS = 25;
-const OVERVIEW_BASE_RATE = 0.02;
+/** Years of the projection shown in the preview. */
+const OVERVIEW_PROJECTION_YEARS = PENSION_PROJECTION_DEFAULT_YEARS;
 
 export default function PensionePage() {
   const view = usePensionView();
@@ -22,7 +22,7 @@ export default function PensionePage() {
     startValue: last.value,
     quarterlyContribution: view.quarterly,
     years: OVERVIEW_PROJECTION_YEARS,
-    rates: { prudent: 0, base: OVERVIEW_BASE_RATE, optimistic: 0.04 },
+    rates: PENSION_PROJECTION_RATES,
   }).at(-1)!;
   return (
     <div className="flex flex-col gap-10">

@@ -47,6 +47,18 @@ describe("GET /api/categories", () => {
     expect(response.status).toBe(401);
   });
 
+  it("returns default category names in the user's language (G11), custom names unchanged", async () => {
+    await db.insert(categories).values([
+      { userId, name: "Spesa", defaultKey: "spesa", type: "dovuta" },
+      { userId, name: "Da categorizzare", type: "voluta", isFallback: true },
+      { userId, name: "Spesa del gatto", type: "voluta" },
+    ]);
+    mockedGetSession.mockResolvedValue({ user: { id: userId, language: "de", productCountry: "DE" } } as never);
+    const response = await GET(new NextRequest("http://localhost/api/categories"));
+    const names = (await response.json()).map((c: { name: string }) => c.name).sort();
+    expect(names).toEqual(["Lebensmittel", "Spesa del gatto", "Zu kategorisieren"]);
+  });
+
   it("ritorna solo le categorie dell'utente autenticato", async () => {
     await db.insert(categories).values([
       { userId, name: "Affitto", type: "dovuta" },

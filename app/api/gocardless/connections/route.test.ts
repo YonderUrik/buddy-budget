@@ -14,6 +14,7 @@ vi.mock("@/lib/gocardless/client", async (importOriginal) => {
 
 import { auth } from "@/lib/auth";
 import { GoCardlessError, createRequisition } from "@/lib/gocardless/client";
+import { bankConnectionStartSchema } from "@/lib/views";
 import { GET, POST } from "./route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
@@ -77,6 +78,57 @@ describe("GET/POST /api/gocardless/connections", () => {
     expect(connection.requisitionId).toBe("req-1");
   });
 
+  it("web by default: GoCardless returns to the cookie callback; the answer carries the connection id", async () => {
+    vi.mocked(createRequisition).mockResolvedValue({ id: "req-w", status: "CR", link: "https://ob.gocardless.com/psd2/start/req-w", accounts: [] });
+    const response = await POST(
+      new NextRequest("http://localhost/api/gocardless/connections", {
+        method: "POST",
+        body: JSON.stringify({ institutionId: "INST_1", institutionName: "Banca Test", transactionTotalDays: 90 }),
+      })
+    );
+    const body = bankConnectionStartSchema.parse(await response.json());
+    expect(body.client).toBe("web");
+    const [connection] = await db.select().from(bankConnections).where(eq(bankConnections.userId, userId));
+    expect(body.connectionId).toBe(connection.id);
+    const params = vi.mocked(createRequisition).mock.calls[0][0];
+    expect(params.redirectUrl).toMatch(/\/api\/gocardless\/callback$/);
+    expect(params.reference).toBe(connection.id);
+  });
+
+  it.each(["native", "ios", "android"])("client %s: GoCardless returns to the public native callback", async (client) => {
+    vi.mocked(createRequisition).mockResolvedValue({ id: "req-n", status: "CR", link: "https://ob.gocardless.com/psd2/start/req-n", accounts: [] });
+    const response = await POST(
+      new NextRequest("http://localhost/api/gocardless/connections", {
+        method: "POST",
+        body: JSON.stringify({ institutionId: "INST_1", institutionName: "Banca Test", transactionTotalDays: 90, client }),
+      })
+    );
+    expect(response.status).toBe(200);
+    const body = bankConnectionStartSchema.parse(await response.json());
+    expect(body).toMatchObject({ link: "https://ob.gocardless.com/psd2/start/req-n", client: "native" });
+    const params = vi.mocked(createRequisition).mock.calls[0][0];
+    expect(params.redirectUrl).toMatch(/\/api\/gocardless\/callback\/native$/);
+    // The reference is the connection id, owned by this user: completing it needs this user's session.
+    const [connection] = await db.select().from(bankConnections).where(eq(bankConnections.userId, userId));
+    expect(params.reference).toBe(connection.id);
+    expect(connection).toMatchObject({ requisitionId: "req-n", status: "pending" });
+    await db.delete(bankConnections).where(eq(bankConnections.userId, userId));
+  });
+
+  it("rejects an unknown client and invalid JSON with a coded 400", async () => {
+    const unknown = await POST(
+      new NextRequest("http://localhost/api/gocardless/connections", {
+        method: "POST",
+        body: JSON.stringify({ institutionId: "INST_1", institutionName: "Banca Test", transactionTotalDays: 90, client: "tv" }),
+      })
+    );
+    expect(unknown.status).toBe(400);
+    expect(await unknown.json()).toMatchObject({ code: "validation_failed", field: "client" });
+    const invalid = await POST(new NextRequest("http://localhost/api/gocardless/connections", { method: "POST", body: "{" }));
+    expect(invalid.status).toBe(400);
+    expect(createRequisition).not.toHaveBeenCalled();
+  });
+
   it("marca la connessione 'error' se GoCardless fallisce", async () => {
     vi.mocked(createRequisition).mockRejectedValue(new Error("GoCardless down"));
 
@@ -87,6 +139,7 @@ describe("GET/POST /api/gocardless/connections", () => {
       })
     );
     expect(response.status).toBe(502);
+    expect((await response.json()).code).toBe("bank_unavailable");
 
     const [connection] = await db.select().from(bankConnections).where(eq(bankConnections.userId, userId));
     expect(connection.status).toBe("error");
@@ -137,7 +190,7 @@ describe("GET/POST /api/gocardless/connections", () => {
       })
     );
     expect(response.status).toBe(409);
-    expect((await response.json()).reason).toBe("user_limit");
+    expect(await response.json()).toMatchObject({ reason: "user_limit", code: "bank_capacity_reached" });
     expect(createRequisition).not.toHaveBeenCalled();
     expect(await db.select().from(bankConnections).where(eq(bankConnections.userId, userId))).toHaveLength(1);
   });

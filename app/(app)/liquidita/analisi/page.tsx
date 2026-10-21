@@ -37,6 +37,7 @@ import {
 } from "@/lib/calc/expenses";
 import { computeMonthPace } from "@/lib/calc/month-pace";
 import { getTrendRange } from "@/lib/calc/movements";
+import { buildAnalysisSentence } from "@/lib/liquidity/analysis-sentence";
 import { buildCumulativeSpend } from "@/lib/liquidity/spend-curve";
 
 import { useBudgetsQuery } from "@/lib/queries/budgets";
@@ -47,7 +48,7 @@ export default function LiquiditaAnalisiPage() {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -105,10 +106,7 @@ export default function LiquiditaAnalisiPage() {
 
   const delta = spent - spentBefore;
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
-  const sentence =
-    spent === 0
-      ? tr("In questo periodo non ci sono ancora spese.")
-      : `${isCurrentMonth ? tr("Finora hai speso") : tr("Hai speso")} ${money(spent)}${spentBefore > 0 ? tr(", {0} {1} del periodo prima", { 0: money(Math.abs(delta)), 1: delta > 0 ? tr("in più") : tr("in meno") }) : ""}.${heaviest ? tr(" La voce che pesa di più è «{0}», il {1}.", { 0: heaviest.name, 1: new Intl.NumberFormat(formattingLocale, { style: "percent", maximumFractionDigits: 0 }).format(heaviest.amount / spent) }) : ""}`;
+  const sentence = buildAnalysisSentence({ language, currency, spent, spentBefore, isCurrentMonth, heaviest: heaviest ?? null });
 
   if (isError) return <LoadError message={tr("Impossibile caricare i dati dell'analisi.")} onRetry={() => refetch()} />;
   return (

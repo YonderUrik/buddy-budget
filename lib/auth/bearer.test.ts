@@ -15,6 +15,14 @@ describe("auth configuration for native clients", async () => {
     expect(bearer?.options?.requireSignature).toBeUndefined();
   });
 
+  it("enables the email OTP plugin for native sign-in, with 6-digit hashed codes valid 10 minutes", () => {
+    const otp = auth.options.plugins?.find((plugin) => plugin.id === "email-otp") as
+      | { options?: { otpLength?: number; expiresIn?: number; storeOTP?: string; disableSignUp?: boolean } }
+      | undefined;
+    expect(otp?.options).toMatchObject({ otpLength: 6, expiresIn: 600, storeOTP: "hashed" });
+    expect(otp?.options?.disableSignUp).toBeUndefined();
+  });
+
   it("ignores a bearer token that is not a valid session", async () => {
     await expect(auth.api.getSession({ headers: new Headers({ Authorization: "Bearer not.a-valid-signature" }) })).resolves.toBeNull();
   });

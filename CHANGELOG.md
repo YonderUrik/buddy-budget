@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.84.0](https://github.com/YonderUrik/buddy-budget/compare/v0.83.0...v0.84.0) (2026-10-21)
+
+
+### Novità
+
+* land visitors in their country's language and gate local-rule features by country ([#465](https://github.com/YonderUrik/buddy-budget/issues/465)) ([99e3ae5](https://github.com/YonderUrik/buddy-budget/commit/99e3ae580ff60d237e118defb36dbbcaeeeba25d))
+
+
+### Correzioni
+
+* stop presenting the bank connection as available on the landing and in the legal texts ([#476](https://github.com/YonderUrik/buddy-budget/issues/476)) ([43fda12](https://github.com/YonderUrik/buddy-budget/commit/43fda12c0fd257adafc4b22c66cd1b7f2c420250))
+
 ## [0.83.0](https://github.com/YonderUrik/buddy-budget/compare/v0.82.0...v0.83.0) (2026-10-21)
 
 

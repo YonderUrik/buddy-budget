@@ -157,7 +157,7 @@ target      = grossNumber / (1 - taxShare)
 progress    = wealth / target
 ```
 
-The tax rate per position comes from the investment tax settings (0.26 by default, 0.125 for government bonds). Losses are not offset against gains and the zainetto fiscale (tax-loss carry-forward) is not used.
+The tax rate per position comes from the investment tax settings (0.26 by default, 0.125 for government bonds). Losses are not offset against gains and the zainetto fiscale (tax-loss carry-forward) is not used. For a product country without Italian tax rules (`DE` and `OTHER`, where `features.taxes` is false) `buildAnalyticsBase` gets `capitalGainsTax: false`: every rate is 0, so latent tax, `taxShare` and the goals' tax deduction are 0, and the screens drop the «sell everything today» card, the «Conta le imposte sulle plusvalenze» toggle and the stamp duty lines (`CostSummary.stampDuty`). Germany therefore sees Analitiche without German taxes (`overview.md` §4.8).
 
 Example: spending 30,000, withdrawal rate 3.5%: gross number 857,142.86. Wealth 200,000 (50,000 cash, 150,000 investments with 40,000 unrealised gain at 26%): latent tax 10,400, `taxShare = 0.052`, target `857,142.86 / 0.948 = 904,159.13`, progress 22%.
 

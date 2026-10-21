@@ -61,6 +61,8 @@ export interface AnalyticsBaseInput {
   pensionFunds: PensionFundData[];
   debtsTotal: number;
   snapshots: NetWorthSnapshot[];
+  /** False where the app has no capital gains rules for the user's country: positions carry no latent tax. */
+  capitalGainsTax?: boolean;
 }
 
 /** Misure di rischio del portafoglio (null senza abbastanza dati). */
@@ -179,7 +181,7 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
           ter: null,
           subjectToBollo: instrument?.type !== "crypto",
           unrealizedGain: r.unrealizedGain ?? 0,
-          taxRate: taxById.get(id)?.taxRate ?? 0.26,
+          taxRate: input.capitalGainsTax === false ? 0 : taxById.get(id)?.taxRate ?? 0.26,
         };
       });
 

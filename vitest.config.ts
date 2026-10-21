@@ -14,6 +14,9 @@ export default defineConfig({
     // file paralleli possono farsi vedere a vicenda righe transitorie (es. bank_account_links non ancora
     // ripulite), rendendo flaky le assertion globali come findDueLinks(). Un file alla volta evita la race.
     fileParallelism: false,
+    // Most tests are integration tests against a real Postgres on shared CI runners: a 5 s default let a
+    // 15 ms cleanup test fail once on a stalled runner (2026-10-21). A real hang still fails, just later.
+    testTimeout: 20_000,
   },
   resolve: {
     alias: {

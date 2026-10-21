@@ -20,7 +20,7 @@ describe("public demo config", () => {
   });
 
   it("has one demo per country and language the app supports", () => {
-    expect(PUBLIC_DEMO_PROFILES.map(publicDemoUserId)).toEqual(["public-demo-it-it", "public-demo-it-en", "public-demo-de-en", "public-demo-de-de"]);
+    expect(PUBLIC_DEMO_PROFILES.map(publicDemoUserId)).toEqual(["public-demo-it-it", "public-demo-it-en", "public-demo-de-en", "public-demo-de-de", "public-demo-other-en"]);
   });
 
   it("is off unless explicitly enabled", () => {
@@ -39,6 +39,17 @@ describe("public demo config", () => {
     expect(pickPublicDemoProfile(null, "fr", "it-IT,it;q=0.9")).toEqual({ productCountry: "IT", language: "it" });
     expect(pickPublicDemoProfile("XX", null, "fr-FR,de;q=0.8")).toEqual({ productCountry: "DE", language: "de" });
     expect(pickPublicDemoProfile(null, null, null)).toEqual({ productCountry: "IT", language: "it" });
+  });
+
+  it("opens the demo of the visitor's country: English without local rules outside Italy and Germany", () => {
+    expect(pickPublicDemoProfile(null, null, "it-IT", "US")).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(pickPublicDemoProfile(null, "en", null, "US")).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(pickPublicDemoProfile(null, null, "en-US", "IT")).toEqual({ productCountry: "IT", language: "it" });
+    expect(pickPublicDemoProfile(null, null, null, "DE")).toEqual({ productCountry: "DE", language: "de" });
+    expect(pickPublicDemoProfile(null, "it", null, "US")).toEqual({ productCountry: "IT", language: "it" });
+    expect(pickPublicDemoProfile(null, null, null, "AT")).toEqual({ productCountry: "DE", language: "de" });
+    expect(pickPublicDemoProfile("OTHER", "de", null, "US")).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(pickPublicDemoProfile("IT", null, null, "US")).toEqual({ productCountry: "IT", language: "en" });
   });
 
   it("reads the profile of a demo session, English for Italy when it is missing", () => {

@@ -306,6 +306,9 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+      # The screenshots are not on main (see docs/landing-screens.md): the image needs them in the build context.
+      - name: Scarica gli screenshot
+        run: node landing/scripts/pull-screens.mjs
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:

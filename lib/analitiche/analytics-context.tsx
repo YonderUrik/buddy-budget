@@ -4,6 +4,7 @@ import * as React from "react";
 import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { authClient } from "@/lib/auth/client";
+import { useLocalization } from "@/lib/localization/provider";
 import { computeAccountsKpi } from "@/components/domain/accounts";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useAnalyticsAssumptionsQuery, useMarkWalkthroughSeenMutation, useUpdateAssumptionsMutation } from "@/lib/queries/analytics";
@@ -46,6 +47,7 @@ const AnalyticsContext = React.createContext<AnalyticsContextValue | null>(null)
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const { data: session } = authClient.useSession();
+  const { features } = useLocalization();
   const accounts = useAccountsQuery();
   const assumptionsQuery = useAnalyticsAssumptionsQuery();
   // Il periodo dei dati decide quali movimenti leggere: finché le ipotesi non arrivano si parte da quello di default.
@@ -83,8 +85,9 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
       pensionFunds: pension.data?.funds ?? [],
       debtsTotal: debts.data?.overview.totalDebt ?? 0,
       snapshots: snapshots.data,
+      capitalGainsTax: features.taxes,
     });
-  }, [accounts.data, transactions.data, categories.data, snapshots.data, investments.data, pension.data, debts.data, session?.user.currency, today, shownPeriodKey]);
+  }, [accounts.data, transactions.data, categories.data, snapshots.data, investments.data, pension.data, debts.data, session?.user.currency, today, shownPeriodKey, features.taxes]);
 
   const stored = assumptionsQuery.data?.assumptions ?? null;
   const returnInfo = React.useMemo(() => (base && stored ? resolveExpectedReturn(stored, base.historicalReturn) : null), [base, stored]);

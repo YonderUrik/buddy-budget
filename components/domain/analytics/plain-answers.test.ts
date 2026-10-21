@@ -65,7 +65,7 @@ describe("plain-answers", () => {
   });
 
   it("la domanda 4 parla di costi, erosione e imposte, senza inventare se non ci sono investimenti", () => {
-    const summary = { rows: [], totalValue: 35000, annualCost: 71, annualPct: 0.002, missingTerValue: 0 };
+    const summary = { rows: [], totalValue: 35000, annualCost: 71, annualPct: 0.002, missingTerValue: 0, stampDuty: true };
     const text = costsSentences(summary, 16441, 30, PLAN.liquidation, "EUR").join(" ");
     expect(text).toContain("71");
     expect(text).toContain("16.441");
@@ -81,7 +81,8 @@ describe("plain-answers", () => {
     expect(successVerdict(0.95, "de").text).toBe("Robust: reicht in der großen Mehrheit der Szenarien");
     const results = [mc("fissa", 0.2), mc("percentuale", 1)];
     expect(lastingAnswer(results, "fissa", 40, "en")!.headline).toBe("If you stopped today, your wealth would last 40 years in 20% of the simulated scenarios (rule: fixed spending).");
-    const summary = { rows: [], totalValue: 35000, annualCost: 71, annualPct: 0.002, missingTerValue: 0 };
+    const summary = { rows: [], totalValue: 35000, annualCost: 71, annualPct: 0.002, missingTerValue: 0, stampDuty: true };
     expect(costsSentences(summary, null, 30, { ...PLAN.liquidation, latentTax: 0 }, "EUR", "de")).toEqual(["Fondskosten und Stempelsteuer: 71\u00a0€ pro Jahr (0,20\u00a0% des Portfolios)."]);
+    expect(costsSentences({ ...summary, stampDuty: false }, null, 30, { ...PLAN.liquidation, latentTax: 0 }, "EUR", "en")).toEqual(["Fund costs: €71 per year (0.20% of the portfolio)."]);
   });
 });

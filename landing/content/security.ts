@@ -71,7 +71,7 @@ export interface FlowContent {
 
 /** The data path when you connect a bank, step by step. */
 export const FLOW = {
-  title: "Il percorso, passo per passo.",
+  title: "Il percorso, per chi ha una banca collegata.",
   lede: "Il collegamento alla banca per ora non accetta conti nuovi e torna presto; chi l'ha già lo tiene. Così funziona: le credenziali restano alla banca e verso BuddyBudget arrivano solo saldi e movimenti, in sola lettura.",
   /** Cosa viaggia su ogni collegamento, nell'ordine dei nodi. */
   links: ["Credenziali e conferma", "Consenso in sola lettura", "Saldi e movimenti"],
@@ -80,8 +80,8 @@ export const FLOW = {
     {
       id: "tu",
       label: "Tu",
-      role: "Scegli la banca nell'app",
-      sees: ["Scegli quale banca collegare e quali conti condividere.", "Puoi scollegare la banca quando vuoi, dall'app o dalla tua banca."],
+      role: "Hai collegato la banca nell'app",
+      sees: ["Hai scelto quale banca collegare e quali conti condividere.", "Puoi scollegare la banca quando vuoi, dall'app o dalla tua banca."],
       never: ["Non devi mai dare a BuddyBudget nome utente, password o codici della banca."],
     },
     {
@@ -149,7 +149,7 @@ export interface FactRow {
 /** Cosa conserva GoCardless: dalle sue condizioni UE (art. 4) e dalla sua informativa privacy, non da ipotesi nostre. */
 export const GOCARDLESS_DATA = {
   question: "Cosa conserva GoCardless, e per quanto?",
-  lede: "GoCardless non è un semplice tramite: è un istituto autorizzato con obblighi propri e una sua informativa privacy. Ecco cosa dicono le sue condizioni.",
+  lede: "Vale per chi ha già collegato una banca. GoCardless non è un semplice tramite: è un istituto autorizzato con obblighi propri e una sua informativa privacy. Ecco cosa dicono le sue condizioni.",
   rows: [
     { label: "Cosa conserva", text: "Nome dell'intestatario, dati e numero del conto, saldo e movimenti del periodo che autorizzi (condizioni UE, art. 4.1). Le credenziali della banca no: non le vede mai (art. 4.3)." },
     { label: "Per cosa li usa", text: "Solo per fornire il servizio. Le condizioni citano anche la prevenzione delle frodi sui tuoi conti e analisi interne per migliorare il servizio (art. 4.1)." },
@@ -224,8 +224,8 @@ export const LIMITS = {
 export const SECURITY_PAGE = {
   h1: "Cosa succede ai tuoi dati",
   title: "Sicurezza e privacy: come BuddyBudget tratta i tuoi dati",
-  description: "Come funziona il collegamento alla banca in sola lettura (PSD2), cosa salviamo e cosa no, dove sono i server e come cancelli tutto. Con le fonti ufficiali.",
-  lead: "L'app legge i tuoi conti e non può spostare soldi. Qui c'è il percorso dei dati, cosa teniamo e cosa no, con le fonti per controllare.",
+  description: "Cosa salviamo e cosa no, dove sono i server, come cancelli tutto e come funziona il collegamento alla banca in sola lettura (PSD2) per chi lo ha già. Con le fonti ufficiali.",
+  lead: "L'app non può spostare soldi. Qui c'è il percorso dei dati di chi ha una banca collegata, cosa teniamo e cosa no, con le fonti per controllare.",
 } as const;
 
 /** A sentence with links: plain strings and link pieces (`/…` internal, `mailto:` or `https:` outside). */

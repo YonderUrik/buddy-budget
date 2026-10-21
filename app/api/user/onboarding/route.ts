@@ -75,6 +75,7 @@ async function handlePost(request: NextRequest) {
     const enabled = [notifications.data.digestEnabled, notifications.data.budgetAlertsEnabled, notifications.data.deadlineAlertsEnabled].filter(Boolean).length;
     requestLogger().info("notifications.preferences.updated", { trigger: "onboarding", count: enabled });
   }
+  requestLogger().info("onboarding.locale.chosen", { country: productCountry as string, language: language as string });
   if (startFocus) requestLogger().info("onboarding.focus.updated", { trigger: "onboarding", count: startFocus.length });
   if (isValidLegalAcceptance(legal) && !selfHosted) requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });
   await applyOnboardingCategories((body as { categories?: unknown } | null)?.categories, session.user.id);

@@ -2,6 +2,7 @@ import type { HeroText } from "@/content/home";
 import { LOCALE_APP_LINKS } from "@/content/site";
 import type { Locale } from "@/lib/i18n";
 import { rise } from "@/lib/motion/rise";
+import { ByRulesText } from "../by-rules";
 import { CtaLink } from "../cta-link";
 import { PhoneShot } from "../phone-shot";
 import { ScreenCrop } from "./screen-crop";
@@ -31,7 +32,7 @@ export function Hero({ text, locale }: HeroProps) {
             </span>
           </h1>
           <div className="hero-foot">
-            <p className="lede" data-rise style={rise(1)}>{text.lede}</p>
+            <p className="lede" data-rise style={rise(1)}><ByRulesText text={text.lede} /></p>
             <div className="cta" id="hero-cta" data-rise style={rise(2)}>
               <CtaLink className="btn sun" href={links.signup} location="hero" target="signup" lang={locale} arrow>
                 {text.cta}

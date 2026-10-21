@@ -1,12 +1,19 @@
 import Link from "next/link";
-import { getTranslator } from "@/lib/localization/server";
+import { getLocaleProfile, getTranslator } from "@/lib/localization/server";
+import { COUNTRY_UNAVAILABLE_MESSAGE, COUNTRY_UNAVAILABLE_NOTES } from "@/lib/localization/config";
 import { PAGE_TITLE } from "@/components/domain/shared";
-/** Explain a country capability restriction for bookmarks and direct navigation. */
+/** Explain a country capability restriction for bookmarks, direct navigation and the «Presto» menu entries. */
 export default async function CountryUnavailablePage() {
   const t = await getTranslator();
+  const { productCountry } = await getLocaleProfile();
+  const note = COUNTRY_UNAVAILABLE_NOTES[productCountry];
   return <div className="mx-auto max-w-2xl space-y-4 p-6">
-    <h1 className={PAGE_TITLE}>{t("Questa funzione non è ancora disponibile per la Germania.")}</h1>
-    <p className="text-muted-foreground">{t("Per la Germania, tasse, pensione, previsioni dei dividendi e pianificazione del pensionamento non sono ancora disponibili. I dati esistenti vengono conservati.")}</p>
-    <Link className="underline" href="/panoramica">{t("Panoramica")}</Link>
+    <h1 className={PAGE_TITLE}>{t(COUNTRY_UNAVAILABLE_MESSAGE)}</h1>
+    {note ? <p className="text-muted-foreground">{t(note)}</p> : null}
+    <p className="text-sm text-muted-foreground">{t("Il paese si cambia in Impostazioni.")}</p>
+    <div className="flex gap-4">
+      <Link className="underline" href="/panoramica">{t("Panoramica")}</Link>
+      <Link className="underline" href="/impostazioni">{t("Impostazioni")}</Link>
+    </div>
   </div>;
 }

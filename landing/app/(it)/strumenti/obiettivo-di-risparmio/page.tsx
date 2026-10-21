@@ -31,7 +31,7 @@ export default function Page() {
       </ul>
       <h2>Altri strumenti</h2>
       <div className="related">
-        <Link href={CONTENT_PATHS.zainetto}>Zainetto fiscale<span>Minusvalenze, scadenze e imposta su una plusvalenza.</span></Link>
+        <Link href={CONTENT_PATHS.zainetto} data-needs="taxes">Zainetto fiscale<span>Minusvalenze, scadenze e imposta su una plusvalenza.</span></Link>
         <Link href={CONTENT_PATHS.ammortamento}>Piano di ammortamento<span>Rata, interessi ed estinzione anticipata di un finanziamento.</span></Link>
       </div>
     </ContentPage>

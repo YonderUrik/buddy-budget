@@ -33,6 +33,8 @@ export interface CostSummary {
   annualPct: number | null;
   /** Valore delle posizioni senza TER indicato: il costo vero è più alto. */
   missingTerValue: number;
+  /** The user's country charges a yearly stamp duty on securities (Italy's bollo): texts name it only then. */
+  stampDuty: boolean;
 }
 
 /** Costo annuo per posizione (TER × valore + bollo) e totale. */
@@ -56,6 +58,7 @@ export function summarizeCosts(positions: CostPosition[], productCountry: Produc
     annualCost,
     annualPct: totalValue > 0 ? annualCost / totalValue : null,
     missingTerValue: positions.filter((p) => p.value > 0 && p.ter === null).reduce((s, p) => s + p.value, 0),
+    stampDuty: rules.annualStampDutyRate > 0,
   };
 }
 

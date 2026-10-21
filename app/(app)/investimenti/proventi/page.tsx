@@ -32,10 +32,10 @@ const PENDING_REFRESH_MS = 4000;
 const PENDING_REFRESH_MAX = 6;
 
 function ItalianPage() {
-  const { t: tr } = useLocalization();
+  const { t: tr, features } = useLocalization();
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const overview = useFilteredInvestmentsOverview(INVESTMENTS_DEFAULT_PERIOD);
-  const view = React.useMemo(() => (overview.data ? buildIncomeView(overview.data, today) : null), [overview.data, today]);
+  const view = React.useMemo(() => (overview.data ? buildIncomeView(overview.data, today, { taxes: features.taxes }) : null), [overview.data, today, features.taxes]);
   const { openRegister } = useInvestmentsActions();
   const dismiss = useDismissDividendMutation();
   const [couponsFor, setCouponsFor] = React.useState<Instrument | null>(null);
@@ -118,7 +118,7 @@ function ItalianPage() {
               todayKey={view.todayKey}
             />
           ) : null}
-          <IncomeForecastCard forecast={view.forecast} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
+          <IncomeForecastCard taxes={features.taxes} forecast={view.forecast} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
         </div>
       </div>
       <InstrumentSettingsDialog

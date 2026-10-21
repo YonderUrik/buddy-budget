@@ -38,7 +38,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
 
   const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr, productCountry, locale } = useLocalization();
+  const { t: tr, productCountry, locale, features } = useLocalization();
   const { parseNumber, toFieldText } = localizedNumberFields(locale);
   const { currency } = base;
   const [drafts, setDrafts] = React.useState<Record<string, string>>(() =>
@@ -71,7 +71,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
 
   return (
     <div className="flex flex-col gap-4">
-      <GuidedReading tab="costi" steps={costsSteps(summary, drag, liquidation, currency, DRAG_YEARS)} />
+      <GuidedReading tab="costi" steps={costsSteps(summary, drag, liquidation, currency, DRAG_YEARS, features.taxes)} />
       <AnalyticsCard title={tr("Costi del portafoglio")} explainer="costs">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Metric label={tr("Costo annuo")} value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? tr("{0} del portafoglio", {0: pct(summary.annualPct, 2)}) : undefined} />
@@ -112,7 +112,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-muted-foreground">{tr("Il TER lo trovi nel KID/scheda del fondo (per un ETF globale di solito 0,1-0,4%). Il bollo (0,2%) è incluso per i titoli in deposito; è escluso per le crypto.")}</p>
+        <p className="text-xs text-muted-foreground">{summary.stampDuty ? tr("Il TER lo trovi nel KID/scheda del fondo (per un ETF globale di solito 0,1-0,4%). Il bollo (0,2%) è incluso per i titoli in deposito; è escluso per le crypto.") : tr("Il TER lo trovi nel KID/scheda del fondo (per un ETF globale di solito 0,1-0,4%).")}</p>
         {localError || error ? <p className="text-sm text-neg" role="alert">{localError ?? error}</p> : null}
         <div>
           <Button onClick={save} disabled={saving}>{saving ? tr("Salvo…") : tr("Salva costi")}</Button>
@@ -145,7 +145,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
         ) : null}
       </AnalyticsCard>
 
-      <AnalyticsCard title={tr("Se vendessi tutto oggi")} explainer="liquidation">
+      {features.taxes ? <AnalyticsCard title={tr("Se vendessi tutto oggi")} explainer="liquidation">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Metric label={tr("Valore di mercato")} value={money(liquidation.grossValue, currency)} />
           <Metric label={tr("Imposta sulle plusvalenze")} value={money(liquidation.latentTax, currency)} tone="neg" sub={liquidation.taxRatio !== null ? tr("{0} del valore", {0: pct(liquidation.taxRatio)}) : undefined} />
@@ -163,7 +163,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
         ) : (
           <p className="text-sm text-muted-foreground">{tr("Nessuna plusvalenza non realizzata: nessuna imposta latente.")}</p>
         )}
-      </AnalyticsCard>
+      </AnalyticsCard> : null}
     </div>
   );
 }

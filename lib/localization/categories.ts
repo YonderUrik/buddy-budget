@@ -1,5 +1,5 @@
 import { DEFAULT_CATEGORIES, OPTIONAL_DEFAULT_CATEGORIES } from "@/lib/categories/defaults";
-import { LANGUAGES } from "./config";
+import { LANGUAGES, PRODUCT_COUNTRIES } from "./config";
 import { buildCategoryProposal } from "@/lib/categories/setup";
 import { translate } from "./messages";
 import type { LocaleProfile } from "./config";
@@ -7,7 +7,8 @@ import type { LocaleProfile } from "./config";
 export function localizedCategoryProposal(profile: LocaleProfile) {
   return buildCategoryProposal().map(category => {
     let description = category.description;
-    if (profile.productCountry === "DE") {
+    // Italian tax examples (F24, 730) only under the Italian rules.
+    if (profile.productCountry !== "IT") {
       if (category.key === "tasse") description = "Imposte e tributi";
       if (category.key === "rimborsi") description = "Resi, rimborsi fiscali, soldi restituiti";
     }
@@ -17,7 +18,7 @@ export function localizedCategoryProposal(profile: LocaleProfile) {
 
 const categoryDefaults = [...DEFAULT_CATEGORIES, ...OPTIONAL_DEFAULT_CATEGORIES];
 const descriptionsByKey = new Map(categoryDefaults.map(category => [category.key, new Set(
-  LANGUAGES.flatMap(language => (["IT", "DE"] as const).map(productCountry =>
+  LANGUAGES.flatMap(language => PRODUCT_COUNTRIES.map(productCountry =>
     localizedCategoryProposal({ language, productCountry }).find(entry => entry.key === category.key)?.description
   ))
 )]));

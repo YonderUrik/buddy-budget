@@ -277,10 +277,10 @@ function riskSteps(base: AnalyticsBase, assumedVolatility: number): ReadingStep[
   ];
 }
 
-/** Passi della scheda Costi e tasse. */
-function costsSteps(summary: CostSummary, drag: CostDragPoint[], liquidation: AnalyticsPlan["liquidation"], currency: string, dragYears: number): ReadingStep[] {
+/** Steps of the Costs and taxes tab. `taxes`: the user's country has capital gains rules, so the «sell everything today» step applies. */
+function costsSteps(summary: CostSummary, drag: CostDragPoint[], liquidation: AnalyticsPlan["liquidation"], currency: string, dragYears: number, taxes = true): ReadingStep[] {
   const last = drag.at(-1);
-  return [
+  const steps: ReadingStep[] = [
     {
       title: tr("Perché i costi contano"),
       text: [
@@ -291,8 +291,8 @@ function costsSteps(summary: CostSummary, drag: CostDragPoint[], liquidation: An
       title: tr("Cosa inserire"),
       text: [
         tr("Nella tabella scrivi il costo annuo di ogni fondo (TER, in %): lo trovi nel KID o nella scheda del fondo. Per un ETF globale di solito è 0,1-0,4%. Poi premi «Salva costi»."),
-        tr("A questo si aggiunge l'imposta di bollo (0,2% annuo sul valore) per i titoli in deposito; per le crypto non si applica."),
-      ],
+        summary.stampDuty ? tr("A questo si aggiunge l'imposta di bollo (0,2% annuo sul valore) per i titoli in deposito; per le crypto non si applica.") : "",
+      ].filter(Boolean),
     },
     {
       title: tr("Il costo annuo"),
@@ -307,6 +307,10 @@ function costsSteps(summary: CostSummary, drag: CostDragPoint[], liquidation: An
         last ? tr("La linea tratteggiata è il portafoglio senza costi, quella piena è con i tuoi costi: dopo {0} anni hai {1} in meno, a parità di rendimento.", { 0: dragYears, 1: money(last.lost, currency) }) : tr("Inserisci i costi per vedere quanto erodono nel tempo."),
       ],
     },
+  ];
+  if (!taxes) return steps;
+  return [
+    ...steps,
     {
       title: tr("Se vendessi tutto oggi"),
       text: [

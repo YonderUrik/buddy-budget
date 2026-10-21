@@ -27,11 +27,12 @@ export const FAQ_EN: readonly FaqItem[] = [
   { question: "Is it free?", answer: "Yes, during the beta. If that changes we'll say so first, and you can take everything with you in a ZIP file." },
   {
     question: "Which countries and languages?",
-    answer: `Two products: Italy, in Italian and English, and Germany, in German and English. You pick the currency. Italy has every feature. Germany has the essentials: accounts, portfolio, dividends and partial 2026 tax estimates, with the limits written out; pension and the advanced simulators stay hidden until they have been reviewed. Banks can be connected in ${BANK_LIST_EN}.`,
+    answer: `Italy in Italian and English, Germany in German and English, every other country in any of the three. You pick the currency. Italy has every feature. Germany has partial 2026 tax estimates, with the limits written out; the pension comes after a review. Other countries get everything except pension and taxes. Banks can be connected in ${BANK_LIST_EN}.`,
   },
   { question: "Does it connect to my bank?", answer: "Not yet: a read-only Open Banking connection is coming soon. Until then you upload your bank statement as CSV or Excel, or add accounts by hand." },
   {
     question: "Are the taxes real?",
+    needs: "taxes",
     answer: "They are estimates. For Italy: 26% on gains, 12.5% on government bonds, losses carried forward for four years (the zainetto fiscale) and stamp duty (bollo). For Germany, partial 2026 estimates. They are for making decisions; the final figure comes from your bank, your broker or your accountant.",
   },
   { question: "What doesn't it do?", answer: "It doesn't tell you what to buy or sell. It doesn't move money or place orders with your broker. Prices are end-of-day, not real time." },
@@ -49,7 +50,11 @@ export const HOME_EN: HomeContent = {
   locale: "en",
   hero: {
     title: ["All your money,", "in one number."],
-    lede: "Bank accounts, investments, pension and mortgage, added up. Updated every day, with the taxes worked out.",
+    lede: {
+      full: "Bank accounts, investments, pension and mortgage, added up. Updated every day, with the taxes worked out.",
+      de: "Bank accounts, investments and mortgage, added up. Updated every day, with the taxes worked out.",
+      none: "Bank accounts, investments and mortgage, added up. Updated every day.",
+    },
     cta: "Get started free",
     demo: "Try the demo",
   },
@@ -58,7 +63,7 @@ export const HOME_EN: HomeContent = {
     rows: [
       { label: "Bank accounts", detail: "3 accounts", value: 22595 },
       { label: "Investments", detail: "3 holdings", value: 35389 },
-      { label: "Pension fund", detail: "1 fund", value: 11082 },
+      { label: "Pension fund", detail: "1 fund", value: 11082, needs: "pension" },
       { label: "Mortgage and loans", detail: "3 debts", value: -39937, tone: "neg" },
     ],
     prefix: "€",
@@ -68,7 +73,7 @@ export const HOME_EN: HomeContent = {
     fieldLabel: "Amount for {place}",
   },
   places: {
-    title: "Four places, one number.",
+    title: { full: "Four places, one number.", de: "Three places, one number." },
     intro: "Each one goes in once. After that, the app keeps it up to date.",
     items: [
       {

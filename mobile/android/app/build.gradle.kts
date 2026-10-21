@@ -28,7 +28,19 @@ android {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
+        // Sideloadable release build against production, for testing on a phone before the store:
+        // `./gradlew :app:assemblePreview`. Installs next to the store app; signed with the local debug key.
+        create("preview") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".preview"
+            versionNameSuffix = "-preview"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+        }
     }
+
+    // The preview build uses the release stubs (no debug launch hooks).
+    sourceSets.getByName("preview").kotlin.directories += "src/release/kotlin"
 
     buildFeatures {
         compose = true

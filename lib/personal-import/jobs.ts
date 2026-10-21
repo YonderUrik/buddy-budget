@@ -7,9 +7,11 @@ import { brokerFallbackSource } from "./broker-fallback";
 import { ImportError, readRawFile } from "./contract";
 import { deletionPlan } from "./delete";
 import type { Preview } from "./confirm";
+import { instanceCapabilities } from "@/lib/selfhost";
 // Raw-file parsers are selected only within the source explicitly chosen by this user.
 export const RAW_PARSER_VERSION = "raw-csv-v1";
 export async function enqueue(userId: string, input: { csv: string; name: string; formatId?: string; regenerate?: boolean; brokerFallback?: boolean; correctionOf?: string; feedback?: string }) {
+  if (process.env.SELF_HOSTED === "true" && !instanceCapabilities().aiCsv) throw new ImportError("Importazione personalizzata non ancora configurata");
   readRawFile(input.csv);
   const broker = input.brokerFallback ? brokerFallbackSource(input.csv) : null;
   const sourceFingerprint = broker ? digest(input.csv) : null;

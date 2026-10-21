@@ -1,4 +1,6 @@
 "use client";
+
+import { useLocalMode } from "@/components/local-mode-provider";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -118,6 +120,7 @@ export function MobileMoreMenu({
   const pathname = usePathname();
   const [quadroOpen, setQuadroOpen] = React.useState(false);
   const { hidden, toggle } = usePrivacy();
+  const local = useLocalMode();
   const { data: sessionData } = authClient.useSession();
   const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
   const markNavigating = useBackToClose(open, onClose);
@@ -184,7 +187,7 @@ export function MobileMoreMenu({
               )}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px] font-semibold leading-tight">{userName}</span>
-                <span className="block truncate text-xs text-text-2">{user?.email ?? tr("Profilo e impostazioni")}</span>
+                <span className="block truncate text-xs text-text-2">{local ? tr("Profilo personale") : user?.email ?? tr("Profilo e impostazioni")}</span>
               </span>
               <Settings className="size-5 shrink-0 text-text-3" aria-hidden="true" />
             </Link>
@@ -310,10 +313,10 @@ export function MobileMoreMenu({
 
             {/* Esci e note */}
             <div className="mt-4 border-t border-border pt-3">
-              <button type="button" onClick={signOut} className={cn(ROW_CLASS, "text-neg")}>
+              {!local && <button type="button" onClick={signOut} className={cn(ROW_CLASS, "text-neg")}>
                 <LogOut className="size-5 shrink-0" aria-hidden="true" />
                 <span className="text-[15px] font-medium">{tr("Esci")}</span>
-              </button>
+              </button>}
               <nav aria-label={tr("Informazioni legali")} className="mt-2 flex flex-wrap items-center gap-x-1 px-3">
                 {LEGAL_LINKS.map((l) => (
                   <a

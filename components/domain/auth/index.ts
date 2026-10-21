@@ -12,6 +12,7 @@ export { AuthFootLinks } from "./auth-foot-links";
 export { BrandLink } from "./brand-link";
 export type { BrandLinkProps } from "./brand-link";
 export { LoginPanel } from "./login-panel";
+export { LoginScreen } from "./login-screen";
 export type { LoginPanelProps } from "./login-panel";
 export { CurrencyPicker } from "./currency-picker";
 export type { CurrencyPickerProps } from "./currency-picker";

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEmailAvailable } from "@/components/local-mode-provider";
+
 /**
  * Onboarding: valuta principale (EUR preselezionato), categorie proposte (confermabili con un tocco o da personalizzare),
  * assistente per le categorie (se il servizio c'è, spento di default e spiegato), email facoltative (tutte spente: si
@@ -33,9 +35,8 @@ export default function OnboardingPage() {
   const { data: assistant } = useAiCategorizationQuery();
   const categorySetup = useCategorySetup();
   const [notifications, setNotifications] = useState<NotificationPreferences>({ ...NOTIFICATION_DEFAULTS });
-  const steps: OnboardingStep[] = assistant?.available
-    ? ["valuta", "categorie", "assistente", "notifiche", "conferme"]
-    : ["valuta", "categorie", "notifiche", "conferme"];
+  const emailAvailable = useEmailAvailable();
+  const steps: OnboardingStep[] = ["valuta", "categorie", ...(assistant?.available ? ["assistente" as const] : []), ...(emailAvailable ? ["notifiche" as const] : []), "conferme"];
   const flow = useStepFlow(steps.length);
   const step = steps[flow.index];
   const [loading, setLoading] = useState(false);

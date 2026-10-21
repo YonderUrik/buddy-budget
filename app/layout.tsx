@@ -8,6 +8,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { MotionProvider } from "@/components/motion";
 import Script from "next/script";
 import "./globals.css";
+import { LocalModeProvider } from "@/components/local-mode-provider";
+import { isLocalMode } from "@/lib/selfhost";
 import { PwaInstallTracker } from "@/components/analytics";
 
 /** Website ID del sito "BuddyBudget" nell'istanza Umami self-hosted (non segreto: finisce comunque nell'HTML). */
@@ -71,11 +73,11 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="h-full bg-background text-foreground font-sans">
-        <Script src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} strategy="afterInteractive" />
+        {process.env.SELF_HOSTED !== "true" && <Script src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} strategy="afterInteractive" />}
         <LocalizationProvider profile={profile}><QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MotionProvider>
-              {children}
+              <LocalModeProvider enabled={isLocalMode()} emailAvailable={!isLocalMode() || Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM && process.env.SELFHOST_OWNER_EMAIL)}>{children}</LocalModeProvider>
               <Toaster />
             </MotionProvider>
           </ThemeProvider>

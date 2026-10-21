@@ -8,6 +8,10 @@ name: buddybudget
 
 x-app-env: &app-env
   NODE_ENV: production
+  SELF_HOSTED: "true"
+  SELFHOST_AUTH_MODE: ${SELFHOST_AUTH_MODE:-server}
+  SELFHOST_OWNER_EMAIL: ${SELFHOST_OWNER_EMAIL:-}
+  APP_BIND: ${APP_BIND:-127.0.0.1}
   # sslmode=disable: il Postgres del compose è nella rete interna e non ha certificati. Un Postgres esterno
   # va invece raggiunto con sslmode=require (vedi docs/self-hosting.md).
   DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?Manca POSTGRES_PASSWORD, lancia ./scripts/selfhost-init.sh}@postgres:5432/buddybudget?sslmode=disable
@@ -26,6 +30,22 @@ x-app-env: &app-env
   LOG_LEVEL: ${LOG_LEVEL:-info}
   # Facoltativa: cifra descrizioni e note nel database (vedi docs/self-hosting.md, «Backup e ripristino»).
   DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
+  # AI: la stessa chiave e la stessa cifratura sono condivise fra app e worker.
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+  OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-v4.1-flash}
+  CATEGORIZATION_MODEL: ${CATEGORIZATION_MODEL:-typesafe/jev-1.13}
+  PERSONAL_CSV_ENCRYPTION_KEY: ${PERSONAL_CSV_ENCRYPTION_KEY:-}
+  NOTIFICATIONS_MODE: ${NOTIFICATIONS_MODE:-off}
+  LOGODEV_PUBLISHABLE_KEY: ${LOGODEV_PUBLISHABLE_KEY:-}
+  LOGODEV_SECRET_KEY: ${LOGODEV_SECRET_KEY:-}
+  ALPHAVANTAGE_API_KEY: ${ALPHAVANTAGE_API_KEY:-}
+  TWELVEDATA_API_KEY: ${TWELVEDATA_API_KEY:-}
+  STOOQ_API_KEY: ${STOOQ_API_KEY:-}
+  COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+  OPENFIGI_API_KEY: ${OPENFIGI_API_KEY:-}
+  SUPPORT_EMAIL_TO: ${SUPPORT_EMAIL_TO:-}
+  OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+  OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
 
 services:
   postgres:
@@ -85,6 +105,20 @@ services:
       retries: 5
       start_period: 30s
 
+  # Il wizard abilita COMPOSE_PROFILES=ai quando è configurato OpenRouter.
+  csv-worker:
+    image: ghcr.io/yonderurik/buddy-budget-csv-worker:${BUDDYBUDGET_VERSION:-latest}
+    profiles: [ai]
+    restart: unless-stopped
+    environment: *app-env
+    init: true
+    stop_grace_period: 180s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
   # Chiama gli endpoint /api/cron/* agli stessi orari (UTC) del cluster di produzione: prezzi di mercato,
   # snapshot del patrimonio, sync bancario, eliminazione account. Senza questo, prezzi e storico non si aggiornano.
   cron:
@@ -93,6 +127,8 @@ services:
     environment:
       CRON_SECRET: ${CRON_SECRET:?Manca CRON_SECRET}
       GOCARDLESS_SECRET_ID: ${GOCARDLESS_SECRET_ID:-}
+      GOCARDLESS_SECRET_KEY: ${GOCARDLESS_SECRET_KEY:-}
+      NOTIFICATIONS_MODE: ${NOTIFICATIONS_MODE:-off}
     depends_on:
       app:
         condition: service_healthy
@@ -105,8 +141,11 @@ services:
           echo "30 6,17,22 * * * $$(call market-prices)"
           echo "50 6,17,23 * * * $$(call net-worth-snapshot)"
           echo "30 3 * * * $$(call account-deletion)"
+          if [ "$$NOTIFICATIONS_MODE" = "execute" ]; then
+            echo "0 7 * * * $$(call notifications)"
+          fi
           # I lavori bancari partono solo se GoCardless è configurato (senza credenziali risponderebbero 500).
-          if [ -n "$$GOCARDLESS_SECRET_ID" ]; then
+          if [ -n "$$GOCARDLESS_SECRET_ID" ] && [ -n "$$GOCARDLESS_SECRET_KEY" ]; then
             echo "0 */12 * * * $$(call gocardless-sync)"
             echo "15 4 * * * $$(call gocardless-maintenance)"
           fi

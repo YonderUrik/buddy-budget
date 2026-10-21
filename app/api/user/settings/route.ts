@@ -9,6 +9,7 @@ import { readJson, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { resolveHomePage } from "@/lib/account/home-pages";
 import { updateUserSettingsSchema } from "@/lib/validation/user-settings";
 import { withRoute } from "@/lib/observability";
+import { instanceCapabilities } from "@/lib/selfhost";
 
 /** Profilo e preferenze dell'utente per la pagina Impostazioni, con metodi di accesso e scadenza dell'accesso recente. */
 async function handleGet(request: NextRequest) {
@@ -17,6 +18,7 @@ async function handleGet(request: NextRequest) {
   const { user } = session;
   const providers = await listLinkedProviders(user.id);
   return Response.json({
+    instance: process.env.SELF_HOSTED === "true" ? instanceCapabilities() : null,
     name: user.name,
     email: user.email,
     image: user.image ?? null,
@@ -28,7 +30,7 @@ async function handleGet(request: NextRequest) {
     legalAcceptedVersion: user.legalAcceptedVersion ?? null,
     createdAt: new Date(user.createdAt).toISOString(),
     googleLinked: providers.includes("google"),
-    recentLoginUntil: recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),
+    recentLoginUntil: process.env.SELF_HOSTED === "true" && instanceCapabilities().localMode ? "9999-12-31T00:00:00.000Z" : recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),
   });
 }
 

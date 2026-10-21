@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { localAccessPlugin } from "./local-plugin";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
@@ -18,7 +19,7 @@ import { touchLastActive } from "@/lib/account/last-active";
 
 /** Client Resend creato al primo uso: senza RESEND_API_KEY (self-hosting) il costruttore lancerebbe già all'import. */
 function getResend(): Resend | null {
-  return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+  return process.env.RESEND_API_KEY && process.env.RESEND_FROM ? new Resend(process.env.RESEND_API_KEY) : null;
 }
 
 /** Google è attivo solo con entrambe le credenziali; altrimenti resta solo il magic link. */
@@ -38,6 +39,7 @@ export const auth = betterAuth({
     },
   }),
   plugins: [
+    localAccessPlugin(),
     magicLink({
       expiresIn: MAGIC_LINK_EXPIRES_MINUTES * 60,
       sendMagicLink: async ({ email, url }) => {
@@ -154,5 +156,7 @@ export const auth = betterAuth({
     },
   },
 });
+
+export { initializeLocalOwner } from "./local-owner";
 
 export type Session = typeof auth.$Infer.Session;

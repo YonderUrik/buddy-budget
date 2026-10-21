@@ -5,6 +5,11 @@ options:
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
+# Preview: the release build against production, with its own bundle id, for installing on a phone before the store.
+configs:
+  Debug: debug
+  Release: release
+  Preview: release
   # Source language of the string catalog (spec strings are keyed by Italian source text).
   developmentLanguage: it
 settings:
@@ -70,6 +75,9 @@ targets:
           API_BASE_URL: http://localhost:3001/
         Release:
           API_BASE_URL: https://app.buddybudget.io/
+        Preview:
+          PRODUCT_BUNDLE_IDENTIFIER: io.buddybudget.app.preview
+          API_BASE_URL: https://app.buddybudget.io/
 schemes:
   BuddyBudget:
     build:
@@ -77,3 +85,12 @@ schemes:
         BuddyBudget: all
     test:
       targets: []
+  # Product ▸ Run on an iPhone with your Apple ID team: release build against production (io.buddybudget.app.preview).
+  BuddyBudget Preview:
+    build:
+      targets:
+        BuddyBudget: all
+    run:
+      config: Preview
+    archive:
+      config: Preview

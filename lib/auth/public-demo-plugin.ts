@@ -1,4 +1,4 @@
-import { APIError, createAuthEndpoint, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
+import { APIError, createAuthEndpoint, createAuthMiddleware } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import type { BetterAuthPlugin } from "better-auth";
 import * as z from "zod";
@@ -16,12 +16,16 @@ import {
 } from "@/lib/public-demo/config";
 import { translate } from "@/lib/localization/messages";
 
+export type PublicDemoSessionReader = (headers: Headers) => Promise<{
+  user: { id: string; language?: string | null; productCountry?: string | null };
+} | null>;
+
 /**
  * better-auth plugin of the public demo: `POST /public-demo/sign-in` opens a short session on the demo account of a
  * language (no email, no password), and a before-hook keeps demo sessions away from the endpoints that would change
  * or delete the shared account. Writes to the app's own API are blocked in `proxy.ts`.
  */
-export function publicDemo() {
+export function publicDemo(readSession: PublicDemoSessionReader) {
   return {
     id: "public-demo",
     endpoints: {
@@ -38,7 +42,7 @@ export function publicDemo() {
             throw new APIError("NOT_FOUND", { message: "demo_disabled" });
           }
           // Never replace a real user's session: signing out first is their choice.
-          const existing = await getSessionFromCtx(ctx);
+          const existing = await readSession(ctx.headers ?? ctx.request?.headers ?? new Headers());
           if (existing && !isPublicDemoUserId(existing.user.id)) throw new APIError("CONFLICT", { message: "already_signed_in" });
           const user = await ctx.context.internalAdapter.findUserById(publicDemoUserId(profile));
           if (!user) {
@@ -62,7 +66,9 @@ export function publicDemo() {
         {
           matcher: (ctx) => PUBLIC_DEMO_BLOCKED_AUTH_PATHS.has(ctx.path ?? ""),
           handler: createAuthMiddleware(async (ctx) => {
-            const session = await getSessionFromCtx(ctx);
+            // Before-hooks do not see header changes returned by other before-hooks. Re-enter getSession's
+            // full pipeline so the bearer plugin authenticates the token before applying the demo guard.
+            const session = await readSession(ctx.headers ?? ctx.request?.headers ?? new Headers());
             if (session && isPublicDemoUserId(session.user.id)) {
               const { language, productCountry } = publicDemoSessionProfile(session.user as { language?: string | null; productCountry?: string | null });
               recordPublicDemoEvent("write_blocked", language, productCountry);

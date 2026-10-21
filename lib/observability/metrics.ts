@@ -18,6 +18,8 @@ export type CronOutcome = "success" | "error";
 export type AuthEvent =
   | "magic_link_sent"
   | "magic_link_failed"
+  | "otp_sent"
+  | "otp_failed"
   | "sign_in"
   | "rate_limited"
   | "signup_refused"
@@ -100,6 +102,7 @@ export type GoCardlessReleaseOutcome = "released" | "failed";
 /** Esito di una richiesta di collegamento: avviata, bloccata da un limite, rifiutata da GoCardless (402) o fallita. */
 export type GoCardlessConnectOutcome =
   | "started"
+  | "paused"
   | "user_limit"
   | "user_attempts"
   | "global_limit"
@@ -114,6 +117,10 @@ export interface GoCardlessCapacityReading {
   limit_global: number;
   limit_provider: number;
   users_over_limit: number;
+  /** 1 while new banks can be connected (`BANK_CONNECTIONS_OPEN`), 0 while only renewals go through. */
+  new_connections_open: number;
+  /** People who pressed «Tienimi aggiornato» and have not been written to yet. */
+  interested: number;
 }
 /** Modalità del cron sugli account inattivi (`dry-run` conta soltanto: niente email, niente eliminazioni). */
 export type InactivityMode = "dry-run" | "execute";
@@ -248,7 +255,7 @@ function createState(): MetricsState {
   });
   state.authEvents = new Counter({
     name: `${METRIC_PREFIX}auth_events_total`,
-    help: "Eventi di autenticazione (invio magic link, accessi, rate limit).",
+    help: "Authentication events (magic link and sign-in code sent, sign-ins, rate limits).",
     labelNames: ["event"],
     registers: r,
   });
@@ -471,7 +478,7 @@ function createState(): MetricsState {
 
   new Gauge({
     name: `${METRIC_PREFIX}gocardless_capacity`,
-    help: "Posti dei collegamenti GoCardless: live (requisition vive), recent (consensi negli ultimi 31 giorni), used (il maggiore), limit_global, limit_provider, users_over_limit.",
+    help: "Posti dei collegamenti GoCardless: live (requisition vive), recent (consensi negli ultimi 31 giorni), used (il maggiore), limit_global, limit_provider, users_over_limit, new_connections_open (1/0), interested (people waiting for new connections).",
     labelNames: ["measure"],
     registers: r,
     async collect() {

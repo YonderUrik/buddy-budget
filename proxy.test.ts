@@ -6,14 +6,14 @@ import { LEGAL_VERSION } from "@/lib/legal";
 import { isPublicPath } from "./proxy";
 
 describe("isPublicPath", () => {
-  it.each(["/api/health", "/api/health/ready", "/api/cron/gocardless-sync", "/api/metrics", "/api/auth/callback/google", "/favicon.ico", "/api/email/unsubscribe", "/disiscrizione"])(
+  it.each(["/api/health", "/api/health/ready", "/api/legal", "/api/cron/gocardless-sync", "/api/metrics", "/api/auth/callback/google", "/favicon.ico", "/api/email/unsubscribe", "/disiscrizione"])(
     "%s è pubblico",
     (path) => {
       expect(isPublicPath(path)).toBe(true);
     }
   );
 
-  it.each(["/api/transactions", "/api/healthz", "/api/cronjobs", "/api/metricsx", "/api/emails", "/disiscrizionex", "/api/user/notifications", "/conti", "/"])("%s richiede sessione", (path) => {
+  it.each(["/api/transactions", "/api/me/bootstrap", "/api/legalx", "/api/healthz", "/api/cronjobs", "/api/metricsx", "/api/emails", "/disiscrizionex", "/api/user/notifications", "/conti", "/"])("%s richiede sessione", (path) => {
     expect(isPublicPath(path)).toBe(false);
   });
 });
@@ -96,6 +96,54 @@ describe("proxy con documenti legali da accettare", async () => {
   it("un account disattivato vede prima la pagina di disattivazione", async () => {
     sessionWith({ deletionScheduledAt: new Date("2026-10-29") });
     expect((await call("/panoramica")).headers.get("location")).toBe("http://localhost/account-disattivato");
+  });
+});
+
+describe("proxy gates for API clients (native apps)", async () => {
+  const { NextRequest } = await import("next/server");
+  const { auth } = await import("@/lib/auth");
+  const { proxy } = await import("./proxy");
+  const mockedGetSession = vi.mocked(auth.api.getSession);
+
+  function sessionWith(user: Record<string, unknown>) {
+    mockedGetSession.mockResolvedValue({ user: { onboardingCompleted: true, deletionScheduledAt: null, legalAcceptedVersion: LEGAL_VERSION, ...user }, session: {} } as never);
+  }
+  const call = (path: string, headers: Record<string, string> = {}) => proxy(new NextRequest(`http://localhost${path}`, { headers }));
+
+  it("answers a deactivated account's API calls with a coded 403", async () => {
+    sessionWith({ deletionScheduledAt: new Date("2026-10-29") });
+    const response = await call("/api/transactions");
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ code: "account_deactivated" });
+  });
+
+  it("answers legal-gated API calls with a coded 403 carrying the version to accept", async () => {
+    sessionWith({ legalAcceptedVersion: "2020-01-01" });
+    const response = await call("/api/transactions");
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ code: "legal_acceptance_required", version: LEGAL_VERSION });
+  });
+
+  it("lets the bootstrap through every gate, and the onboarding gate never blocks the API", async () => {
+    for (const user of [{ deletionScheduledAt: new Date("2026-10-29") }, { legalAcceptedVersion: null }, { onboardingCompleted: false, legalAcceptedVersion: null }, {}]) {
+      sessionWith(user);
+      expect((await call("/api/me/bootstrap")).status).toBe(200);
+    }
+    sessionWith({ onboardingCompleted: false, legalAcceptedVersion: null });
+    expect((await call("/api/transactions")).status).toBe(200);
+  });
+
+  it("reads the session from the request headers, so a bearer token works like the cookie", async () => {
+    sessionWith({});
+    await call("/api/transactions", { Authorization: "Bearer session-token" });
+    expect(new Headers(mockedGetSession.mock.lastCall?.[0]?.headers).get("authorization")).toBe("Bearer session-token");
+    mockedGetSession.mockResolvedValue(null);
+    expect((await call("/api/transactions", { Authorization: "Bearer expired" })).status).toBe(401);
+  });
+
+  it("keeps redirecting pages, not answering JSON", async () => {
+    sessionWith({ legalAcceptedVersion: null });
+    expect((await call("/panoramica")).headers.get("location")).toBe("http://localhost/accetta-termini");
   });
 });
 

@@ -66,7 +66,7 @@ export const START_STEPS: readonly StartStepDef[] = [
   {
     id: "conto",
     title: "Aggiungi il tuo conto",
-    description: "Collega la banca oppure crealo a mano: bastano il nome e il saldo di oggi.",
+    description: "Crealo a mano: bastano il nome e il saldo di oggi.",
     href: NEW_ACCOUNT_HREF,
     cta: "Aggiungi un conto",
     done: "Conto aggiunto",
@@ -74,7 +74,7 @@ export const START_STEPS: readonly StartStepDef[] = [
   {
     id: "import",
     title: "Importa i movimenti",
-    description: "Carica il CSV o l'estratto conto della tua banca, oppure collega la banca.",
+    description: "Carica il CSV o l'estratto conto della tua banca.",
     href: "/importazioni",
     cta: "Importa un file",
     done: "Movimenti aggiunti",

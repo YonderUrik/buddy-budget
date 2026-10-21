@@ -35,7 +35,7 @@ export const SECURITY_EN: SecurityContent = {
     kicker: "Security and privacy",
     crumb: "Security and privacy",
     ctaTitle: "Try it without connecting anything.",
-    ctaText: "Start with a manual account or the sample data, and connect your bank only when you're ready.",
+    ctaText: "Start with a manual account, your bank statement or the sample data.",
     more: "Other questions.",
     sourcesSummary: "Official sources",
     legalNote: [
@@ -48,7 +48,7 @@ export const SECURITY_EN: SecurityContent = {
   },
   flow: {
     title: "The path, step by step.",
-    lede: "Your login details stay with your bank. Only balances and transactions reach BuddyBudget, read-only.",
+    lede: "The bank connection isn't taking new accounts for now and is coming back soon; people who already have it keep it. This is how it works: your login details stay with your bank, and only balances and transactions reach BuddyBudget, read-only.",
     links: ["Login and confirmation", "Read-only consent", "Balances and transactions"],
     neverTitle: "Never.",
     nodes: [

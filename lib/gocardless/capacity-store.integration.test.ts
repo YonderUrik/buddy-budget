@@ -6,8 +6,9 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnectionAttempts, bankConnections } from "@/lib/db/schema/bank-connections";
 import { getCapacityStatus, loadCapacityUsage, readCapacitySnapshot, reserveConnectionSlot } from "./capacity-store";
 import { usedSlots } from "./capacity";
+import { registerBankInterest, withdrawBankInterest } from "./interest";
 
-const ENV_KEYS = ["GOCARDLESS_MAX_CONNECTIONS", "GOCARDLESS_MAX_CONNECTIONS_PER_USER", "GOCARDLESS_MAX_ATTEMPTS_PER_USER", "GOCARDLESS_PROVIDER_LIMIT"] as const;
+const ENV_KEYS = ["GOCARDLESS_MAX_CONNECTIONS", "GOCARDLESS_MAX_CONNECTIONS_PER_USER", "GOCARDLESS_MAX_ATTEMPTS_PER_USER", "GOCARDLESS_PROVIDER_LIMIT", "BANK_CONNECTIONS_OPEN"] as const;
 
 async function createUser(): Promise<string> {
   const id = `test-capacity-${crypto.randomUUID()}`;
@@ -32,6 +33,7 @@ describe("capacity-store", () => {
 
   beforeEach(() => {
     for (const key of ENV_KEYS) savedEnv[key] = process.env[key];
+    process.env.BANK_CONNECTIONS_OPEN = "true";
   });
 
   afterEach(async () => {
@@ -70,7 +72,34 @@ describe("capacity-store", () => {
 
     expect(await reserveConnectionSlot({ userId, institutionId: "INST_B", institutionName: "Banca B" })).toMatchObject({ ok: false, reason: "user_limit" });
     expect(await reserveConnectionSlot({ userId, institutionId: "INST_A", institutionName: "Banca A" })).toMatchObject({ ok: true, kind: "renewal" });
-    expect(await getCapacityStatus(userId)).toEqual({ canConnectNew: false, reason: "user_limit", renewableInstitutionIds: ["INST_A"] });
+    expect(await getCapacityStatus(userId)).toEqual({ canConnectNew: false, reason: "user_limit", renewableInstitutionIds: ["INST_A"], interested: false });
+  });
+
+  it("with new connections closed refuses a new bank but still renews a linked one", async () => {
+    process.env.BANK_CONNECTIONS_OPEN = "false";
+    const fresh = await createUser();
+    const linked = await createUser();
+    users.push(fresh, linked);
+    await linkBank(linked, "INST_A");
+
+    expect(await reserveConnectionSlot({ userId: fresh, institutionId: "INST_A", institutionName: "Banca A" })).toMatchObject({ ok: false, reason: "paused", kind: "new" });
+    expect(await db.select().from(bankConnections).where(eq(bankConnections.userId, fresh))).toHaveLength(0);
+    expect(await reserveConnectionSlot({ userId: linked, institutionId: "INST_A", institutionName: "Banca A" })).toMatchObject({ ok: true, kind: "renewal" });
+    expect(await getCapacityStatus(fresh)).toMatchObject({ canConnectNew: false, reason: "paused", interested: false });
+  });
+
+  it("records «Tienimi aggiornato» once per person and counts it until withdrawn", async () => {
+    const userId = await createUser();
+    users.push(userId);
+    const before = (await readCapacitySnapshot()).interested;
+
+    expect(await registerBankInterest(userId, "IT")).toEqual({ created: true });
+    expect(await registerBankInterest(userId, "IT")).toEqual({ created: false });
+    expect((await getCapacityStatus(userId)).interested).toBe(true);
+    expect((await readCapacitySnapshot()).interested).toBe(before + 1);
+
+    expect(await withdrawBankInterest(userId)).toEqual({ removed: true });
+    expect((await readCapacitySnapshot()).interested).toBe(before);
   });
 
   it("non supera il tetto globale con richieste simultanee", async () => {

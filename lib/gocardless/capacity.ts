@@ -4,6 +4,8 @@
  * Il conteggio vero (con il lock contro i collegamenti simultanei) è in `capacity-store.ts`.
  */
 
+import { isSelfHosted, parseFlag } from "@/lib/instance/config";
+
 /** Finestra dei consensi "recenti": 31 giorni contengono sempre il mese di calendario in corso, qualunque sia il conteggio di GoCardless. */
 export const ATTEMPT_WINDOW_DAYS = 31;
 
@@ -16,9 +18,14 @@ export interface CapacityLimits {
   global: number;
   /** Limite del piano GoCardless: i rinnovi usano la riserva tra `global` e questo, poi si ferma anche loro. */
   provider: number;
+  /**
+   * Whether new banks can be connected at all (`BANK_CONNECTIONS_OPEN`). When false only renewals of a bank already
+   * linked go through: the hosted version keeps it off until a bank provider for everyone is in place.
+   */
+  newConnectionsOpen: boolean;
 }
 
-export const DEFAULT_CAPACITY_LIMITS: CapacityLimits = { perUser: 1, attemptsPerUser: 3, global: 40, provider: 50 };
+export const DEFAULT_CAPACITY_LIMITS: CapacityLimits = { perUser: 1, attemptsPerUser: 3, global: 40, provider: 50, newConnectionsOpen: true };
 
 function positiveInt(value: string | undefined, fallback: number): number {
   if (value === undefined || value.trim() === "") return fallback;
@@ -26,10 +33,15 @@ function positiveInt(value: string | undefined, fallback: number): number {
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
-/** Legge i limiti dalle variabili d'ambiente; un valore assente o non valido torna al default. `provider` non scende mai sotto `global`. */
+/**
+ * Reads the limits from the environment; a missing or invalid value falls back to the default and `provider` never goes
+ * below `global`. `BANK_CONNECTIONS_OPEN` unset means closed on the hosted version and open on a self-hosted install
+ * (which brings its own GoCardless keys).
+ */
 export function parseCapacityLimits(env: Record<string, string | undefined>): CapacityLimits {
   const global = positiveInt(env.GOCARDLESS_MAX_CONNECTIONS, DEFAULT_CAPACITY_LIMITS.global);
   return {
+    newConnectionsOpen: parseFlag(env.BANK_CONNECTIONS_OPEN) ?? isSelfHosted(env),
     perUser: positiveInt(env.GOCARDLESS_MAX_CONNECTIONS_PER_USER, DEFAULT_CAPACITY_LIMITS.perUser),
     attemptsPerUser: positiveInt(env.GOCARDLESS_MAX_ATTEMPTS_PER_USER, DEFAULT_CAPACITY_LIMITS.attemptsPerUser),
     global,
@@ -56,7 +68,7 @@ export interface UserCapacityState {
   recentAttempts: number;
 }
 
-export type CapacityBlockReason = "user_limit" | "user_attempts" | "global_limit" | "provider_limit";
+export type CapacityBlockReason = "paused" | "user_limit" | "user_attempts" | "global_limit" | "provider_limit";
 export type ConnectionKind = "new" | "renewal";
 
 export type CapacityDecision =
@@ -75,6 +87,7 @@ export function decideCapacity(
   institutionId?: string
 ): CapacityDecision {
   const kind: ConnectionKind = institutionId && user.linkedInstitutionIds.includes(institutionId) ? "renewal" : "new";
+  if (kind === "new" && !limits.newConnectionsOpen) return { allowed: false, kind, reason: "paused" };
   const used = usedSlots(usage);
   if (used >= limits.provider) return { allowed: false, kind, reason: "provider_limit" };
   if (kind === "new" && used >= limits.global) return { allowed: false, kind, reason: "global_limit" };
@@ -85,6 +98,7 @@ export function decideCapacity(
 
 /** Messaggio per l'utente quando il collegamento è bloccato (stesso testo dalla route e dall'interfaccia). */
 export const CAPACITY_BLOCK_MESSAGES: Record<CapacityBlockReason, string> = {
+  paused: "Il collegamento automatico alla banca arriva presto. Intanto puoi tenere il conto a mano o importare un file.",
   user_limit: "Per ora puoi collegare una sola banca. Gli altri conti puoi tenerli a mano o importarli da un file.",
   user_attempts: "Hai avviato troppi collegamenti questo mese. Riprova più avanti, oppure tieni il conto a mano o importa un file.",
   global_limit: "I collegamenti automatici sono al completo: stiamo aggiungendo posti. Intanto puoi tenere il conto a mano o importare un file.",

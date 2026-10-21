@@ -36,9 +36,11 @@ describe("GET/POST /api/gocardless/connections", () => {
     userId = user.id;
     mockedGetSession.mockResolvedValue({ user: { id: userId } } as never);
     vi.mocked(createRequisition).mockReset();
+    process.env.BANK_CONNECTIONS_OPEN = "true";
   });
 
   afterEach(async () => {
+    delete process.env.BANK_CONNECTIONS_OPEN;
     await db.delete(bankConnectionAttempts).where(eq(bankConnectionAttempts.userId, userId));
     await db.delete(authUser).where(eq(authUser.id, userId));
   });
@@ -138,6 +140,20 @@ describe("GET/POST /api/gocardless/connections", () => {
     expect((await response.json()).reason).toBe("user_limit");
     expect(createRequisition).not.toHaveBeenCalled();
     expect(await db.select().from(bankConnections).where(eq(bankConnections.userId, userId))).toHaveLength(1);
+  });
+
+  it("with new connections closed answers 409 «paused» without calling GoCardless", async () => {
+    process.env.BANK_CONNECTIONS_OPEN = "false";
+    const response = await POST(
+      new NextRequest("http://localhost/api/gocardless/connections", {
+        method: "POST",
+        body: JSON.stringify({ institutionId: "INST_A", institutionName: "Banca A", transactionTotalDays: 90 }),
+      })
+    );
+    expect(response.status).toBe(409);
+    expect((await response.json()).reason).toBe("paused");
+    expect(createRequisition).not.toHaveBeenCalled();
+    expect(await db.select().from(bankConnections).where(eq(bankConnections.userId, userId))).toHaveLength(0);
   });
 
   it("traduce il 402 di GoCardless (posti del piano finiti) in posti esauriti", async () => {

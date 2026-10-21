@@ -26,7 +26,7 @@ export default function Page() {
       disclaimer={false}
       crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Funzioni" }]}
       ctaTitle="Provale con i tuoi dati."
-      ctaText="Collega la banca in sola lettura o aggiungi un conto a mano, e vedi il quadro completo in pochi minuti."
+      ctaText="Importa l'estratto conto o aggiungi un conto a mano, e vedi il quadro completo in pochi minuti."
       ctaLocation="funzioni"
     >
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.funzioni}`, inLanguage: "it-IT" }} />

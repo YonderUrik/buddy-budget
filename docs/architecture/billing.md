@@ -73,6 +73,9 @@ No card data, no amounts, no invoices: Stripe holds those.
 - **Self-heal**: `status?refresh=1` re-reads the user's subscriptions from Stripe (20-second cooldown on Redis), so a lost webhook is fixed the next time the user opens the plans page.
 - **Access codes**: `pnpm billing:code --label … [--days N] [--uses N] [--expires DATE]` prints a code like `BB-7KQ2-M9XP` once. `POST /api/billing/redeem` (10 attempts an hour per user) adds a `code` grant, once per user per code.
 - **Owner CLI**: `pnpm billing:stripe-setup [--live]` creates product, prices and portal configuration and prints the env values; `billing:grant` / `billing:revoke` give or take Pro by email; `billing:grant-existing --until DATE [--dry-run]` gives the existing accounts a `launch` grant.
+- **Plans page** (`/pro?da=<area or place>`): the navy Pro card carries the purchase block (yearly and monthly as two price tiles, yearly selected, the trial button); Free sits beside it on desktop and under it on the phone. A Free account arriving from a locked section reads what that section gives (`AREA_PITCH`). Settings → Account shows the plan as one block with one action.
+- **Invitations to Pro** (`useProUpsell`, `ProMenuCard`, `ProNudge`): only for a Free account where plans apply, never in the native app, on self-hosted installs or in the public demo. Places: a card under the menu items in the sidebar (a yellow icon when collapsed), the top of the phone's «Altro» sheet, a block at the end of Liquidità → Conti and → Analisi (closable for 30 days in that browser, `localStorage`), the Settings plan block. Each links to `/pro?da=<place>`; the button says «Prova 14 giorni gratis» while the trial is available.
+- **Landing**: a «Prezzi» section on both homes (`/#prezzi`, `/en#pricing`, in the menu) from `landing/content/pricing.ts`, whose prices `lib/billing/landing-prices.test.ts` keeps equal to `PRO_PRICE_CENTS` and `PRO_TRIAL_DAYS`. Until Pro is turned on it says that everything is unlocked; lines on pension and taxes follow the visitor's country (`data-needs`).
 - **Account**: deactivation sets `cancel_at_period_end` (reactivation clears it); deletion deletes the Stripe customer first, which ends its subscriptions; an account with a paid subscription is never deleted for inactivity.
 
 ## 6. Configuration
@@ -92,7 +95,7 @@ The boot log `app.billing.configured` says the mode in one line (`billing=pilot 
 
 - Logs: `billing.webhook.handled` / `failed` / `invalid_signature`, `billing.subscription.synced` / `unknown_user`, `billing.payment.failed`, `billing.checkout.created` / `rejected` / `failed`, `billing.portal.opened` / `failed`, `billing.code.redeemed` / `rejected`, `billing.email.sent` / `failed`, `billing.customer.deleted` / `delete_failed`, `billing.refresh.failed`, `billing.plan.blocked` (with `proArea`).
 - Metrics: `buddybudget_billing_webhook_events_total{type,outcome}`, `buddybudget_billing_actions_total{action,outcome}`, `buddybudget_plan_blocks_total{area,kind}`, `buddybudget_accounts_pro{source}`.
-- Umami: `pro_page_viewed`, `pro_lock_opened`, `pro_checkout_started`, `pro_activated`, `pro_portal_opened`, `access_code_redeemed`.
+- Umami: `pro_page_viewed` (`from`: area or invitation), `pro_lock_opened`, `pro_nudge_opened` / `pro_nudge_dismissed` (`place`), `pro_checkout_started`, `pro_activated`, `pro_portal_opened`, `access_code_redeemed`.
 
 ## 8. Limits
 
@@ -103,4 +106,4 @@ The boot log `app.billing.configured` says the mode in one line (`billing=pilot 
 
 ## 9. Tests
 
-Unit: `lib/billing/{config,access,entitlement,plan-routes,access-codes,subscription-map}.test.ts`, `components/domain/billing/plan-status.test.ts`. Integration (real database, Stripe mocked): `lib/billing/billing.integration.test.ts`. Proxy: "proxy with the Free and Pro plans" in `proxy.test.ts`.
+Unit: `lib/billing/{config,access,entitlement,plan-routes,access-codes,subscription-map,landing-prices}.test.ts`, `components/domain/billing/plan-status.test.ts`. Integration (real database, Stripe mocked): `lib/billing/billing.integration.test.ts`. Proxy: "proxy with the Free and Pro plans" in `proxy.test.ts`.

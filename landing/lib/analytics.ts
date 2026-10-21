@@ -4,7 +4,7 @@ import type { ScreenId } from "@/content/screens";
 import type { Locale } from "@/lib/i18n";
 
 /** Sections measured with `section_view`: the home sections, the closing (home and content pages) and the screen gallery. */
-export type SectionId = "come" | "dentro" | "sicurezza" | "codice" | "domande" | "fine" | "schermate";
+export type SectionId = "come" | "dentro" | "sicurezza" | "codice" | "domande" | "prezzi" | "fine" | "schermate";
 
 /**
  * Product events of the landing sent to Umami (the landing's own Umami site, not the app's).
@@ -12,7 +12,7 @@ export type SectionId = "come" | "dentro" | "sicurezza" | "codice" | "domande" |
  */
 export interface LandingEvents {
   cta_click: {
-    location: "nav" | "hero" | "mobile_bar" | "dentro" | "closing" | "funzioni" | "schermate" | "strumenti" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "calcolatore_obiettivo" | "guida_zainetto" | "funzione_investimenti" | "sicurezza";
+    location: "nav" | "hero" | "mobile_bar" | "dentro" | "prezzi" | "closing" | "funzioni" | "schermate" | "strumenti" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "calcolatore_obiettivo" | "guida_zainetto" | "funzione_investimenti" | "sicurezza";
     target: "signup" | "login" | "calculator" | "how";
     /** Language of the page the click came from. */
     lang: Locale;

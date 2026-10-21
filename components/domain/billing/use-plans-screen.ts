@@ -10,6 +10,7 @@ import { nativePlatform } from "@/lib/native/shell";
 import { useLocalization } from "@/lib/localization/provider";
 import { useBillingStatusQuery, useOpenPortalMutation, useRedeemCodeMutation, useStartCheckoutMutation } from "@/lib/queries/billing";
 import { usePlan } from "./plan-provider";
+import type { ProNudgePlace } from "./pro-nudge-places";
 
 /** How often and for how long the page re-reads the plan after Checkout, while the webhook is on its way. */
 const ACTIVATION_POLL_MS = 2_000;
@@ -19,7 +20,8 @@ const ACTIVATION_TIMEOUT_MS = 30_000;
 const subscribeNoop = () => () => {};
 
 export interface UsePlansScreenOptions {
-  from: ProAreaId | "impostazioni" | null;
+  /** The locked area or the invitation that led here. */
+  from: ProAreaId | ProNudgePlace | null;
   checkout: "success" | "cancel" | null;
 }
 

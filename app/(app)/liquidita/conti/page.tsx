@@ -16,6 +16,7 @@ import {
   groupAccounts,
   sumBalances,
 } from "@/components/domain/accounts";
+import { ProNudge } from "@/components/domain/billing";
 import { EmptyState, LoadError } from "@/components/domain/shared";
 import { AccountLine, LIQUIDITY_ACCOUNT_PARAM, LIQUIDITY_HREF, SectionTitle, useLiquidity, useLiquidityActions } from "@/components/domain/liquidity";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
+import { isCountryPathAvailable } from "@/lib/localization/config";
 import { isAccountSyncing } from "@/lib/sync-jobs/view";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 
@@ -40,7 +42,8 @@ export default function LiquiditaContiPage() {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
-  const { t: tr, language } = useLocalization();
+  const { t: tr, language, productCountry } = useLocalization();
+  const pensionOpen = isCountryPathAvailable(productCountry, "/pensione");
   const { buildAccountStatus } = localizedAccountStatus(language);
   const router = useRouter();
   const { data: session } = authClient.useSession();
@@ -142,6 +145,13 @@ export default function LiquiditaContiPage() {
           <Button className="h-11 gap-1.5" onClick={addAccount}>
             <PlusIcon className="size-4" aria-hidden="true" />{" "}{tr("Aggiungi un conto")}</Button>
         </div>
+      )}
+      {list.length > 0 && (
+        <ProNudge
+          place="conti"
+          title={pensionOpen ? "Hai anche investimenti, un fondo pensione o un mutuo?" : "Hai anche investimenti o un mutuo?"}
+          text="Con Pro li tieni qui accanto ai conti e vedi il tuo patrimonio netto in un numero solo."
+        />
       )}
       <AccountDetailsDialog
         account={open}

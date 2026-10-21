@@ -11,13 +11,13 @@ import { PlanStatusCard } from "./plan-status-card";
 import { ProOffer } from "./pro-offer";
 import { usePlansScreen, type UsePlansScreenOptions } from "./use-plans-screen";
 
-/** Names of the Pro areas, for the «… fa parte di Pro» line. */
-const AREA_NAMES: Record<ProAreaId, string> = {
-  panoramica: "Panoramica",
-  investimenti: "Investimenti",
-  pensione: "Pensione",
-  debiti: "Debiti",
-  analitiche: "Analitiche",
+/** What each Pro area gives, said to a Free account that tapped it in the menu. */
+const AREA_PITCH: Record<ProAreaId, string> = {
+  panoramica: "Panoramica fa parte di Pro: conti, investimenti, pensione e debiti in un numero solo, il tuo patrimonio netto.",
+  investimenti: "Investimenti fa parte di Pro: rendimenti, tasse stimate e diversificazione di quello che hai investito.",
+  pensione: "Pensione fa parte di Pro: il fondo pensione accanto al resto, con quanto avrai e quanto risparmi di tasse.",
+  debiti: "Debiti fa parte di Pro: quanto manca su mutui e finanziamenti e cosa cambia se anticipi.",
+  analitiche: "Analitiche fa parte di Pro: dove arrivi con i tuoi risparmi, simulazioni, FIRE e obiettivi.",
 };
 
 export type PlansScreenProps = UsePlansScreenOptions;
@@ -31,7 +31,7 @@ export function PlansScreen(props: PlansScreenProps) {
   const { t: tr, locale } = useLocalization();
   const screen = usePlansScreen(props);
   const { plan, status, native } = screen;
-  const areaId = props.from && props.from !== "impostazioni" && PRO_AREAS.some((area) => area.id === props.from) ? props.from : null;
+  const areaId = PRO_AREAS.find((area) => area.id === props.from)?.id ?? null;
 
   if (!plan.enforced) {
     return (
@@ -47,14 +47,19 @@ export function PlansScreen(props: PlansScreenProps) {
   const tier = data?.plan.tier ?? plan.tier;
   const proPrice = native ? null : tr("{0} al mese o {1} all'anno", { 0: formatProPrice(PRO_PRICE_CENTS.month, locale), 1: formatProPrice(PRO_PRICE_CENTS.year, locale) });
 
+  const offer =
+    data && tier === "free" && !data.subscription && !native && data.canPurchase ? (
+      <ProOffer trialAvailable={data.trialAvailable} pending={screen.starting} error={screen.startError} onStart={screen.start} />
+    ) : null;
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      <div className="flex flex-col gap-1">
+    <div className="mx-auto flex max-w-5xl flex-col gap-6 p-4 sm:gap-8 sm:p-6">
+      <header className="flex flex-col gap-2">
         <h1 className={PAGE_TITLE}>{tr("BuddyBudget Pro")}</h1>
-        <p className="text-sm text-text-2">
-          {areaId && tier === "free" ? tr("{0} fa parte di Pro.", { 0: tr(AREA_NAMES[areaId]) }) : tr("Liquidità è gratis. Con Pro sblocchi tutto il resto, senza limiti.")}
+        <p className="max-w-[60ch] text-base text-text-2 sm:text-lg">
+          {areaId && tier === "free" ? tr(AREA_PITCH[areaId]) : tr("Liquidità è gratis, per sempre. Pro sblocca tutto il resto, senza limiti.")}
         </p>
-      </div>
+      </header>
 
       {screen.activating ? (
         <p className="flex items-center gap-2 rounded-2xl bg-card p-5 text-sm" role="status">
@@ -77,12 +82,14 @@ export function PlansScreen(props: PlansScreenProps) {
         <PlanStatusCard status={data} canManage={!native} managing={screen.managing} onManage={screen.manage} error={screen.manageError} />
       ) : null}
 
-      {data && tier === "free" && !data.subscription && !native && data.canPurchase ? (
-        <ProOffer trialAvailable={data.trialAvailable} pending={screen.starting} error={screen.startError} onStart={screen.start} />
-      ) : null}
-      {!data && status.isLoading ? <div className="h-56 animate-pulse rounded-2xl bg-muted" aria-busy="true" /> : null}
-
-      <PlanComparison current={tier} proPrice={proPrice} />
+      {!data && status.isLoading ? (
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] md:gap-4" aria-busy="true">
+          <div className="order-2 h-80 animate-pulse rounded-3xl bg-muted md:order-1" />
+          <div className="order-1 h-[34rem] animate-pulse rounded-3xl bg-muted md:order-2" />
+        </div>
+      ) : (
+        <PlanComparison current={tier} proPrice={proPrice} offer={offer} />
+      )}
 
       {data && tier === "free" && !native ? <AccessCodeForm pending={screen.redeeming} error={screen.redeemError} onRedeem={screen.redeemCode} /> : null}
       {native && tier === "free" ? <p className="text-sm text-text-2">{tr("Questa sezione non è inclusa nel tuo piano.")}</p> : null}

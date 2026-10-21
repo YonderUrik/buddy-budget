@@ -31,7 +31,7 @@ import { LEGAL_LINKS } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
 /** Cosa ha toccato l'utente nel menu (tipo chiuso, per le statistiche d'uso). */
-export type MoreMenuAction = "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro";
+export type MoreMenuAction = "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" | "promo";
 
 /** Spiegazione di una riga per `href`, in italiano semplice: cosa si trova dentro la sezione. */
 export const MORE_MENU_HINTS: Record<string, string> = {
@@ -50,6 +50,8 @@ export interface MobileMoreMenuProps {
   activeHref?: string;
   /** Riepilogo finanziario sotto le sezioni (lo stesso slot della sidebar). */
   extra?: React.ReactNode;
+  /** An invitation under the account row (e.g. to a higher plan); its links replace the menu like the summary's. */
+  promo?: React.ReactNode;
   settingsHref?: string;
   /** Pagina di aiuto e segnalazioni. */
   supportHref?: string;
@@ -109,6 +111,7 @@ export function MobileMoreMenu({
   badges,
   activeHref,
   extra,
+  promo,
   settingsHref = "/impostazioni",
   supportHref = "/aiuto",
   onAction,
@@ -143,12 +146,12 @@ export function MobileMoreMenu({
   }
 
   /** I link del riepilogo (slot) sono link normali: li facciamo sostituire la voce del menu invece di accodarsi. */
-  function replaceInternalLink(event: React.MouseEvent) {
+  function replaceInternalLink(event: React.MouseEvent, action: MoreMenuAction = "quadro") {
     const anchor = (event.target as HTMLElement).closest("a[href]");
     const href = anchor?.getAttribute("href");
     if (!href || !href.startsWith("/") || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
     event.preventDefault();
-    go("quadro");
+    go(action);
     router.replace(href);
   }
 
@@ -188,6 +191,8 @@ export function MobileMoreMenu({
               </span>
               <Settings className="size-5 shrink-0 text-text-3" aria-hidden="true" />
             </Link>
+
+            {promo ? <div onClickCapture={(event) => replaceInternalLink(event, "promo")}>{promo}</div> : null}
 
             {/* Sezioni */}
             {sections.length > 0 ? (

@@ -35,7 +35,7 @@ export function AccessCodeForm({ pending, error, onRedeem }: AccessCodeFormProps
         if (code.trim()) onRedeem(code.trim());
       }}
     >
-      <Label htmlFor={inputId}>{tr("Codice di accesso")}</Label>
+      <Label htmlFor={inputId}>{tr("Codice di attivazione")}</Label>
       <div className="flex gap-2">
         <Input
           id={inputId}

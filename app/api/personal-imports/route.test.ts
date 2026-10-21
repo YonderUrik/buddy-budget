@@ -32,6 +32,15 @@ describe("personal import API", () => {
     expect((await POST(req("POST", { csv: "a,b\nx,y", name: "Test", consent: true, consentVersion: "openrouter-raw-zdr-v3" }))).status).toBe(503);
     expect(enqueue).not.toHaveBeenCalled();
   });
+  it("accepts bearer-authenticated writes without an Origin (native apps) but not cookie ones", async () => {
+    const id = "d42c811b-f061-4a42-8023-0c84c8e1ce85", token = "a".repeat(64);
+    const bearer = (method: string, body: unknown, path = "", cookie?: string) => new NextRequest(`http://localhost:3000/api/personal-imports${path}`, { method, headers: { Authorization: "Bearer session-token", "Content-Type": "application/json", ...(cookie ? { Cookie: cookie } : {}) }, body: JSON.stringify(body) });
+    expect((await POST(bearer("POST", { csv: "a,b\nx,y", name: "Test", consent: true, consentVersion: "openrouter-raw-zdr-v3" }))).status).toBe(202);
+    expect((await remove(bearer("DELETE", { token }, `/${id}`))).status).toBe(200);
+    expect((await confirm(bearer("POST", {}, `/${id}`, "better-auth.session_token=x"))).status).toBe(403);
+    const cookieOnly = new NextRequest("http://localhost:3000/api/personal-imports", { method: "POST", headers: { Cookie: "better-auth.session_token=x", "Content-Type": "application/json" }, body: "{}" });
+    expect((await POST(cookieOnly)).status).toBe(403);
+  });
   it("previews and deletes only under the authenticated owner with the reviewed token", async () => {
     const id = "d42c811b-f061-4a42-8023-0c84c8e1ce85", token = "a".repeat(64);
     expect((await preview(req("GET", undefined, `/${id}?deletion=1`))).status).toBe(200);

@@ -5,6 +5,7 @@
  * dates are `YYYY-MM-DD`, timestamps ISO 8601.
  */
 import { z } from "zod";
+import { PRODUCT_COUNTRIES } from "@/lib/localization/config";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const timestamp = z.iso.datetime({ offset: true });
@@ -281,7 +282,7 @@ export const analyticsViewSchema = z.object({
 });
 
 const countryMetaSchema = z.object({
-  id: z.enum(["IT", "DE"]),
+  id: z.enum(PRODUCT_COUNTRIES),
   languages: z.array(z.enum(["it", "en", "de"])),
   features: z.object({ taxes: z.boolean(), pension: z.boolean(), retirement: z.boolean(), incomeForecasts: z.boolean(), inflation: z.boolean() }),
   sections: z.record(z.string(), z.boolean()),
@@ -311,7 +312,7 @@ export const appMetaSchema = z.object({
   features: z.array(z.object({ id: z.string(), area: z.string(), areaLabel: z.string(), name: z.string(), description: z.string(), status: z.enum(["live", "new", "soon"]), appPath: z.string().nullable(), available: z.boolean().nullable() })),
   profile: z
     .object({
-      productCountry: z.enum(["IT", "DE"]),
+      productCountry: z.enum(PRODUCT_COUNTRIES),
       language: z.enum(["it", "en", "de"]),
       capabilities: countryMetaSchema,
       categoryProposal: z.array(z.looseObject({ key: z.string().nullable(), name: z.string() })),

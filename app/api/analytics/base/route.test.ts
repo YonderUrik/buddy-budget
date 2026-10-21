@@ -14,6 +14,7 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 import { auth } from "@/lib/auth";
 import { GET } from "./route";
 import { GET as getPlan } from "../../financial-planning/route";
+import { isCountryPathAvailable } from "@/lib/localization/config";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
 const session = (productCountry: "IT" | "DE") => ({ user: { id: userId, currency: "EUR", language: "it", productCountry } }) as never;
@@ -63,11 +64,11 @@ describe("GET /api/analytics/base", () => {
     expect(await (await GET(new NextRequest("http://localhost/api/analytics/base?today=x"))).json()).toMatchObject({ code: "invalid_date" });
   });
 
-  it("is Italy only; /api/financial-planning answers Italy with the same coded 403", async () => {
-    mockedGetSession.mockResolvedValue(session("DE"));
-    const de = await GET(new NextRequest("http://localhost/api/analytics/base"));
-    expect(de.status).toBe(403);
-    expect(await de.json()).toMatchObject({ code: "country_feature_unavailable" });
+  it("is open in every country; /api/financial-planning answers Italy with a coded 403", async () => {
+    // Since #465 Analitiche runs everywhere; the Italian tax view is Italy only and Germany keeps its own income.
+    expect(["IT", "DE", "OTHER"].map((c) => isCountryPathAvailable(c, "/api/analytics/base"))).toEqual([true, true, true]);
+    expect(["IT", "DE", "OTHER"].map((c) => isCountryPathAvailable(c, "/api/investments/taxes"))).toEqual([true, false, false]);
+    expect(["IT", "DE", "OTHER"].map((c) => isCountryPathAvailable(c, "/api/investments/income"))).toEqual([true, false, true]);
     mockedGetSession.mockResolvedValue(session("IT"));
     const it = await getPlan(new NextRequest("http://localhost/api/financial-planning"));
     expect(it.status).toBe(403);

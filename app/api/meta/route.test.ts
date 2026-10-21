@@ -64,8 +64,8 @@ describe("GET /api/whats-new", () => {
     const it = buildWhatsNew({ language: "it", productCountry: "IT", dismissed: [], now });
     expect(it.current?.id).toBe(newest!.id);
     expect(buildWhatsNew({ language: "it", productCountry: "IT", dismissed: [newest!.id], now }).current?.id).toBe(older!.id);
-    // Goals are not available in Germany.
-    expect(buildWhatsNew({ language: "en", productCountry: "DE", dismissed: [], now }).entries.map((e) => e.id)).not.toContain("obiettivi-di-risparmio");
+    // Goals are available in every country since #465.
+    expect(buildWhatsNew({ language: "en", productCountry: "DE", dismissed: [], now }).entries.map((e) => e.id)).toContain("obiettivi-di-risparmio");
     expect(buildWhatsNew({ language: "it", productCountry: "IT", dismissed: [], now: new Date("2030-01-01") })).toMatchObject({ entries: [], current: null });
   });
 });

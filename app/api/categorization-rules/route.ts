@@ -10,6 +10,8 @@ import { countPastMatchesSafely } from "@/lib/categorization/recategorize";
 import { merchantKey } from "@/lib/categorization/merchant-key";
 import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
+import { localizeCategory } from "@/lib/localization/categories";
+import { resolveProfile } from "@/lib/localization/config";
 
 /** Recupera una categoria solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedCategory(userId: string, categoryId: string) {
@@ -36,8 +38,8 @@ async function findDuplicateRule(userId: string, matchType: string, pattern: str
 }
 
 /**
- * GET /api/categorization-rules — ritorna le regole dell'utente autenticato, ordinate per
- * hitCount decrescente, ciascuna arricchita con il nome della categoria collegata.
+ * GET /api/categorization-rules — the user's rules by descending hitCount, each with the name of its category (default
+ * names in the user's language).
  */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -61,6 +63,8 @@ async function handleGet(request: NextRequest) {
       updatedAt: categorizationRules.updatedAt,
       categoryName: categories.name,
       categoryType: categories.type,
+      categoryDefaultKey: categories.defaultKey,
+      categoryIsFallback: categories.isFallback,
     })
     .from(categorizationRules)
     .innerJoin(categories, eq(categorizationRules.categoryId, categories.id))
@@ -69,9 +73,12 @@ async function handleGet(request: NextRequest) {
 
   // Logo dell'esercente della regola, come in Categorizza; il tipo di categoria serve solo a dire se è una spesa.
   const expenseIds = new Set<string>();
-  const rules = rows.map(({ categoryType, ...rule }) => {
+  const profile = resolveProfile(session.user);
+  const rules = rows.map(({ categoryType, categoryDefaultKey, categoryIsFallback, ...rule }) => {
     if (categoryType !== "entrata" && categoryType !== "trasferimento") expenseIds.add(rule.id);
-    return rule;
+    // Default category names in the user's language (G11), as GET /api/categories.
+    const categoryName = localizeCategory({ name: rule.categoryName, defaultKey: categoryDefaultKey, isFallback: categoryIsFallback }, profile).name;
+    return { ...rule, categoryName };
   });
   const withLogos = await withMerchantLogos(rules, (rule) => ({ label: rule.pattern, texts: [], isExpense: expenseIds.has(rule.id) }), session.user.id);
   return Response.json(withLogos);

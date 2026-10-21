@@ -7,6 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { BanknoteIcon, LandmarkIcon, PlusIcon } from "lucide-react";
 import {
   AccountDetailsDialog,
@@ -24,6 +25,7 @@ import { authClient } from "@/lib/auth/client";
 import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { computeConnectionHealth, needsRenewal } from "@/lib/gocardless/connection-health";
+import { webBankErrorMessage } from "@/lib/gocardless/return-messages";
 import { accountFollowsTransactions, buildAccountBalanceSeries } from "@/lib/liquidity/account-series";
 
 import { useAccountsQuery } from "@/lib/queries/accounts";
@@ -65,6 +67,17 @@ export default function LiquiditaContiPage() {
     }, 0);
     return () => window.clearTimeout(timer);
   }, [addAccount, tr]);
+
+  // The bank-consent return (`/api/gocardless/callback`) lands here with ?bankError=<code> when the link failed.
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const message = webBankErrorMessage(params.get("bankError"));
+    if (!params.has("bankError")) return;
+    params.delete("bankError");
+    const query = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    if (message) toast.error(tr(message));
+  }, [tr]);
 
   const { data: accounts, isLoading, isError, refetch } = useAccountsQuery();
   const connections = useBankConnectionsStatusQuery().data ?? [];

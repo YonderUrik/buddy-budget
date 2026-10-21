@@ -48,7 +48,8 @@ export interface TaxView {
   hasTransactions: boolean;
 }
 
-function sellablePositions(rows: PositionRow[], byId: Map<string, Instrument>, fx: FxTable, currency: string, todayKey: string): SellablePosition[] {
+/** Open positions with today's last price and FX rate, for the sale simulator. */
+export function sellablePositions(rows: PositionRow[], byId: Map<string, Instrument>, fx: FxTable, currency: string, todayKey: string): SellablePosition[] {
   return rows.flatMap((row) => {
     const instrument = byId.get(row.instrument.id);
     if (!instrument) return [];

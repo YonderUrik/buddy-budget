@@ -14,10 +14,11 @@ import { SimulationResult } from "@/components/domain/shared";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { InvestmentTransactionInput } from "@/lib/calc/investments";
-import { simulateSale, type ManualLossInput, type TaxCategory, type TaxInstrument } from "@/lib/calc/taxes";
+import { simulateSale, type ManualLossInput, type TaxInstrument } from "@/lib/calc/taxes";
 import type { TaxRegime } from "@/lib/db/schema/investments";
 
 import type { SellablePosition } from "@/lib/investments/tax-view";
+import { SALE_CATEGORY_TEXT, SALE_NON_HARMONIZED_TEXT, saleTaxLineLabel } from "@/lib/investments/sale-simulation-text";
 import { parseAmount } from "@/lib/validation/accounts";
 
 import { OperationFormField as Field } from "../operation-form-field";
@@ -25,11 +26,6 @@ import { CalculatorIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
 import { privateNumberFormat } from "@/lib/format";
 
-const CATEGORY_TEXT: Record<TaxCategory, string> = {
-  diversi: "Reddito diverso: compensabile con lo zaino.",
-  capitale: "Guadagno di un ETF o fondo: reddito di capitale, tassato per intero anche se hai minusvalenze.",
-  crypto: "Crypto: si dichiara a parte e si compensa solo con altre crypto.",
-};
 
 export interface SaleSimulatorCardProps {
   positions: SellablePosition[];
@@ -129,13 +125,13 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
               {result.lossesUsed > 0 ? <Line label={tr("Zaino usato")} value={format(result.lossesUsed)} /> : null}
               {result.lossesCreated > 0 ? <Line label={tr("Nuovo zaino")} value={format(result.lossesCreated)} /> : null}
               <Line
-                label={result.taxDelta < 0 ? tr("Imposte in meno quest'anno") : regime === "amministrato" ? tr("Imposte trattenute") : tr("Imposte in più in dichiarazione")}
+                label={tr(saleTaxLineLabel(result, regime))}
                 value={format(Math.abs(result.taxDelta))}
               />
             </dl>
             <p className="text-sm text-muted-foreground">
-              {tr(CATEGORY_TEXT[result.category])}
-              {result.nonHarmonized ? tr(" ETF non armonizzato: in realtà a IRPEF, qui stimato al 26%.") : ""}
+              {tr(SALE_CATEGORY_TEXT[result.category])}
+              {result.nonHarmonized ? tr(SALE_NON_HARMONIZED_TEXT) : ""}
             </p>
           </>
         ) : (

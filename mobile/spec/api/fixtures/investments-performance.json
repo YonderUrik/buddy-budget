@@ -1,0 +1,5246 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "period": "3mesi",
+  "calculationPeriod": "3mesi",
+  "range": null,
+  "selection": null,
+  "hasTransactions": true,
+  "benchmark": {
+    "id": "796d8742-2073-438c-83e6-c7368eeec651",
+    "isin": "IE00DEMO0015",
+    "name": "ETF MSCI World Demo",
+    "type": "etf",
+    "currency": "EUR",
+    "priceMode": "auto",
+    "priceUnit": "unita",
+    "exchange": "XETRA",
+    "taxRate": "0.2600",
+    "taxHarmonized": true,
+    "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+    "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+    "createdAt": "2026-10-18T14:45:23.601Z",
+    "updatedAt": "2026-10-18T14:45:23.601Z"
+  },
+  "benchmarkFirstPriceDate": "2025-08-15",
+  "returns": {
+    "fromKey": "2026-07-18",
+    "baseKey": "2026-07-17",
+    "toKey": "2026-10-18",
+    "days": 93,
+    "showAnnual": false,
+    "twr": 0.03801335765602465,
+    "twrAnnual": null,
+    "moneyWeighted": 0.03816360286874443,
+    "moneyWeightedAnnual": null,
+    "real": null,
+    "benchmarkStatus": "ok",
+    "benchmark": {
+      "twr": 0.03414537828229558,
+      "twrAnnual": null,
+      "simulatedValue": 73287.86937118266,
+      "portfolioValue": 73618.967894562,
+      "moneyWeighted": 0.03378689206960783,
+      "depleted": false
+    },
+    "timingInsight": null,
+    "series": [
+      {
+        "date": "2026-07-17",
+        "portfolio": 0,
+        "benchmark": 0,
+        "label": "17 lug"
+      },
+      {
+        "date": "2026-07-18",
+        "portfolio": 0,
+        "benchmark": 0,
+        "label": "18 lug"
+      },
+      {
+        "date": "2026-07-19",
+        "portfolio": 0,
+        "benchmark": 0,
+        "label": "19 lug"
+      },
+      {
+        "date": "2026-07-20",
+        "portfolio": 0.006971573997248015,
+        "benchmark": 0.0007851951500590371,
+        "label": "20 lug"
+      },
+      {
+        "date": "2026-07-21",
+        "portfolio": 0.005892373411815921,
+        "benchmark": -0.0041575667992549414,
+        "label": "21 lug"
+      },
+      {
+        "date": "2026-07-22",
+        "portfolio": 0.007448451354672203,
+        "benchmark": -0.0029202616332981712,
+        "label": "22 lug"
+      },
+      {
+        "date": "2026-07-23",
+        "portfolio": 0.013387257845382639,
+        "benchmark": 0.004905855009240678,
+        "label": "23 lug"
+      },
+      {
+        "date": "2026-07-24",
+        "portfolio": 0.007237240768740438,
+        "benchmark": -0.0007252213724400214,
+        "label": "24 lug"
+      },
+      {
+        "date": "2026-07-25",
+        "portfolio": 0.007237240768740438,
+        "benchmark": -0.0007252213724400214,
+        "label": "25 lug"
+      },
+      {
+        "date": "2026-07-26",
+        "portfolio": 0.007237240768740438,
+        "benchmark": -0.0007252213724400214,
+        "label": "26 lug"
+      },
+      {
+        "date": "2026-07-27",
+        "portfolio": 0.0012621621387109982,
+        "benchmark": -0.011227091170291414,
+        "label": "27 lug"
+      },
+      {
+        "date": "2026-07-28",
+        "portfolio": 0.0057087182837947115,
+        "benchmark": -0.006063810254039681,
+        "label": "28 lug"
+      },
+      {
+        "date": "2026-07-29",
+        "portfolio": 0.005294032011291971,
+        "benchmark": -0.0024174045747997752,
+        "label": "29 lug"
+      },
+      {
+        "date": "2026-07-30",
+        "portfolio": 0.009737114591568341,
+        "benchmark": 0.006670006744743162,
+        "label": "30 lug"
+      },
+      {
+        "date": "2026-07-31",
+        "portfolio": 0.013675697365917783,
+        "benchmark": 0.011807452802943708,
+        "label": "31 lug"
+      },
+      {
+        "date": "2026-08-01",
+        "portfolio": 0.013675697365917783,
+        "benchmark": 0.011807452802943708,
+        "label": "1 ago"
+      },
+      {
+        "date": "2026-08-02",
+        "portfolio": 0.013675697365917783,
+        "benchmark": 0.011807452802943708,
+        "label": "2 ago"
+      },
+      {
+        "date": "2026-08-03",
+        "portfolio": 0.01806092006017712,
+        "benchmark": 0.017123897520499476,
+        "label": "3 ago"
+      },
+      {
+        "date": "2026-08-04",
+        "portfolio": 0.017041321282954103,
+        "benchmark": 0.012770723938856143,
+        "label": "4 ago"
+      },
+      {
+        "date": "2026-08-05",
+        "portfolio": 0.013732866397253796,
+        "benchmark": 0.004523868179482138,
+        "label": "5 ago"
+      },
+      {
+        "date": "2026-08-06",
+        "portfolio": 0.017391871857909358,
+        "benchmark": 0.014450912385692183,
+        "label": "6 ago"
+      },
+      {
+        "date": "2026-08-07",
+        "portfolio": 0.018512763071513394,
+        "benchmark": 0.012360134230541053,
+        "label": "7 ago"
+      },
+      {
+        "date": "2026-08-08",
+        "portfolio": 0.018512763071513394,
+        "benchmark": 0.012360134230541053,
+        "label": "8 ago"
+      },
+      {
+        "date": "2026-08-09",
+        "portfolio": 0.018838912782386474,
+        "benchmark": 0.012360134230541053,
+        "label": "9 ago"
+      },
+      {
+        "date": "2026-08-10",
+        "portfolio": 0.011304161038910854,
+        "benchmark": -0.0010804506706453276,
+        "label": "10 ago"
+      },
+      {
+        "date": "2026-08-11",
+        "portfolio": 0.013275848193817108,
+        "benchmark": -0.0004161257493262571,
+        "label": "11 ago"
+      },
+      {
+        "date": "2026-08-12",
+        "portfolio": 0.01579127118760626,
+        "benchmark": 0.0075133303254175665,
+        "label": "12 ago"
+      },
+      {
+        "date": "2026-08-13",
+        "portfolio": 0.016705536990899272,
+        "benchmark": 0.0045432443230204456,
+        "label": "13 ago"
+      },
+      {
+        "date": "2026-08-14",
+        "portfolio": 0.012415871168927728,
+        "benchmark": -0.0016146786282060788,
+        "label": "14 ago"
+      },
+      {
+        "date": "2026-08-15",
+        "portfolio": 0.014092513380478788,
+        "benchmark": -0.0016146786282060788,
+        "label": "15 ago"
+      },
+      {
+        "date": "2026-08-16",
+        "portfolio": 0.014092513380478788,
+        "benchmark": -0.0016146786282060788,
+        "label": "16 ago"
+      },
+      {
+        "date": "2026-08-17",
+        "portfolio": 0.011547835813397134,
+        "benchmark": -0.007438593771769364,
+        "label": "17 ago"
+      },
+      {
+        "date": "2026-08-18",
+        "portfolio": 0.013611390554429503,
+        "benchmark": -0.0045017240154382465,
+        "label": "18 ago"
+      },
+      {
+        "date": "2026-08-19",
+        "portfolio": 0.017828121196316715,
+        "benchmark": 0.0023721935732099464,
+        "label": "19 ago"
+      },
+      {
+        "date": "2026-08-20",
+        "portfolio": 0.019167457522044185,
+        "benchmark": 0.006088722438589045,
+        "label": "20 ago"
+      },
+      {
+        "date": "2026-08-21",
+        "portfolio": 0.019557313264834786,
+        "benchmark": 0.01172164416727317,
+        "label": "21 ago"
+      },
+      {
+        "date": "2026-08-22",
+        "portfolio": 0.019557313264834786,
+        "benchmark": 0.01172164416727317,
+        "label": "22 ago"
+      },
+      {
+        "date": "2026-08-23",
+        "portfolio": 0.019557313264834786,
+        "benchmark": 0.01172164416727317,
+        "label": "23 ago"
+      },
+      {
+        "date": "2026-08-24",
+        "portfolio": 0.018625275026286525,
+        "benchmark": 0.009536753314935087,
+        "label": "24 ago"
+      },
+      {
+        "date": "2026-08-25",
+        "portfolio": 0.013136069791313654,
+        "benchmark": -0.0012354598189531218,
+        "label": "25 ago"
+      },
+      {
+        "date": "2026-08-26",
+        "portfolio": 0.018455307099430884,
+        "benchmark": 0.010661492313668308,
+        "label": "26 ago"
+      },
+      {
+        "date": "2026-08-27",
+        "portfolio": 0.013413754153937196,
+        "benchmark": 0.000877462500242121,
+        "label": "27 ago"
+      },
+      {
+        "date": "2026-08-28",
+        "portfolio": 0.011592213249070449,
+        "benchmark": -0.00022697768145074626,
+        "label": "28 ago"
+      },
+      {
+        "date": "2026-08-29",
+        "portfolio": 0.011592213249070449,
+        "benchmark": -0.00022697768145074626,
+        "label": "29 ago"
+      },
+      {
+        "date": "2026-08-30",
+        "portfolio": 0.011592213249070449,
+        "benchmark": -0.00022697768145074626,
+        "label": "30 ago"
+      },
+      {
+        "date": "2026-08-31",
+        "portfolio": 0.014775205618776432,
+        "benchmark": 0.009729592076818117,
+        "label": "31 ago"
+      },
+      {
+        "date": "2026-09-01",
+        "portfolio": 0.013466810676311614,
+        "benchmark": 0.00619852058530701,
+        "label": "1 set"
+      },
+      {
+        "date": "2026-09-02",
+        "portfolio": 0.011342893546541388,
+        "benchmark": 0.005568334583555989,
+        "label": "2 set"
+      },
+      {
+        "date": "2026-09-03",
+        "portfolio": 0.014847751919545349,
+        "benchmark": 0.00811952681612138,
+        "label": "3 set"
+      },
+      {
+        "date": "2026-09-04",
+        "portfolio": 0.01927589996903767,
+        "benchmark": 0.015545203158864984,
+        "label": "4 set"
+      },
+      {
+        "date": "2026-09-05",
+        "portfolio": 0.01927589996903767,
+        "benchmark": 0.015545203158864984,
+        "label": "5 set"
+      },
+      {
+        "date": "2026-09-06",
+        "portfolio": 0.01958884517570425,
+        "benchmark": 0.015545203158864984,
+        "label": "6 set"
+      },
+      {
+        "date": "2026-09-07",
+        "portfolio": 0.021170896991381527,
+        "benchmark": 0.016328552961920373,
+        "label": "7 set"
+      },
+      {
+        "date": "2026-09-08",
+        "portfolio": 0.02884394057203532,
+        "benchmark": 0.02413898415492799,
+        "label": "8 set"
+      },
+      {
+        "date": "2026-09-09",
+        "portfolio": 0.0314749125369731,
+        "benchmark": 0.031742736483525213,
+        "label": "9 set"
+      },
+      {
+        "date": "2026-09-10",
+        "portfolio": 0.03164998542986219,
+        "benchmark": 0.0317353550955104,
+        "label": "10 set"
+      },
+      {
+        "date": "2026-09-11",
+        "portfolio": 0.03050386351853107,
+        "benchmark": 0.03354194981209746,
+        "label": "11 set"
+      },
+      {
+        "date": "2026-09-12",
+        "portfolio": 0.03050386351853107,
+        "benchmark": 0.03354194981209746,
+        "label": "12 set"
+      },
+      {
+        "date": "2026-09-13",
+        "portfolio": 0.030513601423546532,
+        "benchmark": 0.03354194981209746,
+        "label": "13 set"
+      },
+      {
+        "date": "2026-09-14",
+        "portfolio": 0.026458333217903585,
+        "benchmark": 0.028866763178314825,
+        "label": "14 set"
+      },
+      {
+        "date": "2026-09-15",
+        "portfolio": 0.024610671624683444,
+        "benchmark": 0.03032458731120946,
+        "label": "15 set"
+      },
+      {
+        "date": "2026-09-16",
+        "portfolio": 0.024675591149354803,
+        "benchmark": 0.03134321885723179,
+        "label": "16 set"
+      },
+      {
+        "date": "2026-09-17",
+        "portfolio": 0.024377872984428617,
+        "benchmark": 0.03248087528499077,
+        "label": "17 set"
+      },
+      {
+        "date": "2026-09-18",
+        "portfolio": 0.020903294820488805,
+        "benchmark": 0.026563770117742358,
+        "label": "18 set"
+      },
+      {
+        "date": "2026-09-19",
+        "portfolio": 0.020903294820488805,
+        "benchmark": 0.026563770117742358,
+        "label": "19 set"
+      },
+      {
+        "date": "2026-09-20",
+        "portfolio": 0.020903294820488805,
+        "benchmark": 0.026563770117742358,
+        "label": "20 set"
+      },
+      {
+        "date": "2026-09-21",
+        "portfolio": 0.028370185385379276,
+        "benchmark": 0.02795792977901046,
+        "label": "21 set"
+      },
+      {
+        "date": "2026-09-22",
+        "portfolio": 0.02552008317049137,
+        "benchmark": 0.02306868289280284,
+        "label": "22 set"
+      },
+      {
+        "date": "2026-09-23",
+        "portfolio": 0.023049255082435716,
+        "benchmark": 0.02066788644103612,
+        "label": "23 set"
+      },
+      {
+        "date": "2026-09-24",
+        "portfolio": 0.02113200587130115,
+        "benchmark": 0.02052025868074292,
+        "label": "24 set"
+      },
+      {
+        "date": "2026-09-25",
+        "portfolio": 0.025121440264677775,
+        "benchmark": 0.02481622650527271,
+        "label": "25 set"
+      },
+      {
+        "date": "2026-09-26",
+        "portfolio": 0.025121440264677775,
+        "benchmark": 0.02481622650527271,
+        "label": "26 set"
+      },
+      {
+        "date": "2026-09-27",
+        "portfolio": 0.025121440264677775,
+        "benchmark": 0.02481622650527271,
+        "label": "27 set"
+      },
+      {
+        "date": "2026-09-28",
+        "portfolio": 0.0323129692061197,
+        "benchmark": 0.032336015545203045,
+        "label": "28 set"
+      },
+      {
+        "date": "2026-09-29",
+        "portfolio": 0.036321296821931526,
+        "benchmark": 0.04084491057909756,
+        "label": "29 set"
+      },
+      {
+        "date": "2026-09-30",
+        "portfolio": 0.03437205489776818,
+        "benchmark": 0.03480693518310907,
+        "label": "30 set"
+      },
+      {
+        "date": "2026-10-01",
+        "portfolio": 0.03630664952621698,
+        "benchmark": 0.03933172603609303,
+        "label": "1 ott"
+      },
+      {
+        "date": "2026-10-02",
+        "portfolio": 0.03283165393213894,
+        "benchmark": 0.037276932147513264,
+        "label": "2 ott"
+      },
+      {
+        "date": "2026-10-03",
+        "portfolio": 0.03283165393213894,
+        "benchmark": 0.037276932147513264,
+        "label": "3 ott"
+      },
+      {
+        "date": "2026-10-04",
+        "portfolio": 0.03283165393213894,
+        "benchmark": 0.037276932147513264,
+        "label": "4 ott"
+      },
+      {
+        "date": "2026-10-05",
+        "portfolio": 0.03970567004172776,
+        "benchmark": 0.04047122781085544,
+        "label": "5 ott"
+      },
+      {
+        "date": "2026-10-06",
+        "portfolio": 0.03392610581769251,
+        "benchmark": 0.03247164854997253,
+        "label": "6 ott"
+      },
+      {
+        "date": "2026-10-07",
+        "portfolio": 0.03337485964397402,
+        "benchmark": 0.03418689858987789,
+        "label": "7 ott"
+      },
+      {
+        "date": "2026-10-08",
+        "portfolio": 0.02907850792893263,
+        "benchmark": 0.025449180527529425,
+        "label": "8 ott"
+      },
+      {
+        "date": "2026-10-09",
+        "portfolio": 0.03220783461405641,
+        "benchmark": 0.0340245080535555,
+        "label": "9 ott"
+      },
+      {
+        "date": "2026-10-10",
+        "portfolio": 0.03220783461405641,
+        "benchmark": 0.0340245080535555,
+        "label": "10 ott"
+      },
+      {
+        "date": "2026-10-11",
+        "portfolio": 0.03220783461405641,
+        "benchmark": 0.0340245080535555,
+        "label": "11 ott"
+      },
+      {
+        "date": "2026-10-12",
+        "portfolio": 0.035665532124502075,
+        "benchmark": 0.03382613325066175,
+        "label": "12 ott"
+      },
+      {
+        "date": "2026-10-13",
+        "portfolio": 0.035327212849486145,
+        "benchmark": 0.028708986009501558,
+        "label": "13 ott"
+      },
+      {
+        "date": "2026-10-14",
+        "portfolio": 0.035465357380161766,
+        "benchmark": 0.028113861600820078,
+        "label": "14 ott"
+      },
+      {
+        "date": "2026-10-15",
+        "portfolio": 0.037428648685306376,
+        "benchmark": 0.03510311337719707,
+        "label": "15 ott"
+      },
+      {
+        "date": "2026-10-16",
+        "portfolio": 0.03579333107002691,
+        "benchmark": 0.03414537828229558,
+        "label": "16 ott"
+      },
+      {
+        "date": "2026-10-17",
+        "portfolio": 0.03579333107002691,
+        "benchmark": 0.03414537828229558,
+        "label": "17 ott"
+      },
+      {
+        "date": "2026-10-18",
+        "portfolio": 0.03801335765602465,
+        "benchmark": 0.03414537828229558,
+        "label": "18 ott"
+      }
+    ],
+    "daily": [
+      {
+        "date": "2026-07-18",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-07-19",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-07-20",
+        "ret": 0.006971573997248036,
+        "gain": 540.2022081977921
+      },
+      {
+        "date": "2026-07-21",
+        "ret": -0.0010717289477675859,
+        "gain": -87.3221790487296
+      },
+      {
+        "date": "2026-07-22",
+        "ret": 0.00154696266120233,
+        "gain": 125.90811993072566
+      },
+      {
+        "date": "2026-07-23",
+        "ret": 0.005894898625060852,
+        "gain": 480.53117346114595
+      },
+      {
+        "date": "2026-07-24",
+        "ret": -0.006068772849698342,
+        "gain": -497.6210164900549
+      },
+      {
+        "date": "2026-07-25",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-07-26",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-07-27",
+        "ret": -0.005932146259275793,
+        "gain": -483.46608870013733
+      },
+      {
+        "date": "2026-07-28",
+        "ret": 0.0044409509449412675,
+        "gain": 359.787584525664
+      },
+      {
+        "date": "2026-07-29",
+        "ret": -0.00041233238308844975,
+        "gain": -33.553826253759325
+      },
+      {
+        "date": "2026-07-30",
+        "ret": 0.004419684628374028,
+        "gain": 359.5065253304201
+      },
+      {
+        "date": "2026-07-31",
+        "ret": 0.003900602164101565,
+        "gain": 318.68554823136947
+      },
+      {
+        "date": "2026-08-01",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-08-02",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-08-03",
+        "ret": 0.004326060796026179,
+        "gain": 354.82486429841083
+      },
+      {
+        "date": "2026-08-04",
+        "ret": -0.0010015105747923708,
+        "gain": -82.49957253952743
+      },
+      {
+        "date": "2026-08-05",
+        "ret": -0.0032530191413725077,
+        "gain": -267.6995303779695
+      },
+      {
+        "date": "2026-08-06",
+        "ret": 0.0036094375371882982,
+        "gain": 296.06389608079917
+      },
+      {
+        "date": "2026-08-07",
+        "ret": 0.0011017300654831033,
+        "gain": 90.69552460379782
+      },
+      {
+        "date": "2026-08-08",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-08-09",
+        "ret": 0.00032022152563851046,
+        "gain": 26.389999999999418
+      },
+      {
+        "date": "2026-08-10",
+        "ret": -0.007395429884886101,
+        "gain": -609.4699420127581
+      },
+      {
+        "date": "2026-08-11",
+        "ret": 0.001949648019722153,
+        "gain": 159.4855539877026
+      },
+      {
+        "date": "2026-08-12",
+        "ret": 0.002482466150034895,
+        "gain": 203.46718224520737
+      },
+      {
+        "date": "2026-08-13",
+        "ret": 0.0009000528250496046,
+        "gain": 73.95300403889269
+      },
+      {
+        "date": "2026-08-14",
+        "ret": -0.004219182119010902,
+        "gain": -346.98188723136263
+      },
+      {
+        "date": "2026-08-15",
+        "ret": 0.00165608052905688,
+        "gain": 135.61999999999534
+      },
+      {
+        "date": "2026-08-16",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-08-17",
+        "ret": -0.00250931501170337,
+        "gain": -205.4932087638299
+      },
+      {
+        "date": "2026-08-18",
+        "ret": 0.002039997188440398,
+        "gain": 166.64055622609158
+      },
+      {
+        "date": "2026-08-19",
+        "ret": 0.004160105816866086,
+        "gain": 340.51839073974406
+      },
+      {
+        "date": "2026-08-20",
+        "ret": 0.0013158767161524957,
+        "gain": 105.71726617086097
+      },
+      {
+        "date": "2026-08-21",
+        "ret": 0.00038252373534233223,
+        "gain": 30.77231800343725
+      },
+      {
+        "date": "2026-08-22",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-08-23",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-08-24",
+        "ret": -0.0009141597303280574,
+        "gain": -73.56817899529415
+      },
+      {
+        "date": "2026-08-25",
+        "ret": -0.005388836669923876,
+        "gain": -433.2771087776782
+      },
+      {
+        "date": "2026-08-26",
+        "ret": 0.005250269402818736,
+        "gain": 419.8611024925194
+      },
+      {
+        "date": "2026-08-27",
+        "ret": -0.004950195566118684,
+        "gain": -397.94276046664163
+      },
+      {
+        "date": "2026-08-28",
+        "ret": -0.001797430612521562,
+        "gain": -143.77891570760403
+      },
+      {
+        "date": "2026-08-29",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-08-30",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-08-31",
+        "ret": 0.003146517270514333,
+        "gain": 251.241786774699
+      },
+      {
+        "date": "2026-09-01",
+        "ret": -0.0012893446107278687,
+        "gain": -103.27498308838403
+      },
+      {
+        "date": "2026-09-02",
+        "ret": -0.00209569480460124,
+        "gain": -167.646250026708
+      },
+      {
+        "date": "2026-09-03",
+        "ret": 0.003465549019396683,
+        "gain": 276.64749950598343
+      },
+      {
+        "date": "2026-09-04",
+        "ret": 0.00436336193396156,
+        "gain": 324.39444053451007
+      },
+      {
+        "date": "2026-09-05",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-09-06",
+        "ret": 0.0003070269852119711,
+        "gain": 22.925540000011097
+      },
+      {
+        "date": "2026-09-07",
+        "ret": 0.0015516566537217256,
+        "gain": 114.53659984419937
+      },
+      {
+        "date": "2026-09-08",
+        "ret": 0.007513966176729555,
+        "gain": 555.509189696284
+      },
+      {
+        "date": "2026-09-09",
+        "ret": 0.0025572118969518242,
+        "gain": 190.4757986832119
+      },
+      {
+        "date": "2026-09-10",
+        "ret": 0.00016973063596714992,
+        "gain": 12.674840152321849
+      },
+      {
+        "date": "2026-09-11",
+        "ret": -0.0011109600421828174,
+        "gain": -82.97636362472258
+      },
+      {
+        "date": "2026-09-12",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-09-13",
+        "ret": 9.44965405760371e-06,
+        "gain": 0.7050000000017462
+      },
+      {
+        "date": "2026-09-14",
+        "ret": -0.003935191345403844,
+        "gain": -273.91533221048303
+      },
+      {
+        "date": "2026-09-15",
+        "ret": -0.0018000356501835025,
+        "gain": -124.80132347725157
+      },
+      {
+        "date": "2026-09-16",
+        "ret": 6.336018789292381e-05,
+        "gain": 4.385025173556642
+      },
+      {
+        "date": "2026-09-17",
+        "ret": -0.0002905487038997368,
+        "gain": -20.109537992422702
+      },
+      {
+        "date": "2026-09-18",
+        "ret": -0.0033918910741571042,
+        "gain": -234.69230240864272
+      },
+      {
+        "date": "2026-09-19",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-09-20",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-09-21",
+        "ret": 0.007314003787404116,
+        "gain": 529.5987375365366
+      },
+      {
+        "date": "2026-09-22",
+        "ret": -0.0027714749565788273,
+        "gain": -202.14713497369667
+      },
+      {
+        "date": "2026-09-23",
+        "ret": -0.0024093414927740054,
+        "gain": -175.24663375367527
+      },
+      {
+        "date": "2026-09-24",
+        "ret": -0.0018740536700552516,
+        "gain": -135.98334580314986
+      },
+      {
+        "date": "2026-09-25",
+        "ret": 0.003906874302674002,
+        "gain": 282.95572298213665
+      },
+      {
+        "date": "2026-09-26",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-09-27",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-09-28",
+        "ret": 0.007015294636297045,
+        "gain": 510.06836316222325
+      },
+      {
+        "date": "2026-09-29",
+        "ret": 0.003882860852648518,
+        "gain": 284.28241301796515
+      },
+      {
+        "date": "2026-09-30",
+        "ret": -0.0018809243138599692,
+        "gain": -138.24598457745742
+      },
+      {
+        "date": "2026-10-01",
+        "ret": 0.0018703082892548917,
+        "gain": 137.20715517802455
+      },
+      {
+        "date": "2026-10-02",
+        "ret": -0.003353250310288628,
+        "gain": -246.45693351370574
+      },
+      {
+        "date": "2026-10-03",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-10-04",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-10-05",
+        "ret": 0.0066555048767322515,
+        "gain": 487.52549044384796
+      },
+      {
+        "date": "2026-10-06",
+        "ret": -0.0055588464991281426,
+        "gain": -409.90373574248224
+      },
+      {
+        "date": "2026-10-07",
+        "ret": -0.000533158192463514,
+        "gain": -39.09600398267503
+      },
+      {
+        "date": "2026-10-08",
+        "ret": -0.004157592644088066,
+        "gain": -304.7099313708313
+      },
+      {
+        "date": "2026-10-09",
+        "ret": 0.003040901798077341,
+        "gain": 221.94107529016037
+      },
+      {
+        "date": "2026-10-10",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-10-11",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-10-12",
+        "ret": 0.003349807465604708,
+        "gain": 245.23010241932934
+      },
+      {
+        "date": "2026-10-13",
+        "ret": -0.00032666847019800484,
+        "gain": -23.994600514342892
+      },
+      {
+        "date": "2026-10-14",
+        "ret": 0.00013343079266262534,
+        "gain": 9.797617432966945
+      },
+      {
+        "date": "2026-10-15",
+        "ret": 0.0018960473096965543,
+        "gain": 139.24240810108313
+      },
+      {
+        "date": "2026-10-16",
+        "ret": -0.0015763181567734113,
+        "gain": -115.98154698946746
+      },
+      {
+        "date": "2026-10-17",
+        "ret": 0,
+        "gain": 0
+      },
+      {
+        "date": "2026-10-18",
+        "ret": 0.002143310368395901,
+        "gain": 157.45083119999617
+      }
+    ]
+  },
+  "benchmarkVerdict": "even",
+  "inspect": [
+    {
+      "index": 0,
+      "date": "2026-07-17",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-17",
+      "days": 0,
+      "showAnnual": false,
+      "twr": 0,
+      "twrAnnual": null,
+      "moneyWeighted": null,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0,
+        "twrAnnual": null,
+        "simulatedValue": 77486.40528107883,
+        "portfolioValue": 77486.40528107883,
+        "moneyWeighted": null,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 1,
+      "date": "2026-07-18",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-18",
+      "days": 1,
+      "showAnnual": false,
+      "twr": 0,
+      "twrAnnual": null,
+      "moneyWeighted": -1.1102230246251565e-16,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0,
+        "twrAnnual": null,
+        "simulatedValue": 77486.40528107883,
+        "portfolioValue": 77486.40528107883,
+        "moneyWeighted": -1.1102230246251565e-16,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 2,
+      "date": "2026-07-19",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-19",
+      "days": 2,
+      "showAnnual": false,
+      "twr": 0,
+      "twrAnnual": null,
+      "moneyWeighted": 0,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0,
+        "twrAnnual": null,
+        "simulatedValue": 77486.40528107883,
+        "portfolioValue": 77486.40528107883,
+        "moneyWeighted": 0,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 3,
+      "date": "2026-07-20",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-20",
+      "days": 3,
+      "showAnnual": false,
+      "twr": 0.006971573997248015,
+      "twrAnnual": null,
+      "moneyWeighted": 0.006971573997248015,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.0007851951500590371,
+        "twrAnnual": null,
+        "simulatedValue": 80998.49776758105,
+        "portfolioValue": 81477.85802615662,
+        "moneyWeighted": 0.0007851951500594812,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 4,
+      "date": "2026-07-21",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-21",
+      "days": 4,
+      "showAnnual": false,
+      "twr": 0.005892373411815921,
+      "twrAnnual": null,
+      "moneyWeighted": 0.0057804125667033635,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0041575667992549414,
+        "twrAnnual": null,
+        "simulatedValue": 80598.45558604461,
+        "portfolioValue": 81390.5358471079,
+        "moneyWeighted": -0.00432926021926372,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 5,
+      "date": "2026-07-22",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-22",
+      "days": 5,
+      "showAnnual": false,
+      "twr": 0.007448451354672203,
+      "twrAnnual": null,
+      "moneyWeighted": 0.007339077975985653,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0029202616332981712,
+        "twrAnnual": null,
+        "simulatedValue": 80698.5968153596,
+        "portfolioValue": 81516.44396703862,
+        "moneyWeighted": -0.0030311217341002505,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 6,
+      "date": "2026-07-23",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-23",
+      "days": 6,
+      "showAnnual": false,
+      "twr": 0.013387257845382639,
+      "twrAnnual": null,
+      "moneyWeighted": 0.01337418026707704,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.004905855009240678,
+        "twrAnnual": null,
+        "simulatedValue": 81332.00315916994,
+        "portfolioValue": 81996.97514049977,
+        "moneyWeighted": 0.004978511529064145,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 7,
+      "date": "2026-07-24",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-24",
+      "days": 7,
+      "showAnnual": false,
+      "twr": 0.007237240768740438,
+      "twrAnnual": null,
+      "moneyWeighted": 0.007069338240133671,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0007252213724400214,
+        "twrAnnual": null,
+        "simulatedValue": 80876.25228481548,
+        "portfolioValue": 81499.35412400971,
+        "moneyWeighted": -0.0007727712358771566,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 8,
+      "date": "2026-07-25",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-25",
+      "days": 8,
+      "showAnnual": false,
+      "twr": 0.007237240768740438,
+      "twrAnnual": null,
+      "moneyWeighted": 0.007052914613686623,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0007252213724400214,
+        "twrAnnual": null,
+        "simulatedValue": 80876.25228481548,
+        "portfolioValue": 81499.35412400971,
+        "moneyWeighted": -0.0007709774348069187,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 9,
+      "date": "2026-07-26",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-26",
+      "days": 9,
+      "showAnnual": false,
+      "twr": 0.007237240768740438,
+      "twrAnnual": null,
+      "moneyWeighted": 0.007040189140257835,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0007252213724400214,
+        "twrAnnual": null,
+        "simulatedValue": 80876.25228481548,
+        "portfolioValue": 81499.35412400971,
+        "moneyWeighted": -0.0007695880536661148,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 10,
+      "date": "2026-07-27",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-27",
+      "days": 10,
+      "showAnnual": false,
+      "twr": 0.0012621621387109982,
+      "twrAnnual": null,
+      "moneyWeighted": 0.0009791030237737974,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.011227091170291414,
+        "twrAnnual": null,
+        "simulatedValue": 80026.28399841496,
+        "portfolioValue": 81015.88803530957,
+        "moneyWeighted": -0.011405487266488823,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 11,
+      "date": "2026-07-28",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-28",
+      "days": 11,
+      "showAnnual": false,
+      "twr": 0.0057087182837947115,
+      "twrAnnual": null,
+      "moneyWeighted": 0.005475621518297169,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.006063810254039681,
+        "twrAnnual": null,
+        "simulatedValue": 80444.1738710821,
+        "portfolioValue": 81375.67561983524,
+        "moneyWeighted": -0.006168638257339265,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 12,
+      "date": "2026-07-29",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-29",
+      "days": 12,
+      "showAnnual": false,
+      "twr": 0.005294032011291971,
+      "twrAnnual": null,
+      "moneyWeighted": 0.005051202070446736,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0024174045747997752,
+        "twrAnnual": null,
+        "simulatedValue": 80739.29552526017,
+        "portfolioValue": 81342.12179358148,
+        "moneyWeighted": -0.0024771613320964114,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 13,
+      "date": "2026-07-30",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-30",
+      "days": 13,
+      "showAnnual": false,
+      "twr": 0.009737114591568341,
+      "twrAnnual": null,
+      "moneyWeighted": 0.009533175248161996,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.006670006744743162,
+        "twrAnnual": null,
+        "simulatedValue": 81474.7846882156,
+        "portfolioValue": 81701.6283189119,
+        "moneyWeighted": 0.006702451470487203,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 14,
+      "date": "2026-07-31",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-07-31",
+      "days": 14,
+      "showAnnual": false,
+      "twr": 0.013675697365917783,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013500453096308984,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.011807452802943708,
+        "twrAnnual": null,
+        "simulatedValue": 81890.58361798874,
+        "portfolioValue": 82020.31386714327,
+        "moneyWeighted": 0.01188268303419604,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 15,
+      "date": "2026-08-01",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-01",
+      "days": 15,
+      "showAnnual": false,
+      "twr": 0.013675697365917783,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013492125145845302,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.011807452802943708,
+        "twrAnnual": null,
+        "simulatedValue": 81890.58361798874,
+        "portfolioValue": 82020.31386714327,
+        "moneyWeighted": 0.011875356525152148,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 16,
+      "date": "2026-08-02",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-02",
+      "days": 16,
+      "showAnnual": false,
+      "twr": 0.013675697365917783,
+      "twrAnnual": null,
+      "moneyWeighted": 0.01348484534083183,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.011807452802943708,
+        "twrAnnual": null,
+        "simulatedValue": 81890.58361798874,
+        "portfolioValue": 82020.31386714327,
+        "moneyWeighted": 0.011868952251201437,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 17,
+      "date": "2026-08-03",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-03",
+      "days": 17,
+      "showAnnual": false,
+      "twr": 0.01806092006017712,
+      "twrAnnual": null,
+      "moneyWeighted": 0.01789602290085246,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.017123897520499476,
+        "twrAnnual": null,
+        "simulatedValue": 82320.86979495587,
+        "portfolioValue": 82375.13873144168,
+        "moneyWeighted": 0.017220362946457568,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 18,
+      "date": "2026-08-04",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-04",
+      "days": 18,
+      "showAnnual": false,
+      "twr": 0.017041321282954103,
+      "twrAnnual": null,
+      "moneyWeighted": 0.016861744318587446,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.012770723938856143,
+        "twrAnnual": null,
+        "simulatedValue": 81968.54591732121,
+        "portfolioValue": 82292.63915890215,
+        "moneyWeighted": 0.012828496144125845,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 19,
+      "date": "2026-08-05",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-05",
+      "days": 19,
+      "showAnnual": false,
+      "twr": 0.013732866397253796,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013525174233273818,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.004523868179482138,
+        "twrAnnual": null,
+        "simulatedValue": 81301.08707495188,
+        "portfolioValue": 82024.93962852418,
+        "moneyWeighted": 0.004520756745027388,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 20,
+      "date": "2026-08-06",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-06",
+      "days": 20,
+      "showAnnual": false,
+      "twr": 0.017391871857909358,
+      "twrAnnual": null,
+      "moneyWeighted": 0.01720234935720577,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.014450912385692183,
+        "twrAnnual": null,
+        "simulatedValue": 82104.53188196146,
+        "portfolioValue": 82321.00352460498,
+        "moneyWeighted": 0.01451035307026416,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 21,
+      "date": "2026-08-07",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-07",
+      "days": 21,
+      "showAnnual": false,
+      "twr": 0.018512763071513394,
+      "twrAnnual": null,
+      "moneyWeighted": 0.018324577741407166,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.012360134230541053,
+        "twrAnnual": null,
+        "simulatedValue": 81935.3148606134,
+        "portfolioValue": 82411.69904920878,
+        "moneyWeighted": 0.012402213983085053,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 22,
+      "date": "2026-08-08",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-08",
+      "days": 22,
+      "showAnnual": false,
+      "twr": 0.018512763071513394,
+      "twrAnnual": null,
+      "moneyWeighted": 0.018319440290383238,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.012360134230541053,
+        "twrAnnual": null,
+        "simulatedValue": 81935.3148606134,
+        "portfolioValue": 82411.69904920878,
+        "moneyWeighted": 0.012398744294704889,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 23,
+      "date": "2026-08-09",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-09",
+      "days": 23,
+      "showAnnual": false,
+      "twr": 0.018838912782386474,
+      "twrAnnual": null,
+      "moneyWeighted": 0.01864265777175822,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.012360134230541053,
+        "twrAnnual": null,
+        "simulatedValue": 81908.9248606134,
+        "portfolioValue": 82411.69904920878,
+        "moneyWeighted": 0.012395577778715472,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 24,
+      "date": "2026-08-10",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-10",
+      "days": 24,
+      "showAnnual": false,
+      "twr": 0.011304161038910854,
+      "twrAnnual": null,
+      "moneyWeighted": 0.011067444122085712,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0010804506706453276,
+        "twrAnnual": null,
+        "simulatedValue": 80821.46218648241,
+        "portfolioValue": 81802.22910719602,
+        "moneyWeighted": -0.001115498788208824,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 25,
+      "date": "2026-08-11",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-11",
+      "days": 25,
+      "showAnnual": false,
+      "twr": 0.013275848193817108,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013045968086923931,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0004161257493262571,
+        "twrAnnual": null,
+        "simulatedValue": 80875.21197198213,
+        "portfolioValue": 81961.71466118372,
+        "moneyWeighted": -0.0004477544115051302,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 26,
+      "date": "2026-08-12",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-12",
+      "days": 26,
+      "showAnnual": false,
+      "twr": 0.01579127118760626,
+      "twrAnnual": null,
+      "moneyWeighted": 0.01557008159191442,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.0075133303254175665,
+        "twrAnnual": null,
+        "simulatedValue": 81516.77538390509,
+        "portfolioValue": 82165.18184342893,
+        "moneyWeighted": 0.007518581628241039,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 27,
+      "date": "2026-08-13",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-13",
+      "days": 27,
+      "showAnnual": false,
+      "twr": 0.016705536990899272,
+      "twrAnnual": null,
+      "moneyWeighted": 0.016485538230602392,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.0045432443230204456,
+        "twrAnnual": null,
+        "simulatedValue": 81276.46905123345,
+        "portfolioValue": 82239.13484746782,
+        "moneyWeighted": 0.004533897639335871,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 28,
+      "date": "2026-08-14",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-14",
+      "days": 28,
+      "showAnnual": false,
+      "twr": 0.012415871168927728,
+      "twrAnnual": null,
+      "moneyWeighted": 0.012175678583538962,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0016146786282060788,
+        "twrAnnual": null,
+        "simulatedValue": 80778.23840064305,
+        "portfolioValue": 81892.15296023646,
+        "moneyWeighted": -0.001651213303250354,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 29,
+      "date": "2026-08-15",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-15",
+      "days": 29,
+      "showAnnual": false,
+      "twr": 0.014092513380478788,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013857089072102369,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0016146786282060788,
+        "twrAnnual": null,
+        "simulatedValue": 80642.61840064306,
+        "portfolioValue": 81892.15296023646,
+        "moneyWeighted": -0.0016509674988696155,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 30,
+      "date": "2026-08-16",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-16",
+      "days": 30,
+      "showAnnual": false,
+      "twr": 0.014092513380478788,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013855923011201421,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0016146786282060788,
+        "twrAnnual": null,
+        "simulatedValue": 80642.61840064306,
+        "portfolioValue": 81892.15296023646,
+        "moneyWeighted": -0.001650830828518468,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 31,
+      "date": "2026-08-17",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-17",
+      "days": 31,
+      "showAnnual": false,
+      "twr": 0.011547835813397134,
+      "twrAnnual": null,
+      "moneyWeighted": 0.011304798692283846,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.007438593771769364,
+        "twrAnnual": null,
+        "simulatedValue": 80172.20306453336,
+        "portfolioValue": 81686.65975147263,
+        "moneyWeighted": -0.007487887383625602,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 32,
+      "date": "2026-08-18",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-18",
+      "days": 32,
+      "showAnnual": false,
+      "twr": 0.013611390554429503,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013371709518267716,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0045017240154382465,
+        "twrAnnual": null,
+        "simulatedValue": 80409.42296548982,
+        "portfolioValue": 81853.30030769872,
+        "moneyWeighted": -0.004544012655655072,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 33,
+      "date": "2026-08-19",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-19",
+      "days": 33,
+      "showAnnual": false,
+      "twr": 0.017828121196316715,
+      "twrAnnual": null,
+      "moneyWeighted": 0.017595819041538396,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.0023721935732099464,
+        "twrAnnual": null,
+        "simulatedValue": 79110.62691150015,
+        "portfolioValue": 80339.79541789346,
+        "moneyWeighted": 0.0023449918796762947,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 34,
+      "date": "2026-08-20",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-20",
+      "days": 34,
+      "showAnnual": false,
+      "twr": 0.019167457522044185,
+      "twrAnnual": null,
+      "moneyWeighted": 0.01891897965341438,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.006088722438589045,
+        "twrAnnual": null,
+        "simulatedValue": 79403.94802551344,
+        "portfolioValue": 80445.51268406432,
+        "moneyWeighted": 0.005987937615664629,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 35,
+      "date": "2026-08-21",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-21",
+      "days": 35,
+      "showAnnual": false,
+      "twr": 0.019557313264834786,
+      "twrAnnual": null,
+      "moneyWeighted": 0.019312051152396537,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.01172164416727317,
+        "twrAnnual": null,
+        "simulatedValue": 79848.51739022325,
+        "portfolioValue": 80476.28500206776,
+        "moneyWeighted": 0.01151382739117679,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 36,
+      "date": "2026-08-22",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-22",
+      "days": 36,
+      "showAnnual": false,
+      "twr": 0.019557313264834786,
+      "twrAnnual": null,
+      "moneyWeighted": 0.019322482639205996,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.01172164416727317,
+        "twrAnnual": null,
+        "simulatedValue": 79848.51739022325,
+        "portfolioValue": 80476.28500206776,
+        "moneyWeighted": 0.011520074358366106,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 37,
+      "date": "2026-08-23",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-23",
+      "days": 37,
+      "showAnnual": false,
+      "twr": 0.019557313264834786,
+      "twrAnnual": null,
+      "moneyWeighted": 0.019332366126009193,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.01172164416727317,
+        "twrAnnual": null,
+        "simulatedValue": 79848.51739022325,
+        "portfolioValue": 80476.28500206776,
+        "moneyWeighted": 0.011525991857844975,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 38,
+      "date": "2026-08-24",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-24",
+      "days": 38,
+      "showAnnual": false,
+      "twr": 0.018625275026286525,
+      "twrAnnual": null,
+      "moneyWeighted": 0.018426471987312176,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.009536753314935087,
+        "twrAnnual": null,
+        "simulatedValue": 79676.07836391155,
+        "portfolioValue": 80402.71682307246,
+        "moneyWeighted": 0.009386270370114635,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 39,
+      "date": "2026-08-25",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-25",
+      "days": 39,
+      "showAnnual": false,
+      "twr": 0.013136069791313654,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013042038399597944,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.0012354598189531218,
+        "twrAnnual": null,
+        "simulatedValue": 78825.89862058854,
+        "portfolioValue": 79969.43971429479,
+        "moneyWeighted": -0.0011914655342594171,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 40,
+      "date": "2026-08-26",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-26",
+      "days": 40,
+      "showAnnual": false,
+      "twr": 0.018455307099430884,
+      "twrAnnual": null,
+      "moneyWeighted": 0.0182759826127874,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.010661492313668308,
+        "twrAnnual": null,
+        "simulatedValue": 79764.846595784,
+        "portfolioValue": 80389.3008167873,
+        "moneyWeighted": 0.010500116055798925,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 41,
+      "date": "2026-08-27",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-27",
+      "days": 41,
+      "showAnnual": false,
+      "twr": 0.013413754153937196,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013326270329570677,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.000877462500242121,
+        "twrAnnual": null,
+        "simulatedValue": 78992.65764518896,
+        "portfolioValue": 79991.35805632066,
+        "moneyWeighted": 0.0008849286995258332,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 42,
+      "date": "2026-08-28",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-28",
+      "days": 42,
+      "showAnnual": false,
+      "twr": 0.011592213249070449,
+      "twrAnnual": null,
+      "moneyWeighted": 0.011539750530108028,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.00022697768145074626,
+        "twrAnnual": null,
+        "simulatedValue": 78905.49146508123,
+        "portfolioValue": 79847.57914061306,
+        "moneyWeighted": -0.00020103550038297335,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 43,
+      "date": "2026-08-29",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-29",
+      "days": 43,
+      "showAnnual": false,
+      "twr": 0.011592213249070449,
+      "twrAnnual": null,
+      "moneyWeighted": 0.011544141054799617,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.00022697768145074626,
+        "twrAnnual": null,
+        "simulatedValue": 78905.49146508123,
+        "portfolioValue": 79847.57914061306,
+        "moneyWeighted": -0.000201112348259036,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 44,
+      "date": "2026-08-30",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-30",
+      "days": 44,
+      "showAnnual": false,
+      "twr": 0.011592213249070449,
+      "twrAnnual": null,
+      "moneyWeighted": 0.011548336111266488,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": -0.00022697768145074626,
+        "twrAnnual": null,
+        "simulatedValue": 78905.49146508123,
+        "portfolioValue": 79847.57914061306,
+        "moneyWeighted": -0.00020118575757688273,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 45,
+      "date": "2026-08-31",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-08-31",
+      "days": 45,
+      "showAnnual": false,
+      "twr": 0.014775205618776432,
+      "twrAnnual": null,
+      "moneyWeighted": 0.014686819774853754,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.009729592076818117,
+        "twrAnnual": null,
+        "simulatedValue": 79691.2978556764,
+        "portfolioValue": 80098.82092738776,
+        "moneyWeighted": 0.009602585226305749,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 46,
+      "date": "2026-09-01",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-01",
+      "days": 46,
+      "showAnnual": false,
+      "twr": 0.013466810676311614,
+      "twrAnnual": null,
+      "moneyWeighted": 0.013402824849884531,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.00619852058530701,
+        "twrAnnual": null,
+        "simulatedValue": 79412.61366914987,
+        "portfolioValue": 79995.54594429937,
+        "moneyWeighted": 0.006127744324901707,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 47,
+      "date": "2026-09-02",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-02",
+      "days": 47,
+      "showAnnual": false,
+      "twr": 0.011342893546541388,
+      "twrAnnual": null,
+      "moneyWeighted": 0.011314191530149786,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.005568334583555989,
+        "twrAnnual": null,
+        "simulatedValue": 79362.87724390879,
+        "portfolioValue": 79827.89969427267,
+        "moneyWeighted": 0.0055087779197491304,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 48,
+      "date": "2026-09-03",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-03",
+      "days": 48,
+      "showAnnual": false,
+      "twr": 0.014847751919545349,
+      "twrAnnual": null,
+      "moneyWeighted": 0.01477236553234107,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.00811952681612138,
+        "twrAnnual": null,
+        "simulatedValue": 73804.74702252021,
+        "portfolioValue": 74345.06819377866,
+        "moneyWeighted": 0.008024911816711722,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 49,
+      "date": "2026-09-04",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-04",
+      "days": 49,
+      "showAnnual": false,
+      "twr": 0.01927589996903767,
+      "twrAnnual": null,
+      "moneyWeighted": 0.018856232695323438,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.015545203158864984,
+        "twrAnnual": null,
+        "simulatedValue": 74348.38311860713,
+        "portfolioValue": 74669.46263431317,
+        "moneyWeighted": 0.014839730588831923,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 50,
+      "date": "2026-09-05",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-05",
+      "days": 50,
+      "showAnnual": false,
+      "twr": 0.01927589996903767,
+      "twrAnnual": null,
+      "moneyWeighted": 0.018887972327234825,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.015545203158864984,
+        "twrAnnual": null,
+        "simulatedValue": 74348.38311860713,
+        "portfolioValue": 74669.46263431317,
+        "moneyWeighted": 0.014864753342875181,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 51,
+      "date": "2026-09-06",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-06",
+      "days": 51,
+      "showAnnual": false,
+      "twr": 0.01958884517570425,
+      "twrAnnual": null,
+      "moneyWeighted": 0.019206299659483506,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.015545203158864984,
+        "twrAnnual": null,
+        "simulatedValue": 73471.68063060712,
+        "portfolioValue": 73815.68568631317,
+        "moneyWeighted": 0.01488888053972559,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 52,
+      "date": "2026-09-07",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-07",
+      "days": 52,
+      "showAnnual": false,
+      "twr": 0.021170896991381527,
+      "twrAnnual": null,
+      "moneyWeighted": 0.020680296763392114,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.016328552961920373,
+        "twrAnnual": null,
+        "simulatedValue": 73528.35366335162,
+        "portfolioValue": 73930.22228615737,
+        "moneyWeighted": 0.01562783277611368,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 53,
+      "date": "2026-09-08",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-08",
+      "days": 53,
+      "showAnnual": false,
+      "twr": 0.02884394057203532,
+      "twrAnnual": null,
+      "moneyWeighted": 0.02771112107873197,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.02413898415492799,
+        "twrAnnual": null,
+        "simulatedValue": 74093.41517357789,
+        "portfolioValue": 74485.73147585365,
+        "moneyWeighted": 0.022770730599626088,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 54,
+      "date": "2026-09-09",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-09",
+      "days": 54,
+      "showAnnual": false,
+      "twr": 0.0314749125369731,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03015907894127623,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.031742736483525213,
+        "twrAnnual": null,
+        "simulatedValue": 74643.52408152528,
+        "portfolioValue": 74676.20727453686,
+        "moneyWeighted": 0.02974685456028947,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 55,
+      "date": "2026-09-10",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-10",
+      "days": 55,
+      "showAnnual": false,
+      "twr": 0.03164998542986219,
+      "twrAnnual": null,
+      "moneyWeighted": 0.030366977195895206,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.0317353550955104,
+        "twrAnnual": null,
+        "simulatedValue": 74642.9900600153,
+        "portfolioValue": 74688.88211468919,
+        "moneyWeighted": 0.02978724637830754,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 56,
+      "date": "2026-09-11",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-11",
+      "days": 56,
+      "showAnnual": false,
+      "twr": 0.03050386351853107,
+      "twrAnnual": null,
+      "moneyWeighted": 0.02936367165648157,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03354194981209746,
+        "twrAnnual": null,
+        "simulatedValue": 74773.69182457798,
+        "portfolioValue": 74605.90575106446,
+        "moneyWeighted": 0.0314864293405861,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 57,
+      "date": "2026-09-12",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-12",
+      "days": 57,
+      "showAnnual": false,
+      "twr": 0.03050386351853107,
+      "twrAnnual": null,
+      "moneyWeighted": 0.029407139782574587,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03354194981209746,
+        "twrAnnual": null,
+        "simulatedValue": 74773.69182457798,
+        "portfolioValue": 74605.90575106446,
+        "moneyWeighted": 0.0315330065034507,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 58,
+      "date": "2026-09-13",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-13",
+      "days": 58,
+      "showAnnual": false,
+      "twr": 0.030513601423546532,
+      "twrAnnual": null,
+      "moneyWeighted": 0.02945819300653274,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03354194981209746,
+        "twrAnnual": null,
+        "simulatedValue": 69773.691824578,
+        "portfolioValue": 69606.61075106447,
+        "moneyWeighted": 0.031578127424355174,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 59,
+      "date": "2026-09-14",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-14",
+      "days": 59,
+      "showAnnual": false,
+      "twr": 0.026458333217903585,
+      "twrAnnual": null,
+      "moneyWeighted": 0.026046333703149127,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.028866763178314825,
+        "twrAnnual": null,
+        "simulatedValue": 69458.07325537792,
+        "portfolioValue": 69332.69541885398,
+        "moneyWeighted": 0.02764108434644985,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 60,
+      "date": "2026-09-15",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-15",
+      "days": 60,
+      "showAnnual": false,
+      "twr": 0.024610671624683444,
+      "twrAnnual": null,
+      "moneyWeighted": 0.02451706767183559,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03032458731120946,
+        "twrAnnual": null,
+        "simulatedValue": 69556.48993967556,
+        "portfolioValue": 69207.89409537673,
+        "moneyWeighted": 0.028961499065990992,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 61,
+      "date": "2026-09-16",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-16",
+      "days": 61,
+      "showAnnual": false,
+      "twr": 0.024675591149354803,
+      "twrAnnual": null,
+      "moneyWeighted": 0.024629672419285598,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03134321885723179,
+        "twrAnnual": null,
+        "simulatedValue": 69625.2570406025,
+        "portfolioValue": 69212.27912055029,
+        "moneyWeighted": 0.02990691392386724,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 62,
+      "date": "2026-09-17",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-17",
+      "days": 62,
+      "showAnnual": false,
+      "twr": 0.024377872984428617,
+      "twrAnnual": null,
+      "moneyWeighted": 0.02442725066702267,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03248087528499077,
+        "twrAnnual": null,
+        "simulatedValue": 69702.05942777908,
+        "portfolioValue": 69192.16958255786,
+        "moneyWeighted": 0.030957260545551923,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 63,
+      "date": "2026-09-18",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-18",
+      "days": 63,
+      "showAnnual": false,
+      "twr": 0.020903294820488805,
+      "twrAnnual": null,
+      "moneyWeighted": 0.02146789869050081,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.026563770117742358,
+        "twrAnnual": null,
+        "simulatedValue": 72753.99090467395,
+        "portfolioValue": 72408.86837501921,
+        "moneyWeighted": 0.02589770165155958,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 64,
+      "date": "2026-09-19",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-19",
+      "days": 64,
+      "showAnnual": false,
+      "twr": 0.020903294820488805,
+      "twrAnnual": null,
+      "moneyWeighted": 0.021498485706470172,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.026563770117742358,
+        "twrAnnual": null,
+        "simulatedValue": 72753.99090467395,
+        "portfolioValue": 72408.86837501921,
+        "moneyWeighted": 0.025934559337292606,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 65,
+      "date": "2026-09-20",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-20",
+      "days": 65,
+      "showAnnual": false,
+      "twr": 0.020903294820488805,
+      "twrAnnual": null,
+      "moneyWeighted": 0.021528221619971477,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.026563770117742358,
+        "twrAnnual": null,
+        "simulatedValue": 72753.99090467395,
+        "portfolioValue": 72408.86837501921,
+        "moneyWeighted": 0.02597039298161752,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 66,
+      "date": "2026-09-21",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-21",
+      "days": 66,
+      "showAnnual": false,
+      "twr": 0.028370185385379276,
+      "twrAnnual": null,
+      "moneyWeighted": 0.02838265832752951,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.02795792977901046,
+        "twrAnnual": null,
+        "simulatedValue": 72852.79692361607,
+        "portfolioValue": 72938.46711255575,
+        "moneyWeighted": 0.02727861225513517,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 67,
+      "date": "2026-09-22",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-22",
+      "days": 67,
+      "showAnnual": false,
+      "twr": 0.02552008317049137,
+      "twrAnnual": null,
+      "moneyWeighted": 0.025811119856203435,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.02306868289280284,
+        "twrAnnual": null,
+        "simulatedValue": 72506.28925030412,
+        "portfolioValue": 72736.31997758205,
+        "moneyWeighted": 0.0228425661600431,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 68,
+      "date": "2026-09-23",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-23",
+      "days": 68,
+      "showAnnual": false,
+      "twr": 0.023049255082435716,
+      "twrAnnual": null,
+      "moneyWeighted": 0.023579442412241525,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.02066788644103612,
+        "twrAnnual": null,
+        "simulatedValue": 72336.14149299939,
+        "portfolioValue": 72561.07334382838,
+        "moneyWeighted": 0.02067285813443087,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 69,
+      "date": "2026-09-24",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-24",
+      "days": 69,
+      "showAnnual": false,
+      "twr": 0.02113200587130115,
+      "twrAnnual": null,
+      "moneyWeighted": 0.021849204325615768,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.02052025868074292,
+        "twrAnnual": null,
+        "simulatedValue": 72325.67890992147,
+        "portfolioValue": 72425.08999802523,
+        "moneyWeighted": 0.020562997498605684,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 70,
+      "date": "2026-09-25",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-25",
+      "days": 70,
+      "showAnnual": false,
+      "twr": 0.025121440264677775,
+      "twrAnnual": null,
+      "moneyWeighted": 0.02554051109100608,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.02481622650527271,
+        "twrAnnual": null,
+        "simulatedValue": 72630.14007748904,
+        "portfolioValue": 72708.04572100737,
+        "moneyWeighted": 0.024531446455421824,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 71,
+      "date": "2026-09-26",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-26",
+      "days": 71,
+      "showAnnual": false,
+      "twr": 0.025121440264677775,
+      "twrAnnual": null,
+      "moneyWeighted": 0.025570319222222526,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.02481622650527271,
+        "twrAnnual": null,
+        "simulatedValue": 72630.14007748904,
+        "portfolioValue": 72708.04572100737,
+        "moneyWeighted": 0.024560082186915633,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 72,
+      "date": "2026-09-27",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-27",
+      "days": 72,
+      "showAnnual": false,
+      "twr": 0.025121440264677775,
+      "twrAnnual": null,
+      "moneyWeighted": 0.025599372596756043,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.02481622650527271,
+        "twrAnnual": null,
+        "simulatedValue": 72630.14007748904,
+        "portfolioValue": 72708.04572100737,
+        "moneyWeighted": 0.02458799261667788,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 73,
+      "date": "2026-09-28",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-28",
+      "days": 73,
+      "showAnnual": false,
+      "twr": 0.0323129692061197,
+      "twrAnnual": null,
+      "moneyWeighted": 0.032256054711084836,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.032336015545203045,
+        "twrAnnual": null,
+        "simulatedValue": 73159.64335702073,
+        "portfolioValue": 73214.67953816958,
+        "moneyWeighted": 0.03154091662968317,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 74,
+      "date": "2026-09-29",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-29",
+      "days": 74,
+      "showAnnual": false,
+      "twr": 0.036321296821931526,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03598849783007285,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.04084491057909756,
+        "twrAnnual": null,
+        "simulatedValue": 73762.65218037684,
+        "portfolioValue": 73498.96195118755,
+        "moneyWeighted": 0.039417999685007477,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 75,
+      "date": "2026-09-30",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-09-30",
+      "days": 75,
+      "showAnnual": false,
+      "twr": 0.03437205489776818,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03422626223703373,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03480693518310907,
+        "twrAnnual": null,
+        "simulatedValue": 73334.75262062381,
+        "portfolioValue": 73360.71596661009,
+        "moneyWeighted": 0.0338882007822936,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 76,
+      "date": "2026-10-01",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-01",
+      "days": 76,
+      "showAnnual": false,
+      "twr": 0.03630664952621698,
+      "twrAnnual": null,
+      "moneyWeighted": 0.036049595834124926,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03933172603609303,
+        "twrAnnual": null,
+        "simulatedValue": 73655.41573814044,
+        "portfolioValue": 73497.92312178812,
+        "moneyWeighted": 0.03810217781125047,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 77,
+      "date": "2026-10-02",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-02",
+      "days": 77,
+      "showAnnual": false,
+      "twr": 0.03283165393213894,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03287009719297562,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.037276932147513264,
+        "twrAnnual": null,
+        "simulatedValue": 73509.79649615237,
+        "portfolioValue": 73251.46618827441,
+        "moneyWeighted": 0.03624047445807177,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 78,
+      "date": "2026-10-03",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-03",
+      "days": 78,
+      "showAnnual": false,
+      "twr": 0.03283165393213894,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03290211226965112,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.037276932147513264,
+        "twrAnnual": null,
+        "simulatedValue": 73509.79649615237,
+        "portfolioValue": 73251.46618827441,
+        "moneyWeighted": 0.03627575722817178,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 79,
+      "date": "2026-10-04",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-04",
+      "days": 79,
+      "showAnnual": false,
+      "twr": 0.03283165393213894,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03293338441336968,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.037276932147513264,
+        "twrAnnual": null,
+        "simulatedValue": 73509.79649615237,
+        "portfolioValue": 73251.46618827441,
+        "moneyWeighted": 0.03631022204122614,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 80,
+      "date": "2026-10-05",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-05",
+      "days": 80,
+      "showAnnual": false,
+      "twr": 0.03970567004172776,
+      "twrAnnual": null,
+      "moneyWeighted": 0.039342375301135046,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.04047122781085544,
+        "twrAnnual": null,
+        "simulatedValue": 73736.1700101904,
+        "portfolioValue": 73738.99167871826,
+        "moneyWeighted": 0.03930546201818519,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 81,
+      "date": "2026-10-06",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-06",
+      "days": 81,
+      "showAnnual": false,
+      "twr": 0.03392610581769251,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03401034528608182,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03247164854997253,
+        "twrAnnual": null,
+        "simulatedValue": 73169.25540397728,
+        "portfolioValue": 73329.08794297578,
+        "moneyWeighted": 0.0319171250477277,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 82,
+      "date": "2026-10-07",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-07",
+      "days": 82,
+      "showAnnual": false,
+      "twr": 0.03337485964397402,
+      "twrAnnual": null,
+      "moneyWeighted": 0.033527980133135626,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03418689858987789,
+        "twrAnnual": null,
+        "simulatedValue": 73290.8118345367,
+        "portfolioValue": 73289.9919389931,
+        "moneyWeighted": 0.033538727055694384,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 83,
+      "date": "2026-10-08",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-08",
+      "days": 83,
+      "showAnnual": false,
+      "twr": 0.02907850792893263,
+      "twrAnnual": null,
+      "moneyWeighted": 0.029559241196517316,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.025449180527529425,
+        "twrAnnual": null,
+        "simulatedValue": 72671.58676869608,
+        "portfolioValue": 72985.28200762227,
+        "moneyWeighted": 0.025443136239388098,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 84,
+      "date": "2026-10-09",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-09",
+      "days": 84,
+      "showAnnual": false,
+      "twr": 0.03220783461405641,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03249853053780538,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.0340245080535555,
+        "twrAnnual": null,
+        "simulatedValue": 73279.30353341866,
+        "portfolioValue": 73207.22308291243,
+        "moneyWeighted": 0.03344496561578758,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 85,
+      "date": "2026-10-10",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-10",
+      "days": 85,
+      "showAnnual": false,
+      "twr": 0.03220783461405641,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03252536542133799,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.0340245080535555,
+        "twrAnnual": null,
+        "simulatedValue": 73279.30353341866,
+        "portfolioValue": 73207.22308291243,
+        "moneyWeighted": 0.03347257992043784,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 86,
+      "date": "2026-10-11",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-11",
+      "days": 86,
+      "showAnnual": false,
+      "twr": 0.03220783461405641,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03255162436289005,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.0340245080535555,
+        "twrAnnual": null,
+        "simulatedValue": 73279.30353341866,
+        "portfolioValue": 73207.22308291243,
+        "moneyWeighted": 0.033499601708011584,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 87,
+      "date": "2026-10-12",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-12",
+      "days": 87,
+      "showAnnual": false,
+      "twr": 0.035665532124502075,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03580493752412783,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03382613325066175,
+        "twrAnnual": null,
+        "simulatedValue": 73265.24509739377,
+        "portfolioValue": 73452.45318533176,
+        "moneyWeighted": 0.03334101461610084,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 88,
+      "date": "2026-10-13",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-13",
+      "days": 88,
+      "showAnnual": false,
+      "twr": 0.035327212849486145,
+      "twrAnnual": null,
+      "moneyWeighted": 0.035516550329103946,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.028708986009501558,
+        "twrAnnual": null,
+        "simulatedValue": 72902.60283602605,
+        "portfolioValue": 73428.45858481742,
+        "moneyWeighted": 0.028589677316022577,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 89,
+      "date": "2026-10-14",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-14",
+      "days": 89,
+      "showAnnual": false,
+      "twr": 0.035465357380161766,
+      "twrAnnual": null,
+      "moneyWeighted": 0.0356725297216518,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.028113861600820078,
+        "twrAnnual": null,
+        "simulatedValue": 72860.42752795138,
+        "portfolioValue": 73438.25620225038,
+        "moneyWeighted": 0.02805524793685943,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 90,
+      "date": "2026-10-15",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-15",
+      "days": 90,
+      "showAnnual": false,
+      "twr": 0.037428648685306376,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03753557710713196,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03510311337719707,
+        "twrAnnual": null,
+        "simulatedValue": 73355.74219254935,
+        "portfolioValue": 73577.49861035147,
+        "moneyWeighted": 0.03461046547828528,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 91,
+      "date": "2026-10-16",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-16",
+      "days": 91,
+      "showAnnual": false,
+      "twr": 0.03579333107002691,
+      "twrAnnual": null,
+      "moneyWeighted": 0.0360318017482828,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03414537828229558,
+        "twrAnnual": null,
+        "simulatedValue": 73287.86937118266,
+        "portfolioValue": 73461.517063362,
+        "moneyWeighted": 0.033739535690210376,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 92,
+      "date": "2026-10-17",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-17",
+      "days": 92,
+      "showAnnual": false,
+      "twr": 0.03579333107002691,
+      "twrAnnual": null,
+      "moneyWeighted": 0.036057341177106794,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03414537828229558,
+        "twrAnnual": null,
+        "simulatedValue": 73287.86937118266,
+        "portfolioValue": 73461.517063362,
+        "moneyWeighted": 0.033763452508197345,
+        "depleted": false
+      },
+      "timingInsight": null
+    },
+    {
+      "index": 93,
+      "date": "2026-10-18",
+      "fromKey": "2026-07-18",
+      "baseKey": "2026-07-17",
+      "toKey": "2026-10-18",
+      "days": 93,
+      "showAnnual": false,
+      "twr": 0.03801335765602465,
+      "twrAnnual": null,
+      "moneyWeighted": 0.03816360286874443,
+      "moneyWeightedAnnual": null,
+      "real": null,
+      "benchmarkStatus": "ok",
+      "benchmark": {
+        "twr": 0.03414537828229558,
+        "twrAnnual": null,
+        "simulatedValue": 73287.86937118266,
+        "portfolioValue": 73618.967894562,
+        "moneyWeighted": 0.03378689206960783,
+        "depleted": false
+      },
+      "timingInsight": null
+    }
+  ],
+  "risk": {
+    "observations": 70,
+    "fewData": true,
+    "volatility": 0.05902840341447836,
+    "drawdown": {
+      "depth": -0.011964918260815138,
+      "peakDate": "2026-07-23",
+      "troughDate": "2026-07-27",
+      "recoveryDate": "2026-07-31",
+      "current": -0.001627684097976645
+    },
+    "drawdownSeries": [
+      {
+        "date": "2026-07-18",
+        "drawdown": 0,
+        "label": "18 lug"
+      },
+      {
+        "date": "2026-07-19",
+        "drawdown": 0,
+        "label": "19 lug"
+      },
+      {
+        "date": "2026-07-20",
+        "drawdown": 0,
+        "label": "20 lug"
+      },
+      {
+        "date": "2026-07-21",
+        "drawdown": -0.0010717289477677472,
+        "label": "21 lug"
+      },
+      {
+        "date": "2026-07-22",
+        "drawdown": 0,
+        "label": "22 lug"
+      },
+      {
+        "date": "2026-07-23",
+        "drawdown": 0,
+        "label": "23 lug"
+      },
+      {
+        "date": "2026-07-24",
+        "drawdown": -0.006068772849698201,
+        "label": "24 lug"
+      },
+      {
+        "date": "2026-07-25",
+        "drawdown": -0.006068772849698201,
+        "label": "25 lug"
+      },
+      {
+        "date": "2026-07-26",
+        "drawdown": -0.006068772849698201,
+        "label": "26 lug"
+      },
+      {
+        "date": "2026-07-27",
+        "drawdown": -0.011964918260815138,
+        "label": "27 lug"
+      },
+      {
+        "date": "2026-07-28",
+        "drawdown": -0.007577102930930502,
+        "label": "28 lug"
+      },
+      {
+        "date": "2026-07-29",
+        "drawdown": -0.007986311029110515,
+        "label": "29 lug"
+      },
+      {
+        "date": "2026-07-30",
+        "drawdown": -0.003601923376829408,
+        "label": "30 lug"
+      },
+      {
+        "date": "2026-07-31",
+        "drawdown": 0,
+        "label": "31 lug"
+      },
+      {
+        "date": "2026-08-01",
+        "drawdown": 0,
+        "label": "1 ago"
+      },
+      {
+        "date": "2026-08-02",
+        "drawdown": 0,
+        "label": "2 ago"
+      },
+      {
+        "date": "2026-08-03",
+        "drawdown": 0,
+        "label": "3 ago"
+      },
+      {
+        "date": "2026-08-04",
+        "drawdown": -0.0010015105747922526,
+        "label": "4 ago"
+      },
+      {
+        "date": "2026-08-05",
+        "drawdown": -0.004251271783094812,
+        "label": "5 ago"
+      },
+      {
+        "date": "2026-08-06",
+        "drawdown": -0.0006571789458613697,
+        "label": "6 ago"
+      },
+      {
+        "date": "2026-08-07",
+        "drawdown": 0,
+        "label": "7 ago"
+      },
+      {
+        "date": "2026-08-08",
+        "drawdown": 0,
+        "label": "8 ago"
+      },
+      {
+        "date": "2026-08-09",
+        "drawdown": 0,
+        "label": "9 ago"
+      },
+      {
+        "date": "2026-08-10",
+        "drawdown": -0.007395429884885951,
+        "label": "10 ago"
+      },
+      {
+        "date": "2026-08-11",
+        "drawdown": -0.005460200350393962,
+        "label": "11 ago"
+      },
+      {
+        "date": "2026-08-12",
+        "drawdown": -0.0029912889629012396,
+        "label": "12 ago"
+      },
+      {
+        "date": "2026-08-13",
+        "drawdown": -0.0020939284559333693,
+        "label": "13 ago"
+      },
+      {
+        "date": "2026-08-14",
+        "drawdown": -0.006304275909444601,
+        "label": "14 ago"
+      },
+      {
+        "date": "2026-08-15",
+        "drawdown": -0.004658635768971187,
+        "label": "15 ago"
+      },
+      {
+        "date": "2026-08-16",
+        "drawdown": -0.004658635768971187,
+        "label": "16 ago"
+      },
+      {
+        "date": "2026-08-17",
+        "drawdown": -0.007156260796005398,
+        "label": "17 ago"
+      },
+      {
+        "date": "2026-08-18",
+        "drawdown": -0.005130862359468469,
+        "label": "18 ago"
+      },
+      {
+        "date": "2026-08-19",
+        "drawdown": -0.0009921014729495914,
+        "label": "19 ago"
+      },
+      {
+        "date": "2026-08-20",
+        "drawdown": 0,
+        "label": "20 ago"
+      },
+      {
+        "date": "2026-08-21",
+        "drawdown": 0,
+        "label": "21 ago"
+      },
+      {
+        "date": "2026-08-22",
+        "drawdown": 0,
+        "label": "22 ago"
+      },
+      {
+        "date": "2026-08-23",
+        "drawdown": 0,
+        "label": "23 ago"
+      },
+      {
+        "date": "2026-08-24",
+        "drawdown": -0.0009141597303281568,
+        "label": "24 ago"
+      },
+      {
+        "date": "2026-08-25",
+        "drawdown": -0.0062980701427749475,
+        "label": "25 ago"
+      },
+      {
+        "date": "2026-08-26",
+        "drawdown": -0.0010808673049237383,
+        "label": "26 ago"
+      },
+      {
+        "date": "2026-08-27",
+        "drawdown": -0.006025712366502067,
+        "label": "27 ago"
+      },
+      {
+        "date": "2026-08-28",
+        "drawdown": -0.007812312179153902,
+        "label": "28 ago"
+      },
+      {
+        "date": "2026-08-29",
+        "drawdown": -0.007812312179153902,
+        "label": "29 ago"
+      },
+      {
+        "date": "2026-08-30",
+        "drawdown": -0.007812312179153902,
+        "label": "30 ago"
+      },
+      {
+        "date": "2026-08-31",
+        "drawdown": -0.004690376483833969,
+        "label": "31 ago"
+      },
+      {
+        "date": "2026-09-01",
+        "drawdown": -0.005973673582920114,
+        "label": "1 set"
+      },
+      {
+        "date": "2026-09-02",
+        "drawdown": -0.008056849390829401,
+        "label": "2 set"
+      },
+      {
+        "date": "2026-09-03",
+        "drawdown": -0.004619221777938498,
+        "label": "3 set"
+      },
+      {
+        "date": "2026-09-04",
+        "drawdown": -0.00027601518044728657,
+        "label": "4 set"
+      },
+      {
+        "date": "2026-09-05",
+        "drawdown": -0.00027601518044728657,
+        "label": "5 set"
+      },
+      {
+        "date": "2026-09-06",
+        "drawdown": 0,
+        "label": "6 set"
+      },
+      {
+        "date": "2026-09-07",
+        "drawdown": 0,
+        "label": "7 set"
+      },
+      {
+        "date": "2026-09-08",
+        "drawdown": 0,
+        "label": "8 set"
+      },
+      {
+        "date": "2026-09-09",
+        "drawdown": 0,
+        "label": "9 set"
+      },
+      {
+        "date": "2026-09-10",
+        "drawdown": 0,
+        "label": "10 set"
+      },
+      {
+        "date": "2026-09-11",
+        "drawdown": -0.001110960042182918,
+        "label": "11 set"
+      },
+      {
+        "date": "2026-09-12",
+        "drawdown": -0.001110960042182918,
+        "label": "12 set"
+      },
+      {
+        "date": "2026-09-13",
+        "drawdown": -0.001101520886313212,
+        "label": "13 set"
+      },
+      {
+        "date": "2026-09-14",
+        "drawdown": -0.005032377536258514,
+        "label": "14 set"
+      },
+      {
+        "date": "2026-09-15",
+        "drawdown": -0.006823354727471531,
+        "label": "15 set"
+      },
+      {
+        "date": "2026-09-16",
+        "drawdown": -0.0067604268686159985,
+        "label": "16 set"
+      },
+      {
+        "date": "2026-09-17",
+        "drawdown": -0.007049011339251288,
+        "label": "17 set"
+      },
+      {
+        "date": "2026-09-18",
+        "drawdown": -0.010416992934765057,
+        "label": "18 set"
+      },
+      {
+        "date": "2026-09-19",
+        "drawdown": -0.010416992934765057,
+        "label": "19 set"
+      },
+      {
+        "date": "2026-09-20",
+        "drawdown": -0.010416992934765057,
+        "label": "20 set"
+      },
+      {
+        "date": "2026-09-21",
+        "drawdown": -0.003179179073139138,
+        "label": "21 set"
+      },
+      {
+        "date": "2026-09-22",
+        "drawdown": -0.005941843014534265,
+        "label": "22 set"
+      },
+      {
+        "date": "2026-09-23",
+        "drawdown": -0.008336868578389778,
+        "label": "23 set"
+      },
+      {
+        "date": "2026-09-24",
+        "drawdown": -0.010195298509288908,
+        "label": "24 set"
+      },
+      {
+        "date": "2026-09-25",
+        "drawdown": -0.006328255956368878,
+        "label": "25 set"
+      },
+      {
+        "date": "2026-09-26",
+        "drawdown": -0.006328255956368878,
+        "label": "26 set"
+      },
+      {
+        "date": "2026-09-27",
+        "drawdown": -0.006328255956368878,
+        "label": "27 set"
+      },
+      {
+        "date": "2026-09-28",
+        "drawdown": 0,
+        "label": "28 set"
+      },
+      {
+        "date": "2026-09-29",
+        "drawdown": 0,
+        "label": "29 set"
+      },
+      {
+        "date": "2026-09-30",
+        "drawdown": -0.0018809243138599996,
+        "label": "30 set"
+      },
+      {
+        "date": "2026-10-01",
+        "drawdown": -1.413393294091847e-05,
+        "label": "1 ott"
+      },
+      {
+        "date": "2026-10-02",
+        "drawdown": -0.003367336848614677,
+        "label": "2 ott"
+      },
+      {
+        "date": "2026-10-03",
+        "drawdown": -0.003367336848614677,
+        "label": "3 ott"
+      },
+      {
+        "date": "2026-10-04",
+        "drawdown": -0.003367336848614677,
+        "label": "4 ott"
+      },
+      {
+        "date": "2026-10-05",
+        "drawdown": 0,
+        "label": "5 ott"
+      },
+      {
+        "date": "2026-10-06",
+        "drawdown": -0.0055588464991283,
+        "label": "6 ott"
+      },
+      {
+        "date": "2026-10-07",
+        "drawdown": -0.006089040947039992,
+        "label": "7 ott"
+      },
+      {
+        "date": "2026-10-08",
+        "drawdown": -0.010221317839277155,
+        "label": "8 ott"
+      },
+      {
+        "date": "2026-10-09",
+        "drawdown": -0.0072114980649961025,
+        "label": "9 ott"
+      },
+      {
+        "date": "2026-10-10",
+        "drawdown": -0.0072114980649961025,
+        "label": "10 ott"
+      },
+      {
+        "date": "2026-10-11",
+        "drawdown": -0.0072114980649961025,
+        "label": "11 ott"
+      },
+      {
+        "date": "2026-10-12",
+        "drawdown": -0.003885847729447778,
+        "label": "12 ott"
+      },
+      {
+        "date": "2026-10-13",
+        "drawdown": -0.00421124681571261,
+        "label": "13 ott"
+      },
+      {
+        "date": "2026-10-14",
+        "drawdown": -0.00407837793305077,
+        "label": "14 ott"
+      },
+      {
+        "date": "2026-10-15",
+        "drawdown": -0.002190063420862143,
+        "label": "15 ott"
+      },
+      {
+        "date": "2026-10-16",
+        "drawdown": -0.0037629293409007225,
+        "label": "16 ott"
+      },
+      {
+        "date": "2026-10-17",
+        "drawdown": -0.0037629293409007225,
+        "label": "17 ott"
+      },
+      {
+        "date": "2026-10-18",
+        "drawdown": -0.001627684097976645,
+        "label": "18 ott"
+      }
+    ],
+    "sharpe": 2.5103509302266316,
+    "riskFreeRate": null,
+    "benchmark": {
+      "volatility": 0.09385049047702859,
+      "beta": 0.5232067475803315,
+      "correlation": 0.8318573269976173
+    },
+    "returns": [
+      0.006971573997248036,
+      -0.0010717289477675859,
+      0.00154696266120233,
+      0.005894898625060852,
+      -0.006068772849698342,
+      -0.005932146259275793,
+      0.0044409509449412675,
+      -0.00041233238308844975,
+      0.004419684628374028,
+      0.003900602164101565,
+      0.004326060796026179,
+      -0.0010015105747923708,
+      -0.0032530191413725077,
+      0.0036094375371882982,
+      0.0011017300654831033,
+      0.00032022152563851046,
+      -0.007395429884886101,
+      0.001949648019722153,
+      0.002482466150034895,
+      0.0009000528250496046,
+      -0.004219182119010902,
+      0.00165608052905688,
+      -0.00250931501170337,
+      0.002039997188440398,
+      0.004160105816866086,
+      0.0013158767161524957,
+      0.00038252373534233223,
+      -0.0009141597303280574,
+      -0.005388836669923876,
+      0.005250269402818736,
+      -0.004950195566118684,
+      -0.001797430612521562,
+      0.003146517270514333,
+      -0.0012893446107278687,
+      -0.00209569480460124,
+      0.003465549019396683,
+      0.00436336193396156,
+      0.0003070269852119711,
+      0.0015516566537217256,
+      0.007513966176729555,
+      0.0025572118969518242,
+      0.00016973063596714992,
+      -0.0011109600421828174,
+      9.44965405760371e-06,
+      -0.003935191345403844,
+      -0.0018000356501835025,
+      6.336018789292381e-05,
+      -0.0002905487038997368,
+      -0.0033918910741571042,
+      0.007314003787404116,
+      -0.0027714749565788273,
+      -0.0024093414927740054,
+      -0.0018740536700552516,
+      0.003906874302674002,
+      0.007015294636297045,
+      0.003882860852648518,
+      -0.0018809243138599692,
+      0.0018703082892548917,
+      -0.003353250310288628,
+      0.0066555048767322515,
+      -0.0055588464991281426,
+      -0.000533158192463514,
+      -0.004157592644088066,
+      0.003040901798077341,
+      0.003349807465604708,
+      -0.00032666847019800484,
+      0.00013343079266262534,
+      0.0018960473096965543,
+      -0.0015763181567734113,
+      0.002143310368395901
+    ],
+    "perYear": 274.73118279569894,
+    "level": 1,
+    "levelLabel": "Basso",
+    "scalePosition": 0.18446376067024486,
+    "levelInsight": "Il valore si muove poco: di solito sale e scende di pochi punti.",
+    "volatilityInsight": "In un anno normale il valore può muoversi di circa ±5,9% (due anni su tre). Meno movimentato di ETF MSCI World Demo (±9,4%).",
+    "sharpeLevel": "buono",
+    "sharpeInsight": "Il rischio preso è stato ripagato bene.",
+    "betaInsight": "Quando ETF MSCI World Demo si muove dell'1%, il portafoglio tende a muoversi dello 0,5%.",
+    "recoveryDays": 4
+  },
+  "correlationInsight": {
+    "aId": "160469f4-e5ab-47c0-ae0b-e98b9272a5a9",
+    "bId": "e230f702-316b-49b3-89f6-5ff99cdedec2",
+    "value": 0.7575788974364194,
+    "average": 0.11786962808856179,
+    "high": false
+  },
+  "heatmaps": {
+    "giorno": {
+      "grouping": "giorno",
+      "columns": [
+        "ott",
+        "",
+        "",
+        "nov",
+        "",
+        "",
+        "",
+        "dic",
+        "",
+        "",
+        "",
+        "",
+        "gen",
+        "",
+        "",
+        "",
+        "feb",
+        "",
+        "",
+        "",
+        "mar",
+        "",
+        "",
+        "",
+        "",
+        "apr",
+        "",
+        "",
+        "",
+        "mag",
+        "",
+        "",
+        "",
+        "giu",
+        "",
+        "",
+        "",
+        "",
+        "lug",
+        "",
+        "",
+        "",
+        "ago",
+        "",
+        "",
+        "",
+        "",
+        "set",
+        "",
+        "",
+        "",
+        "ott",
+        ""
+      ],
+      "rows": [
+        {
+          "label": "lun",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-07-20",
+              "label": "lun 20 luglio 2026",
+              "ret": 0.006971573997248015,
+              "gain": 540.2022081977921,
+              "level": 4
+            },
+            {
+              "key": "2026-07-27",
+              "label": "lun 27 luglio 2026",
+              "ret": -0.005932146259275739,
+              "gain": -483.46608870013733,
+              "level": 4
+            },
+            {
+              "key": "2026-08-03",
+              "label": "lun 3 agosto 2026",
+              "ret": 0.004326060796026265,
+              "gain": 354.82486429841083,
+              "level": 3
+            },
+            {
+              "key": "2026-08-10",
+              "label": "lun 10 agosto 2026",
+              "ret": -0.007395429884886062,
+              "gain": -609.4699420127581,
+              "level": 4
+            },
+            {
+              "key": "2026-08-17",
+              "label": "lun 17 agosto 2026",
+              "ret": -0.0025093150117033725,
+              "gain": -205.4932087638299,
+              "level": 2
+            },
+            {
+              "key": "2026-08-24",
+              "label": "lun 24 agosto 2026",
+              "ret": -0.0009141597303280458,
+              "gain": -73.56817899529415,
+              "level": 1
+            },
+            {
+              "key": "2026-08-31",
+              "label": "lun 31 agosto 2026",
+              "ret": 0.003146517270514293,
+              "gain": 251.241786774699,
+              "level": 3
+            },
+            {
+              "key": "2026-09-07",
+              "label": "lun 7 settembre 2026",
+              "ret": 0.0015516566537217003,
+              "gain": 114.53659984419937,
+              "level": 2
+            },
+            {
+              "key": "2026-09-14",
+              "label": "lun 14 settembre 2026",
+              "ret": -0.003935191345403877,
+              "gain": -273.91533221048303,
+              "level": 3
+            },
+            {
+              "key": "2026-09-21",
+              "label": "lun 21 settembre 2026",
+              "ret": 0.007314003787404211,
+              "gain": 529.5987375365366,
+              "level": 4
+            },
+            {
+              "key": "2026-09-28",
+              "label": "lun 28 settembre 2026",
+              "ret": 0.007015294636297131,
+              "gain": 510.06836316222325,
+              "level": 4
+            },
+            {
+              "key": "2026-10-05",
+              "label": "lun 5 ottobre 2026",
+              "ret": 0.006655504876732277,
+              "gain": 487.52549044384796,
+              "level": 4
+            },
+            {
+              "key": "2026-10-12",
+              "label": "lun 12 ottobre 2026",
+              "ret": 0.0033498074656046484,
+              "gain": 245.23010241932934,
+              "level": 3
+            }
+          ]
+        },
+        {
+          "label": "mar",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-07-21",
+              "label": "mar 21 luglio 2026",
+              "ret": -0.0010717289477676362,
+              "gain": -87.3221790487296,
+              "level": 1
+            },
+            {
+              "key": "2026-07-28",
+              "label": "mar 28 luglio 2026",
+              "ret": 0.0044409509449412354,
+              "gain": 359.787584525664,
+              "level": 3
+            },
+            {
+              "key": "2026-08-04",
+              "label": "mar 4 agosto 2026",
+              "ret": -0.0010015105747923636,
+              "gain": -82.49957253952743,
+              "level": 1
+            },
+            {
+              "key": "2026-08-11",
+              "label": "mar 11 agosto 2026",
+              "ret": 0.0019496480197220833,
+              "gain": 159.4855539877026,
+              "level": 2
+            },
+            {
+              "key": "2026-08-18",
+              "label": "mar 18 agosto 2026",
+              "ret": 0.00203999718844039,
+              "gain": 166.64055622609158,
+              "level": 2
+            },
+            {
+              "key": "2026-08-25",
+              "label": "mar 25 agosto 2026",
+              "ret": -0.005388836669923847,
+              "gain": -433.2771087776782,
+              "level": 4
+            },
+            {
+              "key": "2026-09-01",
+              "label": "mar 1 settembre 2026",
+              "ret": -0.0012893446107278272,
+              "gain": -103.27498308838403,
+              "level": 1
+            },
+            {
+              "key": "2026-09-08",
+              "label": "mar 8 settembre 2026",
+              "ret": 0.007513966176729614,
+              "gain": 555.509189696284,
+              "level": 4
+            },
+            {
+              "key": "2026-09-15",
+              "label": "mar 15 settembre 2026",
+              "ret": -0.0018000356501834958,
+              "gain": -124.80132347725157,
+              "level": 2
+            },
+            {
+              "key": "2026-09-22",
+              "label": "mar 22 settembre 2026",
+              "ret": -0.002771474956578812,
+              "gain": -202.14713497369667,
+              "level": 2
+            },
+            {
+              "key": "2026-09-29",
+              "label": "mar 29 settembre 2026",
+              "ret": 0.00388286085264844,
+              "gain": 284.28241301796515,
+              "level": 3
+            },
+            {
+              "key": "2026-10-06",
+              "label": "mar 6 ottobre 2026",
+              "ret": -0.005558846499128189,
+              "gain": -409.90373574248224,
+              "level": 4
+            },
+            {
+              "key": "2026-10-13",
+              "label": "mar 13 ottobre 2026",
+              "ret": -0.0003266684701980216,
+              "gain": -23.994600514342892,
+              "level": 0
+            }
+          ]
+        },
+        {
+          "label": "mer",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-07-22",
+              "label": "mer 22 luglio 2026",
+              "ret": 0.0015469626612023557,
+              "gain": 125.90811993072566,
+              "level": 2
+            },
+            {
+              "key": "2026-07-29",
+              "label": "mer 29 luglio 2026",
+              "ret": -0.0004123323830884651,
+              "gain": -33.553826253759325,
+              "level": 0
+            },
+            {
+              "key": "2026-08-05",
+              "label": "mer 5 agosto 2026",
+              "ret": -0.0032530191413725484,
+              "gain": -267.6995303779695,
+              "level": 3
+            },
+            {
+              "key": "2026-08-12",
+              "label": "mer 12 agosto 2026",
+              "ret": 0.00248246615003489,
+              "gain": 203.46718224520737,
+              "level": 2
+            },
+            {
+              "key": "2026-08-19",
+              "label": "mer 19 agosto 2026",
+              "ret": 0.0041601058168661,
+              "gain": 340.51839073974406,
+              "level": 3
+            },
+            {
+              "key": "2026-08-26",
+              "label": "mer 26 agosto 2026",
+              "ret": 0.005250269402818697,
+              "gain": 419.8611024925194,
+              "level": 4
+            },
+            {
+              "key": "2026-09-02",
+              "label": "mer 2 settembre 2026",
+              "ret": -0.002095694804601256,
+              "gain": -167.646250026708,
+              "level": 2
+            },
+            {
+              "key": "2026-09-09",
+              "label": "mer 9 settembre 2026",
+              "ret": 0.0025572118969519053,
+              "gain": 190.4757986832119,
+              "level": 2
+            },
+            {
+              "key": "2026-09-16",
+              "label": "mer 16 settembre 2026",
+              "ret": 6.336018789299125e-05,
+              "gain": 4.385025173556642,
+              "level": 0
+            },
+            {
+              "key": "2026-09-23",
+              "label": "mer 23 settembre 2026",
+              "ret": -0.002409341492774053,
+              "gain": -175.24663375367527,
+              "level": 2
+            },
+            {
+              "key": "2026-09-30",
+              "label": "mer 30 settembre 2026",
+              "ret": -0.0018809243138599996,
+              "gain": -138.24598457745742,
+              "level": 2
+            },
+            {
+              "key": "2026-10-07",
+              "label": "mer 7 ottobre 2026",
+              "ret": -0.0005331581924634676,
+              "gain": -39.09600398267503,
+              "level": 1
+            },
+            {
+              "key": "2026-10-14",
+              "label": "mer 14 ottobre 2026",
+              "ret": 0.00013343079266259217,
+              "gain": 9.797617432966945,
+              "level": 0
+            }
+          ]
+        },
+        {
+          "label": "gio",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-07-23",
+              "label": "gio 23 luglio 2026",
+              "ret": 0.005894898625060874,
+              "gain": 480.53117346114595,
+              "level": 4
+            },
+            {
+              "key": "2026-07-30",
+              "label": "gio 30 luglio 2026",
+              "ret": 0.004419684628373943,
+              "gain": 359.5065253304201,
+              "level": 3
+            },
+            {
+              "key": "2026-08-06",
+              "label": "gio 6 agosto 2026",
+              "ret": 0.0036094375371882315,
+              "gain": 296.06389608079917,
+              "level": 3
+            },
+            {
+              "key": "2026-08-13",
+              "label": "gio 13 agosto 2026",
+              "ret": 0.0009000528250495687,
+              "gain": 73.95300403889269,
+              "level": 1
+            },
+            {
+              "key": "2026-08-20",
+              "label": "gio 20 agosto 2026",
+              "ret": 0.0013158767161525198,
+              "gain": 105.71726617086097,
+              "level": 1
+            },
+            {
+              "key": "2026-08-27",
+              "label": "gio 27 agosto 2026",
+              "ret": -0.0049501955661186425,
+              "gain": -397.94276046664163,
+              "level": 4
+            },
+            {
+              "key": "2026-09-03",
+              "label": "gio 3 settembre 2026",
+              "ret": 0.003465549019396663,
+              "gain": 276.64749950598343,
+              "level": 3
+            },
+            {
+              "key": "2026-09-10",
+              "label": "gio 10 settembre 2026",
+              "ret": 0.00016973063596714688,
+              "gain": 12.674840152321849,
+              "level": 0
+            },
+            {
+              "key": "2026-09-17",
+              "label": "gio 17 settembre 2026",
+              "ret": -0.0002905487038997734,
+              "gain": -20.109537992422702,
+              "level": 0
+            },
+            {
+              "key": "2026-09-24",
+              "label": "gio 24 settembre 2026",
+              "ret": -0.0018740536700552202,
+              "gain": -135.98334580314986,
+              "level": 2
+            },
+            {
+              "key": "2026-10-01",
+              "label": "gio 1 ottobre 2026",
+              "ret": 0.0018703082892548295,
+              "gain": 137.20715517802455,
+              "level": 2
+            },
+            {
+              "key": "2026-10-08",
+              "label": "gio 8 ottobre 2026",
+              "ret": -0.004157592644088104,
+              "gain": -304.7099313708313,
+              "level": 3
+            },
+            {
+              "key": "2026-10-15",
+              "label": "gio 15 ottobre 2026",
+              "ret": 0.0018960473096965025,
+              "gain": 139.24240810108313,
+              "level": 2
+            }
+          ]
+        },
+        {
+          "label": "ven",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-07-24",
+              "label": "ven 24 luglio 2026",
+              "ret": -0.006068772849698312,
+              "gain": -497.6210164900549,
+              "level": 4
+            },
+            {
+              "key": "2026-07-31",
+              "label": "ven 31 luglio 2026",
+              "ret": 0.0039006021641014854,
+              "gain": 318.68554823136947,
+              "level": 3
+            },
+            {
+              "key": "2026-08-07",
+              "label": "ven 7 agosto 2026",
+              "ret": 0.0011017300654831974,
+              "gain": 90.69552460379782,
+              "level": 1
+            },
+            {
+              "key": "2026-08-14",
+              "label": "ven 14 agosto 2026",
+              "ret": -0.004219182119010956,
+              "gain": -346.98188723136263,
+              "level": 3
+            },
+            {
+              "key": "2026-08-21",
+              "label": "ven 21 agosto 2026",
+              "ret": 0.00038252373534231054,
+              "gain": 30.77231800343725,
+              "level": 0
+            },
+            {
+              "key": "2026-08-28",
+              "label": "ven 28 agosto 2026",
+              "ret": -0.0017974306125215778,
+              "gain": -143.77891570760403,
+              "level": 2
+            },
+            {
+              "key": "2026-09-04",
+              "label": "ven 4 settembre 2026",
+              "ret": 0.004363361933961585,
+              "gain": 324.39444053451007,
+              "level": 3
+            },
+            {
+              "key": "2026-09-11",
+              "label": "ven 11 settembre 2026",
+              "ret": -0.001110960042182807,
+              "gain": -82.97636362472258,
+              "level": 1
+            },
+            {
+              "key": "2026-09-18",
+              "label": "ven 18 settembre 2026",
+              "ret": -0.0033918910741570496,
+              "gain": -234.69230240864272,
+              "level": 3
+            },
+            {
+              "key": "2026-09-25",
+              "label": "ven 25 settembre 2026",
+              "ret": 0.003906874302674002,
+              "gain": 282.95572298213665,
+              "level": 3
+            },
+            {
+              "key": "2026-10-02",
+              "label": "ven 2 ottobre 2026",
+              "ret": -0.003353250310288658,
+              "gain": -246.45693351370574,
+              "level": 3
+            },
+            {
+              "key": "2026-10-09",
+              "label": "ven 9 ottobre 2026",
+              "ret": 0.0030409017980772557,
+              "gain": 221.94107529016037,
+              "level": 3
+            },
+            {
+              "key": "2026-10-16",
+              "label": "ven 16 ottobre 2026",
+              "ret": -0.001576318156773393,
+              "gain": -115.98154698946746,
+              "level": 2
+            }
+          ]
+        },
+        {
+          "label": "sab",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-07-18",
+              "label": "sab 18 luglio 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-07-25",
+              "label": "sab 25 luglio 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-08-01",
+              "label": "sab 1 agosto 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-08-08",
+              "label": "sab 8 agosto 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-08-15",
+              "label": "sab 15 agosto 2026",
+              "ret": 0.001656080529056858,
+              "gain": 135.61999999999534,
+              "level": 2
+            },
+            {
+              "key": "2026-08-22",
+              "label": "sab 22 agosto 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-08-29",
+              "label": "sab 29 agosto 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-09-05",
+              "label": "sab 5 settembre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-09-12",
+              "label": "sab 12 settembre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-09-19",
+              "label": "sab 19 settembre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-09-26",
+              "label": "sab 26 settembre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-10-03",
+              "label": "sab 3 ottobre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-10-10",
+              "label": "sab 10 ottobre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-10-17",
+              "label": "sab 17 ottobre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            }
+          ]
+        },
+        {
+          "label": "dom",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-07-19",
+              "label": "dom 19 luglio 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-07-26",
+              "label": "dom 26 luglio 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-08-02",
+              "label": "dom 2 agosto 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-08-09",
+              "label": "dom 9 agosto 2026",
+              "ret": 0.0003202215256385976,
+              "gain": 26.389999999999418,
+              "level": 0
+            },
+            {
+              "key": "2026-08-16",
+              "label": "dom 16 agosto 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-08-23",
+              "label": "dom 23 agosto 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-08-30",
+              "label": "dom 30 agosto 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-09-06",
+              "label": "dom 6 settembre 2026",
+              "ret": 0.0003070269852119001,
+              "gain": 22.925540000011097,
+              "level": 0
+            },
+            {
+              "key": "2026-09-13",
+              "label": "dom 13 settembre 2026",
+              "ret": 9.449654057691603e-06,
+              "gain": 0.7050000000017462,
+              "level": 0
+            },
+            {
+              "key": "2026-09-20",
+              "label": "dom 20 settembre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-09-27",
+              "label": "dom 27 settembre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-10-04",
+              "label": "dom 4 ottobre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-10-11",
+              "label": "dom 11 ottobre 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-10-18",
+              "label": "dom 18 ottobre 2026",
+              "ret": 0.0021433103683958787,
+              "gain": 157.45083119999617,
+              "level": 2
+            }
+          ]
+        }
+      ],
+      "scale": 0.006068772849698312,
+      "positive": 33,
+      "negative": 27,
+      "counted": 93
+    },
+    "settimana": {
+      "grouping": "settimana",
+      "columns": [
+        "1",
+        "",
+        "",
+        "",
+        "5",
+        "",
+        "",
+        "",
+        "9",
+        "",
+        "",
+        "",
+        "13",
+        "",
+        "",
+        "",
+        "17",
+        "",
+        "",
+        "",
+        "21",
+        "",
+        "",
+        "",
+        "25",
+        "",
+        "",
+        "",
+        "29",
+        "",
+        "",
+        "",
+        "33",
+        "",
+        "",
+        "",
+        "37",
+        "",
+        "",
+        "",
+        "41",
+        "",
+        "",
+        "",
+        "45",
+        "",
+        "",
+        "",
+        "49",
+        "",
+        "",
+        "",
+        "53"
+      ],
+      "rows": [
+        {
+          "label": "2026",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-W29",
+              "label": "Settimana dal 13 lug 2026",
+              "ret": 0,
+              "gain": 0,
+              "level": 0
+            },
+            {
+              "key": "2026-W30",
+              "label": "Settimana dal 20 lug 2026",
+              "ret": 0.007237240768740438,
+              "gain": 561.6983060508792,
+              "level": 4
+            },
+            {
+              "key": "2026-W31",
+              "label": "Settimana dal 27 lug 2026",
+              "ret": 0.006392194744768709,
+              "gain": 520.9597431335569,
+              "level": 4
+            },
+            {
+              "key": "2026-W32",
+              "label": "Settimana dal 3 ago 2026",
+              "ret": 0.005093557466047338,
+              "gain": 417.7751820655103,
+              "level": 3
+            },
+            {
+              "key": "2026-W33",
+              "label": "Settimana dal 10 ago 2026",
+              "ret": -0.004658635768971298,
+              "gain": -383.92608897232276,
+              "level": 3
+            },
+            {
+              "key": "2026-W34",
+              "label": "Settimana dal 17 ago 2026",
+              "ret": 0.005388857340184128,
+              "gain": 438.15532237630396,
+              "level": 3
+            },
+            {
+              "key": "2026-W35",
+              "label": "Settimana dal 24 ago 2026",
+              "ret": -0.007812312179153569,
+              "gain": -628.7058614546986,
+              "level": 4
+            },
+            {
+              "key": "2026-W36",
+              "label": "Settimana dal 31 ago 2026",
+              "ret": 0.007904995532686199,
+              "gain": 604.2880337001116,
+              "level": 4
+            },
+            {
+              "key": "2026-W37",
+              "label": "Settimana dal 7 set 2026",
+              "ret": 0.010714864427493476,
+              "gain": 790.9250647512963,
+              "level": 4
+            },
+            {
+              "key": "2026-W38",
+              "label": "Settimana dal 14 set 2026",
+              "ret": -0.00932574455085522,
+              "gain": -649.1334709152434,
+              "level": 4
+            },
+            {
+              "key": "2026-W39",
+              "label": "Settimana dal 21 set 2026",
+              "ret": 0.004131777677268023,
+              "gain": 299.1773459881515,
+              "level": 3
+            },
+            {
+              "key": "2026-W40",
+              "label": "Settimana dal 28 set 2026",
+              "ret": 0.007521268568405404,
+              "gain": 546.8550132670498,
+              "level": 4
+            },
+            {
+              "key": "2026-W41",
+              "label": "Settimana dal 5 ott 2026",
+              "ret": -0.0006039893488037906,
+              "gain": -44.24310536198027,
+              "level": 1
+            },
+            {
+              "key": "2026-W42",
+              "label": "Settimana dal 12 ott 2026",
+              "ret": 0.005624374130176024,
+              "gain": 411.74481164956524,
+              "level": 3
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      ],
+      "scale": 0.007904995532686199,
+      "positive": 9,
+      "negative": 4,
+      "counted": 14
+    },
+    "mese": {
+      "grouping": "mese",
+      "columns": [
+        "gen",
+        "feb",
+        "mar",
+        "apr",
+        "mag",
+        "giu",
+        "lug",
+        "ago",
+        "set",
+        "ott",
+        "nov",
+        "dic"
+      ],
+      "rows": [
+        {
+          "label": "2026",
+          "cells": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "key": "2026-07",
+              "label": "luglio 2026",
+              "ret": 0.013675697365917783,
+              "gain": 1082.658049184436,
+              "level": 4
+            },
+            {
+              "key": "2026-08",
+              "label": "agosto 2026",
+              "ret": 0.0010846745716761585,
+              "gain": 94.54034078949189,
+              "level": 1
+            },
+            {
+              "key": "2026-09",
+              "label": "settembre 2026",
+              "ret": 0.019311517635122177,
+              "gain": 1450.119978352348,
+              "level": 4
+            },
+            {
+              "key": "2026-10",
+              "label": "ottobre 2026",
+              "ret": 0.003520302719910884,
+              "gain": 258.2519279519038,
+              "level": 2
+            },
+            null,
+            null
+          ],
+          "total": {
+            "key": "2026",
+            "label": "2026",
+            "ret": 0.03801335765602465,
+            "gain": 2885.5702962781797,
+            "level": 4
+          }
+        }
+      ],
+      "scale": 0.013675697365917783,
+      "positive": 4,
+      "negative": 0,
+      "counted": 4
+    },
+    "anno": {
+      "grouping": "anno",
+      "columns": [
+        "2026"
+      ],
+      "rows": [
+        {
+          "label": "",
+          "cells": [
+            {
+              "key": "2026",
+              "label": "2026",
+              "ret": 0.03801335765602465,
+              "gain": 2885.5702962781797,
+              "level": 4
+            }
+          ]
+        }
+      ],
+      "scale": 0.03801335765602465,
+      "positive": 1,
+      "negative": 0,
+      "counted": 1
+    }
+  }
+}

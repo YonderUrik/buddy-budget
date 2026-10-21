@@ -1,0 +1,657 @@
+{
+  "topic": "liquidity",
+  "source": "lib/liquidity/*, lib/gocardless/connection-health.ts",
+  "fixtures": "same as expenses.json fixtures",
+  "vectors": [
+    {
+      "id": "split.ownShareForPreset.100.2",
+      "function": "ownShareForPreset",
+      "input": {
+        "total": 100,
+        "parts": 2
+      },
+      "expected": 50,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.ownShareForPreset.100.3",
+      "function": "ownShareForPreset",
+      "input": {
+        "total": 100,
+        "parts": 3
+      },
+      "expected": 33.33,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.ownShareForPreset.10.01.4",
+      "function": "ownShareForPreset",
+      "input": {
+        "total": 10.01,
+        "parts": 4
+      },
+      "expected": 2.5,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.ownShareForPreset.0.01.2",
+      "function": "ownShareForPreset",
+      "input": {
+        "total": 0.01,
+        "parts": 2
+      },
+      "expected": 0.01,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.clampOwnShare.150.100",
+      "function": "clampOwnShare",
+      "input": {
+        "share": 150,
+        "total": 100
+      },
+      "expected": 100,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.clampOwnShare.-5.100",
+      "function": "clampOwnShare",
+      "input": {
+        "share": -5,
+        "total": 100
+      },
+      "expected": 0,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.clampOwnShare.NaN.100",
+      "function": "clampOwnShare",
+      "input": {
+        "share": "NaN",
+        "total": 100
+      },
+      "expected": 100,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.clampOwnShare.33.335.100",
+      "function": "clampOwnShare",
+      "input": {
+        "share": 33.335,
+        "total": 100
+      },
+      "expected": 33.34,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.excludedFromOwnShare.100.33.33",
+      "function": "excludedFromOwnShare",
+      "input": {
+        "total": 100,
+        "ownShare": 33.33
+      },
+      "expected": 66.67,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.excludedFromOwnShare.59.99.20",
+      "function": "excludedFromOwnShare",
+      "input": {
+        "total": 59.99,
+        "ownShare": 20
+      },
+      "expected": 39.99,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.excludedFromOwnShare.100.120",
+      "function": "excludedFromOwnShare",
+      "input": {
+        "total": 100,
+        "ownShare": 120
+      },
+      "expected": 0,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.matchPreset.100.33.33",
+      "function": "matchPreset",
+      "input": {
+        "total": 100,
+        "ownShare": 33.33
+      },
+      "expected": "terzo",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.matchPreset.100.33.34",
+      "function": "matchPreset",
+      "input": {
+        "total": 100,
+        "ownShare": 33.34
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.matchPreset.100.50",
+      "function": "matchPreset",
+      "input": {
+        "total": 100,
+        "ownShare": 50
+      },
+      "expected": "meta",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "split.matchPreset.100.40",
+      "function": "matchPreset",
+      "input": {
+        "total": 100,
+        "ownShare": 40
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "liquidity.cumulativeSpend",
+      "function": "buildCumulativeSpend",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        },
+        "today": "2026-10-05"
+      },
+      "expected": [
+        {
+          "date": "2026-10-01",
+          "value": 0
+        },
+        {
+          "date": "2026-10-02",
+          "value": 0
+        },
+        {
+          "date": "2026-10-03",
+          "value": 55.25
+        },
+        {
+          "date": "2026-10-04",
+          "value": 55.25
+        },
+        {
+          "date": "2026-10-05",
+          "value": 55.25
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "liquidity.accountSeries.auto",
+      "function": "buildAccountBalanceSeries",
+      "input": {
+        "account": {
+          "id": "acc1",
+          "source": "auto",
+          "balance": "1500.00"
+        },
+        "transactions": [
+          {
+            "id": "t21",
+            "date": "2026-10-14",
+            "amount": "-100.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t22",
+            "date": "2026-10-15",
+            "amount": "50.00",
+            "excludedAmount": "0.00",
+            "categoryId": "salary",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t23",
+            "date": "2026-10-16",
+            "amount": "-20.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t24",
+            "date": "2026-10-12",
+            "amount": "-30.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc2",
+            "description": "TX",
+            "note": null
+          }
+        ],
+        "from": "2026-10-12",
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "date": "2026-10-12",
+          "value": 1570
+        },
+        {
+          "date": "2026-10-13",
+          "value": 1570
+        },
+        {
+          "date": "2026-10-14",
+          "value": 1470
+        },
+        {
+          "date": "2026-10-15",
+          "value": 1520
+        },
+        {
+          "date": "2026-10-16",
+          "value": 1500
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "includes today; today's movements are part of the current balance"
+    },
+    {
+      "id": "liquidity.accountSeries.manual",
+      "function": "buildAccountBalanceSeries",
+      "input": {
+        "account": {
+          "id": "acc2",
+          "source": "manual",
+          "balance": "500.00"
+        },
+        "transactions": [
+          {
+            "id": "t21",
+            "date": "2026-10-14",
+            "amount": "-100.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t22",
+            "date": "2026-10-15",
+            "amount": "50.00",
+            "excludedAmount": "0.00",
+            "categoryId": "salary",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t23",
+            "date": "2026-10-16",
+            "amount": "-20.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t24",
+            "date": "2026-10-12",
+            "amount": "-30.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc2",
+            "description": "TX",
+            "note": null
+          }
+        ],
+        "from": "2026-10-14",
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "date": "2026-10-14",
+          "value": 500
+        },
+        {
+          "date": "2026-10-15",
+          "value": 500
+        },
+        {
+          "date": "2026-10-16",
+          "value": 500
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "liquidity.dayLabel.it-IT.2026-10-16",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-16",
+        "today": "2026-10-16",
+        "locale": "it-IT"
+      },
+      "expected": "Oggi",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.it-IT.2026-10-15",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-15",
+        "today": "2026-10-16",
+        "locale": "it-IT"
+      },
+      "expected": "Ieri",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.it-IT.2026-10-05",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-05",
+        "today": "2026-10-16",
+        "locale": "it-IT"
+      },
+      "expected": "lunedì 5 ottobre",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.it-IT.2025-12-24",
+      "function": "dayLabel",
+      "input": {
+        "date": "2025-12-24",
+        "today": "2026-10-16",
+        "locale": "it-IT"
+      },
+      "expected": "mercoledì 24 dicembre 2025",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.en-GB.2026-10-16",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-16",
+        "today": "2026-10-16",
+        "locale": "en-GB"
+      },
+      "expected": "Oggi",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.en-GB.2026-10-15",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-15",
+        "today": "2026-10-16",
+        "locale": "en-GB"
+      },
+      "expected": "Ieri",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.en-GB.2026-10-05",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-05",
+        "today": "2026-10-16",
+        "locale": "en-GB"
+      },
+      "expected": "Monday 5 October",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.en-GB.2025-12-24",
+      "function": "dayLabel",
+      "input": {
+        "date": "2025-12-24",
+        "today": "2026-10-16",
+        "locale": "en-GB"
+      },
+      "expected": "Wednesday, 24 December 2025",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.de-DE.2026-10-16",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-16",
+        "today": "2026-10-16",
+        "locale": "de-DE"
+      },
+      "expected": "Oggi",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.de-DE.2026-10-15",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-15",
+        "today": "2026-10-16",
+        "locale": "de-DE"
+      },
+      "expected": "Ieri",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.de-DE.2026-10-05",
+      "function": "dayLabel",
+      "input": {
+        "date": "2026-10-05",
+        "today": "2026-10-16",
+        "locale": "de-DE"
+      },
+      "expected": "Montag, 5. Oktober",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.dayLabel.de-DE.2025-12-24",
+      "function": "dayLabel",
+      "input": {
+        "date": "2025-12-24",
+        "today": "2026-10-16",
+        "locale": "de-DE"
+      },
+      "expected": "Mittwoch, 24. Dezember 2025",
+      "tolerance": 1e-9,
+      "notes": "'Oggi'/'Ieri' are Italian source strings, translated by the UI layer via t()"
+    },
+    {
+      "id": "liquidity.groupByDay",
+      "function": "groupByDay",
+      "input": {
+        "fixture": "transactions (only 2026-10-*)",
+        "today": "2026-10-16",
+        "locale": "it-IT"
+      },
+      "expected": [
+        {
+          "date": "2026-10-16",
+          "label": "Oggi",
+          "total": -12.3,
+          "itemIds": [
+            "t15"
+          ]
+        },
+        {
+          "date": "2026-10-14",
+          "label": "mercoledì 14 ottobre",
+          "total": 20,
+          "itemIds": [
+            "t14"
+          ]
+        },
+        {
+          "date": "2026-10-10",
+          "label": "sabato 10 ottobre",
+          "total": -50,
+          "itemIds": [
+            "t13"
+          ]
+        },
+        {
+          "date": "2026-10-08",
+          "label": "giovedì 8 ottobre",
+          "total": -30,
+          "itemIds": [
+            "t12"
+          ]
+        },
+        {
+          "date": "2026-10-03",
+          "label": "sabato 3 ottobre",
+          "total": -55.25,
+          "itemIds": [
+            "t11"
+          ]
+        },
+        {
+          "date": "2026-10-01",
+          "label": "giovedì 1 ottobre",
+          "total": 2600,
+          "itemIds": [
+            "t10"
+          ]
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "connectionHealth.linked.2026-10-20T10:00:00Z",
+      "function": "computeConnectionHealth",
+      "input": {
+        "input": {
+          "status": "linked",
+          "consentExpiresAt": "2026-10-20T10:00:00Z"
+        },
+        "now": "2026-10-16T10:00:00.000Z"
+      },
+      "expected": {
+        "state": "expiring",
+        "daysLeft": 4
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "connectionHealth.linked.2026-10-23T10:00:01Z",
+      "function": "computeConnectionHealth",
+      "input": {
+        "input": {
+          "status": "linked",
+          "consentExpiresAt": "2026-10-23T10:00:01Z"
+        },
+        "now": "2026-10-16T10:00:00.000Z"
+      },
+      "expected": {
+        "state": "ok",
+        "daysLeft": 8
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "connectionHealth.linked.2026-10-16T09:00:00Z",
+      "function": "computeConnectionHealth",
+      "input": {
+        "input": {
+          "status": "linked",
+          "consentExpiresAt": "2026-10-16T09:00:00Z"
+        },
+        "now": "2026-10-16T10:00:00.000Z"
+      },
+      "expected": {
+        "state": "expired",
+        "daysLeft": null
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "connectionHealth.linked.null",
+      "function": "computeConnectionHealth",
+      "input": {
+        "input": {
+          "status": "linked",
+          "consentExpiresAt": null
+        },
+        "now": "2026-10-16T10:00:00.000Z"
+      },
+      "expected": {
+        "state": "ok",
+        "daysLeft": null
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "connectionHealth.error.2026-12-01T00:00:00Z",
+      "function": "computeConnectionHealth",
+      "input": {
+        "input": {
+          "status": "error",
+          "consentExpiresAt": "2026-12-01T00:00:00Z"
+        },
+        "now": "2026-10-16T10:00:00.000Z"
+      },
+      "expected": {
+        "state": "error",
+        "daysLeft": null
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "connectionHealth.pending.null",
+      "function": "computeConnectionHealth",
+      "input": {
+        "input": {
+          "status": "pending",
+          "consentExpiresAt": null
+        },
+        "now": "2026-10-16T10:00:00.000Z"
+      },
+      "expected": {
+        "state": "pending",
+        "daysLeft": null
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "connectionHealth.expired.null",
+      "function": "computeConnectionHealth",
+      "input": {
+        "input": {
+          "status": "expired",
+          "consentExpiresAt": null
+        },
+        "now": "2026-10-16T10:00:00.000Z"
+      },
+      "expected": {
+        "state": "expired",
+        "daysLeft": null
+      },
+      "tolerance": 1e-9
+    }
+  ]
+}

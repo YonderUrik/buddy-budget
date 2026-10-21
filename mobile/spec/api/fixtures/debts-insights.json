@@ -1,0 +1,4991 @@
+{
+  "debts": [
+    {
+      "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+      "kind": "loan",
+      "name": "Mutuo casa",
+      "startMode": "origine",
+      "principal": 38000,
+      "annualRate": 2.9,
+      "installments": 120,
+      "firstInstallmentDate": "2023-10-05",
+      "declaredInstallment": null,
+      "anchorDate": null,
+      "costs": [],
+      "plan": {
+        "rows": [
+          {
+            "number": 1,
+            "dueDate": "2023-10-05",
+            "installment": 365.18,
+            "interest": 91.83,
+            "capital": 273.35,
+            "residual": 37726.65,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 2,
+            "dueDate": "2023-11-05",
+            "installment": 365.18,
+            "interest": 91.17,
+            "capital": 274.01,
+            "residual": 37452.64,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 3,
+            "dueDate": "2023-12-05",
+            "installment": 365.18,
+            "interest": 90.51,
+            "capital": 274.67,
+            "residual": 37177.97,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 4,
+            "dueDate": "2024-01-05",
+            "installment": 365.18,
+            "interest": 89.85,
+            "capital": 275.33,
+            "residual": 36902.64,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 5,
+            "dueDate": "2024-02-05",
+            "installment": 365.18,
+            "interest": 89.18,
+            "capital": 276,
+            "residual": 36626.64,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 6,
+            "dueDate": "2024-03-05",
+            "installment": 365.18,
+            "interest": 88.51,
+            "capital": 276.67,
+            "residual": 36349.97,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 7,
+            "dueDate": "2024-04-05",
+            "installment": 365.18,
+            "interest": 87.85,
+            "capital": 277.33,
+            "residual": 36072.64,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 8,
+            "dueDate": "2024-05-05",
+            "installment": 365.18,
+            "interest": 87.18,
+            "capital": 278,
+            "residual": 35794.64,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 9,
+            "dueDate": "2024-06-05",
+            "installment": 365.18,
+            "interest": 86.5,
+            "capital": 278.68,
+            "residual": 35515.96,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 10,
+            "dueDate": "2024-07-05",
+            "installment": 365.18,
+            "interest": 85.83,
+            "capital": 279.35,
+            "residual": 35236.61,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 11,
+            "dueDate": "2024-08-05",
+            "installment": 365.18,
+            "interest": 85.16,
+            "capital": 280.02,
+            "residual": 34956.59,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 12,
+            "dueDate": "2024-09-05",
+            "installment": 365.18,
+            "interest": 84.48,
+            "capital": 280.7,
+            "residual": 34675.89,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 13,
+            "dueDate": "2024-10-05",
+            "installment": 365.18,
+            "interest": 83.8,
+            "capital": 281.38,
+            "residual": 34394.51,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 14,
+            "dueDate": "2024-11-05",
+            "installment": 365.18,
+            "interest": 83.12,
+            "capital": 282.06,
+            "residual": 34112.45,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 15,
+            "dueDate": "2024-12-05",
+            "installment": 365.18,
+            "interest": 82.44,
+            "capital": 282.74,
+            "residual": 33829.71,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 16,
+            "dueDate": "2025-01-05",
+            "installment": 365.18,
+            "interest": 81.76,
+            "capital": 283.42,
+            "residual": 33546.29,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 17,
+            "dueDate": "2025-02-05",
+            "installment": 365.18,
+            "interest": 81.07,
+            "capital": 284.11,
+            "residual": 33262.18,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 18,
+            "dueDate": "2025-03-05",
+            "installment": 365.18,
+            "interest": 80.38,
+            "capital": 284.8,
+            "residual": 32977.38,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 19,
+            "dueDate": "2025-04-05",
+            "installment": 365.18,
+            "interest": 79.7,
+            "capital": 285.48,
+            "residual": 32691.9,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 20,
+            "dueDate": "2025-05-05",
+            "installment": 365.18,
+            "interest": 79.01,
+            "capital": 286.17,
+            "residual": 32405.73,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 21,
+            "dueDate": "2025-06-05",
+            "installment": 365.18,
+            "interest": 78.31,
+            "capital": 286.87,
+            "residual": 32118.86,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 22,
+            "dueDate": "2025-07-05",
+            "installment": 365.18,
+            "interest": 77.62,
+            "capital": 287.56,
+            "residual": 31831.3,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 23,
+            "dueDate": "2025-08-05",
+            "installment": 365.18,
+            "interest": 76.93,
+            "capital": 288.25,
+            "residual": 31543.05,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 24,
+            "dueDate": "2025-09-05",
+            "installment": 365.18,
+            "interest": 76.23,
+            "capital": 288.95,
+            "residual": 31254.1,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 25,
+            "dueDate": "2025-10-05",
+            "installment": 365.18,
+            "interest": 75.53,
+            "capital": 289.65,
+            "residual": 30964.45,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 26,
+            "dueDate": "2025-11-05",
+            "installment": 365.18,
+            "interest": 74.83,
+            "capital": 290.35,
+            "residual": 30674.1,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 27,
+            "dueDate": "2025-12-05",
+            "installment": 365.18,
+            "interest": 74.13,
+            "capital": 291.05,
+            "residual": 30383.05,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 28,
+            "dueDate": "2026-01-05",
+            "installment": 365.18,
+            "interest": 73.43,
+            "capital": 291.75,
+            "residual": 30091.3,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 29,
+            "dueDate": "2026-02-05",
+            "installment": 365.18,
+            "interest": 72.72,
+            "capital": 292.46,
+            "residual": 29798.84,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 30,
+            "dueDate": "2026-03-05",
+            "installment": 365.18,
+            "interest": 72.01,
+            "capital": 293.17,
+            "residual": 29505.67,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 31,
+            "dueDate": "2026-04-05",
+            "installment": 365.18,
+            "interest": 71.31,
+            "capital": 293.87,
+            "residual": 29211.8,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 32,
+            "dueDate": "2026-05-05",
+            "installment": 365.18,
+            "interest": 70.6,
+            "capital": 294.58,
+            "residual": 28917.22,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 33,
+            "dueDate": "2026-06-05",
+            "installment": 365.18,
+            "interest": 69.88,
+            "capital": 295.3,
+            "residual": 28621.92,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 34,
+            "dueDate": "2026-07-05",
+            "installment": 365.18,
+            "interest": 69.17,
+            "capital": 296.01,
+            "residual": 28325.91,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 35,
+            "dueDate": "2026-08-05",
+            "installment": 365.18,
+            "interest": 68.45,
+            "capital": 296.73,
+            "residual": 28029.18,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 36,
+            "dueDate": "2026-09-05",
+            "installment": 365.18,
+            "interest": 67.74,
+            "capital": 297.44,
+            "residual": 27731.74,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 37,
+            "dueDate": "2026-10-05",
+            "installment": 365.18,
+            "interest": 67.02,
+            "capital": 298.16,
+            "residual": 27433.58,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 38,
+            "dueDate": "2026-11-05",
+            "installment": 365.18,
+            "interest": 66.3,
+            "capital": 298.88,
+            "residual": 27134.7,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 39,
+            "dueDate": "2026-12-05",
+            "installment": 365.18,
+            "interest": 65.58,
+            "capital": 299.6,
+            "residual": 26835.1,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 40,
+            "dueDate": "2027-01-05",
+            "installment": 365.18,
+            "interest": 64.85,
+            "capital": 300.33,
+            "residual": 26534.77,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 41,
+            "dueDate": "2027-02-05",
+            "installment": 365.18,
+            "interest": 64.13,
+            "capital": 301.05,
+            "residual": 26233.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 42,
+            "dueDate": "2027-03-05",
+            "installment": 365.18,
+            "interest": 63.4,
+            "capital": 301.78,
+            "residual": 25931.94,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 43,
+            "dueDate": "2027-04-05",
+            "installment": 365.18,
+            "interest": 62.67,
+            "capital": 302.51,
+            "residual": 25629.43,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 44,
+            "dueDate": "2027-05-05",
+            "installment": 365.18,
+            "interest": 61.94,
+            "capital": 303.24,
+            "residual": 25326.19,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 45,
+            "dueDate": "2027-06-05",
+            "installment": 365.18,
+            "interest": 61.2,
+            "capital": 303.98,
+            "residual": 25022.21,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 46,
+            "dueDate": "2027-07-05",
+            "installment": 365.18,
+            "interest": 60.47,
+            "capital": 304.71,
+            "residual": 24717.5,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 47,
+            "dueDate": "2027-08-05",
+            "installment": 365.18,
+            "interest": 59.73,
+            "capital": 305.45,
+            "residual": 24412.05,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 48,
+            "dueDate": "2027-09-05",
+            "installment": 365.18,
+            "interest": 59,
+            "capital": 306.18,
+            "residual": 24105.87,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 49,
+            "dueDate": "2027-10-05",
+            "installment": 365.18,
+            "interest": 58.26,
+            "capital": 306.92,
+            "residual": 23798.95,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 50,
+            "dueDate": "2027-11-05",
+            "installment": 365.18,
+            "interest": 57.51,
+            "capital": 307.67,
+            "residual": 23491.28,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 51,
+            "dueDate": "2027-12-05",
+            "installment": 365.18,
+            "interest": 56.77,
+            "capital": 308.41,
+            "residual": 23182.87,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 52,
+            "dueDate": "2028-01-05",
+            "installment": 365.18,
+            "interest": 56.03,
+            "capital": 309.15,
+            "residual": 22873.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 53,
+            "dueDate": "2028-02-05",
+            "installment": 365.18,
+            "interest": 55.28,
+            "capital": 309.9,
+            "residual": 22563.82,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 54,
+            "dueDate": "2028-03-05",
+            "installment": 365.18,
+            "interest": 54.53,
+            "capital": 310.65,
+            "residual": 22253.17,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 55,
+            "dueDate": "2028-04-05",
+            "installment": 365.18,
+            "interest": 53.78,
+            "capital": 311.4,
+            "residual": 21941.77,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 56,
+            "dueDate": "2028-05-05",
+            "installment": 365.18,
+            "interest": 53.03,
+            "capital": 312.15,
+            "residual": 21629.62,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 57,
+            "dueDate": "2028-06-05",
+            "installment": 365.18,
+            "interest": 52.27,
+            "capital": 312.91,
+            "residual": 21316.71,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 58,
+            "dueDate": "2028-07-05",
+            "installment": 365.18,
+            "interest": 51.52,
+            "capital": 313.66,
+            "residual": 21003.05,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 59,
+            "dueDate": "2028-08-05",
+            "installment": 365.18,
+            "interest": 50.76,
+            "capital": 314.42,
+            "residual": 20688.63,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 60,
+            "dueDate": "2028-09-05",
+            "installment": 365.18,
+            "interest": 50,
+            "capital": 315.18,
+            "residual": 20373.45,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 61,
+            "dueDate": "2028-10-05",
+            "installment": 365.18,
+            "interest": 49.24,
+            "capital": 315.94,
+            "residual": 20057.51,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 62,
+            "dueDate": "2028-11-05",
+            "installment": 365.18,
+            "interest": 48.47,
+            "capital": 316.71,
+            "residual": 19740.8,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 63,
+            "dueDate": "2028-12-05",
+            "installment": 365.18,
+            "interest": 47.71,
+            "capital": 317.47,
+            "residual": 19423.33,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 64,
+            "dueDate": "2029-01-05",
+            "installment": 365.18,
+            "interest": 46.94,
+            "capital": 318.24,
+            "residual": 19105.09,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 65,
+            "dueDate": "2029-02-05",
+            "installment": 365.18,
+            "interest": 46.17,
+            "capital": 319.01,
+            "residual": 18786.08,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 66,
+            "dueDate": "2029-03-05",
+            "installment": 365.18,
+            "interest": 45.4,
+            "capital": 319.78,
+            "residual": 18466.3,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 67,
+            "dueDate": "2029-04-05",
+            "installment": 365.18,
+            "interest": 44.63,
+            "capital": 320.55,
+            "residual": 18145.75,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 68,
+            "dueDate": "2029-05-05",
+            "installment": 365.18,
+            "interest": 43.85,
+            "capital": 321.33,
+            "residual": 17824.42,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 69,
+            "dueDate": "2029-06-05",
+            "installment": 365.18,
+            "interest": 43.08,
+            "capital": 322.1,
+            "residual": 17502.32,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 70,
+            "dueDate": "2029-07-05",
+            "installment": 365.18,
+            "interest": 42.3,
+            "capital": 322.88,
+            "residual": 17179.44,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 71,
+            "dueDate": "2029-08-05",
+            "installment": 365.18,
+            "interest": 41.52,
+            "capital": 323.66,
+            "residual": 16855.78,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 72,
+            "dueDate": "2029-09-05",
+            "installment": 365.18,
+            "interest": 40.73,
+            "capital": 324.45,
+            "residual": 16531.33,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 73,
+            "dueDate": "2029-10-05",
+            "installment": 365.18,
+            "interest": 39.95,
+            "capital": 325.23,
+            "residual": 16206.1,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 74,
+            "dueDate": "2029-11-05",
+            "installment": 365.18,
+            "interest": 39.16,
+            "capital": 326.02,
+            "residual": 15880.08,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 75,
+            "dueDate": "2029-12-05",
+            "installment": 365.18,
+            "interest": 38.38,
+            "capital": 326.8,
+            "residual": 15553.28,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 76,
+            "dueDate": "2030-01-05",
+            "installment": 365.18,
+            "interest": 37.59,
+            "capital": 327.59,
+            "residual": 15225.69,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 77,
+            "dueDate": "2030-02-05",
+            "installment": 365.18,
+            "interest": 36.8,
+            "capital": 328.38,
+            "residual": 14897.31,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 78,
+            "dueDate": "2030-03-05",
+            "installment": 365.18,
+            "interest": 36,
+            "capital": 329.18,
+            "residual": 14568.13,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 79,
+            "dueDate": "2030-04-05",
+            "installment": 365.18,
+            "interest": 35.21,
+            "capital": 329.97,
+            "residual": 14238.16,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 80,
+            "dueDate": "2030-05-05",
+            "installment": 365.18,
+            "interest": 34.41,
+            "capital": 330.77,
+            "residual": 13907.39,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 81,
+            "dueDate": "2030-06-05",
+            "installment": 365.18,
+            "interest": 33.61,
+            "capital": 331.57,
+            "residual": 13575.82,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 82,
+            "dueDate": "2030-07-05",
+            "installment": 365.18,
+            "interest": 32.81,
+            "capital": 332.37,
+            "residual": 13243.45,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 83,
+            "dueDate": "2030-08-05",
+            "installment": 365.18,
+            "interest": 32.01,
+            "capital": 333.17,
+            "residual": 12910.28,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 84,
+            "dueDate": "2030-09-05",
+            "installment": 365.18,
+            "interest": 31.2,
+            "capital": 333.98,
+            "residual": 12576.3,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 85,
+            "dueDate": "2030-10-05",
+            "installment": 365.18,
+            "interest": 30.39,
+            "capital": 334.79,
+            "residual": 12241.51,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 86,
+            "dueDate": "2030-11-05",
+            "installment": 365.18,
+            "interest": 29.58,
+            "capital": 335.6,
+            "residual": 11905.91,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 87,
+            "dueDate": "2030-12-05",
+            "installment": 365.18,
+            "interest": 28.77,
+            "capital": 336.41,
+            "residual": 11569.5,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 88,
+            "dueDate": "2031-01-05",
+            "installment": 365.18,
+            "interest": 27.96,
+            "capital": 337.22,
+            "residual": 11232.28,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 89,
+            "dueDate": "2031-02-05",
+            "installment": 365.18,
+            "interest": 27.14,
+            "capital": 338.04,
+            "residual": 10894.24,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 90,
+            "dueDate": "2031-03-05",
+            "installment": 365.18,
+            "interest": 26.33,
+            "capital": 338.85,
+            "residual": 10555.39,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 91,
+            "dueDate": "2031-04-05",
+            "installment": 365.18,
+            "interest": 25.51,
+            "capital": 339.67,
+            "residual": 10215.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 92,
+            "dueDate": "2031-05-05",
+            "installment": 365.18,
+            "interest": 24.69,
+            "capital": 340.49,
+            "residual": 9875.23,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 93,
+            "dueDate": "2031-06-05",
+            "installment": 365.18,
+            "interest": 23.87,
+            "capital": 341.31,
+            "residual": 9533.92,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 94,
+            "dueDate": "2031-07-05",
+            "installment": 365.18,
+            "interest": 23.04,
+            "capital": 342.14,
+            "residual": 9191.78,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 95,
+            "dueDate": "2031-08-05",
+            "installment": 365.18,
+            "interest": 22.21,
+            "capital": 342.97,
+            "residual": 8848.81,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 96,
+            "dueDate": "2031-09-05",
+            "installment": 365.18,
+            "interest": 21.38,
+            "capital": 343.8,
+            "residual": 8505.01,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 97,
+            "dueDate": "2031-10-05",
+            "installment": 365.18,
+            "interest": 20.55,
+            "capital": 344.63,
+            "residual": 8160.38,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 98,
+            "dueDate": "2031-11-05",
+            "installment": 365.18,
+            "interest": 19.72,
+            "capital": 345.46,
+            "residual": 7814.92,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 99,
+            "dueDate": "2031-12-05",
+            "installment": 365.18,
+            "interest": 18.89,
+            "capital": 346.29,
+            "residual": 7468.63,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 100,
+            "dueDate": "2032-01-05",
+            "installment": 365.18,
+            "interest": 18.05,
+            "capital": 347.13,
+            "residual": 7121.5,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 101,
+            "dueDate": "2032-02-05",
+            "installment": 365.18,
+            "interest": 17.21,
+            "capital": 347.97,
+            "residual": 6773.53,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 102,
+            "dueDate": "2032-03-05",
+            "installment": 365.18,
+            "interest": 16.37,
+            "capital": 348.81,
+            "residual": 6424.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 103,
+            "dueDate": "2032-04-05",
+            "installment": 365.18,
+            "interest": 15.53,
+            "capital": 349.65,
+            "residual": 6075.07,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 104,
+            "dueDate": "2032-05-05",
+            "installment": 365.18,
+            "interest": 14.68,
+            "capital": 350.5,
+            "residual": 5724.57,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 105,
+            "dueDate": "2032-06-05",
+            "installment": 365.18,
+            "interest": 13.83,
+            "capital": 351.35,
+            "residual": 5373.22,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 106,
+            "dueDate": "2032-07-05",
+            "installment": 365.18,
+            "interest": 12.99,
+            "capital": 352.19,
+            "residual": 5021.03,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 107,
+            "dueDate": "2032-08-05",
+            "installment": 365.18,
+            "interest": 12.13,
+            "capital": 353.05,
+            "residual": 4667.98,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 108,
+            "dueDate": "2032-09-05",
+            "installment": 365.18,
+            "interest": 11.28,
+            "capital": 353.9,
+            "residual": 4314.08,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 109,
+            "dueDate": "2032-10-05",
+            "installment": 365.18,
+            "interest": 10.43,
+            "capital": 354.75,
+            "residual": 3959.33,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 110,
+            "dueDate": "2032-11-05",
+            "installment": 365.18,
+            "interest": 9.57,
+            "capital": 355.61,
+            "residual": 3603.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 111,
+            "dueDate": "2032-12-05",
+            "installment": 365.18,
+            "interest": 8.71,
+            "capital": 356.47,
+            "residual": 3247.25,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 112,
+            "dueDate": "2033-01-05",
+            "installment": 365.18,
+            "interest": 7.85,
+            "capital": 357.33,
+            "residual": 2889.92,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 113,
+            "dueDate": "2033-02-05",
+            "installment": 365.18,
+            "interest": 6.98,
+            "capital": 358.2,
+            "residual": 2531.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 114,
+            "dueDate": "2033-03-05",
+            "installment": 365.18,
+            "interest": 6.12,
+            "capital": 359.06,
+            "residual": 2172.66,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 115,
+            "dueDate": "2033-04-05",
+            "installment": 365.18,
+            "interest": 5.25,
+            "capital": 359.93,
+            "residual": 1812.73,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 116,
+            "dueDate": "2033-05-05",
+            "installment": 365.18,
+            "interest": 4.38,
+            "capital": 360.8,
+            "residual": 1451.93,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 117,
+            "dueDate": "2033-06-05",
+            "installment": 365.18,
+            "interest": 3.51,
+            "capital": 361.67,
+            "residual": 1090.26,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 118,
+            "dueDate": "2033-07-05",
+            "installment": 365.18,
+            "interest": 2.63,
+            "capital": 362.55,
+            "residual": 727.71,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 119,
+            "dueDate": "2033-08-05",
+            "installment": 365.18,
+            "interest": 1.76,
+            "capital": 363.42,
+            "residual": 364.29,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 120,
+            "dueDate": "2033-09-05",
+            "installment": 365.17,
+            "interest": 0.88,
+            "capital": 364.29,
+            "residual": 0,
+            "status": "da_pagare",
+            "payment": null
+          }
+        ],
+        "totals": {
+          "residual": 27433.58,
+          "currentInstallment": 365.18,
+          "interestToDate": 2945.24,
+          "interestRemaining": 2876.35,
+          "paidTotal": 0,
+          "remainingInstallments": 83,
+          "endDate": "2033-09-05",
+          "nextDueDate": "2026-11-05",
+          "overdueCount": 0,
+          "unconfirmedCount": 37,
+          "finished": false,
+          "penaltiesPaid": 0,
+          "closedOn": null
+        },
+        "residualSeries": [
+          {
+            "date": "2023-09-05",
+            "residual": 38000
+          },
+          {
+            "date": "2023-10-05",
+            "residual": 37726.65
+          },
+          {
+            "date": "2023-11-05",
+            "residual": 37452.64
+          },
+          {
+            "date": "2023-12-05",
+            "residual": 37177.97
+          },
+          {
+            "date": "2024-01-05",
+            "residual": 36902.64
+          },
+          {
+            "date": "2024-02-05",
+            "residual": 36626.64
+          },
+          {
+            "date": "2024-03-05",
+            "residual": 36349.97
+          },
+          {
+            "date": "2024-04-05",
+            "residual": 36072.64
+          },
+          {
+            "date": "2024-05-05",
+            "residual": 35794.64
+          },
+          {
+            "date": "2024-06-05",
+            "residual": 35515.96
+          },
+          {
+            "date": "2024-07-05",
+            "residual": 35236.61
+          },
+          {
+            "date": "2024-08-05",
+            "residual": 34956.59
+          },
+          {
+            "date": "2024-09-05",
+            "residual": 34675.89
+          },
+          {
+            "date": "2024-10-05",
+            "residual": 34394.51
+          },
+          {
+            "date": "2024-11-05",
+            "residual": 34112.45
+          },
+          {
+            "date": "2024-12-05",
+            "residual": 33829.71
+          },
+          {
+            "date": "2025-01-05",
+            "residual": 33546.29
+          },
+          {
+            "date": "2025-02-05",
+            "residual": 33262.18
+          },
+          {
+            "date": "2025-03-05",
+            "residual": 32977.38
+          },
+          {
+            "date": "2025-04-05",
+            "residual": 32691.9
+          },
+          {
+            "date": "2025-05-05",
+            "residual": 32405.73
+          },
+          {
+            "date": "2025-06-05",
+            "residual": 32118.86
+          },
+          {
+            "date": "2025-07-05",
+            "residual": 31831.3
+          },
+          {
+            "date": "2025-08-05",
+            "residual": 31543.05
+          },
+          {
+            "date": "2025-09-05",
+            "residual": 31254.1
+          },
+          {
+            "date": "2025-10-05",
+            "residual": 30964.45
+          },
+          {
+            "date": "2025-11-05",
+            "residual": 30674.1
+          },
+          {
+            "date": "2025-12-05",
+            "residual": 30383.05
+          },
+          {
+            "date": "2026-01-05",
+            "residual": 30091.3
+          },
+          {
+            "date": "2026-02-05",
+            "residual": 29798.84
+          },
+          {
+            "date": "2026-03-05",
+            "residual": 29505.67
+          },
+          {
+            "date": "2026-04-05",
+            "residual": 29211.8
+          },
+          {
+            "date": "2026-05-05",
+            "residual": 28917.22
+          },
+          {
+            "date": "2026-06-05",
+            "residual": 28621.92
+          },
+          {
+            "date": "2026-07-05",
+            "residual": 28325.91
+          },
+          {
+            "date": "2026-08-05",
+            "residual": 28029.18
+          },
+          {
+            "date": "2026-09-05",
+            "residual": 27731.74
+          },
+          {
+            "date": "2026-10-05",
+            "residual": 27433.58
+          },
+          {
+            "date": "2026-11-05",
+            "residual": 27134.7
+          },
+          {
+            "date": "2026-12-05",
+            "residual": 26835.1
+          },
+          {
+            "date": "2027-01-05",
+            "residual": 26534.77
+          },
+          {
+            "date": "2027-02-05",
+            "residual": 26233.72
+          },
+          {
+            "date": "2027-03-05",
+            "residual": 25931.94
+          },
+          {
+            "date": "2027-04-05",
+            "residual": 25629.43
+          },
+          {
+            "date": "2027-05-05",
+            "residual": 25326.19
+          },
+          {
+            "date": "2027-06-05",
+            "residual": 25022.21
+          },
+          {
+            "date": "2027-07-05",
+            "residual": 24717.5
+          },
+          {
+            "date": "2027-08-05",
+            "residual": 24412.05
+          },
+          {
+            "date": "2027-09-05",
+            "residual": 24105.87
+          },
+          {
+            "date": "2027-10-05",
+            "residual": 23798.95
+          },
+          {
+            "date": "2027-11-05",
+            "residual": 23491.28
+          },
+          {
+            "date": "2027-12-05",
+            "residual": 23182.87
+          },
+          {
+            "date": "2028-01-05",
+            "residual": 22873.72
+          },
+          {
+            "date": "2028-02-05",
+            "residual": 22563.82
+          },
+          {
+            "date": "2028-03-05",
+            "residual": 22253.17
+          },
+          {
+            "date": "2028-04-05",
+            "residual": 21941.77
+          },
+          {
+            "date": "2028-05-05",
+            "residual": 21629.62
+          },
+          {
+            "date": "2028-06-05",
+            "residual": 21316.71
+          },
+          {
+            "date": "2028-07-05",
+            "residual": 21003.05
+          },
+          {
+            "date": "2028-08-05",
+            "residual": 20688.63
+          },
+          {
+            "date": "2028-09-05",
+            "residual": 20373.45
+          },
+          {
+            "date": "2028-10-05",
+            "residual": 20057.51
+          },
+          {
+            "date": "2028-11-05",
+            "residual": 19740.8
+          },
+          {
+            "date": "2028-12-05",
+            "residual": 19423.33
+          },
+          {
+            "date": "2029-01-05",
+            "residual": 19105.09
+          },
+          {
+            "date": "2029-02-05",
+            "residual": 18786.08
+          },
+          {
+            "date": "2029-03-05",
+            "residual": 18466.3
+          },
+          {
+            "date": "2029-04-05",
+            "residual": 18145.75
+          },
+          {
+            "date": "2029-05-05",
+            "residual": 17824.42
+          },
+          {
+            "date": "2029-06-05",
+            "residual": 17502.32
+          },
+          {
+            "date": "2029-07-05",
+            "residual": 17179.44
+          },
+          {
+            "date": "2029-08-05",
+            "residual": 16855.78
+          },
+          {
+            "date": "2029-09-05",
+            "residual": 16531.33
+          },
+          {
+            "date": "2029-10-05",
+            "residual": 16206.1
+          },
+          {
+            "date": "2029-11-05",
+            "residual": 15880.08
+          },
+          {
+            "date": "2029-12-05",
+            "residual": 15553.28
+          },
+          {
+            "date": "2030-01-05",
+            "residual": 15225.69
+          },
+          {
+            "date": "2030-02-05",
+            "residual": 14897.31
+          },
+          {
+            "date": "2030-03-05",
+            "residual": 14568.13
+          },
+          {
+            "date": "2030-04-05",
+            "residual": 14238.16
+          },
+          {
+            "date": "2030-05-05",
+            "residual": 13907.39
+          },
+          {
+            "date": "2030-06-05",
+            "residual": 13575.82
+          },
+          {
+            "date": "2030-07-05",
+            "residual": 13243.45
+          },
+          {
+            "date": "2030-08-05",
+            "residual": 12910.28
+          },
+          {
+            "date": "2030-09-05",
+            "residual": 12576.3
+          },
+          {
+            "date": "2030-10-05",
+            "residual": 12241.51
+          },
+          {
+            "date": "2030-11-05",
+            "residual": 11905.91
+          },
+          {
+            "date": "2030-12-05",
+            "residual": 11569.5
+          },
+          {
+            "date": "2031-01-05",
+            "residual": 11232.28
+          },
+          {
+            "date": "2031-02-05",
+            "residual": 10894.24
+          },
+          {
+            "date": "2031-03-05",
+            "residual": 10555.39
+          },
+          {
+            "date": "2031-04-05",
+            "residual": 10215.72
+          },
+          {
+            "date": "2031-05-05",
+            "residual": 9875.23
+          },
+          {
+            "date": "2031-06-05",
+            "residual": 9533.92
+          },
+          {
+            "date": "2031-07-05",
+            "residual": 9191.78
+          },
+          {
+            "date": "2031-08-05",
+            "residual": 8848.81
+          },
+          {
+            "date": "2031-09-05",
+            "residual": 8505.01
+          },
+          {
+            "date": "2031-10-05",
+            "residual": 8160.38
+          },
+          {
+            "date": "2031-11-05",
+            "residual": 7814.92
+          },
+          {
+            "date": "2031-12-05",
+            "residual": 7468.63
+          },
+          {
+            "date": "2032-01-05",
+            "residual": 7121.5
+          },
+          {
+            "date": "2032-02-05",
+            "residual": 6773.53
+          },
+          {
+            "date": "2032-03-05",
+            "residual": 6424.72
+          },
+          {
+            "date": "2032-04-05",
+            "residual": 6075.07
+          },
+          {
+            "date": "2032-05-05",
+            "residual": 5724.57
+          },
+          {
+            "date": "2032-06-05",
+            "residual": 5373.22
+          },
+          {
+            "date": "2032-07-05",
+            "residual": 5021.03
+          },
+          {
+            "date": "2032-08-05",
+            "residual": 4667.98
+          },
+          {
+            "date": "2032-09-05",
+            "residual": 4314.08
+          },
+          {
+            "date": "2032-10-05",
+            "residual": 3959.33
+          },
+          {
+            "date": "2032-11-05",
+            "residual": 3603.72
+          },
+          {
+            "date": "2032-12-05",
+            "residual": 3247.25
+          },
+          {
+            "date": "2033-01-05",
+            "residual": 2889.92
+          },
+          {
+            "date": "2033-02-05",
+            "residual": 2531.72
+          },
+          {
+            "date": "2033-03-05",
+            "residual": 2172.66
+          },
+          {
+            "date": "2033-04-05",
+            "residual": 1812.73
+          },
+          {
+            "date": "2033-05-05",
+            "residual": 1451.93
+          },
+          {
+            "date": "2033-06-05",
+            "residual": 1090.26
+          },
+          {
+            "date": "2033-07-05",
+            "residual": 727.71
+          },
+          {
+            "date": "2033-08-05",
+            "residual": 364.29
+          },
+          {
+            "date": "2033-09-05",
+            "residual": 0
+          }
+        ],
+        "earlyRepayments": [],
+        "warnings": []
+      },
+      "apr": 2.938896015604864,
+      "events": [
+        {
+          "id": "dd55dda7-3c6f-43d4-a41d-c2d83e0271e2",
+          "type": "payment",
+          "date": "2023-10-05",
+          "amount": null,
+          "installmentNumber": 1,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "2d7bced2-6f9c-4cc8-9fcb-b9a0f3bea939",
+          "type": "payment",
+          "date": "2023-11-05",
+          "amount": null,
+          "installmentNumber": 2,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "b1a96325-68da-4bcb-9808-c94db2eb02c9",
+          "type": "payment",
+          "date": "2023-12-05",
+          "amount": null,
+          "installmentNumber": 3,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "ab2884be-21bf-4d62-b017-007db8fe5a48",
+          "type": "payment",
+          "date": "2024-01-05",
+          "amount": null,
+          "installmentNumber": 4,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "cccb4dd6-2935-442b-b22e-15b55a1d6b35",
+          "type": "payment",
+          "date": "2024-02-05",
+          "amount": null,
+          "installmentNumber": 5,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "2922181d-dceb-4122-8d44-c7391cf795d2",
+          "type": "payment",
+          "date": "2024-03-05",
+          "amount": null,
+          "installmentNumber": 6,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "825e0d2b-1208-4332-bbef-1bd01c551fde",
+          "type": "payment",
+          "date": "2024-04-05",
+          "amount": null,
+          "installmentNumber": 7,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "6d2093ea-a95a-4752-a11f-a7baf8705322",
+          "type": "payment",
+          "date": "2024-05-05",
+          "amount": null,
+          "installmentNumber": 8,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "d6665cf7-abc0-4c2b-b4dd-6d0a2f8a312e",
+          "type": "payment",
+          "date": "2024-06-05",
+          "amount": null,
+          "installmentNumber": 9,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "a78fd1aa-859c-457e-b9a8-7e1ff1341923",
+          "type": "payment",
+          "date": "2024-07-05",
+          "amount": null,
+          "installmentNumber": 10,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "7a568e3c-328d-4070-8f37-d9edc81e54d7",
+          "type": "payment",
+          "date": "2024-08-05",
+          "amount": null,
+          "installmentNumber": 11,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "608f7de7-bcd8-4dfa-b78e-4958f20d8837",
+          "type": "payment",
+          "date": "2024-09-05",
+          "amount": null,
+          "installmentNumber": 12,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "83144323-56d7-4345-9a3f-34b6780c4312",
+          "type": "payment",
+          "date": "2024-10-05",
+          "amount": null,
+          "installmentNumber": 13,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "fef835a1-beee-41b7-adce-bbfa457437fd",
+          "type": "payment",
+          "date": "2024-11-05",
+          "amount": null,
+          "installmentNumber": 14,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "d5557169-eacb-45a6-8ad5-aeeba0f4b5ed",
+          "type": "payment",
+          "date": "2024-12-05",
+          "amount": null,
+          "installmentNumber": 15,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "48acea16-6cae-4650-bf78-7c65713b131c",
+          "type": "payment",
+          "date": "2025-01-05",
+          "amount": null,
+          "installmentNumber": 16,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "b6834cc3-1fed-4292-af09-4861fe642fe0",
+          "type": "payment",
+          "date": "2025-02-05",
+          "amount": null,
+          "installmentNumber": 17,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "a9961689-b7be-4c8b-8e37-4bf92ba6400f",
+          "type": "payment",
+          "date": "2025-03-05",
+          "amount": null,
+          "installmentNumber": 18,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "9893fc2d-2545-4969-a4e7-92b2bc68be77",
+          "type": "payment",
+          "date": "2025-04-05",
+          "amount": null,
+          "installmentNumber": 19,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "96232b13-704a-4035-bd4c-39136cf9b4c9",
+          "type": "payment",
+          "date": "2025-05-05",
+          "amount": null,
+          "installmentNumber": 20,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "c06b2f12-e059-4e8a-8b77-aff8f9d87303",
+          "type": "payment",
+          "date": "2025-06-05",
+          "amount": null,
+          "installmentNumber": 21,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "cc1e38ea-4683-4bb6-9082-a891ad3cf2cf",
+          "type": "payment",
+          "date": "2025-07-05",
+          "amount": null,
+          "installmentNumber": 22,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "9efd568d-5828-4b10-876b-ddea3dfeeef9",
+          "type": "payment",
+          "date": "2025-08-05",
+          "amount": null,
+          "installmentNumber": 23,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "14bb1961-9194-446b-abc7-7e7c845d7dae",
+          "type": "payment",
+          "date": "2025-09-05",
+          "amount": null,
+          "installmentNumber": 24,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "8294a573-24c9-4252-a3a3-9096fb46f231",
+          "type": "payment",
+          "date": "2025-10-05",
+          "amount": null,
+          "installmentNumber": 25,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "c883df8f-32d9-4218-a310-1cd6ebfadd86",
+          "type": "payment",
+          "date": "2025-11-05",
+          "amount": null,
+          "installmentNumber": 26,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "63ffdebb-bb89-4a70-a521-e6cc790f86fe",
+          "type": "payment",
+          "date": "2025-12-05",
+          "amount": null,
+          "installmentNumber": 27,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "018fb686-0c0e-4256-ba41-7688236bdb65",
+          "type": "payment",
+          "date": "2026-01-05",
+          "amount": null,
+          "installmentNumber": 28,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "166d0dab-fdbe-4215-817b-92070dcc0446",
+          "type": "payment",
+          "date": "2026-02-05",
+          "amount": null,
+          "installmentNumber": 29,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "b6c3660e-3413-4ecf-8d7a-ab1fa65e0bbb",
+          "type": "payment",
+          "date": "2026-03-05",
+          "amount": null,
+          "installmentNumber": 30,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "0f48d114-3e15-4276-b2ef-e2f13bd0de40",
+          "type": "payment",
+          "date": "2026-04-05",
+          "amount": null,
+          "installmentNumber": 31,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "62c9853b-2c87-4758-8534-bec152d42f63",
+          "type": "payment",
+          "date": "2026-05-05",
+          "amount": null,
+          "installmentNumber": 32,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "85619119-28c3-4794-9342-eaebf7b1ee29",
+          "type": "payment",
+          "date": "2026-06-05",
+          "amount": null,
+          "installmentNumber": 33,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "3906bfd1-7803-4f79-815c-9279eb8b3b19",
+          "type": "payment",
+          "date": "2026-07-05",
+          "amount": null,
+          "installmentNumber": 34,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "37ef6907-e2c9-426b-b0e7-26379ec93655",
+          "type": "payment",
+          "date": "2026-08-05",
+          "amount": null,
+          "installmentNumber": 35,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "26feac6e-8ab1-4286-9df2-c735323b77e9",
+          "type": "payment",
+          "date": "2026-09-05",
+          "amount": null,
+          "installmentNumber": 36,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+      "kind": "loan",
+      "name": "Prestito auto",
+      "startMode": "origine",
+      "principal": 14000,
+      "annualRate": 6.9,
+      "installments": 60,
+      "firstInstallmentDate": "2025-08-12",
+      "declaredInstallment": null,
+      "anchorDate": null,
+      "costs": [],
+      "plan": {
+        "rows": [
+          {
+            "number": 1,
+            "dueDate": "2025-08-12",
+            "installment": 276.56,
+            "interest": 80.5,
+            "capital": 196.06,
+            "residual": 13803.94,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 2,
+            "dueDate": "2025-09-12",
+            "installment": 276.56,
+            "interest": 79.37,
+            "capital": 197.19,
+            "residual": 13606.75,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 3,
+            "dueDate": "2025-10-12",
+            "installment": 276.56,
+            "interest": 78.24,
+            "capital": 198.32,
+            "residual": 13408.43,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 4,
+            "dueDate": "2025-11-12",
+            "installment": 276.56,
+            "interest": 77.1,
+            "capital": 199.46,
+            "residual": 13208.97,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 5,
+            "dueDate": "2025-12-12",
+            "installment": 276.56,
+            "interest": 75.95,
+            "capital": 200.61,
+            "residual": 13008.36,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 6,
+            "dueDate": "2026-01-12",
+            "installment": 276.56,
+            "interest": 74.8,
+            "capital": 201.76,
+            "residual": 12806.6,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 7,
+            "dueDate": "2026-02-12",
+            "installment": 276.56,
+            "interest": 73.64,
+            "capital": 202.92,
+            "residual": 12603.68,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 8,
+            "dueDate": "2026-03-12",
+            "installment": 276.56,
+            "interest": 72.47,
+            "capital": 204.09,
+            "residual": 12399.59,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 9,
+            "dueDate": "2026-04-12",
+            "installment": 276.56,
+            "interest": 71.3,
+            "capital": 205.26,
+            "residual": 12194.33,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 10,
+            "dueDate": "2026-05-12",
+            "installment": 276.56,
+            "interest": 70.12,
+            "capital": 206.44,
+            "residual": 11987.89,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 11,
+            "dueDate": "2026-06-12",
+            "installment": 276.56,
+            "interest": 68.93,
+            "capital": 207.63,
+            "residual": 11780.26,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 12,
+            "dueDate": "2026-07-12",
+            "installment": 276.56,
+            "interest": 67.74,
+            "capital": 208.82,
+            "residual": 11571.44,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 13,
+            "dueDate": "2026-08-12",
+            "installment": 276.56,
+            "interest": 66.54,
+            "capital": 210.02,
+            "residual": 11361.42,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 14,
+            "dueDate": "2026-09-12",
+            "installment": 276.56,
+            "interest": 65.33,
+            "capital": 211.23,
+            "residual": 11150.19,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 15,
+            "dueDate": "2026-10-12",
+            "installment": 276.56,
+            "interest": 64.11,
+            "capital": 212.45,
+            "residual": 10937.74,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 16,
+            "dueDate": "2026-11-12",
+            "installment": 276.56,
+            "interest": 62.89,
+            "capital": 213.67,
+            "residual": 10724.07,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 17,
+            "dueDate": "2026-12-12",
+            "installment": 276.56,
+            "interest": 61.66,
+            "capital": 214.9,
+            "residual": 10509.17,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 18,
+            "dueDate": "2027-01-12",
+            "installment": 276.56,
+            "interest": 60.43,
+            "capital": 216.13,
+            "residual": 10293.04,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 19,
+            "dueDate": "2027-02-12",
+            "installment": 276.56,
+            "interest": 59.18,
+            "capital": 217.38,
+            "residual": 10075.66,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 20,
+            "dueDate": "2027-03-12",
+            "installment": 276.56,
+            "interest": 57.94,
+            "capital": 218.62,
+            "residual": 9857.04,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 21,
+            "dueDate": "2027-04-12",
+            "installment": 276.56,
+            "interest": 56.68,
+            "capital": 219.88,
+            "residual": 9637.16,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 22,
+            "dueDate": "2027-05-12",
+            "installment": 276.56,
+            "interest": 55.41,
+            "capital": 221.15,
+            "residual": 9416.01,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 23,
+            "dueDate": "2027-06-12",
+            "installment": 276.56,
+            "interest": 54.14,
+            "capital": 222.42,
+            "residual": 9193.59,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 24,
+            "dueDate": "2027-07-12",
+            "installment": 276.56,
+            "interest": 52.86,
+            "capital": 223.7,
+            "residual": 8969.89,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 25,
+            "dueDate": "2027-08-12",
+            "installment": 276.56,
+            "interest": 51.58,
+            "capital": 224.98,
+            "residual": 8744.91,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 26,
+            "dueDate": "2027-09-12",
+            "installment": 276.56,
+            "interest": 50.28,
+            "capital": 226.28,
+            "residual": 8518.63,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 27,
+            "dueDate": "2027-10-12",
+            "installment": 276.56,
+            "interest": 48.98,
+            "capital": 227.58,
+            "residual": 8291.05,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 28,
+            "dueDate": "2027-11-12",
+            "installment": 276.56,
+            "interest": 47.67,
+            "capital": 228.89,
+            "residual": 8062.16,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 29,
+            "dueDate": "2027-12-12",
+            "installment": 276.56,
+            "interest": 46.36,
+            "capital": 230.2,
+            "residual": 7831.96,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 30,
+            "dueDate": "2028-01-12",
+            "installment": 276.56,
+            "interest": 45.03,
+            "capital": 231.53,
+            "residual": 7600.43,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 31,
+            "dueDate": "2028-02-12",
+            "installment": 276.56,
+            "interest": 43.7,
+            "capital": 232.86,
+            "residual": 7367.57,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 32,
+            "dueDate": "2028-03-12",
+            "installment": 276.56,
+            "interest": 42.36,
+            "capital": 234.2,
+            "residual": 7133.37,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 33,
+            "dueDate": "2028-04-12",
+            "installment": 276.56,
+            "interest": 41.02,
+            "capital": 235.54,
+            "residual": 6897.83,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 34,
+            "dueDate": "2028-05-12",
+            "installment": 276.56,
+            "interest": 39.66,
+            "capital": 236.9,
+            "residual": 6660.93,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 35,
+            "dueDate": "2028-06-12",
+            "installment": 276.56,
+            "interest": 38.3,
+            "capital": 238.26,
+            "residual": 6422.67,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 36,
+            "dueDate": "2028-07-12",
+            "installment": 276.56,
+            "interest": 36.93,
+            "capital": 239.63,
+            "residual": 6183.04,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 37,
+            "dueDate": "2028-08-12",
+            "installment": 276.56,
+            "interest": 35.55,
+            "capital": 241.01,
+            "residual": 5942.03,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 38,
+            "dueDate": "2028-09-12",
+            "installment": 276.56,
+            "interest": 34.17,
+            "capital": 242.39,
+            "residual": 5699.64,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 39,
+            "dueDate": "2028-10-12",
+            "installment": 276.56,
+            "interest": 32.77,
+            "capital": 243.79,
+            "residual": 5455.85,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 40,
+            "dueDate": "2028-11-12",
+            "installment": 276.56,
+            "interest": 31.37,
+            "capital": 245.19,
+            "residual": 5210.66,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 41,
+            "dueDate": "2028-12-12",
+            "installment": 276.56,
+            "interest": 29.96,
+            "capital": 246.6,
+            "residual": 4964.06,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 42,
+            "dueDate": "2029-01-12",
+            "installment": 276.56,
+            "interest": 28.54,
+            "capital": 248.02,
+            "residual": 4716.04,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 43,
+            "dueDate": "2029-02-12",
+            "installment": 276.56,
+            "interest": 27.12,
+            "capital": 249.44,
+            "residual": 4466.6,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 44,
+            "dueDate": "2029-03-12",
+            "installment": 276.56,
+            "interest": 25.68,
+            "capital": 250.88,
+            "residual": 4215.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 45,
+            "dueDate": "2029-04-12",
+            "installment": 276.56,
+            "interest": 24.24,
+            "capital": 252.32,
+            "residual": 3963.4,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 46,
+            "dueDate": "2029-05-12",
+            "installment": 276.56,
+            "interest": 22.79,
+            "capital": 253.77,
+            "residual": 3709.63,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 47,
+            "dueDate": "2029-06-12",
+            "installment": 276.56,
+            "interest": 21.33,
+            "capital": 255.23,
+            "residual": 3454.4,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 48,
+            "dueDate": "2029-07-12",
+            "installment": 276.56,
+            "interest": 19.86,
+            "capital": 256.7,
+            "residual": 3197.7,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 49,
+            "dueDate": "2029-08-12",
+            "installment": 276.56,
+            "interest": 18.39,
+            "capital": 258.17,
+            "residual": 2939.53,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 50,
+            "dueDate": "2029-09-12",
+            "installment": 276.56,
+            "interest": 16.9,
+            "capital": 259.66,
+            "residual": 2679.87,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 51,
+            "dueDate": "2029-10-12",
+            "installment": 276.56,
+            "interest": 15.41,
+            "capital": 261.15,
+            "residual": 2418.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 52,
+            "dueDate": "2029-11-12",
+            "installment": 276.56,
+            "interest": 13.91,
+            "capital": 262.65,
+            "residual": 2156.07,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 53,
+            "dueDate": "2029-12-12",
+            "installment": 276.56,
+            "interest": 12.4,
+            "capital": 264.16,
+            "residual": 1891.91,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 54,
+            "dueDate": "2030-01-12",
+            "installment": 276.56,
+            "interest": 10.88,
+            "capital": 265.68,
+            "residual": 1626.23,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 55,
+            "dueDate": "2030-02-12",
+            "installment": 276.56,
+            "interest": 9.35,
+            "capital": 267.21,
+            "residual": 1359.02,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 56,
+            "dueDate": "2030-03-12",
+            "installment": 276.56,
+            "interest": 7.81,
+            "capital": 268.75,
+            "residual": 1090.27,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 57,
+            "dueDate": "2030-04-12",
+            "installment": 276.56,
+            "interest": 6.27,
+            "capital": 270.29,
+            "residual": 819.98,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 58,
+            "dueDate": "2030-05-12",
+            "installment": 276.56,
+            "interest": 4.71,
+            "capital": 271.85,
+            "residual": 548.13,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 59,
+            "dueDate": "2030-06-12",
+            "installment": 276.56,
+            "interest": 3.15,
+            "capital": 273.41,
+            "residual": 274.72,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 60,
+            "dueDate": "2030-07-12",
+            "installment": 276.3,
+            "interest": 1.58,
+            "capital": 274.72,
+            "residual": 0,
+            "status": "da_pagare",
+            "payment": null
+          }
+        ],
+        "totals": {
+          "residual": 10937.74,
+          "currentInstallment": 276.56,
+          "interestToDate": 1086.14,
+          "interestRemaining": 1507.2,
+          "paidTotal": 0,
+          "remainingInstallments": 45,
+          "endDate": "2030-07-12",
+          "nextDueDate": "2026-11-12",
+          "overdueCount": 0,
+          "unconfirmedCount": 15,
+          "finished": false,
+          "penaltiesPaid": 0,
+          "closedOn": null
+        },
+        "residualSeries": [
+          {
+            "date": "2025-07-12",
+            "residual": 14000
+          },
+          {
+            "date": "2025-08-12",
+            "residual": 13803.94
+          },
+          {
+            "date": "2025-09-12",
+            "residual": 13606.75
+          },
+          {
+            "date": "2025-10-12",
+            "residual": 13408.43
+          },
+          {
+            "date": "2025-11-12",
+            "residual": 13208.97
+          },
+          {
+            "date": "2025-12-12",
+            "residual": 13008.36
+          },
+          {
+            "date": "2026-01-12",
+            "residual": 12806.6
+          },
+          {
+            "date": "2026-02-12",
+            "residual": 12603.68
+          },
+          {
+            "date": "2026-03-12",
+            "residual": 12399.59
+          },
+          {
+            "date": "2026-04-12",
+            "residual": 12194.33
+          },
+          {
+            "date": "2026-05-12",
+            "residual": 11987.89
+          },
+          {
+            "date": "2026-06-12",
+            "residual": 11780.26
+          },
+          {
+            "date": "2026-07-12",
+            "residual": 11571.44
+          },
+          {
+            "date": "2026-08-12",
+            "residual": 11361.42
+          },
+          {
+            "date": "2026-09-12",
+            "residual": 11150.19
+          },
+          {
+            "date": "2026-10-12",
+            "residual": 10937.74
+          },
+          {
+            "date": "2026-11-12",
+            "residual": 10724.07
+          },
+          {
+            "date": "2026-12-12",
+            "residual": 10509.17
+          },
+          {
+            "date": "2027-01-12",
+            "residual": 10293.04
+          },
+          {
+            "date": "2027-02-12",
+            "residual": 10075.66
+          },
+          {
+            "date": "2027-03-12",
+            "residual": 9857.04
+          },
+          {
+            "date": "2027-04-12",
+            "residual": 9637.16
+          },
+          {
+            "date": "2027-05-12",
+            "residual": 9416.01
+          },
+          {
+            "date": "2027-06-12",
+            "residual": 9193.59
+          },
+          {
+            "date": "2027-07-12",
+            "residual": 8969.89
+          },
+          {
+            "date": "2027-08-12",
+            "residual": 8744.91
+          },
+          {
+            "date": "2027-09-12",
+            "residual": 8518.63
+          },
+          {
+            "date": "2027-10-12",
+            "residual": 8291.05
+          },
+          {
+            "date": "2027-11-12",
+            "residual": 8062.16
+          },
+          {
+            "date": "2027-12-12",
+            "residual": 7831.96
+          },
+          {
+            "date": "2028-01-12",
+            "residual": 7600.43
+          },
+          {
+            "date": "2028-02-12",
+            "residual": 7367.57
+          },
+          {
+            "date": "2028-03-12",
+            "residual": 7133.37
+          },
+          {
+            "date": "2028-04-12",
+            "residual": 6897.83
+          },
+          {
+            "date": "2028-05-12",
+            "residual": 6660.93
+          },
+          {
+            "date": "2028-06-12",
+            "residual": 6422.67
+          },
+          {
+            "date": "2028-07-12",
+            "residual": 6183.04
+          },
+          {
+            "date": "2028-08-12",
+            "residual": 5942.03
+          },
+          {
+            "date": "2028-09-12",
+            "residual": 5699.64
+          },
+          {
+            "date": "2028-10-12",
+            "residual": 5455.85
+          },
+          {
+            "date": "2028-11-12",
+            "residual": 5210.66
+          },
+          {
+            "date": "2028-12-12",
+            "residual": 4964.06
+          },
+          {
+            "date": "2029-01-12",
+            "residual": 4716.04
+          },
+          {
+            "date": "2029-02-12",
+            "residual": 4466.6
+          },
+          {
+            "date": "2029-03-12",
+            "residual": 4215.72
+          },
+          {
+            "date": "2029-04-12",
+            "residual": 3963.4
+          },
+          {
+            "date": "2029-05-12",
+            "residual": 3709.63
+          },
+          {
+            "date": "2029-06-12",
+            "residual": 3454.4
+          },
+          {
+            "date": "2029-07-12",
+            "residual": 3197.7
+          },
+          {
+            "date": "2029-08-12",
+            "residual": 2939.53
+          },
+          {
+            "date": "2029-09-12",
+            "residual": 2679.87
+          },
+          {
+            "date": "2029-10-12",
+            "residual": 2418.72
+          },
+          {
+            "date": "2029-11-12",
+            "residual": 2156.07
+          },
+          {
+            "date": "2029-12-12",
+            "residual": 1891.91
+          },
+          {
+            "date": "2030-01-12",
+            "residual": 1626.23
+          },
+          {
+            "date": "2030-02-12",
+            "residual": 1359.02
+          },
+          {
+            "date": "2030-03-12",
+            "residual": 1090.27
+          },
+          {
+            "date": "2030-04-12",
+            "residual": 819.98
+          },
+          {
+            "date": "2030-05-12",
+            "residual": 548.13
+          },
+          {
+            "date": "2030-06-12",
+            "residual": 274.72
+          },
+          {
+            "date": "2030-07-12",
+            "residual": 0
+          }
+        ],
+        "earlyRepayments": [],
+        "warnings": []
+      },
+      "apr": 7.122977056050339,
+      "events": [
+        {
+          "id": "6e7375a0-c85a-4615-88df-e1061c5408a8",
+          "type": "payment",
+          "date": "2025-08-12",
+          "amount": null,
+          "installmentNumber": 1,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "4c6b28f7-b6ee-4dab-b215-8f2b9dd646a5",
+          "type": "payment",
+          "date": "2025-09-12",
+          "amount": null,
+          "installmentNumber": 2,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "b9fa9668-f33a-4add-aca0-ee4498a1c131",
+          "type": "payment",
+          "date": "2025-10-12",
+          "amount": null,
+          "installmentNumber": 3,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "6e50968b-d073-4791-8028-54ca27e0c14e",
+          "type": "payment",
+          "date": "2025-11-12",
+          "amount": null,
+          "installmentNumber": 4,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "34715aba-6458-4779-a261-ede4e74aafa3",
+          "type": "payment",
+          "date": "2025-12-12",
+          "amount": null,
+          "installmentNumber": 5,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "795e80b3-aa23-4f07-a11a-3c2147a0aa11",
+          "type": "payment",
+          "date": "2026-01-12",
+          "amount": null,
+          "installmentNumber": 6,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "bf51b379-27e8-493f-a3ce-781e0756dc89",
+          "type": "payment",
+          "date": "2026-02-12",
+          "amount": null,
+          "installmentNumber": 7,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "99e54c79-3904-43f2-9b49-9bf3f8190f71",
+          "type": "payment",
+          "date": "2026-03-12",
+          "amount": null,
+          "installmentNumber": 8,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "8f784d27-3ff2-4449-b94b-3b1356ff3322",
+          "type": "payment",
+          "date": "2026-04-12",
+          "amount": null,
+          "installmentNumber": 9,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "31504393-689b-4e6d-9106-6a946abbda5c",
+          "type": "payment",
+          "date": "2026-05-12",
+          "amount": null,
+          "installmentNumber": 10,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "50e2af71-aa31-4e0c-98aa-b27ed9c2e6c7",
+          "type": "payment",
+          "date": "2026-06-12",
+          "amount": null,
+          "installmentNumber": 11,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "7f0b74d1-4608-4983-b607-e63563c038bd",
+          "type": "payment",
+          "date": "2026-07-12",
+          "amount": null,
+          "installmentNumber": 12,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "840c940b-08ae-45d7-88c4-22256bb287da",
+          "type": "payment",
+          "date": "2026-08-12",
+          "amount": null,
+          "installmentNumber": 13,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "d9998391-794d-4282-a6d4-169a8393d91f",
+          "type": "payment",
+          "date": "2026-09-12",
+          "amount": null,
+          "installmentNumber": 14,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+      "kind": "loan",
+      "name": "Cucina e lavatrice",
+      "startMode": "origine",
+      "principal": 2400,
+      "annualRate": 11.9,
+      "installments": 24,
+      "firstInstallmentDate": "2026-01-20",
+      "declaredInstallment": null,
+      "anchorDate": null,
+      "costs": [],
+      "plan": {
+        "rows": [
+          {
+            "number": 1,
+            "dueDate": "2026-01-20",
+            "installment": 112.86,
+            "interest": 23.8,
+            "capital": 89.06,
+            "residual": 2310.94,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 2,
+            "dueDate": "2026-02-20",
+            "installment": 112.86,
+            "interest": 22.92,
+            "capital": 89.94,
+            "residual": 2221,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 3,
+            "dueDate": "2026-03-20",
+            "installment": 112.86,
+            "interest": 22.02,
+            "capital": 90.84,
+            "residual": 2130.16,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 4,
+            "dueDate": "2026-04-20",
+            "installment": 112.86,
+            "interest": 21.12,
+            "capital": 91.74,
+            "residual": 2038.42,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 5,
+            "dueDate": "2026-05-20",
+            "installment": 112.86,
+            "interest": 20.21,
+            "capital": 92.65,
+            "residual": 1945.77,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 6,
+            "dueDate": "2026-06-20",
+            "installment": 112.86,
+            "interest": 19.3,
+            "capital": 93.56,
+            "residual": 1852.21,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 7,
+            "dueDate": "2026-07-20",
+            "installment": 112.86,
+            "interest": 18.37,
+            "capital": 94.49,
+            "residual": 1757.72,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 8,
+            "dueDate": "2026-08-20",
+            "installment": 112.86,
+            "interest": 17.43,
+            "capital": 95.43,
+            "residual": 1662.29,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 9,
+            "dueDate": "2026-09-20",
+            "installment": 112.86,
+            "interest": 16.48,
+            "capital": 96.38,
+            "residual": 1565.91,
+            "status": "da_confermare",
+            "payment": null
+          },
+          {
+            "number": 10,
+            "dueDate": "2026-10-20",
+            "installment": 112.86,
+            "interest": 15.53,
+            "capital": 97.33,
+            "residual": 1468.58,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 11,
+            "dueDate": "2026-11-20",
+            "installment": 112.86,
+            "interest": 14.56,
+            "capital": 98.3,
+            "residual": 1370.28,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 12,
+            "dueDate": "2026-12-20",
+            "installment": 112.86,
+            "interest": 13.59,
+            "capital": 99.27,
+            "residual": 1271.01,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 13,
+            "dueDate": "2027-01-20",
+            "installment": 112.86,
+            "interest": 12.6,
+            "capital": 100.26,
+            "residual": 1170.75,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 14,
+            "dueDate": "2027-02-20",
+            "installment": 112.86,
+            "interest": 11.61,
+            "capital": 101.25,
+            "residual": 1069.5,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 15,
+            "dueDate": "2027-03-20",
+            "installment": 112.86,
+            "interest": 10.61,
+            "capital": 102.25,
+            "residual": 967.25,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 16,
+            "dueDate": "2027-04-20",
+            "installment": 112.86,
+            "interest": 9.59,
+            "capital": 103.27,
+            "residual": 863.98,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 17,
+            "dueDate": "2027-05-20",
+            "installment": 112.86,
+            "interest": 8.57,
+            "capital": 104.29,
+            "residual": 759.69,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 18,
+            "dueDate": "2027-06-20",
+            "installment": 112.86,
+            "interest": 7.53,
+            "capital": 105.33,
+            "residual": 654.36,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 19,
+            "dueDate": "2027-07-20",
+            "installment": 112.86,
+            "interest": 6.49,
+            "capital": 106.37,
+            "residual": 547.99,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 20,
+            "dueDate": "2027-08-20",
+            "installment": 112.86,
+            "interest": 5.43,
+            "capital": 107.43,
+            "residual": 440.56,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 21,
+            "dueDate": "2027-09-20",
+            "installment": 112.86,
+            "interest": 4.37,
+            "capital": 108.49,
+            "residual": 332.07,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 22,
+            "dueDate": "2027-10-20",
+            "installment": 112.86,
+            "interest": 3.29,
+            "capital": 109.57,
+            "residual": 222.5,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 23,
+            "dueDate": "2027-11-20",
+            "installment": 112.86,
+            "interest": 2.21,
+            "capital": 110.65,
+            "residual": 111.85,
+            "status": "da_pagare",
+            "payment": null
+          },
+          {
+            "number": 24,
+            "dueDate": "2027-12-20",
+            "installment": 112.96,
+            "interest": 1.11,
+            "capital": 111.85,
+            "residual": 0,
+            "status": "da_pagare",
+            "payment": null
+          }
+        ],
+        "totals": {
+          "residual": 1565.91,
+          "currentInstallment": 112.86,
+          "interestToDate": 181.65,
+          "interestRemaining": 127.09,
+          "paidTotal": 0,
+          "remainingInstallments": 15,
+          "endDate": "2027-12-20",
+          "nextDueDate": "2026-10-20",
+          "overdueCount": 0,
+          "unconfirmedCount": 9,
+          "finished": false,
+          "penaltiesPaid": 0,
+          "closedOn": null
+        },
+        "residualSeries": [
+          {
+            "date": "2025-12-20",
+            "residual": 2400
+          },
+          {
+            "date": "2026-01-20",
+            "residual": 2310.94
+          },
+          {
+            "date": "2026-02-20",
+            "residual": 2221
+          },
+          {
+            "date": "2026-03-20",
+            "residual": 2130.16
+          },
+          {
+            "date": "2026-04-20",
+            "residual": 2038.42
+          },
+          {
+            "date": "2026-05-20",
+            "residual": 1945.77
+          },
+          {
+            "date": "2026-06-20",
+            "residual": 1852.21
+          },
+          {
+            "date": "2026-07-20",
+            "residual": 1757.72
+          },
+          {
+            "date": "2026-08-20",
+            "residual": 1662.29
+          },
+          {
+            "date": "2026-09-20",
+            "residual": 1565.91
+          },
+          {
+            "date": "2026-10-20",
+            "residual": 1468.58
+          },
+          {
+            "date": "2026-11-20",
+            "residual": 1370.28
+          },
+          {
+            "date": "2026-12-20",
+            "residual": 1271.01
+          },
+          {
+            "date": "2027-01-20",
+            "residual": 1170.75
+          },
+          {
+            "date": "2027-02-20",
+            "residual": 1069.5
+          },
+          {
+            "date": "2027-03-20",
+            "residual": 967.25
+          },
+          {
+            "date": "2027-04-20",
+            "residual": 863.98
+          },
+          {
+            "date": "2027-05-20",
+            "residual": 759.69
+          },
+          {
+            "date": "2027-06-20",
+            "residual": 654.36
+          },
+          {
+            "date": "2027-07-20",
+            "residual": 547.99
+          },
+          {
+            "date": "2027-08-20",
+            "residual": 440.56
+          },
+          {
+            "date": "2027-09-20",
+            "residual": 332.07
+          },
+          {
+            "date": "2027-10-20",
+            "residual": 222.5
+          },
+          {
+            "date": "2027-11-20",
+            "residual": 111.85
+          },
+          {
+            "date": "2027-12-20",
+            "residual": 0
+          }
+        ],
+        "earlyRepayments": [],
+        "warnings": []
+      },
+      "apr": 12.566720207626592,
+      "events": [
+        {
+          "id": "5e82fcb0-dc6e-4a3f-b917-f1159971b5dd",
+          "type": "payment",
+          "date": "2026-01-20",
+          "amount": null,
+          "installmentNumber": 1,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "5ba4292a-c9b0-4b33-b621-7cc8258da81d",
+          "type": "payment",
+          "date": "2026-02-20",
+          "amount": null,
+          "installmentNumber": 2,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "b3f5d91d-b5a0-4796-ab68-8be94137add5",
+          "type": "payment",
+          "date": "2026-03-20",
+          "amount": null,
+          "installmentNumber": 3,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "84689817-9134-41cb-9e09-58445acb0039",
+          "type": "payment",
+          "date": "2026-04-20",
+          "amount": null,
+          "installmentNumber": 4,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "6fc0e4dd-f22d-4998-906c-7279061a0c40",
+          "type": "payment",
+          "date": "2026-05-20",
+          "amount": null,
+          "installmentNumber": 5,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "b1ced93f-3ea2-418b-b4bf-be63e660a719",
+          "type": "payment",
+          "date": "2026-06-20",
+          "amount": null,
+          "installmentNumber": 6,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "fec6affd-f311-4991-8968-22a1b5e534da",
+          "type": "payment",
+          "date": "2026-07-20",
+          "amount": null,
+          "installmentNumber": 7,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "dc78994e-2b20-47d3-b224-750da2c71a16",
+          "type": "payment",
+          "date": "2026-08-20",
+          "amount": null,
+          "installmentNumber": 8,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        },
+        {
+          "id": "0a696892-b35a-495b-8a85-2c8b98ea718e",
+          "type": "payment",
+          "date": "2026-09-20",
+          "amount": null,
+          "installmentNumber": 9,
+          "rate": null,
+          "penalty": null,
+          "effect": null,
+          "transactionId": null,
+          "note": null
+        }
+      ]
+    }
+  ],
+  "overview": {
+    "totalResidual": 39937.23,
+    "totalDebt": 39937.23,
+    "monthlyPayment": 754.6,
+    "interestToDate": 4213.03,
+    "interestRemaining": 4510.64,
+    "debtFreeDate": "2033-09-05",
+    "openCount": 3,
+    "weightedApr": 4.462304042146785,
+    "nextDue": [
+      {
+        "debtId": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+        "name": "Cucina e lavatrice",
+        "date": "2026-10-20",
+        "amount": 112.86,
+        "overdue": false
+      },
+      {
+        "debtId": "5865804d-9337-41da-bb50-6a341db6ee80",
+        "name": "Mutuo casa",
+        "date": "2026-11-05",
+        "amount": 365.18,
+        "overdue": false
+      },
+      {
+        "debtId": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+        "name": "Prestito auto",
+        "date": "2026-11-12",
+        "amount": 276.56,
+        "overdue": false
+      }
+    ],
+    "residualSeries": [
+      {
+        "date": "2026-10-18",
+        "residual": 39937.23
+      },
+      {
+        "date": "2026-10-20",
+        "residual": 39839.9
+      },
+      {
+        "date": "2026-11-05",
+        "residual": 39541.02
+      },
+      {
+        "date": "2026-11-12",
+        "residual": 39327.35
+      },
+      {
+        "date": "2026-11-20",
+        "residual": 39229.05
+      },
+      {
+        "date": "2026-12-05",
+        "residual": 38929.45
+      },
+      {
+        "date": "2026-12-12",
+        "residual": 38714.55
+      },
+      {
+        "date": "2026-12-20",
+        "residual": 38615.28
+      },
+      {
+        "date": "2027-01-05",
+        "residual": 38314.95
+      },
+      {
+        "date": "2027-01-12",
+        "residual": 38098.82
+      },
+      {
+        "date": "2027-01-20",
+        "residual": 37998.56
+      },
+      {
+        "date": "2027-02-05",
+        "residual": 37697.51
+      },
+      {
+        "date": "2027-02-12",
+        "residual": 37480.13
+      },
+      {
+        "date": "2027-02-20",
+        "residual": 37378.88
+      },
+      {
+        "date": "2027-03-05",
+        "residual": 37077.1
+      },
+      {
+        "date": "2027-03-12",
+        "residual": 36858.48
+      },
+      {
+        "date": "2027-03-20",
+        "residual": 36756.23
+      },
+      {
+        "date": "2027-04-05",
+        "residual": 36453.72
+      },
+      {
+        "date": "2027-04-12",
+        "residual": 36233.84
+      },
+      {
+        "date": "2027-04-20",
+        "residual": 36130.57
+      },
+      {
+        "date": "2027-05-05",
+        "residual": 35827.33
+      },
+      {
+        "date": "2027-05-12",
+        "residual": 35606.18
+      },
+      {
+        "date": "2027-05-20",
+        "residual": 35501.89
+      },
+      {
+        "date": "2027-06-05",
+        "residual": 35197.91
+      },
+      {
+        "date": "2027-06-12",
+        "residual": 34975.49
+      },
+      {
+        "date": "2027-06-20",
+        "residual": 34870.16
+      },
+      {
+        "date": "2027-07-05",
+        "residual": 34565.45
+      },
+      {
+        "date": "2027-07-12",
+        "residual": 34341.75
+      },
+      {
+        "date": "2027-07-20",
+        "residual": 34235.38
+      },
+      {
+        "date": "2027-08-05",
+        "residual": 33929.93
+      },
+      {
+        "date": "2027-08-12",
+        "residual": 33704.95
+      },
+      {
+        "date": "2027-08-20",
+        "residual": 33597.52
+      },
+      {
+        "date": "2027-09-05",
+        "residual": 33291.34
+      },
+      {
+        "date": "2027-09-12",
+        "residual": 33065.06
+      },
+      {
+        "date": "2027-09-20",
+        "residual": 32956.57
+      },
+      {
+        "date": "2027-10-05",
+        "residual": 32649.65
+      },
+      {
+        "date": "2027-10-12",
+        "residual": 32422.07
+      },
+      {
+        "date": "2027-10-20",
+        "residual": 32312.5
+      },
+      {
+        "date": "2027-11-05",
+        "residual": 32004.83
+      },
+      {
+        "date": "2027-11-12",
+        "residual": 31775.94
+      },
+      {
+        "date": "2027-11-20",
+        "residual": 31665.29
+      },
+      {
+        "date": "2027-12-05",
+        "residual": 31356.88
+      },
+      {
+        "date": "2027-12-12",
+        "residual": 31126.68
+      },
+      {
+        "date": "2027-12-20",
+        "residual": 31014.83
+      },
+      {
+        "date": "2028-01-05",
+        "residual": 30705.68
+      },
+      {
+        "date": "2028-01-12",
+        "residual": 30474.15
+      },
+      {
+        "date": "2028-02-05",
+        "residual": 30164.25
+      },
+      {
+        "date": "2028-02-12",
+        "residual": 29931.39
+      },
+      {
+        "date": "2028-03-05",
+        "residual": 29620.74
+      },
+      {
+        "date": "2028-03-12",
+        "residual": 29386.54
+      },
+      {
+        "date": "2028-04-05",
+        "residual": 29075.14
+      },
+      {
+        "date": "2028-04-12",
+        "residual": 28839.6
+      },
+      {
+        "date": "2028-05-05",
+        "residual": 28527.45
+      },
+      {
+        "date": "2028-05-12",
+        "residual": 28290.55
+      },
+      {
+        "date": "2028-06-05",
+        "residual": 27977.64
+      },
+      {
+        "date": "2028-06-12",
+        "residual": 27739.38
+      },
+      {
+        "date": "2028-07-05",
+        "residual": 27425.72
+      },
+      {
+        "date": "2028-07-12",
+        "residual": 27186.09
+      },
+      {
+        "date": "2028-08-05",
+        "residual": 26871.67
+      },
+      {
+        "date": "2028-08-12",
+        "residual": 26630.66
+      },
+      {
+        "date": "2028-09-05",
+        "residual": 26315.48
+      },
+      {
+        "date": "2028-09-12",
+        "residual": 26073.09
+      },
+      {
+        "date": "2028-10-05",
+        "residual": 25757.15
+      },
+      {
+        "date": "2028-10-12",
+        "residual": 25513.36
+      },
+      {
+        "date": "2028-11-05",
+        "residual": 25196.65
+      },
+      {
+        "date": "2028-11-12",
+        "residual": 24951.46
+      },
+      {
+        "date": "2028-12-05",
+        "residual": 24633.99
+      },
+      {
+        "date": "2028-12-12",
+        "residual": 24387.39
+      },
+      {
+        "date": "2029-01-05",
+        "residual": 24069.15
+      },
+      {
+        "date": "2029-01-12",
+        "residual": 23821.13
+      },
+      {
+        "date": "2029-02-05",
+        "residual": 23502.12
+      },
+      {
+        "date": "2029-02-12",
+        "residual": 23252.68
+      },
+      {
+        "date": "2029-03-05",
+        "residual": 22932.9
+      },
+      {
+        "date": "2029-03-12",
+        "residual": 22682.02
+      },
+      {
+        "date": "2029-04-05",
+        "residual": 22361.47
+      },
+      {
+        "date": "2029-04-12",
+        "residual": 22109.15
+      },
+      {
+        "date": "2029-05-05",
+        "residual": 21787.82
+      },
+      {
+        "date": "2029-05-12",
+        "residual": 21534.05
+      },
+      {
+        "date": "2029-06-05",
+        "residual": 21211.95
+      },
+      {
+        "date": "2029-06-12",
+        "residual": 20956.72
+      },
+      {
+        "date": "2029-07-05",
+        "residual": 20633.84
+      },
+      {
+        "date": "2029-07-12",
+        "residual": 20377.14
+      },
+      {
+        "date": "2029-08-05",
+        "residual": 20053.48
+      },
+      {
+        "date": "2029-08-12",
+        "residual": 19795.31
+      },
+      {
+        "date": "2029-09-05",
+        "residual": 19470.86
+      },
+      {
+        "date": "2029-09-12",
+        "residual": 19211.2
+      },
+      {
+        "date": "2029-10-05",
+        "residual": 18885.97
+      },
+      {
+        "date": "2029-10-12",
+        "residual": 18624.82
+      },
+      {
+        "date": "2029-11-05",
+        "residual": 18298.8
+      },
+      {
+        "date": "2029-11-12",
+        "residual": 18036.15
+      },
+      {
+        "date": "2029-12-05",
+        "residual": 17709.35
+      },
+      {
+        "date": "2029-12-12",
+        "residual": 17445.19
+      },
+      {
+        "date": "2030-01-05",
+        "residual": 17117.6
+      },
+      {
+        "date": "2030-01-12",
+        "residual": 16851.92
+      },
+      {
+        "date": "2030-02-05",
+        "residual": 16523.54
+      },
+      {
+        "date": "2030-02-12",
+        "residual": 16256.33
+      },
+      {
+        "date": "2030-03-05",
+        "residual": 15927.15
+      },
+      {
+        "date": "2030-03-12",
+        "residual": 15658.4
+      },
+      {
+        "date": "2030-04-05",
+        "residual": 15328.43
+      },
+      {
+        "date": "2030-04-12",
+        "residual": 15058.14
+      },
+      {
+        "date": "2030-05-05",
+        "residual": 14727.37
+      },
+      {
+        "date": "2030-05-12",
+        "residual": 14455.52
+      },
+      {
+        "date": "2030-06-05",
+        "residual": 14123.95
+      },
+      {
+        "date": "2030-06-12",
+        "residual": 13850.54
+      },
+      {
+        "date": "2030-07-05",
+        "residual": 13518.17
+      },
+      {
+        "date": "2030-07-12",
+        "residual": 13243.45
+      },
+      {
+        "date": "2030-08-05",
+        "residual": 12910.28
+      },
+      {
+        "date": "2030-09-05",
+        "residual": 12576.3
+      },
+      {
+        "date": "2030-10-05",
+        "residual": 12241.51
+      },
+      {
+        "date": "2030-11-05",
+        "residual": 11905.91
+      },
+      {
+        "date": "2030-12-05",
+        "residual": 11569.5
+      },
+      {
+        "date": "2031-01-05",
+        "residual": 11232.28
+      },
+      {
+        "date": "2031-02-05",
+        "residual": 10894.24
+      },
+      {
+        "date": "2031-03-05",
+        "residual": 10555.39
+      },
+      {
+        "date": "2031-04-05",
+        "residual": 10215.72
+      },
+      {
+        "date": "2031-05-05",
+        "residual": 9875.23
+      },
+      {
+        "date": "2031-06-05",
+        "residual": 9533.92
+      },
+      {
+        "date": "2031-07-05",
+        "residual": 9191.78
+      },
+      {
+        "date": "2031-08-05",
+        "residual": 8848.81
+      },
+      {
+        "date": "2031-09-05",
+        "residual": 8505.01
+      },
+      {
+        "date": "2031-10-05",
+        "residual": 8160.38
+      },
+      {
+        "date": "2031-11-05",
+        "residual": 7814.92
+      },
+      {
+        "date": "2031-12-05",
+        "residual": 7468.63
+      },
+      {
+        "date": "2032-01-05",
+        "residual": 7121.5
+      },
+      {
+        "date": "2032-02-05",
+        "residual": 6773.53
+      },
+      {
+        "date": "2032-03-05",
+        "residual": 6424.72
+      },
+      {
+        "date": "2032-04-05",
+        "residual": 6075.07
+      },
+      {
+        "date": "2032-05-05",
+        "residual": 5724.57
+      },
+      {
+        "date": "2032-06-05",
+        "residual": 5373.22
+      },
+      {
+        "date": "2032-07-05",
+        "residual": 5021.03
+      },
+      {
+        "date": "2032-08-05",
+        "residual": 4667.98
+      },
+      {
+        "date": "2032-09-05",
+        "residual": 4314.08
+      },
+      {
+        "date": "2032-10-05",
+        "residual": 3959.33
+      },
+      {
+        "date": "2032-11-05",
+        "residual": 3603.72
+      },
+      {
+        "date": "2032-12-05",
+        "residual": 3247.25
+      },
+      {
+        "date": "2033-01-05",
+        "residual": 2889.92
+      },
+      {
+        "date": "2033-02-05",
+        "residual": 2531.72
+      },
+      {
+        "date": "2033-03-05",
+        "residual": 2172.66
+      },
+      {
+        "date": "2033-04-05",
+        "residual": 1812.73
+      },
+      {
+        "date": "2033-05-05",
+        "residual": 1451.93
+      },
+      {
+        "date": "2033-06-05",
+        "residual": 1090.26
+      },
+      {
+        "date": "2033-07-05",
+        "residual": 727.71
+      },
+      {
+        "date": "2033-08-05",
+        "residual": 364.29
+      },
+      {
+        "date": "2033-09-05",
+        "residual": 0
+      }
+    ]
+  },
+  "insights": {
+    "interestShares": {
+      "items": [
+        {
+          "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+          "name": "Mutuo casa",
+          "yearly": 795.57382,
+          "share": 0.45811592864550876
+        },
+        {
+          "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+          "name": "Prestito auto",
+          "yearly": 754.70406,
+          "share": 0.4345818610514808
+        },
+        {
+          "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+          "name": "Cucina e lavatrice",
+          "yearly": 186.34329000000002,
+          "share": 0.10730221030301042
+        }
+      ],
+      "total": 1736.6211700000001
+    },
+    "repaid": [
+      {
+        "debtId": "5865804d-9337-41da-bb50-6a341db6ee80",
+        "share": 0.2780636842105263
+      },
+      {
+        "debtId": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+        "share": 0.21873285714285717
+      },
+      {
+        "debtId": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+        "share": 0.34753749999999994
+      }
+    ],
+    "exit": {
+      "loans": [
+        {
+          "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+          "name": "Mutuo casa",
+          "residual": 27433.58,
+          "annualRate": 2.9,
+          "installment": 365.18
+        },
+        {
+          "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+          "name": "Prestito auto",
+          "residual": 10937.74,
+          "annualRate": 6.9,
+          "installment": 276.56
+        },
+        {
+          "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+          "name": "Cucina e lavatrice",
+          "residual": 1565.91,
+          "annualRate": 11.9,
+          "installment": 112.86
+        }
+      ],
+      "slider": {
+        "min": 0,
+        "max": 1000,
+        "step": 50,
+        "default": 200
+      },
+      "extras": [
+        0,
+        50,
+        100,
+        150,
+        200,
+        250,
+        300,
+        350,
+        400,
+        450,
+        500,
+        550,
+        600,
+        650,
+        700,
+        750,
+        800,
+        850,
+        900,
+        950,
+        1000
+      ],
+      "plans": [
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2028-02-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 0
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2029-11-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 8
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2031-09-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 24
+            }
+          ],
+          "endDate": "2031-09-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 683.9100000000003
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-09-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 5
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2029-06-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 13
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2031-05-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 28
+            }
+          ],
+          "endDate": "2031-05-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 1022.4700000000003
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-06-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 8
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2029-02-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 17
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2031-01-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 32
+            }
+          ],
+          "endDate": "2031-01-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 1306.5500000000002
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-05-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 9
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2028-12-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 19
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2030-10-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 35
+            }
+          ],
+          "endDate": "2030-10-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 1505.5900000000001
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-04-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 10
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2028-09-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 22
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2030-07-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 38
+            }
+          ],
+          "endDate": "2030-07-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 1708.25
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-03-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 11
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2028-07-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 24
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2030-05-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 40
+            }
+          ],
+          "endDate": "2030-05-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 1883.67
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-02-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 12
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2028-06-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 25
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2030-03-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 42
+            }
+          ],
+          "endDate": "2030-03-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2023.2400000000002
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-02-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 12
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2028-04-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 27
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2030-01-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 44
+            }
+          ],
+          "endDate": "2030-01-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2158.12
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-02-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 12
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2028-03-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 28
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-11-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 46
+            }
+          ],
+          "endDate": "2029-11-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2266.56
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-01-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 13
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2028-02-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 29
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-09-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 48
+            }
+          ],
+          "endDate": "2029-09-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2377.65
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-01-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 13
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2028-01-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 30
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-08-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 49
+            }
+          ],
+          "endDate": "2029-08-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2471.44
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-01-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 13
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-12-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 31
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-07-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 50
+            }
+          ],
+          "endDate": "2029-07-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2557.5600000000004
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-01-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 13
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-12-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 31
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-05-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 52
+            }
+          ],
+          "endDate": "2029-05-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2631.3900000000003
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2027-01-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 13
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-11-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 32
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-04-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 53
+            }
+          ],
+          "endDate": "2029-04-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2702.76
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2026-12-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 14
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-10-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 33
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-03-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 54
+            }
+          ],
+          "endDate": "2029-03-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2774.4700000000003
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2026-12-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 14
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-10-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 33
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-02-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 55
+            }
+          ],
+          "endDate": "2029-02-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2835.37
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2026-12-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 14
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-09-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 34
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2029-01-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 56
+            }
+          ],
+          "endDate": "2029-01-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2892.5
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2026-12-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 14
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-09-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 34
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2028-12-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 57
+            }
+          ],
+          "endDate": "2028-12-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2945.25
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2026-12-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 14
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-09-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 34
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2028-12-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 57
+            }
+          ],
+          "endDate": "2028-12-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 2985.7200000000003
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2026-12-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 14
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-08-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 35
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2028-11-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 58
+            }
+          ],
+          "endDate": "2028-11-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 3040.63
+        },
+        {
+          "steps": [
+            {
+              "id": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+              "name": "Cucina e lavatrice",
+              "endDate": "2026-12-18",
+              "baselineEndDate": "2028-02-18",
+              "monthsSaved": 14
+            },
+            {
+              "id": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+              "name": "Prestito auto",
+              "endDate": "2027-08-18",
+              "baselineEndDate": "2030-07-18",
+              "monthsSaved": 35
+            },
+            {
+              "id": "5865804d-9337-41da-bb50-6a341db6ee80",
+              "name": "Mutuo casa",
+              "endDate": "2028-10-18",
+              "baselineEndDate": "2033-09-18",
+              "monthsSaved": 59
+            }
+          ],
+          "endDate": "2028-10-18",
+          "baselineEndDate": "2033-09-18",
+          "interestSaved": 3083.94
+        }
+      ]
+    }
+  }
+}

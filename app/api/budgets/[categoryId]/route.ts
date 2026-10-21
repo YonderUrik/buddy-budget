@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { apiError, validationError } from "@/lib/http";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
@@ -29,15 +30,15 @@ async function handlePut(
     .from(categories)
     .where(and(eq(categories.id, categoryId), eq(categories.userId, session.user.id)));
   if (!category) {
-    return new Response(null, { status: 404 });
+    return apiError(404, "category_not_found", "Categoria non trovata");
   }
 
-  if (category.type === "trasferimento") return Response.json({ error: "I trasferimenti sono esclusi dal budget" }, { status: 400 });
+  if (category.type === "trasferimento") return apiError(400, "transfer_without_budget", "I trasferimenti sono esclusi dal budget");
 
   const body = await request.json();
   const parsed = upsertBudgetSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    return validationError(parsed.error);
   }
 
   const [budget] = await db

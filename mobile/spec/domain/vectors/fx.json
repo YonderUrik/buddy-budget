@@ -1,0 +1,208 @@
+{
+  "topic": "fx-conversion",
+  "source": "lib/calc/fx.ts",
+  "vectors": [
+    {
+      "id": "fx.getPerEur.eur",
+      "function": "getPerEur",
+      "input": {
+        "rates": [
+          {
+            "date": "2026-01-02",
+            "currency": "USD",
+            "perEur": "1.10"
+          },
+          {
+            "date": "2026-01-05",
+            "currency": "USD",
+            "perEur": "1.12"
+          },
+          {
+            "date": "2026-01-02",
+            "currency": "GBP",
+            "perEur": "0.85"
+          },
+          {
+            "date": "2026-01-03",
+            "currency": "CHF",
+            "perEur": "-1"
+          }
+        ],
+        "currency": "EUR",
+        "dateKey": "2000-01-01"
+      },
+      "expected": 1,
+      "tolerance": 1e-9,
+      "notes": "EUR is the pivot: always 1."
+    },
+    {
+      "id": "fx.getPerEur.carryForward",
+      "function": "getPerEur",
+      "input": {
+        "rates": [
+          {
+            "date": "2026-01-02",
+            "currency": "USD",
+            "perEur": "1.10"
+          },
+          {
+            "date": "2026-01-05",
+            "currency": "USD",
+            "perEur": "1.12"
+          },
+          {
+            "date": "2026-01-02",
+            "currency": "GBP",
+            "perEur": "0.85"
+          },
+          {
+            "date": "2026-01-03",
+            "currency": "CHF",
+            "perEur": "-1"
+          }
+        ],
+        "currency": "USD",
+        "dateKey": "2026-01-04"
+      },
+      "expected": 1.1,
+      "tolerance": 1e-9,
+      "notes": "Weekend/holiday: last rate on or before date."
+    },
+    {
+      "id": "fx.getPerEur.beforeFirst",
+      "function": "getPerEur",
+      "input": {
+        "rates": [
+          {
+            "date": "2026-01-02",
+            "currency": "USD",
+            "perEur": "1.10"
+          },
+          {
+            "date": "2026-01-05",
+            "currency": "USD",
+            "perEur": "1.12"
+          },
+          {
+            "date": "2026-01-02",
+            "currency": "GBP",
+            "perEur": "0.85"
+          },
+          {
+            "date": "2026-01-03",
+            "currency": "CHF",
+            "perEur": "-1"
+          }
+        ],
+        "currency": "USD",
+        "dateKey": "2026-01-01"
+      },
+      "expected": null,
+      "tolerance": 1e-9,
+      "notes": "No rate on or before → null (value becomes 'unpriced')."
+    },
+    {
+      "id": "fx.fxRateBetween.cross",
+      "function": "fxRateBetween",
+      "input": {
+        "rates": [
+          {
+            "date": "2026-01-02",
+            "currency": "USD",
+            "perEur": "1.10"
+          },
+          {
+            "date": "2026-01-05",
+            "currency": "USD",
+            "perEur": "1.12"
+          },
+          {
+            "date": "2026-01-02",
+            "currency": "GBP",
+            "perEur": "0.85"
+          },
+          {
+            "date": "2026-01-03",
+            "currency": "CHF",
+            "perEur": "-1"
+          }
+        ],
+        "from": "USD",
+        "to": "GBP",
+        "dateKey": "2026-01-06"
+      },
+      "expected": 0.758928571429,
+      "tolerance": 1e-9,
+      "notes": "perTo/perFrom = 0.85/1.12"
+    },
+    {
+      "id": "fx.convertAmount.usdToEur",
+      "function": "convertAmount",
+      "input": {
+        "rates": [
+          {
+            "date": "2026-01-02",
+            "currency": "USD",
+            "perEur": "1.10"
+          },
+          {
+            "date": "2026-01-05",
+            "currency": "USD",
+            "perEur": "1.12"
+          },
+          {
+            "date": "2026-01-02",
+            "currency": "GBP",
+            "perEur": "0.85"
+          },
+          {
+            "date": "2026-01-03",
+            "currency": "CHF",
+            "perEur": "-1"
+          }
+        ],
+        "amount": 1000,
+        "from": "USD",
+        "to": "EUR",
+        "dateKey": "2026-01-05"
+      },
+      "expected": 892.857142857,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "fx.convertAmount.invalidRateIgnored",
+      "function": "convertAmount",
+      "input": {
+        "rates": [
+          {
+            "date": "2026-01-02",
+            "currency": "USD",
+            "perEur": "1.10"
+          },
+          {
+            "date": "2026-01-05",
+            "currency": "USD",
+            "perEur": "1.12"
+          },
+          {
+            "date": "2026-01-02",
+            "currency": "GBP",
+            "perEur": "0.85"
+          },
+          {
+            "date": "2026-01-03",
+            "currency": "CHF",
+            "perEur": "-1"
+          }
+        ],
+        "amount": 10,
+        "from": "CHF",
+        "to": "EUR",
+        "dateKey": "2026-01-05"
+      },
+      "expected": null,
+      "tolerance": 1e-9,
+      "notes": "perEur <= 0 rows are dropped at table build."
+    }
+  ]
+}

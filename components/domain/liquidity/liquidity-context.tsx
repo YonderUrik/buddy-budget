@@ -7,6 +7,9 @@
 
 import * as React from "react";
 import type { ExpensePeriod } from "@/lib/calc/expenses";
+import { liquidityFetchWindow } from "@/lib/liquidity/fetch-window";
+
+export { liquidityFetchWindow };
 
 export interface LiquidityState {
   period: ExpensePeriod;
@@ -25,12 +28,6 @@ export interface LiquidityState {
 }
 
 const LiquidityContext = React.createContext<LiquidityState | null>(null);
-
-/** Finestra di fetch dei movimenti: dal 1° gennaio dell'anno precedente al 31 dicembre, così il cambio periodo non rifà richieste. */
-export function liquidityFetchWindow(referenceDate: Date): { from: string; to: string } {
-  const key = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  return { from: key(new Date(referenceDate.getFullYear() - 1, 0, 1)), to: key(new Date(referenceDate.getFullYear(), 11, 31)) };
-}
 
 export function LiquidityProvider({
   children,

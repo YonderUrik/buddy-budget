@@ -1,0 +1,1101 @@
+{
+  "topic": "expenses",
+  "source": "lib/calc/expenses.ts",
+  "fixtures": {
+    "categories": [
+      {
+        "id": "food",
+        "name": "Spesa",
+        "type": "dovuta",
+        "isFallback": false,
+        "color": "green",
+        "icon": "shopping-cart"
+      },
+      {
+        "id": "fun",
+        "name": "Svago",
+        "type": "voluta",
+        "isFallback": false,
+        "color": "violet",
+        "icon": "film"
+      },
+      {
+        "id": "save",
+        "name": "Risparmio",
+        "type": "futuro",
+        "isFallback": false,
+        "color": "blue",
+        "icon": "piggy-bank"
+      },
+      {
+        "id": "gift",
+        "name": "Regali",
+        "type": "saltuaria",
+        "isFallback": false,
+        "color": "pink",
+        "icon": "gift"
+      },
+      {
+        "id": "salary",
+        "name": "Stipendio",
+        "type": "entrata",
+        "isFallback": false,
+        "color": "emerald",
+        "icon": "briefcase"
+      },
+      {
+        "id": "xfer",
+        "name": "Giroconti",
+        "type": "trasferimento",
+        "isFallback": false,
+        "color": "slate",
+        "icon": "arrow-left-right"
+      },
+      {
+        "id": "unc",
+        "name": "Da categorizzare",
+        "type": "voluta",
+        "isFallback": true,
+        "color": "slate",
+        "icon": "help-circle"
+      }
+    ],
+    "budgets": [
+      {
+        "categoryId": "food",
+        "monthlyAmount": "300.00"
+      },
+      {
+        "categoryId": "fun",
+        "monthlyAmount": "150.00"
+      }
+    ],
+    "transactions": [
+      {
+        "id": "t1",
+        "date": "2026-08-03",
+        "amount": "2500.00",
+        "excludedAmount": "0.00",
+        "categoryId": "salary",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t2",
+        "date": "2026-08-05",
+        "amount": "-80.00",
+        "excludedAmount": "0.00",
+        "categoryId": "food",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t3",
+        "date": "2026-08-12",
+        "amount": "-120.00",
+        "excludedAmount": "-60.00",
+        "categoryId": "fun",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t4",
+        "date": "2026-08-20",
+        "amount": "-300.00",
+        "excludedAmount": "0.00",
+        "categoryId": "save",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t5",
+        "date": "2026-09-01",
+        "amount": "2500.00",
+        "excludedAmount": "0.00",
+        "categoryId": "salary",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t6",
+        "date": "2026-09-02",
+        "amount": "-90.50",
+        "excludedAmount": "0.00",
+        "categoryId": "food",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t7",
+        "date": "2026-09-10",
+        "amount": "-40.00",
+        "excludedAmount": "0.00",
+        "categoryId": "unc",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t8",
+        "date": "2026-09-15",
+        "amount": "-500.00",
+        "excludedAmount": "-500.00",
+        "categoryId": "xfer",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t9",
+        "date": "2026-09-28",
+        "amount": "-200.00",
+        "excludedAmount": "0.00",
+        "categoryId": "gift",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t10",
+        "date": "2026-10-01",
+        "amount": "2600.00",
+        "excludedAmount": "0.00",
+        "categoryId": "salary",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t11",
+        "date": "2026-10-03",
+        "amount": "-55.25",
+        "excludedAmount": "0.00",
+        "categoryId": "food",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t12",
+        "date": "2026-10-08",
+        "amount": "-30.00",
+        "excludedAmount": "0.00",
+        "categoryId": "fun",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t13",
+        "date": "2026-10-10",
+        "amount": "-100.00",
+        "excludedAmount": "-50.00",
+        "categoryId": "fun",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t14",
+        "date": "2026-10-14",
+        "amount": "20.00",
+        "excludedAmount": "0.00",
+        "categoryId": "food",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      },
+      {
+        "id": "t15",
+        "date": "2026-10-16",
+        "amount": "-12.30",
+        "excludedAmount": "0.00",
+        "categoryId": "food",
+        "accountId": "acc1",
+        "description": "TX",
+        "note": null
+      }
+    ]
+  },
+  "conventions": "Dates are local calendar dates YYYY-MM-DD. Amounts in transactions are decimal strings, signed (negative = outflow). month fields are 0-based.",
+  "vectors": [
+    {
+      "id": "expenses.periodRange.settimana.2026-10-14",
+      "function": "getPeriodRange",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-10-14"
+      },
+      "expected": {
+        "from": "2026-10-12",
+        "to": "2026-10-18"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.periodRange.settimana.2026-11-01",
+      "function": "getPeriodRange",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-11-01"
+      },
+      "expected": {
+        "from": "2026-10-26",
+        "to": "2026-11-01"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.periodRange.mese.2026-02-15",
+      "function": "getPeriodRange",
+      "input": {
+        "period": "mese",
+        "referenceDate": "2026-02-15"
+      },
+      "expected": {
+        "from": "2026-02-01",
+        "to": "2026-02-28"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.periodRange.3mesi.2026-01-31",
+      "function": "getPeriodRange",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-01-31"
+      },
+      "expected": {
+        "from": "2025-12-01",
+        "to": "2026-01-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.periodRange.anno.2026-06-30",
+      "function": "getPeriodRange",
+      "input": {
+        "period": "anno",
+        "referenceDate": "2026-06-30"
+      },
+      "expected": {
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.previousPeriodRange.settimana.2026-10-14",
+      "function": "getPreviousPeriodRange",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-10-14"
+      },
+      "expected": {
+        "from": "2026-10-05",
+        "to": "2026-10-11"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.previousPeriodRange.mese.2026-03-31",
+      "function": "getPreviousPeriodRange",
+      "input": {
+        "period": "mese",
+        "referenceDate": "2026-03-31"
+      },
+      "expected": {
+        "from": "2026-03-01",
+        "to": "2026-03-31"
+      },
+      "tolerance": 1e-9,
+      "notes": "QUIRK: addMonths overflows (31 Mar - 1 month = 3 Mar) so the 'previous month' of 31 March is March itself. Port as-is or fix on web too."
+    },
+    {
+      "id": "expenses.previousPeriodRange.mese.2026-03-15",
+      "function": "getPreviousPeriodRange",
+      "input": {
+        "period": "mese",
+        "referenceDate": "2026-03-15"
+      },
+      "expected": {
+        "from": "2026-02-01",
+        "to": "2026-02-28"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.previousPeriodRange.3mesi.2026-05-31",
+      "function": "getPreviousPeriodRange",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-05-31"
+      },
+      "expected": {
+        "from": "2026-01-01",
+        "to": "2026-03-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.previousPeriodRange.anno.2024-02-29",
+      "function": "getPreviousPeriodRange",
+      "input": {
+        "period": "anno",
+        "referenceDate": "2024-02-29"
+      },
+      "expected": {
+        "from": "2023-01-01",
+        "to": "2023-12-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.shiftReference.mese.2026-01-31.1",
+      "function": "shiftReferenceDate",
+      "input": {
+        "period": "mese",
+        "referenceDate": "2026-01-31",
+        "direction": 1
+      },
+      "expected": "2026-03-03",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.shiftReference.settimana.2026-10-14.-1",
+      "function": "shiftReferenceDate",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-10-14",
+        "direction": -1
+      },
+      "expected": "2026-10-07",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.shiftReference.3mesi.2026-11-30.1",
+      "function": "shiftReferenceDate",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-11-30",
+        "direction": 1
+      },
+      "expected": "2027-03-02",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.shiftReference.anno.2024-02-29.1",
+      "function": "shiftReferenceDate",
+      "input": {
+        "period": "anno",
+        "referenceDate": "2024-02-29",
+        "direction": 1
+      },
+      "expected": "2025-03-01",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.periodLabel.it-IT.mese.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "mese",
+        "referenceDate": "2026-10-14",
+        "locale": "it-IT"
+      },
+      "expected": "Ottobre 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.it-IT.settimana.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-10-14",
+        "locale": "it-IT"
+      },
+      "expected": "12–18 ott",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.it-IT.settimana.2026-09-30",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-09-30",
+        "locale": "it-IT"
+      },
+      "expected": "28 set – 4 ott",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.it-IT.settimana.2025-12-31",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2025-12-31",
+        "locale": "it-IT"
+      },
+      "expected": "29 dic 2025 – 4 gen 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.it-IT.3mesi.2026-01-15",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-01-15",
+        "locale": "it-IT"
+      },
+      "expected": "Nov 2025 – Gen 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.it-IT.3mesi.2026-10-15",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-10-15",
+        "locale": "it-IT"
+      },
+      "expected": "Ago – Ott 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.it-IT.anno.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "anno",
+        "referenceDate": "2026-10-14",
+        "locale": "it-IT"
+      },
+      "expected": "2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.en-GB.mese.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "mese",
+        "referenceDate": "2026-10-14",
+        "locale": "en-GB"
+      },
+      "expected": "October 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.en-GB.settimana.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-10-14",
+        "locale": "en-GB"
+      },
+      "expected": "12–18 Oct",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.en-GB.settimana.2026-09-30",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-09-30",
+        "locale": "en-GB"
+      },
+      "expected": "28 Sept – 4 Oct",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.en-GB.settimana.2025-12-31",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2025-12-31",
+        "locale": "en-GB"
+      },
+      "expected": "29 Dec 2025 – 4 Jan 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.en-GB.3mesi.2026-01-15",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-01-15",
+        "locale": "en-GB"
+      },
+      "expected": "Nov 2025 – Jan 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.en-GB.3mesi.2026-10-15",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-10-15",
+        "locale": "en-GB"
+      },
+      "expected": "Aug – Oct 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.en-GB.anno.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "anno",
+        "referenceDate": "2026-10-14",
+        "locale": "en-GB"
+      },
+      "expected": "2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.de-DE.mese.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "mese",
+        "referenceDate": "2026-10-14",
+        "locale": "de-DE"
+      },
+      "expected": "Oktober 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.de-DE.settimana.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-10-14",
+        "locale": "de-DE"
+      },
+      "expected": "12–18. Okt.",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.de-DE.settimana.2026-09-30",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2026-09-30",
+        "locale": "de-DE"
+      },
+      "expected": "28. Sept. – 4. Okt.",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.de-DE.settimana.2025-12-31",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "settimana",
+        "referenceDate": "2025-12-31",
+        "locale": "de-DE"
+      },
+      "expected": "29. Dez. 2025 – 4. Jan. 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.de-DE.3mesi.2026-01-15",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-01-15",
+        "locale": "de-DE"
+      },
+      "expected": "Nov. 2025 – Jan. 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.de-DE.3mesi.2026-10-15",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-10-15",
+        "locale": "de-DE"
+      },
+      "expected": "Aug – Okt. 2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.periodLabel.de-DE.anno.2026-10-14",
+      "function": "formatPeriodLabel",
+      "input": {
+        "period": "anno",
+        "referenceDate": "2026-10-14",
+        "locale": "de-DE"
+      },
+      "expected": "2026",
+      "tolerance": 1e-9,
+      "notes": "range = getPeriodRange(period, referenceDate); en dash U+2013"
+    },
+    {
+      "id": "expenses.scaleBudget.settimana",
+      "function": "scaleBudgetForPeriod",
+      "input": {
+        "monthlyTotal": 450,
+        "period": "settimana"
+      },
+      "expected": 105,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.scaleBudget.mese",
+      "function": "scaleBudgetForPeriod",
+      "input": {
+        "monthlyTotal": 450,
+        "period": "mese"
+      },
+      "expected": 450,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.scaleBudget.3mesi",
+      "function": "scaleBudgetForPeriod",
+      "input": {
+        "monthlyTotal": 450,
+        "period": "3mesi"
+      },
+      "expected": 1350,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.scaleBudget.anno",
+      "function": "scaleBudgetForPeriod",
+      "input": {
+        "monthlyTotal": 450,
+        "period": "anno"
+      },
+      "expected": 5400,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.summary.oct",
+      "function": "computeSummary",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        }
+      },
+      "expected": {
+        "uscite": 197.55,
+        "escluse": 50,
+        "speseEffettive": 147.55
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.summary.sep",
+      "function": "computeSummary",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-09-01",
+          "to": "2026-09-30"
+        }
+      },
+      "expected": {
+        "uscite": 830.5,
+        "escluse": 500,
+        "speseEffettive": 330.5
+      },
+      "tolerance": 1e-9,
+      "notes": "transfer (xfer) has excludedAmount = amount so it nets to 0"
+    },
+    {
+      "id": "expenses.incomeSummary.oct",
+      "function": "computeIncomeSummary",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        }
+      },
+      "expected": {
+        "entrate": 2620,
+        "escluse": 0,
+        "entrateEffettive": 2620
+      },
+      "tolerance": 1e-9,
+      "notes": "refund +20 on 'food' counts as income"
+    },
+    {
+      "id": "expenses.kpis.mese.2026-10-16.2026-10-16",
+      "function": "computeKpis",
+      "input": {
+        "fixture": "transactions+budgets",
+        "period": "mese",
+        "referenceDate": "2026-10-16",
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "speso": 147.55,
+        "budgetTotale": 450,
+        "budgetRimanente": 302.45,
+        "giorniRimasti": 15,
+        "mediaGiornaliera": 9.221875,
+        "mediaGiornalieraPeriodoPrecedente": 11.016666666666667
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.kpis.mese.2026-09-10.2026-10-16",
+      "function": "computeKpis",
+      "input": {
+        "fixture": "transactions+budgets",
+        "period": "mese",
+        "referenceDate": "2026-09-10",
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "speso": 330.5,
+        "budgetTotale": 450,
+        "budgetRimanente": 359.5,
+        "giorniRimasti": 0,
+        "mediaGiornaliera": 11.016666666666667,
+        "mediaGiornalieraPeriodoPrecedente": 14.193548387096774
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.kpis.settimana.2026-10-14.2026-10-14",
+      "function": "computeKpis",
+      "input": {
+        "fixture": "transactions+budgets",
+        "period": "settimana",
+        "referenceDate": "2026-10-14",
+        "today": "2026-10-14"
+      },
+      "expected": {
+        "speso": 0,
+        "budgetTotale": 105,
+        "budgetRimanente": 105,
+        "giorniRimasti": 4,
+        "mediaGiornaliera": 0,
+        "mediaGiornalieraPeriodoPrecedente": 11.428571428571429
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.kpis.3mesi.2026-10-16.2026-10-16",
+      "function": "computeKpis",
+      "input": {
+        "fixture": "transactions+budgets",
+        "period": "3mesi",
+        "referenceDate": "2026-10-16",
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "speso": 918.05,
+        "budgetTotale": 1350,
+        "budgetRimanente": 971.95,
+        "giorniRimasti": 15,
+        "mediaGiornaliera": 11.922727272727272,
+        "mediaGiornalieraPeriodoPrecedente": 0
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.kpis.anno.2026-10-16.2026-10-16",
+      "function": "computeKpis",
+      "input": {
+        "fixture": "transactions+budgets",
+        "period": "anno",
+        "referenceDate": "2026-10-16",
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "speso": 918.05,
+        "budgetTotale": 5400,
+        "budgetRimanente": 5021.95,
+        "giorniRimasti": 76,
+        "mediaGiornaliera": 3.1766435986159167,
+        "mediaGiornalieraPeriodoPrecedente": 0
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.kpis.noBudgets",
+      "function": "computeKpis",
+      "input": {
+        "fixture": "transactions",
+        "budgets": [],
+        "period": "mese",
+        "referenceDate": "2026-10-16",
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "speso": 147.55,
+        "budgetTotale": 0,
+        "budgetRimanente": null,
+        "giorniRimasti": 15,
+        "mediaGiornaliera": 9.221875,
+        "mediaGiornalieraPeriodoPrecedente": 11.016666666666667
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.incomeKpis.mese",
+      "function": "computeIncomeKpis",
+      "input": {
+        "fixture": "transactions",
+        "period": "mese",
+        "referenceDate": "2026-10-16",
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "entrate": 2620,
+        "mediaGiornaliera": 163.75,
+        "mediaGiornalieraPeriodoPrecedente": 83.33333333333333
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.categoryBreakdown.oct",
+      "function": "computeCategoryBreakdown",
+      "input": {
+        "fixture": "transactions+categories",
+        "period": "mese",
+        "referenceDate": "2026-10-16",
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "categoryId": "food",
+          "name": "Spesa",
+          "group": "dovuta",
+          "amount": 67.55,
+          "color": "green",
+          "icon": "shopping-cart"
+        },
+        {
+          "categoryId": "fun",
+          "name": "Svago",
+          "group": "voluta",
+          "amount": 80,
+          "color": "violet",
+          "icon": "film"
+        },
+        {
+          "categoryId": "save",
+          "name": "Risparmio",
+          "group": "futuro",
+          "amount": 0,
+          "color": "blue",
+          "icon": "piggy-bank"
+        },
+        {
+          "categoryId": "gift",
+          "name": "Regali",
+          "group": "saltuaria",
+          "amount": 0,
+          "color": "pink",
+          "icon": "gift"
+        },
+        {
+          "categoryId": "unc",
+          "name": "Da categorizzare",
+          "group": "daCategorizzare",
+          "amount": 0,
+          "color": "slate",
+          "icon": "help-circle"
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.groupTotals.sep",
+      "function": "computeGroupTotals",
+      "input": {
+        "fixture": "transactions+categories",
+        "period": "mese",
+        "referenceDate": "2026-09-15",
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "dovuta": 90.5,
+        "voluta": 0,
+        "futuro": 0,
+        "saltuaria": 200,
+        "daCategorizzare": 40
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.trend6",
+      "function": "compute6MonthTrend",
+      "input": {
+        "fixture": "transactions",
+        "referenceDate": "2026-10-16"
+      },
+      "expected": [
+        {
+          "year": 2026,
+          "month": 4,
+          "label": "Mag",
+          "total": 0
+        },
+        {
+          "year": 2026,
+          "month": 5,
+          "label": "Giu",
+          "total": 0
+        },
+        {
+          "year": 2026,
+          "month": 6,
+          "label": "Lug",
+          "total": 0
+        },
+        {
+          "year": 2026,
+          "month": 7,
+          "label": "Ago",
+          "total": 440
+        },
+        {
+          "year": 2026,
+          "month": 8,
+          "label": "Set",
+          "total": 330.5
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "label": "Ott",
+          "total": 147.55
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "month is 0-based (JS getMonth)"
+    },
+    {
+      "id": "expenses.monthlyStacks.top1",
+      "function": "computeCategoryMonthlyStacks",
+      "input": {
+        "fixture": "transactions+categories",
+        "referenceDate": "2026-10-16",
+        "topCount": 1,
+        "monthCount": 3
+      },
+      "expected": [
+        {
+          "year": 2026,
+          "month": 7,
+          "label": "Ago",
+          "segments": [
+            {
+              "key": "save",
+              "name": "Risparmio",
+              "color": "blue",
+              "amount": 300
+            },
+            {
+              "key": "altro",
+              "name": "Altro",
+              "color": "altro",
+              "amount": 140
+            }
+          ]
+        },
+        {
+          "year": 2026,
+          "month": 8,
+          "label": "Set",
+          "segments": [
+            {
+              "key": "gift",
+              "name": "Regali",
+              "color": "pink",
+              "amount": 200
+            },
+            {
+              "key": "altro",
+              "name": "Altro",
+              "color": "altro",
+              "amount": 130.5
+            }
+          ]
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "label": "Ott",
+          "segments": [
+            {
+              "key": "fun",
+              "name": "Svago",
+              "color": "violet",
+              "amount": 80
+            },
+            {
+              "key": "altro",
+              "name": "Altro",
+              "color": "altro",
+              "amount": 67.55
+            }
+          ]
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "expenses.filter.search",
+      "function": "filterTransactions",
+      "input": {
+        "fixture": "transactions",
+        "filter": {
+          "categoryId": null,
+          "searchText": "  tx ",
+          "accountId": null
+        }
+      },
+      "expected": 15,
+      "tolerance": 1e-9,
+      "notes": "expected = count"
+    },
+    {
+      "id": "expenses.filter.category",
+      "function": "filterTransactions",
+      "input": {
+        "fixture": "transactions",
+        "filter": {
+          "categoryId": "fun",
+          "searchText": ""
+        }
+      },
+      "expected": [
+        "t3",
+        "t12",
+        "t13"
+      ],
+      "tolerance": 1e-9
+    }
+  ]
+}

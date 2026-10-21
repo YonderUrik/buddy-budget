@@ -1,0 +1,2473 @@
+{
+  "topic": "fire-and-simulations",
+  "source": "lib/calc/fire.ts, lib/calc/monte-carlo.ts, lib/calc/growth-split.ts, lib/calc/liquidation.ts, lib/calc/costs.ts, lib/analitiche/*",
+  "generatedWith": "npx tsx (Node, V8 doubles)",
+  "vectors": [
+    {
+      "id": "fireNumber-basic",
+      "function": "fireNumber",
+      "input": {
+        "annualSpending": 30000,
+        "withdrawalRate": 0.035
+      },
+      "expected": 857142.857142857,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "fireNumber-4pct",
+      "function": "fireNumber",
+      "input": {
+        "annualSpending": 24000,
+        "withdrawalRate": 0.04
+      },
+      "expected": 600000,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "fireNumber-zeroRate",
+      "function": "fireNumber",
+      "input": {
+        "annualSpending": 24000,
+        "withdrawalRate": 0
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "fireNumber-negSpend",
+      "function": "fireNumber",
+      "input": {
+        "annualSpending": -1,
+        "withdrawalRate": 0.04
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "fireNumberAfterTax-10pct",
+      "function": "fireNumberAfterTax",
+      "input": {
+        "grossNumber": 857142.857142857,
+        "taxShare": 0.1
+      },
+      "expected": 952380.9523809522,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "fireNumberAfterTax-0",
+      "function": "fireNumberAfterTax",
+      "input": {
+        "grossNumber": 600000,
+        "taxShare": 0
+      },
+      "expected": 600000,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "fireNumberAfterTax-1",
+      "function": "fireNumberAfterTax",
+      "input": {
+        "grossNumber": 600000,
+        "taxShare": 1
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "wealthAfterYears-0.04-10-12000",
+      "function": "wealthAfterYears",
+      "input": {
+        "input": {
+          "current": 50000,
+          "annualSaving": 12000,
+          "realReturn": 0.04
+        },
+        "years": 10
+      },
+      "expected": 218085.49972142052,
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "wealthAfterYears-0-10-12000",
+      "function": "wealthAfterYears",
+      "input": {
+        "input": {
+          "current": 50000,
+          "annualSaving": 12000,
+          "realReturn": 0
+        },
+        "years": 10
+      },
+      "expected": 170000,
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "wealthAfterYears-0.04-0-12000",
+      "function": "wealthAfterYears",
+      "input": {
+        "input": {
+          "current": 50000,
+          "annualSaving": 12000,
+          "realReturn": 0.04
+        },
+        "years": 0
+      },
+      "expected": 50000,
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "wealthAfterYears--0.02-5--5000",
+      "function": "wealthAfterYears",
+      "input": {
+        "input": {
+          "current": 100000,
+          "annualSaving": -5000,
+          "realReturn": -0.02
+        },
+        "years": 5
+      },
+      "expected": 66372.27887999997,
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "yearsToTarget-0",
+      "function": "yearsToTarget",
+      "input": {
+        "input": {
+          "current": 50000,
+          "annualSaving": 12000,
+          "realReturn": 0.04
+        },
+        "target": 857142.857142857
+      },
+      "expected": 30.488380781054587,
+      "tolerance": 1e-9,
+      "notes": "closed form ln"
+    },
+    {
+      "id": "yearsToTarget-1",
+      "function": "yearsToTarget",
+      "input": {
+        "input": {
+          "current": 50000,
+          "annualSaving": 12000,
+          "realReturn": 0
+        },
+        "target": 650000
+      },
+      "expected": 50,
+      "tolerance": 1e-9,
+      "notes": "zero return: linear"
+    },
+    {
+      "id": "yearsToTarget-2",
+      "function": "yearsToTarget",
+      "input": {
+        "input": {
+          "current": 900000,
+          "annualSaving": 0,
+          "realReturn": 0.04
+        },
+        "target": 857142.857142857
+      },
+      "expected": 0,
+      "tolerance": 1e-9,
+      "notes": "already there → 0"
+    },
+    {
+      "id": "yearsToTarget-3",
+      "function": "yearsToTarget",
+      "input": {
+        "input": {
+          "current": 10000,
+          "annualSaving": 0,
+          "realReturn": 0
+        },
+        "target": 650000
+      },
+      "expected": null,
+      "tolerance": 1e-9,
+      "notes": "never → null"
+    },
+    {
+      "id": "yearsToTarget-4",
+      "function": "yearsToTarget",
+      "input": {
+        "input": {
+          "current": 1000,
+          "annualSaving": 100,
+          "realReturn": 0.01
+        },
+        "target": 10000000
+      },
+      "expected": null,
+      "tolerance": 1e-9,
+      "notes": "beyond 80 years → null"
+    },
+    {
+      "id": "yearsToTarget-5",
+      "function": "yearsToTarget",
+      "input": {
+        "input": {
+          "current": 100000,
+          "annualSaving": -2000,
+          "realReturn": 0.03
+        },
+        "target": 200000
+      },
+      "expected": 46.89954450087547,
+      "tolerance": 1e-9,
+      "notes": "negative saving but bottom>0"
+    },
+    {
+      "id": "coastNumber-0.04-10",
+      "function": "coastNumber",
+      "input": {
+        "target": 857142.857142857,
+        "realReturn": 0.04,
+        "years": 10
+      },
+      "expected": 579055.0018506845,
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "coastNumber-0.04-30",
+      "function": "coastNumber",
+      "input": {
+        "target": 857142.857142857,
+        "realReturn": 0.04,
+        "years": 30
+      },
+      "expected": 264273.14397721743,
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "coastNumber-0-20",
+      "function": "coastNumber",
+      "input": {
+        "target": 500000,
+        "realReturn": 0,
+        "years": 20
+      },
+      "expected": 500000,
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "coastNumber-0.04-0",
+      "function": "coastNumber",
+      "input": {
+        "target": 500000,
+        "realReturn": 0.04,
+        "years": 0
+      },
+      "expected": 500000,
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "leanSpending",
+      "function": "leanSpending",
+      "input": {
+        "dovuta": 15000,
+        "saltuaria": 2500
+      },
+      "expected": 17500,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "sensitivityByRateAndReturn",
+      "function": "sensitivityByRateAndReturn",
+      "input": {
+        "annualSpending": 30000,
+        "current": 150000,
+        "annualSaving": 15000,
+        "withdrawalRates": [
+          0.025,
+          0.03,
+          0.035,
+          0.04,
+          0.045
+        ],
+        "realReturns": [
+          0.02,
+          0.03,
+          0.04,
+          0.05,
+          0.06
+        ]
+      },
+      "expected": [
+        [
+          {
+            "rowValue": 0.025,
+            "columnValue": 0.02,
+            "years": 39.04481343153105
+          },
+          {
+            "rowValue": 0.025,
+            "columnValue": 0.03,
+            "years": 32.52537634300271
+          },
+          {
+            "rowValue": 0.025,
+            "columnValue": 0.04,
+            "years": 28.01102275663736
+          },
+          {
+            "rowValue": 0.025,
+            "columnValue": 0.05,
+            "years": 24.67654751365333
+          },
+          {
+            "rowValue": 0.025,
+            "columnValue": 0.06,
+            "years": 22.101912147839382
+          }
+        ],
+        [
+          {
+            "rowValue": 0.03,
+            "columnValue": 0.02,
+            "years": 33.58020598213927
+          },
+          {
+            "rowValue": 0.03,
+            "columnValue": 0.03,
+            "years": 28.29099830795191
+          },
+          {
+            "rowValue": 0.03,
+            "columnValue": 0.04,
+            "years": 24.548527298476625
+          },
+          {
+            "rowValue": 0.03,
+            "columnValue": 0.05,
+            "years": 21.743562022074908
+          },
+          {
+            "rowValue": 0.03,
+            "columnValue": 0.06,
+            "years": 19.554756041833627
+          }
+        ],
+        [
+          {
+            "rowValue": 0.035,
+            "columnValue": 0.02,
+            "years": 29.27987718906365
+          },
+          {
+            "rowValue": 0.035,
+            "columnValue": 0.03,
+            "years": 24.905087818780707
+          },
+          {
+            "rowValue": 0.035,
+            "columnValue": 0.04,
+            "years": 21.751563438393248
+          },
+          {
+            "rowValue": 0.035,
+            "columnValue": 0.05,
+            "years": 19.357623097168716
+          },
+          {
+            "rowValue": 0.035,
+            "columnValue": 0.06,
+            "years": 17.47198392696828
+          }
+        ],
+        [
+          {
+            "rowValue": 0.04,
+            "columnValue": 0.02,
+            "years": 25.79585103157185
+          },
+          {
+            "rowValue": 0.04,
+            "columnValue": 0.03,
+            "years": 22.122901397120238
+          },
+          {
+            "rowValue": 0.04,
+            "columnValue": 0.04,
+            "years": 19.432080418026096
+          },
+          {
+            "rowValue": 0.04,
+            "columnValue": 0.05,
+            "years": 17.366161291132766
+          },
+          {
+            "rowValue": 0.04,
+            "columnValue": 0.06,
+            "years": 15.725208543887753
+          }
+        ],
+        [
+          {
+            "rowValue": 0.045,
+            "columnValue": 0.02,
+            "years": 22.909445455935153
+          },
+          {
+            "rowValue": 0.045,
+            "columnValue": 0.03,
+            "years": 19.788812521557375
+          },
+          {
+            "rowValue": 0.045,
+            "columnValue": 0.04,
+            "years": 17.469825401516044
+          },
+          {
+            "rowValue": 0.045,
+            "columnValue": 0.05,
+            "years": 15.671317314835568
+          },
+          {
+            "rowValue": 0.045,
+            "columnValue": 0.06,
+            "years": 14.231935719820067
+          }
+        ]
+      ],
+      "tolerance": 1e-9,
+      "notes": "FIRE tab: rows = withdrawalRate + [-0.01,-0.005,0,0.005,0.01] (each max 0.01); cols = expectedReturn + [-0.02..0.02]"
+    },
+    {
+      "id": "sensitivityBySpendingAndSaving",
+      "function": "sensitivityBySpendingAndSaving",
+      "input": {
+        "annualSpending": 30000,
+        "withdrawalRate": 0.035,
+        "realReturn": 0.04,
+        "current": 150000,
+        "annualSaving": 15000,
+        "spendingChanges": [
+          -0.2,
+          -0.1,
+          0,
+          0.1,
+          0.2
+        ],
+        "savingChanges": [
+          -0.2,
+          -0.1,
+          0,
+          0.1,
+          0.2
+        ]
+      },
+      "expected": [
+        [
+          {
+            "rowValue": -0.2,
+            "columnValue": -0.2,
+            "years": 16.269143319326243
+          },
+          {
+            "rowValue": -0.2,
+            "columnValue": -0.1,
+            "years": 15.551686536682496
+          },
+          {
+            "rowValue": -0.2,
+            "columnValue": 0,
+            "years": 14.896544334557248
+          },
+          {
+            "rowValue": -0.2,
+            "columnValue": 0.1,
+            "years": 14.295745290318305
+          },
+          {
+            "rowValue": -0.2,
+            "columnValue": 0.2,
+            "years": 13.742649161584476
+          }
+        ],
+        [
+          {
+            "rowValue": -0.1,
+            "columnValue": -0.2,
+            "years": 19.913165099751325
+          },
+          {
+            "rowValue": -0.1,
+            "columnValue": -0.1,
+            "years": 18.97472767646417
+          },
+          {
+            "rowValue": -0.1,
+            "columnValue": 0,
+            "years": 18.12426905347779
+          },
+          {
+            "rowValue": -0.1,
+            "columnValue": 0.1,
+            "years": 17.349557576203836
+          },
+          {
+            "rowValue": -0.1,
+            "columnValue": 0.2,
+            "years": 16.640590308863494
+          }
+        ],
+        [
+          {
+            "rowValue": 0,
+            "columnValue": -0.2,
+            "years": 24.080684233092143
+          },
+          {
+            "rowValue": 0,
+            "columnValue": -0.1,
+            "years": 22.853033330636425
+          },
+          {
+            "rowValue": 0,
+            "columnValue": 0,
+            "years": 21.751563438393248
+          },
+          {
+            "rowValue": 0,
+            "columnValue": 0.1,
+            "years": 20.756883940278318
+          },
+          {
+            "rowValue": 0,
+            "columnValue": 0.2,
+            "years": 19.8535235949161
+          }
+        ],
+        [
+          {
+            "rowValue": 0.1,
+            "columnValue": -0.2,
+            "years": 28.96428263045718
+          },
+          {
+            "rowValue": 0.1,
+            "columnValue": -0.1,
+            "years": 27.340017407639223
+          },
+          {
+            "rowValue": 0.1,
+            "columnValue": 0,
+            "years": 25.902654264663752
+          },
+          {
+            "rowValue": 0.1,
+            "columnValue": 0.1,
+            "years": 24.619747265709144
+          },
+          {
+            "rowValue": 0.1,
+            "columnValue": 0.2,
+            "years": 23.46627542607012
+          }
+        ],
+        [
+          {
+            "rowValue": 0.2,
+            "columnValue": -0.2,
+            "years": 34.88656236998429
+          },
+          {
+            "rowValue": 0.2,
+            "columnValue": -0.1,
+            "years": 32.6821005543758
+          },
+          {
+            "rowValue": 0.2,
+            "columnValue": 0,
+            "years": 30.770115489533765
+          },
+          {
+            "rowValue": 0.2,
+            "columnValue": 0.1,
+            "years": 29.091554433948694
+          },
+          {
+            "rowValue": 0.2,
+            "columnValue": 0.2,
+            "years": 27.60306634636229
+          }
+        ]
+      ],
+      "tolerance": 1e-9,
+      "notes": "saving = annualSaving*(1+savingChange) - (spending - annualSpending)"
+    },
+    {
+      "id": "savingsRate",
+      "function": "savingsRate",
+      "input": {
+        "income": 40000,
+        "expenses": 30000
+      },
+      "expected": 0.25,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "savingsRate-null",
+      "function": "savingsRate",
+      "input": {
+        "income": 0,
+        "expenses": 30000
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "monthsOfCoverage",
+      "function": "monthsOfCoverage",
+      "input": {
+        "amount": 15000,
+        "monthlySpending": 2500
+      },
+      "expected": 6,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "mulberry32-seed1-first10",
+      "function": "mulberry32",
+      "input": {
+        "seed": 1,
+        "draws": 10
+      },
+      "expected": [
+        0.6270739405881613,
+        0.002735721180215478,
+        0.5274470399599522,
+        0.9810509674716741,
+        0.9683778982143849,
+        0.281103502959013,
+        0.6128388606011868,
+        0.7207431411370635,
+        0.425796952098608,
+        0.9948229456786066
+      ],
+      "tolerance": 0,
+      "notes": "Exact: pure 32-bit integer arithmetic then /2^32. Must match bit-for-bit."
+    },
+    {
+      "id": "mulberry32-seed42-first5",
+      "function": "mulberry32",
+      "input": {
+        "seed": 42,
+        "draws": 5
+      },
+      "expected": [
+        0.6011037519201636,
+        0.44829055899754167,
+        0.8524657934904099,
+        0.6697340414393693,
+        0.17481389874592423
+      ],
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "mulberry32-seedMax-first3",
+      "function": "mulberry32",
+      "input": {
+        "seed": 4294967295,
+        "draws": 3
+      },
+      "expected": [
+        0.8964226141106337,
+        0.189478256739676,
+        0.7156526781618595
+      ],
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "pathSeed-seed1",
+      "function": "pathSeed (private)",
+      "input": {
+        "seed": 1,
+        "indices": [
+          0,
+          1,
+          2,
+          2999
+        ]
+      },
+      "expected": [
+        4258643485,
+        3230166098,
+        2201688711,
+        3641478400
+      ],
+      "tolerance": 0,
+      "notes": "pathSeed(seed,i) = (imul(seed ^ 0x9e3779b9, 0x85ebca6b) + imul(i+1, 0xc2b2ae35)) >>> 0. Note: the + of two signed int32 happens in double precision, then >>> 0 (ToUint32 of the double sum, i.e. modulo 2^32)."
+    },
+    {
+      "id": "gaussian-path0-first6",
+      "function": "gaussian",
+      "input": {
+        "generator": "mulberry32(pathSeed(1,0))",
+        "draws": 6
+      },
+      "expected": [
+        -0.6197839843280668,
+        0.09759417954064474,
+        0.11166124814789974,
+        1.0986252105315595,
+        0.3631061870615431,
+        -0.6275126863790461
+      ],
+      "tolerance": 1e-15,
+      "notes": "Box-Muller cos branch, consumes 2 uniforms per normal; log/cos may differ by 1 ulp across libm"
+    },
+    {
+      "id": "lognormalParams-4-15",
+      "function": "lognormalParams",
+      "input": {
+        "expectedReturn": 0.04,
+        "volatility": 0.15
+      },
+      "expected": {
+        "mu": 0.028926164575085497,
+        "sd": 0.14348901406167533
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "lognormalParams-4-12",
+      "function": "lognormalParams",
+      "input": {
+        "expectedReturn": 0.04,
+        "volatility": 0.12
+      },
+      "expected": {
+        "mu": 0.03260783204365078,
+        "sd": 0.11500331394903844
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "lognormalParams-0vol",
+      "function": "lognormalParams",
+      "input": {
+        "expectedReturn": 0.03,
+        "volatility": 0
+      },
+      "expected": {
+        "mu": 0.02955880224154443,
+        "sd": 0
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "percentile",
+      "function": "percentile",
+      "input": {
+        "sorted": [
+          1,
+          2,
+          3,
+          4,
+          10
+        ],
+        "p": [
+          0,
+          10,
+          25,
+          50,
+          90,
+          100,
+          150
+        ]
+      },
+      "expected": [
+        1,
+        1.4,
+        2,
+        3,
+        7.6000000000000005,
+        10,
+        10
+      ],
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "percentile-empty",
+      "function": "percentile",
+      "input": {
+        "sorted": [],
+        "p": 50
+      },
+      "expected": 0,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "runMonteCarlo-fissa-200p",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 500000,
+        "annualSavings": 0,
+        "accumulationYears": 0,
+        "retirementYears": 30,
+        "annualSpending": 20000,
+        "expectedReturn": 0.04,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "paths": 200,
+        "seed": 1,
+        "rule": "fissa"
+      },
+      "expected": {
+        "successRate": 0.765,
+        "endingWealth": {
+          "p10": 0,
+          "p50": 309030.98300010257,
+          "p90": 1102845.6715030614
+        },
+        "maxCut": {
+          "median": 0,
+          "p90": 1
+        },
+        "wealthYear0": {
+          "year": 0,
+          "p10": 500000,
+          "p25": 500000,
+          "p50": 500000,
+          "p75": 500000,
+          "p90": 500000
+        },
+        "wealthYear10": {
+          "year": 10,
+          "p10": 267845.9073585466,
+          "p25": 345508.2753067814,
+          "p50": 459045.6142618559,
+          "p75": 612639.5189037423,
+          "p90": 769977.3815147689
+        },
+        "wealthYear30": {
+          "year": 30,
+          "p10": 0,
+          "p25": 25593.032429922412,
+          "p50": 309030.98300010257,
+          "p75": 715393.9729065824,
+          "p90": 1102845.6715030614
+        },
+        "ruinByYear": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.005,
+          0.01,
+          0.015,
+          0.02,
+          0.04,
+          0.045,
+          0.05,
+          0.055,
+          0.095,
+          0.12,
+          0.15,
+          0.185,
+          0.205,
+          0.235
+        ],
+        "spendingYear0": {
+          "year": 0,
+          "p10": 20000,
+          "p50": 20000,
+          "p90": 20000
+        },
+        "spendingYear29": {
+          "year": 29,
+          "p10": 0,
+          "p50": 20000,
+          "p90": 20000
+        }
+      },
+      "tolerance": 0.000001,
+      "notes": "Relative tolerance 1e-9 recommended on money values; successRate/ruinByYear must match exactly (counts/200)."
+    },
+    {
+      "id": "runMonteCarlo-percentuale-200p",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 500000,
+        "annualSavings": 0,
+        "accumulationYears": 0,
+        "retirementYears": 30,
+        "annualSpending": 20000,
+        "expectedReturn": 0.04,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "paths": 200,
+        "seed": 1,
+        "rule": "percentuale"
+      },
+      "expected": {
+        "successRate": 1,
+        "endingWealth": {
+          "p10": 174391.4730405779,
+          "p50": 396158.6671606386,
+          "p90": 887238.3208909332
+        },
+        "maxCut": {
+          "median": 0.36898053278775017,
+          "p90": 0.6783040657489882
+        },
+        "wealthYear0": {
+          "year": 0,
+          "p10": 500000,
+          "p25": 500000,
+          "p50": 500000,
+          "p75": 500000,
+          "p90": 500000
+        },
+        "wealthYear10": {
+          "year": 10,
+          "p10": 314218.46042156377,
+          "p25": 369469.7691657144,
+          "p50": 464352.41971936676,
+          "p75": 586613.441408905,
+          "p90": 728061.105175072
+        },
+        "wealthYear30": {
+          "year": 30,
+          "p10": 174391.4730405779,
+          "p25": 254761.05215850804,
+          "p50": 396158.6671606386,
+          "p75": 598466.0082822572,
+          "p90": 887238.3208909332
+        },
+        "ruinByYear": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "spendingYear0": {
+          "year": 0,
+          "p10": 20000,
+          "p50": 20000,
+          "p90": 20000
+        },
+        "spendingYear29": {
+          "year": 29,
+          "p10": 7034.602196869682,
+          "p50": 15670.519057962454,
+          "p90": 33425.68674935833
+        }
+      },
+      "tolerance": 0.000001,
+      "notes": "Relative tolerance 1e-9 recommended on money values; successRate/ruinByYear must match exactly (counts/200)."
+    },
+    {
+      "id": "runMonteCarlo-guyton-klinger-200p",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 500000,
+        "annualSavings": 0,
+        "accumulationYears": 0,
+        "retirementYears": 30,
+        "annualSpending": 20000,
+        "expectedReturn": 0.04,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "paths": 200,
+        "seed": 1,
+        "rule": "guyton-klinger"
+      },
+      "expected": {
+        "successRate": 0.995,
+        "endingWealth": {
+          "p10": 110704.1756624031,
+          "p50": 353763.555650717,
+          "p90": 955037.7437235723
+        },
+        "maxCut": {
+          "median": 0.18224698563896036,
+          "p90": 0.4829969567638147
+        },
+        "wealthYear0": {
+          "year": 0,
+          "p10": 500000,
+          "p25": 500000,
+          "p50": 500000,
+          "p75": 500000,
+          "p90": 500000
+        },
+        "wealthYear10": {
+          "year": 10,
+          "p10": 302465.7739194256,
+          "p25": 362252.5053144379,
+          "p50": 467933.80489505915,
+          "p75": 599418.157773562,
+          "p90": 756972.0943219687
+        },
+        "wealthYear30": {
+          "year": 30,
+          "p10": 110704.1756624031,
+          "p25": 199716.42609414743,
+          "p50": 353763.555650717,
+          "p75": 628493.428830117,
+          "p90": 955037.7437235723
+        },
+        "ruinByYear": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.005,
+          0.005
+        ],
+        "spendingYear0": {
+          "year": 0,
+          "p10": 20000,
+          "p50": 20000,
+          "p90": 20000
+        },
+        "spendingYear29": {
+          "year": 29,
+          "p10": 10921.848751017238,
+          "p50": 18316.57276995249,
+          "p90": 34982.559981167884
+        }
+      },
+      "tolerance": 0.000001,
+      "notes": "Relative tolerance 1e-9 recommended on money values; successRate/ruinByYear must match exactly (counts/200)."
+    },
+    {
+      "id": "runMonteCarlo-vanguard-200p",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 500000,
+        "annualSavings": 0,
+        "accumulationYears": 0,
+        "retirementYears": 30,
+        "annualSpending": 20000,
+        "expectedReturn": 0.04,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "paths": 200,
+        "seed": 1,
+        "rule": "vanguard"
+      },
+      "expected": {
+        "successRate": 0.95,
+        "endingWealth": {
+          "p10": 61333.96070487601,
+          "p50": 326470.7278611553,
+          "p90": 874982.3461350478
+        },
+        "maxCut": {
+          "median": 0.19085296711005,
+          "p90": 0.5041098499635844
+        },
+        "wealthYear0": {
+          "year": 0,
+          "p10": 500000,
+          "p25": 500000,
+          "p50": 500000,
+          "p75": 500000,
+          "p90": 500000
+        },
+        "wealthYear10": {
+          "year": 10,
+          "p10": 288672.2958789938,
+          "p25": 356864.75466701615,
+          "p50": 455560.3125634247,
+          "p75": 590057.4416907685,
+          "p90": 730880.5826005366
+        },
+        "wealthYear30": {
+          "year": 30,
+          "p10": 61333.96070487601,
+          "p25": 156456.3848932928,
+          "p50": 326470.7278611553,
+          "p75": 585199.7809817025,
+          "p90": 874982.3461350478
+        },
+        "ruinByYear": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.005,
+          0.01,
+          0.01,
+          0.015,
+          0.015,
+          0.025,
+          0.03,
+          0.035,
+          0.05
+        ],
+        "spendingYear0": {
+          "year": 0,
+          "p10": 20000,
+          "p50": 20000,
+          "p90": 20000
+        },
+        "spendingYear29": {
+          "year": 29,
+          "p10": 9917.80300072831,
+          "p50": 16872.327904048187,
+          "p90": 33024.52933046624
+        }
+      },
+      "tolerance": 0.000001,
+      "notes": "Relative tolerance 1e-9 recommended on money values; successRate/ruinByYear must match exactly (counts/200)."
+    },
+    {
+      "id": "runMonteCarlo-accum-pension",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 100000,
+        "annualSavings": 20000,
+        "accumulationYears": 10,
+        "retirementYears": 25,
+        "annualSpending": 30000,
+        "expectedReturn": 0.05,
+        "volatility": 0.15,
+        "inflation": 0.02,
+        "rule": "fissa",
+        "publicPension": {
+          "annual": 10000,
+          "startsAfterYears": 5
+        },
+        "paths": 100,
+        "seed": 7
+      },
+      "expected": {
+        "successRate": 0.44,
+        "endingWealth": {
+          "p10": 0,
+          "p50": 0,
+          "p90": 858542.4413533424
+        },
+        "maxCut": {
+          "median": 0.6666666666666667,
+          "p90": 0.6666666666666667
+        },
+        "wealthYear10": {
+          "year": 10,
+          "p10": 276038.2061863627,
+          "p25": 320392.8092142911,
+          "p50": 380918.58256240917,
+          "p75": 476418.61606366065,
+          "p90": 568997.5972123866
+        },
+        "wealthYear35": {
+          "year": 35,
+          "p10": 0,
+          "p25": 0,
+          "p50": 0,
+          "p75": 489335.82975727506,
+          "p90": 858542.4413533424
+        },
+        "spendingYear4": {
+          "year": 4,
+          "p10": 30000,
+          "p50": 30000,
+          "p90": 30000
+        },
+        "spendingYear5": {
+          "year": 5,
+          "p10": 30000,
+          "p50": 30000,
+          "p90": 30000
+        }
+      },
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "runMonteCarlo-tiny-full",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 1000,
+        "annualSavings": 0,
+        "accumulationYears": 0,
+        "retirementYears": 3,
+        "annualSpending": 400,
+        "expectedReturn": 0,
+        "volatility": 0.2,
+        "rule": "fissa",
+        "paths": 3,
+        "seed": 1
+      },
+      "expected": {
+        "rule": "fissa",
+        "paths": 3,
+        "successRate": 0,
+        "wealth": [
+          {
+            "year": 0,
+            "p10": 1000,
+            "p25": 1000,
+            "p50": 1000,
+            "p75": 1000,
+            "p90": 1000
+          },
+          {
+            "year": 1,
+            "p10": 503.1386984310937,
+            "p25": 509.6074260414281,
+            "p50": 520.3886387253186,
+            "p75": 520.8482541869591,
+            "p90": 521.1240234639434
+          },
+          {
+            "year": 2,
+            "p10": 101.88420524002203,
+            "p25": 108.8106118418604,
+            "p50": 120.35462284492435,
+            "p75": 122.54558267835964,
+            "p90": 123.8601585784208
+          },
+          {
+            "year": 3,
+            "p10": 0,
+            "p25": 0,
+            "p50": 0,
+            "p75": 0,
+            "p90": 0
+          }
+        ],
+        "ruinByYear": [
+          0,
+          0,
+          1
+        ],
+        "spending": [
+          {
+            "year": 0,
+            "p10": 400,
+            "p50": 400,
+            "p90": 400
+          },
+          {
+            "year": 1,
+            "p10": 400,
+            "p50": 400,
+            "p90": 400
+          },
+          {
+            "year": 2,
+            "p10": 101.88420524002203,
+            "p50": 120.35462284492435,
+            "p90": 123.8601585784208
+          }
+        ],
+        "endingWealth": {
+          "p10": 0,
+          "p50": 0,
+          "p90": 0
+        },
+        "maxCut": {
+          "median": 0.6991134428876891,
+          "p90": 0.7452894868999449
+        }
+      },
+      "tolerance": 1e-9,
+      "notes": "3 paths × 3 years: full result for step-by-step debugging"
+    },
+    {
+      "id": "runMonteCarlo-gk-tiny",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 1000,
+        "annualSavings": 0,
+        "accumulationYears": 0,
+        "retirementYears": 20,
+        "annualSpending": 60,
+        "expectedReturn": 0,
+        "volatility": 0.2,
+        "rule": "guyton-klinger",
+        "paths": 3,
+        "seed": 1
+      },
+      "expected": {
+        "successRate": 0.3333333333333333,
+        "spending": [
+          {
+            "year": 0,
+            "p10": 60,
+            "p50": 60,
+            "p90": 60
+          },
+          {
+            "year": 1,
+            "p10": 52.94117647058823,
+            "p50": 52.94117647058823,
+            "p90": 52.94117647058823
+          },
+          {
+            "year": 2,
+            "p10": 47.75086505190311,
+            "p50": 51.903114186851205,
+            "p90": 52.73356401384083
+          },
+          {
+            "year": 3,
+            "p10": 42.3163036841034,
+            "p50": 46.712802768166085,
+            "p90": 51.6955017301038
+          },
+          {
+            "year": 4,
+            "p10": 42.3163036841034,
+            "p50": 46.712802768166085,
+            "p90": 51.6955017301038
+          }
+        ],
+        "endingWealth": {
+          "p10": 0,
+          "p50": 0,
+          "p90": 130.17699421818685
+        }
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "runMonteCarlo-clamps",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 500000,
+        "annualSavings": 0,
+        "accumulationYears": -3,
+        "retirementYears": 0.4,
+        "annualSpending": 20000,
+        "expectedReturn": 0.04,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "paths": 0,
+        "seed": 1,
+        "rule": "fissa"
+      },
+      "expected": {
+        "paths": 1,
+        "wealthLen": 2,
+        "spendingLen": 1,
+        "successRate": 1
+      },
+      "tolerance": 0,
+      "notes": "paths clamped to [1,10000]; retirementYears max(1, round); accumulation max(0, round)"
+    },
+    {
+      "id": "runMonteCarlo-default3000",
+      "function": "runMonteCarlo",
+      "input": {
+        "startingWealth": 500000,
+        "annualSavings": 0,
+        "accumulationYears": 0,
+        "retirementYears": 30,
+        "annualSpending": 20000,
+        "expectedReturn": 0.04,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "paths": "default(3000)",
+        "seed": 1,
+        "rule": "fissa"
+      },
+      "expected": {
+        "paths": 3000,
+        "successRate": 0.7713333333333333,
+        "endingWealth": {
+          "p10": 0,
+          "p50": 257262.2786895057,
+          "p90": 1256230.793276951
+        }
+      },
+      "tolerance": 0.000001,
+      "notes": "Production default path count; use as a perf + determinism check"
+    },
+    {
+      "id": "splitGrowth",
+      "function": "splitGrowth",
+      "input": {
+        "points": [
+          {
+            "month": "2025-01",
+            "netWorth": 100000,
+            "savings": 1000
+          },
+          {
+            "month": "2025-02",
+            "netWorth": 102500,
+            "savings": 1500
+          },
+          {
+            "month": "2025-03",
+            "netWorth": 101000,
+            "savings": 1200
+          },
+          {
+            "month": "2025-04",
+            "netWorth": 105000,
+            "savings": 800
+          }
+        ]
+      },
+      "expected": {
+        "rows": [
+          {
+            "month": "2025-02",
+            "netWorth": 102500,
+            "savings": 1500,
+            "delta": 2500,
+            "fromSavings": 1500,
+            "fromMarket": 1000
+          },
+          {
+            "month": "2025-03",
+            "netWorth": 101000,
+            "savings": 1200,
+            "delta": -1500,
+            "fromSavings": 1200,
+            "fromMarket": -2700
+          },
+          {
+            "month": "2025-04",
+            "netWorth": 105000,
+            "savings": 800,
+            "delta": 4000,
+            "fromSavings": 800,
+            "fromMarket": 3200
+          }
+        ],
+        "totalDelta": 5000,
+        "totalFromSavings": 3500,
+        "totalFromMarket": 1500,
+        "savingsShare": 0.7
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "splitGrowth-negative",
+      "function": "splitGrowth",
+      "input": {
+        "points": [
+          {
+            "month": "2025-02",
+            "netWorth": 102500,
+            "savings": 1500
+          },
+          {
+            "month": "2025-03",
+            "netWorth": 101000,
+            "savings": 1200
+          }
+        ]
+      },
+      "expected": {
+        "rows": [
+          {
+            "month": "2025-03",
+            "netWorth": 101000,
+            "savings": 1200,
+            "delta": -1500,
+            "fromSavings": 1200,
+            "fromMarket": -2700
+          }
+        ],
+        "totalDelta": -1500,
+        "totalFromSavings": 1200,
+        "totalFromMarket": -2700,
+        "savingsShare": null
+      },
+      "tolerance": 1e-9,
+      "notes": "totalDelta<=0 → savingsShare null"
+    },
+    {
+      "id": "splitGrowth-single",
+      "function": "splitGrowth",
+      "input": {
+        "points": [
+          {
+            "month": "2025-01",
+            "netWorth": 100000,
+            "savings": 1000
+          }
+        ]
+      },
+      "expected": {
+        "rows": [],
+        "totalDelta": 0,
+        "totalFromSavings": 0,
+        "totalFromMarket": 0,
+        "savingsShare": null
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "computeLiquidation",
+      "function": "computeLiquidation",
+      "input": {
+        "positions": [
+          {
+            "id": "a",
+            "name": "ETF World",
+            "value": 50000,
+            "unrealizedGain": 10000,
+            "taxRate": 0.26
+          },
+          {
+            "id": "b",
+            "name": "BTP",
+            "value": 20000,
+            "unrealizedGain": 2000,
+            "taxRate": 0.125
+          },
+          {
+            "id": "c",
+            "name": "Stock",
+            "value": 5000,
+            "unrealizedGain": -1500,
+            "taxRate": 0.26
+          }
+        ]
+      },
+      "expected": {
+        "latentTax": 2850,
+        "grossValue": 75000,
+        "netValue": 72150,
+        "taxRatio": 0.038,
+        "byPosition": [
+          {
+            "id": "a",
+            "name": "ETF World",
+            "tax": 2600
+          },
+          {
+            "id": "b",
+            "name": "BTP",
+            "tax": 250
+          }
+        ]
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "computeLiquidation-empty",
+      "function": "computeLiquidation",
+      "input": {
+        "positions": []
+      },
+      "expected": {
+        "latentTax": 0,
+        "grossValue": 0,
+        "netValue": 0,
+        "taxRatio": null,
+        "byPosition": []
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "summarizeCosts-IT",
+      "function": "summarizeCosts",
+      "input": {
+        "positions": [
+          {
+            "id": "a",
+            "name": "ETF",
+            "value": 50000,
+            "ter": 0.002,
+            "subjectToBollo": true
+          },
+          {
+            "id": "b",
+            "name": "BTC",
+            "value": 10000,
+            "ter": null,
+            "subjectToBollo": false
+          },
+          {
+            "id": "c",
+            "name": "Zero",
+            "value": 0,
+            "ter": 0.01,
+            "subjectToBollo": true
+          }
+        ],
+        "productCountry": "IT"
+      },
+      "expected": {
+        "rows": [
+          {
+            "id": "a",
+            "name": "ETF",
+            "value": 50000,
+            "terCost": 100,
+            "bolloCost": 100,
+            "total": 200,
+            "pct": 0.004
+          },
+          {
+            "id": "b",
+            "name": "BTC",
+            "value": 10000,
+            "terCost": 0,
+            "bolloCost": 0,
+            "total": 0,
+            "pct": 0
+          }
+        ],
+        "totalValue": 60000,
+        "annualCost": 200,
+        "annualPct": 0.0033333333333333335,
+        "missingTerValue": 10000
+      },
+      "tolerance": 1e-9,
+      "notes": "IT bollo 0.2%/yr"
+    },
+    {
+      "id": "summarizeCosts-DE",
+      "function": "summarizeCosts",
+      "input": {
+        "positions": [
+          {
+            "id": "a",
+            "name": "ETF",
+            "value": 50000,
+            "ter": 0.002,
+            "subjectToBollo": true
+          },
+          {
+            "id": "b",
+            "name": "BTC",
+            "value": 10000,
+            "ter": null,
+            "subjectToBollo": false
+          },
+          {
+            "id": "c",
+            "name": "Zero",
+            "value": 0,
+            "ter": 0.01,
+            "subjectToBollo": true
+          }
+        ],
+        "productCountry": "DE"
+      },
+      "expected": {
+        "rows": [
+          {
+            "id": "a",
+            "name": "ETF",
+            "value": 50000,
+            "terCost": 100,
+            "bolloCost": 0,
+            "total": 100,
+            "pct": 0.002
+          },
+          {
+            "id": "b",
+            "name": "BTC",
+            "value": 10000,
+            "terCost": 0,
+            "bolloCost": 0,
+            "total": 0,
+            "pct": 0
+          }
+        ],
+        "totalValue": 60000,
+        "annualCost": 100,
+        "annualPct": 0.0016666666666666668,
+        "missingTerValue": 10000
+      },
+      "tolerance": 1e-9,
+      "notes": "DE no stamp duty"
+    },
+    {
+      "id": "costDrag",
+      "function": "costDrag",
+      "input": {
+        "value": 10000,
+        "grossReturn": 0.05,
+        "annualCostPct": 0.004,
+        "years": 3
+      },
+      "expected": [
+        {
+          "year": 0,
+          "withoutCosts": 10000,
+          "withCosts": 10000,
+          "lost": 0
+        },
+        {
+          "year": 1,
+          "withoutCosts": 10500,
+          "withCosts": 10460,
+          "lost": 40
+        },
+        {
+          "year": 2,
+          "withoutCosts": 11025,
+          "withCosts": 10941.160000000002,
+          "lost": 83.83999999999833
+        },
+        {
+          "year": 3,
+          "withoutCosts": 11576.250000000002,
+          "withCosts": 11444.453360000001,
+          "lost": 131.79664000000048
+        }
+      ],
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "resolvePlan-defaults",
+      "function": "resolvePlan",
+      "input": {
+        "base": {
+          "wealth": {
+            "liquidity": 30000,
+            "investments": 120000,
+            "pension": 15000,
+            "debts": 0
+          },
+          "cashflow": {
+            "annualSpending": 30000,
+            "annualSavings": 15000,
+            "monthsWithData": 12
+          },
+          "positions": [
+            {
+              "id": "a",
+              "name": "ETF World",
+              "value": 50000,
+              "unrealizedGain": 10000,
+              "taxRate": 0.26
+            },
+            {
+              "id": "b",
+              "name": "BTP",
+              "value": 20000,
+              "unrealizedGain": 2000,
+              "taxRate": 0.125
+            },
+            {
+              "id": "c",
+              "name": "Stock",
+              "value": 5000,
+              "unrealizedGain": -1500,
+              "taxRate": 0.26
+            }
+          ]
+        },
+        "assumptions": "DEFAULT_ASSUMPTIONS"
+      },
+      "expected": {
+        "spending": 30000,
+        "spendingSource": "dati",
+        "savings": 15000,
+        "savingsSource": "dati",
+        "wealth": 150000,
+        "liquidation": {
+          "latentTax": 2850,
+          "grossValue": 75000,
+          "netValue": 72150,
+          "taxRatio": 0.038,
+          "byPosition": [
+            {
+              "id": "a",
+              "name": "ETF World",
+              "tax": 2600
+            },
+            {
+              "id": "b",
+              "name": "BTP",
+              "tax": 250
+            }
+          ]
+        },
+        "taxShare": 0.019,
+        "fireNumberGross": 857142.857142857,
+        "target": 873743.9930100479,
+        "progress": 0.17167500000000002,
+        "yearsToFire": 22.092797078186525,
+        "coast": [
+          {
+            "years": 10,
+            "number": 590270.1344043674
+          },
+          {
+            "years": 15,
+            "number": 485159.02377743536
+          },
+          {
+            "years": 20,
+            "number": 398765.3527315789
+          },
+          {
+            "years": 25,
+            "number": 327756.052646539
+          },
+          {
+            "years": 30,
+            "number": 269391.5840746355
+          }
+        ]
+      },
+      "tolerance": 0.000001,
+      "notes": "includeLatentTax=true → taxShare = latentTax / wealth (cap 0.99); pension excluded by default"
+    },
+    {
+      "id": "resolvePlan-manual",
+      "function": "resolvePlan",
+      "input": {
+        "base": "same as resolvePlan-defaults",
+        "assumptions": {
+          "includeLatentTax": false,
+          "includePensionFunds": true,
+          "annualSpending": 24000,
+          "withdrawalRate": 0.04,
+          "expectedReturn": 0.04
+        }
+      },
+      "expected": {
+        "spending": 24000,
+        "spendingSource": "ipotesi",
+        "savings": 15000,
+        "savingsSource": "dati",
+        "wealth": 165000,
+        "liquidation": {
+          "latentTax": 2850,
+          "grossValue": 75000,
+          "netValue": 72150,
+          "taxRatio": 0.038,
+          "byPosition": [
+            {
+              "id": "a",
+              "name": "ETF World",
+              "tax": 2600
+            },
+            {
+              "id": "b",
+              "name": "BTP",
+              "tax": 250
+            }
+          ]
+        },
+        "taxShare": 0,
+        "fireNumberGross": 600000,
+        "target": 600000,
+        "progress": 0.275,
+        "yearsToFire": 15.065211311439226,
+        "coast": [
+          {
+            "years": 10,
+            "number": 405338.5012954792
+          },
+          {
+            "years": 15,
+            "number": 333158.7016279649
+          },
+          {
+            "years": 20,
+            "number": 273832.1677207753
+          },
+          {
+            "years": 25,
+            "number": 225070.0813523784
+          },
+          {
+            "years": 30,
+            "number": 184991.20078405223
+          }
+        ]
+      },
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "resolvePlan-fewMonths",
+      "function": "resolvePlan",
+      "input": {
+        "base": "monthsWithData=2",
+        "assumptions": "DEFAULT_ASSUMPTIONS"
+      },
+      "expected": {
+        "spending": null,
+        "spendingSource": "manca",
+        "savings": null,
+        "target": null,
+        "yearsToFire": null,
+        "coast": []
+      },
+      "tolerance": 0,
+      "notes": "Fewer than MIN_MONTHS_FOR_CASHFLOW=3 → spending/savings null ('manca')"
+    },
+    {
+      "id": "scenarioSlider-expectedReturn-null",
+      "function": "scenarioSlider",
+      "input": {
+        "field": "expectedReturn",
+        "baseline": null
+      },
+      "expected": {
+        "min": -0.02,
+        "max": 0.5,
+        "step": 0.001
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "scenarioSlider-withdrawalRate-null",
+      "function": "scenarioSlider",
+      "input": {
+        "field": "withdrawalRate",
+        "baseline": null
+      },
+      "expected": {
+        "min": 0.02,
+        "max": 0.06,
+        "step": 0.001
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "scenarioSlider-annualSpending-30000",
+      "function": "scenarioSlider",
+      "input": {
+        "field": "annualSpending",
+        "baseline": 30000
+      },
+      "expected": {
+        "min": 0,
+        "max": 60000,
+        "step": 100
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "scenarioSlider-annualSpending-3000",
+      "function": "scenarioSlider",
+      "input": {
+        "field": "annualSpending",
+        "baseline": 3000
+      },
+      "expected": {
+        "min": 0,
+        "max": 12000,
+        "step": 100
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "scenarioSlider-annualSavings-15000",
+      "function": "scenarioSlider",
+      "input": {
+        "field": "annualSavings",
+        "baseline": 15000
+      },
+      "expected": {
+        "min": 0,
+        "max": 30000,
+        "step": 100
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "scenarioSlider-annualSavings--4300",
+      "function": "scenarioSlider",
+      "input": {
+        "field": "annualSavings",
+        "baseline": -4300
+      },
+      "expected": {
+        "min": -9000,
+        "max": 12000,
+        "step": 100
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "scenarioSlider-annualSavings-null",
+      "function": "scenarioSlider",
+      "input": {
+        "field": "annualSavings",
+        "baseline": null
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "yearsToFireWith-none",
+      "function": "yearsToFireWith",
+      "input": {
+        "plan": "resolvePlan-defaults",
+        "overrides": {}
+      },
+      "expected": 22.092797078186525,
+      "tolerance": 1e-9,
+      "notes": "Equals plan.yearsToFire"
+    },
+    {
+      "id": "yearsToFireWith-savings",
+      "function": "yearsToFireWith",
+      "input": {
+        "plan": "resolvePlan-defaults",
+        "overrides": {
+          "annualSavings": 25000
+        }
+      },
+      "expected": 16.815596044948496,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "yearsToFireWith-all",
+      "function": "yearsToFireWith",
+      "input": {
+        "plan": "resolvePlan-defaults",
+        "overrides": {
+          "annualSavings": 20000,
+          "annualSpending": 25000,
+          "expectedReturn": 0.05,
+          "withdrawalRate": 0.04
+        }
+      },
+      "expected": 12.999959815185541,
+      "tolerance": 1e-9,
+      "notes": "taxShare stays from plan (not recomputed)"
+    },
+    {
+      "id": "buildSimulationInput-oggi",
+      "function": "buildSimulationInput",
+      "input": {
+        "plan": "resolvePlan-defaults",
+        "assumptions": "DEFAULT_ASSUMPTIONS",
+        "retireAt": "oggi"
+      },
+      "expected": {
+        "startingWealth": 150000,
+        "annualSavings": 15000,
+        "accumulationYears": 0,
+        "retirementYears": 40,
+        "annualSpending": 30000,
+        "expectedReturn": 0.04,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "rule": "fissa"
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "buildSimulationInput-fire",
+      "function": "buildSimulationInput",
+      "input": {
+        "plan": "resolvePlan-defaults",
+        "assumptions": "DEFAULT_ASSUMPTIONS",
+        "retireAt": "fire"
+      },
+      "expected": {
+        "startingWealth": 150000,
+        "annualSavings": 15000,
+        "accumulationYears": 23,
+        "retirementYears": 40,
+        "annualSpending": 30000,
+        "expectedReturn": 0.04,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "rule": "fissa"
+      },
+      "tolerance": 1e-9,
+      "notes": "accumulationYears = min(ceil(yearsToFire), 40)"
+    },
+    {
+      "id": "applyScenario+resolvePlan",
+      "function": "resolvePlan(applyScenario)",
+      "input": {
+        "overrides": {
+          "annualSavings": 20000
+        }
+      },
+      "expected": {
+        "savings": 20000,
+        "savingsSource": "ipotesi",
+        "yearsToFire": 19.079784888124564
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "resolveAssumptions-invalidField",
+      "function": "resolveAssumptions",
+      "input": {
+        "stored": {
+          "withdrawalRate": 0.5,
+          "expectedReturn": 0.05,
+          "retirementYears": 30
+        }
+      },
+      "expected": {
+        "withdrawalRate": 0.035,
+        "dataPeriod": {
+          "kind": "ultimi",
+          "months": 12
+        },
+        "annualSpending": null,
+        "annualSavings": null,
+        "expectedReturn": 0.05,
+        "expectedReturnAuto": false,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "retirementYears": 30,
+        "rule": "fissa",
+        "includePensionFunds": false,
+        "includeLatentTax": true,
+        "publicPension": null,
+        "terByInstrument": {}
+      },
+      "tolerance": 0,
+      "notes": "invalid withdrawalRate (>0.1) falls back to default; missing expectedReturnAuto → (expectedReturn === 0.04) → false"
+    },
+    {
+      "id": "mergeAssumptions-manualReturn",
+      "function": "mergeAssumptions",
+      "input": {
+        "current": "DEFAULT_ASSUMPTIONS",
+        "update": {
+          "expectedReturn": 0.06
+        }
+      },
+      "expected": {
+        "withdrawalRate": 0.035,
+        "dataPeriod": {
+          "kind": "ultimi",
+          "months": 12
+        },
+        "annualSpending": null,
+        "annualSavings": null,
+        "expectedReturn": 0.06,
+        "expectedReturnAuto": false,
+        "volatility": 0.12,
+        "inflation": 0.02,
+        "retirementYears": 40,
+        "rule": "fissa",
+        "includePensionFunds": false,
+        "includeLatentTax": true,
+        "publicPension": null,
+        "terByInstrument": {}
+      },
+      "tolerance": 0,
+      "notes": "Writing a return without expectedReturnAuto switches auto off"
+    },
+    {
+      "id": "resolveExpectedReturn-history",
+      "function": "resolveExpectedReturn",
+      "input": {
+        "assumptions": "DEFAULT (auto, inflation 0.02)",
+        "history": {
+          "status": "ok",
+          "months": 24,
+          "shorterThanPeriod": false,
+          "fromKey": "2024-10-18",
+          "toKey": "2026-10-18",
+          "nominal": 0.09,
+          "real": null
+        }
+      },
+      "expected": {
+        "history": {
+          "status": "ok",
+          "months": 24,
+          "shorterThanPeriod": false,
+          "fromKey": "2024-10-18",
+          "toKey": "2026-10-18",
+          "nominal": 0.09,
+          "real": null
+        },
+        "historyReal": 0.06862745098039214,
+        "clamped": false,
+        "value": 0.069,
+        "source": "storico",
+        "high": false
+      },
+      "tolerance": 1e-12,
+      "notes": "real = (1.09/1.02)-1 = 0.0686… → rounded to 3 decimals 0.069 ; high = value > 0.08"
+    },
+    {
+      "id": "resolveExpectedReturn-clamped",
+      "function": "resolveExpectedReturn",
+      "input": {
+        "assumptions": "DEFAULT",
+        "history": {
+          "status": "ok",
+          "months": 24,
+          "shorterThanPeriod": false,
+          "fromKey": "2024-10-18",
+          "toKey": "2026-10-18",
+          "nominal": 0.09,
+          "real": 0.7
+        }
+      },
+      "expected": {
+        "history": {
+          "status": "ok",
+          "months": 24,
+          "shorterThanPeriod": false,
+          "fromKey": "2024-10-18",
+          "toKey": "2026-10-18",
+          "nominal": 0.09,
+          "real": 0.7
+        },
+        "historyReal": 0.7,
+        "clamped": true,
+        "value": 0.5,
+        "source": "storico",
+        "high": true
+      },
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "resolveExpectedReturn-missing",
+      "function": "resolveExpectedReturn",
+      "input": {
+        "assumptions": "DEFAULT",
+        "history": {
+          "status": "manca",
+          "reason": "storico-breve"
+        }
+      },
+      "expected": {
+        "history": {
+          "status": "manca",
+          "reason": "storico-breve"
+        },
+        "historyReal": null,
+        "clamped": false,
+        "value": 0.04,
+        "source": "prudente",
+        "high": false
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "resolveExpectedReturn-manual",
+      "function": "resolveExpectedReturn",
+      "input": {
+        "assumptions": {
+          "expectedReturnAuto": false,
+          "expectedReturn": 0.03
+        },
+        "history": {
+          "status": "ok",
+          "months": 24,
+          "shorterThanPeriod": false,
+          "fromKey": "2024-10-18",
+          "toKey": "2026-10-18",
+          "nominal": 0.09,
+          "real": null
+        }
+      },
+      "expected": {
+        "history": {
+          "status": "ok",
+          "months": 24,
+          "shorterThanPeriod": false,
+          "fromKey": "2024-10-18",
+          "toKey": "2026-10-18",
+          "nominal": 0.09,
+          "real": null
+        },
+        "historyReal": 0.06862745098039214,
+        "clamped": false,
+        "value": 0.03,
+        "source": "manuale",
+        "high": false
+      },
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "resolvePeriodRange-12",
+      "function": "resolvePeriodRange",
+      "input": {
+        "period": {
+          "kind": "ultimi",
+          "months": 12
+        },
+        "today": "2026-10-18"
+      },
+      "expected": {
+        "from": "2025-10-01",
+        "to": "2026-09-30",
+        "months": 12
+      },
+      "tolerance": 0,
+      "notes": "Local dates; current month never counts"
+    },
+    {
+      "id": "resolvePeriodRange-24",
+      "function": "resolvePeriodRange",
+      "input": {
+        "period": {
+          "kind": "ultimi",
+          "months": 24
+        },
+        "today": "2026-10-18"
+      },
+      "expected": {
+        "from": "2024-10-01",
+        "to": "2026-09-30",
+        "months": 24
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "resolvePeriodRange-custom-clip",
+      "function": "resolvePeriodRange",
+      "input": {
+        "period": {
+          "kind": "personalizzato",
+          "from": "2026-01",
+          "to": "2026-12"
+        },
+        "today": "2026-10-18"
+      },
+      "expected": {
+        "from": "2026-01-01",
+        "to": "2026-09-30",
+        "months": 9
+      },
+      "tolerance": 0,
+      "notes": "to clipped at end of last full month"
+    },
+    {
+      "id": "monthSpan",
+      "function": "monthSpan",
+      "input": {
+        "from": "2025-11",
+        "to": "2026-02"
+      },
+      "expected": 4,
+      "tolerance": 0,
+      "notes": ""
+    }
+  ]
+}

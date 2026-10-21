@@ -1,0 +1,917 @@
+{
+  "topic": "financial-planning-de",
+  "source": "lib/financial-planning/**",
+  "generatedWith": "npx tsx (Node, V8 doubles)",
+  "vectors": [
+    {
+      "id": "fundTaxableShare-unknown",
+      "function": "fundTaxableShare",
+      "input": {
+        "kind": "unknown"
+      },
+      "expected": null,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "fundTaxableShare-equity",
+      "function": "fundTaxableShare",
+      "input": {
+        "kind": "equity"
+      },
+      "expected": 0.7,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "fundTaxableShare-mixed",
+      "function": "fundTaxableShare",
+      "input": {
+        "kind": "mixed"
+      },
+      "expected": 0.85,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "fundTaxableShare-property",
+      "function": "fundTaxableShare",
+      "input": {
+        "kind": "property"
+      },
+      "expected": 0.4,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "fundTaxableShare-foreign-property",
+      "function": "fundTaxableShare",
+      "input": {
+        "kind": "foreign-property"
+      },
+      "expected": 0.19999999999999996,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "fundTaxableShare-other",
+      "function": "fundTaxableShare",
+      "input": {
+        "kind": "other"
+      },
+      "expected": 1,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanCapitalTax-below-allowance",
+      "function": "germanCapitalTax",
+      "input": {
+        "profile": {},
+        "shareGains": 0,
+        "generalIncome": 800
+      },
+      "expected": {
+        "taxable": 0,
+        "foreignCredit": 0,
+        "usedAllowance": 800,
+        "remainingAllowance": 200,
+        "capitalTax": 0,
+        "solidarity": 0,
+        "church": 0,
+        "total": 0,
+        "remainingShareLosses": 0,
+        "remainingGeneralLosses": 0
+      },
+      "tolerance": 1e-9,
+      "notes": "800 < 1000 allowance → 0 tax"
+    },
+    {
+      "id": "germanCapitalTax-single-basic",
+      "function": "germanCapitalTax",
+      "input": {
+        "profile": {},
+        "shareGains": 3000,
+        "generalIncome": 2000
+      },
+      "expected": {
+        "taxable": 4000,
+        "foreignCredit": 0,
+        "usedAllowance": 1000,
+        "remainingAllowance": 0,
+        "capitalTax": 1000,
+        "solidarity": 55,
+        "church": 0,
+        "total": 1055,
+        "remainingShareLosses": 0,
+        "remainingGeneralLosses": 0
+      },
+      "tolerance": 1e-9,
+      "notes": "taxable 4000; KapESt 1000; Soli 55"
+    },
+    {
+      "id": "germanCapitalTax-church9",
+      "function": "germanCapitalTax",
+      "input": {
+        "profile": {
+          "churchRate": 0.09
+        },
+        "shareGains": 3000,
+        "generalIncome": 2000
+      },
+      "expected": {
+        "taxable": 4000,
+        "foreignCredit": 0,
+        "usedAllowance": 1000,
+        "remainingAllowance": 0,
+        "capitalTax": 978,
+        "solidarity": 53.79,
+        "church": 88.02,
+        "total": 1119.81,
+        "remainingShareLosses": 0,
+        "remainingGeneralLosses": 0
+      },
+      "tolerance": 1e-9,
+      "notes": "church reduces KapESt: (taxable)/(4+0.09)"
+    },
+    {
+      "id": "germanCapitalTax-joint-losses",
+      "function": "germanCapitalTax",
+      "input": {
+        "profile": {
+          "joint": true,
+          "shareLosses": 5000,
+          "generalLosses": 500
+        },
+        "shareGains": 3000,
+        "generalIncome": 4000
+      },
+      "expected": {
+        "taxable": 1500,
+        "foreignCredit": 0,
+        "usedAllowance": 2000,
+        "remainingAllowance": 0,
+        "capitalTax": 375,
+        "solidarity": 20.62,
+        "church": 0,
+        "total": 395.62,
+        "remainingShareLosses": 2000,
+        "remainingGeneralLosses": 0
+      },
+      "tolerance": 1e-9,
+      "notes": "share losses offset only share gains; remaining 2000 share losses carried"
+    },
+    {
+      "id": "germanCapitalTax-foreign-credit",
+      "function": "germanCapitalTax",
+      "input": {
+        "profile": {
+          "verifiedForeignCredit": 300,
+          "allowanceUsedElsewhere": 200
+        },
+        "shareGains": 0,
+        "generalIncome": 5000
+      },
+      "expected": {
+        "taxable": 4200,
+        "foreignCredit": 300,
+        "usedAllowance": 800,
+        "remainingAllowance": 0,
+        "capitalTax": 750,
+        "solidarity": 41.25,
+        "church": 0,
+        "total": 791.25,
+        "remainingShareLosses": 0,
+        "remainingGeneralLosses": 0
+      },
+      "tolerance": 1e-9,
+      "notes": "credit capped at 25% of taxable"
+    },
+    {
+      "id": "germanIncomeTax-0",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 0,
+        "joint": false
+      },
+      "expected": 0,
+      "tolerance": 0,
+      "notes": "2026 tariff §32a, floor to whole euro"
+    },
+    {
+      "id": "germanIncomeTax-12348",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 12348,
+        "joint": false
+      },
+      "expected": 0,
+      "tolerance": 0,
+      "notes": "2026 tariff §32a, floor to whole euro"
+    },
+    {
+      "id": "germanIncomeTax-15000",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 15000,
+        "joint": false
+      },
+      "expected": 435,
+      "tolerance": 0,
+      "notes": "2026 tariff §32a, floor to whole euro"
+    },
+    {
+      "id": "germanIncomeTax-17799",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 17799,
+        "joint": false
+      },
+      "expected": 1034,
+      "tolerance": 0,
+      "notes": "2026 tariff §32a, floor to whole euro"
+    },
+    {
+      "id": "germanIncomeTax-40000",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 40000,
+        "joint": false
+      },
+      "expected": 7209,
+      "tolerance": 0,
+      "notes": "2026 tariff §32a, floor to whole euro"
+    },
+    {
+      "id": "germanIncomeTax-69878",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 69878,
+        "joint": false
+      },
+      "expected": 18213,
+      "tolerance": 0,
+      "notes": "2026 tariff §32a, floor to whole euro"
+    },
+    {
+      "id": "germanIncomeTax-100000",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 100000,
+        "joint": false
+      },
+      "expected": 30864,
+      "tolerance": 0,
+      "notes": "2026 tariff §32a, floor to whole euro"
+    },
+    {
+      "id": "germanIncomeTax-300000",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 300000,
+        "joint": false
+      },
+      "expected": 115529,
+      "tolerance": 0,
+      "notes": "2026 tariff §32a, floor to whole euro"
+    },
+    {
+      "id": "germanIncomeTax-joint-80000",
+      "function": "germanIncomeTax",
+      "input": {
+        "taxableIncome": 80000,
+        "joint": true
+      },
+      "expected": 14418,
+      "tolerance": 0,
+      "notes": "splitting: 2 × tax(floor(x/2))"
+    },
+    {
+      "id": "germanFundAdvance-0",
+      "function": "germanFundAdvance",
+      "input": {
+        "kind": "equity",
+        "startValue": 10000,
+        "endValue": 11000,
+        "distributions": 0,
+        "acquisitionMonth": 1
+      },
+      "expected": {
+        "gross": 224,
+        "taxable": 156.8,
+        "receiptYear": 2027
+      },
+      "tolerance": 1e-9,
+      "notes": "base = min(start×0.032×0.7, max(0,end−start+distr)); gross = max(0, base−distr) × (13−month)/12"
+    },
+    {
+      "id": "germanFundAdvance-1",
+      "function": "germanFundAdvance",
+      "input": {
+        "kind": "equity",
+        "startValue": 10000,
+        "endValue": 10100,
+        "distributions": 50,
+        "acquisitionMonth": 1
+      },
+      "expected": {
+        "gross": 100,
+        "taxable": 70,
+        "receiptYear": 2027
+      },
+      "tolerance": 1e-9,
+      "notes": "base = min(start×0.032×0.7, max(0,end−start+distr)); gross = max(0, base−distr) × (13−month)/12"
+    },
+    {
+      "id": "germanFundAdvance-2",
+      "function": "germanFundAdvance",
+      "input": {
+        "kind": "unknown",
+        "startValue": 20000,
+        "endValue": 22000,
+        "distributions": 0,
+        "acquisitionMonth": 7
+      },
+      "expected": {
+        "gross": 224,
+        "taxable": null,
+        "receiptYear": 2027
+      },
+      "tolerance": 1e-9,
+      "notes": "base = min(start×0.032×0.7, max(0,end−start+distr)); gross = max(0, base−distr) × (13−month)/12"
+    },
+    {
+      "id": "germanFundAdvance-3",
+      "function": "germanFundAdvance",
+      "input": {
+        "kind": "mixed",
+        "startValue": 10000,
+        "endValue": 9000,
+        "distributions": 0,
+        "acquisitionMonth": 1
+      },
+      "expected": {
+        "gross": 0,
+        "taxable": 0,
+        "receiptYear": 2027
+      },
+      "tolerance": 1e-9,
+      "notes": "base = min(start×0.032×0.7, max(0,end−start+distr)); gross = max(0, base−distr) × (13−month)/12"
+    },
+    {
+      "id": "germanCrypto-mixed",
+      "function": "germanCrypto",
+      "input": {
+        "tax": {
+          "joint": false
+        },
+        "otherTaxableIncome": 40000,
+        "crypto": [
+          {
+            "id": "1",
+            "name": "BTC",
+            "acquired": "2025-03-01",
+            "sold": "2026-02-01",
+            "proceeds": 5000,
+            "cost": 3000,
+            "fees": 20
+          },
+          {
+            "id": "2",
+            "name": "ETH",
+            "acquired": "2024-01-01",
+            "sold": "2026-05-01",
+            "proceeds": 4000,
+            "cost": 1000,
+            "fees": 0
+          }
+        ]
+      },
+      "expected": {
+        "shortTerm": 1980,
+        "exempt": 3000,
+        "taxable": 1980,
+        "incomeTax": 634,
+        "remainingLoss": 0
+      },
+      "tolerance": 0,
+      "notes": "held >1y exempt; short-term ≥1000 fully taxable (threshold, not allowance)"
+    },
+    {
+      "id": "germanCrypto-under-threshold",
+      "function": "germanCrypto",
+      "input": {
+        "otherTaxableIncome": 40000,
+        "crypto": [
+          {
+            "id": "1",
+            "name": "BTC",
+            "acquired": "2026-01-01",
+            "sold": "2026-02-01",
+            "proceeds": 1900,
+            "cost": 1000,
+            "fees": 0
+          }
+        ],
+        "cryptoLossCarryforward": 300
+      },
+      "expected": {
+        "shortTerm": 900,
+        "exempt": 0,
+        "taxable": 0,
+        "incomeTax": 0,
+        "remainingLoss": 300
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "germanCrypto-loss",
+      "function": "germanCrypto",
+      "input": {
+        "crypto": [
+          {
+            "id": "1",
+            "name": "X",
+            "acquired": "2026-01-01",
+            "sold": "2026-03-01",
+            "proceeds": 500,
+            "cost": 1500,
+            "fees": 0
+          }
+        ],
+        "cryptoLossCarryforward": 100
+      },
+      "expected": {
+        "shortTerm": -1000,
+        "exempt": 0,
+        "taxable": 0,
+        "incomeTax": 0,
+        "remainingLoss": 1100
+      },
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "germanPensionTaxableShare-2005",
+      "function": "germanPensionTaxableShare",
+      "input": {
+        "startYear": 2005
+      },
+      "expected": 0.5,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanPensionTaxableShare-2010",
+      "function": "germanPensionTaxableShare",
+      "input": {
+        "startYear": 2010
+      },
+      "expected": 0.6,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanPensionTaxableShare-2021",
+      "function": "germanPensionTaxableShare",
+      "input": {
+        "startYear": 2021
+      },
+      "expected": 0.81,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanPensionTaxableShare-2026",
+      "function": "germanPensionTaxableShare",
+      "input": {
+        "startYear": 2026
+      },
+      "expected": 0.84,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanPensionTaxableShare-2058",
+      "function": "germanPensionTaxableShare",
+      "input": {
+        "startYear": 2058
+      },
+      "expected": 1,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanPensionTaxableShare-2070",
+      "function": "germanPensionTaxableShare",
+      "input": {
+        "startYear": 2070
+      },
+      "expected": 1,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanAnnuityShare-60",
+      "function": "germanAnnuityShare",
+      "input": {
+        "age": 60
+      },
+      "expected": 0.22,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanAnnuityShare-65",
+      "function": "germanAnnuityShare",
+      "input": {
+        "age": 65
+      },
+      "expected": 0.18,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanAnnuityShare-67",
+      "function": "germanAnnuityShare",
+      "input": {
+        "age": 67
+      },
+      "expected": 0.17,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanAnnuityShare-70",
+      "function": "germanAnnuityShare",
+      "input": {
+        "age": 70
+      },
+      "expected": 0.15,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanAnnuityShare-97",
+      "function": "germanAnnuityShare",
+      "input": {
+        "age": 97
+      },
+      "expected": 0.01,
+      "tolerance": 1e-12,
+      "notes": ""
+    },
+    {
+      "id": "germanProgressiveSurcharges-5000-false",
+      "function": "germanProgressiveSurcharges",
+      "input": {
+        "tax": 5000,
+        "joint": false,
+        "churchRate": 0
+      },
+      "expected": {
+        "solidarity": 0,
+        "church": 0
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "germanProgressiveSurcharges-25000-false",
+      "function": "germanProgressiveSurcharges",
+      "input": {
+        "tax": 25000,
+        "joint": false,
+        "churchRate": 0.09
+      },
+      "expected": {
+        "solidarity": 553.35,
+        "church": 2250
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "germanProgressiveSurcharges-30000-false",
+      "function": "germanProgressiveSurcharges",
+      "input": {
+        "tax": 30000,
+        "joint": false,
+        "churchRate": 0
+      },
+      "expected": {
+        "solidarity": 1148.35,
+        "church": 0
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "germanProgressiveSurcharges-50000-true",
+      "function": "germanProgressiveSurcharges",
+      "input": {
+        "tax": 50000,
+        "joint": true,
+        "churchRate": 0.08
+      },
+      "expected": {
+        "solidarity": 1106.7,
+        "church": 4000
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "germanAvdAllowance-direct",
+      "function": "germanAvdAllowance",
+      "input": {
+        "plan": "avdP",
+        "contributionYear": 0
+      },
+      "expected": {
+        "base": 540,
+        "children": 600,
+        "bonus": 200,
+        "total": 1340,
+        "deduction": 3140
+      },
+      "tolerance": 1e-9,
+      "notes": "annual 1800 → basic 360×0.5 + (1800−360)×0.25 = 540; children 2×300; starter 200"
+    },
+    {
+      "id": "germanAvdAllowance-year5",
+      "function": "germanAvdAllowance",
+      "input": {
+        "plan": "avdP",
+        "contributionYear": 5
+      },
+      "expected": {
+        "base": 540,
+        "children": 300,
+        "bonus": 0,
+        "total": 840,
+        "deduction": 2640
+      },
+      "tolerance": 1e-9,
+      "notes": "child with 3 years left drops out"
+    },
+    {
+      "id": "germanAvdAllowance-indirect",
+      "function": "germanAvdAllowance",
+      "input": {
+        "plan": {
+          "monthlyContribution": 50,
+          "avd": {
+            "eligibility": "indirect",
+            "spouseAnnualContribution": 1200
+          }
+        }
+      },
+      "expected": {
+        "base": 175,
+        "children": 0,
+        "bonus": 0,
+        "total": 175,
+        "deduction": 0
+      },
+      "tolerance": 1e-9,
+      "notes": "indirect capped at 175"
+    },
+    {
+      "id": "germanAvdTaxBenefit",
+      "function": "germanAvdTaxBenefit",
+      "input": {
+        "plan": "avdP",
+        "joint": false
+      },
+      "expected": {
+        "base": 540,
+        "children": 600,
+        "bonus": 200,
+        "total": 1340,
+        "deduction": 3140,
+        "extraRefund": 0
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "projectGermanAvd",
+      "function": "projectGermanAvd",
+      "input": {
+        "plan": "avdP",
+        "referenceYear": 2026
+      },
+      "expected": {
+        "currentCapital": 0,
+        "projectedCapital": 162065.22716364844,
+        "monthlyGross": 624.8810653692063,
+        "lumpSum": 48619.56814909453,
+        "paymentYears": 18,
+        "grants": 19760
+      },
+      "tolerance": 0.000001,
+      "notes": "monthly in arrears, grants at year end; delay = contributionStartYear − referenceYear = 1 year"
+    },
+    {
+      "id": "projectGermanPension-statutory",
+      "function": "projectGermanPension",
+      "input": {
+        "plan": {
+          "kind": "statutory",
+          "points": 30,
+          "annualPoints": 1,
+          "yearsUntilPayment": 20,
+          "accessFactor": 1
+        }
+      },
+      "expected": {
+        "currentCapital": 0,
+        "projectedCapital": 0,
+        "monthlyGross": 2126,
+        "paymentYears": null,
+        "grants": 0,
+        "lumpSum": 0
+      },
+      "tolerance": 1e-9,
+      "notes": "(30+20×1)×42.52"
+    },
+    {
+      "id": "projectGermanPension-occ-capital",
+      "function": "projectGermanPension",
+      "input": {
+        "plan": {
+          "kind": "occupational",
+          "capital": 20000,
+          "monthlyContribution": 200,
+          "yearsUntilPayment": 25,
+          "nominalReturn": 0.04,
+          "paymentMode": "capital"
+        }
+      },
+      "expected": {
+        "currentCapital": 20000,
+        "projectedCapital": 155086.35050428618,
+        "monthlyGross": 0,
+        "paymentYears": null,
+        "grants": 0,
+        "lumpSum": 155086.35050428618
+      },
+      "tolerance": 0.000001,
+      "notes": ""
+    },
+    {
+      "id": "projectGermanPension-zeroReturn",
+      "function": "projectGermanPension",
+      "input": {
+        "plan": {
+          "kind": "private",
+          "capital": 1000,
+          "monthlyContribution": 100,
+          "yearsUntilPayment": 10,
+          "nominalReturn": 0,
+          "paymentMode": "income",
+          "monthlyGross": 300
+        }
+      },
+      "expected": {
+        "currentCapital": 1000,
+        "projectedCapital": 13000,
+        "monthlyGross": 300,
+        "paymentYears": null,
+        "grants": 0,
+        "lumpSum": 0
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "germanRetirement-manual",
+      "function": "germanRetirement",
+      "input": {
+        "retirement": {
+          "liquidCapital": 200000,
+          "annualSaving": 20000,
+          "annualSpending": 36000,
+          "yearsUntilRetirement": 15,
+          "realReturn": 0.03,
+          "withdrawalRate": 0.035,
+          "inflation": 0.02,
+          "pensionDeductionRate": 0.25,
+          "withdrawalTaxShare": 0.1
+        },
+        "pensions": [
+          {
+            "id": "s",
+            "kind": "statutory",
+            "points": 30,
+            "annualPoints": 1,
+            "yearsUntilPayment": 20,
+            "accessFactor": 1
+          }
+        ],
+        "pensionTax": {
+          "mode": "manual"
+        }
+      },
+      "expected": {
+        "atRetirement": 683571.7610539964,
+        "currentTarget": 1142857.1428571427,
+        "depletedAfter": 34,
+        "issues": [],
+        "rows0to6": [
+          {
+            "year": 0,
+            "capital": 662878.9138856163,
+            "pension": 0,
+            "withdrawal": 40000
+          },
+          {
+            "year": 1,
+            "capital": 641565.2813021848,
+            "pension": 0,
+            "withdrawal": 40000
+          },
+          {
+            "year": 2,
+            "capital": 619612.2397412504,
+            "pension": 0,
+            "withdrawal": 40000
+          },
+          {
+            "year": 3,
+            "capital": 597000.6069334879,
+            "pension": 0,
+            "withdrawal": 40000
+          },
+          {
+            "year": 4,
+            "capital": 573710.6251414926,
+            "pension": 0,
+            "withdrawal": 40000
+          },
+          {
+            "year": 5,
+            "capital": 564458.5355538711,
+            "pension": 12876.63348768957,
+            "withdrawal": 25692.629458122698
+          },
+          {
+            "year": 6,
+            "capital": 554639.9305010104,
+            "pension": 12624.15047812703,
+            "withdrawal": 25973.16613541441
+          }
+        ],
+        "row49": {
+          "year": 49,
+          "capital": 0,
+          "pension": 5387.592961417409,
+          "withdrawal": 34013.7855984251
+        }
+      },
+      "tolerance": 0.000001,
+      "notes": "50 yearly rows; beginning-of-year withdrawal; pension enters at yearsUntilPayment (5 years after retirement)"
+    },
+    {
+      "id": "germanPensionNet-kvdr",
+      "function": "germanPensionNet",
+      "input": {
+        "payments": [
+          {
+            "plan": {
+              "kind": "statutory",
+              "pensionStartYear": 2046
+            },
+            "annual": 25512,
+            "lumpSum": 0
+          }
+        ],
+        "pensionTax": {
+          "mode": "rules",
+          "insurance": "kvdr",
+          "additionalHealthRate": 0.029
+        },
+        "tax": {
+          "joint": false,
+          "churchRate": 0
+        }
+      },
+      "expected": {
+        "gross": 25512,
+        "taxable": 23981.28,
+        "health": 2232.2999999999997,
+        "care": 918.4319999999999,
+        "incomeTax": 1751,
+        "solidarity": 0,
+        "church": 0,
+        "net": 20610.268,
+        "issues": [],
+        "insuranceIssues": []
+      },
+      "tolerance": 1e-9,
+      "notes": "taxable share 2046 = min(1, 0.82+24×0.005)=0.94; health = half of (14.6%+2.9%); care 3.6%; €102 allowance"
+    }
+  ]
+}

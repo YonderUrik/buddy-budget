@@ -1,0 +1,47 @@
+[
+  {
+    "user": "DE user",
+    "request": "GET /api/investments/taxes",
+    "status": 403,
+    "body": {
+      "code": "country_feature_unavailable",
+      "error": "Diese Funktion ist für Deutschland noch nicht verfügbar."
+    }
+  },
+  {
+    "user": "DE user",
+    "request": "GET /api/investments/income",
+    "status": 403,
+    "body": {
+      "code": "country_feature_unavailable",
+      "error": "Diese Funktion ist für Deutschland noch nicht verfügbar."
+    }
+  },
+  {
+    "user": "DE user",
+    "request": "GET /api/pension/view",
+    "status": 403,
+    "body": {
+      "code": "country_feature_unavailable",
+      "error": "Diese Funktion ist für Deutschland noch nicht verfügbar."
+    }
+  },
+  {
+    "user": "DE user",
+    "request": "GET /api/analytics/base",
+    "status": 403,
+    "body": {
+      "code": "country_feature_unavailable",
+      "error": "Diese Funktion ist für Deutschland noch nicht verfügbar."
+    }
+  },
+  {
+    "user": "IT user",
+    "request": "GET /api/financial-planning",
+    "status": 403,
+    "body": {
+      "code": "country_feature_unavailable",
+      "error": "Questa funzione non è ancora disponibile per la Germania."
+    }
+  }
+]

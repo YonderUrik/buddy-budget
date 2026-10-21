@@ -1,0 +1,1257 @@
+{
+  "description": "Mobile-only UI strings (Italian source + en + de). Same entry format as catalog.json; `id` and `placeholders` are filled in by scripts/export-strings.mjs. Prefer adding strings to the web catalogs (domain/formatting-localization.md §5); use this file only for copy the web never shows. `aliases` give friendly accessor names to existing entries.",
+  "aliases": [
+    {
+      "name": "appName",
+      "it": "BuddyBudget"
+    },
+    {
+      "name": "retry",
+      "it": "Riprova"
+    },
+    {
+      "name": "cancel",
+      "it": "Annulla"
+    },
+    {
+      "name": "close",
+      "it": "Chiudi"
+    },
+    {
+      "name": "loading",
+      "it": "Caricamento…"
+    },
+    {
+      "name": "offline",
+      "it": "Sei offline"
+    },
+    {
+      "name": "offlineMessage",
+      "it": "Controlla la connessione e riprova."
+    },
+    {
+      "name": "genericError",
+      "it": "Qualcosa è andato storto. Riprova."
+    },
+    {
+      "name": "serverUnreachable",
+      "it": "Impossibile raggiungere il server"
+    },
+    {
+      "name": "sessionExpired",
+      "it": "La sessione è scaduta. Accedi di nuovo."
+    },
+    {
+      "name": "updateRequiredTitle",
+      "it": "Aggiorna l'app"
+    },
+    {
+      "name": "updateRequiredMessage",
+      "it": "Questa versione dell'app non è più supportata. Aggiorna BuddyBudget per continuare."
+    },
+    {
+      "name": "cachedDataAsOf",
+      "it": "Dati aggiornati al {0}"
+    },
+    {
+      "name": "undo",
+      "it": "Annulla eliminazione"
+    },
+    {
+      "name": "itemDeleted",
+      "it": "Elemento eliminato"
+    }
+  ],
+  "entries": [
+    {
+      "id": "you_re_offline_72cc71",
+      "it": "Sei offline",
+      "en": "You're offline",
+      "de": "Du bist offline",
+      "placeholders": []
+    },
+    {
+      "id": "something_went_wrong_try_again_24ee04",
+      "it": "Qualcosa è andato storto. Riprova.",
+      "en": "Something went wrong. Try again.",
+      "de": "Etwas ist schiefgelaufen. Versuche es erneut.",
+      "placeholders": []
+    },
+    {
+      "id": "can_t_reach_the_server_fa782e",
+      "it": "Impossibile raggiungere il server",
+      "en": "Can't reach the server",
+      "de": "Server nicht erreichbar",
+      "placeholders": []
+    },
+    {
+      "id": "your_session_has_expired_please_sign_in_09c616",
+      "it": "La sessione è scaduta. Accedi di nuovo.",
+      "en": "Your session has expired. Please sign in again.",
+      "de": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+      "placeholders": []
+    },
+    {
+      "id": "update_the_app_b31cf5",
+      "it": "Aggiorna l'app",
+      "en": "Update the app",
+      "de": "App aktualisieren",
+      "placeholders": []
+    },
+    {
+      "id": "this_version_of_the_app_is_no_longer_sup_4af4ba",
+      "it": "Questa versione dell'app non è più supportata. Aggiorna BuddyBudget per continuare.",
+      "en": "This version of the app is no longer supported. Update BuddyBudget to continue.",
+      "de": "Diese App-Version wird nicht mehr unterstützt. Aktualisiere BuddyBudget, um fortzufahren.",
+      "placeholders": []
+    },
+    {
+      "id": "data_as_of_0_8edc5c",
+      "it": "Dati aggiornati al {0}",
+      "en": "Data as of {0}",
+      "de": "Daten vom {0}",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Shown above cached content while offline; {0} = formatted date/time"
+    },
+    {
+      "id": "undo_d2edc5",
+      "it": "Annulla eliminazione",
+      "en": "Undo",
+      "de": "Rückgängig",
+      "placeholders": []
+    },
+    {
+      "id": "item_deleted_ee2397",
+      "it": "Elemento eliminato",
+      "en": "Item deleted",
+      "de": "Eintrag gelöscht",
+      "placeholders": []
+    },
+    {
+      "id": "italiano_21df73",
+      "it": "Italiano",
+      "en": "Italiano",
+      "de": "Italiano",
+      "placeholders": []
+    },
+    {
+      "id": "english_649df0",
+      "it": "English",
+      "en": "English",
+      "de": "English",
+      "placeholders": []
+    },
+    {
+      "id": "deutsch_a6a770",
+      "it": "Deutsch",
+      "en": "Deutsch",
+      "de": "Deutsch",
+      "placeholders": []
+    },
+    {
+      "id": "a_code_by_email_no_password_if_it_s_your_7e8fbd",
+      "it": "Un codice via email, nessuna password. Se è la prima volta, l'account si crea da solo.",
+      "en": "A code by email, no password. If it's your first time, the account is created for you.",
+      "de": "Ein Code per E-Mail, kein Passwort. Beim ersten Mal wird das Konto automatisch erstellt.",
+      "placeholders": []
+    },
+    {
+      "id": "the_code_is_valid_for_0_minutes_and_work_a9f139",
+      "it": "Il codice vale {0} minuti e si usa una volta sola.",
+      "en": "The code is valid for {0} minutes and works only once.",
+      "de": "Der Code ist {0} Minuten gültig und funktioniert nur einmal.",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "send_me_the_code_37e79c",
+      "it": "Mandami il codice",
+      "en": "Send me the code",
+      "de": "Code senden",
+      "placeholders": []
+    },
+    {
+      "id": "we_couldn_t_send_the_code_check_the_addr_98f53a",
+      "it": "Non siamo riusciti a inviare il codice. Controlla l'indirizzo e riprova.",
+      "en": "We couldn't send the code. Check the address and try again.",
+      "de": "Wir konnten den Code nicht senden. Prüfe die Adresse und versuche es erneut.",
+      "placeholders": []
+    },
+    {
+      "id": "enter_a_valid_email_address_4da262",
+      "it": "Inserisci un indirizzo email valido.",
+      "en": "Enter a valid email address.",
+      "de": "Gib eine gültige E-Mail-Adresse ein.",
+      "placeholders": []
+    },
+    {
+      "id": "we_sent_a_sign_in_code_to_0_it_stays_val_1f2c5c",
+      "it": "Abbiamo inviato un codice di accesso a {0}. Resta valido per {1} minuti.",
+      "en": "We sent a sign-in code to {0}. It stays valid for {1} minutes.",
+      "de": "Wir haben einen Anmeldecode an {0} gesendet. Er ist {1} Minuten gültig.",
+      "placeholders": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "resend_code_017e1e",
+      "it": "Invia di nuovo il codice",
+      "en": "Resend code",
+      "de": "Code erneut senden",
+      "placeholders": []
+    },
+    {
+      "id": "the_code_is_not_correct_check_it_and_try_7564e8",
+      "it": "Il codice non è corretto. Controlla e riprova.",
+      "en": "The code is not correct. Check it and try again.",
+      "de": "Der Code ist nicht korrekt. Prüfe ihn und versuche es erneut.",
+      "placeholders": []
+    },
+    {
+      "id": "the_code_has_expired_request_a_new_one_f6627c",
+      "it": "Il codice è scaduto. Fatti mandare un nuovo codice.",
+      "en": "The code has expired. Request a new one.",
+      "de": "Der Code ist abgelaufen. Fordere einen neuen an.",
+      "placeholders": []
+    },
+    {
+      "id": "too_many_wrong_attempts_this_code_no_lon_8978e9",
+      "it": "Troppi tentativi sbagliati: questo codice non vale più. Fatti mandare un nuovo codice.",
+      "en": "Too many wrong attempts: this code no longer works. Request a new one.",
+      "de": "Zu viele falsche Versuche: Dieser Code gilt nicht mehr. Fordere einen neuen an.",
+      "placeholders": []
+    },
+    {
+      "id": "checking_0a76c7",
+      "it": "Verifica in corso…",
+      "en": "Checking…",
+      "de": "Wird geprüft…",
+      "placeholders": []
+    },
+    {
+      "id": "send_me_a_sign_in_code_39e556",
+      "it": "Inviami un codice di accesso",
+      "en": "Send me a sign-in code",
+      "de": "Anmeldecode senden",
+      "placeholders": []
+    },
+    {
+      "id": "we_couldn_t_send_the_code_try_again_shor_c55738",
+      "it": "Non siamo riusciti a inviare il codice. Riprova tra poco.",
+      "en": "We couldn't send the code. Try again shortly.",
+      "de": "Wir konnten den Code nicht senden. Versuche es gleich noch einmal.",
+      "placeholders": []
+    },
+    {
+      "id": "we_sent_a_code_to_0_enter_it_to_continue_5c54a8",
+      "it": "Ti abbiamo inviato un codice a {0}. Inseriscilo per continuare.",
+      "en": "We sent a code to {0}. Enter it to continue.",
+      "de": "Wir haben einen Code an {0} gesendet. Gib ihn ein, um fortzufahren.",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "confirm_code_00ae35",
+      "it": "Conferma il codice",
+      "en": "Confirm code",
+      "de": "Code bestätigen",
+      "placeholders": []
+    },
+    {
+      "id": "this_section_is_coming_to_the_app_soon_490353",
+      "it": "Questa sezione arriva presto nell'app.",
+      "en": "This section is coming to the app soon.",
+      "de": "Dieser Bereich kommt bald in die App.",
+      "placeholders": []
+    },
+    {
+      "id": "optional_d4c7b8",
+      "it": "Facoltativa",
+      "en": "Optional",
+      "de": "Optional",
+      "placeholders": []
+    },
+    {
+      "id": "rename_5ced82",
+      "it": "Rinomina",
+      "en": "Rename",
+      "de": "Umbenennen",
+      "placeholders": []
+    },
+    {
+      "id": "reset_6c5d22",
+      "it": "Resetta",
+      "en": "Reset",
+      "de": "Zurücksetzen",
+      "placeholders": []
+    },
+    {
+      "id": "deactivate_a8542c",
+      "it": "Disattiva",
+      "en": "Deactivate",
+      "de": "Deaktivieren",
+      "placeholders": []
+    },
+    {
+      "id": "archive_ready_choose_where_to_save_it_f2227d",
+      "it": "Archivio pronto: scegli dove salvarlo.",
+      "en": "Archive ready: choose where to save it.",
+      "de": "Archiv bereit: Wähle, wo es gespeichert werden soll.",
+      "placeholders": []
+    },
+    {
+      "id": "you_have_0_across_1_accounts_4d9169",
+      "it": "Hai {0} su {1} conti.",
+      "en": "You have {0} across {1} accounts.",
+      "de": "Du hast {0} auf {1} Konten.",
+      "placeholders": [
+        "0",
+        "1"
+      ],
+      "note": "Movimenti month sentence; {0} = total balance (no decimals), {1} = account count"
+    },
+    {
+      "id": "you_have_0_in_1_account_d3e2c2",
+      "it": "Hai {0} su 1 conto.",
+      "en": "You have {0} in 1 account.",
+      "de": "Du hast {0} auf 1 Konto.",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Movimenti month sentence, one account"
+    },
+    {
+      "id": "s_1_transaction_is_waiting_for_a_category_b476a2",
+      "it": "1 movimento aspetta una categoria.",
+      "en": "1 transaction is waiting for a category.",
+      "de": "1 Umsatz wartet auf eine Kategorie.",
+      "placeholders": []
+    },
+    {
+      "id": "s_0_transactions_are_waiting_for_a_categor_6ea7ce",
+      "it": "{0} movimenti aspettano una categoria.",
+      "en": "{0} transactions are waiting for a category.",
+      "de": "{0} Umsätze warten auf eine Kategorie.",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "remember_it_for_future_0_6e7405",
+      "it": "Ricordala per i prossimi «{0}»",
+      "en": "Remember it for future «{0}»",
+      "de": "Für künftige «{0}» merken",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "s_0_will_be_permanently_deleted_c71e7f",
+      "it": "«{0}» verrà eliminato definitivamente.",
+      "en": "«{0}» will be permanently deleted.",
+      "de": "«{0}» wird endgültig gelöscht.",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "adding_5b1f1e",
+      "it": "Aggiungo…",
+      "en": "Adding…",
+      "de": "Wird hinzugefügt…",
+      "placeholders": []
+    },
+    {
+      "id": "s_0_of_spending_2275b3",
+      "it": "{0}% delle spese",
+      "en": "{0}% of spending",
+      "de": "{0} % der Ausgaben",
+      "placeholders": [
+        "0"
+      ],
+      "note": "{0} = formatted percentage number"
+    },
+    {
+      "id": "s_0_of_spending_1_c8cd33",
+      "it": "{0}% delle spese · {1}",
+      "en": "{0}% of spending · {1}",
+      "de": "{0} % der Ausgaben · {1}",
+      "placeholders": [
+        "0",
+        "1"
+      ],
+      "note": "Analisi group block subtitle; {1} = «n categorie»"
+    },
+    {
+      "id": "s_1_category_bc0141",
+      "it": "1 categoria",
+      "en": "1 category",
+      "de": "1 Kategorie",
+      "placeholders": []
+    },
+    {
+      "id": "s_0_categories_aefb1d",
+      "it": "{0} categorie",
+      "en": "{0} categories",
+      "de": "{0} Kategorien",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "used_0_times_033448",
+      "it": "usata {0} volte",
+      "en": "used {0} times",
+      "de": "{0}-mal verwendet",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "the_pattern_0_will_no_longer_be_applied_57982a",
+      "it": "Il pattern \"{0}\" non verrà più applicato automaticamente alle nuove transazioni.",
+      "en": "The pattern \"{0}\" will no longer be applied automatically to new transactions.",
+      "de": "Das Muster \"{0}\" wird nicht mehr automatisch auf neue Umsätze angewendet.",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "rules_apply_automatically_to_new_transac_8cf2be",
+      "it": "Le regole si applicano da sole alle nuove transazioni. \"Contiene\" copre tutte le varianti: cambia esselunga via roma in esselunga per prendere ogni filiale.",
+      "en": "Rules apply automatically to new transactions. \"Contains\" covers every variant: change esselunga via roma to esselunga to match every branch.",
+      "de": "Regeln gelten automatisch für neue Umsätze. \"Enthält\" deckt alle Varianten ab: Ändere esselunga via roma in esselunga, um jede Filiale zu erfassen.",
+      "placeholders": []
+    },
+    {
+      "id": "when_confidence_is_high_the_app_assigns_379731",
+      "it": "Quando è abbastanza sicura, l'app mette la categoria da sola e la ritrovi in «Messe dall'app».",
+      "en": "When confidence is high, the app assigns the category automatically under ‘Assigned by the app’.",
+      "de": "Bei hoher Sicherheit weist die App die Kategorie automatisch zu. Du findest sie unter „Von der App zugewiesen“.",
+      "placeholders": [],
+      "note": "Mobile layout of the web «Meno da fare · …» prompt (CAT-045): the web fragment without its leading «· »."
+    },
+    {
+      "id": "s_0_merchants_without_a_suggestion_0f86af",
+      "it": "{0} esercenti senza proposta",
+      "en": "{0} merchants without a suggestion",
+      "de": "{0} Händler ohne Vorschlag",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "s_1_merchant_without_a_suggestion_b5a742",
+      "it": "1 esercente senza proposta",
+      "en": "1 merchant without a suggestion",
+      "de": "1 Händler ohne Vorschlag",
+      "placeholders": []
+    },
+    {
+      "id": "reading_your_merchants_0_of_1_suggestion_9bf3ba",
+      "it": "Sto leggendo i tuoi esercenti… {0} proposte su {1}",
+      "en": "Reading your merchants… {0} of {1} suggestions",
+      "de": "Ich lese deine Händler… {0} von {1} Vorschlägen",
+      "placeholders": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "and_one_more_a44a57",
+      "it": "e un altro",
+      "en": "and one more",
+      "de": "und ein weiterer",
+      "placeholders": []
+    },
+    {
+      "id": "and_0_more_ab4561",
+      "it": "e altri {0}",
+      "en": "and {0} more",
+      "de": "und {0} weitere",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "always_use_this_category_for_0_a0fb34",
+      "it": "Usa sempre questa categoria per «{0}»",
+      "en": "Always use this category for «{0}»",
+      "de": "Immer diese Kategorie für «{0}» verwenden",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "last_time_on_0_1_transactions_1c4657",
+      "it": "Ultima volta il {0}: {1} movimenti",
+      "en": "Last time on {0}: {1} transactions",
+      "de": "Zuletzt am {0}: {1} Umsätze",
+      "placeholders": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "s_0_possibly_chosen_by_you_fc513e",
+      "it": "{0} forse scelti da te",
+      "en": "{0} possibly chosen by you",
+      "de": "{0} vielleicht von dir gewählt",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "tap_a_category_to_edit_it_or_move_it_to_5e54fa",
+      "it": "Tocca una categoria per modificarla o spostarla in un altro gruppo.",
+      "en": "Tap a category to edit it or move it to another group.",
+      "de": "Tippe eine Kategorie an, um sie zu bearbeiten oder in eine andere Gruppe zu verschieben.",
+      "placeholders": [],
+      "note": "Mobile replacement of the web drag & drop hint (CAT board)"
+    },
+    {
+      "id": "set_by_the_app_you_always_choose_it_for_05d41c",
+      "it": "Messa dall'app: la scegli sempre per questo esercente (sicura al {0}%)",
+      "en": "Set by the app: you always choose it for this merchant ({0}% confident)",
+      "de": "Von der App gesetzt: Du wählst sie immer für diesen Händler ({0} % sicher)",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "set_by_the_app_ai_suggestion_0_confident_663f2a",
+      "it": "Messa dall'app: proposta dell'AI (sicura al {0}%)",
+      "en": "Set by the app: AI suggestion ({0}% confident)",
+      "de": "Von der App gesetzt: KI-Vorschlag ({0} % sicher)",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "s_0_transactions_would_change_category_onl_30f23b",
+      "it": "{0} movimenti cambierebbero categoria. Cambiano solo quelli con la spunta",
+      "en": "{0} transactions would change category. Only the checked ones change",
+      "de": "{0} Umsätze würden die Kategorie wechseln. Nur die markierten ändern sich",
+      "placeholders": [
+        "0"
+      ]
+    },
+    {
+      "id": "s_0_of_1_budget_5cc188",
+      "it": "{0} su {1} di budget",
+      "en": "{0} of {1} budget",
+      "de": "{0} von {1} Budget",
+      "placeholders": [
+        "0",
+        "1"
+      ],
+      "note": "Movimenti budget progress row"
+    },
+    {
+      "id": "new_rule_f92fd8",
+      "it": "Nuova regola",
+      "en": "New rule",
+      "de": "Neue Regel",
+      "placeholders": [],
+      "note": "Title of the new-rule sheet (mobile)"
+    },
+    {
+      "id": "edit_rule_d103e5",
+      "it": "Modifica regola",
+      "en": "Edit rule",
+      "de": "Regel bearbeiten",
+      "placeholders": [],
+      "note": "Title of the rule edit sheet (mobile)"
+    },
+    {
+      "id": "starting_4b1ed7",
+      "it": "Avvio…",
+      "en": "Starting…",
+      "de": "Wird gestartet…",
+      "placeholders": [],
+      "note": "Conti trovati confirm button while finalizing (web hard-codes it)"
+    },
+    {
+      "id": "s_0_will_be_permanently_deleted_together_w_8199c6",
+      "it": "\"{0}\" verrà eliminato definitivamente, insieme al suo saldo e a tutti i suoi movimenti.",
+      "en": "“{0}” will be permanently deleted, together with its balance and all its transactions.",
+      "de": "„{0}“ wird endgültig gelöscht, zusammen mit dem Saldo und allen Umsätzen.",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Delete manual account confirmation (decision 0003: the web copy omits that movements are deleted)"
+    },
+    {
+      "id": "s_0_will_be_disconnected_and_all_its_trans_69155f",
+      "it": "\"{0}\" verrà scollegato e tutti i suoi movimenti verranno eliminati. L'azione non è reversibile.",
+      "en": "“{0}” will be disconnected and all its transactions will be deleted. This cannot be undone.",
+      "de": "„{0}“ wird getrennt und alle Umsätze werden gelöscht. Dies ist nicht rückgängig zu machen.",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Unlink bank account confirmation (decision 0003: the web copy omits that movements are deleted)"
+    },
+    {
+      "id": "you_cancelled_the_bank_connection_de6865",
+      "it": "Hai annullato il collegamento con la banca.",
+      "en": "You cancelled the bank connection.",
+      "de": "Du hast die Bankverbindung abgebrochen.",
+      "placeholders": [],
+      "note": "Toast when the bank consent is cancelled in the in-app browser"
+    },
+    {
+      "id": "s_0_a_year_in_1_confirmed_subscription_df9fba",
+      "it": "{0} all'anno, in {1} abbonamento confermato.",
+      "en": "{0} a year, in {1} confirmed subscription.",
+      "de": "{0} pro Jahr, in {1} bestätigten Abo.",
+      "placeholders": [
+        "0",
+        "1"
+      ],
+      "note": "Subscriptions hero, one confirmed subscription; {0} yearly amount, {1} count (whole sentence, 06 open question 2)"
+    },
+    {
+      "id": "s_0_a_year_in_1_confirmed_subscriptions_4f9a55",
+      "it": "{0} all'anno, in {1} abbonamenti confermati.",
+      "en": "{0} a year, in {1} confirmed subscriptions.",
+      "de": "{0} pro Jahr, in {1} bestätigten Abos.",
+      "placeholders": [
+        "0",
+        "1"
+      ],
+      "note": "Subscriptions hero, several confirmed subscriptions; {0} yearly amount, {1} count"
+    },
+    {
+      "id": "s_0_more_awaiting_confirmation_are_worth_a_5389df",
+      "it": "Altri {0} da confermare valgono circa {1} al mese.",
+      "en": "{0} more awaiting confirmation are worth about {1} a month.",
+      "de": "Weitere {0} zur Bestätigung sind etwa {1} pro Monat wert.",
+      "placeholders": [
+        "0",
+        "1"
+      ],
+      "note": "Subscriptions hero, pending items; {0} count, {1} monthly amount"
+    },
+    {
+      "id": "next_payment_0_1_4dd102",
+      "it": "Prossimo addebito: {0} {1}",
+      "en": "Next payment: {0} {1}",
+      "de": "Nächste Zahlung: {0} {1}",
+      "placeholders": [
+        "0",
+        "1"
+      ],
+      "note": "Subscriptions hero; {0} subscription name, {1} relative date (oggi, tra 3 giorni, il 12 nov)"
+    },
+    {
+      "id": "s_0_payments_in_the_next_30_days_1_4d2fee",
+      "it": "· nei prossimi 30 giorni {0} addebiti, {1}",
+      "en": "· {0} payments in the next 30 days, {1}",
+      "de": "· in den nächsten 30 Tagen {0} Zahlungen, {1}",
+      "placeholders": [
+        "0",
+        "1"
+      ],
+      "note": "Subscriptions hero; {0} count, {1} sum"
+    },
+    {
+      "id": "costs_0_a_month_c52590",
+      "it": "Pesa {0} al mese",
+      "en": "Costs {0} a month",
+      "de": "Kostet {0} pro Monat",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Subscription detail, monthly equivalent of a non-monthly subscription"
+    },
+    {
+      "id": "subscription_deleted_78cc42",
+      "it": "Abbonamento eliminato",
+      "en": "Subscription deleted",
+      "de": "Abo gelöscht",
+      "placeholders": [],
+      "note": "Undo toast after deleting a manual subscription (mobile, decision 0003)"
+    },
+    {
+      "id": "subscription_restored_to_its_original_st_2d7401",
+      "it": "Abbonamento ripristinato com'era",
+      "en": "Subscription restored to its original state",
+      "de": "Abo auf den ursprünglichen Zustand zurückgesetzt",
+      "placeholders": [],
+      "note": "Undo toast after «Ripristina com'era» on a detected subscription (mobile, decision 0003)"
+    },
+    {
+      "id": "sample_data_cleared_76a317",
+      "it": "Dati d'esempio azzerati",
+      "en": "Sample data cleared",
+      "de": "Beispieldaten zurückgesetzt",
+      "placeholders": [],
+      "note": "Snackbar after resetting demo data from the banner (02-overview mobile adaptation)"
+    },
+    {
+      "id": "choose_what_to_show_in_your_overview_in_d786d6",
+      "it": "Scegli cosa vedere in «Il tuo quadro», nel menu Altro. Vale per questo dispositivo.",
+      "en": "Choose what to show in “Your overview”, in the More menu. Applies to this device.",
+      "de": "Wähle, was in „Deine Übersicht“ im Menü „Mehr“ angezeigt wird. Gilt für dieses Gerät.",
+      "placeholders": [],
+      "note": "Settings › Aspetto e uso: module switches of «Il tuo quadro» (SET-020, mobile replacement of «Barra laterale»)"
+    },
+    {
+      "id": "press_and_hold_then_slide_along_a_date_t_094c44",
+      "it": "Tieni premuto e scorri su una data per aggiornare i numeri sopra, oppure scegli le date in «Personalizzato».",
+      "en": "Press and hold, then slide along a date to update the figures above, or pick dates in “Custom”.",
+      "de": "Gedrückt halten und über ein Datum ziehen, um die Zahlen oben zu aktualisieren, oder Daten unter „Benutzerdefiniert“ wählen.",
+      "placeholders": [],
+      "note": "Performance returns chart hint (INV-034 mobile: press-and-hold scrubbing instead of hover)"
+    },
+    {
+      "id": "shares_d34312",
+      "it": "azioni",
+      "en": "shares",
+      "de": "Aktien",
+      "placeholders": [],
+      "note": "Security page: unit of the share count in an indicator formula (SEC-037)"
+    },
+    {
+      "id": "per_year_f47b42",
+      "it": "l'anno",
+      "en": "per year",
+      "de": "pro Jahr",
+      "placeholders": [],
+      "note": "Security page: «≈ X l'anno» cost on the position and dividend growth per year (SEC-045/047)"
+    },
+    {
+      "id": "s_0_points_0d2f9d",
+      "it": "{0} punti",
+      "en": "{0} points",
+      "de": "{0} Punkte",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Diversificazione › allocation drift «−7 punti» (INV-053; untranslated on web)"
+    },
+    {
+      "id": "s_0_per_10_000_e82f29",
+      "it": "{0} ogni 10.000",
+      "en": "{0} per 10,000",
+      "de": "{0} pro 10.000",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Security page key fact under the TER (SEC-019; untranslated on web)"
+    },
+    {
+      "id": "invalid_year_1f395f",
+      "it": "Anno non valido",
+      "en": "Invalid year",
+      "de": "Ungültiges Jahr",
+      "placeholders": [],
+      "note": "Tasse › prior loss form validation (INV-088)"
+    },
+    {
+      "id": "invalid_exchange_rate_0c37ca",
+      "it": "Cambio non valido",
+      "en": "Invalid exchange rate",
+      "de": "Ungültiger Wechselkurs",
+      "placeholders": [],
+      "note": "Register operation: FX rate must be > 0 (INV-069)"
+    },
+    {
+      "id": "you_can_t_sell_more_units_than_you_hold_17f2e6",
+      "it": "Non puoi vendere più quote di quelle che possiedi",
+      "en": "You can't sell more units than you hold",
+      "de": "Du kannst nicht mehr Anteile verkaufen, als du besitzt",
+      "placeholders": [],
+      "note": "Register operation: client-side oversell check (INV-069)"
+    },
+    {
+      "id": "already_added_511f94",
+      "it": "Già aggiunti",
+      "en": "Already added",
+      "de": "Bereits hinzugefügt",
+      "placeholders": [],
+      "note": "Instrument search: known instruments group (SEC-004; web default prop not exported)"
+    },
+    {
+      "id": "recording_f467fb",
+      "it": "Registrazione…",
+      "en": "Recording…",
+      "de": "Wird erfasst…",
+      "placeholders": [],
+      "note": "Register operation button while saving (INV-062; untranslated on web)"
+    },
+    {
+      "id": "yes_2dbb40",
+      "it": "sì",
+      "en": "yes",
+      "de": "ja",
+      "placeholders": [],
+      "note": "Instrument settings: «Automatico (sì)» harmonised default (INV-082)"
+    },
+    {
+      "id": "no_fd1286",
+      "it": "no",
+      "en": "no",
+      "de": "nein",
+      "placeholders": [],
+      "note": "Instrument settings: «Automatico (no)» harmonised default (INV-082)"
+    },
+    {
+      "id": "joined_5170cf",
+      "it": "Adesione",
+      "en": "Joined",
+      "de": "Beitritt",
+      "placeholders": [],
+      "note": "Pension exit-tax timeline mark (web hard-codes it, PEN-025)"
+    },
+    {
+      "id": "minimum_88c284",
+      "it": "Minimo",
+      "en": "Minimum",
+      "de": "Minimum",
+      "placeholders": [],
+      "note": "Pension exit-tax timeline mark (web hard-codes it, PEN-025)"
+    },
+    {
+      "id": "event_deleted_edb513",
+      "it": "Evento eliminato",
+      "en": "Event deleted",
+      "de": "Ereignis gelöscht",
+      "placeholders": [],
+      "note": "Debts: undo toast after removing an event (decision 0003, DEBT-027)"
+    },
+    {
+      "id": "snapshot_deleted_fbb6cb",
+      "it": "Fotografia eliminata",
+      "en": "Snapshot deleted",
+      "de": "Stand gelöscht",
+      "placeholders": [],
+      "note": "Pension: undo toast after removing a snapshot (decision 0003, PEN-012)"
+    },
+    {
+      "id": "paste_b2a906",
+      "it": "Incolla",
+      "en": "Paste",
+      "de": "Einfügen",
+      "placeholders": [],
+      "note": "Pension import wizard: first step label (paste only on mobile, PEN-014)"
+    },
+    {
+      "id": "paste_the_rows_cd9c0e",
+      "it": "Incolla le righe",
+      "en": "Paste the rows",
+      "de": "Zeilen einfügen",
+      "placeholders": [],
+      "note": "Pension import: paste section title and «I tuoi dati» link (PEN-014)"
+    },
+    {
+      "id": "paste_the_rows_into_the_fund_0_4ace8f",
+      "it": "Incolla le righe nel fondo «{0}».",
+      "en": "Paste the rows into the fund «{0}».",
+      "de": "Füge die Zeilen in den Fonds «{0}» ein.",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Pension import dialog description (paste only on mobile, PEN-014)"
+    },
+    {
+      "id": "at_most_1000_rows_per_import_dc0674",
+      "it": "Al massimo 1000 righe per import",
+      "en": "At most 1000 rows per import",
+      "de": "Höchstens 1000 Zeilen pro Import",
+      "placeholders": [],
+      "note": "Pension import: client check of PEN-017 (server message of the same limit)"
+    },
+    {
+      "id": "one_row_per_snapshot_with_three_columns_57201b",
+      "it": "Una riga per fotografia, con tre colonne: la data, i contributi netti e il controvalore. Anche copiate da Excel: il testo viene letto sul telefono, al server arrivano solo le righe che confermi.",
+      "en": "One row per snapshot, with three columns: the date, net contributions and market value. Rows copied from Excel work too: the text is read on the phone and only the rows you confirm reach the server.",
+      "de": "Eine Zeile pro Stand, mit drei Spalten: Datum, Nettobeiträge und Marktwert. Auch aus Excel kopiert: Der Text wird auf dem Telefon gelesen, an den Server gehen nur die Zeilen, die du bestätigst.",
+      "placeholders": [],
+      "note": "Pension import: paste step description (PEN-014)"
+    },
+    {
+      "id": "and_the_costs_pay_back_in_0_months_7b2865",
+      "it": "e le spese rientrano in {0} mesi",
+      "en": "and the costs pay back in {0} months",
+      "de": "und die Kosten sind in {0} Monaten wieder drin",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Debts refinance verdict suffix (web template literal outside t(), DEBT-031)"
+    },
+    {
+      "id": "spending_over_time_b574dc",
+      "it": "Spesa nel tempo",
+      "en": "Spending over time",
+      "de": "Ausgaben im Zeitverlauf",
+      "placeholders": [],
+      "note": "Analytics withdrawal chart accessibility summary (ANA-023)"
+    },
+    {
+      "id": "spending_9c4edc",
+      "it": "spesa",
+      "en": "spending",
+      "de": "Ausgaben",
+      "placeholders": [],
+      "note": "Analytics sensitivity table row label (web literal outside t(), ANA-028)"
+    },
+    {
+      "id": "savings_2bfc9a",
+      "it": "risparmio",
+      "en": "savings",
+      "de": "Ersparnis",
+      "placeholders": [],
+      "note": "Analytics sensitivity table column label (web literal outside t(), ANA-028)"
+    },
+    {
+      "id": "s_8_90f617",
+      "it": "8%",
+      "en": "8%",
+      "de": "8%",
+      "placeholders": [],
+      "note": "German church-tax option (web literal t(\"8%\"), PLAN-018)"
+    },
+    {
+      "id": "s_9_44652a",
+      "it": "9%",
+      "en": "9%",
+      "de": "9%",
+      "placeholders": [],
+      "note": "German church-tax option (web literal t(\"9%\"), PLAN-018)"
+    },
+    {
+      "id": "discard_changes_fa8fc0",
+      "it": "Discard changes",
+      "en": "Discard changes",
+      "de": "Änderungen verwerfen",
+      "placeholders": [],
+      "note": "German plan unsaved-changes sheet (mobile adaptation, 13-planning-de)"
+    },
+    {
+      "id": "save_your_changes_to_the_plan_before_lea_828ac0",
+      "it": "Save your changes to the plan before leaving?",
+      "en": "Save your changes to the plan before leaving?",
+      "de": "Möchtest du deine Änderungen am Plan speichern, bevor du gehst?",
+      "placeholders": [],
+      "note": "German plan unsaved-changes sheet text (mobile adaptation, 13-planning-de)"
+    },
+    {
+      "id": "reload_cce715",
+      "it": "Reload",
+      "en": "Reload",
+      "de": "Neu laden",
+      "placeholders": [],
+      "note": "German plan 409 banner action (mobile adaptation, PLAN-013)"
+    },
+    {
+      "id": "reload_the_plan_your_unsaved_changes_wil_f7b4ad",
+      "it": "Reload the plan? Your unsaved changes will be lost.",
+      "en": "Reload the plan? Your unsaved changes will be lost.",
+      "de": "Plan neu laden? Deine ungespeicherten Änderungen gehen verloren.",
+      "placeholders": [],
+      "note": "German plan 409 reload confirmation (mobile adaptation, PLAN-013)"
+    },
+    {
+      "id": "min_0_a443a7",
+      "it": "Min. {0}",
+      "en": "Min. {0}",
+      "de": "Mind. {0}",
+      "placeholders": [
+        "0"
+      ],
+      "note": "German plan numeric field helper with the clamping limit (mobile adaptation, PLAN-015)"
+    },
+    {
+      "id": "i_consent_to_sending_the_full_file_and_m_afd547",
+      "it": "Acconsento a inviare il file completo e la segnalazione per una nuova analisi AI.",
+      "en": "I consent to sending the full file and my report for a new AI analysis.",
+      "de": "Ich stimme zu, die vollständige Datei und meine Meldung für eine neue KI-Analyse zu senden.",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "analyze_correction_251e5b",
+      "it": "Analizza la correzione",
+      "en": "Analyze correction",
+      "de": "Korrektur analysieren",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "loading_comparison_55f2ef",
+      "it": "Caricamento del confronto…",
+      "en": "Loading comparison…",
+      "de": "Vergleich wird geladen…",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "what_is_wrong_e12c61",
+      "it": "Che cosa è sbagliato?",
+      "en": "What is wrong?",
+      "de": "Was ist falsch?",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "confirm_and_replace_57d727",
+      "it": "Conferma e sostituisci",
+      "en": "Confirm and replace",
+      "de": "Bestätigen und ersetzen",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "compare_the_correction_before_confirming_e130f6",
+      "it": "Confronta la correzione prima di confermare.",
+      "en": "Compare the correction before confirming.",
+      "de": "Vergleiche die Korrektur vor der Bestätigung.",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "correction_awaiting_confirmation_e08074",
+      "it": "Correzione da confermare",
+      "en": "Correction awaiting confirmation",
+      "de": "Korrektur wartet auf Bestätigung",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "import_correction_531132",
+      "it": "Correzione dell’importazione",
+      "en": "Import correction",
+      "de": "Importkorrektur",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "effect_of_the_import_on_the_account_f43a6a",
+      "it": "Effetto dell’importazione sul conto",
+      "en": "Effect of the import on the account",
+      "de": "Auswirkung des Imports auf das Konto",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "i_have_reviewed_the_comparison_and_want_e149fb",
+      "it": "Ho controllato il confronto e voglio sostituire i dati dell’importazione originale.",
+      "en": "I have reviewed the comparison and want to replace the original import data.",
+      "de": "Ich habe den Vergleich geprüft und möchte die Daten des ursprünglichen Imports ersetzen.",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "the_original_transactions_stay_unchanged_ed2299",
+      "it": "I movimenti originali restano invariati fino alla conferma della sostituzione.",
+      "en": "The original transactions stay unchanged until you confirm the replacement.",
+      "de": "Die ursprünglichen Buchungen bleiben unverändert, bis du den Ersatz bestätigst.",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "the_previous_file_was_deleted_after_impo_f87e90",
+      "it": "Il file precedente è stato eliminato dopo l’importazione. L’AI analizzerà il file completo insieme alla tua segnalazione tramite OpenRouter, senza conservazione presso il fornitore.",
+      "en": "The previous file was deleted after import. AI will analyze the full file and your report via OpenRouter, without retention by the provider.",
+      "de": "Die vorherige Datei wurde nach dem Import gelöscht. Die KI analysiert die vollständige Datei und deine Meldung über OpenRouter, ohne Speicherung beim Anbieter.",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "the_result_is_wrong_8eb604",
+      "it": "Il risultato è sbagliato",
+      "en": "The result is wrong",
+      "de": "Das Ergebnis ist falsch",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "current_investments_f35aa2",
+      "it": "Investimenti attuali",
+      "en": "Current investments",
+      "de": "Aktuelle Anlagen",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "proposed_investments_0fb65a",
+      "it": "Investimenti proposti",
+      "en": "Proposed investments",
+      "de": "Vorgeschlagene Anlagen",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "the_correction_has_expired_discard_it_an_487fa1",
+      "it": "La correzione è scaduta. Scartala e ricarica il file dall’importazione originale.",
+      "en": "The correction has expired. Discard it and upload the file again from the original import.",
+      "de": "Die Korrektur ist abgelaufen. Verwirf sie und lade die Datei beim ursprünglichen Import erneut hoch.",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "current_transactions_5e62e7",
+      "it": "Movimenti attuali",
+      "en": "Current transactions",
+      "de": "Aktuelle Buchungen",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "proposed_transactions_28e968",
+      "it": "Movimenti proposti",
+      "en": "Proposed transactions",
+      "de": "Vorgeschlagene Buchungen",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "new_analysis_in_progress_we_will_email_y_9832b2",
+      "it": "Nuova analisi in corso. Ti avviseremo via email quando potrai controllarla.",
+      "en": "New analysis in progress. We will email you when it is ready to review.",
+      "de": "Die neue Analyse läuft. Du erhältst eine E-Mail, sobald du sie prüfen kannst.",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "investment_transactions_e412c1",
+      "it": "Operazioni di investimento",
+      "en": "Investment transactions",
+      "de": "Wertpapiertransaktionen",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "price_and_gross_amount_in_the_instrument_616c8f",
+      "it": "Prezzo e lordo nella valuta dello strumento; commissioni e imposte nella valuta del profilo.",
+      "en": "Price and gross amount in the instrument currency; fees and taxes in the profile currency.",
+      "de": "Preis und Bruttobetrag in der Wertpapierwährung; Gebühren und Steuern in der Profilwährung.",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "proposed_3c4d5c",
+      "it": "Proposto",
+      "en": "Proposed",
+      "de": "Vorgeschlagen",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "upload_the_original_csv_or_excel_file_ag_c7a72a",
+      "it": "Ricarica il file originale CSV o Excel",
+      "en": "Upload the original CSV or Excel file again",
+      "de": "Lade die ursprüngliche CSV- oder Excel-Datei erneut hoch",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "discard_correction_and_keep_original_44bf23",
+      "it": "Scarta correzione e mantieni originale",
+      "en": "Discard correction and keep original",
+      "de": "Korrektur verwerfen und Original behalten",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "cash_change_e811f5",
+      "it": "Variazione di liquidità",
+      "en": "Cash change",
+      "de": "Veränderung der Liquidität",
+      "placeholders": [],
+      "note": "Imports correction (IMP-049…054): web main catalog; the backend branch's web catalog predates the feature"
+    },
+    {
+      "id": "csv_or_excel_5a4d75",
+      "it": "CSV o Excel",
+      "en": "CSV or Excel",
+      "de": "CSV oder Excel",
+      "placeholders": [],
+      "note": "Broker import picker subtitle without drag and drop (INV-093, mobile adaptation of «CSV o Excel, oppure trascinalo qui.»)"
+    },
+    {
+      "id": "csv_txt_or_excel_xlsx_bdc219",
+      "it": "CSV, TXT o Excel (.xlsx)",
+      "en": "CSV, TXT or Excel (.xlsx)",
+      "de": "CSV, TXT oder Excel (.xlsx)",
+      "placeholders": [],
+      "note": "File picker subtitle of the personal and pension imports (IMP-017, PEN-014; no drag and drop on phone)"
+    },
+    {
+      "id": "required_0_80d9cd",
+      "it": "Ti serve: {0}.",
+      "en": "Required: {0}.",
+      "de": "Benötigt: {0}.",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Broker import picker subtitle with the chosen provider's file (INV-095; web adds «Oppure trascinalo qui.»)"
+    },
+    {
+      "id": "one_row_per_snapshot_with_date_net_contr_c9dce6",
+      "it": "Una riga per fotografia, con tre colonne: la data, i contributi netti e il controvalore. Il file viene letto sul telefono e non viene caricato né conservato: al server arrivano solo le righe che confermi.",
+      "en": "One row per snapshot with date, net contributions and market value. The file is read on your phone, not uploaded or stored: only confirmed rows reach the server.",
+      "de": "Eine Zeile je Stichtag mit Datum, Nettoeinzahlungen und Marktwert. Die Datei wird auf dem Telefon gelesen, nicht hochgeladen oder gespeichert: Nur bestätigte Zeilen erreichen den Server.",
+      "placeholders": [],
+      "note": "Pension import file step (PEN-014): the web says «nel tuo browser»"
+    },
+    {
+      "id": "comparison_not_available_51e349",
+      "it": "Confronto non disponibile",
+      "en": "Comparison not available",
+      "de": "Vergleich nicht verfügbar",
+      "placeholders": [],
+      "note": "Correction comparison fallback error (IMP-050), server message not in the web catalog"
+    },
+    {
+      "id": "couldn_t_start_the_ai_analysis_try_uploa_5af437",
+      "it": "Impossibile avviare l'analisi AI. Riprova il caricamento.",
+      "en": "Couldn't start the AI analysis. Try uploading again.",
+      "de": "Die KI-Analyse konnte nicht gestartet werden. Lade die Datei erneut hoch.",
+      "placeholders": [],
+      "note": "Broker import AI recovery failure (INV-104); web text not in the catalog"
+    },
+    {
+      "id": "s_1_source_6eb6ee",
+      "it": "1 origine",
+      "en": "1 source",
+      "de": "1 Quelle",
+      "placeholders": [],
+      "note": "Import management summary (INV-106); untranslated plural on the web"
+    },
+    {
+      "id": "s_0_sources_7c5c1a",
+      "it": "{0} origini",
+      "en": "{0} sources",
+      "de": "{0} Quellen",
+      "placeholders": [
+        "0"
+      ],
+      "note": "Import management summary (INV-106); untranslated plural on the web"
+    },
+    {
+      "id": "last_signed_in_with_the_emailed_code_01fa58",
+      "it": "Ultimo accesso con il codice via email",
+      "en": "Last signed in with the emailed code",
+      "de": "Zuletzt mit dem E-Mail-Code angemeldet",
+      "placeholders": [],
+      "note": "AUTH-059: mobile variant of «Ultimo accesso con il link via email» (the apps sign in with an emailed code)."
+    },
+    {
+      "id": "the_code_goes_to_this_address_and_is_val_de7b7b",
+      "it": "Il codice arriva a questo indirizzo e vale {0} minuti.",
+      "en": "The code goes to this address and is valid for {0} minutes.",
+      "de": "Der Code geht an diese Adresse und ist {0} Minuten gültig.",
+      "placeholders": [
+        "0"
+      ],
+      "note": "AUTH-059: mobile variant of «Il link arriva a questo indirizzo e vale {0} minuti.»"
+    }
+  ]
+}

@@ -1,0 +1,934 @@
+{
+  "language": "de",
+  "server": {
+    "version": "0.78.0",
+    "commit": "96b7d92ec091a7c588649d093ce087e979708598",
+    "builtAt": "2026-10-18T14:38:45.612Z"
+  },
+  "legal": {
+    "version": "2026-10-12",
+    "language": "de",
+    "specificClauseSections": [
+      "Haftung",
+      "Sperrung und Kündigung",
+      "Änderungen der Bedingungen",
+      "Anwendbares Recht, Gerichtsstand und Kontakt"
+    ],
+    "documents": [
+      {
+        "id": "privacy",
+        "label": "Datenschutz",
+        "url": "https://buddybudget.io/privacy"
+      },
+      {
+        "id": "termini",
+        "label": "Nutzungsbedingungen",
+        "url": "https://buddybudget.io/termini"
+      },
+      {
+        "id": "cookie",
+        "label": "Cookies",
+        "url": "https://buddybudget.io/cookie"
+      }
+    ],
+    "privacyEmail": "privacy@buddybudget.io"
+  },
+  "languages": [
+    {
+      "id": "it",
+      "name": "Italiano",
+      "locale": "it-IT"
+    },
+    {
+      "id": "en",
+      "name": "English",
+      "locale": "en-GB"
+    },
+    {
+      "id": "de",
+      "name": "Deutsch",
+      "locale": "de-DE"
+    }
+  ],
+  "countries": [
+    {
+      "id": "IT",
+      "languages": [
+        "it",
+        "en"
+      ],
+      "features": {
+        "taxes": true,
+        "pension": true,
+        "retirement": true,
+        "incomeForecasts": true,
+        "inflation": true
+      },
+      "sections": {
+        "pension": true,
+        "analytics": true,
+        "goals": true,
+        "investmentTaxes": true,
+        "investmentIncome": true,
+        "fire": true,
+        "financialPlanning": false
+      },
+      "planning": {
+        "tax": false,
+        "income": false,
+        "pension": false,
+        "retirement": false,
+        "simulations": false
+      }
+    },
+    {
+      "id": "DE",
+      "languages": [
+        "en",
+        "de"
+      ],
+      "features": {
+        "taxes": false,
+        "pension": false,
+        "retirement": false,
+        "incomeForecasts": false,
+        "inflation": true
+      },
+      "sections": {
+        "pension": false,
+        "analytics": false,
+        "goals": false,
+        "investmentTaxes": true,
+        "investmentIncome": true,
+        "fire": false,
+        "financialPlanning": true
+      },
+      "planning": {
+        "tax": true,
+        "income": true,
+        "pension": false,
+        "retirement": false,
+        "simulations": false
+      }
+    }
+  ],
+  "currencies": [
+    {
+      "value": "EUR",
+      "label": "Euro",
+      "symbol": "€"
+    },
+    {
+      "value": "USD",
+      "label": "US-Dollar",
+      "symbol": "$"
+    },
+    {
+      "value": "GBP",
+      "label": "Britisches Pfund",
+      "symbol": "£"
+    },
+    {
+      "value": "CHF",
+      "label": "Schweizer Franken",
+      "symbol": "CHF"
+    }
+  ],
+  "defaultCurrency": "EUR",
+  "homePages": [
+    {
+      "path": "/panoramica",
+      "label": "Übersicht"
+    },
+    {
+      "path": "/liquidita",
+      "label": "Liquidität"
+    },
+    {
+      "path": "/liquidita/conti",
+      "label": "Konten"
+    },
+    {
+      "path": "/liquidita/analisi",
+      "label": "Umsatzanalyse"
+    },
+    {
+      "path": "/investimenti",
+      "label": "Anlagen"
+    }
+  ],
+  "defaultHomePage": "/panoramica",
+  "notifications": {
+    "defaults": {
+      "digestEnabled": false,
+      "digestFrequency": "mensile",
+      "budgetAlertsEnabled": false,
+      "deadlineAlertsEnabled": false,
+      "goalAlertsEnabled": false
+    },
+    "kinds": [
+      {
+        "id": "digest",
+        "label": "Regelmäßige Zusammenfassung",
+        "hint": "Eine kurze Übersicht über Einnahmen, Ausgaben und Anlagen des letzten Zeitraums."
+      },
+      {
+        "id": "budget",
+        "label": "Budgetwarnungen",
+        "hint": "Eine E-Mail, wenn eine Kategorie 80 % ihres Monatsbudgets erreicht oder es überschreitet."
+      },
+      {
+        "id": "deadlines",
+        "label": "Fälligkeitshinweise",
+        "hint": "Eine E-Mail, wenn eine Kreditrate bald fällig oder überfällig ist."
+      },
+      {
+        "id": "goals",
+        "label": "Erinnerungen an Sparziele",
+        "hint": "Zu Monatsbeginn, wo deine Sparziele stehen, und eine E-Mail, wenn du eines erreichst oder ein Datum näher rückt."
+      }
+    ],
+    "digestFrequencies": [
+      "settimanale",
+      "mensile"
+    ],
+    "budgetAlertThresholds": [
+      80,
+      100
+    ],
+    "deadlineLeadDays": 3,
+    "alertsMaxPerWeek": 3
+  },
+  "limits": {
+    "transactionsPageDefault": 50,
+    "transactionsPageMax": 200,
+    "goalsMax": 20,
+    "goalSourcesMax": 12,
+    "pensionFundsMax": 10,
+    "pensionSnapshotsPerFundMax": 5000,
+    "investmentTargetsMax": 30,
+    "priceAlertsPerInstrumentMax": 10,
+    "debtCostsMax": 10,
+    "bankSyncsPerDay": 4,
+    "bankSyncMinGapMinutes": 240,
+    "personalImportMaxBytes": 26214400
+  },
+  "features": [
+    {
+      "id": "csv-personali-ai",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Personal CSVs with AI",
+      "description": "Upload the CSV of a bank or broker we don't know: we read it in the background and remember the institution and the columns of its format. If the saved reader fails, we try again with the AI you have authorized and send a technical report to support. You get an email when the import is done.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "primi-passi-e-dati-d-esempio",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "First steps and sample data",
+      "description": "Starting without a bank? The Overview shows four steps that tick themselves off (account, transactions, investment, goal), and you can try the app with sample data that resets with one tap.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "demo-senza-account",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Demo without an account",
+      "description": "Open the app with the data of a sample account, for Italy or Germany, in Italian, English or German, without signing up: look at everything, nothing is saved.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "collegamento-alla-banca",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Bank connection",
+      "description": "Imports balances and transactions from a bank through Open Banking, read-only, every 12 hours or whenever you like. Limited spots during the beta.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "conti-manuali",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Manual accounts",
+      "description": "For cash or for banks that don't connect. Tap the account to change its balance, name and icon.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "categorizza-con-ai",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Categorize with AI",
+      "description": "If you turn it on, the assistant suggests a category for each merchant. Suggestions that are at least 90% sure apply themselves and you review them in “Set by the app”; you confirm the others with a swipe, one card at a time. It uses only the cleaned-up merchant name and your personal instructions, which you can change in Settings.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "categorie-pronte",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Ready-made categories",
+      "description": "When you sign up you get 24 categories already split by type of spending: confirm them with one tap, or remove, rename or add your own.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "categorizzazione-automatica",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Automatic categorization",
+      "description": "Your rules, and categories that are at least 90% sure, apply themselves, and a new rule takes effect right away. In “Set by the app” you see what was set, with the merchant's logo, the dates and where it came from (a rule, your past choices or AI), and you fix it with one tap. “Recategorize” redoes the automatic categories with today's rules, with a preview and undo.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "quattro-gruppi-di-spesa",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Four spending groups",
+      "description": "Needs, Wants, Future you and Occasional, with colors and icons you choose.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "trasferimenti-tra-conti",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Transfers between your accounts",
+      "description": "Put transfers in their own category: they stay visible in your transactions and are left out of income and spending.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "dividi-e-escludi",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Split and exclude",
+      "description": "Leave out all or part of refunds, transfers and shared expenses: pick Half, A third or an amount, and see right away how much is yours.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "budget-per-categoria",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Budget per category",
+      "description": "Set a budget and see how much of it you've used.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "analisi-e-cash-flow",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Analysis and cash flow",
+      "description": "Income, spending, net and savings, month by month and by category.",
+      "status": "live",
+      "appPath": "/liquidita",
+      "available": true
+    },
+    {
+      "id": "abbonamenti",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Subscriptions",
+      "description": "Finds recurring charges (streaming, gym, insurance) and you confirm them with one tap. See the cost per month and per year, the next charge and price increases. Worked out from your transactions, without AI.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "etf-azioni-btp-fondi-e-crypto",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "ETFs, stocks, government bonds, funds and crypto",
+      "description": "End-of-day prices from free sources with automatic fallback, ECB exchange rates.",
+      "status": "live",
+      "appPath": "/investimenti",
+      "available": true
+    },
+    {
+      "id": "operazioni-e-import-csv",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Trades and CSV import",
+      "description": "Record buys and sells or import your broker's files: Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance or another CSV. Several brokers live in the same portfolio and each import is managed on its own. If you allow AI recovery, read errors start a new analysis automatically, with the financial checks kept in place.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "rendimenti-veri",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Real returns",
+      "description": "TWR, MWR and returns after inflation in the product's country (Italy or Germany, Eurostat index), with explanations on hover. The figures follow the chart date; drag to pick a range, also for risk and monthly returns. It also shows what you'd have if costs and taxes had stayed invested.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "confronto-con-un-indice",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Compare with an index",
+      "description": "“With the same contributions you'd have X today instead of Y.” Quick picks for the S&P 500, MSCI World, FTSE All-World and Nasdaq-100 through accumulating ETFs, or search for another instrument.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "rischio",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Risk",
+      "description": "A clear risk level (from low to very high), then how much the portfolio swings, the worst drop, whether the risk paid off and how closely it follows the index.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "diversificazione",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Diversification",
+      "description": "By region and sector, looking inside the ETFs.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "allocazione-obiettivo",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Target allocation",
+      "description": "With a suggestion of where to put your next contribution.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "proventi",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Dividends",
+      "description": "Income received and expected over the next 12 months, month by month and by instrument, with gross, withholding tax and net.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "pianificazione-germania",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Financial planning for Germany",
+      "description": "Essential localization in English and German: portfolio, income and 2026 tax estimates in EUR, with explicit limits. Pension, AVD (a German private pension product), retirement and the advanced simulators are hidden until they have been reviewed.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "tasse-italiane",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Italian taxes",
+      "description": "Capital gains and losses, the zainetto fiscale (four-year tax-loss carryforward), government bonds, crypto and bollo (stamp duty).",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "simulatore-prima-di-vendere",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "“Before you sell” simulator",
+      "description": "Works out the taxes again with the extra sale, before you make it.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "titoli-watchlist-e-avvisi",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Securities, watchlist and alerts",
+      "description": "A page for each security, opened from your holdings or by search, with a chart of your purchases, risk, a watchlist and price alerts by email.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "indicatori-fondamentali",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Fundamentals",
+      "description": "For every stock: P/E, P/S, P/B, revenue and earnings per share, margins, ROE and debt calculated from the financial statements, with the range of recent years and the calculation under each number. For ETFs: holdings, sectors, what the TER costs you and the securities you already hold elsewhere.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "finanziamenti-nuovi-o-in-corso",
+      "area": "Debiti",
+      "areaLabel": "Debts",
+      "name": "New or ongoing loans",
+      "description": "From the start or from a snapshot of today, with the amortization schedule.",
+      "status": "live",
+      "appPath": "/debiti",
+      "available": true
+    },
+    {
+      "id": "calcolatore-della-variabile-mancante",
+      "area": "Debiti",
+      "areaLabel": "Debts",
+      "name": "Missing-figure calculator",
+      "description": "From principal, payment, number of payments or rate it works out the one that's missing, with the APR (TAEG).",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "estinzione-anticipata",
+      "area": "Debiti",
+      "areaLabel": "Debts",
+      "name": "Early repayment",
+      "description": "Lower payment or shorter term, with the penalty, the interest saved and a monthly extra.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "simulatore-dei-debiti",
+      "area": "Debiti",
+      "areaLabel": "Debts",
+      "name": "Debt simulator",
+      "description": "Inside each loan: how much you save by paying more, paying off part of it or moving to another bank. In the overview, the path to getting out of debt sooner.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "patrimonio-netto-nel-tempo",
+      "area": "Patrimonio",
+      "areaLabel": "Net worth",
+      "name": "Net worth over time",
+      "description": "Cash, investments and pension, with debts already subtracted, and the history rebuilt. Show or hide items from the legend and the total updates.",
+      "status": "live",
+      "appPath": "/panoramica",
+      "available": true
+    },
+    {
+      "id": "pensione",
+      "area": "Patrimonio",
+      "areaLabel": "Net worth",
+      "name": "Pension",
+      "description": "Pension fund and TFR (Italian severance pay): real return, what you'd take home if you withdrew today after tax, and an estimate of what it will be worth. Enter the history by hand or import it from CSV or Excel.",
+      "status": "new",
+      "appPath": "/pensione",
+      "available": false
+    },
+    {
+      "id": "analitiche",
+      "area": "Patrimonio",
+      "areaLabel": "Net worth",
+      "name": "Analytics",
+      "description": "The year you could stop working, with four “what if…” sliders for savings, spending, return and withdrawal; the first three start from your data for the last 12 or 24 months, or the months you choose. For those who want more: the FIRE number after tax, Monte Carlo simulations and withdrawal rules.",
+      "status": "new",
+      "appPath": "/analitiche",
+      "available": false
+    },
+    {
+      "id": "obiettivi-di-risparmio",
+      "area": "Patrimonio",
+      "areaLabel": "Net worth",
+      "name": "Savings goals",
+      "description": "A trip, a house deposit, an emergency fund: choose how much you need, by when, and which accounts or investments the money comes from. The month's savings go to your goals in the order you choose; see when you'll reach each one, whether your savings cover everything and how much each goal moves the year you could stop working. Email reminders at the start of the month, if you want them.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "tuoi-dati-tuo-controllo",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Your data, your control",
+      "description": "Export everything as a ZIP, or reset or delete your account with 30 days to change your mind.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "email-riepilogo-e-avvisi",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Summary and alert emails",
+      "description": "If you want, get a summary of the month or the week, with what you spent, what came in, investment gains and dividends in a few lines, and an alert when a budget is nearly used up or a payment is about to fall due. You choose them when you first sign in, they start switched off and each one turns off with one click.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "piu-lingue-e-valute",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Languages and currencies",
+      "description": "The Italy product in Italian and English; the Germany product in German and English. Selectable currencies. For Germany: portfolio and income, partial 2026 tax estimates with explicit limits; pension and advanced simulators on hold until review. Unsupported cases are flagged, without applying Italian rules.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "notifiche-push",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Push notifications",
+      "description": "Alerts on your phone, for example about prices.",
+      "status": "soon",
+      "appPath": null,
+      "available": true
+    }
+  ],
+  "profile": {
+    "productCountry": "DE",
+    "language": "de",
+    "capabilities": {
+      "id": "DE",
+      "languages": [
+        "en",
+        "de"
+      ],
+      "features": {
+        "taxes": false,
+        "pension": false,
+        "retirement": false,
+        "incomeForecasts": false,
+        "inflation": true
+      },
+      "sections": {
+        "pension": false,
+        "analytics": false,
+        "goals": false,
+        "investmentTaxes": true,
+        "investmentIncome": true,
+        "fire": false,
+        "financialPlanning": true
+      },
+      "planning": {
+        "tax": true,
+        "income": true,
+        "pension": false,
+        "retirement": false,
+        "simulations": false
+      }
+    },
+    "categoryProposal": [
+      {
+        "key": "affitto",
+        "name": "Miete & Immobilienkredit",
+        "type": "dovuta",
+        "icon": "home",
+        "color": "slate",
+        "description": "Miete, Kreditrate, Hausgeld",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "bollette",
+        "name": "Versorgung & Telefon",
+        "type": "dovuta",
+        "icon": "zap",
+        "color": "yellow",
+        "description": "Strom, Gas, Wasser, Internet, Mobilfunk",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "spesa",
+        "name": "Lebensmittel",
+        "type": "dovuta",
+        "icon": "shopping-cart",
+        "color": "green",
+        "description": "Supermarkt, Lebensmittel, Haushaltswaren",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "trasporti",
+        "name": "Verkehr",
+        "type": "dovuta",
+        "icon": "car",
+        "color": "blue",
+        "description": "Kraftstoff, Nahverkehr, Maut, Parken, Werkstatt",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "salute",
+        "name": "Gesundheit",
+        "type": "dovuta",
+        "icon": "pill",
+        "color": "rose",
+        "description": "Apotheke, Arztbesuche, Zahnarzt, Untersuchungen",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "assicurazioni",
+        "name": "Versicherungen",
+        "type": "dovuta",
+        "icon": "shield",
+        "color": "indigo",
+        "description": "Auto, Haus, Leben, Gesundheit",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "rate",
+        "name": "Kredite & Raten",
+        "type": "dovuta",
+        "icon": "credit-card",
+        "color": "red",
+        "description": "Kredite, Darlehen, Ratenkäufe",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "ristoranti",
+        "name": "Restaurants & Cafés",
+        "type": "voluta",
+        "icon": "utensils",
+        "color": "orange",
+        "description": "Restaurants, Cafés, Kaffee, Lieferdienste",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "abbonamenti",
+        "name": "Abonnements",
+        "type": "voluta",
+        "icon": "tv",
+        "color": "purple",
+        "description": "Streaming, Musik, Apps, Software, Zeitungen",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "svago",
+        "name": "Freizeit",
+        "type": "voluta",
+        "icon": "gamepad-2",
+        "color": "teal",
+        "description": "Kino, Konzerte, Hobbys, Spiele, Bücher",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "benessere",
+        "name": "Sport & Wohlbefinden",
+        "type": "voluta",
+        "icon": "dumbbell",
+        "color": "lime",
+        "description": "Fitnessstudio, Sport, Friseur, Kosmetik",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "shopping",
+        "name": "Shopping",
+        "type": "voluta",
+        "icon": "shopping-bag",
+        "color": "pink",
+        "description": "Kleidung, Schuhe, Elektronik, Onlinekäufe",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "viaggi",
+        "name": "Reisen",
+        "type": "voluta",
+        "icon": "plane",
+        "color": "cyan",
+        "description": "Flüge, Urlaubsreisen, Hotels, Ferienwohnungen",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "contanti",
+        "name": "Bargeld",
+        "type": "voluta",
+        "icon": "wallet",
+        "color": "emerald",
+        "description": "Bargeldabhebungen",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "risparmio",
+        "name": "Sparen",
+        "type": "futuro",
+        "icon": "piggy-bank",
+        "color": "green",
+        "description": "Einzahlungen auf Sparkonten oder Sparziele",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "investimenti",
+        "name": "Anlagen",
+        "type": "futuro",
+        "icon": "coins",
+        "color": "teal",
+        "description": "Einzahlungen beim Broker, Sparpläne",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "tasse",
+        "name": "Steuern & Abgaben",
+        "type": "saltuaria",
+        "icon": "receipt",
+        "color": "slate",
+        "description": "Steuern und Abgaben",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "casa",
+        "name": "Wohnen & Einrichtung",
+        "type": "saltuaria",
+        "icon": "sofa",
+        "color": "amber",
+        "description": "Möbel, Haushaltsgeräte, Renovierung",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "regali",
+        "name": "Geschenke & Spenden",
+        "type": "saltuaria",
+        "icon": "gift",
+        "color": "pink",
+        "description": "Geschenke, Feiern, Spenden",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "trasferimenti",
+        "name": "Umbuchungen eigener Konten",
+        "type": "trasferimento",
+        "icon": "landmark",
+        "color": "slate",
+        "description": "Umbuchungen zwischen eigenen Konten: ohne Einfluss auf Einnahmen und Ausgaben",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "stipendio",
+        "name": "Gehalt",
+        "type": "entrata",
+        "icon": "banknote",
+        "color": "emerald",
+        "description": "Gehalt, Rente, Sonderzahlungen",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "interessi",
+        "name": "Zinsen & Dividenden",
+        "type": "entrata",
+        "icon": "trending-up",
+        "color": "teal",
+        "description": "Sparzinsen, Dividenden und Kupons",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "rimborsi",
+        "name": "Erstattungen",
+        "type": "entrata",
+        "icon": "calculator",
+        "color": "cyan",
+        "description": "Retouren, Steuererstattungen, Rückzahlungen",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "altre-entrate",
+        "name": "Sonstige Einnahmen",
+        "type": "entrata",
+        "icon": "package",
+        "color": "slate",
+        "description": "Einnahmen, die keiner anderen Kategorie zugeordnet sind",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "figli",
+        "name": "Kinder & Schule",
+        "type": "dovuta",
+        "icon": "graduation-cap",
+        "color": "violet",
+        "description": "Schule, Bücher, Schulessen, Kinderaktivitäten",
+        "enabled": false,
+        "optional": true
+      },
+      {
+        "key": "animali",
+        "name": "Haustiere",
+        "type": "dovuta",
+        "icon": "paw-print",
+        "color": "amber",
+        "description": "Futter, Tierarzt, Zubehör",
+        "enabled": false,
+        "optional": true
+      },
+      {
+        "key": "pensione",
+        "name": "Zusatzrente",
+        "type": "futuro",
+        "icon": "landmark",
+        "color": "indigo",
+        "description": "Beiträge zur Altersvorsorge",
+        "enabled": false,
+        "optional": true
+      },
+      {
+        "key": "imprevisti",
+        "name": "Unvorhergesehenes",
+        "type": "saltuaria",
+        "icon": "alert-triangle",
+        "color": "yellow",
+        "description": "Ungeplante Ausgaben",
+        "enabled": false,
+        "optional": true
+      },
+      {
+        "key": "lavoro-autonomo",
+        "name": "Selbstständigkeit",
+        "type": "entrata",
+        "icon": "briefcase",
+        "color": "blue",
+        "description": "Rechnungen, gelegentliche Tätigkeiten",
+        "enabled": false,
+        "optional": true
+      }
+    ]
+  }
+}

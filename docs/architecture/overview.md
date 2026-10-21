@@ -221,7 +221,7 @@ Strings: Italian is the source language. `translate(language, source)` in [`mess
 
 ### 4.10 Landing
 
-[`landing/`](../../landing/) is a separate Next.js project with its own `package.json`, lockfile, tests and Dockerfile. It builds with `output: "export"` and is served by nginx on port 3000 ([`landing/nginx.conf`](../../landing/nginx.conf)), which also serves a Markdown version of each page when the request sends `Accept: text/markdown`. It shares no runtime code with the app: it reads the generated catalog copy and screenshots in `landing/public/screens/`. CI builds and deploys it as its own image (`buddy-budget-landing`).
+[`landing/`](../../landing/) is a separate Next.js project with its own `package.json`, lockfile, tests and Dockerfile. It builds with `output: "export"` and is served by nginx on port 3000 ([`landing/nginx.conf`](../../landing/nginx.conf)), which also serves a Markdown version of each page when the request sends `Accept: text/markdown`. It shares no runtime code with the app: it reads the generated catalog copy and screenshots in `landing/public/screens/`, downloaded from the `screenshots` branch (`pnpm screens:pull`, see [`docs/landing-screens.md`](../landing-screens.md)). CI builds and deploys it as its own image (`buddy-budget-landing`).
 
 ### 4.11 Mobile and PWA
 

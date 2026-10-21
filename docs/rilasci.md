@@ -44,7 +44,7 @@ Normal merges build the images (`sha-…`, `main`) but do **not** deploy them: d
 ## Images and auto-merge
 
 - The images (app, migrator, landing) are built and published only in the run of the release PR merge, with tags `sha-…`, `main` and `X.Y.Z`. A normal push to `main` only runs the tests and keeps the release PR up to date.
-- `automerge.yml` enables auto-merge (squash) on Dependabot patch PRs and on `bot/landing-screens`. It requires "Allow auto-merge" in the repo settings and the required checks in branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): the protection decides when to merge. The release PR and every minor/major remain manual.
+- `automerge.yml` enables auto-merge (squash) on Dependabot patch PRs (landing screenshots no longer go through PRs: see `docs/landing-screens.md`). It requires "Allow auto-merge" in the repo settings and the required checks in branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): the protection decides when to merge. The release PR and every minor/major remain manual.
 
 ## Dependencies: patch only
 

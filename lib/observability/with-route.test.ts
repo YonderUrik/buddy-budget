@@ -46,7 +46,7 @@ describe("withRoute", () => {
     });
     const res = await handler(req());
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: "Errore interno" });
+    expect(await res.json()).toEqual({ error: "Errore interno", code: "internal_error" });
     expect(lines[0]).toMatchObject({ event: "http.request.failed", level: "error", status: 500 });
     expect(JSON.stringify(lines[0])).not.toContain("mario@example.com");
   });

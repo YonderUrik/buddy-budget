@@ -1,6 +1,7 @@
 import { localizeCategory } from "@/lib/localization/categories";
 import { resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
+import { apiError, validationError } from "@/lib/http";
 import { and, eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
@@ -46,13 +47,13 @@ async function handlePatch(
   const { id } = await params;
   const category = await getOwnedCategory(session.user.id, id);
   if (!category) {
-    return new Response(null, { status: 404 });
+    return apiError(404, "category_not_found", "Categoria non trovata");
   }
 
   const body = await request.json();
   const parsed = updateCategorySchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    return validationError(parsed.error);
   }
 
   // Saving a displayed default label is not a rename (including the protected fallback).
@@ -63,10 +64,7 @@ async function handlePatch(
   if (Object.keys(parsed.data).length === 0) return Response.json(category);
 
   if (category.isFallback && parsed.data.name && parsed.data.name !== category.name) {
-    return Response.json(
-      { error: "Il nome della categoria di fallback non può essere modificato" },
-      { status: 409 }
-    );
+    return apiError(409, "fallback_category_locked", "Il nome della categoria di fallback non può essere modificato");
   }
 
   if (parsed.data.name && parsed.data.name !== category.name) {
@@ -75,12 +73,12 @@ async function handlePatch(
       .from(categories)
       .where(and(eq(categories.userId, session.user.id), eq(categories.name, parsed.data.name)));
     if (existing) {
-      return Response.json({ error: "Categoria già esistente" }, { status: 409 });
+      return apiError(409, "category_exists", "Categoria già esistente");
     }
   }
 
   if (category.isFallback && parsed.data.type === "trasferimento") {
-    return Response.json({ error: "La categoria da categorizzare non può diventare un trasferimento" }, { status: 400 });
+    return apiError(400, "fallback_category_locked", "La categoria da categorizzare non può diventare un trasferimento");
   }
   const updated = await db.transaction(async (tx) => {
     const [row] = await tx.update(categories).set({ ...parsed.data, ...(parsed.data.name && parsed.data.name !== category.name ? { defaultKey: null } : {}) }).where(eq(categories.id, id)).returning();
@@ -117,14 +115,11 @@ async function handleDelete(
   const { id } = await params;
   const category = await getOwnedCategory(session.user.id, id);
   if (!category) {
-    return new Response(null, { status: 404 });
+    return apiError(404, "category_not_found", "Categoria non trovata");
   }
 
   if (category.isFallback) {
-    return Response.json(
-      { error: "La categoria di fallback non può essere eliminata" },
-      { status: 409 }
-    );
+    return apiError(409, "fallback_category_locked", "La categoria di fallback non può essere eliminata");
   }
 
   const fallback = await getFallbackCategory(session.user.id);

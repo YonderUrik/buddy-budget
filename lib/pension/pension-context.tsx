@@ -18,12 +18,12 @@ import {
   type PensionPerformance,
   type WithdrawalScenario,
 } from "@/lib/calc/pension";
+import { ASSUMED_INFLATION } from "@/lib/pension/projection";
 import { todayIso } from "@/lib/debts/dates";
 import { usePensionQuery } from "@/lib/queries/pension";
 import type { PensionFundData, PensionSnapshotData } from "./types";
 
-/** Inflazione annua costante usata per la rivalutazione del TFR in azienda (con i dati veri verrà dall'indice). */
-export const ASSUMED_INFLATION = 0.02;
+export { ASSUMED_INFLATION };
 
 export interface PensionContextValue {
   isLoading: boolean;

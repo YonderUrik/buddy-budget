@@ -134,8 +134,9 @@ export function isCountryPathAvailable(country: string, path: string): boolean {
     for (const [route, capability] of [["/investimenti/tasse", "tax"], ["/investimenti/proventi", "income"]] as const) {
       if (within(path, route)) return path === route && isPlanningAvailable(country, capability);
     }
-    return true;
+    // The native apps' Italian tax and income views: Germany has its own (`/api/financial-planning`).
+    return !["/api/investments/taxes", "/api/investments/income"].some(prefix => within(path, prefix));
   }
   // No local tax rules: no tax screens. Everything else (income, Analitiche, goals) runs without taxes.
-  return !["/investimenti/tasse", "/api/financial-planning"].some(prefix => within(path, prefix));
+  return !["/investimenti/tasse", "/api/investments/taxes", "/api/financial-planning"].some(prefix => within(path, prefix));
 }

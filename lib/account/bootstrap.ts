@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { LEGAL_VERSION, needsLegalAcceptance } from "@/lib/legal/version";
-import { COUNTRY_LANGUAGES, LANGUAGES, PRODUCT_COUNTRIES, countryFeatures, isCountryPathAvailable, resolveProfile } from "@/lib/localization/config";
+import { planningModel } from "@/lib/financial-planning/registry";
+import { COUNTRY_LANGUAGES, LANGUAGES, PRODUCT_COUNTRIES, countryFeatures, isCountryPathAvailable, resolveProfile, type ProductCountry } from "@/lib/localization/config";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { resolveHomePage } from "./home-pages";
 import { ACCOUNT_DEACTIVATED_CODE, LEGAL_ACCEPTANCE_REQUIRED_CODE, ONBOARDING_REQUIRED_CODE, accountGate } from "./gates";
@@ -21,6 +22,19 @@ export const COUNTRY_SECTION_PATHS = {
 } as const;
 
 export type CountrySection = keyof typeof COUNTRY_SECTION_PATHS;
+
+/**
+ * Which country-gated sections a product country has: the proxy's path policy, and for the financial plan also a
+ * planning model (Italy passes the path policy but `/api/financial-planning` has no Italian model and answers 403).
+ */
+export function countrySections(country: ProductCountry): Record<CountrySection, boolean> {
+  return Object.fromEntries(
+    Object.entries(COUNTRY_SECTION_PATHS).map(([section, path]) => [
+      section,
+      isCountryPathAvailable(country, path) && (section !== "financialPlanning" || planningModel(country) !== null),
+    ]),
+  ) as Record<CountrySection, boolean>;
+}
 
 const isoDate = z.iso.datetime();
 const booleanMap = <K extends string>(keys: readonly K[]) => z.object(Object.fromEntries(keys.map((key) => [key, z.boolean()])) as Record<K, z.ZodBoolean>);
@@ -105,9 +119,7 @@ export function buildMeBootstrap({ user, session }: BootstrapSession): MeBootstr
     gate: accountGate(user),
     capabilities: {
       features: { ...countryFeatures(profile.productCountry) },
-      sections: Object.fromEntries(
-        Object.entries(COUNTRY_SECTION_PATHS).map(([section, path]) => [section, isCountryPathAvailable(profile.productCountry, path)]),
-      ) as Record<CountrySection, boolean>,
+      sections: countrySections(profile.productCountry),
     },
     session: {
       createdAt: createdAt.toISOString(),

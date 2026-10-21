@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Debt } from "@/lib/db/schema/debts";
-import { buildExitPlan, findDueRow, yearlyInterestShares } from "./overview-insights";
+import { buildDebtsInsights, buildExitPlan, EXIT_EXTRA_MAX, EXIT_EXTRA_STEP, findDueRow, repaidShare, yearlyInterestShares } from "./overview-insights";
 import { buildDebtsView } from "./view";
 
 const now = new Date("2026-09-30T10:00:00Z");
@@ -53,5 +53,16 @@ describe("findDueRow", () => {
     const next = d.plan.rows.find((r) => r.status !== "pagata")!;
     expect(findDueRow(d, next.dueDate)?.number).toBe(next.number);
     expect(findDueRow(d, "1999-01-01")).toBeUndefined();
+  });
+});
+
+describe("buildDebtsInsights", () => {
+  it("serves the overview readings and one exit plan per slider step", () => {
+    const insights = buildDebtsInsights(view.debts, TODAY);
+    expect(insights.interestShares).toEqual(yearlyInterestShares(view.debts));
+    expect(insights.repaid).toEqual(view.debts.map((d) => ({ debtId: d.id, share: repaidShare(d) })));
+    expect(insights.exit.extras).toHaveLength(EXIT_EXTRA_MAX / EXIT_EXTRA_STEP + 1);
+    expect(insights.exit.plans[6]).toEqual(buildExitPlan(view.debts, 300, TODAY));
+    expect(insights.exit.loans.map((l) => l.id)).toEqual(["caro", "mutuo"]);
   });
 });

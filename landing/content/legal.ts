@@ -5,7 +5,7 @@
  */
 
 /** Versione dei documenti (data dell'ultima modifica sostanziale). */
-export const LEGAL_VERSION = "2026-10-22";
+export const LEGAL_VERSION = "2026-10-23";
 
 export const LEGAL_OWNER = {
   name: "Daniele Roccaforte",

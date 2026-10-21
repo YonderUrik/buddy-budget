@@ -27,7 +27,7 @@ import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
 import { touchLastActive } from "@/lib/account/last-active";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
-import { publicDemo } from "./public-demo-plugin";
+import { publicDemo, type PublicDemoSessionReader } from "./public-demo-plugin";
 
 /** Sign-in methods of this instance (password, magic link, Google), from the environment: see lib/instance/config.ts. */
 const methods = authMethods();
@@ -52,6 +52,9 @@ async function accountByEmail(email: string) {
     .catch(() => []);
   return user;
 }
+
+// Resolve lazily through the complete auth pipeline, including bearer authentication.
+const readPublicDemoSession: PublicDemoSessionReader = (headers) => auth.api.getSession({ headers });
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -98,7 +101,7 @@ export const auth = betterAuth({
     // Cookie readable by the page (no database field): lets the login page offer the method used last time.
     lastLoginMethod(),
     // Read-only sample accounts anyone can open from the landing (`/demo`), when PUBLIC_DEMO_ENABLED=true.
-    publicDemo(),
+    publicDemo(readPublicDemoSession),
     // Native apps (no cookie jar): `Authorization: Bearer <session token>` is read as the session cookie by every
     // `getSession` call (API routes and proxy), and sign-in responses carry the token in the `set-auth-token` header.
     // The web keeps using the HttpOnly cookie. Unsigned tokens are accepted (the plugin signs them itself), so the

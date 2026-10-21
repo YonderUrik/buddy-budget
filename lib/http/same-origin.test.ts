@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { isBearerOnlyRequest, isTrustedWriteOrigin } from "./same-origin";
 
 const APP_URL = "https://app.buddybudget.io";
 const request = (headers: Record<string, string>) => new Request(`${APP_URL}/api/personal-imports`, { method: "POST", headers });
+
+afterEach(() => vi.unstubAllEnvs());
 
 describe("isTrustedWriteOrigin", () => {
   it("accepts cookie requests from the app origin only", () => {
@@ -21,7 +23,8 @@ describe("isTrustedWriteOrigin", () => {
   });
 
   it("uses the request URL when APP_URL is not set", () => {
-    expect(isTrustedWriteOrigin(request({ origin: APP_URL }), undefined)).toBe(true);
+    vi.stubEnv("APP_URL", undefined);
+    expect(isTrustedWriteOrigin(request({ origin: APP_URL }))).toBe(true);
   });
 });
 

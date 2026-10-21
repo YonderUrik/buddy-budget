@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.85.0](https://github.com/YonderUrik/buddy-budget/compare/v0.84.0...v0.85.0) (2026-10-21)
+
+
+### Novità
+
+* add the mobile backend API independently of native apps ([#480](https://github.com/YonderUrik/buddy-budget/issues/480)) ([08f1d90](https://github.com/YonderUrik/buddy-budget/commit/08f1d90fa95242aff5ce43111f5416807a638600))
+
 ## [0.84.0](https://github.com/YonderUrik/buddy-budget/compare/v0.83.0...v0.84.0) (2026-10-21)
 
 

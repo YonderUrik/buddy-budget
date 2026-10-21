@@ -2,7 +2,7 @@ import 'server-only';
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { lastLoginMethod, magicLink } from "better-auth/plugins";
+import { bearer, lastLoginMethod, magicLink } from "better-auth/plugins";
 import { APIError } from "better-auth/api";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
@@ -27,7 +27,7 @@ import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
 import { touchLastActive } from "@/lib/account/last-active";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
-import { publicDemo } from "./public-demo-plugin";
+import { publicDemo, type PublicDemoSessionReader } from "./public-demo-plugin";
 
 /** Sign-in methods of this instance (password, magic link, Google), from the environment: see lib/instance/config.ts. */
 const methods = authMethods();
@@ -52,6 +52,9 @@ async function accountByEmail(email: string) {
     .catch(() => []);
   return user;
 }
+
+// Resolve lazily through the complete auth pipeline, including bearer authentication.
+const readPublicDemoSession: PublicDemoSessionReader = (headers) => auth.api.getSession({ headers });
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -98,7 +101,12 @@ export const auth = betterAuth({
     // Cookie readable by the page (no database field): lets the login page offer the method used last time.
     lastLoginMethod(),
     // Read-only sample accounts anyone can open from the landing (`/demo`), when PUBLIC_DEMO_ENABLED=true.
-    publicDemo(),
+    publicDemo(readPublicDemoSession),
+    // Native apps (no cookie jar): `Authorization: Bearer <session token>` is read as the session cookie by every
+    // `getSession` call (API routes and proxy), and sign-in responses carry the token in the `set-auth-token` header.
+    // The web keeps using the HttpOnly cookie. Unsigned tokens are accepted (the plugin signs them itself), so the
+    // `token` returned by `/magic-link/verify` without a callbackURL works as is.
+    bearer(),
   ],
   socialProviders: googleProvider,
   // Email and password: on for self-hosted installs (no email service needed), off on the hosted version.

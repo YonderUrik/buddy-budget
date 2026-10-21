@@ -277,7 +277,7 @@ export interface ProductEvents {
   /** Product country changed in Impostazioni. */
   country_changed: { from: "settings"; country: "IT" | "DE" | "OTHER" };
   /** A section the user's country does not have yet was tapped (menu entry marked «Presto nel tuo paese»): how many people want it there. */
-  country_feature_requested: { section: "pensione" | "analitiche"; country: "DE" | "OTHER" };
+  country_feature_requested: { section: "pensione"; country: "DE" | "OTHER" };
   settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
   more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */

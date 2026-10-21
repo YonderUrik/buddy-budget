@@ -13,15 +13,13 @@ export const FEATURE_NEEDS: Readonly<Record<string, RuleNeed>> = {
   "simulatore-prima-di-vendere": "taxes",
   "pianificazione-germania": "taxes",
   pensione: "pension",
-  analitiche: "retirement",
 };
 
-/** App screens of the gallery that show Italian taxes, the pension fund or the retirement planning. */
+/** App screens of the gallery that show Italian taxes or the pension fund. */
 export const SCREEN_NEEDS: Partial<Record<ScreenId, RuleNeed>> = {
   tasse: "taxes",
   pensione: "pension",
   "pensione-scenari": "pension",
-  analitiche: "retirement",
 };
 
 /** The notes, per language: the home (pension, and taxes too where no rules exist) and the tax blocks alone. */

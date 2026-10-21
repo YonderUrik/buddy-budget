@@ -27,7 +27,7 @@ export const FAQ_EN: readonly FaqItem[] = [
   { question: "Is it free?", answer: "Yes, during the beta. If that changes we'll say so first, and you can take everything with you in a ZIP file." },
   {
     question: "Which countries and languages?",
-    answer: `Two products: Italy, in Italian and English, and Germany, in German and English. You pick the currency. Italy has every feature. Germany has the essentials: accounts, portfolio, dividends and partial 2026 tax estimates, with the limits written out; pension and the advanced simulators stay hidden until they have been reviewed. Banks can be connected in ${BANK_LIST_EN}.`,
+    answer: `Italy in Italian and English, Germany in German and English, every other country in any of the three. You pick the currency. Italy has every feature. Germany has partial 2026 tax estimates, with the limits written out; the pension comes after a review. Other countries get everything except pension and taxes. Banks can be connected in ${BANK_LIST_EN}.`,
   },
   { question: "Does it connect to my bank?", answer: "Not yet: a read-only Open Banking connection is coming soon. Until then you upload your bank statement as CSV or Excel, or add accounts by hand." },
   {
@@ -144,7 +144,6 @@ export const HOME_EN: HomeContent = {
         text: "It starts from what you really save and spend, not from a guess. Move a slider and the year moves.",
         figure: { value: "2046", caption: "in 19.2 years, at today's pace" },
         shot: "analitiche",
-        needs: "retirement",
       },
     ],
     tabsLabel: "Screens",

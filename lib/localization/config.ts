@@ -18,8 +18,8 @@ export const PRODUCT_COUNTRY_NAMES: Record<ProductCountry, string> = { IT: "Ital
  */
 export const COUNTRY_UNAVAILABLE_NOTES: Record<ProductCountry, string | null> = {
   IT: null,
-  DE: "Per la Germania, tasse, pensione, previsioni dei dividendi e pianificazione del pensionamento non sono ancora disponibili. I dati esistenti vengono conservati.",
-  OTHER: "Tasse, pensione e previsioni dei dividendi seguono le regole italiane e tedesche: per il tuo paese arriveranno presto. Tutto il resto funziona.",
+  DE: "Per la Germania la pensione non è ancora disponibile. I dati esistenti vengono conservati.",
+  OTHER: "Tasse e pensione seguono le regole italiane e tedesche: per il tuo paese arriveranno presto. Tutto il resto funziona.",
 };
 /** Error of a page or API that the user's country does not have yet (Italian source key). */
 export const COUNTRY_UNAVAILABLE_MESSAGE = "Non ancora disponibile nel tuo paese. Arriverà presto.";
@@ -127,14 +127,15 @@ const within = (path: string, prefix: string) => path === prefix || path.startsW
  */
 export function isCountryPathAvailable(country: string, path: string): boolean {
   if (country === "IT") return true;
-  // Analitiche (FIRE, withdrawals, goals) only uses the user's own figures: open where no local rules exist.
-  if (country === "OTHER" && ["/analitiche", "/api/analytics", "/api/goals", "/api/sidebar/fire"].some(prefix => within(path, prefix))) return true;
-  // Dedicated German screens; legacy Italian APIs and subpages stay inaccessible.
-  const planningRoutes = { "/pensione": "pension", "/analitiche": "retirement", "/investimenti/tasse": "tax", "/investimenti/proventi": "income" } as const;
-  if (Object.hasOwn(planningRoutes, path)) return isPlanningAvailable(country, planningRoutes[path as keyof typeof planningRoutes]);
-  if (country === "DE" && path === "/api/financial-planning") return true;
-  return ![
-    "/pensione", "/analitiche", "/investimenti/tasse", "/investimenti/proventi",
-    "/api/pension", "/api/analytics", "/api/goals", "/api/sidebar/fire", "/api/investments/tax-carryforwards", "/api/financial-planning",
-  ].some(prefix => within(path, prefix));
+  // The Italian pension fund and the Italian loss carry-forward (zainetto fiscale) exist only in Italy.
+  if (["/pensione", "/api/pension", "/api/investments/tax-carryforwards"].some(prefix => within(path, prefix))) return false;
+  if (country === "DE") {
+    // Dedicated German tax and income screens; the Italian subpages under them stay closed.
+    for (const [route, capability] of [["/investimenti/tasse", "tax"], ["/investimenti/proventi", "income"]] as const) {
+      if (within(path, route)) return path === route && isPlanningAvailable(country, capability);
+    }
+    return true;
+  }
+  // No local tax rules: no tax screens. Everything else (income, Analitiche, goals) runs without taxes.
+  return !["/investimenti/tasse", "/api/financial-planning"].some(prefix => within(path, prefix));
 }

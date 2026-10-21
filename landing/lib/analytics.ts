@@ -21,6 +21,8 @@ export interface LandingEvents {
   demo_click: { location: LandingEvents["cta_click"]["location"]; lang: Locale };
   /** The language menu, or the "also available in English" bar of the Italian home. */
   language_switch_click: { from: Locale; to: Locale; location: "nav" | "menu" | "footer" | "hint" };
+  /** An Italian page replaced by its English counterpart because the visitor's country does not speak Italian (no country sent). */
+  language_auto_switched: { from: "it"; to: "en" };
   /** The "also available in English" bar closed without following it. */
   language_hint_dismissed: undefined;
   section_view: { section: SectionId };

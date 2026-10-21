@@ -71,7 +71,8 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
   const { t: tr } = useLocalization();
   const fieldId = React.useId();
   const { productCountry, language } = useLocalization();
-  const [country, setCountry] = React.useState<string>(productCountry);
+  // Banks are listed by GoCardless country: a country without its own rules starts from Italy's list (changeable below).
+  const [country, setCountry] = React.useState<string>(productCountry === "OTHER" ? "IT" : productCountry);
   const [search, setSearch] = React.useState("");
   const { data: institutions, isLoading, isError, refetch } = useInstitutionsQuery(country);
   const createConnection = useCreateConnectionMutation();

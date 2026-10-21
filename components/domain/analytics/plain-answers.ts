@@ -147,10 +147,12 @@ export function lastingAnswer(results: MonteCarloResult[], selected: WithdrawalR
 export function costsSentences(summary: CostSummary, lostAfterYears: number | null, years: number, liquidation: AnalyticsPlan["liquidation"], currency: string, language: Language = "it"): string[] {
   const { money, pct, t } = textTools(language);
   if (summary.totalValue <= 0) return [t("Non hai ancora investimenti: quando ne avrai, qui vedrai quanto costano.")];
+  const cost = money(summary.annualCost, currency);
+  const share = summary.annualPct !== null ? pct(summary.annualPct, 2) : null;
   const out = [
-    summary.annualPct !== null
-      ? t("Costi dei fondi e bollo: {0} l'anno ({1} del portafoglio).", { 0: money(summary.annualCost, currency), 1: pct(summary.annualPct, 2) })
-      : t("Costi dei fondi e bollo: {0} l'anno.", { 0: money(summary.annualCost, currency) }),
+    summary.stampDuty
+      ? share !== null ? t("Costi dei fondi e bollo: {0} l'anno ({1} del portafoglio).", { 0: cost, 1: share }) : t("Costi dei fondi e bollo: {0} l'anno.", { 0: cost })
+      : share !== null ? t("Costi dei fondi: {0} l'anno ({1} del portafoglio).", { 0: cost, 1: share }) : t("Costi dei fondi: {0} l'anno.", { 0: cost }),
   ];
   if (lostAfterYears !== null && lostAfterYears > 0) out.push(t("In {0} anni sono {1} in meno, a parità di rendimento.", { 0: years, 1: money(lostAfterYears, currency) }));
   if (summary.missingTerValue > 0) out.push(t("Per posizioni da {0} manca il costo del fondo: il totale è più basso del reale.", { 0: money(summary.missingTerValue, currency) }));

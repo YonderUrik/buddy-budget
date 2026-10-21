@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import "./lang-switch.css";
 import { track, type LandingEvents } from "@/lib/analytics";
 import { HTML_LANG, LOCALE_NAME, LOCALES, type Locale } from "@/lib/i18n";
+import { rememberLanguageChoice } from "@/lib/visitor-country";
 
 export interface LangSwitchProps {
   /** Language of the current page (listed with a check, not linked). */
@@ -23,7 +24,7 @@ export interface LangSwitchProps {
  * Language menu: a button with the current language written in itself, opening the list of every language, each
  * in its own name. Built to hold many languages, not only two. A `<details>` so it works without script; script only
  * closes it on a click outside or Escape. Links are plain `<a>` (each language has its own root layout). A choice
- * sends `language_switch_click`.
+ * is remembered (the switch by country never overrides it) and sends `language_switch_click`.
  */
 export function LangSwitch({ locale, hrefs, location, label, up, className }: LangSwitchProps) {
   const root = useRef<HTMLDetailsElement>(null);
@@ -64,7 +65,10 @@ export function LangSwitch({ locale, hrefs, location, label, up, className }: La
                 <Check size={16} strokeWidth={2} aria-hidden="true" />
               </span>
             ) : (
-              <a className="lang-item" href={hrefs[l]} hrefLang={HTML_LANG[l]} lang={HTML_LANG[l]} onClick={() => track("language_switch_click", { from: locale, to: l, location })}>
+              <a className="lang-item" href={hrefs[l]} hrefLang={HTML_LANG[l]} lang={HTML_LANG[l]} onClick={() => {
+                  rememberLanguageChoice(l);
+                  track("language_switch_click", { from: locale, to: l, location });
+                }}>
                 {LOCALE_NAME[l]}
               </a>
             )}

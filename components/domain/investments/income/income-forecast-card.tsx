@@ -37,9 +37,11 @@ export interface IncomeForecastCardProps {
   currency: string;
   /** Apre l'inserimento delle cedole di un'obbligazione. */
   onEditCoupons: (instrument: Instrument) => void;
+  /** False where the app has no tax rules for the user's country: amounts are gross and shown once. */
+  taxes?: boolean;
 }
 
-export function IncomeForecastCard({ forecast, instrumentsById, currency, onEditCoupons }: IncomeForecastCardProps) {
+export function IncomeForecastCard({ forecast, instrumentsById, currency, onEditCoupons, taxes = true }: IncomeForecastCardProps) {
   const { locale: formattingLocale } = useLocalization();
   const { shortMonthLabel } = localizedFormats(formattingLocale);
 
@@ -66,8 +68,9 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
           <p className="text-sm text-muted-foreground">{tr("Nessun incasso previsto: i tuoi strumenti non hanno staccato dividendi nell'ultimo anno (es. ETF ad accumulazione).")}</p>
         ) : (
           <>
-            <p className="max-w-prose text-base text-foreground">{tr("Da")}{" "}{periodLabel(forecast)}{tr(", con le quote di oggi dovresti incassare circa")}{" "}<span className="font-semibold tabular-nums text-pos">{format(forecast.totalNet)}</span>{" "}{tr("netti")}<span className="text-muted-foreground"> {"("}{format(forecast.totalGross)}{" "}{tr("lordi), circa")}{" "}{format(forecast.totalNet / 12)}{" "}{tr("al mese.")}</span>
-            </p>
+            {taxes ? <p className="max-w-prose text-base text-foreground">{tr("Da")}{" "}{periodLabel(forecast)}{tr(", con le quote di oggi dovresti incassare circa")}{" "}<span className="font-semibold tabular-nums text-pos">{format(forecast.totalNet)}</span>{" "}{tr("netti")}<span className="text-muted-foreground"> {"("}{format(forecast.totalGross)}{" "}{tr("lordi), circa")}{" "}{format(forecast.totalNet / 12)}{" "}{tr("al mese.")}</span>
+            </p> : <p className="max-w-prose text-base text-foreground">{tr("Da")}{" "}{periodLabel(forecast)}{tr(", con le quote di oggi dovresti incassare circa")}{" "}<span className="font-semibold tabular-nums text-pos">{format(forecast.totalGross)}</span>{" "}{tr("lordi")}<span className="text-muted-foreground">{tr(", circa")}{" "}{format(forecast.totalGross / 12)}{" "}{tr("al mese.")}</span>
+            </p>}
             <MonthBars
               ariaLabel={tr("Incassi previsti per mese")}
               bars={forecast.months.map((m) => ({
@@ -75,7 +78,7 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
                 label: shortMonthLabel(m.key),
                 primary: m.net,
                 secondary: m.gross - m.net,
-                title: `${shortMonthLabel(m.key)} ${m.key.slice(0, 4)}: ${format(m.net)} netti, ${format(m.gross)} lordi`,
+                title: taxes ? `${shortMonthLabel(m.key)} ${m.key.slice(0, 4)}: ${format(m.net)} netti, ${format(m.gross)} lordi` : `${shortMonthLabel(m.key)} ${m.key.slice(0, 4)}: ${format(m.gross)}`,
               }))}
             />
             <ul className="flex flex-col">
@@ -90,7 +93,7 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
                   </span>
                   <span className="shrink-0 text-right tabular-nums">
                     <span className={event.kind === "rimborso" ? "text-foreground" : "text-pos"}>{formatCurrency(event.net, currency)}</span>
-                    {event.kind !== "rimborso" ? <span className="block text-xs text-muted-foreground">{formatCurrency(event.gross, currency)}{" "}{tr("lordi")}</span> : null}
+                    {taxes && event.kind !== "rimborso" ? <span className="block text-xs text-muted-foreground">{formatCurrency(event.gross, currency)}{" "}{tr("lordi")}</span> : null}
                   </span>
                 </li>
               ))}
@@ -100,7 +103,7 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
                 {showAll ? tr("Mostra meno") : tr("Mostra tutti ({0})", {0: forecast.events.length})}
               </Button>
             ) : null}
-            <p className="text-xs text-muted-foreground">{tr("Stima per data di stacco, netta della sola imposta italiana: sui dividendi esteri c'è anche la ritenuta del paese d'origine. Il rimborso di un'obbligazione è capitale che torna, non un provento.")}</p>
+            <p className="text-xs text-muted-foreground">{taxes ? tr("Stima per data di stacco, netta della sola imposta italiana: sui dividendi esteri c'è anche la ritenuta del paese d'origine. Il rimborso di un'obbligazione è capitale che torna, non un provento.") : tr("Stima per data di stacco, al lordo delle imposte: quelle del tuo paese non sono calcolate. Il rimborso di un'obbligazione è capitale che torna, non un provento.")}</p>
           </>
         )}
         {missingTerms.length > 0 ? (

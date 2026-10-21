@@ -23,7 +23,7 @@ export const SOURCES_CHECKED_EN = "2 October 2026";
 export const SOURCES_SUMMARY_EN = "Sources and legal references, in Italian";
 
 export const TOOLS_EN: readonly Tool[] = [
-  { id: "zainetto", name: "Zainetto fiscale", text: "Italian tax-loss carryforward: how much of your past losses you can still use, and the tax you pay on a gain.", href: EN_PATHS.zainetto },
+  { id: "zainetto", name: "Zainetto fiscale", text: "Italian tax-loss carryforward: how much of your past losses you can still use, and the tax you pay on a gain.", href: EN_PATHS.zainetto, needs: "taxes" },
   { id: "ammortamento", name: "Loan amortization", text: "Monthly payment, total interest and how much you save by paying part of the loan off early.", href: EN_PATHS.loanAmortization },
   { id: "obiettivo", name: "Savings goal", text: "How long it takes to reach an amount with what you put aside each month.", href: EN_PATHS.savingsGoal },
 ];

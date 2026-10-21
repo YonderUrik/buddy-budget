@@ -68,6 +68,8 @@ const DEMO_SEED_TEXTS: Record<string, readonly [en: string, de: string]> = {
   "Portafoglio principale": ["Main portfolio", "Hauptdepot"],
   "BTP Valore 2030": ["BTP Valore 2030", "Bundesanleihe 2030"],
   "Bund tedesco 2030": ["German Bund 2030", "Bundesanleihe 2030"],
+  "Titolo di Stato europeo 2030": ["European government bond 2030", "Europäische Staatsanleihe 2030"],
+  "Titolo di Stato europeo 12 mesi": ["European 12-month bill", "Europäische Geldmarktanleihe 12 Monate"],
   "BOT 12 mesi": ["BOT 12-month bill", "BOT 12 Monate"],
   "Titolo di Stato tedesco 12 mesi": ["German 12-month bill", "Bubill 12 Monate"],
   "Interactive Brokers · liquidità": ["Interactive Brokers · cash", "Interactive Brokers · Guthaben"],

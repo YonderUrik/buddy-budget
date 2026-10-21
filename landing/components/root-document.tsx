@@ -10,7 +10,10 @@ import { HTML_LANG, LOCALES, OG_LOCALE, SCHEMA_LANGUAGE, type Locale } from "@/l
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import { LANG_HINT_STORAGE_KEY } from "@/lib/lang-hint";
 import { SCREEN_LANGUAGE_SCRIPT } from "@/lib/screen-variants";
+import { autoLanguageScript, RULES_SCRIPT } from "@/lib/visitor-country";
+import { AutoSwitchReport } from "@/components/auto-switch-report";
 import { UtmPassthrough } from "@/components/utm-passthrough";
+import { HOME_PATH, PAGE_PAIRS } from "@/content/locales";
 
 const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 // The script goes through the app's `/stats` proxy (avoids tracker blocks); `data-domains` limits counting to the real domain.
@@ -84,25 +87,36 @@ if(window.matchMedia("(prefers-reduced-motion: no-preference)").matches)document
  */
 const LANG_HINT_SCRIPT = `try{var l=(navigator.languages&&navigator.languages[0])||navigator.language||"";if(l&&!/^it\\b/i.test(l)&&localStorage.getItem("${LANG_HINT_STORAGE_KEY}")!=="1")document.documentElement.dataset.langHint="en"}catch(e){}`;
 
+/** Italian pages only: the English counterpart of each page (`PAGE_PAIRS`), for the switch by country. */
+const AUTO_LANGUAGE_SCRIPT = autoLanguageScript(Object.fromEntries(PAGE_PAIRS.map((p) => [p.it, p.en])), HOME_PATH.en);
+
+/** Boot script of a page: the switch by country first (nothing else matters if the page is replaced), then the rest. */
+export function bootScript(locale: Locale, autoLanguage = true): string {
+  if (locale === "en") return `${BOOT_SCRIPT}\n${RULES_SCRIPT}`;
+  return [autoLanguage ? AUTO_LANGUAGE_SCRIPT : null, BOOT_SCRIPT, RULES_SCRIPT, SCREEN_LANGUAGE_SCRIPT, LANG_HINT_SCRIPT].filter(Boolean).join("\n");
+}
+
 /**
  * The `<html>` of one language, shared by the two root layouts (`app/(it)/layout.tsx`, `app/en/layout.tsx`): `lang`,
  * the boot script, structured data, the brand sprite and Umami. English pages also carry `data-screens="en"`, which
  * switches the app screenshots to their English captures; Italian pages pick them from `?lang=` or the browser
- * (`SCREEN_LANGUAGE_SCRIPT`).
+ * (`SCREEN_LANGUAGE_SCRIPT`). Every page sets `data-rules` from the country cookie (`lib/visitor-country.ts`); Italian
+ * pages also move a visitor from outside Italy to English, unless `autoLanguage` is off (the 404).
  */
-export function RootDocument({ locale, children }: { locale: Locale; children: React.ReactNode }) {
+export function RootDocument({ locale, autoLanguage = true, children }: { locale: Locale; autoLanguage?: boolean; children: React.ReactNode }) {
   return (
     <html lang={HTML_LANG[locale]} data-screens={locale === "en" ? "en" : undefined} suppressHydrationWarning>
       <body>
         {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document -- rendered only by the root layouts (and the global 404) */}
         <Script id="boot" strategy="beforeInteractive">
-          {locale === "it" ? `${BOOT_SCRIPT}\n${SCREEN_LANGUAGE_SCRIPT}\n${LANG_HINT_SCRIPT}` : BOOT_SCRIPT}
+          {bootScript(locale, autoLanguage)}
         </Script>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }} />
         <BrandSprite />
         {children}
         <RiseObserver />
         <UtmPassthrough appUrl={APP_URL} />
+        {locale === "en" ? <AutoSwitchReport /> : null}
         {UMAMI_ID ? <Script src={UMAMI_SRC} data-website-id={UMAMI_ID} data-domains={UMAMI_DOMAINS} strategy="afterInteractive" /> : null}
       </body>
     </html>

@@ -70,7 +70,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
   const { t: tr } = useLocalization();
   const pathname = usePathname();
   const [pendingHref, startNav] = usePendingNavHref();
-  const primary = primaryHrefs.flatMap((href) => items.filter((i) => i.href === href && !i.comingSoon));
+  const primary = primaryHrefs.flatMap((href) => items.filter((i) => i.href === href && !i.comingSoon && !i.locked));
   const current = pendingHref ?? activeHref ?? pathname;
   const inPrimary = primary.some((i) => isActivePath(current, i.href));
 

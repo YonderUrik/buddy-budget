@@ -755,7 +755,7 @@ export function recordStartEvent(event: StartEvent): void {
   metrics().startEvents.inc({ event });
 }
 
-/** Public demo events; `language` (it/en/de) and `country` (IT/DE) are the demo's profile, both closed enums. */
-export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "en" | "de", country: "IT" | "DE"): void {
+/** Public demo events; `language` (it/en/de) and `country` (IT/DE/OTHER) are the demo's profile, both closed enums. */
+export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "en" | "de", country: "IT" | "DE" | "OTHER"): void {
   metrics().publicDemoEvents.inc({ event, language, country });
 }

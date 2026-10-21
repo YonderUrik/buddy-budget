@@ -27,8 +27,8 @@ export default function Page() {
       <p className="note">Piano alla francese a rata costante, con TAN e rate mensili. Non include spese di istruttoria, assicurazioni o tassi variabili: per il costo reale serve il TAEG del contratto.</p>
       <h2>Rata costante, interessi decrescenti</h2>
       <p>Nel piano alla francese la rata resta uguale, ma all&apos;inizio quasi tutta serve a pagare interessi; col tempo cresce la quota di capitale. Per questo estinguere una parte presto fa risparmiare più che farlo verso la fine.</p>
-      <h2>Altri strumenti</h2>
-      <div className="related">
+      <h2 data-needs="taxes">Altri strumenti</h2>
+      <div className="related" data-needs="taxes">
         <Link href={CONTENT_PATHS.zainetto}>Zainetto fiscale<span>Minusvalenze, scadenze e imposta su una plusvalenza.</span></Link>
         <Link href={CONTENT_PATHS.funzioneInvestimenti}>Investimenti con le tasse italiane<span>Come BuddyBudget calcola rendimento, zaino fiscale e bollo.</span></Link>
       </div>

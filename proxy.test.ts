@@ -202,3 +202,31 @@ describe("proxy behind the ingress", async () => {
     expect(loggedIn.headers.get("location")).toBe("https://app.example.test/liquidita");
   });
 });
+
+describe("proxy and the visitor's country", async () => {
+  const { NextRequest } = await import("next/server");
+  const { auth } = await import("@/lib/auth");
+  const { proxy } = await import("./proxy");
+  const mockedGetSession = vi.mocked(auth.api.getSession);
+
+  it("turns ?lang= on the sign-in page into the language choice and drops it from the address", async () => {
+    mockedGetSession.mockResolvedValue(null as never);
+    const response = await proxy(new NextRequest("http://localhost/login?utm_source=landing&lang=it&signup=1"));
+    expect(response.headers.get("location")).toBe("http://localhost/login?utm_source=landing&signup=1");
+    expect(response.cookies.get("bb-language")?.value).toBe("it");
+    expect((await proxy(new NextRequest("http://localhost/login?lang=fr"))).headers.get("location")).toBeNull();
+  });
+
+  it("sends a section another country does not have to the explanation page, and APIs get a translated 403", async () => {
+    mockedGetSession.mockResolvedValue({
+      user: { id: "u1", language: "en", productCountry: "OTHER", onboardingCompleted: true, deletionScheduledAt: null, legalAcceptedVersion: LEGAL_VERSION },
+      session: {},
+    } as never);
+    expect((await proxy(new NextRequest("http://localhost/pensione"))).headers.get("location")).toBe("http://localhost/country-unavailable");
+    const api = await proxy(new NextRequest("http://localhost/api/investments/tax-carryforwards"));
+    expect(api.status).toBe(403);
+    expect(await api.json()).toMatchObject({ code: "country_feature_unavailable", error: "Not available in your country yet. Coming soon." });
+    expect((await proxy(new NextRequest("http://localhost/liquidita"))).headers.get("location")).toBeNull();
+    expect((await proxy(new NextRequest("http://localhost/analitiche"))).headers.get("location")).toBeNull();
+  });
+});

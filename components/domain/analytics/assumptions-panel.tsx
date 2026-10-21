@@ -57,7 +57,7 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
 
   const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr, locale } = useLocalization();
+  const { t: tr, locale, features } = useLocalization();
   const { parseNumber, toFieldText } = localizedNumberFields(locale);
   const initialPercents = React.useMemo(() => toPercentDraft(assumptions, locale), [assumptions, locale]);
   const [percents, setPercents] = React.useState<PercentDraft>(initialPercents);
@@ -211,13 +211,13 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
         </div>
       </div>
       <div className="flex flex-col gap-3">
-        <label className="flex items-start justify-between gap-4 text-sm">
+        {features.taxes ? <label className="flex items-start justify-between gap-4 text-sm">
           <span>
             <span className="font-medium">{tr("Conta le imposte sulle plusvalenze")}</span>
             <span className="block text-xs text-muted-foreground">{tr("Il patrimonio che spendi è quello dopo le tasse: il numero FIRE sale di conseguenza. Stimate:")}{" "}{money(plan.liquidation.latentTax, currency)}{" "}{tr("se vendessi tutto oggi.")}</span>
           </span>
           <Switch checked={includeTax} onCheckedChange={setIncludeTax} aria-label={tr("Conta le imposte sulle plusvalenze")} />
-        </label>
+        </label> : null}
         <label className="flex items-start justify-between gap-4 text-sm">
           <span>
             <span className="font-medium">{tr("Includi la previdenza complementare")}</span>

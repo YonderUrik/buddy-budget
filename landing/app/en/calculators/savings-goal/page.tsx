@@ -41,7 +41,7 @@ export default function Page() {
       </ul>
       <h2>Other tools</h2>
       <div className="related">
-        <Link href={EN_PATHS.zainetto}>Zainetto fiscale<span>Capital losses, their expiry and the tax on a gain.</span></Link>
+        <Link href={EN_PATHS.zainetto} data-needs="taxes">Zainetto fiscale<span>Capital losses, their expiry and the tax on a gain.</span></Link>
         <Link href={EN_PATHS.loanAmortization}>Loan amortization<span>Payment, interest and early repayment of a loan.</span></Link>
       </div>
     </ContentPage>

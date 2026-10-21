@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.83.0](https://github.com/YonderUrik/buddy-budget/compare/v0.82.0...v0.83.0) (2026-10-21)
+
+
+### Novità
+
+* accept bearer session tokens for the native apps ([#470](https://github.com/YonderUrik/buddy-budget/issues/470)) ([94bf1d5](https://github.com/YonderUrik/buddy-budget/commit/94bf1d5381b93fd1fa9dd7f61c817e4d169f9abc))
+* native app sign-in with an emailed code and launch state ([#472](https://github.com/YonderUrik/buddy-budget/issues/472)) ([cdc967a](https://github.com/YonderUrik/buddy-budget/commit/cdc967a1509c53cf7bd3920ee84bc2cea3ccb863))
+
 ## [0.82.0](https://github.com/YonderUrik/buddy-budget/compare/v0.81.0...v0.82.0) (2026-10-20)
 
 

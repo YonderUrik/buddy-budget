@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.85.1](https://github.com/YonderUrik/buddy-budget/compare/v0.85.0...v0.85.1) (2026-10-22)
+
+
+### Prestazioni
+
+* cache the Analytics plan behind the sidebar FIRE goal and Goals on Redis ([#483](https://github.com/YonderUrik/buddy-budget/issues/483)) ([0a518db](https://github.com/YonderUrik/buddy-budget/commit/0a518db6c7cd43d37891cfe3317acf1e8204415c))
+
 ## [0.85.0](https://github.com/YonderUrik/buddy-budget/compare/v0.84.0...v0.85.0) (2026-10-21)
 
 

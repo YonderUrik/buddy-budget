@@ -1,0 +1,52 @@
+# Feature inventory — BuddyBudget mobile (iOS + Android)
+
+Status: draft · Derived from the **current web code** (`buddy-budget`, Next.js 16, checkout of 2026-10-18), not from the mockup-era `docs/functional-spec.md`.
+
+Each file follows the same template (Purpose · Entry points · Screens · Requirements · Mobile adaptation notes · Open questions). Requirement IDs are stable; UI copy is quoted verbatim in Italian (the source keys of the web i18n catalog, translated at runtime into en/de). Items marked **"Proposal — needs product sign-off"** are mobile behaviours that do not exist on web and must be approved before implementation.
+
+## Index
+
+| File | Area | ID prefix | # req. | Web routes | Country availability |
+|---|---|---|---:|---|---|
+| [00-app-shell-navigation.md](00-app-shell-navigation.md) | App shell, navigation, sidebar insights, background-job island, Novità, theme, hide amounts, country gating model, feature catalog map | SHELL | 57 | `/` (home redirect), app layout, `/country-unavailable`, (`/style-guide` dev-only, excluded) | IT + DE (nav items filtered for DE) |
+| [01-auth-onboarding.md](01-auth-onboarding.md) | Sign-in (magic link, Google), legal acceptance, onboarding (country, language, currency, categories, emails, AI consent), deactivated account, unsubscribe | AUTH | 57 | `/login`, `/onboarding`, `/accetta-termini`, `/account-disattivato`, `/disiscrizione` | IT + DE |
+| [02-overview.md](02-overview.md) | Panoramica: net worth over time, asset classes, Primi passi checklist, demo data, upcoming dues, goals section | OV | 43 | `/panoramica` | IT + DE (DE: no goals section, no Previdenza class) |
+| [03-transactions.md](03-transactions.md) | Liquidità frame, Movimenti, row actions (edit, Dividi, notes, category), Analisi (cash flow, spending groups), budgets, legacy redirects | TX | 63 | `/liquidita`, `/liquidita/analisi` (+ `/movimenti`, `/spese`, `/transazioni`, `/cash-flow` redirects) | IT + DE |
+| [04-accounts-bank-sync.md](04-accounts-bank-sync.md) | Conti, manual accounts, GoCardless bank linking & limits, consent return, sync jobs, renewal | ACC | 55 | `/liquidita/conti`, `/conti/collega/[connectionId]` | IT + DE (bank country picker IT/DE/FR/ES/GB) |
+| [05-categories-categorization.md](05-categories-categorization.md) | Categories board, rules, Categorizza (Da decidere / Messe dall'app), AI proposals ≥90% auto-apply, Ricategorizza with undo, merchant logos | CAT | 96 | `/liquidita/categorie`, `/liquidita/regole`, `/categorizza` | IT + DE |
+| [06-subscriptions.md](06-subscriptions.md) | Recurring charges detection, confirm/dismiss, totals, price increases, manual add | SUB | 26 | `/liquidita/abbonamenti` | IT + DE |
+| [07-investments.md](07-investments.md) | Portafoglio, Performance, Diversificazione, Operazioni, Dividendi/Tasse (IT), register operation, broker CSV imports, import management, reset | INV | 110 | `/investimenti`, `/investimenti/{performance,diversificazione,operazioni,proventi,tasse}`, `/investimenti/rendiconti*` (legacy) | IT; DE: Dividendi/Tasse replaced by German planning screens |
+| [08-securities-watchlist.md](08-securities-watchlist.md) | Security page (key facts, chart with purchases, risk, fundamentals, ETF composition/TER), search, watchlist «Seguiti», price alerts | SEC | 53 | `/investimenti/titoli/[id]` (`/investimenti/titoli` redirects) | IT + DE (instrument settings partly gated) |
+| [09-pension.md](09-pension.md) | Italian pension funds & TFR: snapshots, CSV/XLSX import, return, withdrawal-today, TFR comparison, exit-tax timeline, projection | PEN | 28 | `/pensione`, `/pensione/{andamento,scenari,proiezione,dati}` | **IT only** (DE → `/country-unavailable`) |
+| [10-debts.md](10-debts.md) | Loans: add (3 start modes, missing-variable calculator, TAEG), plan, mark paid, events, early repayment, surroga, exit plan | DEBT | 38 | `/debiti`, `/debiti/finanziamenti`, (`/debiti/simulatore` redirect) | IT + DE |
+| [11-analytics.md](11-analytics.md) | Analitiche «Risposte»: FIRE year, what-if sliders, data period, four answers, «Per esperti», assumptions, goal dialog, walkthrough | ANA | 35 | `/analitiche` (+ legacy `costi`, `crescita`, `prelievi`, `rischio`, `simulazione` redirects) | **IT only** (DE → `/country-unavailable`) |
+| [12-goals.md](12-goals.md) | Savings goals: list, 5-step form, detail, «Aggiorna i soldi da parte», priorities, FIRE impact, email reminder | GOAL | 35 | `/analitiche/obiettivi`, `/analitiche/obiettivi/[id]` | **IT only** |
+| [13-planning-de.md](13-planning-de.md) | German financial planning: Tax 2026 & Income (visible); Pension/AVD, Retirement, simulators (hidden behind switches) | PLAN | 39 | `/investimenti/tasse`, `/investimenti/proventi` (DE); `/pensione`, `/analitiche` (DE, switched off) | **DE only** |
+| [14-imports.md](14-imports.md) | Personal CSV/XLSX imports with AI: upload, background analysis, rows to review, AI correction, import island, email | IMP | 61 | `/importazioni` | IT + DE |
+| [15-settings.md](15-settings.md) | Profile, locale (country/language/currency), home page, sidebar prefs, notifications, AI assistant, sessions, export, reset, deactivate, delete | SET | 49 | `/impostazioni` | IT + DE (goal reminders & FIRE module hidden for DE) |
+| [16-help-support.md](16-help-support.md) | Aiuto (FAQ, report form), «Scrivici», «Segnala questo problema», client error reporting | SUP | 26 | `/aiuto` | IT + DE |
+| **Total** | | | **871** | | |
+
+Country gating is centralised in `lib/localization/config.ts` (`isCountryPathAvailable`) and `lib/localization/planning-availability.ts` (DE: `tax: true, income: true, pension: false, retirement: false, simulations: false`); the web proxy redirects blocked routes to `/country-unavailable` and blocked APIs answer `403 {code:"country_feature_unavailable"}`. Model documented once in 00-app-shell-navigation.
+
+## Biggest cross-cutting findings
+
+1. **The API is not yet usable by native clients.** Auth is cookie-only via better-auth (bearer plugin not enabled); personal-import write endpoints enforce an `Origin == APP_URL` check (403 otherwise); merchant-logo images need an authenticated session; GoCardless consent always returns to a web URL. A native auth/token strategy, deep links (magic link, bank return) and native Google sign-in are prerequisites.
+2. **Most financial maths runs in the browser.** Investments (positions, TWR/MWR, risk, exposure, dividend forecasts, Italian tax), Analitiche (plan, Monte Carlo ~3,000 paths), Pension, Debt simulations, German planning and month-pace curves are client-side TypeScript fed by large raw downloads. Identical results on iOS and Android require either server endpoints (recommended) or byte-for-byte ports with shared test fixtures.
+3. **Gate state lives in the web proxy/session.** Onboarding completed, legal version, deactivation, country, language, home page, hide-amounts are read from the cookie session in `proxy.ts`; mobile needs one "session/profile + gates" endpoint and must not hard-code `LEGAL_VERSION` or route policy.
+4. **Per-device web preferences** (sidebar modules, bottom bar, theme, Novità dismissals, analytics opt-out) are in localStorage; they won't sync to mobile. Decide which become account settings and which are dropped (the sidebar has no native equivalent).
+5. **Localisation gaps.** Many strings bypass `t()`, are built from fragments (breaks German word order), or use Italian-only number parsing (`parseAmount` treats `,` as decimal; pension snapshot parsing reads `10.880` as 10.88). All transactional emails are Italian only. Server errors are Italian text without codes.
+6. **Destructive actions without confirmation on web** (delete debt event, pension snapshot, investment operation, subscription, demo reset). Mobile proposals use swipe + undo snackbar consistently — needs sign-off.
+7. **Docs vs code drift.** CLAUDE.md still mentions «Includi liquidità», broker TWR overlay, «Il foglio» login, a «Categorizza automaticamente» wizard, an editable budget in the pie legend and a `/investimenti/titoli` list — none of these exist in current code. The `/country-unavailable` copy says DE has no taxes/dividends, but DE Tax/Income screens are live. Specs follow the code.
+8. **No pagination.** `GET /api/transactions` returns a full date window (default two years) with server-side logo lookup per row; the net-worth history endpoint returns hundreds of KB. Mobile needs paginated/aggregated endpoints.
+9. **German tax year hard-coded to 2026**; no behaviour defined from 1 January 2027.
+10. **Push notifications** appear in the feature catalog as `soon`, but no backend exists; all alerts today are email (opt-in).
+
+## Known web bugs (fixed on mobile)
+
+- **02-overview — investments pulse `{±x,x}% sul versato`**: the web formats the percentage with `toFixed(1).replace(".", ",")`, so English shows `11,0%`; mobile formats it with the account locale (`11.0%` in en).
+- **04-accounts — delete/unlink confirmation**: `DELETE /api/accounts/{id}` also deletes all the account's movements, but the web copy says only «insieme al suo saldo registrato» (manual) or nothing (linked); mobile states that the movements are deleted too (`"{0}" verrà eliminato definitivamente, insieme al suo saldo e a tutti i suoi movimenti.` / `"{0}" verrà scollegato e tutti i suoi movimenti verranno eliminati. L'azione non è reversibile.`).
+- **11-analytics — metric sub-labels with an unfilled `{0}`**: several `Metric` notes pass a template literally (`"{0} prima delle imposte"`, `"hai fatto il {0}"`, `"spesa {0} ÷ {1}"`, `"{0} del traguardo"`, `"intorno al {0}"`, `"caso sfortunato {0}"`, `"regola: {0} · {1} anni"`, `"{0} della crescita"`, `"ipotizzata {0}"`, `"rendimento annuo {0}"`, `"{0} del portafoglio"`, `"{0} del valore"`), so the web shows the braces; mobile fills them with the gross FIRE number, progress, spending ÷ rate, finish year, unlucky ending wealth, rule/years, savings share, assumed volatility, annual return, cost % and tax ratio.
+- **11-analytics — Italian-only fragments**: `plain-answers.ts`, `deltaText`, the headline comparison and the walkthrough paragraphs are rendered without `t()`, and the «Arrivo» sentence formats the return with `toFixed(1).replace(".", ",")`; mobile translates them (catalog keys) and formats the number with the account locale.
+- **12-goals — reminder opt-in before the create succeeds** (open question 1): mobile enables goal emails only after `POST /api/goals` succeeds.
+

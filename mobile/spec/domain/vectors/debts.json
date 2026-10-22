@@ -1,0 +1,2872 @@
+{
+  "topic": "debts",
+  "source": "lib/calc/amortization.ts, lib/calc/debt-plan.ts, lib/calc/early-repayment.ts, lib/calc/debt-simulator.ts, lib/debts/*.ts",
+  "generatedBy": "running the TypeScript sources with tsx",
+  "vectors": [
+    {
+      "id": "round2.1.005",
+      "function": "round2",
+      "input": {
+        "value": 1.005
+      },
+      "expected": 1.01,
+      "tolerance": 0,
+      "notes": "Math.round((x + Number.EPSILON) * 100) / 100 — half-up toward +inf (JS Math.round)"
+    },
+    {
+      "id": "round2.2.675",
+      "function": "round2",
+      "input": {
+        "value": 2.675
+      },
+      "expected": 2.68,
+      "tolerance": 0,
+      "notes": "Math.round((x + Number.EPSILON) * 100) / 100 — half-up toward +inf (JS Math.round)"
+    },
+    {
+      "id": "round2.-1.005",
+      "function": "round2",
+      "input": {
+        "value": -1.005
+      },
+      "expected": -1,
+      "tolerance": 0,
+      "notes": "Math.round((x + Number.EPSILON) * 100) / 100 — half-up toward +inf (JS Math.round)"
+    },
+    {
+      "id": "round2.0.125",
+      "function": "round2",
+      "input": {
+        "value": 0.125
+      },
+      "expected": 0.13,
+      "tolerance": 0,
+      "notes": "Math.round((x + Number.EPSILON) * 100) / 100 — half-up toward +inf (JS Math.round)"
+    },
+    {
+      "id": "round2.1234.5649",
+      "function": "round2",
+      "input": {
+        "value": 1234.5649
+      },
+      "expected": 1234.56,
+      "tolerance": 0,
+      "notes": "Math.round((x + Number.EPSILON) * 100) / 100 — half-up toward +inf (JS Math.round)"
+    },
+    {
+      "id": "installmentAmount.10000_6.5_60",
+      "function": "installmentAmount",
+      "input": {
+        "principal": 10000,
+        "annualRate": 6.5,
+        "installments": 60
+      },
+      "expected": 195.66,
+      "tolerance": 0
+    },
+    {
+      "id": "installmentAmount.200000_3.2_360",
+      "function": "installmentAmount",
+      "input": {
+        "principal": 200000,
+        "annualRate": 3.2,
+        "installments": 360
+      },
+      "expected": 864.93,
+      "tolerance": 0
+    },
+    {
+      "id": "installmentAmount.1200_0_12",
+      "function": "installmentAmount",
+      "input": {
+        "principal": 1200,
+        "annualRate": 0,
+        "installments": 12
+      },
+      "expected": 100,
+      "tolerance": 0
+    },
+    {
+      "id": "installmentAmount.1000_0_7",
+      "function": "installmentAmount",
+      "input": {
+        "principal": 1000,
+        "annualRate": 0,
+        "installments": 7
+      },
+      "expected": 142.86,
+      "tolerance": 0
+    },
+    {
+      "id": "installmentAmount.15000_9.9_48",
+      "function": "installmentAmount",
+      "input": {
+        "principal": 15000,
+        "annualRate": 9.9,
+        "installments": 48
+      },
+      "expected": 379.72,
+      "tolerance": 0
+    },
+    {
+      "id": "installmentAmount.error.zeroPrincipal",
+      "function": "installmentAmount",
+      "input": {
+        "principal": 0,
+        "annualRate": 5,
+        "installments": 10
+      },
+      "expected": {
+        "error": "AmortizationError",
+        "message": "Capitale e numero di rate devono essere positivi"
+      },
+      "tolerance": null
+    },
+    {
+      "id": "addMonthsClamped.2024-01-31_1_none",
+      "function": "addMonthsClamped",
+      "input": {
+        "date": "2024-01-31",
+        "months": 1,
+        "anchorDay": null
+      },
+      "expected": "2024-02-29",
+      "tolerance": 0
+    },
+    {
+      "id": "addMonthsClamped.2024-01-31_2_none",
+      "function": "addMonthsClamped",
+      "input": {
+        "date": "2024-01-31",
+        "months": 2,
+        "anchorDay": null
+      },
+      "expected": "2024-03-31",
+      "tolerance": 0
+    },
+    {
+      "id": "addMonthsClamped.2023-01-31_1_none",
+      "function": "addMonthsClamped",
+      "input": {
+        "date": "2023-01-31",
+        "months": 1,
+        "anchorDay": null
+      },
+      "expected": "2023-02-28",
+      "tolerance": 0
+    },
+    {
+      "id": "addMonthsClamped.2024-02-29_1_31",
+      "function": "addMonthsClamped",
+      "input": {
+        "date": "2024-02-29",
+        "months": 1,
+        "anchorDay": 31
+      },
+      "expected": "2024-03-31",
+      "tolerance": 0
+    },
+    {
+      "id": "addMonthsClamped.2024-03-15_-3_none",
+      "function": "addMonthsClamped",
+      "input": {
+        "date": "2024-03-15",
+        "months": -3,
+        "anchorDay": null
+      },
+      "expected": "2023-12-15",
+      "tolerance": 0
+    },
+    {
+      "id": "addMonthsClamped.2024-11-30_3_none",
+      "function": "addMonthsClamped",
+      "input": {
+        "date": "2024-11-30",
+        "months": 3,
+        "anchorDay": null
+      },
+      "expected": "2025-02-28",
+      "tolerance": 0
+    },
+    {
+      "id": "buildSegmentSchedule.short_eom",
+      "function": "buildSegmentSchedule",
+      "input": {
+        "firstDueDate": "2024-01-31",
+        "principal": 1000,
+        "annualRate": 12,
+        "installments": 4
+      },
+      "expected": [
+        {
+          "number": 1,
+          "dueDate": "2024-01-31",
+          "installment": 256.28,
+          "interest": 10,
+          "capital": 246.28,
+          "residual": 753.72
+        },
+        {
+          "number": 2,
+          "dueDate": "2024-02-29",
+          "installment": 256.28,
+          "interest": 7.54,
+          "capital": 248.74,
+          "residual": 504.98
+        },
+        {
+          "number": 3,
+          "dueDate": "2024-03-31",
+          "installment": 256.28,
+          "interest": 5.05,
+          "capital": 251.23,
+          "residual": 253.75
+        },
+        {
+          "number": 4,
+          "dueDate": "2024-04-30",
+          "installment": 256.29,
+          "interest": 2.54,
+          "capital": 253.75,
+          "residual": 0
+        }
+      ],
+      "tolerance": 0,
+      "notes": "anchor day 31 clamps to Feb 29 then returns to 31"
+    },
+    {
+      "id": "buildSegmentSchedule.zeroRate_lastAbsorbs",
+      "function": "buildSegmentSchedule",
+      "input": {
+        "firstDueDate": "2025-03-10",
+        "principal": 1000,
+        "annualRate": 0,
+        "installments": 3
+      },
+      "expected": [
+        {
+          "number": 1,
+          "dueDate": "2025-03-10",
+          "installment": 333.33,
+          "interest": 0,
+          "capital": 333.33,
+          "residual": 666.67
+        },
+        {
+          "number": 2,
+          "dueDate": "2025-04-10",
+          "installment": 333.33,
+          "interest": 0,
+          "capital": 333.33,
+          "residual": 333.34
+        },
+        {
+          "number": 3,
+          "dueDate": "2025-05-10",
+          "installment": 333.34,
+          "interest": 0,
+          "capital": 333.34,
+          "residual": 0
+        }
+      ],
+      "tolerance": 0,
+      "notes": "333.33 x2 then last 333.34"
+    },
+    {
+      "id": "buildSegmentSchedule.declaredInstallment_firstNumber",
+      "function": "buildSegmentSchedule",
+      "input": {
+        "firstDueDate": "2025-01-15",
+        "principal": 5000,
+        "annualRate": 5,
+        "installments": 6,
+        "installment": 900,
+        "firstNumber": 4
+      },
+      "expected": [
+        {
+          "number": 4,
+          "dueDate": "2025-01-15",
+          "installment": 900,
+          "interest": 20.83,
+          "capital": 879.17,
+          "residual": 4120.83
+        },
+        {
+          "number": 5,
+          "dueDate": "2025-02-15",
+          "installment": 900,
+          "interest": 17.17,
+          "capital": 882.83,
+          "residual": 3238
+        },
+        {
+          "number": 6,
+          "dueDate": "2025-03-15",
+          "installment": 900,
+          "interest": 13.49,
+          "capital": 886.51,
+          "residual": 2351.49
+        },
+        {
+          "number": 7,
+          "dueDate": "2025-04-15",
+          "installment": 900,
+          "interest": 9.8,
+          "capital": 890.2,
+          "residual": 1461.29
+        },
+        {
+          "number": 8,
+          "dueDate": "2025-05-15",
+          "installment": 900,
+          "interest": 6.09,
+          "capital": 893.91,
+          "residual": 567.38
+        },
+        {
+          "number": 9,
+          "dueDate": "2025-06-15",
+          "installment": 569.74,
+          "interest": 2.36,
+          "capital": 567.38,
+          "residual": 0
+        }
+      ],
+      "tolerance": 0,
+      "notes": "declared installment higher than computed: last row absorbs the residual (smaller)"
+    },
+    {
+      "id": "buildSegmentSchedule.60_summary",
+      "function": "buildSegmentSchedule(summary)",
+      "input": {
+        "firstDueDate": "2025-01-15",
+        "principal": 10000,
+        "annualRate": 6.5,
+        "installments": 60
+      },
+      "expected": {
+        "first": {
+          "number": 1,
+          "dueDate": "2025-01-15",
+          "installment": 195.66,
+          "interest": 54.17,
+          "capital": 141.49,
+          "residual": 9858.51
+        },
+        "second": {
+          "number": 2,
+          "dueDate": "2025-02-15",
+          "installment": 195.66,
+          "interest": 53.4,
+          "capital": 142.26,
+          "residual": 9716.25
+        },
+        "last": {
+          "number": 60,
+          "dueDate": "2029-12-15",
+          "installment": 195.75,
+          "interest": 1.05,
+          "capital": 194.7,
+          "residual": 0
+        },
+        "totalInterest": 1739.69,
+        "rows": 60
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "buildSegmentSchedule.declaredTooHigh_quirk",
+      "function": "buildSegmentSchedule",
+      "input": {
+        "firstDueDate": "2025-01-15",
+        "principal": 1000,
+        "annualRate": 0,
+        "installments": 4,
+        "installment": 600
+      },
+      "expected": [
+        {
+          "number": 1,
+          "dueDate": "2025-01-15",
+          "installment": 600,
+          "interest": 0,
+          "capital": 600,
+          "residual": 400
+        },
+        {
+          "number": 2,
+          "dueDate": "2025-02-15",
+          "installment": 600,
+          "interest": 0,
+          "capital": 400,
+          "residual": 0
+        },
+        {
+          "number": 3,
+          "dueDate": "2025-03-15",
+          "installment": 600,
+          "interest": 0,
+          "capital": 0,
+          "residual": 0
+        },
+        {
+          "number": 4,
+          "dueDate": "2025-04-15",
+          "installment": 0,
+          "interest": 0,
+          "capital": 0,
+          "residual": 0
+        }
+      ],
+      "tolerance": 0,
+      "notes": "non-last rows keep the declared installment after residual reaches 0; last row 0"
+    },
+    {
+      "id": "solveAnnualRate.10000_195.66_60",
+      "function": "solveAnnualRate",
+      "input": {
+        "principal": 10000,
+        "installment": 195.66,
+        "installments": 60
+      },
+      "expected": 6.499683561881042,
+      "tolerance": 0.00001,
+      "notes": "bisection on [0,100] with tol 1e-12 on annual % (max 200 iterations)"
+    },
+    {
+      "id": "solveAnnualRate.1200_100_12",
+      "function": "solveAnnualRate",
+      "input": {
+        "principal": 1200,
+        "installment": 100,
+        "installments": 12
+      },
+      "expected": 0.000002980232594040899,
+      "tolerance": 0.00001,
+      "notes": "bisection on [0,100] with tol 1e-12 on annual % (max 200 iterations)"
+    },
+    {
+      "id": "solveAnnualRate.20000_400_60",
+      "function": "solveAnnualRate",
+      "input": {
+        "principal": 20000,
+        "installment": 400,
+        "installments": 60
+      },
+      "expected": 7.420095793504444,
+      "tolerance": 0.00001,
+      "notes": "bisection on [0,100] with tol 1e-12 on annual % (max 200 iterations)"
+    },
+    {
+      "id": "solveAnnualRate.error.tooLow",
+      "function": "solveAnnualRate",
+      "input": {
+        "principal": 10000,
+        "installment": 100,
+        "installments": 60
+      },
+      "expected": {
+        "error": "AmortizationError",
+        "message": "La rata per il numero di rate non copre nemmeno il capitale: controlla i dati"
+      },
+      "tolerance": null
+    },
+    {
+      "id": "solveInstallments.10000_6.5_195.66",
+      "function": "solveInstallments",
+      "input": {
+        "principal": 10000,
+        "annualRate": 6.5,
+        "installment": 195.66
+      },
+      "expected": 60,
+      "tolerance": 0
+    },
+    {
+      "id": "solveInstallments.10000_6.5_300",
+      "function": "solveInstallments",
+      "input": {
+        "principal": 10000,
+        "annualRate": 6.5,
+        "installment": 300
+      },
+      "expected": 37,
+      "tolerance": 0
+    },
+    {
+      "id": "solveInstallments.1000_0_300",
+      "function": "solveInstallments",
+      "input": {
+        "principal": 1000,
+        "annualRate": 0,
+        "installment": 300
+      },
+      "expected": 4,
+      "tolerance": 0
+    },
+    {
+      "id": "solveInstallments.1000_0_101",
+      "function": "solveInstallments",
+      "input": {
+        "principal": 1000,
+        "annualRate": 0,
+        "installment": 101
+      },
+      "expected": 10,
+      "tolerance": 0
+    },
+    {
+      "id": "solveInstallments.error.interestOnly",
+      "function": "solveInstallments",
+      "input": {
+        "principal": 10000,
+        "annualRate": 12,
+        "installment": 100
+      },
+      "expected": {
+        "error": "AmortizationError",
+        "message": "La rata non supera gli interessi del primo mese: il debito non si ridurrebbe mai"
+      },
+      "tolerance": null
+    },
+    {
+      "id": "solvePrincipal.6.5_195.66_60",
+      "function": "solvePrincipal",
+      "input": {
+        "annualRate": 6.5,
+        "installment": 195.66,
+        "installments": 60
+      },
+      "expected": 9999.92,
+      "tolerance": 0
+    },
+    {
+      "id": "solvePrincipal.0_100_12",
+      "function": "solvePrincipal",
+      "input": {
+        "annualRate": 0,
+        "installment": 100,
+        "installments": 12
+      },
+      "expected": 1200,
+      "tolerance": 0
+    },
+    {
+      "id": "solvePrincipal.3.2_864.93_360",
+      "function": "solvePrincipal",
+      "input": {
+        "annualRate": 3.2,
+        "installment": 864.93,
+        "installments": 360
+      },
+      "expected": 199999.14,
+      "tolerance": 0
+    },
+    {
+      "id": "computeApr.10000_0_0",
+      "function": "computeApr",
+      "input": {
+        "principal": 10000,
+        "upfrontCosts": 0,
+        "installment": 195.66,
+        "recurringCosts": 0,
+        "installments": 60
+      },
+      "expected": 6.6968493893910574,
+      "tolerance": 0.000001,
+      "notes": "TAEG = ((1+i)^12 - 1)*100, i by bisection on [0,1]"
+    },
+    {
+      "id": "computeApr.10000_300_2.5",
+      "function": "computeApr",
+      "input": {
+        "principal": 10000,
+        "upfrontCosts": 300,
+        "installment": 195.66,
+        "recurringCosts": 2.5,
+        "installments": 60
+      },
+      "expected": 8.642424942283311,
+      "tolerance": 0.000001,
+      "notes": "TAEG = ((1+i)^12 - 1)*100, i by bisection on [0,1]"
+    },
+    {
+      "id": "computeApr.1200_0_0",
+      "function": "computeApr",
+      "input": {
+        "principal": 1200,
+        "upfrontCosts": 0,
+        "installment": 100,
+        "recurringCosts": 0,
+        "installments": 12
+      },
+      "expected": 5.456968210637569e-10,
+      "tolerance": 0.000001,
+      "notes": "TAEG = ((1+i)^12 - 1)*100, i by bisection on [0,1]"
+    },
+    {
+      "id": "computeApr.1200_50_0",
+      "function": "computeApr",
+      "input": {
+        "principal": 1200,
+        "upfrontCosts": 50,
+        "installment": 100,
+        "recurringCosts": 0,
+        "installments": 12
+      },
+      "expected": 8.225724782541244,
+      "tolerance": 0.000001,
+      "notes": "TAEG = ((1+i)^12 - 1)*100, i by bisection on [0,1]"
+    },
+    {
+      "id": "resolveMissingLoanInput.principal+annualRate+installments",
+      "function": "resolveMissingLoanInput",
+      "input": {
+        "principal": 10000,
+        "annualRate": 6.5,
+        "installments": 60
+      },
+      "expected": {
+        "principal": 10000,
+        "annualRate": 6.5,
+        "installments": 60,
+        "installment": 195.66,
+        "calculated": "installment"
+      },
+      "tolerance": 0.000001
+    },
+    {
+      "id": "resolveMissingLoanInput.principal+annualRate+installment",
+      "function": "resolveMissingLoanInput",
+      "input": {
+        "principal": 10000,
+        "annualRate": 6.5,
+        "installment": 195.66
+      },
+      "expected": {
+        "principal": 10000,
+        "annualRate": 6.5,
+        "installment": 195.66,
+        "installments": 60,
+        "calculated": "installments"
+      },
+      "tolerance": 0.000001
+    },
+    {
+      "id": "resolveMissingLoanInput.annualRate+installment+installments",
+      "function": "resolveMissingLoanInput",
+      "input": {
+        "annualRate": 6.5,
+        "installment": 195.66,
+        "installments": 60
+      },
+      "expected": {
+        "annualRate": 6.5,
+        "installment": 195.66,
+        "installments": 60,
+        "principal": 9999.92,
+        "calculated": "principal"
+      },
+      "tolerance": 0.000001
+    },
+    {
+      "id": "resolveMissingLoanInput.principal+installment+installments",
+      "function": "resolveMissingLoanInput",
+      "input": {
+        "principal": 10000,
+        "installment": 195.66,
+        "installments": 60
+      },
+      "expected": {
+        "principal": 10000,
+        "installment": 195.66,
+        "installments": 60,
+        "annualRate": 6.499683561881042,
+        "calculated": "annualRate"
+      },
+      "tolerance": 0.000001
+    },
+    {
+      "id": "resolveMissingLoanInput.principal",
+      "function": "resolveMissingLoanInput",
+      "input": {
+        "principal": 10000
+      },
+      "expected": {
+        "error": "AmortizationError",
+        "message": "Servono almeno tre dati su quattro tra capitale, rata, numero di rate e tasso"
+      },
+      "tolerance": 0.000001
+    },
+    {
+      "id": "parseAmount.\"1.250,50\"",
+      "function": "parseAmount",
+      "input": {
+        "text": "1.250,50"
+      },
+      "expected": 1250.5,
+      "tolerance": 0,
+      "notes": "undefined is serialized as null"
+    },
+    {
+      "id": "parseAmount.\"6,9\"",
+      "function": "parseAmount",
+      "input": {
+        "text": "6,9"
+      },
+      "expected": 6.9,
+      "tolerance": 0,
+      "notes": "undefined is serialized as null"
+    },
+    {
+      "id": "parseAmount.\"1250.5\"",
+      "function": "parseAmount",
+      "input": {
+        "text": "1250.5"
+      },
+      "expected": 1250.5,
+      "tolerance": 0,
+      "notes": "undefined is serialized as null"
+    },
+    {
+      "id": "parseAmount.\"\"",
+      "function": "parseAmount",
+      "input": {
+        "text": ""
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": "undefined is serialized as null"
+    },
+    {
+      "id": "parseAmount.\"abc\"",
+      "function": "parseAmount",
+      "input": {
+        "text": "abc"
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": "undefined is serialized as null"
+    },
+    {
+      "id": "parseAmount.\" 12 \"",
+      "function": "parseAmount",
+      "input": {
+        "text": " 12 "
+      },
+      "expected": 12,
+      "tolerance": 0,
+      "notes": "undefined is serialized as null"
+    },
+    {
+      "id": "parseAmount.\"1.250\"",
+      "function": "parseAmount",
+      "input": {
+        "text": "1.250"
+      },
+      "expected": 1.25,
+      "tolerance": 0,
+      "notes": "undefined is serialized as null"
+    },
+    {
+      "id": "resolvePenalty.5000_1_percent",
+      "function": "resolvePenalty",
+      "input": {
+        "amount": 5000,
+        "text": "1",
+        "unit": "percent"
+      },
+      "expected": 50,
+      "tolerance": 0
+    },
+    {
+      "id": "resolvePenalty.5000_150_eur",
+      "function": "resolvePenalty",
+      "input": {
+        "amount": 5000,
+        "text": "150",
+        "unit": "eur"
+      },
+      "expected": 150,
+      "tolerance": 0
+    },
+    {
+      "id": "resolvePenalty.5000__eur",
+      "function": "resolvePenalty",
+      "input": {
+        "amount": 5000,
+        "text": "",
+        "unit": "eur"
+      },
+      "expected": 0,
+      "tolerance": 0
+    },
+    {
+      "id": "resolvePenalty.3333_0,5_percent",
+      "function": "resolvePenalty",
+      "input": {
+        "amount": 3333,
+        "text": "0,5",
+        "unit": "percent"
+      },
+      "expected": 16.67,
+      "tolerance": 0
+    },
+    {
+      "id": "resolvePenalty.5000_-1_eur",
+      "function": "resolvePenalty",
+      "input": {
+        "amount": 5000,
+        "text": "-1",
+        "unit": "eur"
+      },
+      "expected": null,
+      "tolerance": 0
+    },
+    {
+      "id": "addForm.missingInstallment",
+      "function": "resolveAddForm+previewAddForm",
+      "input": {
+        "name": "Auto",
+        "startMode": "nuovo",
+        "principal": "10000",
+        "installment": "",
+        "installments": "60",
+        "annualRate": "6,5",
+        "firstInstallmentDate": "2025-01-31",
+        "costs": []
+      },
+      "expected": {
+        "resolution": {
+          "ok": true,
+          "value": {
+            "inputs": {
+              "principal": 10000,
+              "installment": 195.66,
+              "installments": 60,
+              "annualRate": 6.5
+            },
+            "calculated": "installment",
+            "apr": 6.6968493893910574
+          }
+        },
+        "preview": {
+          "installment": 195.66,
+          "totalInterest": 1739.69,
+          "endDate": "2029-12-31"
+        },
+        "createInput": {
+          "name": "Auto",
+          "startMode": "nuovo",
+          "principal": 10000,
+          "annualRate": 6.5,
+          "installments": 60,
+          "firstInstallmentDate": "2025-01-31",
+          "costs": []
+        }
+      },
+      "tolerance": 0.000001
+    },
+    {
+      "id": "addForm.missingRate_withCosts",
+      "function": "resolveAddForm+previewAddForm",
+      "input": {
+        "name": "Prestito",
+        "startMode": "origine",
+        "principal": "10000",
+        "installment": "195,66",
+        "installments": "60",
+        "annualRate": "",
+        "firstInstallmentDate": "2023-05-05",
+        "costs": [
+          {
+            "label": "Istruttoria",
+            "amount": "300",
+            "kind": "una_tantum"
+          },
+          {
+            "label": "Incasso",
+            "amount": "2,5",
+            "kind": "per_rata"
+          }
+        ]
+      },
+      "expected": {
+        "resolution": {
+          "ok": true,
+          "value": {
+            "inputs": {
+              "principal": 10000,
+              "installment": 195.66,
+              "installments": 60,
+              "annualRate": 6.499683561881042
+            },
+            "calculated": "annualRate",
+            "apr": 8.642424942283311
+          }
+        },
+        "preview": {
+          "installment": 195.66,
+          "totalInterest": 1739.63,
+          "endDate": "2028-04-05"
+        },
+        "createInput": {
+          "name": "Prestito",
+          "startMode": "origine",
+          "principal": 10000,
+          "annualRate": 6.4997,
+          "installments": 60,
+          "firstInstallmentDate": "2023-05-05",
+          "installment": 195.66,
+          "costs": [
+            {
+              "label": "Istruttoria",
+              "amount": 300,
+              "kind": "una_tantum"
+            },
+            {
+              "label": "Incasso",
+              "amount": 2.5,
+              "kind": "per_rata"
+            }
+          ]
+        }
+      },
+      "tolerance": 0.000001
+    },
+    {
+      "id": "addForm.fotografia_missingInstallments",
+      "function": "resolveAddForm+previewAddForm",
+      "input": {
+        "name": "Mutuo",
+        "startMode": "fotografia",
+        "principal": "150000",
+        "installment": "800",
+        "installments": "",
+        "annualRate": "3",
+        "firstInstallmentDate": "2025-02-28",
+        "costs": []
+      },
+      "expected": {
+        "resolution": {
+          "ok": true,
+          "value": {
+            "inputs": {
+              "principal": 150000,
+              "installment": 800,
+              "installments": 254,
+              "annualRate": 3
+            },
+            "calculated": "installments",
+            "apr": null
+          }
+        },
+        "preview": {
+          "installment": 800,
+          "totalInterest": 52660.33,
+          "endDate": "2046-03-28"
+        },
+        "createInput": {
+          "name": "Mutuo",
+          "startMode": "fotografia",
+          "principal": 150000,
+          "annualRate": 3,
+          "installments": 254,
+          "firstInstallmentDate": "2025-02-28",
+          "installment": 800,
+          "anchorDate": "2025-01-10",
+          "costs": []
+        }
+      },
+      "tolerance": 0.000001,
+      "notes": "fotografia → apr null, anchorDate = today"
+    },
+    {
+      "id": "addForm.nonIntegerInstallments",
+      "function": "resolveAddForm",
+      "input": {
+        "name": "",
+        "startMode": "nuovo",
+        "principal": "10000",
+        "installment": "",
+        "installments": "60,5",
+        "annualRate": "5",
+        "firstInstallmentDate": "",
+        "costs": []
+      },
+      "expected": {
+        "ok": false,
+        "message": "Il numero di rate deve essere intero"
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "addForm.tooFewFields",
+      "function": "resolveAddForm",
+      "input": {
+        "name": "",
+        "startMode": "nuovo",
+        "principal": "10000",
+        "installment": "",
+        "installments": "",
+        "annualRate": "5",
+        "firstInstallmentDate": "",
+        "costs": []
+      },
+      "expected": {
+        "ok": false,
+        "message": null
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "buildLoanPlan.basic_noEvents",
+      "function": "buildLoanPlan",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 12000,
+          "annualRate": 6,
+          "installments": 12,
+          "firstInstallmentDate": "2025-01-31",
+          "installment": null
+        },
+        "events": [],
+        "today": "2025-04-15"
+      },
+      "expected": {
+        "rows": [
+          {
+            "n": 1,
+            "d": "2025-01-31",
+            "i": 1032.8,
+            "int": 60,
+            "c": 972.8,
+            "res": 11027.2,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 2,
+            "d": "2025-02-28",
+            "i": 1032.8,
+            "int": 55.14,
+            "c": 977.66,
+            "res": 10049.54,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 3,
+            "d": "2025-03-31",
+            "i": 1032.8,
+            "int": 50.25,
+            "c": 982.55,
+            "res": 9066.99,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 4,
+            "d": "2025-04-30",
+            "i": 1032.8,
+            "int": 45.33,
+            "c": 987.47,
+            "res": 8079.52,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 5,
+            "d": "2025-05-31",
+            "i": 1032.8,
+            "int": 40.4,
+            "c": 992.4,
+            "res": 7087.12,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 6,
+            "d": "2025-06-30",
+            "i": 1032.8,
+            "int": 35.44,
+            "c": 997.36,
+            "res": 6089.76,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 7,
+            "d": "2025-07-31",
+            "i": 1032.8,
+            "int": 30.45,
+            "c": 1002.35,
+            "res": 5087.41,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 8,
+            "d": "2025-08-31",
+            "i": 1032.8,
+            "int": 25.44,
+            "c": 1007.36,
+            "res": 4080.05,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 9,
+            "d": "2025-09-30",
+            "i": 1032.8,
+            "int": 20.4,
+            "c": 1012.4,
+            "res": 3067.65,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 10,
+            "d": "2025-10-31",
+            "i": 1032.8,
+            "int": 15.34,
+            "c": 1017.46,
+            "res": 2050.19,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 11,
+            "d": "2025-11-30",
+            "i": 1032.8,
+            "int": 10.25,
+            "c": 1022.55,
+            "res": 1027.64,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 12,
+            "d": "2025-12-31",
+            "i": 1032.78,
+            "int": 5.14,
+            "c": 1027.64,
+            "res": 0,
+            "s": "da_pagare",
+            "paid": null
+          }
+        ],
+        "totals": {
+          "residual": 9066.99,
+          "currentInstallment": 1032.8,
+          "interestToDate": 165.39,
+          "interestRemaining": 228.19,
+          "paidTotal": 0,
+          "remainingInstallments": 9,
+          "endDate": "2025-12-31",
+          "nextDueDate": "2025-01-31",
+          "overdueCount": 3,
+          "unconfirmedCount": 0,
+          "finished": false,
+          "penaltiesPaid": 0,
+          "closedOn": null
+        },
+        "residualSeries": [
+          {
+            "date": "2024-12-31",
+            "residual": 12000
+          },
+          {
+            "date": "2025-01-31",
+            "residual": 11027.2
+          },
+          {
+            "date": "2025-02-28",
+            "residual": 10049.54
+          },
+          {
+            "date": "2025-03-31",
+            "residual": 9066.99
+          },
+          {
+            "date": "2025-04-30",
+            "residual": 8079.52
+          },
+          {
+            "date": "2025-05-31",
+            "residual": 7087.12
+          },
+          {
+            "date": "2025-06-30",
+            "residual": 6089.76
+          },
+          {
+            "date": "2025-07-31",
+            "residual": 5087.41
+          },
+          {
+            "date": "2025-08-31",
+            "residual": 4080.05
+          },
+          {
+            "date": "2025-09-30",
+            "residual": 3067.65
+          },
+          {
+            "date": "2025-10-31",
+            "residual": 2050.19
+          },
+          {
+            "date": "2025-11-30",
+            "residual": 1027.64
+          },
+          {
+            "date": "2025-12-31",
+            "residual": 0
+          }
+        ],
+        "earlyRepayments": [],
+        "warnings": []
+      },
+      "tolerance": 0,
+      "notes": "rows compacted: n=number d=dueDate i=installment int=interest c=capital res=residual s=status paid=payment.amount"
+    },
+    {
+      "id": "buildLoanPlan.origine_payments_statuses",
+      "function": "buildLoanPlan",
+      "input": {
+        "terms": {
+          "startMode": "origine",
+          "principal": 12000,
+          "annualRate": 6,
+          "installments": 12,
+          "firstInstallmentDate": "2025-01-31",
+          "installment": null
+        },
+        "events": [
+          {
+            "type": "payment",
+            "installmentNumber": 1,
+            "date": "2025-01-31",
+            "amount": 1032.8
+          },
+          {
+            "type": "payment",
+            "installmentNumber": 2,
+            "date": "2025-03-01",
+            "amount": 1032.8
+          }
+        ],
+        "today": "2025-05-31"
+      },
+      "expected": {
+        "rows": [
+          {
+            "n": 1,
+            "d": "2025-01-31",
+            "i": 1032.8,
+            "int": 60,
+            "c": 972.8,
+            "res": 11027.2,
+            "s": "pagata",
+            "paid": 1032.8
+          },
+          {
+            "n": 2,
+            "d": "2025-02-28",
+            "i": 1032.8,
+            "int": 55.14,
+            "c": 977.66,
+            "res": 10049.54,
+            "s": "pagata",
+            "paid": 1032.8
+          },
+          {
+            "n": 3,
+            "d": "2025-03-31",
+            "i": 1032.8,
+            "int": 50.25,
+            "c": 982.55,
+            "res": 9066.99,
+            "s": "da_confermare",
+            "paid": null
+          },
+          {
+            "n": 4,
+            "d": "2025-04-30",
+            "i": 1032.8,
+            "int": 45.33,
+            "c": 987.47,
+            "res": 8079.52,
+            "s": "da_confermare",
+            "paid": null
+          },
+          {
+            "n": 5,
+            "d": "2025-05-31",
+            "i": 1032.8,
+            "int": 40.4,
+            "c": 992.4,
+            "res": 7087.12,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 6,
+            "d": "2025-06-30",
+            "i": 1032.8,
+            "int": 35.44,
+            "c": 997.36,
+            "res": 6089.76,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 7,
+            "d": "2025-07-31",
+            "i": 1032.8,
+            "int": 30.45,
+            "c": 1002.35,
+            "res": 5087.41,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 8,
+            "d": "2025-08-31",
+            "i": 1032.8,
+            "int": 25.44,
+            "c": 1007.36,
+            "res": 4080.05,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 9,
+            "d": "2025-09-30",
+            "i": 1032.8,
+            "int": 20.4,
+            "c": 1012.4,
+            "res": 3067.65,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 10,
+            "d": "2025-10-31",
+            "i": 1032.8,
+            "int": 15.34,
+            "c": 1017.46,
+            "res": 2050.19,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 11,
+            "d": "2025-11-30",
+            "i": 1032.8,
+            "int": 10.25,
+            "c": 1022.55,
+            "res": 1027.64,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 12,
+            "d": "2025-12-31",
+            "i": 1032.78,
+            "int": 5.14,
+            "c": 1027.64,
+            "res": 0,
+            "s": "da_pagare",
+            "paid": null
+          }
+        ],
+        "totals": {
+          "residual": 7087.12,
+          "currentInstallment": 1032.8,
+          "interestToDate": 251.12,
+          "interestRemaining": 142.46,
+          "paidTotal": 2065.6,
+          "remainingInstallments": 7,
+          "endDate": "2025-12-31",
+          "nextDueDate": "2025-05-31",
+          "overdueCount": 0,
+          "unconfirmedCount": 2,
+          "finished": false,
+          "penaltiesPaid": 0,
+          "closedOn": null
+        },
+        "residualSeries": [
+          {
+            "date": "2024-12-31",
+            "residual": 12000
+          },
+          {
+            "date": "2025-01-31",
+            "residual": 11027.2
+          },
+          {
+            "date": "2025-02-28",
+            "residual": 10049.54
+          },
+          {
+            "date": "2025-03-31",
+            "residual": 9066.99
+          },
+          {
+            "date": "2025-04-30",
+            "residual": 8079.52
+          },
+          {
+            "date": "2025-05-31",
+            "residual": 7087.12
+          },
+          {
+            "date": "2025-06-30",
+            "residual": 6089.76
+          },
+          {
+            "date": "2025-07-31",
+            "residual": 5087.41
+          },
+          {
+            "date": "2025-08-31",
+            "residual": 4080.05
+          },
+          {
+            "date": "2025-09-30",
+            "residual": 3067.65
+          },
+          {
+            "date": "2025-10-31",
+            "residual": 2050.19
+          },
+          {
+            "date": "2025-11-30",
+            "residual": 1027.64
+          },
+          {
+            "date": "2025-12-31",
+            "residual": 0
+          }
+        ],
+        "earlyRepayments": [],
+        "warnings": []
+      },
+      "tolerance": 0,
+      "notes": "rows 3-4 past & unpaid → da_confermare (origine); row 5 due today → da_pagare but counted as past in totals"
+    },
+    {
+      "id": "buildLoanPlan.rateChange_warning",
+      "function": "buildLoanPlan",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 12000,
+          "annualRate": 6,
+          "installments": 12,
+          "firstInstallmentDate": "2025-01-31",
+          "installment": null
+        },
+        "events": [
+          {
+            "type": "rate_change",
+            "date": "2025-03-15",
+            "rate": 3
+          },
+          {
+            "type": "payment",
+            "installmentNumber": 99,
+            "date": "2025-01-01",
+            "amount": 1
+          }
+        ],
+        "today": "2025-02-10"
+      },
+      "expected": {
+        "rows": [
+          {
+            "n": 1,
+            "d": "2025-01-31",
+            "i": 1032.8,
+            "int": 60,
+            "c": 972.8,
+            "res": 11027.2,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 2,
+            "d": "2025-02-28",
+            "i": 1032.8,
+            "int": 55.14,
+            "c": 977.66,
+            "res": 10049.54,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 3,
+            "d": "2025-03-31",
+            "i": 1018.82,
+            "int": 25.12,
+            "c": 993.7,
+            "res": 9055.84,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 4,
+            "d": "2025-04-30",
+            "i": 1018.82,
+            "int": 22.64,
+            "c": 996.18,
+            "res": 8059.66,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 5,
+            "d": "2025-05-31",
+            "i": 1018.82,
+            "int": 20.15,
+            "c": 998.67,
+            "res": 7060.99,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 6,
+            "d": "2025-06-30",
+            "i": 1018.82,
+            "int": 17.65,
+            "c": 1001.17,
+            "res": 6059.82,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 7,
+            "d": "2025-07-31",
+            "i": 1018.82,
+            "int": 15.15,
+            "c": 1003.67,
+            "res": 5056.15,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 8,
+            "d": "2025-08-31",
+            "i": 1018.82,
+            "int": 12.64,
+            "c": 1006.18,
+            "res": 4049.97,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 9,
+            "d": "2025-09-30",
+            "i": 1018.82,
+            "int": 10.12,
+            "c": 1008.7,
+            "res": 3041.27,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 10,
+            "d": "2025-10-31",
+            "i": 1018.82,
+            "int": 7.6,
+            "c": 1011.22,
+            "res": 2030.05,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 11,
+            "d": "2025-11-30",
+            "i": 1018.82,
+            "int": 5.08,
+            "c": 1013.74,
+            "res": 1016.31,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 12,
+            "d": "2025-12-31",
+            "i": 1018.85,
+            "int": 2.54,
+            "c": 1016.31,
+            "res": 0,
+            "s": "da_pagare",
+            "paid": null
+          }
+        ],
+        "totals": {
+          "residual": 11027.2,
+          "currentInstallment": 1032.8,
+          "interestToDate": 60,
+          "interestRemaining": 193.83,
+          "paidTotal": 0,
+          "remainingInstallments": 11,
+          "endDate": "2025-12-31",
+          "nextDueDate": "2025-01-31",
+          "overdueCount": 1,
+          "unconfirmedCount": 0,
+          "finished": false,
+          "penaltiesPaid": 0,
+          "closedOn": null
+        },
+        "residualSeries": [
+          {
+            "date": "2024-12-31",
+            "residual": 12000
+          },
+          {
+            "date": "2025-01-31",
+            "residual": 11027.2
+          },
+          {
+            "date": "2025-02-28",
+            "residual": 10049.54
+          },
+          {
+            "date": "2025-03-31",
+            "residual": 9055.84
+          },
+          {
+            "date": "2025-04-30",
+            "residual": 8059.66
+          },
+          {
+            "date": "2025-05-31",
+            "residual": 7060.99
+          },
+          {
+            "date": "2025-06-30",
+            "residual": 6059.82
+          },
+          {
+            "date": "2025-07-31",
+            "residual": 5056.15
+          },
+          {
+            "date": "2025-08-31",
+            "residual": 4049.97
+          },
+          {
+            "date": "2025-09-30",
+            "residual": 3041.27
+          },
+          {
+            "date": "2025-10-31",
+            "residual": 2030.05
+          },
+          {
+            "date": "2025-11-30",
+            "residual": 1016.31
+          },
+          {
+            "date": "2025-12-31",
+            "residual": 0
+          }
+        ],
+        "earlyRepayments": [],
+        "warnings": [
+          "Pagamento della rata 99, che non esiste: ignorato"
+        ]
+      },
+      "tolerance": 0,
+      "notes": "nuovo: past unpaid → scaduta"
+    },
+    {
+      "id": "buildLoanPlan.balanceCorrection",
+      "function": "buildLoanPlan",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 12000,
+          "annualRate": 6,
+          "installments": 12,
+          "firstInstallmentDate": "2025-01-31",
+          "installment": null
+        },
+        "events": [
+          {
+            "type": "balance_correction",
+            "date": "2025-06-01",
+            "amount": 5000
+          }
+        ],
+        "today": "2025-06-01"
+      },
+      "expected": {
+        "rows": [
+          {
+            "n": 1,
+            "d": "2025-01-31",
+            "i": 1032.8,
+            "int": 60,
+            "c": 972.8,
+            "res": 11027.2,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 2,
+            "d": "2025-02-28",
+            "i": 1032.8,
+            "int": 55.14,
+            "c": 977.66,
+            "res": 10049.54,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 3,
+            "d": "2025-03-31",
+            "i": 1032.8,
+            "int": 50.25,
+            "c": 982.55,
+            "res": 9066.99,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 4,
+            "d": "2025-04-30",
+            "i": 1032.8,
+            "int": 45.33,
+            "c": 987.47,
+            "res": 8079.52,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 5,
+            "d": "2025-05-31",
+            "i": 1032.8,
+            "int": 40.4,
+            "c": 992.4,
+            "res": 7087.12,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 6,
+            "d": "2025-06-30",
+            "i": 728.64,
+            "int": 25,
+            "c": 703.64,
+            "res": 4296.36,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 7,
+            "d": "2025-07-31",
+            "i": 728.64,
+            "int": 21.48,
+            "c": 707.16,
+            "res": 3589.2,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 8,
+            "d": "2025-08-31",
+            "i": 728.64,
+            "int": 17.95,
+            "c": 710.69,
+            "res": 2878.51,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 9,
+            "d": "2025-09-30",
+            "i": 728.64,
+            "int": 14.39,
+            "c": 714.25,
+            "res": 2164.26,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 10,
+            "d": "2025-10-31",
+            "i": 728.64,
+            "int": 10.82,
+            "c": 717.82,
+            "res": 1446.44,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 11,
+            "d": "2025-11-30",
+            "i": 728.64,
+            "int": 7.23,
+            "c": 721.41,
+            "res": 725.03,
+            "s": "da_pagare",
+            "paid": null
+          },
+          {
+            "n": 12,
+            "d": "2025-12-31",
+            "i": 728.66,
+            "int": 3.63,
+            "c": 725.03,
+            "res": 0,
+            "s": "da_pagare",
+            "paid": null
+          }
+        ],
+        "totals": {
+          "residual": 7087.12,
+          "currentInstallment": 728.64,
+          "interestToDate": 251.12,
+          "interestRemaining": 100.5,
+          "paidTotal": 0,
+          "remainingInstallments": 7,
+          "endDate": "2025-12-31",
+          "nextDueDate": "2025-01-31",
+          "overdueCount": 5,
+          "unconfirmedCount": 0,
+          "finished": false,
+          "penaltiesPaid": 0,
+          "closedOn": null
+        },
+        "residualSeries": [
+          {
+            "date": "2024-12-31",
+            "residual": 12000
+          },
+          {
+            "date": "2025-01-31",
+            "residual": 11027.2
+          },
+          {
+            "date": "2025-02-28",
+            "residual": 10049.54
+          },
+          {
+            "date": "2025-03-31",
+            "residual": 9066.99
+          },
+          {
+            "date": "2025-04-30",
+            "residual": 8079.52
+          },
+          {
+            "date": "2025-05-31",
+            "residual": 7087.12
+          },
+          {
+            "date": "2025-06-30",
+            "residual": 4296.36
+          },
+          {
+            "date": "2025-07-31",
+            "residual": 3589.2
+          },
+          {
+            "date": "2025-08-31",
+            "residual": 2878.51
+          },
+          {
+            "date": "2025-09-30",
+            "residual": 2164.26
+          },
+          {
+            "date": "2025-10-31",
+            "residual": 1446.44
+          },
+          {
+            "date": "2025-11-30",
+            "residual": 725.03
+          },
+          {
+            "date": "2025-12-31",
+            "residual": 0
+          }
+        ],
+        "earlyRepayments": [],
+        "warnings": []
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "buildLoanPlan.earlyRepayment_closes",
+      "function": "buildLoanPlan",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 12000,
+          "annualRate": 6,
+          "installments": 12,
+          "firstInstallmentDate": "2025-01-31",
+          "installment": null
+        },
+        "events": [
+          {
+            "type": "early_repayment",
+            "date": "2025-04-10",
+            "amount": 20000,
+            "penalty": 50,
+            "effect": "reduce_duration"
+          }
+        ],
+        "today": "2025-05-01"
+      },
+      "expected": {
+        "rows": [
+          {
+            "n": 1,
+            "d": "2025-01-31",
+            "i": 1032.8,
+            "int": 60,
+            "c": 972.8,
+            "res": 11027.2,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 2,
+            "d": "2025-02-28",
+            "i": 1032.8,
+            "int": 55.14,
+            "c": 977.66,
+            "res": 10049.54,
+            "s": "scaduta",
+            "paid": null
+          },
+          {
+            "n": 3,
+            "d": "2025-03-31",
+            "i": 1032.8,
+            "int": 50.25,
+            "c": 982.55,
+            "res": 9066.99,
+            "s": "scaduta",
+            "paid": null
+          }
+        ],
+        "totals": {
+          "residual": 0,
+          "currentInstallment": 0,
+          "interestToDate": 165.39,
+          "interestRemaining": 0,
+          "paidTotal": 0,
+          "remainingInstallments": 0,
+          "endDate": "2025-04-10",
+          "nextDueDate": "2025-01-31",
+          "overdueCount": 3,
+          "unconfirmedCount": 0,
+          "finished": true,
+          "penaltiesPaid": 50,
+          "closedOn": "2025-04-10"
+        },
+        "residualSeries": [
+          {
+            "date": "2024-12-31",
+            "residual": 12000
+          },
+          {
+            "date": "2025-01-31",
+            "residual": 11027.2
+          },
+          {
+            "date": "2025-02-28",
+            "residual": 10049.54
+          },
+          {
+            "date": "2025-03-31",
+            "residual": 9066.99
+          },
+          {
+            "date": "2025-04-10",
+            "residual": 0
+          }
+        ],
+        "earlyRepayments": [
+          {
+            "date": "2025-04-10",
+            "amount": 9066.99,
+            "penalty": 50,
+            "effect": "reduce_duration",
+            "residualAfter": 0
+          }
+        ],
+        "warnings": []
+      },
+      "tolerance": 0,
+      "notes": "amount ≥ residual closes the debt; repayment amount is clamped to the residual"
+    },
+    {
+      "id": "compareEarlyRepayment.2025-06-20_5000_0",
+      "function": "compareEarlyRepayment",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 20000,
+          "annualRate": 5,
+          "installments": 48,
+          "firstInstallmentDate": "2025-01-15",
+          "installment": null
+        },
+        "events": [],
+        "today": "2025-02-01",
+        "input": {
+          "date": "2025-06-20",
+          "amount": 5000,
+          "penalty": 0
+        }
+      },
+      "expected": {
+        "baselineInterest": 1631.8,
+        "baselineEndDate": "2028-12-15",
+        "baselineInstallment": 460.59,
+        "reduceInstallment": {
+          "effect": "reduce_installment",
+          "nextInstallment": 330.57,
+          "endDate": "2028-12-15",
+          "remainingInstallments": 42,
+          "interestAfter": 1171.19,
+          "interestSaved": 460.61,
+          "netBenefit": 460.61,
+          "monthsSaved": 0,
+          "closesDebt": false
+        },
+        "reduceDuration": {
+          "effect": "reduce_duration",
+          "nextInstallment": 460.59,
+          "endDate": "2027-12-15",
+          "remainingInstallments": 30,
+          "interestAfter": 820.71,
+          "interestSaved": 811.09,
+          "netBenefit": 811.09,
+          "monthsSaved": 12,
+          "closesDebt": false
+        }
+      },
+      "tolerance": 0,
+      "notes": "plan omitted from expected (re-derivable via buildLoanPlan)"
+    },
+    {
+      "id": "compareEarlyRepayment.2026-01-10_2000_20",
+      "function": "compareEarlyRepayment",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 20000,
+          "annualRate": 5,
+          "installments": 48,
+          "firstInstallmentDate": "2025-01-15",
+          "installment": null
+        },
+        "events": [],
+        "today": "2025-02-01",
+        "input": {
+          "date": "2026-01-10",
+          "amount": 2000,
+          "penalty": 20
+        }
+      },
+      "expected": {
+        "baselineInterest": 1213.29,
+        "baselineEndDate": "2028-12-15",
+        "baselineInstallment": 460.59,
+        "reduceInstallment": {
+          "effect": "reduce_installment",
+          "nextInstallment": 400.64,
+          "endDate": "2028-12-15",
+          "remainingInstallments": 36,
+          "interestAfter": 1055.41,
+          "interestSaved": 157.88,
+          "netBenefit": 137.88,
+          "monthsSaved": 0,
+          "closesDebt": false
+        },
+        "reduceDuration": {
+          "effect": "reduce_duration",
+          "nextInstallment": 460.59,
+          "endDate": "2028-07-15",
+          "remainingInstallments": 31,
+          "interestAfter": 909.63,
+          "interestSaved": 303.66,
+          "netBenefit": 283.66,
+          "monthsSaved": 5,
+          "closesDebt": false
+        }
+      },
+      "tolerance": 0,
+      "notes": "plan omitted from expected (re-derivable via buildLoanPlan)"
+    },
+    {
+      "id": "compareEarlyRepayment.2025-03-01_25000_100",
+      "function": "compareEarlyRepayment",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 20000,
+          "annualRate": 5,
+          "installments": 48,
+          "firstInstallmentDate": "2025-01-15",
+          "installment": null
+        },
+        "events": [],
+        "today": "2025-02-01",
+        "input": {
+          "date": "2025-03-01",
+          "amount": 25000,
+          "penalty": 100
+        }
+      },
+      "expected": {
+        "baselineInterest": 1943,
+        "baselineEndDate": "2028-12-15",
+        "baselineInstallment": 460.59,
+        "reduceInstallment": {
+          "effect": "reduce_installment",
+          "nextInstallment": 0,
+          "endDate": "2025-03-01",
+          "remainingInstallments": 0,
+          "interestAfter": 0,
+          "interestSaved": 1943,
+          "netBenefit": 1843,
+          "monthsSaved": 45,
+          "closesDebt": true
+        },
+        "reduceDuration": {
+          "effect": "reduce_duration",
+          "nextInstallment": 0,
+          "endDate": "2025-03-01",
+          "remainingInstallments": 0,
+          "interestAfter": 0,
+          "interestSaved": 1943,
+          "netBenefit": 1843,
+          "monthsSaved": 45,
+          "closesDebt": true
+        }
+      },
+      "tolerance": 0,
+      "notes": "plan omitted from expected (re-derivable via buildLoanPlan)"
+    },
+    {
+      "id": "simulateRecurringExtra.100_2025-02-01",
+      "function": "simulateRecurringExtra",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 20000,
+          "annualRate": 5,
+          "installments": 48,
+          "firstInstallmentDate": "2025-01-15",
+          "installment": null
+        },
+        "events": [],
+        "today": "2025-02-01",
+        "monthlyExtra": 100
+      },
+      "expected": {
+        "interestWith": 1631.61,
+        "interestWithout": 2024.76,
+        "interestSaved": 393.15,
+        "extraPaid": 3751.93,
+        "endDate": "2028-03-15",
+        "baselineEndDate": "2028-12-15",
+        "monthsSaved": 9
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "simulateRecurringExtra.500_2025-02-01",
+      "function": "simulateRecurringExtra",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 20000,
+          "annualRate": 5,
+          "installments": 48,
+          "firstInstallmentDate": "2025-01-15",
+          "installment": null
+        },
+        "events": [],
+        "today": "2025-02-01",
+        "monthlyExtra": 500
+      },
+      "expected": {
+        "interestWith": 928.9,
+        "interestWithout": 2024.76,
+        "interestSaved": 1095.86,
+        "extraPaid": 10500,
+        "endDate": "2026-11-15",
+        "baselineEndDate": "2028-12-15",
+        "monthsSaved": 25
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "simulateRecurringExtra.50_2027-06-01",
+      "function": "simulateRecurringExtra",
+      "input": {
+        "terms": {
+          "startMode": "nuovo",
+          "principal": 20000,
+          "annualRate": 5,
+          "installments": 48,
+          "firstInstallmentDate": "2025-01-15",
+          "installment": null
+        },
+        "events": [],
+        "today": "2027-06-01",
+        "monthlyExtra": 50
+      },
+      "expected": {
+        "interestWith": 319.71,
+        "interestWithout": 354.23,
+        "interestSaved": 34.52,
+        "extraPaid": 850,
+        "endDate": "2028-11-15",
+        "baselineEndDate": "2028-12-15",
+        "monthsSaved": 1
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "compareRefinance.2.5_240_1500_0",
+      "function": "compareRefinance",
+      "input": {
+        "current": {
+          "residual": 150000,
+          "currentInstallment": 900,
+          "interestRemaining": 60000,
+          "endDate": "2045-01-01"
+        },
+        "today": "2025-01-31",
+        "offer": {
+          "annualRate": 2.5,
+          "installments": 240,
+          "upfrontCosts": 1500,
+          "penalty": 0
+        }
+      },
+      "expected": {
+        "residual": 150000,
+        "currentInstallment": 900,
+        "currentInterestRemaining": 60000,
+        "currentEndDate": "2045-01-01",
+        "newInstallment": 794.85,
+        "newInterest": 40764,
+        "newEndDate": "2045-01-31",
+        "switchCosts": 1500,
+        "netSaving": 17736,
+        "breakEvenMonths": 15
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "compareRefinance.4_300_0_0",
+      "function": "compareRefinance",
+      "input": {
+        "current": {
+          "residual": 150000,
+          "currentInstallment": 900,
+          "interestRemaining": 60000,
+          "endDate": "2045-01-01"
+        },
+        "today": "2025-01-31",
+        "offer": {
+          "annualRate": 4,
+          "installments": 300,
+          "upfrontCosts": 0,
+          "penalty": 0
+        }
+      },
+      "expected": {
+        "residual": 150000,
+        "currentInstallment": 900,
+        "currentInterestRemaining": 60000,
+        "currentEndDate": "2045-01-01",
+        "newInstallment": 791.76,
+        "newInterest": 87528,
+        "newEndDate": "2050-01-31",
+        "switchCosts": 0,
+        "netSaving": -27528,
+        "breakEvenMonths": null
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "compareRefinance.0_120_500_500",
+      "function": "compareRefinance",
+      "input": {
+        "current": {
+          "residual": 150000,
+          "currentInstallment": 900,
+          "interestRemaining": 60000,
+          "endDate": "2045-01-01"
+        },
+        "today": "2025-01-31",
+        "offer": {
+          "annualRate": 0,
+          "installments": 120,
+          "upfrontCosts": 500,
+          "penalty": 500
+        }
+      },
+      "expected": {
+        "residual": 150000,
+        "currentInstallment": 900,
+        "currentInterestRemaining": 60000,
+        "currentEndDate": "2045-01-01",
+        "newInstallment": 1250,
+        "newInterest": 0,
+        "newEndDate": "2035-01-31",
+        "switchCosts": 1000,
+        "netSaving": 59000,
+        "breakEvenMonths": null
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "compareRefinance.6_240_2000_1000",
+      "function": "compareRefinance",
+      "input": {
+        "current": {
+          "residual": 150000,
+          "currentInstallment": 900,
+          "interestRemaining": 60000,
+          "endDate": "2045-01-01"
+        },
+        "today": "2025-01-31",
+        "offer": {
+          "annualRate": 6,
+          "installments": 240,
+          "upfrontCosts": 2000,
+          "penalty": 1000
+        }
+      },
+      "expected": {
+        "residual": 150000,
+        "currentInstallment": 900,
+        "currentInterestRemaining": 60000,
+        "currentEndDate": "2045-01-01",
+        "newInstallment": 1074.65,
+        "newInterest": 107916,
+        "newEndDate": "2045-01-31",
+        "switchCosts": 3000,
+        "netSaving": -50916,
+        "breakEvenMonths": null
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "simulatePayoff.single_none",
+      "function": "simulatePayoff",
+      "input": {
+        "loans": [
+          {
+            "id": "a",
+            "name": "Auto",
+            "residual": 8000,
+            "annualRate": 7,
+            "installment": 250
+          }
+        ],
+        "monthlyExtra": 0,
+        "strategy": "none",
+        "today": "2025-01-31"
+      },
+      "expected": {
+        "strategy": "none",
+        "months": 36,
+        "totalInterest": 880.88,
+        "endDate": "2028-01-31",
+        "closeOrder": [
+          "Auto"
+        ],
+        "closings": [
+          {
+            "id": "a",
+            "name": "Auto",
+            "months": 36,
+            "endDate": "2028-01-31"
+          }
+        ]
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "simulatePayoff.single_extra200",
+      "function": "simulatePayoff",
+      "input": {
+        "loans": [
+          {
+            "id": "a",
+            "name": "Auto",
+            "residual": 8000,
+            "annualRate": 7,
+            "installment": 250
+          }
+        ],
+        "monthlyExtra": 200,
+        "strategy": "avalanche",
+        "today": "2025-01-31"
+      },
+      "expected": {
+        "strategy": "avalanche",
+        "months": 19,
+        "totalInterest": 470.73,
+        "endDate": "2026-08-31",
+        "closeOrder": [
+          "Auto"
+        ],
+        "closings": [
+          {
+            "id": "a",
+            "name": "Auto",
+            "months": 19,
+            "endDate": "2026-08-31"
+          }
+        ]
+      },
+      "tolerance": 0,
+      "notes": "same call as DebtExtraSim slider default (200)"
+    },
+    {
+      "id": "comparePayoffStrategies.three_loans_extra150",
+      "function": "comparePayoffStrategies",
+      "input": {
+        "loans": [
+          {
+            "id": "a",
+            "name": "Auto",
+            "residual": 8000,
+            "annualRate": 7,
+            "installment": 250
+          },
+          {
+            "id": "c",
+            "name": "Carta",
+            "residual": 2000,
+            "annualRate": 18,
+            "installment": 100
+          },
+          {
+            "id": "m",
+            "name": "Mobili",
+            "residual": 1500,
+            "annualRate": 0,
+            "installment": 125
+          }
+        ],
+        "monthlyExtra": 150,
+        "today": "2025-01-31"
+      },
+      "expected": {
+        "none": {
+          "strategy": "none",
+          "months": 36,
+          "totalInterest": 1276.53,
+          "endDate": "2028-01-31",
+          "closeOrder": [
+            "Mobili",
+            "Carta",
+            "Auto"
+          ],
+          "closings": [
+            {
+              "id": "m",
+              "name": "Mobili",
+              "months": 12,
+              "endDate": "2026-01-31"
+            },
+            {
+              "id": "c",
+              "name": "Carta",
+              "months": 24,
+              "endDate": "2027-01-31"
+            },
+            {
+              "id": "a",
+              "name": "Auto",
+              "months": 36,
+              "endDate": "2028-01-31"
+            }
+          ]
+        },
+        "avalanche": {
+          "strategy": "avalanche",
+          "months": 20,
+          "totalInterest": 737.74,
+          "endDate": "2026-09-30",
+          "closeOrder": [
+            "Carta",
+            "Mobili",
+            "Auto"
+          ],
+          "closings": [
+            {
+              "id": "c",
+              "name": "Carta",
+              "months": 9,
+              "endDate": "2025-10-31"
+            },
+            {
+              "id": "m",
+              "name": "Mobili",
+              "months": 12,
+              "endDate": "2026-01-31"
+            },
+            {
+              "id": "a",
+              "name": "Auto",
+              "months": 20,
+              "endDate": "2026-09-30"
+            }
+          ]
+        },
+        "snowball": {
+          "strategy": "snowball",
+          "months": 20,
+          "totalInterest": 814.51,
+          "endDate": "2026-09-30",
+          "closeOrder": [
+            "Mobili",
+            "Carta",
+            "Auto"
+          ],
+          "closings": [
+            {
+              "id": "m",
+              "name": "Mobili",
+              "months": 6,
+              "endDate": "2025-07-31"
+            },
+            {
+              "id": "c",
+              "name": "Carta",
+              "months": 10,
+              "endDate": "2025-11-30"
+            },
+            {
+              "id": "a",
+              "name": "Auto",
+              "months": 20,
+              "endDate": "2026-09-30"
+            }
+          ]
+        }
+      },
+      "tolerance": 0
+    },
+    {
+      "id": "simulatePayoff.neverCloses_cap600",
+      "function": "simulatePayoff",
+      "input": {
+        "loans": [
+          {
+            "id": "x",
+            "name": "Stuck",
+            "residual": 10000,
+            "annualRate": 12,
+            "installment": 90
+          }
+        ],
+        "monthlyExtra": 0,
+        "strategy": "none",
+        "today": "2025-01-31"
+      },
+      "expected": {
+        "strategy": "none",
+        "months": 600,
+        "totalInterest": 444583.4,
+        "endDate": "2075-01-31",
+        "closeOrder": [],
+        "closings": []
+      },
+      "tolerance": 0,
+      "notes": "stops at MAX_PAYOFF_MONTHS=600"
+    },
+    {
+      "id": "buildDebtsView.overview",
+      "function": "buildDebtsView(overview + apr)",
+      "input": {
+        "debts": [
+          {
+            "id": "auto",
+            "userId": "u",
+            "kind": "loan",
+            "name": "auto",
+            "startMode": "nuovo",
+            "principal": "12000.00",
+            "annualRate": "6.0000",
+            "installments": 12,
+            "firstInstallmentDate": "2025-01-31",
+            "installment": null,
+            "anchorDate": null,
+            "costs": [],
+            "createdAt": "1970-01-01T00:00:00.000Z",
+            "updatedAt": "1970-01-01T00:00:00.000Z"
+          },
+          {
+            "id": "tv",
+            "userId": "u",
+            "kind": "loan",
+            "name": "tv",
+            "startMode": "nuovo",
+            "principal": "1200.00",
+            "annualRate": "0",
+            "installments": 12,
+            "firstInstallmentDate": "2025-03-10",
+            "installment": null,
+            "anchorDate": null,
+            "costs": [
+              {
+                "label": "Istruttoria",
+                "amount": 30,
+                "kind": "una_tantum"
+              }
+            ],
+            "createdAt": "1970-01-01T00:00:00.000Z",
+            "updatedAt": "1970-01-01T00:00:00.000Z"
+          }
+        ],
+        "events": [
+          {
+            "id": "e1",
+            "debtId": "auto",
+            "userId": "u",
+            "type": "payment",
+            "date": "2025-01-31",
+            "amount": "1032.80",
+            "installmentNumber": 1,
+            "rate": null,
+            "penalty": null,
+            "effect": null,
+            "transactionId": null,
+            "note": null,
+            "createdAt": "1970-01-01T00:00:00.000Z"
+          }
+        ],
+        "today": "2025-04-01"
+      },
+      "expected": {
+        "overview": {
+          "totalResidual": 10166.99,
+          "totalDebt": 10166.99,
+          "monthlyPayment": 1132.8,
+          "interestToDate": 165.39,
+          "interestRemaining": 228.19,
+          "debtFreeDate": "2026-02-10",
+          "openCount": 2,
+          "weightedApr": 6.020566379685046,
+          "nextDue": [
+            {
+              "debtId": "auto",
+              "name": "auto",
+              "date": "2025-02-28",
+              "amount": 1032.8,
+              "overdue": true
+            },
+            {
+              "debtId": "tv",
+              "name": "tv",
+              "date": "2025-03-10",
+              "amount": 100,
+              "overdue": true
+            }
+          ],
+          "residualSeries": [
+            {
+              "date": "2025-04-01",
+              "residual": 10166.99
+            },
+            {
+              "date": "2025-04-10",
+              "residual": 10066.99
+            },
+            {
+              "date": "2025-04-30",
+              "residual": 9079.52
+            },
+            {
+              "date": "2025-05-10",
+              "residual": 8979.52
+            },
+            {
+              "date": "2025-05-31",
+              "residual": 7987.12
+            },
+            {
+              "date": "2025-06-10",
+              "residual": 7887.12
+            },
+            {
+              "date": "2025-06-30",
+              "residual": 6889.76
+            },
+            {
+              "date": "2025-07-10",
+              "residual": 6789.76
+            },
+            {
+              "date": "2025-07-31",
+              "residual": 5787.41
+            },
+            {
+              "date": "2025-08-10",
+              "residual": 5687.41
+            },
+            {
+              "date": "2025-08-31",
+              "residual": 4680.05
+            },
+            {
+              "date": "2025-09-10",
+              "residual": 4580.05
+            },
+            {
+              "date": "2025-09-30",
+              "residual": 3567.65
+            },
+            {
+              "date": "2025-10-10",
+              "residual": 3467.65
+            },
+            {
+              "date": "2025-10-31",
+              "residual": 2450.19
+            },
+            {
+              "date": "2025-11-10",
+              "residual": 2350.19
+            },
+            {
+              "date": "2025-11-30",
+              "residual": 1327.64
+            },
+            {
+              "date": "2025-12-10",
+              "residual": 1227.64
+            },
+            {
+              "date": "2025-12-31",
+              "residual": 200
+            },
+            {
+              "date": "2026-01-10",
+              "residual": 100
+            },
+            {
+              "date": "2026-02-10",
+              "residual": 0
+            }
+          ]
+        },
+        "aprs": [
+          {
+            "id": "auto",
+            "apr": 6.168325803305685
+          },
+          {
+            "id": "tv",
+            "apr": 4.80262709207222
+          }
+        ]
+      },
+      "tolerance": 0.000001,
+      "notes": "DB numeric columns arrive as strings"
+    },
+    {
+      "id": "yearlyInterestShares.basic",
+      "function": "yearlyInterestShares",
+      "input": {
+        "debts": "buildDebtsView(debts above, today 2025-04-01).debts"
+      },
+      "expected": {
+        "items": [
+          {
+            "id": "auto",
+            "name": "auto",
+            "yearly": 544.0194,
+            "share": 1
+          }
+        ],
+        "total": 544.0194
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "buildExitPlan.extra200",
+      "function": "buildExitPlan",
+      "input": {
+        "debts": "buildDebtsView(debts above, today 2025-04-01).debts",
+        "monthlyExtra": 200,
+        "today": "2025-04-01"
+      },
+      "expected": {
+        "steps": [
+          {
+            "id": "auto",
+            "name": "auto",
+            "endDate": "2025-12-01",
+            "baselineEndDate": "2026-01-01",
+            "monthsSaved": 1
+          },
+          {
+            "id": "tv",
+            "name": "tv",
+            "endDate": "2026-01-01",
+            "baselineEndDate": "2026-03-01",
+            "monthsSaved": 2
+          }
+        ],
+        "endDate": "2026-01-01",
+        "baselineEndDate": "2026-03-01",
+        "interestSaved": 33.420000000000016
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "addDaysIso.leap",
+      "function": "addDaysIso",
+      "input": {
+        "isoDate": "2024-02-28",
+        "days": 1
+      },
+      "expected": "2024-02-29",
+      "tolerance": 0
+    },
+    {
+      "id": "addDaysIso.negative",
+      "function": "addDaysIso",
+      "input": {
+        "isoDate": "2025-03-01",
+        "days": -1
+      },
+      "expected": "2025-02-28",
+      "tolerance": 0
+    },
+    {
+      "id": "todayIso.utc",
+      "function": "todayIso",
+      "input": {
+        "now": "2025-06-30T23:30:00+02:00"
+      },
+      "expected": "2025-06-30",
+      "tolerance": 0,
+      "notes": "UTC date, not local"
+    }
+  ]
+}

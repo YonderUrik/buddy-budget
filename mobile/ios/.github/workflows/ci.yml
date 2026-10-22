@@ -1,0 +1,24 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # The spec repo is private: a fine-grained PAT with read access to it.
+          token: ${{ secrets.SPEC_REPO_TOKEN }}
+      - name: Kit unit tests (shared golden vectors)
+        working-directory: BuddyBudgetKit
+        run: swift test
+      - name: Generate project
+        run: brew install xcodegen && xcodegen generate
+      - name: Build app
+        run: |
+          xcodebuild build -project BuddyBudget.xcodeproj -scheme BuddyBudget \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO | xcbeautify

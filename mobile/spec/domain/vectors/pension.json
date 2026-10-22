@@ -1,0 +1,1059 @@
+{
+  "topic": "pension",
+  "source": "lib/calc/pension.ts (+ lib/calc/returns.ts xirrDaily/daysBetween)",
+  "generatedWith": "npx tsx (Node, V8 doubles)",
+  "vectors": [
+    {
+      "id": "exitTaxRate-0",
+      "function": "exitTaxRate",
+      "input": {
+        "years": 0
+      },
+      "expected": 0.15,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "exitTaxRate-15",
+      "function": "exitTaxRate",
+      "input": {
+        "years": 15
+      },
+      "expected": 0.15,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "exitTaxRate-16",
+      "function": "exitTaxRate",
+      "input": {
+        "years": 16
+      },
+      "expected": 0.147,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "exitTaxRate-20",
+      "function": "exitTaxRate",
+      "input": {
+        "years": 20
+      },
+      "expected": 0.135,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "exitTaxRate-35",
+      "function": "exitTaxRate",
+      "input": {
+        "years": 35
+      },
+      "expected": 0.09,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "exitTaxRate-40",
+      "function": "exitTaxRate",
+      "input": {
+        "years": 40
+      },
+      "expected": 0.09,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "wholeYearsBetween-2010-03-15-2026-03-14",
+      "function": "wholeYearsBetween",
+      "input": {
+        "from": "2010-03-15",
+        "to": "2026-03-14"
+      },
+      "expected": 15,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "wholeYearsBetween-2010-03-15-2026-03-15",
+      "function": "wholeYearsBetween",
+      "input": {
+        "from": "2010-03-15",
+        "to": "2026-03-15"
+      },
+      "expected": 16,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "wholeYearsBetween-2024-02-29-2025-02-28",
+      "function": "wholeYearsBetween",
+      "input": {
+        "from": "2024-02-29",
+        "to": "2025-02-28"
+      },
+      "expected": 0,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "wholeYearsBetween-2030-01-01-2026-01-01",
+      "function": "wholeYearsBetween",
+      "input": {
+        "from": "2030-01-01",
+        "to": "2026-01-01"
+      },
+      "expected": 0,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "addMonths-2024-01-31-1",
+      "function": "addMonths",
+      "input": {
+        "date": "2024-01-31",
+        "months": 1
+      },
+      "expected": "2024-02-29",
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "addMonths-2023-01-31-1",
+      "function": "addMonths",
+      "input": {
+        "date": "2023-01-31",
+        "months": 1
+      },
+      "expected": "2023-02-28",
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "addMonths-2026-10-18-180",
+      "function": "addMonths",
+      "input": {
+        "date": "2026-10-18",
+        "months": 180
+      },
+      "expected": "2041-10-18",
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "addMonths-2026-03-31--1",
+      "function": "addMonths",
+      "input": {
+        "date": "2026-03-31",
+        "months": -1
+      },
+      "expected": "2026-02-28",
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "exitTaxMilestones-2005-06-30",
+      "function": "exitTaxMilestones",
+      "input": {
+        "adhesionDate": "2005-06-30"
+      },
+      "expected": {
+        "reductionStartsOn": "2020-06-30",
+        "minRateOn": "2040-06-30"
+      },
+      "tolerance": 0,
+      "notes": "min rate after 15 + round((0.15-0.09)/0.003)=35 years"
+    },
+    {
+      "id": "exitTaxMilestones-2026-01-01",
+      "function": "exitTaxMilestones",
+      "input": {
+        "adhesionDate": "2026-01-01"
+      },
+      "expected": {
+        "reductionStartsOn": "2041-01-01",
+        "minRateOn": "2061-01-01"
+      },
+      "tolerance": 0,
+      "notes": "min rate after 15 + round((0.15-0.09)/0.003)=35 years"
+    },
+    {
+      "id": "exitTaxMilestones-2024-02-29",
+      "function": "exitTaxMilestones",
+      "input": {
+        "adhesionDate": "2024-02-29"
+      },
+      "expected": {
+        "reductionStartsOn": "2039-02-28",
+        "minRateOn": "2059-02-28"
+      },
+      "tolerance": 0,
+      "notes": "min rate after 15 + round((0.15-0.09)/0.003)=35 years"
+    },
+    {
+      "id": "deriveContributions-adhesion",
+      "function": "deriveContributions",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          },
+          {
+            "id": "b",
+            "date": "2022-12-31",
+            "netContributions": 4500,
+            "value": 4650
+          },
+          {
+            "id": "c",
+            "date": "2023-12-31",
+            "netContributions": 7500,
+            "value": 8100
+          },
+          {
+            "id": "d",
+            "date": "2024-12-31",
+            "netContributions": 10500,
+            "value": 12000
+          },
+          {
+            "id": "e",
+            "date": "2025-06-30",
+            "netContributions": 12000,
+            "value": 13800
+          }
+        ],
+        "adhesionDate": "2021-07-01"
+      },
+      "expected": [
+        {
+          "date": "2021-09-30",
+          "amount": 750,
+          "estimated": true
+        },
+        {
+          "date": "2021-12-30",
+          "amount": 750,
+          "estimated": true
+        },
+        {
+          "date": "2022-03-31",
+          "amount": 750,
+          "estimated": true
+        },
+        {
+          "date": "2022-06-30",
+          "amount": 750,
+          "estimated": true
+        },
+        {
+          "date": "2022-12-31",
+          "amount": 1500,
+          "estimated": false
+        },
+        {
+          "date": "2023-12-31",
+          "amount": 3000,
+          "estimated": false
+        },
+        {
+          "date": "2024-12-31",
+          "amount": 3000,
+          "estimated": false
+        },
+        {
+          "date": "2025-06-30",
+          "amount": 1500,
+          "estimated": false
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "First 3000 spread over round(round(364/30.4167)/3)=4 quarterly estimated payments"
+    },
+    {
+      "id": "deriveContributions-noAdhesion",
+      "function": "deriveContributions",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          },
+          {
+            "id": "b",
+            "date": "2022-12-31",
+            "netContributions": 4500,
+            "value": 4650
+          },
+          {
+            "id": "c",
+            "date": "2023-12-31",
+            "netContributions": 7500,
+            "value": 8100
+          },
+          {
+            "id": "d",
+            "date": "2024-12-31",
+            "netContributions": 10500,
+            "value": 12000
+          },
+          {
+            "id": "e",
+            "date": "2025-06-30",
+            "netContributions": 12000,
+            "value": 13800
+          }
+        ],
+        "adhesionDate": null
+      },
+      "expected": [
+        {
+          "date": "2022-06-30",
+          "amount": 3000,
+          "estimated": false
+        },
+        {
+          "date": "2022-12-31",
+          "amount": 1500,
+          "estimated": false
+        },
+        {
+          "date": "2023-12-31",
+          "amount": 3000,
+          "estimated": false
+        },
+        {
+          "date": "2024-12-31",
+          "amount": 3000,
+          "estimated": false
+        },
+        {
+          "date": "2025-06-30",
+          "amount": 1500,
+          "estimated": false
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "deriveContributions-empty",
+      "function": "deriveContributions",
+      "input": {
+        "snapshots": [],
+        "adhesionDate": null
+      },
+      "expected": [],
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "computePensionPerformance-adhesion",
+      "function": "computePensionPerformance",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          },
+          {
+            "id": "b",
+            "date": "2022-12-31",
+            "netContributions": 4500,
+            "value": 4650
+          },
+          {
+            "id": "c",
+            "date": "2023-12-31",
+            "netContributions": 7500,
+            "value": 8100
+          },
+          {
+            "id": "d",
+            "date": "2024-12-31",
+            "netContributions": 10500,
+            "value": 12000
+          },
+          {
+            "id": "e",
+            "date": "2025-06-30",
+            "netContributions": 12000,
+            "value": 13800
+          }
+        ],
+        "adhesionDate": "2021-07-01"
+      },
+      "expected": {
+        "value": 13800,
+        "netContributions": 12000,
+        "gain": 1800,
+        "gainPct": 0.15,
+        "annualReturn": 0.08475209733099454,
+        "approximate": true,
+        "firstDate": "2021-09-30",
+        "lastDate": "2025-06-30"
+      },
+      "tolerance": 1e-9,
+      "notes": "annualReturn from XIRR bisection; tolerance 1e-9 absolute"
+    },
+    {
+      "id": "computePensionPerformance-null",
+      "function": "computePensionPerformance",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          },
+          {
+            "id": "b",
+            "date": "2022-12-31",
+            "netContributions": 4500,
+            "value": 4650
+          },
+          {
+            "id": "c",
+            "date": "2023-12-31",
+            "netContributions": 7500,
+            "value": 8100
+          },
+          {
+            "id": "d",
+            "date": "2024-12-31",
+            "netContributions": 10500,
+            "value": 12000
+          },
+          {
+            "id": "e",
+            "date": "2025-06-30",
+            "netContributions": 12000,
+            "value": 13800
+          }
+        ],
+        "adhesionDate": null
+      },
+      "expected": {
+        "value": 13800,
+        "netContributions": 12000,
+        "gain": 1800,
+        "gainPct": 0.15,
+        "annualReturn": 0.09042837667548964,
+        "approximate": false,
+        "firstDate": "2022-06-30",
+        "lastDate": "2025-06-30"
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "computePensionPerformance-single",
+      "function": "computePensionPerformance",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          }
+        ],
+        "adhesionDate": null
+      },
+      "expected": {
+        "value": 3100,
+        "netContributions": 3000,
+        "gain": 100,
+        "gainPct": 0.03333333333333333,
+        "annualReturn": null,
+        "approximate": false,
+        "firstDate": "2022-06-30",
+        "lastDate": "2022-06-30"
+      },
+      "tolerance": 1e-9,
+      "notes": "Single snapshot, same-date flows: days=0 → annualReturn null"
+    },
+    {
+      "id": "computePensionPerformance-none",
+      "function": "computePensionPerformance",
+      "input": {
+        "snapshots": [],
+        "adhesionDate": null
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "withdrawalScenarios-gain",
+      "function": "withdrawalScenarios",
+      "input": {
+        "value": 13800,
+        "netContributions": 12000,
+        "adhesionDate": "2005-06-30",
+        "today": "2026-10-18"
+      },
+      "expected": [
+        {
+          "reason": "pensionamento",
+          "rate": 0.132,
+          "netLow": 11978.4,
+          "netHigh": 12216
+        },
+        {
+          "reason": "sanitarie",
+          "rate": 0.132,
+          "netLow": 11978.4,
+          "netHigh": 12216
+        },
+        {
+          "reason": "altri",
+          "rate": 0.23,
+          "netLow": 10626,
+          "netHigh": 11040
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "withdrawalScenarios-loss",
+      "function": "withdrawalScenarios",
+      "input": {
+        "value": 9000,
+        "netContributions": 10000,
+        "adhesionDate": "2020-01-01",
+        "today": "2026-10-18"
+      },
+      "expected": [
+        {
+          "reason": "pensionamento",
+          "rate": 0.15,
+          "netLow": 7650,
+          "netHigh": 7650
+        },
+        {
+          "reason": "sanitarie",
+          "rate": 0.15,
+          "netLow": 7650,
+          "netHigh": 7650
+        },
+        {
+          "reason": "altri",
+          "rate": 0.23,
+          "netLow": 6930,
+          "netHigh": 6930
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "base capped at value when value < contributions"
+    },
+    {
+      "id": "withdrawalScenarios-override",
+      "function": "withdrawalScenarios",
+      "input": {
+        "value": 13800,
+        "netContributions": 12000,
+        "adhesionDate": "2020-01-01",
+        "today": "2026-10-18",
+        "yearsOverride": 30
+      },
+      "expected": [
+        {
+          "reason": "pensionamento",
+          "rate": 0.105,
+          "netLow": 12351,
+          "netHigh": 12540
+        },
+        {
+          "reason": "sanitarie",
+          "rate": 0.105,
+          "netLow": 12351,
+          "netHigh": 12540
+        },
+        {
+          "reason": "altri",
+          "rate": 0.23,
+          "netLow": 10626,
+          "netHigh": 11040
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Rate-simulation slider path"
+    },
+    {
+      "id": "withdrawalScenarios-noAdhesion",
+      "function": "withdrawalScenarios",
+      "input": {
+        "value": 5000,
+        "netContributions": 0,
+        "adhesionDate": null,
+        "today": "2026-10-18"
+      },
+      "expected": [
+        {
+          "reason": "pensionamento",
+          "rate": 0.15,
+          "netLow": 4250,
+          "netHigh": 5000
+        },
+        {
+          "reason": "sanitarie",
+          "rate": 0.15,
+          "netLow": 4250,
+          "netHigh": 5000
+        },
+        {
+          "reason": "altri",
+          "rate": 0.23,
+          "netLow": 3850,
+          "netHigh": 5000
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "companyTfrValue-2pct",
+      "function": "companyTfrValue",
+      "input": {
+        "contributions": [
+          {
+            "date": "2021-09-30",
+            "amount": 750,
+            "estimated": true
+          },
+          {
+            "date": "2021-12-30",
+            "amount": 750,
+            "estimated": true
+          },
+          {
+            "date": "2022-03-31",
+            "amount": 750,
+            "estimated": true
+          },
+          {
+            "date": "2022-06-30",
+            "amount": 750,
+            "estimated": true
+          },
+          {
+            "date": "2022-12-31",
+            "amount": 1500,
+            "estimated": false
+          },
+          {
+            "date": "2023-12-31",
+            "amount": 3000,
+            "estimated": false
+          },
+          {
+            "date": "2024-12-31",
+            "amount": 3000,
+            "estimated": false
+          },
+          {
+            "date": "2025-06-30",
+            "amount": 1500,
+            "estimated": false
+          }
+        ],
+        "asOf": "2025-06-30",
+        "inflationRate": 0.02
+      },
+      "expected": {
+        "gross": 12610.15721782803,
+        "net": 12506.430490797264,
+        "annualRate": 0.03
+      },
+      "tolerance": 1e-9,
+      "notes": "annualRate = 0.015 + 0.75*0.02 = 0.03"
+    },
+    {
+      "id": "companyTfrValue-0",
+      "function": "companyTfrValue",
+      "input": {
+        "contributions": [
+          {
+            "date": "2020-01-01",
+            "amount": 1000,
+            "estimated": false
+          }
+        ],
+        "asOf": "2025-01-01",
+        "inflationRate": 0
+      },
+      "expected": {
+        "gross": 1077.3718938479387,
+        "net": 1064.2186718937892,
+        "annualRate": 0.015
+      },
+      "tolerance": 1e-9,
+      "notes": "years = 1827/365"
+    },
+    {
+      "id": "companyTfrValue-empty",
+      "function": "companyTfrValue",
+      "input": {
+        "contributions": [],
+        "asOf": "2025-01-01",
+        "inflationRate": 0.02
+      },
+      "expected": {
+        "gross": 0,
+        "net": 0,
+        "annualRate": 0.03
+      },
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "recentQuarterlyContribution-ok",
+      "function": "recentQuarterlyContribution",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          },
+          {
+            "id": "b",
+            "date": "2022-12-31",
+            "netContributions": 4500,
+            "value": 4650
+          },
+          {
+            "id": "c",
+            "date": "2023-12-31",
+            "netContributions": 7500,
+            "value": 8100
+          },
+          {
+            "id": "d",
+            "date": "2024-12-31",
+            "netContributions": 10500,
+            "value": 12000
+          },
+          {
+            "id": "e",
+            "date": "2025-06-30",
+            "netContributions": 12000,
+            "value": 13800
+          }
+        ]
+      },
+      "expected": 750.6855575868374,
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "recentQuarterlyContribution-short",
+      "function": "recentQuarterlyContribution",
+      "input": {
+        "snapshots": [
+          {
+            "id": "d",
+            "date": "2024-12-31",
+            "netContributions": 10500,
+            "value": 12000
+          },
+          {
+            "id": "e",
+            "date": "2025-06-30",
+            "netContributions": 12000,
+            "value": 13800
+          }
+        ]
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": "181 days < 270 → null"
+    },
+    {
+      "id": "recentQuarterlyContribution-one",
+      "function": "recentQuarterlyContribution",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          }
+        ]
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "projectPension-3y",
+      "function": "projectPension",
+      "input": {
+        "startValue": 10000,
+        "quarterlyContribution": 500,
+        "years": 3,
+        "rates": {
+          "prudent": 0,
+          "base": 0.02,
+          "optimistic": 0.04
+        }
+      },
+      "expected": [
+        {
+          "year": 0,
+          "prudent": 10000,
+          "base": 10000,
+          "optimistic": 10000
+        },
+        {
+          "year": 1,
+          "prudent": 12000,
+          "base": 12214.93811721943,
+          "optimistic": 12429.754877219897
+        },
+        {
+          "year": 2,
+          "prudent": 14000,
+          "base": 14474.17499678325,
+          "optimistic": 14956.699949528589
+        },
+        {
+          "year": 3,
+          "prudent": 16000,
+          "base": 16778.596613938345,
+          "optimistic": 17584.722824729626
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "projectPension-0y",
+      "function": "projectPension",
+      "input": {
+        "startValue": 10000,
+        "quarterlyContribution": 500,
+        "years": 0,
+        "rates": {
+          "prudent": 0,
+          "base": 0.02,
+          "optimistic": 0.04
+        }
+      },
+      "expected": [
+        {
+          "year": 0,
+          "prudent": 10000,
+          "base": 10000,
+          "optimistic": 10000
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "projectPension-roundYears",
+      "function": "projectPension",
+      "input": {
+        "startValue": 0,
+        "quarterlyContribution": 100,
+        "years": 1.6,
+        "rates": {
+          "prudent": 0,
+          "base": 0.02,
+          "optimistic": 0.04
+        }
+      },
+      "expected": [
+        {
+          "year": 0,
+          "prudent": 0,
+          "base": 0,
+          "optimistic": 0
+        },
+        {
+          "year": 1,
+          "prudent": 400,
+          "base": 402.98762344388524,
+          "optimistic": 405.9509754439794
+        },
+        {
+          "year": 2,
+          "prudent": 800,
+          "base": 814.0349993566483,
+          "optimistic": 828.1399899057179
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "years rounded with Math.round (1.6 → 2)"
+    },
+    {
+      "id": "projectPension-25y-last",
+      "function": "projectPension(last point)",
+      "input": {
+        "startValue": 13800,
+        "quarterlyContribution": 500,
+        "years": 25,
+        "rates": {
+          "prudent": 0,
+          "base": 0.02,
+          "optimistic": 0.04
+        }
+      },
+      "expected": {
+        "year": 25,
+        "prudent": 63800,
+        "base": 87179.43454192573,
+        "optimistic": 121319.52683669343
+      },
+      "tolerance": 0.000001,
+      "notes": "Default slider position (25y); only last point listed"
+    },
+    {
+      "id": "yearlyBreakdown",
+      "function": "yearlyBreakdown",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          },
+          {
+            "id": "b",
+            "date": "2022-12-31",
+            "netContributions": 4500,
+            "value": 4650
+          },
+          {
+            "id": "c",
+            "date": "2023-12-31",
+            "netContributions": 7500,
+            "value": 8100
+          },
+          {
+            "id": "d",
+            "date": "2024-12-31",
+            "netContributions": 10500,
+            "value": 12000
+          },
+          {
+            "id": "e",
+            "date": "2025-06-30",
+            "netContributions": 12000,
+            "value": 13800
+          }
+        ]
+      },
+      "expected": [
+        {
+          "year": 2022,
+          "contributions": 4500,
+          "gain": 150,
+          "endValue": 4650,
+          "returnRate": 0.03333333333333333,
+          "partial": false
+        },
+        {
+          "year": 2023,
+          "contributions": 3000,
+          "gain": 450,
+          "endValue": 8100,
+          "returnRate": 0.058823529411764705,
+          "partial": false
+        },
+        {
+          "year": 2024,
+          "contributions": 3000,
+          "gain": 900,
+          "endValue": 12000,
+          "returnRate": 0.08108108108108109,
+          "partial": false
+        },
+        {
+          "year": 2025,
+          "contributions": 1500,
+          "gain": 300,
+          "endValue": 13800,
+          "returnRate": 0.022222222222222223,
+          "partial": true
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": ""
+    },
+    {
+      "id": "yearlyBreakdown-partialDec31",
+      "function": "yearlyBreakdown",
+      "input": {
+        "snapshots": [
+          {
+            "id": "a",
+            "date": "2022-06-30",
+            "netContributions": 3000,
+            "value": 3100
+          },
+          {
+            "id": "b",
+            "date": "2022-12-31",
+            "netContributions": 4500,
+            "value": 4650
+          },
+          {
+            "id": "c",
+            "date": "2023-12-31",
+            "netContributions": 7500,
+            "value": 8100
+          },
+          {
+            "id": "d",
+            "date": "2024-12-31",
+            "netContributions": 10500,
+            "value": 12000
+          }
+        ]
+      },
+      "expected": [
+        {
+          "year": 2022,
+          "contributions": 4500,
+          "gain": 150,
+          "endValue": 4650,
+          "returnRate": 0.03333333333333333,
+          "partial": false
+        },
+        {
+          "year": 2023,
+          "contributions": 3000,
+          "gain": 450,
+          "endValue": 8100,
+          "returnRate": 0.058823529411764705,
+          "partial": false
+        },
+        {
+          "year": 2024,
+          "contributions": 3000,
+          "gain": 900,
+          "endValue": 12000,
+          "returnRate": 0.08108108108108109,
+          "partial": false
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "last snapshot on 12-31 → partial=false"
+    }
+  ]
+}

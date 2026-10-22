@@ -47,8 +47,8 @@ export interface AnalyticsSnapshot {
 }
 
 /**
- * Carica dati e ipotesi delle Analitiche e ne ricava il piano, come fa la pagina: lo usano la sidebar (traguardo
- * FIRE), gli Obiettivi e le email. È una lettura pesante: chi la chiama la tiene in cache o la fa di rado.
+ * Carica dati e ipotesi delle Analitiche e ne ricava il piano, come fa la pagina. The sidebar FIRE goal, the Goals view
+ * and the emails read it through `loadAnalyticsDigest`, which keeps the result on Redis: it is a heavy read.
  */
 export async function loadAnalyticsSnapshot(userId: string, now = new Date()): Promise<AnalyticsSnapshot> {
   const today = startOfDay(now);

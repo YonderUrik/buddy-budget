@@ -1,10 +1,9 @@
 import "server-only";
 import { asc, eq } from "drizzle-orm";
-import { loadAnalyticsSnapshot, type AnalyticsSnapshot } from "@/lib/analitiche/snapshot";
+import { loadAnalyticsDigest, type AnalyticsDigest } from "@/lib/analitiche/digest";
 import { db } from "@/lib/db/client";
 import { goals, goalSources, type Goal, type GoalSource } from "@/lib/db/schema/goals";
 import { buildGoalsView, type GoalRecord, type GoalSourceRecord, type GoalsView } from "./view";
-import type { FireInput } from "./plan";
 
 /** Obiettivo dal database alla forma della vista. */
 export function toGoalRecord(row: Goal): GoalRecord {
@@ -35,32 +34,27 @@ export async function loadGoalRows(userId: string): Promise<{ goals: GoalRecord[
   return { goals: goalRows.map(toGoalRecord), sources: sourceRows.map(toGoalSourceRecord) };
 }
 
-/** Dati del confronto con il traguardo: servono spesa e risparmio, come nelle Analitiche. */
-function fireInput(snapshot: AnalyticsSnapshot): FireInput | null {
-  const { plan, assumptions } = snapshot;
-  if (plan.target === null || plan.savings === null) return null;
-  return { wealth: plan.wealth, annualSavings: plan.savings, realReturn: assumptions.expectedReturn, target: plan.target };
-}
-
-/** Costruisce la vista degli obiettivi da righe già lette e da una fotografia delle Analitiche. */
-export function goalsViewFrom(snapshot: AnalyticsSnapshot, rows: { goals: GoalRecord[]; sources: GoalSourceRecord[] }): GoalsView {
-  const { base, plan } = snapshot;
+/** Builds the Goals view from rows already read and the Analytics digest. */
+export function goalsViewFrom(digest: AnalyticsDigest, rows: { goals: GoalRecord[]; sources: GoalSourceRecord[] }): GoalsView {
   return buildGoalsView({
-    currency: snapshot.currency,
-    todayKey: snapshot.todayKey,
+    currency: digest.currency,
+    todayKey: digest.todayKey,
     goals: rows.goals,
     sources: rows.sources,
-    accounts: snapshot.accounts,
-    positions: base.positions.map((p) => ({ id: p.id, name: p.name, value: p.value, unrealizedGain: p.unrealizedGain, taxRate: p.taxRate, type: base.instrumentTypes[p.id] })),
-    capacity: plan.savings === null ? null : plan.savings / 12,
-    fire: fireInput(snapshot),
-    essential: snapshot.essential,
-    debtsTotal: base.wealth.debts,
+    accounts: digest.accounts,
+    positions: digest.positions,
+    capacity: digest.capacity,
+    fire: digest.fire,
+    essential: digest.essential,
+    debtsTotal: digest.debtsTotal,
   });
 }
 
-/** Vista completa degli obiettivi dell'utente, con gli stessi dati e le stesse ipotesi delle Analitiche. */
+/**
+ * Full Goals view of the user, with the same data and assumptions as Analitiche. The goals themselves are always read
+ * fresh; the plan behind them comes from the cached digest (`loadAnalyticsDigest`).
+ */
 export async function loadGoalsView(userId: string, now = new Date()): Promise<GoalsView> {
-  const [snapshot, rows] = await Promise.all([loadAnalyticsSnapshot(userId, now), loadGoalRows(userId)]);
-  return goalsViewFrom(snapshot, rows);
+  const [digest, rows] = await Promise.all([loadAnalyticsDigest(userId, now), loadGoalRows(userId)]);
+  return goalsViewFrom(digest, rows);
 }

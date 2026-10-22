@@ -26,10 +26,10 @@ export async function loadInvestmentsPerformance(user: ViewUser, options: ViewOp
   return buildInvestmentsPerformance({ ...options, language: resolveProfile(user).language, all, data });
 }
 
-/** `GET /api/investments/income` for a user (Italy). */
-export async function loadInvestmentsIncome(userId: string, options: { today: Date; excludedBrokers: ReadonlySet<string> }) {
+/** `GET /api/investments/income` for a user: Italy with taxes, «Altro paese» before tax (Germany has its own income section). */
+export async function loadInvestmentsIncome(userId: string, options: { today: Date; excludedBrokers: ReadonlySet<string>; taxes: boolean }) {
   const { data } = await loadInvestmentViewData(userId, options.excludedBrokers);
-  return buildInvestmentsIncome(data, options.today);
+  return buildInvestmentsIncome(data, options.today, { taxes: options.taxes });
 }
 
 /** `GET /api/investments/taxes` for a user (Italy). */

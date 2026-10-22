@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import { countryFeatures, resolveProfile } from "@/lib/localization/config";
 import { withCountryGuard } from "@/lib/localization/guard";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 import { parseInvestmentsQuery } from "@/lib/views/investments-query";
@@ -18,7 +19,8 @@ async function handleGet(request: NextRequest) {
   bindRequestUser(session.user.id);
   const query = parseInvestmentsQuery(request);
   if (query instanceof Response) return query;
-  return Response.json(await loadInvestmentsIncome(session.user.id, query));
+  const { productCountry } = resolveProfile(session.user);
+  return Response.json(await loadInvestmentsIncome(session.user.id, { ...query, taxes: countryFeatures(productCountry).taxes }));
 }
 
 export const GET = withRoute("investments.income", withCountryGuard(handleGet));

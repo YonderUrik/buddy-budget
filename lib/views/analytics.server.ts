@@ -8,7 +8,7 @@ import { todayIso } from "@/lib/debts/dates";
 import { buildDebtsView } from "@/lib/debts/view";
 import { loadInvestmentData, type InvestmentData } from "@/lib/investments/data";
 import { loadTransactionRows } from "@/lib/liquidity/transactions-list.server";
-import { resolveProfile } from "@/lib/localization/config";
+import { countryFeatures, resolveProfile } from "@/lib/localization/config";
 import { loadNetWorthSnapshotRows } from "@/lib/net-worth/snapshot-rows";
 import { loadUserPension } from "@/lib/pension/data";
 import { buildAnalyticsView } from "./analytics";
@@ -46,6 +46,8 @@ export async function loadAnalyticsView(user: { id: string; currency?: string | 
     pensionFunds: pension.funds,
     debtsTotal: debts.overview.totalDebt,
     snapshots,
+    // Before tax where the country has no capital gains rules (Germany, «Altro paese»), as on the web.
+    capitalGainsTax: countryFeatures(profile.productCountry).taxes,
     stored: assumptions,
     walkthroughSeen,
   });

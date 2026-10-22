@@ -1,0 +1,88 @@
+{
+  "topic": "category-colors",
+  "source": "lib/calc/distribute-colors.ts",
+  "swatchPool": [
+    "slate",
+    "blue",
+    "green",
+    "yellow",
+    "purple",
+    "orange",
+    "red",
+    "teal",
+    "pink",
+    "indigo",
+    "cyan",
+    "lime",
+    "amber",
+    "rose",
+    "violet",
+    "emerald",
+    "slate-light",
+    "blue-light",
+    "green-light",
+    "yellow-light",
+    "purple-light",
+    "orange-light",
+    "red-light",
+    "teal-light",
+    "pink-light",
+    "indigo-light",
+    "cyan-light",
+    "lime-light",
+    "amber-light",
+    "rose-light",
+    "violet-light",
+    "emerald-light",
+    "slate-dark",
+    "blue-dark",
+    "green-dark",
+    "yellow-dark",
+    "purple-dark",
+    "orange-dark",
+    "red-dark",
+    "teal-dark",
+    "pink-dark",
+    "indigo-dark",
+    "cyan-dark",
+    "lime-dark",
+    "amber-dark",
+    "rose-dark",
+    "violet-dark",
+    "emerald-dark"
+  ],
+  "vectors": [
+    {
+      "id": "colors.distribute.3",
+      "function": "distributeColors",
+      "input": {
+        "categoryIds": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "expected": {
+        "a": "slate",
+        "b": "blue",
+        "c": "green"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "colors.distribute.50.tail",
+      "function": "distributeColors",
+      "input": {
+        "categoryIds": "c0..c49"
+      },
+      "expected": {
+        "c46": "violet-dark",
+        "c47": "emerald-dark",
+        "c48": "slate",
+        "c49": "blue"
+      },
+      "tolerance": 1e-9,
+      "notes": "pool size 48; wraps cyclically"
+    }
+  ]
+}

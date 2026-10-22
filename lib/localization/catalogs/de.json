@@ -5253,5 +5253,10 @@
   "Non avvisarmi più": "Nicht mehr benachrichtigen",
   "Tienimi aggiornato": "Halte mich auf dem Laufenden",
   "Impossibile salvare la richiesta, riprova": "Die Anfrage konnte nicht gespeichert werden, versuche es erneut",
-  "Il collegamento automatico alla banca arriva presto. Intanto puoi tenere il conto a mano o importare un file.": "Die automatische Bankverbindung kommt bald. Bis dahin kannst du das Konto von Hand führen oder eine Datei importieren."
+  "Il collegamento automatico alla banca arriva presto. Intanto puoi tenere il conto a mano o importare un file.": "Die automatische Bankverbindung kommt bald. Bis dahin kannst du das Konto von Hand führen oder eine Datei importieren.",
+  "Impossibile leggere lo stato dell'assistente": "Der Assistentenstatus konnte nicht geladen werden",
+  "L'assistente si è interrotto. Puoi riprovare.": "Der Assistent wurde unterbrochen. Du kannst es erneut versuchen.",
+  "Nessuna nuova proposta. Puoi scegliere le categorie a mano.": "Keine neuen Vorschläge. Du kannst die Kategorien manuell wählen.",
+  "Nessuna nuova proposta: scegli le categorie a mano": "Keine neuen Vorschläge: Kategorien manuell wählen",
+  "Ultima richiesta: {0} nuove proposte": "Letzte Anfrage: {0} neue Vorschläge"
 }

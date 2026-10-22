@@ -5253,5 +5253,10 @@
   "Non avvisarmi più": "Stop notifying me",
   "Tienimi aggiornato": "Keep me posted",
   "Impossibile salvare la richiesta, riprova": "Could not save the request, try again",
-  "Il collegamento automatico alla banca arriva presto. Intanto puoi tenere il conto a mano o importare un file.": "The automatic bank connection is coming soon. Until then you can keep the account by hand or import a file."
+  "Il collegamento automatico alla banca arriva presto. Intanto puoi tenere il conto a mano o importare un file.": "The automatic bank connection is coming soon. Until then you can keep the account by hand or import a file.",
+  "Impossibile leggere lo stato dell'assistente": "Unable to read the assistant status",
+  "L'assistente si è interrotto. Puoi riprovare.": "The assistant was interrupted. You can try again.",
+  "Nessuna nuova proposta. Puoi scegliere le categorie a mano.": "No new suggestions. You can choose categories manually.",
+  "Nessuna nuova proposta: scegli le categorie a mano": "No new suggestions: choose categories manually",
+  "Ultima richiesta: {0} nuove proposte": "Last request: {0} new suggestions"
 }

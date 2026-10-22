@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { GenerationJob } from "@/lib/categorization/ai/generation";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import type { AutoCategorizedGroup } from "@/lib/categorization/auto-review";
 import type { RecategorizeApplyResponse, RecategorizePreviewResponse } from "@/lib/categorization/recategorize-plan";
@@ -336,13 +337,33 @@ export function useUndoRecategorizeMutation() {
   });
 }
 
-/** Chiede all'assistente le proposte per i movimenti già presenti; risponde subito, le proposte arrivano ricaricando l'elenco. */
+export const GENERATION_QUERY_KEY = ["categorization-generation"] as const;
+
+/** Poll only while the server reports running work; resume after navigation/reload. */
+export function useGenerationJobQuery(enabled = true) {
+  return useQuery({
+    queryKey: GENERATION_QUERY_KEY,
+    enabled,
+    queryFn: async (): Promise<GenerationJob | null> => {
+      const response = await fetch("/api/transactions/categorize-suggestions/generate");
+      if (!response.ok) throw new Error(pageText("Impossibile leggere lo stato dell'assistente"));
+      return ((await response.json()) as { job: GenerationJob | null }).job;
+    },
+    refetchInterval: (query) => query.state.data?.status === "running" ? 2000 : false,
+  });
+}
+
+/** Start or resume the server-reported background job. */
 export function useGenerateAiSuggestionsMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/transactions/categorize-suggestions/generate", { method: "POST" });
       if (!response.ok) throw new Error(pageText("Impossibile avviare l'assistente"));
-      return (await response.json()) as { status: "started" | "disabled" | "no_key" };
+      return (await response.json()) as { status: "started" | "disabled" | "no_key"; job?: GenerationJob };
+    },
+    onSuccess: (result) => {
+      if (result.job) queryClient.setQueryData(GENERATION_QUERY_KEY, result.job);
     },
   });
 }

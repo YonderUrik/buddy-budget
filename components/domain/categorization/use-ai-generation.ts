@@ -1,88 +1,62 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
-
-
-/**
- * Stato del pulsante «Categorizza con l'AI»: registra il consenso se manca, avvia la generazione e ricarica l'elenco
- * finché le proposte arrivano (contatori veri: esercenti senza proposta all'avvio e quanti ne restano).
- */
-
 import * as React from "react";
 import { toast } from "sonner";
+import { useLocalization } from "@/lib/localization/provider";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import { track } from "@/lib/analytics";
-import { useGenerateAiSuggestionsMutation } from "@/lib/queries/categorization";
+import { useGenerateAiSuggestionsMutation, useGenerationJobQuery } from "@/lib/queries/categorization";
 import { useAiCategorizationQuery, useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
 
-/** Ogni quanto si ricarica l'elenco mentre l'assistente lavora, e per quanti giri al massimo (~4 minuti). */
-const GENERATE_POLL_MS = 4000;
-const GENERATE_POLL_MAX_TICKS = 60;
-/** Giri senza nuove proposte, dopo almeno una comparsa, oltre i quali si considera finito (restano i nomi non inviabili). */
-const GENERATE_IDLE_TICKS = 8;
-
 export interface UseAiGenerationOptions {
-  /** Gruppi da decidere: quelli senza proposta sono il lavoro dell'assistente. */
   groups: readonly SuggestionGroup[];
-  /** Ricarica l'elenco delle proposte. */
   refetch: () => Promise<unknown>;
 }
 
+/** Drive progress and completion from the server job, including blocked-only and failed runs. */
 export function useAiGeneration({ groups, refetch }: UseAiGenerationOptions) {
   const { t: tr } = useLocalization();
   const { data: assistant } = useAiCategorizationQuery();
   const generateMutation = useGenerateAiSuggestionsMutation();
   const consentMutation = useUpdateAiCategorizationMutation();
-  const [generating, setGenerating] = React.useState(false);
-  const [foundCount, setFoundCount] = React.useState<number | undefined>(undefined);
-  const [startMissing, setStartMissing] = React.useState(0);
+  const jobQuery = useGenerationJobQuery(Boolean(assistant?.available));
+  const job = jobQuery.data;
+  const handled = React.useRef<string | null>(null);
+  const [mountedAt] = React.useState(Date.now);
   const missingCount = groups.filter((group) => !group.suggestion).length;
-  const missingRef = React.useRef(missingCount);
-  React.useEffect(() => {
-    missingRef.current = missingCount;
-  });
+  const generating = consentMutation.isPending || generateMutation.isPending || (job?.status === "running" && !jobQuery.isError);
 
-  const start = React.useCallback(async () => {
-    track("ai_suggestions_generate_clicked", { missing: missingRef.current, consentGiven: Boolean(assistant?.enabled) });
-    setFoundCount(undefined);
-    setGenerating(true);
+  React.useEffect(() => {
+    if (!job || job.status === "running" || handled.current === job.id) return;
+    handled.current = job.id;
+    void refetch();
+    if (job.updatedAt < mountedAt) return;
+    track("ai_suggestions_generate_finished", { outcome: job.status, stored: job.stored, blocked: job.blocked });
+    if (job.status === "failed") toast.error(tr("L'assistente si è interrotto. Puoi riprovare."));
+    else if (job.stored === 0) toast.info(tr("Nessuna nuova proposta. Puoi scegliere le categorie a mano."));
+    else toast.success(tr("{0} esercenti hanno una proposta", { 0: job.stored }));
+  }, [job, refetch, tr, mountedAt]);
+
+  React.useEffect(() => {
+    if (jobQuery.isError) toast.error(tr("Impossibile leggere lo stato dell'assistente"));
+  }, [jobQuery.isError, tr]);
+
+  const start = async () => {
+    if (generating) return;
+    track("ai_suggestions_generate_clicked", { missing: missingCount, consentGiven: Boolean(assistant?.enabled) });
     try {
       if (!assistant?.enabled) await consentMutation.mutateAsync(true);
-      const { status } = await generateMutation.mutateAsync();
-      if (status !== "started") throw new Error(tr("L'assistente non è disponibile"));
+      const result = await generateMutation.mutateAsync();
+      if (result.status !== "started") throw new Error(tr("L'assistente non è disponibile"));
     } catch (error) {
-      setGenerating(false);
       toast.error(error instanceof Error ? error.message : tr("Impossibile avviare l'assistente"));
-      return;
     }
-    const startedWith = missingRef.current;
-    setStartMissing(startedWith);
-    let ticks = 0;
-    let idle = 0;
-    let lastMissing = missingRef.current;
-    const timer = setInterval(async () => {
-      ticks += 1;
-      await refetch();
-      const changed = missingRef.current !== lastMissing;
-      idle = changed ? 0 : idle + 1;
-      lastMissing = missingRef.current;
-      const settled = idle >= GENERATE_IDLE_TICKS && missingRef.current < startedWith;
-      if (ticks >= GENERATE_POLL_MAX_TICKS || missingRef.current === 0 || settled) {
-        clearInterval(timer);
-        setGenerating(false);
-        const found = Math.max(0, startedWith - missingRef.current);
-        setFoundCount(found);
-        toast.success(found === 1 ? tr("1 esercente ha una proposta") : tr("{0} esercenti hanno una proposta", {0: found}));
-      }
-    }, GENERATE_POLL_MS);
-  }, [assistant?.enabled, consentMutation, generateMutation, refetch, tr]);
+  };
 
   return {
-    assistant,
-    missingCount,
-    generating,
-    foundCount,
-    startMissing,
-    done: Math.max(0, startMissing - missingCount),
+    assistant, missingCount, generating,
+    foundCount: job?.status === "done" ? job.stored : undefined,
+    startMissing: job?.total ?? 0,
+    done: job?.stored ?? 0,
     start,
   };
 }

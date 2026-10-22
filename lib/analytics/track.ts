@@ -287,6 +287,7 @@ export interface ProductEvents {
   ai_categorization_toggled: { enabled: boolean };
   /** Pulsante «Categorizza con l'AI» in Categorizza; `missing` = esercenti senza proposta in quel momento. */
   ai_suggestions_generate_clicked: { missing: number; consentGiven: boolean };
+  ai_suggestions_generate_finished: { outcome: "done" | "failed"; stored: number; blocked: number };
   /** Riquadro «Novità» della Panoramica: clic sul pulsante o chiusura (`id` = identificativo della voce). */
   whats_new_clicked: { id: string };
   whats_new_dismissed: { id: string };

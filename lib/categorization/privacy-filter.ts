@@ -24,6 +24,7 @@ const BUSINESS_WORDS = new Set([
   "tabacchi", "tabaccheria", "edicola", "ferramenta", "lavanderia", "parrucchiere", "barbiere", "estetica",
   "palestra", "club", "studio", "ottica", "libreria", "cartoleria", "fiorista", "ristoro", "autogrill", "distributore",
   "benzina", "carburanti", "autolavaggio", "assicurazioni", "banca", "ufficio", "poste", "comune", "ente",
+  "pizza", "burger", "baklava", "hostel", "ostello", "museum", "museo", "musei", "mobilita",
 ]);
 
 /** Il testo di una carta arriva come «ESERCENTE CITTÀ PAESE Carta N. ***** Data operazione…»: si taglia lì. */
@@ -51,7 +52,7 @@ export function prepareMerchantForModel(rawDescription: string): PreparedMerchan
 
   const words = name.split(/\s+/).filter((word) => word.length > 0);
   const onlyLetters = words.every((word) => /^[A-Za-zÀ-ÿ'.]+$/.test(word));
-  const hasBusinessWord = words.some((word) => BUSINESS_WORDS.has(word.toLowerCase().replace(/\./g, "")));
+  const hasBusinessWord = words.some((word) => BUSINESS_WORDS.has(word.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[.'’]/g, "")));
   if (words.length >= 2 && words.length <= 4 && onlyLetters && !hasBusinessWord) {
     return { name, blocked: "persona" };
   }

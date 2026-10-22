@@ -65,7 +65,9 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
   const status = generating
     ? null
     : foundCount !== undefined
-      ? tr("{0} proposte pronte nelle carte", { 0: foundCount })
+      ? foundCount === 0
+        ? tr("Nessuna nuova proposta: scegli le categorie a mano")
+        : tr("Ultima richiesta: {0} nuove proposte", { 0: foundCount })
       : tr("{0} {1} proposta", { 0: missingCount, 1: missingCount === 1 ? "esercente senza" : "esercenti senza" });
 
   const button = compact ? (

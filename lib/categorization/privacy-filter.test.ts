@@ -50,6 +50,17 @@ describe("prepareMerchantForModel", () => {
     expect(prepareMerchantForModel("BOFIPA SNC TORINO IT Carta N. ***** 249").blocked).toBeNull();
   });
 
+  it.each(["PAYPAL *TICKETRAUS TIC", "Hostel World", "Pizza Teigmeister", "LS BURGER VISION TURMS", "Sönmez Baklava", "Azienda Napoletana Mobilità", "MUSEI NAZIONALI DEL VO", "LOVELY SOCIETA' COO"])(
+    "recognizes a business without the Carta N. boilerplate: %s",
+    (name) => expect(prepareMerchantForModel(name).blocked).toBeNull()
+  );
+  it.each(["PAYPAL *MARIO ROSSI", "De Florio Marianna", "GABRIELE STREE", "Vito a San Luca"])(
+    "still protects ambiguous personal names: %s",
+    (name) => expect(prepareMerchantForModel(name).blocked).toBe("persona")
+  );
+  it("does not use a brand to exempt a bank transfer", () => {
+    expect(prepareMerchantForModel("Bonifico a favore di Ticketraus").blocked).toBe("operazione");
+  });
   it("blocca trasferimenti e simili", () => {
     expect(prepareMerchantForModel("Bonifico a favore di Qualcuno").blocked).toBe("operazione");
     expect(prepareMerchantForModel("Versamento Contanti Atm").blocked).toBe("operazione");

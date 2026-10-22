@@ -41,3 +41,22 @@ it("non salva una risposta in volo se le istruzioni sono cambiate", async () => 
   expect(await suggestCategoriesForUser(userId, { fetchImpl })).toMatchObject({ stored: 0 });
   expect(await db.select().from(categorizationSuggestions).where(eq(categorizationSuggestions.userId, userId))).toHaveLength(0);
 });
+it("reports zero eligible groups when all descriptions are ambiguous people", async () => {
+  await db.update(transactions).set({ description: "Mario Rossi" }).where(eq(transactions.userId, userId));
+  const fetchImpl = vi.fn();
+  const onProgress = vi.fn();
+  expect(await suggestCategoriesForUser(userId, { fetchImpl, onProgress })).toEqual({ outcome: "nothing_to_do", stored: 0, blocked: 1 });
+  expect(onProgress).toHaveBeenCalledWith({ processed: 0, total: 0, stored: 0, blocked: 1 });
+  expect(fetchImpl).not.toHaveBeenCalled();
+});
+it("keeps a partial provider failure distinguishable from success", async () => {
+  let requests = 0;
+  const onProgress = vi.fn();
+  const fetchImpl = vi.fn(async (_url, options) => {
+    if (++requests > 1) return new Response(null, { status: 503 });
+    const body = JSON.parse(options!.body as string);
+    return Response.json({ answers: Object.fromEntries(Object.keys(body.questions).map((key) => [key, { type: "choice", choice: "Svago", confidence: 0.8 }])) });
+  }) as unknown as typeof fetch;
+  expect(await suggestCategoriesForUser(userId, { fetchImpl, onProgress })).toMatchObject({ outcome: "failed", stored: 5 });
+  expect(onProgress).toHaveBeenLastCalledWith({ processed: 5, total: 12, stored: 5, blocked: 0 });
+});

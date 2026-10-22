@@ -75,7 +75,7 @@ describe("buildDigest", () => {
       { name: "Spesa alimentare", amount: 200 },
       { name: "Svago", amount: 60 },
     ]);
-    expect(data.budget).toEqual({ total: 2, over: 1 });
+    expect(data.budget).toEqual({ total: 2, over: 1, savedUp: 0 });
   });
 
   it("senza movimenti nel periodo non ce n'è da raccontare", () => {

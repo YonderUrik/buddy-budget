@@ -25,7 +25,7 @@ jobs:
       app: ${{ steps.f.outputs.app }}
       landing: ${{ steps.f.outputs.landing }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       # On PRs, skips the jobs that are not needed (e.g. a dependency bump only in landing/ does not rerun the app's lint and tests).
@@ -57,9 +57,9 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -110,9 +110,9 @@ jobs:
       GOCARDLESS_SECRET_KEY: ci-gocardless-key
       CRON_SECRET: ci-only-placeholder-cron-secret-0000000
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -154,7 +154,7 @@ jobs:
       # with the version (app and landing) and CHANGELOG. When that PR is merged it creates the tag and GitHub Release.
       # With RELEASE_PLEASE_TOKEN (PAT) the release PR also gets the checks; with GITHUB_TOKEN it does not (see docs/rilasci.md).
       - id: rp
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@v5
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
@@ -183,17 +183,17 @@ jobs:
           - image: buddy-budget-csv-worker
             target: csv-worker
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
+      - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v4
         if: vars.SELFHOST_IMAGES == 'true'
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
@@ -201,7 +201,7 @@ jobs:
             type=raw,value=main
             type=raw,value=${{ needs.release.outputs.version }},enable=${{ needs.release.outputs.is_release == 'true' }}
             type=raw,value=latest,enable=${{ needs.release.outputs.is_release == 'true' }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           target: ${{ matrix.target }}
@@ -231,11 +231,11 @@ jobs:
       name: production
       url: https://app.buddybudget.io
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: YonderUrik/buddy-budget-infra
           ssh-key: ${{ secrets.INFRA_DEPLOY_KEY }}
-      - uses: imranismail/setup-kustomize@2ba527d4d055ab63514ba50a99456fc35684947f # v2.1.0
+      - uses: imranismail/setup-kustomize@53f941b41dca13ed61874bbc6b4b6e1562877530 # v3.0.0
         with:
           kustomize-version: "5.4.3"
       - name: Aggiorna il tag immagine
@@ -279,11 +279,11 @@ jobs:
       run:
         working-directory: landing
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           package_json_file: landing/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -305,25 +305,25 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # The screenshots are not on main (see docs/landing-screens.md): the image needs them in the build context.
       - name: Scarica gli screenshot
         run: node landing/scripts/pull-screens.mjs
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository_owner }}/buddy-budget-landing
           tags: |
             type=sha,prefix=sha-
             type=raw,value=main
             type=raw,value=${{ needs.release.outputs.version }},enable=${{ needs.release.outputs.is_release == 'true' }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: landing
           push: true
@@ -345,11 +345,11 @@ jobs:
       name: landing
       url: https://buddybudget.io
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: YonderUrik/buddy-budget-infra
           ssh-key: ${{ secrets.INFRA_DEPLOY_KEY }}
-      - uses: imranismail/setup-kustomize@2ba527d4d055ab63514ba50a99456fc35684947f # v2.1.0
+      - uses: imranismail/setup-kustomize@53f941b41dca13ed61874bbc6b4b6e1562877530 # v3.0.0
         with:
           kustomize-version: "5.4.3"
       - name: Aggiorna il tag immagine

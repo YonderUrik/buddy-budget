@@ -9,3 +9,4 @@ export { loadInvestmentViewData, type LoadedInvestmentData } from "./investments
 export { loadPensionView } from "./pension.server";
 export { loadAnalyticsView } from "./analytics.server";
 export { loadPlanningResults } from "./financial-planning.server";
+export { loadBudgetMonth } from "./budget-month.server";

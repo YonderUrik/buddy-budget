@@ -30,8 +30,8 @@ describe("dati d'esempio", () => {
   it("crea conti e movimenti demo, li esclude dai passi e li azzera", async () => {
     const userId = await makeUser();
     const before = await loadStartStatus(userId);
-    expect(before.steps).toEqual({ conto: false, import: false, investimento: false, debito: false, pensione: false, obiettivo: false });
-    expect(before.stepIds).toEqual(["conto", "import", "investimento", "obiettivo"]);
+    expect(before.steps).toEqual({ conto: false, import: false, budget: false, investimento: false, debito: false, pensione: false, obiettivo: false });
+    expect(before.stepIds).toEqual(["conto", "import", "budget", "investimento", "obiettivo"]);
     expect(before.demoActive).toBe(false);
 
     const result = await startDemo(userId);
@@ -136,6 +136,12 @@ describe("focus", () => {
     expect(status.focus).toEqual(["debiti"]);
     expect(status.stepIds).toEqual(["conto", "debito", "obiettivo"]);
     expect(status.completed).toBe(false);
+  });
+
+  it("does not reopen a finished checklist with the budget step", async () => {
+    const userId = await makeUser();
+    await db.update(authUser).set({ startChecklistCompletedAt: new Date() }).where(eq(authUser.id, userId));
+    expect((await loadStartStatus(userId)).stepIds).not.toContain("budget");
   });
 
   it("drops the pension step where the pension section is hidden", async () => {

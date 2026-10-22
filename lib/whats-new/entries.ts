@@ -20,6 +20,15 @@ export const WHATS_NEW_MAX_AGE_DAYS = 45;
 
 export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
   {
+    id: "budget-del-mese",
+    date: "2026-10-22",
+    title: "Budget del mese",
+    summary:
+      "Nuova scheda Budget in Liquidità: quanto puoi ancora spendere e dove arriva il mese, con budget già proposti dai tuoi movimenti. Per le spese saltuarie quello che non spendi resta per i mesi dopo.",
+    href: "/liquidita/budget",
+    ctaLabel: "Apri i budget",
+  },
+  {
     id: "obiettivi-di-risparmio",
     date: "2026-10-15",
     title: "Obiettivi di risparmio",

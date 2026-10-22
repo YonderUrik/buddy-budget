@@ -53,6 +53,21 @@ describe("findBudgetAlerts", () => {
     });
     expect(alerts.map((a) => a.name)).toEqual(["Svago", "Spesa alimentare"]);
   });
+
+  it("counts the leftover carried from the months before and the amount of a single month", () => {
+    const rolling = [makeBudget({ categoryId: "cat-food", monthlyAmount: "300", rollover: true, rolloverFrom: "2026-09" })];
+    // September left 200 €, so October has 500 €: 310 € is only 62%.
+    expect(findBudgetAlerts({ ...base, budgets: rolling, transactions: [...spend(100, "2026-09-10"), ...spend(310)] })).toEqual([]);
+    const months = [{ categoryId: "cat-food", month: "2026-10", amount: "200", singleMonth: true }];
+    const [alert] = findBudgetAlerts({ ...base, months, transactions: spend(170) });
+    expect(alert).toMatchObject({ threshold: 80, budget: 200 });
+  });
+
+  it("says where the month is heading when it goes over", () => {
+    const history = ["2026-07", "2026-08", "2026-09"].flatMap((m) => spend(150, `${m}-20`));
+    const [alert] = findBudgetAlerts({ ...base, transactions: [...history, ...spend(250)] });
+    expect(alert.projected).toBe(400);
+  });
 });
 
 describe("findDeadlineAlerts", () => {

@@ -16,6 +16,7 @@ Analitiche (Analytics, route `/analitiche`) turns the user's balances, transacti
 | «e se…» sliders | plan + slider overrides | scenario plan (not saved) | [`lib/analitiche/scenario.ts`](../../lib/analitiche/scenario.ts) |
 | Simulation | plan + assumptions | Monte Carlo bands, success rate per withdrawal rule | [`lib/analitiche/simulation.ts`](../../lib/analitiche/simulation.ts), [`lib/calc/monte-carlo.ts`](../../lib/calc/monte-carlo.ts) |
 | Server snapshot | user id | base + plan + essential spending, read once | [`lib/analitiche/snapshot.ts`](../../lib/analitiche/snapshot.ts) `loadAnalyticsSnapshot` |
+| Server digest | snapshot, input fingerprint | what the sidebar FIRE module and the Goals view need, cached on Redis | [`lib/analitiche/digest.ts`](../../lib/analitiche/digest.ts) `loadAnalyticsDigest` |
 | Goals view | `goals`, `goal_sources`, snapshot | per-goal value, savings plan, FIRE shift, free sources | [`lib/goals/view.ts`](../../lib/goals/view.ts), [`lib/goals/plan.ts`](../../lib/goals/plan.ts) |
 | Goal reminders | goals view + sent keys | alert / monthly reminder / digest section | [`lib/notifications/goals.ts`](../../lib/notifications/goals.ts) |
 
@@ -38,7 +39,7 @@ accounts, transactions, investments, pension, debts, snapshots
        (in browser)           compareRules            (+ monthsToFire)
 ```
 
-The page computes everything in the browser: [`lib/analitiche/analytics-context.tsx`](../../lib/analitiche/analytics-context.tsx) assembles the inputs from the existing TanStack queries (accounts, transactions, investments, pension, debts, snapshots) and calls the same `buildAnalyticsBase` and `resolvePlan`. Server consumers (sidebar FIRE module in [`lib/sidebar/fire.ts`](../../lib/sidebar/fire.ts), the goals API, notification emails) call `loadAnalyticsSnapshot`, which runs the same pure functions on the server, so the figures match.
+The page computes everything in the browser: [`lib/analitiche/analytics-context.tsx`](../../lib/analitiche/analytics-context.tsx) assembles the inputs from the existing TanStack queries (accounts, transactions, investments, pension, debts, snapshots) and calls the same `buildAnalyticsBase` and `resolvePlan`. Server consumers (sidebar FIRE module in [`lib/sidebar/fire.ts`](../../lib/sidebar/fire.ts), the goals API, notification emails) call `loadAnalyticsDigest`, which runs `loadAnalyticsSnapshot` (the same pure functions on the server, so the figures match) and caches the result (§4.17).
 
 ## 2. Principles
 
@@ -339,6 +340,14 @@ Two engines outside Analitiche share the monthly series:
 
 Example: on 15 March, spent 900 so far; the first 15 days of December, January and February cost 1,000, 800 and 900: `typicalSoFar = 900`, on pace.
 
+### 4.17 Server digest cache
+
+The server snapshot reads every account, transaction, investment operation, price, pension fund and debt of the user and runs the whole plan: about one second for a user with investments, and it blocks the pod while it runs. Panoramica asks for it twice at once (`/api/sidebar/fire` and `/api/goals`). [`lib/analitiche/digest.ts`](../../lib/analitiche/digest.ts) keeps on Redis only what those two need (`AnalyticsDigest`: accounts, positions with tax rate, monthly capacity, FIRE input, essential spending, debts, sidebar figures), under `analytics:digest:<userId>` with a 30-minute TTL.
+
+An entry is used only when its fingerprint matches `analyticsInputsFingerprint`, computed on every request with a few aggregate queries: the cash history markers (`cashInputsFingerprint`: accounts, transactions), the investment history markers (`investmentInputsFingerprint`: operations, manual prices, closes, exchange rates), an md5 of every row of the small tables (assumptions, categories, debts and events, pension funds and snapshots, instrument settings, tax carryforwards, portfolios, dismissed dividends, broker sources and statements), currency, country and today's date. Any edit, import, sync or new close changes it. Inputs outside it (inflation index, dividends, instrument metadata) are picked up by the TTL. Parallel calls for the same user in one pod share one computation (`inFlight`). The goals themselves are always read fresh, so creating or reordering a goal shows at once.
+
+Example: Panoramica opens, both requests arrive together; the first computes (miss, ~1 s), the second joins it (shared). On the next page the fingerprint is unchanged and both answer from Redis (hit, a few tens of ms). After a new transaction the transactions marker changes and the next request computes again.
+
 ## 5. Limits and out of scope
 
 - Debts are not subtracted from FIRE wealth and loan payments are not modelled separately; they are only part of spending when they appear as expense transactions.
@@ -362,6 +371,7 @@ Example: on 15 March, spent 900 so far; the first 15 days of December, January a
 | [`lib/analitiche/historical-return.test.ts`](../../lib/analitiche/historical-return.test.ts) | TWR over 12/24 months and custom windows, start at first purchase, observed inflation, missing reasons, clamp and warning |
 | [`lib/analitiche/plan.test.ts`](../../lib/analitiche/plan.test.ts) | Spending/savings from data, FIRE net of latent tax, user figures override data, minimum months, pension funds opt-in |
 | [`lib/analitiche/scenario.test.ts`](../../lib/analitiche/scenario.test.ts), [`simulation.test.ts`](../../lib/analitiche/simulation.test.ts) | Slider ranges, overrides, `yearsToFireWith`; simulation input for «oggi» and «fire», negative savings |
+| [`lib/analitiche/digest.test.ts`](../../lib/analitiche/digest.test.ts) | Fingerprint stable without changes and different after account, transaction, category, assumptions and day changes; cache hit, recompute after a change, shared parallel computation, answer with a broken cache |
 | [`lib/goals/plan.test.ts`](../../lib/goals/plan.test.ts), [`essential.test.ts`](../../lib/goals/essential.test.ts) | Month helpers, priority allocation, statuses, FIRE shift only for spent goals; essential spending basis and window |
 | [`lib/notifications/goals.test.ts`](../../lib/notifications/goals.test.ts) | Monthly reminder once, reached and deadline alerts, email content, digest |
 | [`components/domain/analytics/plain-answers.test.ts`](../../components/domain/analytics/plain-answers.test.ts) | Plain-language answers for the four questions |

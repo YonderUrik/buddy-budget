@@ -58,7 +58,7 @@ const FEATURES_EN: Readonly<Record<string, FeatureText>> = {
   "quattro-gruppi-di-spesa": { name: "Four spending groups", description: "Needs, Wants, Future you and Occasional, with colors and icons you choose." },
   "trasferimenti-tra-conti": { name: "Transfers between your accounts", description: "Put transfers in their own category: they stay visible in your transactions and are left out of income and spending." },
   "dividi-e-escludi": { name: "Split and exclude", description: "Leave out all or part of refunds, transfers and shared expenses: pick Half, A third or an amount, and see right away how much is yours." },
-  "budget-per-categoria": { name: "Budget per category", description: "Set a budget and see how much of it you've used." },
+  "budget-per-categoria": { name: "Budget per category", description: "Budgets proposed from your own months, how much you can still spend today and where the month is heading; what you don't spend on occasional costs carries over to the next month." },
   "analisi-e-cash-flow": { name: "Analysis and cash flow", description: "Income, spending, net and savings, month by month and by category." },
   "dettaglio-del-movimento": { name: "Transaction details", description: "Tap a transaction to see everything: where it came from, who chose its category and why, the bank's own text, your note and how much you spent at the same merchant in the last year. With the assistant on, you can also ask the AI which category it would pick." },
   abbonamenti: { name: "Subscriptions", description: "Finds recurring charges (streaming, gym, insurance) and you confirm them with one tap. See the cost per month and per year, the next charge and price increases. Worked out from your transactions, without AI." },
@@ -113,7 +113,7 @@ export const FEATURES: readonly Feature[] = [
   f("dettaglio-del-movimento", "Liquidità", "Dettaglio del movimento", "Tocchi un movimento e vedi tutto: da dove arriva, chi ha scelto la categoria e perché, il testo della banca, la tua nota e quanto hai speso dallo stesso esercente nell'ultimo anno. Con l'assistente acceso puoi anche chiedere all'AI quale categoria sceglierebbe.", "new", "/liquidita"),
   f("trasferimenti-tra-conti", "Liquidità", "Trasferimenti tra i tuoi conti", "Assegna i giroconti alla categoria dedicata: restano visibili nei movimenti, esclusi dai conteggi di entrate e spese.", "new"),
   f("dividi-e-escludi", "Liquidità", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise: scegli Metà, Un terzo o un importo, e vedi subito quanto è tuo.", "live"),
-  f("budget-per-categoria", "Liquidità", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
+  f("budget-per-categoria", "Liquidità", "Budget per categoria", "Budget proposti dai tuoi mesi, quanto puoi ancora spendere oggi e dove arriva il mese; quello che non spendi nelle spese saltuarie resta per i mesi dopo.", "new"),
   f("analisi-e-cash-flow", "Liquidità", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/liquidita"),
   f("abbonamenti", "Liquidità", "Abbonamenti", "Trova gli addebiti ricorrenti (streaming, palestra, assicurazioni) e li confermi con un tocco. Vedi il costo al mese e all'anno, il prossimo addebito e gli aumenti di prezzo. Il calcolo parte dai tuoi movimenti, senza AI.", "new"),
 

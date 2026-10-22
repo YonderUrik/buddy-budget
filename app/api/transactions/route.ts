@@ -1,6 +1,6 @@
 import { resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
-import { and, desc, eq, gt, gte, lt, lte } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
@@ -9,16 +9,23 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { createTransactionSchema } from "@/lib/validation/transactions";
 import { rejectIfDemoActive } from "@/lib/start/demo";
 import { applyRulesToUncategorized } from "@/lib/categorization/auto-apply";
-import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
+import { apiError, validationError } from "@/lib/http";
+import { decodeTransactionCursor, TRANSACTION_PAGE_DEFAULT, TRANSACTION_PAGE_MAX } from "@/lib/liquidity/transactions-list";
+import { loadTransactionPage, loadTransactionRows, withTransactionLogos } from "@/lib/liquidity/transactions-list.server";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 const VALID_TYPES = ["uscita", "entrata", "tutte"] as const;
 type TypeParam = (typeof VALID_TYPES)[number];
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * GET /api/transactions?from&to&type — ritorna le transazioni dell'utente autenticato nel periodo indicato, filtrate per
- * direzione (default "uscita", retrocompatibile). Ogni riga ha `logoPath`: il logo dell'esercente come in Categorizza, o null.
+ * GET /api/transactions — two modes.
+ * - Legacy (web): `?from&to&type` → array of every transaction in the window, filtered by direction (default
+ *   "uscita"), newest first. Each row has `logoPath` (merchant logo as in Categorizza, or null).
+ * - Paged (native apps, gaps.md G4): with `limit` (1–200) or `cursor` → `{ items, nextCursor }`, ordered by date then id
+ *   descending. `from`/`to` optional, `type` defaults to "tutte", filters `accountId`, `categoryId`, `q` (description or
+ *   note) and `uncategorized=1` (fallback category), the same as the Movimenti screen.
  */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -27,43 +34,51 @@ async function handleGet(request: NextRequest) {
   }
   bindRequestUser(session.user.id);
 
-  const url = new URL(request.url);
-  const from = url.searchParams.get("from");
-  const to = url.searchParams.get("to");
-  if (!from || !to) {
-    return Response.json({ error: "from e to sono obbligatori (YYYY-MM-DD)" }, { status: 400 });
+  const params = new URL(request.url).searchParams;
+  const paged = params.has("limit") || params.has("cursor");
+  const from = params.get("from");
+  const to = params.get("to");
+  if (!paged && (!from || !to)) {
+    return apiError(400, "invalid_date_range", "from e to sono obbligatori (YYYY-MM-DD)");
   }
-  if (!DATE_FORMAT.test(from) || !DATE_FORMAT.test(to)) {
-    return Response.json({ error: "from e to devono avere formato YYYY-MM-DD" }, { status: 400 });
+  if ((from && !DATE_FORMAT.test(from)) || (to && !DATE_FORMAT.test(to))) {
+    return apiError(400, "invalid_date", "from e to devono avere formato YYYY-MM-DD");
   }
 
-  const typeParam = (url.searchParams.get("type") ?? "uscita") as TypeParam;
+  const typeParam = (params.get("type") ?? (paged ? "tutte" : "uscita")) as TypeParam;
   if (!VALID_TYPES.includes(typeParam)) {
-    return Response.json({ error: "type deve essere uno tra uscita, entrata, tutte" }, { status: 400 });
+    return apiError(400, "invalid_type", "type deve essere uno tra uscita, entrata, tutte");
   }
 
-  const directionCondition =
-    typeParam === "uscita" ? lt(transactions.amount, "0") : typeParam === "entrata" ? gt(transactions.amount, "0") : undefined;
+  if (!paged) {
+    const rows = await loadTransactionRows(session.user.id, { from, to, direction: typeParam });
+    return Response.json(await withTransactionLogos(rows, session.user.id));
+  }
 
-  const rows = await db
-    .select()
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, session.user.id),
-        gte(transactions.date, from),
-        lte(transactions.date, to),
-        ...(directionCondition ? [directionCondition] : [])
-      )
-    )
-    .orderBy(desc(transactions.date));
-
-  const withLogos = await withMerchantLogos(
-    rows,
-    (row) => ({ label: row.description, texts: [row.rawDescription], isExpense: Number(row.amount) < 0 }),
-    session.user.id
-  );
-  return Response.json(withLogos);
+  const limit = params.has("limit") ? Number(params.get("limit")) : TRANSACTION_PAGE_DEFAULT;
+  if (!Number.isInteger(limit) || limit < 1 || limit > TRANSACTION_PAGE_MAX) {
+    return apiError(400, "validation_failed", `limit deve essere un intero tra 1 e ${TRANSACTION_PAGE_MAX}`, { field: "limit" });
+  }
+  const rawCursor = params.get("cursor");
+  const cursor = rawCursor ? decodeTransactionCursor(rawCursor) : null;
+  if (rawCursor && !cursor) return apiError(400, "invalid_cursor", "Cursore non valido");
+  const accountId = params.get("accountId");
+  const categoryId = params.get("categoryId");
+  for (const [field, value] of [["accountId", accountId], ["categoryId", categoryId]] as const) {
+    if (value && !UUID.test(value)) return apiError(400, "validation_failed", `${field} non valido`, { field });
+  }
+  const page = await loadTransactionPage(session.user.id, {
+    from,
+    to,
+    limit,
+    cursor,
+    direction: typeParam,
+    accountId,
+    categoryId,
+    searchText: params.get("q") ?? "",
+    uncategorizedOnly: params.get("uncategorized") === "1",
+  });
+  return Response.json(page);
 }
 
 /**
@@ -83,7 +98,7 @@ async function handlePost(request: NextRequest) {
   const body = await request.json();
   const parsed = createTransactionSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    return validationError(parsed.error);
   }
 
   const [account] = await db
@@ -91,13 +106,10 @@ async function handlePost(request: NextRequest) {
     .from(accounts)
     .where(and(eq(accounts.id, parsed.data.accountId), eq(accounts.userId, session.user.id)));
   if (!account) {
-    return Response.json({ error: "Conto non valido" }, { status: 400 });
+    return apiError(400, "invalid_account", "Conto non valido");
   }
   if (account.source === "auto") {
-    return Response.json(
-      { error: "Non si può aggiungere una spesa manuale a un conto collegato" },
-      { status: 400 }
-    );
+    return apiError(400, "linked_account_read_only", "Non si può aggiungere una spesa manuale a un conto collegato");
   }
 
   const [category] = await db
@@ -105,7 +117,7 @@ async function handlePost(request: NextRequest) {
     .from(categories)
     .where(and(eq(categories.id, parsed.data.categoryId), eq(categories.userId, session.user.id)));
   if (!category) {
-    return Response.json({ error: "Categoria non valida" }, { status: 400 });
+    return apiError(400, "invalid_category", "Categoria non valida");
   }
 
   const signedAmount = (category.type === "entrata" || (category.type === "trasferimento" && parsed.data.direction === "entrata")) ? parsed.data.amount : -parsed.data.amount;

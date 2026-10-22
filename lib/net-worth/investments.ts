@@ -81,7 +81,7 @@ function changeMarker(column: SQL | AnyColumn) {
  * cambi degli strumenti posseduti, valuta dell'utente. Cambia quando si registra, modifica o elimina un'operazione
  * (anche datata anni fa), quando si inserisce un prezzo manuale e quando arriva lo storico prezzi in background.
  */
-async function investmentInputsFingerprint(userId: string): Promise<string> {
+export async function investmentInputsFingerprint(userId: string): Promise<string> {
   const heldInstruments = db
     .selectDistinct({ id: investmentTransactions.instrumentId })
     .from(investmentTransactions)

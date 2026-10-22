@@ -155,7 +155,7 @@ export const PLACES = {
   banksLabel: "Paesi delle banche del collegamento in arrivo",
 } as const satisfies PlacesText;
 
-export type ShowcaseId = "spese" | "investimenti" | "tasse" | "mutuo" | "futuro";
+export type ShowcaseId = "spese" | "budget" | "investimenti" | "tasse" | "mutuo" | "futuro";
 
 export interface ShowcaseTab {
   id: ShowcaseId;
@@ -182,7 +182,7 @@ export interface ShowcaseText {
   allHref: string;
 }
 
-/** «Cosa ti dice, ogni giorno»: five things the number knows, each with the real screen and its figure. */
+/** «Cosa ti dice, ogni giorno»: six things the number knows, each with the real screen and its figure. */
 export const SHOWCASE = {
   title: "Cosa ti dice, ogni giorno.",
   tabs: [
@@ -193,6 +193,14 @@ export const SHOWCASE = {
       text: "Carichi l'estratto conto della banca. L'app divide i movimenti in quattro gruppi e ti chiede solo quando ha un dubbio.",
       figure: { value: "2.164", small: " €", caption: "spesi a ottobre, finora · 5 movimenti da decidere, il resto l'ha messo l'app" },
       shot: "movimenti",
+    },
+    {
+      id: "budget",
+      tab: "Budget",
+      title: "Quanto puoi ancora spendere questo mese?",
+      text: "I budget te li propone l'app dai tuoi mesi. Vedi quanto resta, quanto al giorno e dove arrivi a questo ritmo; per le spese saltuarie l'avanzo resta per i mesi dopo.",
+      figure: { value: "646", small: " €", caption: "da spendere fino a fine mese · circa 65 € al giorno" },
+      shot: "budget",
     },
     {
       id: "investimenti",

@@ -6,7 +6,7 @@ import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { authSession, authUser } from "@/lib/db/schema/auth";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
-import { budgets } from "@/lib/db/schema/budgets";
+import { budgetMonths, budgets } from "@/lib/db/schema/budgets";
 import { subscriptions } from "@/lib/db/schema/subscriptions";
 import { goals } from "@/lib/db/schema/goals";
 import { categories } from "@/lib/db/schema/categories";
@@ -168,6 +168,7 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
     );
   await tx.delete(netWorthSnapshots).where(eq(netWorthSnapshots.userId, userId));
   await tx.delete(transactions).where(eq(transactions.userId, userId));
+  await tx.delete(budgetMonths).where(eq(budgetMonths.userId, userId));
   await tx.delete(budgets).where(eq(budgets.userId, userId));
   await tx.delete(subscriptions).where(eq(subscriptions.userId, userId));
   // Le parti assegnate (goal_sources) vanno via in cascata con l'obiettivo.

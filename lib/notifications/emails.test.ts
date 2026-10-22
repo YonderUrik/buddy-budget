@@ -14,7 +14,7 @@ const data: DigestData = {
   income: 2000,
   previousSpent: 1100,
   topCategories: [{ name: "Spesa alimentare", amount: 320 }],
-  budget: { total: 4, over: 1 },
+  budget: { total: 4, over: 1, savedUp: 0 },
   movements: 40,
   investments: null,
 };
@@ -29,7 +29,7 @@ describe("riepilogo: movimenti da decidere", () => {
 describe("email: ogni email opzionale porta la disiscrizione", () => {
   const emails = {
     digest: digestEmail(data, ctx),
-    budget: budgetAlertEmail([{ categoryId: "c", name: "Cibo", threshold: 100, spent: 310, budget: 300, itemKey: "k", itemKeys: ["k"] }], ctx),
+    budget: budgetAlertEmail([{ categoryId: "c", name: "Cibo", threshold: 100, spent: 310, budget: 300, projected: null, itemKey: "k", itemKeys: ["k"] }], ctx),
     deadlines: deadlineAlertEmail([{ debtId: "d", name: "Mutuo", date: "2026-10-12", amount: 600, overdue: false, itemKey: "k" }], ctx),
   };
 
@@ -97,7 +97,7 @@ describe("digestEmail", () => {
 
 describe("budgetAlertEmail e deadlineAlertEmail", () => {
   it("più categorie in un'unica email, con la percentuale", () => {
-    const alert = (name: string, spent: number) => ({ categoryId: name, name, threshold: 80, spent, budget: 100, itemKey: name, itemKeys: [name] });
+    const alert = (name: string, spent: number) => ({ categoryId: name, name, threshold: 80, spent, budget: 100, projected: null, itemKey: name, itemKeys: [name] });
     const { text } = budgetAlertEmail([alert("Cibo", 85), alert("Svago", 90)], ctx);
     expect(text).toContain("2 categorie");
     expect(text).toContain("Cibo: 85%");
@@ -127,7 +127,7 @@ describe("email nella lingua di chi le riceve", () => {
     expect(text).toContain("You're receiving this email because you signed up for the regular summary.");
     expect(text).toContain("Unsubscribe from these emails: https://app.test/disiscrizione?t=TOKEN");
     expect(html).toContain('<html lang="en">');
-    expect(budgetAlertEmail([{ categoryId: "c", name: "Food", threshold: 100, spent: 310, budget: 300, itemKey: "k", itemKeys: ["k"] }], en).text).toContain(
+    expect(budgetAlertEmail([{ categoryId: "c", name: "Food", threshold: 100, spent: 310, budget: 300, projected: null, itemKey: "k", itemKeys: ["k"] }], en).text).toContain(
       "This month you've used 103% of your Food budget: €310.00 of €300.00.",
     );
     const deadline = deadlineAlertEmail([{ debtId: "d", name: "Mortgage", date: "2026-10-01", amount: 600, overdue: true, itemKey: "k" }], en);
@@ -145,7 +145,7 @@ describe("email nella lingua di chi le riceve", () => {
     expect(text).toContain("Ausgaben im Vergleich zum Vormonat: +12 %");
     expect(text).toContain("Gewinn im Zeitraum: +312,40 € (+1,3 %)");
     expect(text).toContain("Du erhältst diese E-Mail, weil du die regelmäßige Zusammenfassung aktiviert hast.");
-    expect(budgetAlertEmail([{ categoryId: "c", name: "Essen", threshold: 100, spent: 310, budget: 300, itemKey: "k", itemKeys: ["k"] }], de).subject).toBe(
+    expect(budgetAlertEmail([{ categoryId: "c", name: "Essen", threshold: 100, spent: 310, budget: 300, projected: null, itemKey: "k", itemKeys: ["k"] }], de).subject).toBe(
       "Du hast diesen Monat ein Budget überschritten",
     );
     expect(deadlineAlertEmail([{ debtId: "d", name: "Kredit", date: "2026-10-12", amount: 600, overdue: false, itemKey: "k" }], de).text).toContain(

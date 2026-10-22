@@ -35,7 +35,7 @@ import { buildInvestmentsView } from "@/lib/investments/view";
 import { useDebtsQuery } from "@/lib/queries/debts";
 import { useGoalsQuery } from "@/lib/queries/goals";
 import { isCountryPathAvailable } from "@/lib/localization/config";
-import { useBudgetsQuery } from "@/lib/queries/budgets";
+import { useBudgetMonthQuery, useBudgetsQuery } from "@/lib/queries/budgets";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
@@ -146,10 +146,13 @@ export default function PanoramicaPage() {
   const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
   const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null, language);
-  const pace = React.useMemo(
-    () => computeMonthPace(monthTransactionsQuery.data ?? [], budgetsQuery.data ?? [], today),
-    [monthTransactionsQuery.data, budgetsQuery.data, today]
-  );
+  // With budgets, «Budget» reads the same month as Liquidità · Budget (carried leftover and single-month amounts included).
+  const budgetMonthQuery = useBudgetMonthQuery(undefined, { enabled: (budgetsQuery.data?.length ?? 0) > 0 });
+  const pace = React.useMemo(() => {
+    const base = computeMonthPace(monthTransactionsQuery.data ?? [], budgetsQuery.data ?? [], today);
+    const plan = budgetMonthQuery.data;
+    return plan && plan.categories.length > 0 ? { ...base, budgetTotal: plan.total.available, budgetSpent: plan.total.spent } : base;
+  }, [monthTransactionsQuery.data, budgetsQuery.data, budgetMonthQuery.data, today]);
   const monthLabel = MONTH_NAME_FORMAT.format(today);
   const dues = debtsData?.nextDue ?? [];
   const debtsFootnote = debtsData ? tr("Residuo dei debiti: {0}{1}", { 0: formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 }), 1: debtsData.debtFreeDate ? tr(", ultima rata il {0}", {0: formatDateWithYear(debtsData.debtFreeDate)}) : "" }) : undefined;

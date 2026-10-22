@@ -13,7 +13,7 @@ import {
   type StartStepId,
 } from "./steps";
 
-const none: Record<StartStepId, boolean> = { conto: false, import: false, investimento: false, debito: false, pensione: false, obiettivo: false };
+const none: Record<StartStepId, boolean> = { conto: false, import: false, budget: false, investimento: false, debito: false, pensione: false, obiettivo: false };
 
 describe("buildDemoData", () => {
   const today = new Date(2026, 9, 10);
@@ -76,14 +76,14 @@ describe("checklist", () => {
 
 describe("startStepsFor", () => {
   const it_ = { pensionAvailable: true };
-  it("keeps the original four when nothing was chosen", () => {
-    expect(startStepsFor(null, it_)).toEqual(["conto", "import", "investimento", "obiettivo"]);
-    expect(startStepsFor([], it_)).toEqual(["conto", "import", "investimento", "obiettivo"]);
+  it("asks for the default steps when nothing was chosen", () => {
+    expect(startStepsFor(null, it_)).toEqual(["conto", "import", "budget", "investimento", "obiettivo"]);
+    expect(startStepsFor([], it_)).toEqual(["conto", "import", "budget", "investimento", "obiettivo"]);
   });
   it("follows the focus, with the account first and the target last", () => {
     expect(startStepsFor(["debiti"], it_)).toEqual(["conto", "debito", "obiettivo"]);
-    expect(startStepsFor(["pensione", "spese"], it_)).toEqual(["conto", "import", "pensione", "obiettivo"]);
-    expect(startStepsFor(["spese", "investimenti", "debiti", "pensione"], it_)).toEqual(["conto", "import", "investimento", "debito", "pensione", "obiettivo"]);
+    expect(startStepsFor(["pensione", "spese"], it_)).toEqual(["conto", "import", "budget", "pensione", "obiettivo"]);
+    expect(startStepsFor(["spese", "investimenti", "debiti", "pensione"], it_)).toEqual(["conto", "import", "budget", "investimento", "debito", "pensione", "obiettivo"]);
   });
   it("never asks for the pension where that section is hidden", () => {
     expect(startStepsFor(["pensione", "debiti"], { pensionAvailable: false })).toEqual(["conto", "debito", "obiettivo"]);
@@ -115,9 +115,9 @@ describe("next step and acknowledgement", () => {
 });
 
 describe("startStepDefinitionsFor", () => {
-  it("asks for a category budget instead of the target where Analitiche is hidden", () => {
-    const de = startStepDefinitionsFor({ retirementAvailable: false }).find((s) => s.id === "obiettivo");
-    expect(de?.href).toBe("/liquidita/categorie");
-    expect(startStepDefinitionsFor({ retirementAvailable: true }).find((s) => s.id === "obiettivo")?.href).toBe("/analitiche?traguardo=1");
+  it("the budget step leads to Liquidità · Budget; without Analitiche the target is not asked", () => {
+    expect(startStepDefinitionsFor().find((s) => s.id === "budget")?.href).toBe("/liquidita/budget");
+    expect(startStepDefinitionsFor().find((s) => s.id === "obiettivo")?.href).toBe("/analitiche?traguardo=1");
+    expect(startStepsFor(["spese"], { pensionAvailable: false, retirementAvailable: false })).toEqual(["conto", "import", "budget"]);
   });
 });

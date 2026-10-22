@@ -195,6 +195,8 @@ interface MetricsState {
   clientErrors: Counter<"kind" | "area" | "outcome">;
   subscriptionActions: Counter<"action">;
   subscriptionsDetect: Histogram<string>;
+  analyticsDigest: Counter<"outcome">;
+  analyticsDigestCompute: Histogram<string>;
   goalActions: Counter<"action" | "kind">;
   categorizationAiRequests: Counter<"outcome">;
   categorizationAiDuration: Histogram<string>;
@@ -317,6 +319,18 @@ function createState(): MetricsState {
   state.subscriptionsDetect = new Histogram({
     name: `${METRIC_PREFIX}subscriptions_detect_duration_seconds`,
     help: "Durata del rilevamento degli abbonamenti per richiesta (lettura delle transazioni compresa).",
+    buckets: DURATION_BUCKETS_SECONDS,
+    registers: r,
+  });
+  state.analyticsDigest = new Counter({
+    name: `${METRIC_PREFIX}analytics_digest_total`,
+    help: "Readings of the Analytics digest (sidebar FIRE goal, Goals), by outcome: hit (from Redis), miss (computed), shared (joined a computation already running in the pod).",
+    labelNames: ["outcome"],
+    registers: r,
+  });
+  state.analyticsDigestCompute = new Histogram({
+    name: `${METRIC_PREFIX}analytics_digest_compute_duration_seconds`,
+    help: "Time to compute the Analytics digest on a cache miss (data reads included).",
     buckets: DURATION_BUCKETS_SECONDS,
     registers: r,
   });
@@ -693,6 +707,15 @@ export function recordGoalAction(action: GoalAction, kind: string): void {
 /** Registra la durata di un rilevamento degli abbonamenti. */
 export function recordSubscriptionsDetect(durationMs: number): void {
   metrics().subscriptionsDetect.observe(durationMs / 1000);
+}
+
+/** How a reading of the Analytics digest was served (closed enum). */
+export type AnalyticsDigestOutcome = "hit" | "miss" | "shared";
+
+/** Records a reading of the Analytics digest; on a miss also how long the computation took. */
+export function recordAnalyticsDigest(outcome: AnalyticsDigestOutcome, durationMs?: number): void {
+  metrics().analyticsDigest.inc({ outcome });
+  if (durationMs !== undefined) metrics().analyticsDigestCompute.observe(durationMs / 1000);
 }
 
 /** Eventi sulle proposte di categoria (enum chiuso). */

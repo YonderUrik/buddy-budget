@@ -1,7 +1,7 @@
 import type { Budget } from "@/lib/db/schema/budgets";
 import type { Category } from "@/lib/db/schema/categories";
 import type { Transaction } from "@/lib/db/schema/transactions";
-import { computeCategoryBreakdown } from "@/lib/calc/expenses";
+import { buildBudgetMonth, type BudgetMonthAmount } from "@/lib/calc/budget-plan";
 import { addDaysIso } from "@/lib/debts/dates";
 import type { DebtDueItem } from "@/lib/debts/view";
 import { BUDGET_ALERT_THRESHOLDS, DEADLINE_LEAD_DAYS } from "./constants";
@@ -13,7 +13,10 @@ export interface BudgetAlert {
   /** Soglia più alta raggiunta (80 o 100). */
   threshold: number;
   spent: number;
+  /** Budget available this month: the month's amount plus the leftover carried from the months before. */
   budget: number;
+  /** Where the month is heading when that is over the budget (null otherwise, or without history). */
+  projected: number | null;
   /** Tutte le chiavi di deduplica da segnare quando l'avviso parte (la soglia raggiunta e quelle sotto). */
   itemKeys: string[];
   /** Chiave della soglia raggiunta: è quella che, se già inviata, esclude l'avviso. */
@@ -25,36 +28,39 @@ export function budgetItemKey(monthKey: string, categoryId: string, threshold: n
   return `budget:${monthKey}:${categoryId}:${threshold}`;
 }
 
-/** Categorie che nel mese in corso hanno raggiunto una soglia di budget non ancora segnalata. */
+/**
+ * Categories that reached a budget threshold this month not yet notified. The budget is the one shown in Liquidità ·
+ * Budget: the month's amount (single-month one included) plus the leftover carried when rollover is on.
+ */
 export function findBudgetAlerts(input: {
   transactions: Transaction[];
   categories: Category[];
   budgets: Budget[];
+  months?: BudgetMonthAmount[];
   alreadySent: ReadonlySet<string>;
   now: Date;
 }): BudgetAlert[] {
   const { year, month } = romeDate(input.now);
   const monthKey = `${year}-${String(month).padStart(2, "0")}`;
-  const reference = romeReferenceDate(input.now);
-  const amounts = new Map(computeCategoryBreakdown(input.transactions, input.categories, "mese", reference, reference).map((c) => [c.categoryId, c]));
+  const plan = buildBudgetMonth({ transactions: input.transactions, categories: input.categories, budgets: input.budgets, months: input.months ?? [], month: monthKey, today: romeReferenceDate(input.now) });
   const alerts: BudgetAlert[] = [];
-  for (const budget of input.budgets) {
-    const limit = Number(budget.monthlyAmount);
-    const row = amounts.get(budget.categoryId);
-    if (!row || limit <= 0) continue;
-    const reached = BUDGET_ALERT_THRESHOLDS.filter((t) => row.amount >= (limit * t) / 100);
+  for (const row of plan.categories) {
+    const limit = row.available;
+    if (limit <= 0 || row.spent <= 0) continue;
+    const reached = BUDGET_ALERT_THRESHOLDS.filter((t) => row.spent >= (limit * t) / 100);
     if (reached.length === 0) continue;
     const threshold = Math.max(...reached);
-    const itemKey = budgetItemKey(monthKey, budget.categoryId, threshold);
+    const itemKey = budgetItemKey(monthKey, row.categoryId, threshold);
     if (input.alreadySent.has(itemKey)) continue;
     alerts.push({
-      categoryId: budget.categoryId,
+      categoryId: row.categoryId,
       name: row.name,
       threshold,
-      spent: row.amount,
+      spent: row.spent,
       budget: limit,
+      projected: row.projected !== null && row.projected > limit && row.spent <= limit ? row.projected : null,
       itemKey,
-      itemKeys: reached.map((t) => budgetItemKey(monthKey, budget.categoryId, t)),
+      itemKeys: reached.map((t) => budgetItemKey(monthKey, row.categoryId, t)),
     });
   }
   return alerts.sort((a, b) => b.threshold - a.threshold || b.spent / b.budget - a.spent / a.budget);

@@ -12,6 +12,7 @@ vi.mock("@/lib/auth", () => ({
 }));
 
 import { auth } from "@/lib/auth";
+import { transactionPageSchema } from "@/lib/views";
 import { GET, POST } from "./route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
@@ -271,5 +272,60 @@ describe("GET/POST /api/transactions", () => {
   it("risponde 400 se from o to hanno formato non valido", async () => {
     const response = await GET(new NextRequest("http://localhost/api/transactions?from=abc&to=2026-12-31"));
     expect(response.status).toBe(400);
+  });
+
+  describe("paged mode (native apps)", () => {
+    async function seedFeed() {
+      const [incomeCategory] = await db.insert(categories).values({ userId, name: "Stipendio", type: "entrata" }).returning();
+      const [fallback] = await db.insert(categories).values({ userId, name: "Da categorizzare", type: "voluta", isFallback: true }).returning();
+      await db.insert(transactions).values([
+        { userId, accountId: manualAccountId, categoryId, description: "Supermercato", amount: "-20.00", date: "2026-02-05", source: "manuale" },
+        { userId, accountId: manualAccountId, categoryId, description: "Bar", note: "caffè al supermercato", amount: "-2.00", date: "2026-02-05", source: "manuale" },
+        { userId, accountId: autoAccountId, categoryId: incomeCategory.id, description: "Stipendio", amount: "1800.00", date: "2026-02-27", source: "auto" },
+        { userId, accountId: autoAccountId, categoryId: fallback.id, description: "???", amount: "-9.00", date: "2026-03-01", source: "auto" },
+        { userId: otherUserId, accountId: otherAccountId, categoryId: otherCategoryId, description: "Supermercato", amount: "-5.00", date: "2026-02-06", source: "manuale" },
+      ]);
+    }
+    const page = async (query: string) => {
+      const response = await GET(new NextRequest(`http://localhost/api/transactions?${query}`));
+      return { status: response.status, body: await response.json() };
+    };
+
+    it("walks the whole feed with the cursor, every type by default, newest first", async () => {
+      await seedFeed();
+      const first = await page("limit=3");
+      expect(first.status).toBe(200);
+      expect(transactionPageSchema.parse(first.body).items.map((t) => t.date)).toEqual(["2026-03-01", "2026-02-27", "2026-02-05"]);
+      expect(first.body.nextCursor).toEqual(expect.any(String));
+      const second = await page(`limit=3&cursor=${first.body.nextCursor}`);
+      expect(second.body.items.map((t: { description: string }) => t.description)).toHaveLength(1);
+      expect(second.body.nextCursor).toBeNull();
+      const ids = [...first.body.items, ...second.body.items].map((t: { id: string }) => t.id);
+      expect(new Set(ids).size).toBe(4);
+    });
+
+    it("filters like the Movimenti screen", async () => {
+      await seedFeed();
+      const descriptions = async (query: string) => (await page(`limit=50&${query}`)).body.items.map((t: { description: string }) => t.description);
+      // Same day: the order inside it follows the (random) ids, so compare as a set.
+      expect((await descriptions("q=supermercato")).sort()).toEqual(["Bar", "Supermercato"]);
+      expect(await descriptions("type=entrata")).toEqual(["Stipendio"]);
+      expect(await descriptions(`accountId=${autoAccountId}&type=uscita`)).toEqual(["???"]);
+      expect(await descriptions(`categoryId=${categoryId}&from=2026-02-01&to=2026-02-28`)).toHaveLength(2);
+      expect(await descriptions("uncategorized=1")).toEqual(["???"]);
+    });
+
+    it("rejects a bad limit or cursor with stable codes", async () => {
+      expect((await page("limit=0")).body).toMatchObject({ code: "validation_failed", field: "limit" });
+      expect((await page("limit=201")).status).toBe(400);
+      expect((await page("cursor=abc")).body).toMatchObject({ code: "invalid_cursor" });
+    });
+
+    it("keeps the legacy array when no limit or cursor is given", async () => {
+      await seedFeed();
+      const legacy = await page("from=2026-01-01&to=2026-12-31&type=tutte");
+      expect(Array.isArray(legacy.body)).toBe(true);
+      expect(legacy.body).toHaveLength(4);
+    });
   });
 });

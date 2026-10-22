@@ -18,6 +18,7 @@ export {
   recordSubscriptionAction,
   recordGoalAction,
   recordSubscriptionsDetect,
+  recordAnalyticsDigest,
   recordCategorizationAiRequest,
   recordCategorizationSuggestions,
   recordCategorizationAutoApplied,
@@ -50,6 +51,7 @@ export {
   DURATION_BUCKETS_SECONDS,
 } from "./metrics";
 export type {
+  AnalyticsDigestOutcome,
   AutoCategorySource,
   FxOutcome,
   PriceInstrumentOutcome,

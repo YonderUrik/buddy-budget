@@ -12,6 +12,7 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
 import { auth } from "@/lib/auth";
 import { GET, POST } from "./route";
+import { debtsInsightsSchema } from "@/lib/views";
 import { DELETE as deleteDebt, PATCH as patchDebt } from "./[id]/route";
 import { POST as postEvent } from "./[id]/events/route";
 import { DELETE as deleteEvent } from "./[id]/events/[eventId]/route";
@@ -192,5 +193,15 @@ describe("route debiti", () => {
   it("non crea più linee di credito (funzione rimossa)", async () => {
     const res = await POST(request("/api/debts", "POST", { kind: "credit_line", name: "Lombard", creditLimit: 50000, initialUsed: 10000, indexRate: 3, spread: 2, openDate: "2026-01-01" }));
     expect(res.status).toBe(400);
+  });
+
+  it("include=insights adds the overview readings; other values are rejected", async () => {
+    await createDebt({ ...loan, name: "Auto", startMode: "nuovo", installments: 48, firstInstallmentDate: "2030-01-05" });
+    const body = (await (await GET(request("/api/debts?include=insights", "GET"))).json()) as { insights: { exit: { plans: unknown[]; slider: { default: number } }; interestShares: { items: unknown[] } } };
+    debtsInsightsSchema.parse(body.insights);
+    expect(body.insights.exit.slider.default).toBe(200);
+    expect(body.insights.exit.plans).toHaveLength(21);
+    expect(body.insights.interestShares.items).toHaveLength(1);
+    expect(await (await GET(request("/api/debts?include=plans", "GET"))).json()).toMatchObject({ code: "validation_failed", field: "include" });
   });
 });

@@ -58,17 +58,17 @@ export interface ProductEvents {
    * Action of a «Primi passi» step pressed; `placement`: the big «next step» block in Panoramica, the list under it, or
    * the «done, next» toast shown elsewhere in the app.
    */
-  start_step_clicked: { step: "conto" | "import" | "investimento" | "debito" | "pensione" | "obiettivo"; placement?: "hero" | "list" | "toast" };
+  start_step_clicked: { step: "conto" | "import" | "budget" | "investimento" | "debito" | "pensione" | "obiettivo"; placement?: "hero" | "list" | "toast" };
   /** A step of the user's checklist became done (seen by the app, once per step and device). */
-  start_step_completed: { step: "conto" | "import" | "investimento" | "debito" | "pensione" | "obiettivo" };
+  start_step_completed: { step: "conto" | "import" | "budget" | "investimento" | "debito" | "pensione" | "obiettivo" };
   /** «Cosa vuoi tenere sotto controllo?» answered at the end of onboarding; `count` 0 = skipped (default steps). */
   onboarding_focus_chosen: { count: number; spese: boolean; investimenti: boolean; debiti: boolean; pensione: boolean };
   /** The same choice changed later from the checklist's «Cambia». */
   start_focus_changed: { count: number };
   /** A first step skipped («Non mi serve») or brought back from the list. */
-  start_step_skipped: { step: "import" | "investimento" | "debito" | "pensione" | "obiettivo"; skipped: boolean };
+  start_step_skipped: { step: "import" | "budget" | "investimento" | "debito" | "pensione" | "obiettivo"; skipped: boolean };
   /** Action pressed in the «no account yet» state of a Liquidità tab (`area`). */
-  empty_state_action_clicked: { area: "movimenti" | "analisi" | "abbonamenti"; action: "conto" | "import" };
+  empty_state_action_clicked: { area: "movimenti" | "analisi" | "budget" | "abbonamenti"; action: "conto" | "import" };
   /** Checklist closed; `done`: how many of the user's steps were already done. */
   start_checklist_dismissed: { done: number };
   start_checklist_reopened: undefined;
@@ -120,6 +120,12 @@ export interface ProductEvents {
   budget_set: undefined;
   /** Monthly budget of a category removed (field emptied in the category's detail window). */
   budget_removed: undefined;
+  /** Budgets created from the app's proposals («Usa questi budget»): how many, and how many with an amount changed by hand. */
+  budget_proposals_accepted: { count: number; changed: number };
+  /** «Porta l'avanzo al mese dopo» switched on or off on a budget. */
+  budget_rollover_toggled: { enabled: boolean };
+  /** A different amount for one month only set (or removed, back to the usual one). */
+  budget_single_month_set: { removed: boolean };
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
   /** «Collega la tua banca» shown as unavailable in the «Nuovo conto» dialog (once per opening); `reason`: closed for now («In arrivo»), spots gone or one bank per person. */
@@ -163,7 +169,7 @@ export interface ProductEvents {
   /** Su telefono: vista scelta dal foglio aperto dal titolo (diversa da quella corrente). */
   section_view_chosen: { section: SectionViewsKey };
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
-  liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "abbonamenti" | "categorie" | "regole" };
+  liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "budget" | "conti" | "abbonamenti" | "categorie" | "regole" };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
   liquidity_account_filtered: { scope: "conto" | "tutti" };
   /** Categoria cambiata dall'icona del movimento; `remembered`: l'utente ha chiesto di ricordarla con una regola. */

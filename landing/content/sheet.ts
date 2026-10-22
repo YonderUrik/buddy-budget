@@ -84,7 +84,7 @@ export const TOUR = {
         ["Categorie", "Confermi un negozio e scegli se ricordarlo. Le regole si leggono, si modificano e si cancellano."],
         ["Nomi leggibili", "Da «POS 1234 ESSELUNGA SPA MI» ricava «Esselunga», anche con codici o filiali diversi."],
         ["Assistente AI", "Spento finché non lo attivi. Propone una categoria per i negozi nuovi e riceve solo il nome pulito del negozio."],
-        ["Gruppi e budget", "Dovute, Volute, Te futuro, Saltuarie; un tetto per categoria, con un'email all'80% e al 100% se la vuoi."],
+        ["Gruppi e budget", "Dovute, Volute, Te futuro, Saltuarie. Budget per categoria proposti dai tuoi mesi: quanto puoi ancora spendere, dove arriva il mese e, per le spese saltuarie, l'avanzo che resta per i mesi dopo; un'email all'80% e al 100% se la vuoi."],
       ],
     },
     {

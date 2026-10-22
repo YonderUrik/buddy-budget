@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { apiError, validationError } from "@/lib/http";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
@@ -36,20 +37,17 @@ async function handlePatch(
   const { id } = await params;
   const account = await getOwnedAccount(session.user.id, id);
   if (!account) {
-    return new Response(null, { status: 404 });
+    return apiError(404, "account_not_found", "Conto non trovato");
   }
 
   const body = await request.json();
   const parsed = updateAccountSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    return validationError(parsed.error);
   }
 
   if (account.source === "auto" && ("type" in parsed.data || "balance" in parsed.data)) {
-    return Response.json(
-      { error: "Per un conto collegato automaticamente tipo e saldo non sono modificabili" },
-      { status: 403 }
-    );
+    return apiError(403, "linked_account_read_only", "Per un conto collegato automaticamente tipo e saldo non sono modificabili");
   }
 
   const { balance, ...rest } = parsed.data;
@@ -83,7 +81,7 @@ async function handleDelete(
   const { id } = await params;
   const account = await getOwnedAccount(session.user.id, id);
   if (!account) {
-    return new Response(null, { status: 404 });
+    return apiError(404, "account_not_found", "Conto non trovato");
   }
 
   // transactions.account_id non ha ON DELETE cascade (a differenza di bank_account_links):

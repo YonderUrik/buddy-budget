@@ -11,7 +11,7 @@ import { client, db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { authAccount, authSession, authUser } from "@/lib/db/schema/auth";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
-import { budgets } from "@/lib/db/schema/budgets";
+import { budgetMonths, budgets } from "@/lib/db/schema/budgets";
 import { categories, DEFAULT_CATEGORIES } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import {
@@ -103,6 +103,7 @@ async function createUserWithData(): Promise<Fixture> {
     { userId, accountId: autoAccount.id, categoryId: category.id, description: "STIPENDIO", amount: "2000.00", date: "2026-09-02", source: "auto" },
   ]);
   await db.insert(budgets).values({ userId, categoryId: category.id, monthlyAmount: "300.00" });
+  await db.insert(budgetMonths).values({ userId, categoryId: category.id, month: "2026-12", amount: "450.00", singleMonth: true });
   await db.insert(categorizationRules).values({ userId, matchType: "merchant", pattern: `supermercato ${tag}`, categoryId: category.id });
 
   const [manualInstrument, commonInstrument] = await db
@@ -200,6 +201,7 @@ describe("gestione account (integrazione)", () => {
       [
         "LEGGIMI.txt",
         "abbonamenti.csv",
+        "budget-mesi.csv",
         "budget.csv",
         "categorie.csv",
         "conti.csv",
@@ -236,6 +238,8 @@ describe("gestione account (integrazione)", () => {
     expect(parsed.pensionSnapshots).toHaveLength(1);
     expect(parsed.financialPlans).toEqual([{ country: "DE", data: { version: 1, country: "DE" } }]);
     expect(parsed.analyticsAssumptions.data).toEqual({ withdrawalRate: 0.03 });
+    expect(parsed.budgetMonths).toEqual([expect.objectContaining({ month: "2026-12", amount: "450.00", singleMonth: true })]);
+    expect(strFromU8(files["budget-mesi.csv"])).toContain("450,00");
   });
 
   it("il reset cancella tutto, ricrea le categorie, riporta all'onboarding e revoca la banca", async () => {
@@ -256,6 +260,7 @@ describe("gestione account (integrazione)", () => {
       netWorthDays: 0,
     });
     expect(await db.select().from(financialPlans).where(eq(financialPlans.userId, f.userId))).toHaveLength(0);
+    expect(await db.select().from(budgetMonths).where(eq(budgetMonths.userId, f.userId))).toHaveLength(0);
     expect(await db.select().from(analyticsAssumptions).where(eq(analyticsAssumptions.userId, f.userId))).toHaveLength(0);
     const [user] = await db.select().from(authUser).where(eq(authUser.id, f.userId));
     expect(user).toMatchObject({ onboardingCompleted: false, currency: "EUR", homePage: "/panoramica", deletionScheduledAt: null });

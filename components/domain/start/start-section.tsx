@@ -21,7 +21,7 @@ export interface StartChecklistSectionProps {
 
 /** First-steps checklist: hidden when closed, complete or while exploring sample data. */
 export function StartChecklistSection({ status, forceVisible, className }: StartChecklistSectionProps) {
-  const { features, productCountry } = useLocalization();
+  const { productCountry } = useLocalization();
   const dismiss = useStartDismissMutation();
   const demo = useStartDemoMutation();
   const saveFocus = useStartFocusMutation();
@@ -37,7 +37,7 @@ export function StartChecklistSection({ status, forceVisible, className }: Start
         steps={status.steps}
         stepIds={status.stepIds}
         skipped={status.skipped}
-        definitions={startStepDefinitionsFor({ retirementAvailable: features.retirement })}
+        definitions={startStepDefinitionsFor()}
         justDone={recent.filter((id) => status.stepIds.includes(id) && status.steps[id])}
         demo={forceVisible ? { onStart: () => demo.mutate(), pending: demo.isPending, errorMessage: demo.error?.message } : undefined}
         className={className}

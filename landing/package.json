@@ -1,6 +1,6 @@
 {
   "name": "buddy-budget-landing",
-  "version": "0.84.0",
+  "version": "0.85.2",
   "private": true,
   "license": "AGPL-3.0-only",
   "description": "Landing page di BuddyBudget (buddybudget.io): sito statico, deploy separato dall'app.",
@@ -23,7 +23,7 @@
     "@gsap/react": "^2.1.2",
     "gsap": "^3.13.0",
     "lucide-react": "^1.53.0",
-    "next": "16.3.8",
+    "next": "16.4.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

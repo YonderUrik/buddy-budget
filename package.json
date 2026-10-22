@@ -1,11 +1,12 @@
 {
   "name": "buddy-budget",
-  "version": "0.84.0",
+  "version": "0.85.2",
   "private": true,
   "license": "AGPL-3.0-only",
   "packageManager": "pnpm@11.5.0",
   "scripts": {
     "demo:seed": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/demo-seed.ts",
+    "dev:mobile-session": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/dev-mobile-session.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -41,7 +42,7 @@
     "ioredis": "^5.11.1",
     "lucide-react": "^1.23.0",
     "motion": "^13.4.6",
-    "next": "16.3.8",
+    "next": "16.4.1",
     "next-themes": "^0.4.6",
     "nodemailer": "^10.1.2",
     "postgres": "^3.4.9",

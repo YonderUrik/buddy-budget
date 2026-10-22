@@ -41,7 +41,7 @@ access code / CLI grant ──────────────────�
 
 ## 3. Data model
 
-Migration `0049_billing` (number to re-check at merge).
+Migration `0050_billing` (after main's `0049_budget_rollover`).
 
 | Table | What it keeps |
 |---|---|

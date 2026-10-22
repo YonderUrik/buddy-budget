@@ -120,6 +120,14 @@ export const HOME_EN: HomeContent = {
         shot: "movimenti",
       },
       {
+        id: "budget",
+        tab: "Budget",
+        title: "How much can you still spend this month?",
+        text: "The app suggests your budgets from your own months. See what's left, how much a day and where you'll land at this pace; for occasional costs, what's left carries over to the coming months.",
+        figure: { value: "€646", caption: "to spend until the end of the month · about €65 a day" },
+        shot: "budget",
+      },
+      {
         id: "investimenti",
         tab: "Investments",
         title: "What you've really earned.",

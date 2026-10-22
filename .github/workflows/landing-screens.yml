@@ -64,9 +64,9 @@ jobs:
       CRON_SECRET: ci-only-placeholder-cron-secret-0000000
       LOGODEV_PUBLISHABLE_KEY: ${{ secrets.LOGODEV_PUBLISHABLE_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -93,7 +93,7 @@ jobs:
             DEMO_LANGUAGE=$language pnpm demo:seed
             (cd landing && CAPTURE_LANGUAGE=$language node --experimental-strip-types scripts/capture-screens.mjs)
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: landing-screens
           path: landing/public/screens

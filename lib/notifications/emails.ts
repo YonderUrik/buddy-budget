@@ -75,6 +75,7 @@ function liquidityRows(data: DigestData, money: MoneyFormatter, l: EmailLocale):
       : [{ label: data.period.period === "mese" ? t("Uscite rispetto al mese prima") : t("Uscite rispetto alla settimana prima"), value: Math.abs(change) < 1 ? tc("in linea") : changePercent(change, l) }]),
     ...(top ? [{ label: t("Voce più pesante"), value: `${top.name} · ${money(top.amount)}` }] : []),
     ...(budget === null ? [] : [{ label: t("Budget superati"), value: tc("{0} su {1}", budget.over, budget.total) }]),
+    ...(budget === null || budget.savedUp <= 0 ? [] : [{ label: t("Messi da parte per i mesi dopo"), value: money(budget.savedUp) }]),
   ];
 }
 
@@ -235,7 +236,9 @@ export function budgetAlertEmail(alerts: BudgetAlert[], ctx: EmailContext): Buil
   const percent = (a: BudgetAlert) => Math.round((a.spent / a.budget) * 100);
   const lead =
     alerts.length === 1
-      ? t("Questo mese hai usato **{0}%** del budget di **{1}**: **{2}** su **{3}**.", percent(alerts[0]), alerts[0].name, ctx.money(alerts[0].spent), ctx.money(alerts[0].budget))
+      ? alerts[0].projected !== null
+        ? t("Questo mese hai usato **{0}%** del budget di **{1}**: **{2}** su **{3}**. A questo ritmo arrivi a **{4}**.", percent(alerts[0]), alerts[0].name, ctx.money(alerts[0].spent), ctx.money(alerts[0].budget), ctx.money(alerts[0].projected))
+        : t("Questo mese hai usato **{0}%** del budget di **{1}**: **{2}** su **{3}**.", percent(alerts[0]), alerts[0].name, ctx.money(alerts[0].spent), ctx.money(alerts[0].budget))
       : exceeded > 0
         ? t("Questo mese {0} categorie sono vicine al budget o lo hanno superato ({1} già sopra).", alerts.length, exceeded)
         : t("Questo mese {0} categorie sono vicine al budget o lo hanno superato.", alerts.length);
@@ -245,7 +248,7 @@ export function budgetAlertEmail(alerts: BudgetAlert[], ctx: EmailContext): Buil
       lead,
       preheader: t("Una o più categorie hanno raggiunto il budget del mese."),
       details: alerts.length === 1 ? [] : alerts.map((a) => ({ label: a.name, value: t("{0}% · {1} su {2}", percent(a), ctx.money(a.spent), ctx.money(a.budget)) })),
-      cta: { label: t("Guarda i budget"), url: `${ctx.appUrl}/liquidita` },
+      cta: { label: t("Guarda i budget"), url: `${ctx.appUrl}/liquidita/budget` },
       footer: footerFor("budget", ctx, l),
     },
     { appUrl: ctx.appUrl, language },

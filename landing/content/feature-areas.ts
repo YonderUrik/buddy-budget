@@ -28,7 +28,7 @@ export const AREA_META: Record<FeatureArea, AreaMeta> = {
     name: "Liquidità",
     slug: "liquidita",
     icon: "wallet",
-    intro: "Conti importati dall'estratto conto o tenuti a mano, movimenti con la categoria giusta e le spese divise nei quattro gruppi.",
+    intro: "Conti importati dall'estratto conto o tenuti a mano, movimenti con la categoria giusta, le spese divise nei quattro gruppi e i budget del mese.",
     shot: { id: "movimenti" },
   },
   Investimenti: {
@@ -75,7 +75,7 @@ export const AREA_META_EN: Record<FeatureArea, AreaMeta> = {
     name: FEATURE_AREA_LABELS_EN.Liquidità,
     slug: "cash",
     icon: "wallet",
-    intro: "Accounts imported from your bank statement or kept by hand, transactions with the right category, and spending split into four groups.",
+    intro: "Accounts imported from your bank statement or kept by hand, transactions with the right category, spending split into four groups, and the month's budgets.",
     shot: { id: "movimenti" },
   },
   Investimenti: {

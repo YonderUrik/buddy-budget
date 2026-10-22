@@ -2,6 +2,27 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.85.2](https://github.com/YonderUrik/buddy-budget/compare/v0.85.1...v0.85.2) (2026-10-22)
+
+
+### Correzioni
+
+* **deps:** bump next to 16.4.1 in app and landing (security) ([#487](https://github.com/YonderUrik/buddy-budget/issues/487)) ([a40e879](https://github.com/YonderUrik/buddy-budget/commit/a40e8793e1591ae7d947077a8f41041d5606c802))
+
+## [0.85.1](https://github.com/YonderUrik/buddy-budget/compare/v0.85.0...v0.85.1) (2026-10-22)
+
+
+### Prestazioni
+
+* cache the Analytics plan behind the sidebar FIRE goal and Goals on Redis ([#483](https://github.com/YonderUrik/buddy-budget/issues/483)) ([0a518db](https://github.com/YonderUrik/buddy-budget/commit/0a518db6c7cd43d37891cfe3317acf1e8204415c))
+
+## [0.85.0](https://github.com/YonderUrik/buddy-budget/compare/v0.84.0...v0.85.0) (2026-10-21)
+
+
+### Novità
+
+* add the mobile backend API independently of native apps ([#480](https://github.com/YonderUrik/buddy-budget/issues/480)) ([08f1d90](https://github.com/YonderUrik/buddy-budget/commit/08f1d90fa95242aff5ce43111f5416807a638600))
+
 ## [0.84.0](https://github.com/YonderUrik/buddy-budget/compare/v0.83.0...v0.84.0) (2026-10-21)
 
 

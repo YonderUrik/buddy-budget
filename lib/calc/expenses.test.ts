@@ -55,6 +55,8 @@ function makeBudget(overrides: Partial<Budget>): Budget {
     userId: "user-1",
     categoryId: "category-1",
     monthlyAmount: "0.00",
+    rollover: false,
+    rolloverFrom: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

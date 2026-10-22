@@ -38,9 +38,11 @@ import {
 } from "@/lib/calc/expenses";
 import { computeMonthPace } from "@/lib/calc/month-pace";
 import { getTrendRange } from "@/lib/calc/movements";
+import { buildAnalysisSentence } from "@/lib/liquidity/analysis-sentence";
 import { buildCumulativeSpend } from "@/lib/liquidity/spend-curve";
 
-import { useBudgetsQuery } from "@/lib/queries/budgets";
+import { monthKey } from "@/lib/calc/budget-plan";
+import { useBudgetMonthQuery, useBudgetsQuery } from "@/lib/queries/budgets";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 
@@ -48,7 +50,7 @@ export default function LiquiditaAnalisiPage() {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -78,11 +80,14 @@ export default function LiquiditaAnalisiPage() {
     [scoped, categories, period, referenceDate, today]
   );
   const heaviest = breakdown[0];
-  // Monthly budgets scaled to the period on screen (a year shows twelve months of budget).
-  const budgetById = React.useMemo(
-    () => new Map(budgets.filter((b) => Number(b.monthlyAmount) > 0).map((b) => [b.categoryId, scaleBudgetForPeriod(Number(b.monthlyAmount), period)])),
-    [budgets, period]
-  );
+  // A month shows what Budget shows for it (one-month amounts and leftover carried in); longer periods scale the
+  // monthly budgets (a year shows twelve months of budget).
+  const shownMonth = monthKey(referenceDate);
+  const monthPlan = useBudgetMonthQuery(shownMonth, { enabled: period === "mese" && budgets.length > 0 }).data;
+  const budgetById = React.useMemo(() => {
+    if (period === "mese" && monthPlan?.month === shownMonth) return new Map(monthPlan.categories.filter((c) => c.available > 0).map((c) => [c.categoryId, c.available]));
+    return new Map(budgets.filter((b) => Number(b.monthlyAmount) > 0).map((b) => [b.categoryId, scaleBudgetForPeriod(Number(b.monthlyAmount), period)]));
+  }, [budgets, period, monthPlan, shownMonth]);
   const groups = React.useMemo<SpendGroup[]>(
     () =>
       ([...EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY] as CategoryGroupKey[])
@@ -106,10 +111,7 @@ export default function LiquiditaAnalisiPage() {
 
   const delta = spent - spentBefore;
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
-  const sentence =
-    spent === 0
-      ? tr("In questo periodo non ci sono ancora spese.")
-      : `${isCurrentMonth ? tr("Finora hai speso") : tr("Hai speso")} ${money(spent)}${spentBefore > 0 ? tr(", {0} {1} del periodo prima", { 0: money(Math.abs(delta)), 1: delta > 0 ? tr("in più") : tr("in meno") }) : ""}.${heaviest ? tr(" La voce che pesa di più è «{0}», il {1}.", { 0: heaviest.name, 1: new Intl.NumberFormat(formattingLocale, { style: "percent", maximumFractionDigits: 0 }).format(heaviest.amount / spent) }) : ""}`;
+  const sentence = buildAnalysisSentence({ language, currency, spent, spentBefore, isCurrentMonth, heaviest: heaviest ?? null });
 
   if (isError) return <LoadError message={tr("Impossibile caricare i dati dell'analisi.")} onRetry={() => refetch()} />;
   return (
@@ -143,7 +145,7 @@ export default function LiquiditaAnalisiPage() {
             icon={PieChartIcon}
             title={tr("Dove vanno i soldi")}
             color="var(--swatch-teal)"
-            href={`${LIQUIDITY_HREF}/categorie`}
+            href={`${LIQUIDITY_HREF}/budget`}
             linkLabel={budgetById.size > 0 ? "Modifica i budget" : "Imposta un budget"}
           />
           {groups.length === 0 ? (

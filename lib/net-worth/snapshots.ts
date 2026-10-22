@@ -70,7 +70,7 @@ async function loadLedgerTransactions(userId: string, ledger: LedgerAccount[], a
  * transactions (count and latest change, so inserts, edits and deletes all count), rows still without a ledger part,
  * and yesterday's date (so every new day is covered once).
  */
-async function cashInputsFingerprint(userId: string, todayKey: string, yesterdayKey: string): Promise<string> {
+export async function cashInputsFingerprint(userId: string, todayKey: string, yesterdayKey: string): Promise<string> {
   const [[account], [transaction], [formats], [legacy]] = await Promise.all([
     db
       .select({ marker: sql<string>`count(*)::text || ':' || coalesce(sum(${accounts.balance}), 0)::text || ':' || coalesce(max(${accounts.updatedAt})::text, '')` })

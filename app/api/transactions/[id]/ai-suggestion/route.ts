@@ -9,7 +9,7 @@ export const maxDuration = 60;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Questions per user in the window: each one is a paid model call. */
-export const SINGLE_SUGGESTION_LIMIT = 30;
+const SINGLE_SUGGESTION_LIMIT = 30;
 const SINGLE_SUGGESTION_WINDOW_SECONDS = 60 * 60;
 
 /** Counts the question in the user's hourly window; lets it through when Redis does not answer. */

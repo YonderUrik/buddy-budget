@@ -10,7 +10,7 @@ import { goals } from "@/lib/db/schema/goals";
 import { investmentTransactions } from "@/lib/db/schema/investments";
 import { pensionFunds } from "@/lib/db/schema/pension";
 import { transactions } from "@/lib/db/schema/transactions";
-import { isCountryPathAvailable } from "@/lib/localization/config";
+import { countryFeatures, isCountryPathAvailable } from "@/lib/localization/config";
 import { START_FOCUS_IDS, START_STEP_IDS, UNSKIPPABLE_STEPS, allStepsSettled, startStepsFor, type StartFocus, type StartStatus, type StartStepId } from "./steps";
 
 /** True se l'account contiene conti di esempio (e quindi, per costruzione, nessun conto vero). */
@@ -68,16 +68,19 @@ export async function loadStartStatus(userId: string): Promise<StartStatus> {
       exists(select 1 from ${investmentTransactions} where ${investmentTransactions.userId} = ${userId}) as investimento,
       exists(select 1 from ${debts} where ${debts.userId} = ${userId}) as debito,
       exists(select 1 from ${pensionFunds} where ${pensionFunds.userId} = ${userId}) as pensione,
+      exists(select 1 from ${budgets} where ${budgets.userId} = ${userId}) as budget,
       (
-        exists(select 1 from ${budgets} where ${budgets.userId} = ${userId})
-        or exists(select 1 from ${goals} where ${goals.userId} = ${userId})
+        exists(select 1 from ${goals} where ${goals.userId} = ${userId})
         or exists(select 1 from ${analyticsAssumptions} where ${analyticsAssumptions.userId} = ${userId} and ${analyticsAssumptions.data} <> '{}'::jsonb)
       ) as obiettivo,
       exists(select 1 from ${accounts} where ${accounts.userId} = ${userId} and ${accounts.isDemo}) as demo
   `);
   const steps = Object.fromEntries(START_STEP_IDS.map((id) => [id, row[id as StartStepId] === true])) as Record<StartStepId, boolean>;
   const focus = parseStartFocus(user?.focus);
-  const stepIds = startStepsFor(focus, { pensionAvailable: isCountryPathAvailable(user?.productCountry ?? "IT", "/pensione") });
+  const country = user?.productCountry ?? "IT";
+  const asked = startStepsFor(focus, { pensionAvailable: isCountryPathAvailable(country, "/pensione"), retirementAvailable: countryFeatures(country).retirement });
+  // The budget step came after some users had already finished their first steps: it does not reopen their checklist.
+  const stepIds = user?.completedAt && !steps.budget ? asked.filter((id) => id !== "budget") : asked;
   const skipped = parseSkippedSteps(user?.skipped);
   const completed = allStepsSettled(steps, stepIds, skipped);
   let justCompleted = false;

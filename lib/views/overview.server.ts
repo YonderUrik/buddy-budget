@@ -11,6 +11,8 @@ import { loadNetWorthSnapshotRows } from "@/lib/net-worth/snapshot-rows";
 import { requestLogger } from "@/lib/observability";
 import { loadUserPension } from "@/lib/pension/data";
 import { loadBankConnectionStatuses, loadUserAccounts, loadUserBudgets } from "./data.server";
+import { loadBudgetMonth } from "./budget-month.server";
+import { monthKey } from "@/lib/calc/budget-plan";
 import { buildOverviewView, OVERVIEW_INVESTMENTS_PERIOD } from "./overview";
 import type { OverviewView } from "./schemas";
 
@@ -53,6 +55,9 @@ export async function loadOverviewView(user: OverviewUser, options: { today: Dat
     optional("connections", loadBankConnectionStatuses(user.id, new Date())),
   ]);
 
+  // With budgets, «Budget» reads the same month as Liquidità · Budget; a failure there falls back to the standing amounts.
+  const budgetMonth = budgets.length > 0 ? await optional("budgets", loadBudgetMonth(user, { today, month: monthKey(today) })) : null;
+
   return buildOverviewView({
     today,
     period: options.period,
@@ -63,6 +68,7 @@ export async function loadOverviewView(user: OverviewUser, options: { today: Dat
     snapshots,
     monthTransactions,
     budgets,
+    budgetTotals: budgetMonth && budgetMonth.categories.length > 0 ? { available: budgetMonth.total.available, spent: budgetMonth.total.spent } : null,
     investments,
     debts,
     pensionFunds: pension?.funds ?? [],

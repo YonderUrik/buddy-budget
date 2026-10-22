@@ -21,6 +21,7 @@ export const API_ERROR_CODES = [
   "invalid_type",
   "invalid_cursor",
   "invalid_period",
+  "invalid_month",
   // Domain.
   "invalid_account",
   "invalid_category",
@@ -33,6 +34,8 @@ export const API_ERROR_CODES = [
   "category_in_use",
   "fallback_category_locked",
   "transfer_without_budget",
+  "budget_not_found",
+  "past_month",
   "subscription_exists",
   "account_not_found",
   "transaction_not_found",

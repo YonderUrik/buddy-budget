@@ -29,6 +29,7 @@ export const SCREEN_TEXT_EN: Record<ScreenId, ScreenText> = {
   panoramica: { label: "Overview", caption: "How much you have in all and how it splits: accounts, investments, pension and debts.", alt: "Overview: net worth, chart over time and split by asset class" },
   conti: { label: "Accounts", caption: "The connected bank and the accounts added by hand, with their balances.", alt: "Accounts: a bank-connected account and manual accounts with balances" },
   movimenti: { label: "Transactions", caption: "Balance, trend and every transaction; change a category with one tap.", alt: "Transactions: list of transactions with categories and amounts" },
+  budget: { label: "Budget", caption: "How much you can still spend this month, category by category, and where it's heading at this pace.", alt: "Budget: what is left to spend this month, money per day and a bar for each category with a budget" },
   analisi: { label: "Analysis", caption: "Money in, money out and what's left, month by month.", alt: "Analysis: income against spending by month and savings indicators" },
   abbonamenti: { label: "Subscriptions", caption: "The charges that come back every month, found on their own: what they cost and when the next one lands.", alt: "Subscriptions: monthly and yearly cost, subscriptions to confirm and next charge" },
   categorie: { label: "Categories", caption: "The four spending groups, income, and money moved between your own accounts.", alt: "Categories split into spending groups, income and transfers" },

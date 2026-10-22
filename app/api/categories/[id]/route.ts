@@ -6,7 +6,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
-import { budgets } from "@/lib/db/schema/budgets";
+import { budgetMonths, budgets } from "@/lib/db/schema/budgets";
 import { transactions } from "@/lib/db/schema/transactions";
 import { updateCategorySchema } from "@/lib/validation/categories";
 import { bindRequestUser, withRoute } from "@/lib/observability";
@@ -88,7 +88,10 @@ async function handlePatch(
         excludedAmount: parsed.data.type === "trasferimento" ? sql`${transactions.amount}` : "0",
         updatedAt: new Date(),
       }).where(and(eq(transactions.categoryId, id), eq(transactions.userId, session.user.id)));
-      if (parsed.data.type === "trasferimento") await tx.delete(budgets).where(eq(budgets.categoryId, id));
+      if (parsed.data.type === "trasferimento") {
+        await tx.delete(budgetMonths).where(eq(budgetMonths.categoryId, id));
+        await tx.delete(budgets).where(eq(budgets.categoryId, id));
+      }
     }
     return row;
   });

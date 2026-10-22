@@ -352,9 +352,64 @@ export const bankConnectionCompletedSchema = bankConnectionAccountsSchema.extend
   consentExpiresAt: timestamp.nullable(),
 });
 
+const monthKey = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
+const budgetGroup = z.enum(["dovuta", "voluta", "futuro", "saltuaria", "daCategorizzare"]);
+
+/** GET /api/budgets/month: Liquidità · Budget for one month (`buildBudgetMonthView`). */
+export const budgetMonthViewSchema = z.object({
+  currency: z.string(),
+  today: isoDate,
+  month: monthKey,
+  when: z.enum(["past", "current", "future"]),
+  daysInMonth: z.number().int(),
+  dayOfMonth: z.number().int().nullable(),
+  daysLeft: z.number().int().nullable(),
+  /** Share of the month gone by (0–1), current month only. */
+  expectedShare: z.number().nullable(),
+  categories: z.array(
+    z.object({
+      categoryId: z.string(),
+      name: z.string(),
+      group: budgetGroup,
+      color: z.string(),
+      icon: z.string(),
+      amount: z.number(),
+      singleMonth: z.boolean(),
+      rollover: z.boolean(),
+      carried: z.number(),
+      available: z.number(),
+      spent: z.number(),
+      left: z.number(),
+      projected: z.number().nullable(),
+      monthlyAmount: z.number(),
+      rolloverFrom: monthKey.nullable(),
+      history: z.array(z.object({ month: monthKey, amount: z.number(), spent: z.number(), carriedOut: z.number().nullable() })),
+    }),
+  ),
+  unbudgeted: z.array(z.object({ categoryId: z.string(), name: z.string(), group: budgetGroup, color: z.string(), icon: z.string(), spent: z.number() })),
+  total: z.object({ available: z.number(), spent: z.number(), left: z.number(), perDay: z.number().nullable() }),
+  income: z.object({ amount: z.number(), kind: z.enum(["usual", "actual"]) }).nullable(),
+  proposals: z.array(
+    z.object({
+      categoryId: z.string(),
+      name: z.string(),
+      group: budgetGroup,
+      color: z.string(),
+      icon: z.string(),
+      amount: z.number(),
+      rollover: z.boolean(),
+      basis: z.discriminatedUnion("kind", [
+        z.object({ kind: z.literal("monthly"), usual: z.number() }),
+        z.object({ kind: z.literal("yearly"), total: z.number(), months: z.number().int() }),
+      ]),
+    }),
+  ),
+});
+
 export type OverviewView = z.infer<typeof overviewViewSchema>;
 export type LiquidityMonth = z.infer<typeof liquidityMonthSchema>;
 export type LiquidityAnalysis = z.infer<typeof liquidityAnalysisSchema>;
 export type AccountExtras = z.infer<typeof accountExtrasSchema>;
 export type AccountHealth = z.infer<typeof accountHealthSchema>;
 export type TransactionPage = z.infer<typeof transactionPageSchema>;
+export type BudgetMonthViewContract = z.infer<typeof budgetMonthViewSchema>;

@@ -29,7 +29,7 @@ const digest: DigestData = {
     { name: "Spesa", amount: 318.4 },
     { name: "Ristoranti & Bar", amount: 164.9 },
   ],
-  budget: { total: 5, over: 1 },
+  budget: { total: 5, over: 1, savedUp: 0 },
   movements: 63,
   investments: { endValue: 48210.55, gain: 612.3, twr: 0.0128, income: 86.4, netContributions: 500 },
 };
@@ -38,8 +38,8 @@ const emails = {
   riepilogo: digestEmail(digest, ctx),
   "avviso-budget": budgetAlertEmail(
     [
-      { categoryId: "a", name: "Ristoranti & Bar", threshold: 100, spent: 164.9, budget: 150, itemKey: "a", itemKeys: ["a"] },
-      { categoryId: "b", name: "Spesa", threshold: 80, spent: 318.4, budget: 380, itemKey: "b", itemKeys: ["b"] },
+      { categoryId: "a", name: "Ristoranti & Bar", threshold: 100, spent: 164.9, budget: 150, projected: null, itemKey: "a", itemKeys: ["a"] },
+      { categoryId: "b", name: "Spesa", threshold: 80, spent: 318.4, budget: 380, projected: null, itemKey: "b", itemKeys: ["b"] },
     ],
     ctx,
   ),

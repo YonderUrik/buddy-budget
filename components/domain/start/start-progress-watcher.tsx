@@ -19,7 +19,7 @@ import { addRecentSteps, clearRecentSteps, readSeenSteps, writeSeenSteps } from 
 const OVERVIEW_PATH = "/panoramica";
 
 export function StartProgressWatcher() {
-  const { t: tr, features } = useLocalization();
+  const { t: tr } = useLocalization();
   const status = useStartQuery().data;
   const pathname = usePathname();
   const router = useRouter();
@@ -42,7 +42,7 @@ export function StartProgressWatcher() {
     for (const step of fresh) track("start_step_completed", { step });
     if (status.dismissed) return;
 
-    const definitions = startStepDefinitionsFor({ retirementAvailable: features.retirement });
+    const definitions = startStepDefinitionsFor();
     const doneText = fresh.map((id) => tr(definitions.find((d) => d.id === id)?.done ?? "")).join(" · ");
     const nextId = nextStartStep(status.steps, status.stepIds, status.skipped);
     if (!nextId) {

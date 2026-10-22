@@ -9,7 +9,7 @@ import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { authUser } from "@/lib/db/schema/auth";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
-import { budgets } from "@/lib/db/schema/budgets";
+import { budgetMonths, budgets } from "@/lib/db/schema/budgets";
 import { subscriptions } from "@/lib/db/schema/subscriptions";
 import { goals, goalSources } from "@/lib/db/schema/goals";
 import { categories } from "@/lib/db/schema/categories";
@@ -105,6 +105,7 @@ async function loadUserData(userId: string) {
     notificationRows,
     goalRows,
     goalSourceRows,
+    budgetMonthRows,
   ] = await Promise.all([
     db
       .select({
@@ -147,7 +148,7 @@ async function loadUserData(userId: string) {
       .where(eq(categories.userId, userId))
       .orderBy(asc(categories.name)),
     db
-      .select({ categoryId: budgets.categoryId, monthlyAmount: budgets.monthlyAmount, updatedAt: budgets.updatedAt })
+      .select({ categoryId: budgets.categoryId, monthlyAmount: budgets.monthlyAmount, rollover: budgets.rollover, rolloverFrom: budgets.rolloverFrom, updatedAt: budgets.updatedAt })
       .from(budgets)
       .where(eq(budgets.userId, userId)),
     db
@@ -395,6 +396,11 @@ async function loadUserData(userId: string) {
       .select({ goalId: goalSources.goalId, accountId: goalSources.accountId, instrumentId: goalSources.instrumentId, amount: goalSources.amount })
       .from(goalSources)
       .where(eq(goalSources.userId, userId)),
+    db
+      .select({ categoryId: budgetMonths.categoryId, month: budgetMonths.month, amount: budgetMonths.amount, singleMonth: budgetMonths.singleMonth })
+      .from(budgetMonths)
+      .where(eq(budgetMonths.userId, userId))
+      .orderBy(asc(budgetMonths.month)),
   ]);
 
   return {
@@ -407,6 +413,7 @@ async function loadUserData(userId: string) {
     bankConnections: connectionRows,
     categories: categoryRows,
     budgets: budgetRows,
+    budgetMonths: budgetMonthRows,
     subscriptions: subscriptionRows,
     rules: ruleRows,
     transactions: transactionRows,
@@ -478,6 +485,13 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
     "budget.csv": toCsv(data.budgets, [
       { header: "Categoria", value: (b) => categoryName.get(b.categoryId) },
       { header: "Budget mensile", value: (b) => decimal(b.monthlyAmount) },
+      { header: "Riporto al mese dopo", value: (b) => (b.rollover ? `sì, da ${b.rolloverFrom ?? ""}` : "no") },
+    ]),
+    "budget-mesi.csv": toCsv(data.budgetMonths, [
+      { header: "Categoria", value: (m) => categoryName.get(m.categoryId) },
+      { header: "Mese", value: (m) => m.month },
+      { header: "Importo", value: (m) => decimal(m.amount) },
+      { header: "Solo quel mese", value: (m) => (m.singleMonth ? "sì" : "no") },
     ]),
     "abbonamenti.csv": toCsv(data.subscriptions, [
       { header: "Nome", value: (s) => s.name ?? s.key },

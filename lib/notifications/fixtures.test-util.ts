@@ -50,6 +50,8 @@ export function makeBudget(overrides: Partial<Budget>): Budget {
     userId: "user-1",
     categoryId: "cat-food",
     monthlyAmount: "300.00",
+    rollover: false,
+    rolloverFrom: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

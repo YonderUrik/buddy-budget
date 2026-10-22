@@ -120,7 +120,7 @@ async function openScreen(page, screen) {
   // l'indicatore di sviluppo di Next non deve finire nelle immagini se l'app gira con `next dev`
   // Same for `data-capture-hidden` (the build version in the sidebar): it changes with every commit, and showing it
   // made every capture a new image even when the screen had not changed.
-  await page.addStyleTag({ content: "nextjs-portal,[data-nextjs-toast],[data-next-badge-root]{display:none!important}[data-capture-hidden]{visibility:hidden!important}" });
+  await page.addStyleTag({ content: "nextjs-portal,[data-nextjs-toast],[data-next-badge-root],[data-sonner-toaster]{display:none!important}[data-capture-hidden]{visibility:hidden!important}" });
   for (const [label, value] of screen.fill ?? []) await page.getByLabel(tr(label), { exact: true }).first().fill(value);
   await page.waitForTimeout(SETTLE_MS);
 }

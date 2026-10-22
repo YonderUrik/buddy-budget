@@ -5,6 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 /** Sezione "Questo mese": curva della spesa contro il solito, budget residuo ed entrate. Aperta sulla pagina, senza riquadro. */
 
+import Link from "next/link";
 import { WalletIcon } from "lucide-react";
 
 import type { MonthPace } from "@/lib/calc/month-pace";
@@ -18,11 +19,13 @@ export interface MonthPaceSectionProps {
   monthLabel: string;
   currency: string;
   href?: string;
+  /** Where the «Budget» figure leads (Liquidità · Budget). */
+  budgetHref?: string;
   onLinkClick?: () => void;
   className?: string;
 }
 
-export function MonthPaceSection({ pace, monthLabel, currency, href = "/liquidita/analisi", onLinkClick, className }: MonthPaceSectionProps) {
+export function MonthPaceSection({ pace, monthLabel, currency, href = "/liquidita/analisi", budgetHref = "/liquidita/budget", onLinkClick, className }: MonthPaceSectionProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -44,7 +47,9 @@ export function MonthPaceSection({ pace, monthLabel, currency, href = "/liquidit
           <div>
             <dt className="text-muted-foreground">{tr("Budget")}</dt>
             <dd className="font-heading text-lg font-medium tabular-nums text-foreground">
-              {overBudget ? tr("sforato di {0}", {0: format(pace.budgetSpent - pace.budgetTotal)}) : tr("restano {0}", {0: format(pace.budgetTotal - pace.budgetSpent)})}
+              <Link href={budgetHref} className="hover:underline focus-visible:outline-2 focus-visible:outline-ring">
+                {overBudget ? tr("sforato di {0}", {0: format(pace.budgetSpent - pace.budgetTotal)}) : tr("restano {0}", {0: format(pace.budgetTotal - pace.budgetSpent)})}
+              </Link>
             </dd>
             <div
               className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted"

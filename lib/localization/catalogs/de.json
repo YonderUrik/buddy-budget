@@ -5103,7 +5103,7 @@
   "Aggiungi il fondo pensione": "Füge deinen Pensionsfonds hinzu",
   "Bastano i contributi versati e il valore di oggi, dall'area clienti del fondo.": "Eingezahlte Beiträge und heutiger Wert aus dem Kundenbereich des Fonds genügen.",
   "Spese e conti": "Ausgaben und Konten",
-  "Dove vanno i soldi ogni mese, per categoria.": "Wohin dein Geld jeden Monat geht, nach Kategorie.",
+  "Dove vanno i soldi ogni mese e quanto puoi ancora spendere.": "Wohin dein Geld jeden Monat geht und wie viel du noch ausgeben kannst.",
   "ETF, azioni, BTP e crypto, con rendimento e tasse.": "ETFs, Aktien, Anleihen und Krypto, mit Rendite und Steuern.",
   "Rate, interessi e quando finisci di pagare.": "Raten, Zinsen und wann du fertig abbezahlt hast.",
   "Quanto hai da parte e quanto rende.": "Wie viel du zurückgelegt hast und was es abwirft.",
@@ -5316,5 +5316,11 @@
   "Budget del mese": "Budget des Monats",
   "Nuova scheda Budget in Liquidità: quanto puoi ancora spendere e dove arriva il mese, con budget già proposti dai tuoi movimenti. Per le spese saltuarie quello che non spendi resta per i mesi dopo.": "Neuer Tab Budget unter Liquidität: wie viel du noch ausgeben kannst und wohin der Monat läuft, mit Budgets, die schon aus deinen Umsätzen vorgeschlagen werden. Bei unregelmäßigen Ausgaben bleibt, was du nicht ausgibst, für die nächsten Monate.",
   "Apri i budget": "Budgets öffnen",
-  "Budget proposti dai tuoi mesi, quanto puoi ancora spendere oggi e dove arriva il mese; quello che non spendi nelle spese saltuarie resta per i mesi dopo.": "Budgets aus deinen eigenen Monaten vorgeschlagen, wie viel du heute noch ausgeben kannst und wohin der Monat läuft; was du bei unregelmäßigen Ausgaben nicht ausgibst, bleibt für die nächsten Monate."
+  "Budget proposti dai tuoi mesi, quanto puoi ancora spendere oggi e dove arriva il mese; quello che non spendi nelle spese saltuarie resta per i mesi dopo.": "Budgets aus deinen eigenen Monaten vorgeschlagen, wie viel du heute noch ausgeben kannst und wohin der Monat läuft; was du bei unregelmäßigen Ausgaben nicht ausgibst, bleibt für die nächsten Monate.",
+  "Dai un budget alle spese": "Gib deinen Ausgaben ein Budget",
+  "Te li proponiamo noi dai tuoi movimenti: vedi quanto puoi ancora spendere nel mese e li accetti con un tocco.": "Wir schlagen sie aus deinen Buchungen vor: Du siehst, wie viel du diesen Monat noch ausgeben kannst, und übernimmst sie mit einem Tippen.",
+  "Vedi i budget": "Budgets ansehen",
+  "Budget impostati": "Budgets festgelegt",
+  "Cosa succede a quello che non spendo del budget?": "Was passiert mit dem Budget, das ich nicht ausgebe?",
+  "Di base il budget ricomincia ogni mese. Se in Liquidità → Budget accendi «Porta l'avanzo al mese dopo» su una categoria, quello che avanza (o che sfori) passa al mese successivo: per le spese saltuarie è acceso da subito, così i soldi messi da parte ci sono quando arriva la spesa.": "Standardmäßig beginnt ein Budget jeden Monat neu. Wenn du in Liquidität → Budget für eine Kategorie «Rest in den nächsten Monat übernehmen» einschaltest, wandert der Rest (oder die Überschreitung) in den Folgemonat: Bei gelegentlichen Ausgaben ist es von Anfang an an, damit das Zurückgelegte da ist, wenn die Ausgabe kommt."
 }

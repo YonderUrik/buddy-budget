@@ -26,6 +26,12 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
       "Tocca l'icona del movimento in Liquidità e scegli la categoria: se vuoi, la ricordiamo con una regola per i prossimi movimenti dello stesso esercente.",
   },
   {
+    id: "budget-avanzo",
+    question: "Cosa succede a quello che non spendo del budget?",
+    answer:
+      "Di base il budget ricomincia ogni mese. Se in Liquidità → Budget accendi «Porta l'avanzo al mese dopo» su una categoria, quello che avanza (o che sfori) passa al mese successivo: per le spese saltuarie è acceso da subito, così i soldi messi da parte ci sono quando arriva la spesa.",
+  },
+  {
     id: "dati-miei",
     question: "Posso scaricare o cancellare i miei dati?",
     answer: "Sì, da Impostazioni: esporti tutto in un file ZIP, azzeri i dati o elimini l'account quando vuoi.",

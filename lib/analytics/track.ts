@@ -55,15 +55,15 @@ export interface ProductEvents {
    * Action of a «Primi passi» step pressed; `placement`: the big «next step» block in Panoramica, the list under it, or
    * the «done, next» toast shown elsewhere in the app.
    */
-  start_step_clicked: { step: "conto" | "import" | "investimento" | "debito" | "pensione" | "obiettivo"; placement?: "hero" | "list" | "toast" };
+  start_step_clicked: { step: "conto" | "import" | "budget" | "investimento" | "debito" | "pensione" | "obiettivo"; placement?: "hero" | "list" | "toast" };
   /** A step of the user's checklist became done (seen by the app, once per step and device). */
-  start_step_completed: { step: "conto" | "import" | "investimento" | "debito" | "pensione" | "obiettivo" };
+  start_step_completed: { step: "conto" | "import" | "budget" | "investimento" | "debito" | "pensione" | "obiettivo" };
   /** «Cosa vuoi tenere sotto controllo?» answered at the end of onboarding; `count` 0 = skipped (default steps). */
   onboarding_focus_chosen: { count: number; spese: boolean; investimenti: boolean; debiti: boolean; pensione: boolean };
   /** The same choice changed later from the checklist's «Cambia». */
   start_focus_changed: { count: number };
   /** A first step skipped («Non mi serve») or brought back from the list. */
-  start_step_skipped: { step: "import" | "investimento" | "debito" | "pensione" | "obiettivo"; skipped: boolean };
+  start_step_skipped: { step: "import" | "budget" | "investimento" | "debito" | "pensione" | "obiettivo"; skipped: boolean };
   /** Action pressed in the «no account yet» state of a Liquidità tab (`area`). */
   empty_state_action_clicked: { area: "movimenti" | "analisi" | "budget" | "abbonamenti"; action: "conto" | "import" };
   /** Checklist closed; `done`: how many of the user's steps were already done. */

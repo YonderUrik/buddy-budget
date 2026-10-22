@@ -1,6 +1,6 @@
 /** Panoramica first steps: checklist step definitions and pure visibility rules (no DB or UI dependency). */
 
-export const START_STEP_IDS = ["conto", "import", "investimento", "debito", "pensione", "obiettivo"] as const;
+export const START_STEP_IDS = ["conto", "import", "budget", "investimento", "debito", "pensione", "obiettivo"] as const;
 export type StartStepId = (typeof START_STEP_IDS)[number];
 
 /** What the user wants to keep an eye on, chosen at the end of onboarding: it decides which steps the checklist asks for. */
@@ -15,7 +15,7 @@ export interface StartFocusOption {
 }
 
 export const START_FOCUS_OPTIONS: readonly StartFocusOption[] = [
-  { id: "spese", title: "Spese e conti", description: "Dove vanno i soldi ogni mese, per categoria." },
+  { id: "spese", title: "Spese e conti", description: "Dove vanno i soldi ogni mese e quanto puoi ancora spendere." },
   { id: "investimenti", title: "Investimenti", description: "ETF, azioni, BTP e crypto, con rendimento e tasse." },
   { id: "debiti", title: "Mutuo e prestiti", description: "Rate, interessi e quando finisci di pagare." },
   { id: "pensione", title: "Fondo pensione", description: "Quanto hai da parte e quanto rende." },
@@ -26,19 +26,21 @@ export function focusOptionsFor(pensionAvailable: boolean): readonly StartFocusO
   return pensionAvailable ? START_FOCUS_OPTIONS : START_FOCUS_OPTIONS.filter((o) => o.id !== "pensione");
 }
 
-/** Steps asked when the user picked nothing (or signed up before the question existed): the original four. */
-export const DEFAULT_START_STEP_IDS: readonly StartStepId[] = ["conto", "import", "investimento", "obiettivo"];
+/** Steps asked when the user picked nothing (or signed up before the question existed). */
+export const DEFAULT_START_STEP_IDS: readonly StartStepId[] = ["conto", "import", "budget", "investimento", "obiettivo"];
 
-/** Step that each focus adds to the checklist. */
-const FOCUS_STEP: Record<StartFocus, StartStepId> = { spese: "import", investimenti: "investimento", debiti: "debito", pensione: "pensione" };
+/** Steps that each focus adds to the checklist: spending brings the movements and then their budgets. */
+const FOCUS_STEPS: Record<StartFocus, readonly StartStepId[]> = { spese: ["import", "budget"], investimenti: ["investimento"], debiti: ["debito"], pensione: ["pensione"] };
 
 /**
  * Steps for this user, in a fixed order: the account always comes first and the target last, the others follow the
- * focus. `pensionAvailable` is false where the pension section is hidden (Germany), so the step never points to it.
+ * focus. `pensionAvailable` is false where the pension section is hidden (Germany), so the step never points to it;
+ * `retirementAvailable` false drops the target in Analitiche the same way.
  */
-export function startStepsFor(focus: readonly StartFocus[] | null | undefined, options: { pensionAvailable: boolean }): StartStepId[] {
-  const wanted = new Set<StartStepId>(focus && focus.length > 0 ? ["conto", ...focus.map((f) => FOCUS_STEP[f]), "obiettivo"] : DEFAULT_START_STEP_IDS);
+export function startStepsFor(focus: readonly StartFocus[] | null | undefined, options: { pensionAvailable: boolean; retirementAvailable?: boolean }): StartStepId[] {
+  const wanted = new Set<StartStepId>(focus && focus.length > 0 ? ["conto", ...focus.flatMap((f) => FOCUS_STEPS[f]), "obiettivo"] : DEFAULT_START_STEP_IDS);
   if (!options.pensionAvailable) wanted.delete("pensione");
+  if (options.retirementAvailable === false) wanted.delete("obiettivo");
   return START_STEP_IDS.filter((id) => wanted.has(id));
 }
 
@@ -80,6 +82,14 @@ export const START_STEPS: readonly StartStepDef[] = [
     done: "Movimenti aggiunti",
   },
   {
+    id: "budget",
+    title: "Dai un budget alle spese",
+    description: "Te li proponiamo noi dai tuoi movimenti: vedi quanto puoi ancora spendere nel mese e li accetti con un tocco.",
+    href: "/liquidita/budget",
+    cta: "Vedi i budget",
+    done: "Budget impostati",
+  },
+  {
     id: "investimento",
     title: "Aggiungi un investimento",
     description: "Registra un acquisto o importa il rendiconto del tuo broker.",
@@ -113,18 +123,9 @@ export const START_STEPS: readonly StartStepDef[] = [
   },
 ];
 
-/** Where the target in Analitiche is hidden (Germany), the last step asks for a category budget instead. */
-const BUDGET_STEP: Pick<StartStepDef, "title" | "description" | "href" | "cta" | "done"> = {
-  title: "Imposta un budget",
-  description: "Imposta un budget per categoria.",
-  href: "/liquidita/categorie",
-  cta: "Vai alle categorie",
-  done: "Budget impostato",
-};
-
-/** Step texts and links for a product country (`retirementAvailable`: Analitiche is shown). */
-export function startStepDefinitionsFor(options: { retirementAvailable: boolean }): StartStepDef[] {
-  return START_STEPS.map((step) => (step.id === "obiettivo" && !options.retirementAvailable ? { ...step, ...BUDGET_STEP } : step));
+/** Step texts and links. Where the target in Analitiche is hidden the step is not asked at all (`startStepsFor`). */
+export function startStepDefinitionsFor(): StartStepDef[] {
+  return [...START_STEPS];
 }
 
 /** First-steps state as returned by `GET /api/start`. */

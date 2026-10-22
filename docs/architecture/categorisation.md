@@ -238,7 +238,7 @@ A budget is an amount per month on an expense category. It is set in two places:
 
 **Proposals** (`proposeBudgets`, current month only, categories without a budget): Dovute and Volute get the median of the last 3 complete months, Saltuarie the total of the last 12 months with data divided by those months, with rollover on; amounts are rounded up (5 € under 50 €, then 10 €). «Te futuro» and the fallback category get none. Nothing is proposed before a complete month of data. «Usa questi budget» posts the kept ones to `POST /api/budgets/accept-proposals`, which never overwrites a budget set meanwhile.
 
-Panoramica's «Budget» and the mobile overview read the same month totals; Analisi still scales the standing amount to the period on screen (`scaleBudgetForPeriod`).
+Panoramica's «Budget» and the mobile overview read the same month totals. Analisi reads the month's `available` per category when it shows one month, and scales the standing amount for longer periods (`scaleBudgetForPeriod`). The «Primi passi» step `budget` ticks when the user has any budget; the account export writes `budget.csv` (with rollover) and `budget-mesi.csv`.
 
 Budget alert emails ([`lib/notifications/alerts.ts`](../../lib/notifications/alerts.ts)) fire at 80% and 100% of the month's `available`, once per category, month and threshold (Rome time); a single alert also says where the month is heading when `projected` is over the budget. The monthly summary counts the budgets gone over in the same plan and adds «Messi da parte per i mesi dopo» (the positive `left` of rollover budgets).
 

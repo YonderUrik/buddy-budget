@@ -1,0 +1,462 @@
+{
+  "topic": "cashflow",
+  "source": "lib/calc/cashflow.ts, lib/calc/movements.ts",
+  "fixtures": "same as expenses.json fixtures",
+  "vectors": [
+    {
+      "id": "cashflow.periodRange.3mesi.2026-05-31",
+      "function": "getCashflowPeriodRange",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-05-31"
+      },
+      "expected": {
+        "from": "2026-03-01",
+        "to": "2026-05-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.periodRange.6mesi.2026-10-16",
+      "function": "getCashflowPeriodRange",
+      "input": {
+        "period": "6mesi",
+        "referenceDate": "2026-10-16"
+      },
+      "expected": {
+        "from": "2026-05-01",
+        "to": "2026-10-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.periodRange.12mesi.2026-02-28",
+      "function": "getCashflowPeriodRange",
+      "input": {
+        "period": "12mesi",
+        "referenceDate": "2026-02-28"
+      },
+      "expected": {
+        "from": "2025-03-01",
+        "to": "2026-02-28"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.periodRange.24mesi.2026-10-16",
+      "function": "getCashflowPeriodRange",
+      "input": {
+        "period": "24mesi",
+        "referenceDate": "2026-10-16"
+      },
+      "expected": {
+        "from": "2024-11-01",
+        "to": "2026-10-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.previousRange.3mesi",
+      "function": "getPreviousCashflowPeriodRange",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-05-31"
+      },
+      "expected": {
+        "from": "2025-12-01",
+        "to": "2026-02-28"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.shift.31jan.back",
+      "function": "shiftCashflowReferenceDate",
+      "input": {
+        "period": "3mesi",
+        "referenceDate": "2026-05-31",
+        "direction": -1
+      },
+      "expected": "2026-02-28",
+      "tolerance": 1e-9,
+      "notes": "day clamped to last day of target month (28 Feb)"
+    },
+    {
+      "id": "cashflow.periodLabel.sameYear",
+      "function": "formatCashflowPeriodLabel",
+      "input": {
+        "range": {
+          "from": "2026-08-01",
+          "to": "2026-10-31"
+        }
+      },
+      "expected": "Ago – Ott 2026",
+      "tolerance": 1e-9,
+      "notes": "Always it-IT in web (not localized)"
+    },
+    {
+      "id": "cashflow.periodLabel.crossYear",
+      "function": "formatCashflowPeriodLabel",
+      "input": {
+        "range": {
+          "from": "2025-11-01",
+          "to": "2026-10-31"
+        }
+      },
+      "expected": "Nov 2025 – Ott 2026",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.kpis.3m.partial",
+      "function": "computeCashflowKpis",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-08-01",
+          "to": "2026-10-31"
+        },
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "entrateMedie": 3028.4615384615386,
+        "usciteMedie": 364.8660256410256,
+        "flussoNettoTotale": 6701.95,
+        "tassoRisparmio": 0.8795209973753281
+      },
+      "tolerance": 1e-9,
+      "notes": "elapsed months = 1 + 1 + 16/31"
+    },
+    {
+      "id": "cashflow.kpis.past",
+      "function": "computeCashflowKpis",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-08-01",
+          "to": "2026-09-30"
+        },
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "entrateMedie": 2500,
+        "usciteMedie": 385.25,
+        "flussoNettoTotale": 4229.5,
+        "tassoRisparmio": 0.8459
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.kpis.future",
+      "function": "computeCashflowKpis",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-11-01",
+          "to": "2026-12-31"
+        },
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "entrateMedie": 0,
+        "usciteMedie": 0,
+        "flussoNettoTotale": 0,
+        "tassoRisparmio": null
+      },
+      "tolerance": 1e-9,
+      "notes": "no elapsed months -> divides by month count; no income -> tassoRisparmio null"
+    },
+    {
+      "id": "cashflow.monthlySeries.crossYear",
+      "function": "computeMonthlySeries",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2025-12-01",
+          "to": "2026-02-28"
+        }
+      },
+      "expected": [
+        {
+          "year": 2025,
+          "month": 11,
+          "label": "Dic '25",
+          "entrate": 0,
+          "uscite": 0
+        },
+        {
+          "year": 2026,
+          "month": 0,
+          "label": "Gen '26",
+          "entrate": 0,
+          "uscite": 0
+        },
+        {
+          "year": 2026,
+          "month": 1,
+          "label": "Feb '26",
+          "entrate": 0,
+          "uscite": 0
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "labels get \" 'YY\" suffix when range spans 2 calendar years"
+    },
+    {
+      "id": "cashflow.monthlySeries.aug-oct",
+      "function": "computeMonthlySeries",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-08-01",
+          "to": "2026-10-31"
+        }
+      },
+      "expected": [
+        {
+          "year": 2026,
+          "month": 7,
+          "label": "Ago",
+          "entrate": 2500,
+          "uscite": 440
+        },
+        {
+          "year": 2026,
+          "month": 8,
+          "label": "Set",
+          "entrate": 2500,
+          "uscite": 330.5
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "label": "Ott",
+          "entrate": 2620,
+          "uscite": 147.55
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.incomeSources.oct",
+      "function": "computeIncomeSources",
+      "input": {
+        "fixture": "transactions+categories",
+        "range": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        }
+      },
+      "expected": [
+        {
+          "categoryId": "salary",
+          "name": "Stipendio",
+          "color": "emerald",
+          "icon": "briefcase",
+          "amount": 2600,
+          "quotaPct": 99.23664122137404
+        },
+        {
+          "categoryId": "food",
+          "name": "Spesa",
+          "color": "green",
+          "icon": "shopping-cart",
+          "amount": 20,
+          "quotaPct": 0.7633587786259541
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "quotaPct is 0-100 (percent), not ratio"
+    },
+    {
+      "id": "cashflow.whereItGoes.sep",
+      "function": "computeWhereItGoes",
+      "input": {
+        "fixture": "transactions+categories",
+        "referenceDate": "2026-09-15"
+      },
+      "expected": [
+        {
+          "key": "dovuta",
+          "label": "Dovute",
+          "amount": 90.5,
+          "quotaPct": 3.62
+        },
+        {
+          "key": "voluta",
+          "label": "Volute",
+          "amount": 0,
+          "quotaPct": 0
+        },
+        {
+          "key": "futuro",
+          "label": "Te futuro",
+          "amount": 0,
+          "quotaPct": 0
+        },
+        {
+          "key": "saltuaria",
+          "label": "Saltuarie",
+          "amount": 200,
+          "quotaPct": 8
+        },
+        {
+          "key": "nonClassificato",
+          "label": "Non classificato",
+          "amount": 40,
+          "quotaPct": 1.6
+        },
+        {
+          "key": "avanzo",
+          "label": "Avanzo",
+          "amount": 2169.5,
+          "quotaPct": 86.78
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.whereItGoes.oct",
+      "function": "computeWhereItGoes",
+      "input": {
+        "fixture": "transactions+categories",
+        "referenceDate": "2026-10-16"
+      },
+      "expected": [
+        {
+          "key": "dovuta",
+          "label": "Dovute",
+          "amount": 67.55,
+          "quotaPct": 2.57824427480916
+        },
+        {
+          "key": "voluta",
+          "label": "Volute",
+          "amount": 80,
+          "quotaPct": 3.0534351145038165
+        },
+        {
+          "key": "futuro",
+          "label": "Te futuro",
+          "amount": 0,
+          "quotaPct": 0
+        },
+        {
+          "key": "saltuaria",
+          "label": "Saltuarie",
+          "amount": 0,
+          "quotaPct": 0
+        },
+        {
+          "key": "nonClassificato",
+          "label": "Non classificato",
+          "amount": 0,
+          "quotaPct": 0
+        },
+        {
+          "key": "avanzo",
+          "label": "Avanzo",
+          "amount": 2472.45,
+          "quotaPct": 94.36832061068702
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "cashflow.accumulated",
+      "function": "computeAccumulatedSavings",
+      "input": {
+        "fixture": "transactions",
+        "range": {
+          "from": "2026-08-01",
+          "to": "2026-10-31"
+        }
+      },
+      "expected": [
+        {
+          "year": 2026,
+          "month": 7,
+          "label": "Ago",
+          "cumulative": 2060
+        },
+        {
+          "year": 2026,
+          "month": 8,
+          "label": "Set",
+          "cumulative": 4229.5
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "label": "Ott",
+          "cumulative": 6701.95
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "movements.savingsRate.1000.700",
+      "function": "computeSavingsRate",
+      "input": {
+        "income": 1000,
+        "expenses": 700
+      },
+      "expected": 0.3,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "movements.savingsRate.1000.1300",
+      "function": "computeSavingsRate",
+      "input": {
+        "income": 1000,
+        "expenses": 1300
+      },
+      "expected": -0.3,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "movements.savingsRate.0.50",
+      "function": "computeSavingsRate",
+      "input": {
+        "income": 0,
+        "expenses": 50
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "movements.savingsRate.-10.0",
+      "function": "computeSavingsRate",
+      "input": {
+        "income": -10,
+        "expenses": 0
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "movements.trendRange.mese",
+      "function": "getTrendRange",
+      "input": {
+        "period": "mese",
+        "referenceDate": "2026-10-16"
+      },
+      "expected": {
+        "from": "2026-05-01",
+        "to": "2026-10-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "movements.trendRange.anno",
+      "function": "getTrendRange",
+      "input": {
+        "period": "anno",
+        "referenceDate": "2026-10-16"
+      },
+      "expected": {
+        "from": "2025-11-01",
+        "to": "2026-10-31"
+      },
+      "tolerance": 1e-9
+    }
+  ]
+}

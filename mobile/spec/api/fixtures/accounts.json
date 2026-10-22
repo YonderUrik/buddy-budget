@@ -1,0 +1,54 @@
+[
+  {
+    "id": "15d545bd-3e34-4e39-a7b6-5f2b2eb5b466",
+    "userId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+    "name": "Conto deposito",
+    "type": "Conto deposito",
+    "balance": "17400.00",
+    "color": "emerald",
+    "icon": "piggy-bank",
+    "source": "manuale",
+    "isDemo": false,
+    "createdAt": "2026-10-18T14:45:23.487Z",
+    "updatedAt": "2026-10-18T14:45:23.487Z"
+  },
+  {
+    "id": "0870b77e-42dd-476c-a8ae-8a7514b9ba42",
+    "userId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+    "name": "Contanti",
+    "type": "Contanti",
+    "balance": "145.00",
+    "color": "amber",
+    "icon": "wallet",
+    "source": "manuale",
+    "isDemo": false,
+    "createdAt": "2026-10-18T14:45:23.487Z",
+    "updatedAt": "2026-10-18T14:45:23.487Z"
+  },
+  {
+    "id": "88524cc8-7e96-40d4-811a-b2c02ef824db",
+    "userId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+    "name": "Conto corrente",
+    "type": "Conto corrente",
+    "balance": "5050.34",
+    "color": "blue",
+    "icon": "landmark",
+    "source": "auto",
+    "isDemo": false,
+    "createdAt": "2026-10-18T14:45:23.487Z",
+    "updatedAt": "2026-10-18T14:45:23.487Z"
+  },
+  {
+    "id": "66f5b2b7-e61a-49da-a69a-9a56734bec97",
+    "userId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+    "name": "Interactive Brokers · liquidità",
+    "type": "Liquidità broker",
+    "balance": "1320.00",
+    "color": "slate",
+    "icon": "landmark",
+    "source": "manuale",
+    "isDemo": false,
+    "createdAt": "2026-10-18T14:45:23.596Z",
+    "updatedAt": "2026-10-18T14:45:23.596Z"
+  }
+]

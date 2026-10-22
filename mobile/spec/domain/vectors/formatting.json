@@ -1,0 +1,1893 @@
+{
+  "topic": "formatting",
+  "source": "lib/format.ts, lib/localization/format.ts, lib/localization/messages.ts, components/domain/debts/debts-format.ts",
+  "generatedWith": {
+    "node": "v25.2.1",
+    "icu": "78.1",
+    "cldr": "48.0",
+    "tz": "Europe/Rome"
+  },
+  "conventions": "Strings are compared byte-exact. Watch U+00A0 (no-break space), U+202F (narrow no-break space), U+2212 (minus sign) and U+2013 (en dash).",
+  "vectors": [
+    {
+      "id": "currency.it-IT.1234.5.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "1234,50 €"
+    },
+    {
+      "id": "currency.it-IT.-1234.5.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": -1234.5,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "-1234,50 €"
+    },
+    {
+      "id": "currency.it-IT.0.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 0,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "0,00 €"
+    },
+    {
+      "id": "currency.it-IT.12345.678.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 12345.678,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "12.345,68 €"
+    },
+    {
+      "id": "currency.it-IT.1234567.891.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234567.891,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "1.234.567,89 €"
+    },
+    {
+      "id": "currency.it-IT.999.999.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 999.999,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "1000,00 €"
+    },
+    {
+      "id": "currency.it-IT.10.USD",
+      "function": "formatCurrency",
+      "input": {
+        "value": 10,
+        "currency": "USD",
+        "locale": "it-IT"
+      },
+      "expected": "10,00 USD"
+    },
+    {
+      "id": "currency.it-IT.10.GBP",
+      "function": "formatCurrency",
+      "input": {
+        "value": 10,
+        "currency": "GBP",
+        "locale": "it-IT"
+      },
+      "expected": "10,00 £"
+    },
+    {
+      "id": "currency.it-IT.1234.5.CHF",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "CHF",
+        "locale": "it-IT"
+      },
+      "expected": "1234,50 CHF"
+    },
+    {
+      "id": "currency.it-IT.0.005.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 0.005,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "0,01 €"
+    },
+    {
+      "id": "currency.it-IT.-0.004.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": -0.004,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "-0,00 €"
+    },
+    {
+      "id": "currency.it-IT.maxFD0",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "it-IT",
+        "maximumFractionDigits": 0
+      },
+      "expected": "1235 €"
+    },
+    {
+      "id": "symbol.it-IT.EUR",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "€"
+    },
+    {
+      "id": "symbol.it-IT.USD",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "USD",
+        "locale": "it-IT"
+      },
+      "expected": "USD"
+    },
+    {
+      "id": "symbol.it-IT.GBP",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "GBP",
+        "locale": "it-IT"
+      },
+      "expected": "£"
+    },
+    {
+      "id": "symbol.it-IT.CHF",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "CHF",
+        "locale": "it-IT"
+      },
+      "expected": "CHF"
+    },
+    {
+      "id": "pct.it-IT.0.1234",
+      "function": "formatPct",
+      "input": {
+        "value": 0.1234,
+        "digits": 1,
+        "locale": "it-IT"
+      },
+      "expected": "12,3%"
+    },
+    {
+      "id": "pct0.it-IT.0.1234",
+      "function": "formatPct",
+      "input": {
+        "value": 0.1234,
+        "digits": 0,
+        "locale": "it-IT"
+      },
+      "expected": "12%"
+    },
+    {
+      "id": "pct.it-IT.-0.05",
+      "function": "formatPct",
+      "input": {
+        "value": -0.05,
+        "digits": 1,
+        "locale": "it-IT"
+      },
+      "expected": "-5,0%"
+    },
+    {
+      "id": "pct0.it-IT.-0.05",
+      "function": "formatPct",
+      "input": {
+        "value": -0.05,
+        "digits": 0,
+        "locale": "it-IT"
+      },
+      "expected": "-5%"
+    },
+    {
+      "id": "pct.it-IT.0",
+      "function": "formatPct",
+      "input": {
+        "value": 0,
+        "digits": 1,
+        "locale": "it-IT"
+      },
+      "expected": "0,0%"
+    },
+    {
+      "id": "pct0.it-IT.0",
+      "function": "formatPct",
+      "input": {
+        "value": 0,
+        "digits": 0,
+        "locale": "it-IT"
+      },
+      "expected": "0%"
+    },
+    {
+      "id": "pct.it-IT.1.5",
+      "function": "formatPct",
+      "input": {
+        "value": 1.5,
+        "digits": 1,
+        "locale": "it-IT"
+      },
+      "expected": "150,0%"
+    },
+    {
+      "id": "pct0.it-IT.1.5",
+      "function": "formatPct",
+      "input": {
+        "value": 1.5,
+        "digits": 0,
+        "locale": "it-IT"
+      },
+      "expected": "150%"
+    },
+    {
+      "id": "signedPct.it-IT.0.1234",
+      "function": "formatSignedPct",
+      "input": {
+        "value": 0.1234,
+        "locale": "it-IT"
+      },
+      "expected": "+12,3%"
+    },
+    {
+      "id": "signedPct.it-IT.-0.05",
+      "function": "formatSignedPct",
+      "input": {
+        "value": -0.05,
+        "locale": "it-IT"
+      },
+      "expected": "−5,0%"
+    },
+    {
+      "id": "signedPct.it-IT.0",
+      "function": "formatSignedPct",
+      "input": {
+        "value": 0,
+        "locale": "it-IT"
+      },
+      "expected": "+0,0%"
+    },
+    {
+      "id": "signedCurrency.it-IT.250",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": 250,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "+250,00 €"
+    },
+    {
+      "id": "signedCurrency.it-IT.-250",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": -250,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "−250,00 €"
+    },
+    {
+      "id": "signedCurrency.it-IT.0",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": 0,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": "+0,00 €"
+    },
+    {
+      "id": "price.it-IT.1.23456",
+      "function": "formatPrice",
+      "input": {
+        "value": 1.23456,
+        "currency": "USD",
+        "locale": "it-IT"
+      },
+      "expected": "1,2346 USD"
+    },
+    {
+      "id": "price.it-IT.123.456",
+      "function": "formatPrice",
+      "input": {
+        "value": 123.456,
+        "currency": "USD",
+        "locale": "it-IT"
+      },
+      "expected": "123,46 USD"
+    },
+    {
+      "id": "price.it-IT.-9.87654",
+      "function": "formatPrice",
+      "input": {
+        "value": -9.87654,
+        "currency": "USD",
+        "locale": "it-IT"
+      },
+      "expected": "-9,8765 USD"
+    },
+    {
+      "id": "compact.it-IT.999",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 999,
+        "locale": "it-IT"
+      },
+      "expected": "999"
+    },
+    {
+      "id": "compact.it-IT.1234",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 1234,
+        "locale": "it-IT"
+      },
+      "expected": "1,2K"
+    },
+    {
+      "id": "compact.it-IT.15300",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 15300,
+        "locale": "it-IT"
+      },
+      "expected": "15,3K"
+    },
+    {
+      "id": "compact.it-IT.2500000",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 2500000,
+        "locale": "it-IT"
+      },
+      "expected": "2,5 Mln"
+    },
+    {
+      "id": "compact.it-IT.1200000000",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 1200000000,
+        "locale": "it-IT"
+      },
+      "expected": "1,2 Mld"
+    },
+    {
+      "id": "ratio.it-IT",
+      "function": "formatRatio",
+      "input": {
+        "value": 1234.5,
+        "digits": 1,
+        "locale": "it-IT"
+      },
+      "expected": "1234,5"
+    },
+    {
+      "id": "shortMonth.it-IT.1",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 1,
+        "locale": "it-IT"
+      },
+      "expected": "gen"
+    },
+    {
+      "id": "shortMonth.it-IT.3",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 3,
+        "locale": "it-IT"
+      },
+      "expected": "mar"
+    },
+    {
+      "id": "shortMonth.it-IT.5",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 5,
+        "locale": "it-IT"
+      },
+      "expected": "mag"
+    },
+    {
+      "id": "shortMonth.it-IT.6",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 6,
+        "locale": "it-IT"
+      },
+      "expected": "giu"
+    },
+    {
+      "id": "shortMonth.it-IT.7",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 7,
+        "locale": "it-IT"
+      },
+      "expected": "lug"
+    },
+    {
+      "id": "shortMonth.it-IT.9",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 9,
+        "locale": "it-IT"
+      },
+      "expected": "set"
+    },
+    {
+      "id": "shortMonth.it-IT.12",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 12,
+        "locale": "it-IT"
+      },
+      "expected": "dic"
+    },
+    {
+      "id": "monthLabel.it-IT",
+      "function": "formatMonthLabel",
+      "input": {
+        "key": "2026-03",
+        "locale": "it-IT"
+      },
+      "expected": "marzo 2026"
+    },
+    {
+      "id": "shortDate.it-IT",
+      "function": "formatShortDate",
+      "input": {
+        "iso": "2026-09-26",
+        "locale": "it-IT"
+      },
+      "expected": "26 set"
+    },
+    {
+      "id": "dateWithYear.it-IT",
+      "function": "formatDateWithYear",
+      "input": {
+        "iso": "2026-09-26",
+        "locale": "it-IT"
+      },
+      "expected": "26 set 2026"
+    },
+    {
+      "id": "longDate.it-IT",
+      "function": "formatLongDate",
+      "input": {
+        "date": "2026-10-29",
+        "locale": "it-IT"
+      },
+      "expected": "29 ottobre 2026"
+    },
+    {
+      "id": "relative.it-IT.30000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 30000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "it-IT"
+      },
+      "expected": "adesso"
+    },
+    {
+      "id": "relative.it-IT.300000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 300000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "it-IT"
+      },
+      "expected": "5 min fa"
+    },
+    {
+      "id": "relative.it-IT.10800000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 10800000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "it-IT"
+      },
+      "expected": "3 h fa"
+    },
+    {
+      "id": "relative.it-IT.90000000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 90000000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "it-IT"
+      },
+      "expected": "1 giorno fa"
+    },
+    {
+      "id": "relative.it-IT.172800000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 172800000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "it-IT"
+      },
+      "expected": "2 giorni fa"
+    },
+    {
+      "id": "relative.it-IT.864000000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 864000000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "it-IT"
+      },
+      "expected": "16 lug"
+    },
+    {
+      "id": "splitMoney.it-IT",
+      "function": "splitMoney",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "it-IT"
+      },
+      "expected": {
+        "main": "1234",
+        "tail": ",50 €"
+      }
+    },
+    {
+      "id": "currency.en-GB.1234.5.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "€1,234.50"
+    },
+    {
+      "id": "currency.en-GB.-1234.5.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": -1234.5,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "-€1,234.50"
+    },
+    {
+      "id": "currency.en-GB.0.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 0,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "€0.00"
+    },
+    {
+      "id": "currency.en-GB.12345.678.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 12345.678,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "€12,345.68"
+    },
+    {
+      "id": "currency.en-GB.1234567.891.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234567.891,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "€1,234,567.89"
+    },
+    {
+      "id": "currency.en-GB.999.999.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 999.999,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "€1,000.00"
+    },
+    {
+      "id": "currency.en-GB.10.USD",
+      "function": "formatCurrency",
+      "input": {
+        "value": 10,
+        "currency": "USD",
+        "locale": "en-GB"
+      },
+      "expected": "US$10.00"
+    },
+    {
+      "id": "currency.en-GB.10.GBP",
+      "function": "formatCurrency",
+      "input": {
+        "value": 10,
+        "currency": "GBP",
+        "locale": "en-GB"
+      },
+      "expected": "£10.00"
+    },
+    {
+      "id": "currency.en-GB.1234.5.CHF",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "CHF",
+        "locale": "en-GB"
+      },
+      "expected": "CHF 1,234.50"
+    },
+    {
+      "id": "currency.en-GB.0.005.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 0.005,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "€0.01"
+    },
+    {
+      "id": "currency.en-GB.-0.004.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": -0.004,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "-€0.00"
+    },
+    {
+      "id": "currency.en-GB.maxFD0",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "en-GB",
+        "maximumFractionDigits": 0
+      },
+      "expected": "€1,235"
+    },
+    {
+      "id": "symbol.en-GB.EUR",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "€"
+    },
+    {
+      "id": "symbol.en-GB.USD",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "USD",
+        "locale": "en-GB"
+      },
+      "expected": "US$"
+    },
+    {
+      "id": "symbol.en-GB.GBP",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "GBP",
+        "locale": "en-GB"
+      },
+      "expected": "£"
+    },
+    {
+      "id": "symbol.en-GB.CHF",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "CHF",
+        "locale": "en-GB"
+      },
+      "expected": "CHF"
+    },
+    {
+      "id": "pct.en-GB.0.1234",
+      "function": "formatPct",
+      "input": {
+        "value": 0.1234,
+        "digits": 1,
+        "locale": "en-GB"
+      },
+      "expected": "12.3%"
+    },
+    {
+      "id": "pct0.en-GB.0.1234",
+      "function": "formatPct",
+      "input": {
+        "value": 0.1234,
+        "digits": 0,
+        "locale": "en-GB"
+      },
+      "expected": "12%"
+    },
+    {
+      "id": "pct.en-GB.-0.05",
+      "function": "formatPct",
+      "input": {
+        "value": -0.05,
+        "digits": 1,
+        "locale": "en-GB"
+      },
+      "expected": "-5.0%"
+    },
+    {
+      "id": "pct0.en-GB.-0.05",
+      "function": "formatPct",
+      "input": {
+        "value": -0.05,
+        "digits": 0,
+        "locale": "en-GB"
+      },
+      "expected": "-5%"
+    },
+    {
+      "id": "pct.en-GB.0",
+      "function": "formatPct",
+      "input": {
+        "value": 0,
+        "digits": 1,
+        "locale": "en-GB"
+      },
+      "expected": "0.0%"
+    },
+    {
+      "id": "pct0.en-GB.0",
+      "function": "formatPct",
+      "input": {
+        "value": 0,
+        "digits": 0,
+        "locale": "en-GB"
+      },
+      "expected": "0%"
+    },
+    {
+      "id": "pct.en-GB.1.5",
+      "function": "formatPct",
+      "input": {
+        "value": 1.5,
+        "digits": 1,
+        "locale": "en-GB"
+      },
+      "expected": "150.0%"
+    },
+    {
+      "id": "pct0.en-GB.1.5",
+      "function": "formatPct",
+      "input": {
+        "value": 1.5,
+        "digits": 0,
+        "locale": "en-GB"
+      },
+      "expected": "150%"
+    },
+    {
+      "id": "signedPct.en-GB.0.1234",
+      "function": "formatSignedPct",
+      "input": {
+        "value": 0.1234,
+        "locale": "en-GB"
+      },
+      "expected": "+12.3%"
+    },
+    {
+      "id": "signedPct.en-GB.-0.05",
+      "function": "formatSignedPct",
+      "input": {
+        "value": -0.05,
+        "locale": "en-GB"
+      },
+      "expected": "−5.0%"
+    },
+    {
+      "id": "signedPct.en-GB.0",
+      "function": "formatSignedPct",
+      "input": {
+        "value": 0,
+        "locale": "en-GB"
+      },
+      "expected": "+0.0%"
+    },
+    {
+      "id": "signedCurrency.en-GB.250",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": 250,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "+€250.00"
+    },
+    {
+      "id": "signedCurrency.en-GB.-250",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": -250,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "−€250.00"
+    },
+    {
+      "id": "signedCurrency.en-GB.0",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": 0,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": "+€0.00"
+    },
+    {
+      "id": "price.en-GB.1.23456",
+      "function": "formatPrice",
+      "input": {
+        "value": 1.23456,
+        "currency": "USD",
+        "locale": "en-GB"
+      },
+      "expected": "US$1.2346"
+    },
+    {
+      "id": "price.en-GB.123.456",
+      "function": "formatPrice",
+      "input": {
+        "value": 123.456,
+        "currency": "USD",
+        "locale": "en-GB"
+      },
+      "expected": "US$123.46"
+    },
+    {
+      "id": "price.en-GB.-9.87654",
+      "function": "formatPrice",
+      "input": {
+        "value": -9.87654,
+        "currency": "USD",
+        "locale": "en-GB"
+      },
+      "expected": "-US$9.8765"
+    },
+    {
+      "id": "compact.en-GB.999",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 999,
+        "locale": "en-GB"
+      },
+      "expected": "999"
+    },
+    {
+      "id": "compact.en-GB.1234",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 1234,
+        "locale": "en-GB"
+      },
+      "expected": "1.2k"
+    },
+    {
+      "id": "compact.en-GB.15300",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 15300,
+        "locale": "en-GB"
+      },
+      "expected": "15.3k"
+    },
+    {
+      "id": "compact.en-GB.2500000",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 2500000,
+        "locale": "en-GB"
+      },
+      "expected": "2.5m"
+    },
+    {
+      "id": "compact.en-GB.1200000000",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 1200000000,
+        "locale": "en-GB"
+      },
+      "expected": "1.2bn"
+    },
+    {
+      "id": "ratio.en-GB",
+      "function": "formatRatio",
+      "input": {
+        "value": 1234.5,
+        "digits": 1,
+        "locale": "en-GB"
+      },
+      "expected": "1,234.5"
+    },
+    {
+      "id": "shortMonth.en-GB.1",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 1,
+        "locale": "en-GB"
+      },
+      "expected": "Jan"
+    },
+    {
+      "id": "shortMonth.en-GB.3",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 3,
+        "locale": "en-GB"
+      },
+      "expected": "Mar"
+    },
+    {
+      "id": "shortMonth.en-GB.5",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 5,
+        "locale": "en-GB"
+      },
+      "expected": "May"
+    },
+    {
+      "id": "shortMonth.en-GB.6",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 6,
+        "locale": "en-GB"
+      },
+      "expected": "Jun"
+    },
+    {
+      "id": "shortMonth.en-GB.7",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 7,
+        "locale": "en-GB"
+      },
+      "expected": "Jul"
+    },
+    {
+      "id": "shortMonth.en-GB.9",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 9,
+        "locale": "en-GB"
+      },
+      "expected": "Sept"
+    },
+    {
+      "id": "shortMonth.en-GB.12",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 12,
+        "locale": "en-GB"
+      },
+      "expected": "Dec"
+    },
+    {
+      "id": "monthLabel.en-GB",
+      "function": "formatMonthLabel",
+      "input": {
+        "key": "2026-03",
+        "locale": "en-GB"
+      },
+      "expected": "March 2026"
+    },
+    {
+      "id": "shortDate.en-GB",
+      "function": "formatShortDate",
+      "input": {
+        "iso": "2026-09-26",
+        "locale": "en-GB"
+      },
+      "expected": "26 Sept"
+    },
+    {
+      "id": "dateWithYear.en-GB",
+      "function": "formatDateWithYear",
+      "input": {
+        "iso": "2026-09-26",
+        "locale": "en-GB"
+      },
+      "expected": "26 Sept 2026"
+    },
+    {
+      "id": "longDate.en-GB",
+      "function": "formatLongDate",
+      "input": {
+        "date": "2026-10-29",
+        "locale": "en-GB"
+      },
+      "expected": "29 October 2026"
+    },
+    {
+      "id": "relative.en-GB.30000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 30000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "en-GB"
+      },
+      "expected": "now"
+    },
+    {
+      "id": "relative.en-GB.300000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 300000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "en-GB"
+      },
+      "expected": "5 minutes ago"
+    },
+    {
+      "id": "relative.en-GB.10800000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 10800000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "en-GB"
+      },
+      "expected": "3 hours ago"
+    },
+    {
+      "id": "relative.en-GB.90000000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 90000000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "en-GB"
+      },
+      "expected": "yesterday"
+    },
+    {
+      "id": "relative.en-GB.172800000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 172800000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "en-GB"
+      },
+      "expected": "2 days ago"
+    },
+    {
+      "id": "relative.en-GB.864000000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 864000000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "en-GB"
+      },
+      "expected": "16 Jul"
+    },
+    {
+      "id": "splitMoney.en-GB",
+      "function": "splitMoney",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "en-GB"
+      },
+      "expected": {
+        "main": "€1,234",
+        "tail": ".50"
+      }
+    },
+    {
+      "id": "currency.de-DE.1234.5.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "1.234,50 €"
+    },
+    {
+      "id": "currency.de-DE.-1234.5.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": -1234.5,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "-1.234,50 €"
+    },
+    {
+      "id": "currency.de-DE.0.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 0,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "0,00 €"
+    },
+    {
+      "id": "currency.de-DE.12345.678.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 12345.678,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "12.345,68 €"
+    },
+    {
+      "id": "currency.de-DE.1234567.891.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234567.891,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "1.234.567,89 €"
+    },
+    {
+      "id": "currency.de-DE.999.999.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 999.999,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "1.000,00 €"
+    },
+    {
+      "id": "currency.de-DE.10.USD",
+      "function": "formatCurrency",
+      "input": {
+        "value": 10,
+        "currency": "USD",
+        "locale": "de-DE"
+      },
+      "expected": "10,00 $"
+    },
+    {
+      "id": "currency.de-DE.10.GBP",
+      "function": "formatCurrency",
+      "input": {
+        "value": 10,
+        "currency": "GBP",
+        "locale": "de-DE"
+      },
+      "expected": "10,00 £"
+    },
+    {
+      "id": "currency.de-DE.1234.5.CHF",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "CHF",
+        "locale": "de-DE"
+      },
+      "expected": "1.234,50 CHF"
+    },
+    {
+      "id": "currency.de-DE.0.005.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": 0.005,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "0,01 €"
+    },
+    {
+      "id": "currency.de-DE.-0.004.EUR",
+      "function": "formatCurrency",
+      "input": {
+        "value": -0.004,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "-0,00 €"
+    },
+    {
+      "id": "currency.de-DE.maxFD0",
+      "function": "formatCurrency",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "de-DE",
+        "maximumFractionDigits": 0
+      },
+      "expected": "1.235 €"
+    },
+    {
+      "id": "symbol.de-DE.EUR",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "€"
+    },
+    {
+      "id": "symbol.de-DE.USD",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "USD",
+        "locale": "de-DE"
+      },
+      "expected": "$"
+    },
+    {
+      "id": "symbol.de-DE.GBP",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "GBP",
+        "locale": "de-DE"
+      },
+      "expected": "£"
+    },
+    {
+      "id": "symbol.de-DE.CHF",
+      "function": "getCurrencySymbol",
+      "input": {
+        "currency": "CHF",
+        "locale": "de-DE"
+      },
+      "expected": "CHF"
+    },
+    {
+      "id": "pct.de-DE.0.1234",
+      "function": "formatPct",
+      "input": {
+        "value": 0.1234,
+        "digits": 1,
+        "locale": "de-DE"
+      },
+      "expected": "12,3 %"
+    },
+    {
+      "id": "pct0.de-DE.0.1234",
+      "function": "formatPct",
+      "input": {
+        "value": 0.1234,
+        "digits": 0,
+        "locale": "de-DE"
+      },
+      "expected": "12 %"
+    },
+    {
+      "id": "pct.de-DE.-0.05",
+      "function": "formatPct",
+      "input": {
+        "value": -0.05,
+        "digits": 1,
+        "locale": "de-DE"
+      },
+      "expected": "-5,0 %"
+    },
+    {
+      "id": "pct0.de-DE.-0.05",
+      "function": "formatPct",
+      "input": {
+        "value": -0.05,
+        "digits": 0,
+        "locale": "de-DE"
+      },
+      "expected": "-5 %"
+    },
+    {
+      "id": "pct.de-DE.0",
+      "function": "formatPct",
+      "input": {
+        "value": 0,
+        "digits": 1,
+        "locale": "de-DE"
+      },
+      "expected": "0,0 %"
+    },
+    {
+      "id": "pct0.de-DE.0",
+      "function": "formatPct",
+      "input": {
+        "value": 0,
+        "digits": 0,
+        "locale": "de-DE"
+      },
+      "expected": "0 %"
+    },
+    {
+      "id": "pct.de-DE.1.5",
+      "function": "formatPct",
+      "input": {
+        "value": 1.5,
+        "digits": 1,
+        "locale": "de-DE"
+      },
+      "expected": "150,0 %"
+    },
+    {
+      "id": "pct0.de-DE.1.5",
+      "function": "formatPct",
+      "input": {
+        "value": 1.5,
+        "digits": 0,
+        "locale": "de-DE"
+      },
+      "expected": "150 %"
+    },
+    {
+      "id": "signedPct.de-DE.0.1234",
+      "function": "formatSignedPct",
+      "input": {
+        "value": 0.1234,
+        "locale": "de-DE"
+      },
+      "expected": "+12,3 %"
+    },
+    {
+      "id": "signedPct.de-DE.-0.05",
+      "function": "formatSignedPct",
+      "input": {
+        "value": -0.05,
+        "locale": "de-DE"
+      },
+      "expected": "−5,0 %"
+    },
+    {
+      "id": "signedPct.de-DE.0",
+      "function": "formatSignedPct",
+      "input": {
+        "value": 0,
+        "locale": "de-DE"
+      },
+      "expected": "+0,0 %"
+    },
+    {
+      "id": "signedCurrency.de-DE.250",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": 250,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "+250,00 €"
+    },
+    {
+      "id": "signedCurrency.de-DE.-250",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": -250,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "−250,00 €"
+    },
+    {
+      "id": "signedCurrency.de-DE.0",
+      "function": "formatSignedCurrency",
+      "input": {
+        "value": 0,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": "+0,00 €"
+    },
+    {
+      "id": "price.de-DE.1.23456",
+      "function": "formatPrice",
+      "input": {
+        "value": 1.23456,
+        "currency": "USD",
+        "locale": "de-DE"
+      },
+      "expected": "1,2346 $"
+    },
+    {
+      "id": "price.de-DE.123.456",
+      "function": "formatPrice",
+      "input": {
+        "value": 123.456,
+        "currency": "USD",
+        "locale": "de-DE"
+      },
+      "expected": "123,46 $"
+    },
+    {
+      "id": "price.de-DE.-9.87654",
+      "function": "formatPrice",
+      "input": {
+        "value": -9.87654,
+        "currency": "USD",
+        "locale": "de-DE"
+      },
+      "expected": "-9,8765 $"
+    },
+    {
+      "id": "compact.de-DE.999",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 999,
+        "locale": "de-DE"
+      },
+      "expected": "999"
+    },
+    {
+      "id": "compact.de-DE.1234",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 1234,
+        "locale": "de-DE"
+      },
+      "expected": "1234"
+    },
+    {
+      "id": "compact.de-DE.15300",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 15300,
+        "locale": "de-DE"
+      },
+      "expected": "15.300"
+    },
+    {
+      "id": "compact.de-DE.2500000",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 2500000,
+        "locale": "de-DE"
+      },
+      "expected": "2,5 Mio."
+    },
+    {
+      "id": "compact.de-DE.1200000000",
+      "function": "formatCompactAmount",
+      "input": {
+        "value": 1200000000,
+        "locale": "de-DE"
+      },
+      "expected": "1,2 Mrd."
+    },
+    {
+      "id": "ratio.de-DE",
+      "function": "formatRatio",
+      "input": {
+        "value": 1234.5,
+        "digits": 1,
+        "locale": "de-DE"
+      },
+      "expected": "1.234,5"
+    },
+    {
+      "id": "shortMonth.de-DE.1",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 1,
+        "locale": "de-DE"
+      },
+      "expected": "Jan"
+    },
+    {
+      "id": "shortMonth.de-DE.3",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 3,
+        "locale": "de-DE"
+      },
+      "expected": "Mär"
+    },
+    {
+      "id": "shortMonth.de-DE.5",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 5,
+        "locale": "de-DE"
+      },
+      "expected": "Mai"
+    },
+    {
+      "id": "shortMonth.de-DE.6",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 6,
+        "locale": "de-DE"
+      },
+      "expected": "Jun"
+    },
+    {
+      "id": "shortMonth.de-DE.7",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 7,
+        "locale": "de-DE"
+      },
+      "expected": "Jul"
+    },
+    {
+      "id": "shortMonth.de-DE.9",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 9,
+        "locale": "de-DE"
+      },
+      "expected": "Sep"
+    },
+    {
+      "id": "shortMonth.de-DE.12",
+      "function": "shortMonthLabel",
+      "input": {
+        "month": 12,
+        "locale": "de-DE"
+      },
+      "expected": "Dez"
+    },
+    {
+      "id": "monthLabel.de-DE",
+      "function": "formatMonthLabel",
+      "input": {
+        "key": "2026-03",
+        "locale": "de-DE"
+      },
+      "expected": "März 2026"
+    },
+    {
+      "id": "shortDate.de-DE",
+      "function": "formatShortDate",
+      "input": {
+        "iso": "2026-09-26",
+        "locale": "de-DE"
+      },
+      "expected": "26. Sept."
+    },
+    {
+      "id": "dateWithYear.de-DE",
+      "function": "formatDateWithYear",
+      "input": {
+        "iso": "2026-09-26",
+        "locale": "de-DE"
+      },
+      "expected": "26. Sept. 2026"
+    },
+    {
+      "id": "longDate.de-DE",
+      "function": "formatLongDate",
+      "input": {
+        "date": "2026-10-29",
+        "locale": "de-DE"
+      },
+      "expected": "29. Oktober 2026"
+    },
+    {
+      "id": "relative.de-DE.30000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 30000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "de-DE"
+      },
+      "expected": "jetzt"
+    },
+    {
+      "id": "relative.de-DE.300000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 300000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "de-DE"
+      },
+      "expected": "vor 5 Minuten"
+    },
+    {
+      "id": "relative.de-DE.10800000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 10800000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "de-DE"
+      },
+      "expected": "vor 3 Stunden"
+    },
+    {
+      "id": "relative.de-DE.90000000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 90000000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "de-DE"
+      },
+      "expected": "gestern"
+    },
+    {
+      "id": "relative.de-DE.172800000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 172800000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "de-DE"
+      },
+      "expected": "vorgestern"
+    },
+    {
+      "id": "relative.de-DE.864000000",
+      "function": "formatRelativeTime",
+      "input": {
+        "msAgo": 864000000,
+        "now": "2026-07-26T12:00:00.000Z",
+        "locale": "de-DE"
+      },
+      "expected": "16. Juli"
+    },
+    {
+      "id": "splitMoney.de-DE",
+      "function": "splitMoney",
+      "input": {
+        "value": 1234.5,
+        "currency": "EUR",
+        "locale": "de-DE"
+      },
+      "expected": {
+        "main": "1.234",
+        "tail": ",50 €"
+      }
+    },
+    {
+      "id": "duration.it.0",
+      "function": "formatDuration",
+      "input": {
+        "months": 0,
+        "language": "it"
+      },
+      "expected": "0 mesi"
+    },
+    {
+      "id": "duration.it.1",
+      "function": "formatDuration",
+      "input": {
+        "months": 1,
+        "language": "it"
+      },
+      "expected": "1 mese"
+    },
+    {
+      "id": "duration.it.12",
+      "function": "formatDuration",
+      "input": {
+        "months": 12,
+        "language": "it"
+      },
+      "expected": "1 anno"
+    },
+    {
+      "id": "duration.it.13",
+      "function": "formatDuration",
+      "input": {
+        "months": 13,
+        "language": "it"
+      },
+      "expected": "1 anno e 1 mese"
+    },
+    {
+      "id": "duration.it.25",
+      "function": "formatDuration",
+      "input": {
+        "months": 25,
+        "language": "it"
+      },
+      "expected": "2 anni e 1 mese"
+    },
+    {
+      "id": "duration.it.60",
+      "function": "formatDuration",
+      "input": {
+        "months": 60,
+        "language": "it"
+      },
+      "expected": "5 anni"
+    },
+    {
+      "id": "duration.en.0",
+      "function": "formatDuration",
+      "input": {
+        "months": 0,
+        "language": "en"
+      },
+      "expected": "0 months"
+    },
+    {
+      "id": "duration.en.1",
+      "function": "formatDuration",
+      "input": {
+        "months": 1,
+        "language": "en"
+      },
+      "expected": "1 month"
+    },
+    {
+      "id": "duration.en.12",
+      "function": "formatDuration",
+      "input": {
+        "months": 12,
+        "language": "en"
+      },
+      "expected": "1 year"
+    },
+    {
+      "id": "duration.en.13",
+      "function": "formatDuration",
+      "input": {
+        "months": 13,
+        "language": "en"
+      },
+      "expected": "1 year and 1 month"
+    },
+    {
+      "id": "duration.en.25",
+      "function": "formatDuration",
+      "input": {
+        "months": 25,
+        "language": "en"
+      },
+      "expected": "2 years and 1 month"
+    },
+    {
+      "id": "duration.en.60",
+      "function": "formatDuration",
+      "input": {
+        "months": 60,
+        "language": "en"
+      },
+      "expected": "5 years"
+    },
+    {
+      "id": "duration.de.0",
+      "function": "formatDuration",
+      "input": {
+        "months": 0,
+        "language": "de"
+      },
+      "expected": "0 Monate"
+    },
+    {
+      "id": "duration.de.1",
+      "function": "formatDuration",
+      "input": {
+        "months": 1,
+        "language": "de"
+      },
+      "expected": "1 Monat"
+    },
+    {
+      "id": "duration.de.12",
+      "function": "formatDuration",
+      "input": {
+        "months": 12,
+        "language": "de"
+      },
+      "expected": "1 Jahr"
+    },
+    {
+      "id": "duration.de.13",
+      "function": "formatDuration",
+      "input": {
+        "months": 13,
+        "language": "de"
+      },
+      "expected": "1 Jahr und 1 Monat"
+    },
+    {
+      "id": "duration.de.25",
+      "function": "formatDuration",
+      "input": {
+        "months": 25,
+        "language": "de"
+      },
+      "expected": "2 Jahre und 1 Monat"
+    },
+    {
+      "id": "duration.de.60",
+      "function": "formatDuration",
+      "input": {
+        "months": 60,
+        "language": "de"
+      },
+      "expected": "5 Jahre"
+    },
+    {
+      "id": "translate.en.Ricollega a \"{0}\"",
+      "function": "translate",
+      "input": {
+        "language": "en",
+        "source": "Ricollega a \"{0}\"",
+        "values": {
+          "0": "Conto corrente"
+        }
+      },
+      "expected": "Reconnect to \"Conto corrente\"",
+      "notes": "missing key falls back to the Italian source; unknown placeholders are left as-is"
+    },
+    {
+      "id": "translate.de.Ricollega a \"{0}\"",
+      "function": "translate",
+      "input": {
+        "language": "de",
+        "source": "Ricollega a \"{0}\"",
+        "values": {
+          "0": "Conto corrente"
+        }
+      },
+      "expected": "Erneut mit „Conto corrente“ verbinden",
+      "notes": "missing key falls back to the Italian source; unknown placeholders are left as-is"
+    },
+    {
+      "id": "translate.it.Ricollega a \"{0}\"",
+      "function": "translate",
+      "input": {
+        "language": "it",
+        "source": "Ricollega a \"{0}\"",
+        "values": {
+          "0": "Conto corrente"
+        }
+      },
+      "expected": "Ricollega a \"Conto corrente\"",
+      "notes": "missing key falls back to the Italian source; unknown placeholders are left as-is"
+    },
+    {
+      "id": "translate.en.{month}: finora hai speso ",
+      "function": "translate",
+      "input": {
+        "language": "en",
+        "source": "{month}: finora hai speso ",
+        "values": {
+          "month": "October"
+        }
+      },
+      "expected": "October: so far you have spent ",
+      "notes": "missing key falls back to the Italian source; unknown placeholders are left as-is"
+    },
+    {
+      "id": "translate.de.Chiave inesistente {x}",
+      "function": "translate",
+      "input": {
+        "language": "de",
+        "source": "Chiave inesistente {x}",
+        "values": {
+          "x": 1
+        }
+      },
+      "expected": "Chiave inesistente 1",
+      "notes": "missing key falls back to the Italian source; unknown placeholders are left as-is"
+    }
+  ]
+}

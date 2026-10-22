@@ -1,0 +1,356 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "period": "1anno",
+  "includePension": false,
+  "isEmpty": false,
+  "todayByClass": {
+    "liquidita": 23915.34,
+    "investimenti": 71038.29324820726,
+    "previdenza": 11082.07,
+    "debiti": -39937.23
+  },
+  "series": [
+    {
+      "date": "2025-10-31",
+      "value": 2434.300000000001,
+      "byClass": {
+        "previdenza": 7976.82,
+        "debiti": -44372.88,
+        "investimenti": 25808.19,
+        "liquidita": 20998.99
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2025-11-30",
+      "value": 9396.630000000001,
+      "byClass": {
+        "previdenza": 7976.82,
+        "debiti": -43883.07,
+        "investimenti": 31855.6,
+        "liquidita": 21424.1
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2025-12-31",
+      "value": 18230.83,
+      "byClass": {
+        "previdenza": 7976.82,
+        "debiti": -45791.41,
+        "investimenti": 42285.61,
+        "liquidita": 21736.63
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-01-31",
+      "value": 24682.219999999998,
+      "byClass": {
+        "previdenza": 8765.55,
+        "debiti": -45208.84,
+        "investimenti": 47230.83,
+        "liquidita": 22660.23
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-02-28",
+      "value": 28725.27,
+      "byClass": {
+        "previdenza": 8765.55,
+        "debiti": -44623.52,
+        "investimenti": 50189.9,
+        "liquidita": 23158.89
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-03-31",
+      "value": 33761.58,
+      "byClass": {
+        "previdenza": 8765.55,
+        "debiti": -44035.42,
+        "investimenti": 54350.73,
+        "liquidita": 23446.27
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-04-30",
+      "value": 45410.740000000005,
+      "byClass": {
+        "previdenza": 9583.92,
+        "debiti": -43444.55,
+        "investimenti": 65452.51,
+        "liquidita": 23402.78
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-05-31",
+      "value": 53184.94,
+      "byClass": {
+        "previdenza": 9583.92,
+        "debiti": -42850.88,
+        "investimenti": 71752.24,
+        "liquidita": 24283.58
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-06-30",
+      "value": 57241.69,
+      "byClass": {
+        "previdenza": 9583.92,
+        "debiti": -42254.39,
+        "investimenti": 74543.44,
+        "liquidita": 24952.64
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-31",
+      "value": 65346.28,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 82020.31,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-31",
+      "value": 64440.81,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 80098.82,
+        "liquidita": 25394.88
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-30",
+      "value": 59242.05,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 73360.72,
+        "liquidita": 26329.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-18",
+      "value": 55016.4,
+      "byClass": {
+        "liquidita": 23915.34,
+        "investimenti": 71038.29324820726,
+        "previdenza": 11082.07,
+        "debiti": -39937.23
+      },
+      "isEstimated": false
+    }
+  ],
+  "change": {
+    "start": 2434.300000000001,
+    "end": 55016.4,
+    "delta": 52582.1,
+    "deltaPct": 21.600501170767767
+  },
+  "composition": [
+    {
+      "key": "liquidita",
+      "label": "Liquidità",
+      "detail": "4 conti",
+      "amount": 23915.34,
+      "share": 0.25186334826689244,
+      "isLiability": false,
+      "highlight": null
+    },
+    {
+      "key": "investimenti",
+      "label": "Investimenti",
+      "detail": "13 posizioni",
+      "amount": 71038.29324820726,
+      "share": 0.7481366517331076,
+      "isLiability": false,
+      "highlight": {
+        "amount": 7048.765114094407,
+        "ratio": 0.11015497878529759,
+        "label": "dal mercato"
+      }
+    },
+    {
+      "key": "previdenza",
+      "label": "Previdenza",
+      "detail": "1 fondo · fuori dal totale",
+      "amount": 11082.07,
+      "share": 0,
+      "isLiability": false,
+      "highlight": null
+    },
+    {
+      "key": "debiti",
+      "label": "Debiti",
+      "detail": "3 debiti",
+      "amount": -39937.23,
+      "share": 0,
+      "isLiability": true,
+      "highlight": null
+    }
+  ],
+  "monthLabel": "ottobre",
+  "monthPace": {
+    "spentSoFar": 2163.83,
+    "typicalSoFar": 1355.9733333333334,
+    "income": 0,
+    "budgetTotal": 780,
+    "budgetSpent": 398.83000000000004,
+    "dayOfMonth": 18,
+    "daysInMonth": 31,
+    "current": [
+      0,
+      428,
+      428,
+      428,
+      1265.2199999999998,
+      1268.2099999999998,
+      1310.7599999999998,
+      1349.7599999999998,
+      1384.6599999999999,
+      1446.6299999999999,
+      1526.2299999999998,
+      1576.2299999999998,
+      1738.7899999999997,
+      1921.7799999999997,
+      1983.2799999999997,
+      2058.4399999999996,
+      2163.8299999999995,
+      2163.8299999999995
+    ],
+    "typical": [
+      0,
+      0,
+      39.416666666666664,
+      39.416666666666664,
+      68.54,
+      71.52999999999999,
+      853.32,
+      883.5366666666665,
+      939.1066666666666,
+      999.9566666666666,
+      1038.4666666666665,
+      1129.7066666666667,
+      1202.9733333333334,
+      1236.0233333333333,
+      1270.0666666666668,
+      1312.2700000000002,
+      1355.9733333333331,
+      1355.9733333333331,
+      1410.283333333333,
+      1534.5833333333333,
+      1572.7266666666665,
+      1636.6466666666665,
+      1731.4533333333331,
+      1781.58,
+      1940.1266666666663,
+      2039.5233333333333,
+      2054.7166666666667,
+      2161.583333333333,
+      2161.583333333333,
+      2161.583333333333,
+      2161.583333333333
+    ]
+  },
+  "voice": [
+    {
+      "key": "pace",
+      "segments": [
+        {
+          "text": "Ottobre è partito sopra il solito: "
+        },
+        {
+          "text": "2164 €",
+          "strong": true
+        },
+        {
+          "text": " spesi, "
+        },
+        {
+          "text": "808 € in più",
+          "strong": true
+        },
+        {
+          "text": " della tua media a questo punto."
+        }
+      ]
+    },
+    {
+      "key": "due",
+      "segments": [
+        {
+          "text": "La rata Cucina e lavatrice scade il 20 ottobre: "
+        },
+        {
+          "text": "113 €",
+          "strong": true
+        },
+        {
+          "text": "."
+        }
+      ]
+    }
+  ],
+  "investments": {
+    "value": 71038.29324820726,
+    "positions": 13,
+    "paid": 63989.52813411287,
+    "marketGain": 7048.765114094407
+  },
+  "pension": {
+    "value": 11082.07,
+    "funds": 1,
+    "included": false
+  },
+  "debts": {
+    "total": 39937.23,
+    "count": 3,
+    "debtFreeDate": "2033-09-05",
+    "nextDue": [
+      {
+        "debtId": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+        "name": "Cucina e lavatrice",
+        "date": "2026-10-20",
+        "amount": 112.86,
+        "overdue": false
+      },
+      {
+        "debtId": "5865804d-9337-41da-bb50-6a341db6ee80",
+        "name": "Mutuo casa",
+        "date": "2026-11-05",
+        "amount": 365.18,
+        "overdue": false
+      },
+      {
+        "debtId": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+        "name": "Prestito auto",
+        "date": "2026-11-12",
+        "amount": 276.56,
+        "overdue": false
+      }
+    ]
+  },
+  "renewalAlerts": [
+    {
+      "connectionId": "f4ba9de6-444c-4fb3-b5ef-d3f3e6cfe2b4",
+      "institutionName": "Banca Demo",
+      "state": "expiring",
+      "daysLeft": 6,
+      "message": "Il collegamento con Banca Demo scade tra 6 giorni."
+    }
+  ]
+}

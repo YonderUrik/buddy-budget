@@ -1,4 +1,5 @@
 import type { Budget } from "@/lib/db/schema/budgets";
+import { buildBudgetMonth, monthKey, type BudgetMonthAmount } from "@/lib/calc/budget-plan";
 import type { Category } from "@/lib/db/schema/categories";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import {
@@ -64,6 +65,8 @@ export interface DigestInput {
   transactions: Transaction[];
   categories: Category[];
   budgets: Budget[];
+  /** Month amounts of the budgets (history and single months), for the monthly summary. */
+  months?: BudgetMonthAmount[];
   frequency: DigestFrequency;
   now: Date;
   /** Portafoglio nel periodo, già calcolato (`buildInvestmentDigest`); null se non ci sono investimenti. */
@@ -81,7 +84,7 @@ export interface DigestData {
   previousSpent: number;
   topCategories: { name: string; amount: number }[];
   /** null se l'utente non ha budget; `over` = categorie con budget che hanno superato il limite nel periodo. */
-  budget: { total: number; over: number } | null;
+  budget: { total: number; over: number; savedUp: number } | null;
   /** Numero di movimenti nel periodo. */
   movements: number;
   investments: InvestmentDigest | null;
@@ -96,7 +99,7 @@ export function isDigestEmpty(data: DigestData): boolean {
 }
 
 /** Cifre del riepilogo, calcolate con gli stessi motori delle schermate (`lib/calc/expenses`): nessun numero nuovo. */
-export function buildDigest({ transactions, categories, budgets, frequency, now, investments = null, toDecide = 0, goals = null }: DigestInput): DigestData {
+export function buildDigest({ transactions, categories, budgets, months = [], frequency, now, investments = null, toDecide = 0, goals = null }: DigestInput): DigestData {
   const period = digestPeriod(frequency, now);
   const range = getPeriodRange(period.period, period.referenceDate);
   const previousRange = getPreviousPeriodRange(period.period, period.referenceDate);
@@ -110,7 +113,14 @@ export function buildDigest({ transactions, categories, budgets, frequency, now,
     .slice(0, TOP_CATEGORIES)
     .map((c) => ({ name: c.name, amount: c.amount }));
   const amountByCategory = new Map(breakdown.map((c) => [c.categoryId, c.amount]));
-  const over = budgets.filter((b) => (amountByCategory.get(b.categoryId) ?? 0) > scaleBudgetForPeriod(Number(b.monthlyAmount), period.period)).length;
+  let over = budgets.filter((b) => (amountByCategory.get(b.categoryId) ?? 0) > scaleBudgetForPeriod(Number(b.monthlyAmount), period.period)).length;
+  let savedUp = 0;
+  if (period.period === "mese" && budgets.length > 0) {
+    // A monthly summary reads the same plan as Liquidità · Budget: carried leftover and single-month amounts included.
+    const plan = buildBudgetMonth({ transactions, categories, budgets, months, month: monthKey(range.from), today: range.to });
+    over = plan.categories.filter((c) => c.left < 0).length;
+    savedUp = plan.categories.filter((c) => c.rollover && c.left > 0).reduce((sum, c) => sum + c.left, 0);
+  }
   const movements = transactions.filter((t) => {
     const date = t.date;
     return date >= toIso(range.from) && date <= toIso(range.to);
@@ -121,7 +131,7 @@ export function buildDigest({ transactions, categories, budgets, frequency, now,
     income,
     previousSpent,
     topCategories,
-    budget: budgets.length === 0 ? null : { total: budgets.length, over },
+    budget: budgets.length === 0 ? null : { total: budgets.length, over, savedUp },
     movements,
     investments,
     toDecide,

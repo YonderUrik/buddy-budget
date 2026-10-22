@@ -1,4 +1,4 @@
-import { BarChart3, Landmark, ListOrdered, Repeat, Tags } from "lucide-react";
+import { BarChart3, Gauge, Landmark, ListOrdered, Repeat, Tags } from "lucide-react";
 import type { SectionTab } from "@/components/domain/shared";
 
 /** Radice della sezione Liquidità. */
@@ -10,10 +10,11 @@ export const LIQUIDITY_ACCOUNT_PARAM = "conto";
 export const LIQUIDITY_TABS: readonly SectionTab[] = [
   { href: LIQUIDITY_HREF, label: "Movimenti", icon: ListOrdered, description: "Entrate e uscite, ricerca e categorie" },
   { href: `${LIQUIDITY_HREF}/analisi`, label: "Analisi", icon: BarChart3, description: "Dove vanno i soldi, mese per mese" },
+  { href: `${LIQUIDITY_HREF}/budget`, label: "Budget", icon: Gauge, description: "Quanto puoi ancora spendere nel mese, categoria per categoria" },
   { href: `${LIQUIDITY_HREF}/conti`, label: "Conti", icon: Landmark, description: "Saldi e collegamenti con le banche" },
   { href: `${LIQUIDITY_HREF}/abbonamenti`, label: "Abbonamenti", icon: Repeat, description: "Addebiti ricorrenti, costo al mese e prossimi addebiti" },
   { href: `${LIQUIDITY_HREF}/categorie`, label: "Categorie e regole", icon: Tags, description: "Gruppi di spesa e regole automatiche" },
 ];
 
 /** Schede in cui il conto selezionato non filtra nulla (la gestione di categorie e regole è globale). */
-export const LIQUIDITY_GLOBAL_HREFS = [`${LIQUIDITY_HREF}/abbonamenti`, `${LIQUIDITY_HREF}/categorie`, `${LIQUIDITY_HREF}/regole`] as const;
+export const LIQUIDITY_GLOBAL_HREFS = [`${LIQUIDITY_HREF}/budget`, `${LIQUIDITY_HREF}/abbonamenti`, `${LIQUIDITY_HREF}/categorie`, `${LIQUIDITY_HREF}/regole`] as const;

@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * What Movimenti, Analisi and Abbonamenti show before the first account: what the tab will hold and the one action
+ * What Movimenti, Analisi, Budget and Abbonamenti show before the first account: what the tab will hold and the one action
  * that starts it, instead of zero amounts and empty charts.
  */
 
-import { ArrowLeftRightIcon, BarChart3, Repeat, type LucideIcon } from "lucide-react";
+import { ArrowLeftRightIcon, BarChart3, Gauge, Repeat, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import { LIQUIDITY_HREF } from "./liquidity-nav";
@@ -21,6 +21,11 @@ export const NO_ACCOUNT_TABS: Record<string, { icon: LucideIcon; title: string; 
     icon: BarChart3,
     title: "Qui vedrai dove vanno i soldi",
     description: "Spese per categoria mese per mese, entrate e risparmio. Serve un conto con i suoi movimenti.",
+  },
+  [`${LIQUIDITY_HREF}/budget`]: {
+    icon: Gauge,
+    title: "Qui terrai d'occhio i budget",
+    description: "Quanto puoi ancora spendere nel mese, categoria per categoria. I budget te li proponiamo noi dai movimenti di un conto.",
   },
   [`${LIQUIDITY_HREF}/abbonamenti`]: {
     icon: Repeat,
@@ -38,7 +43,7 @@ export interface LiquidityNoAccountsProps {
 
 export function LiquidityNoAccounts({ href, onAddAccount, importHref = "/importazioni" }: LiquidityNoAccountsProps) {
   const tab = NO_ACCOUNT_TABS[href] ?? NO_ACCOUNT_TABS[LIQUIDITY_HREF];
-  const name = href === LIQUIDITY_HREF ? "movimenti" : href.endsWith("/analisi") ? "analisi" : "abbonamenti";
+  const name = href === LIQUIDITY_HREF ? "movimenti" : href.endsWith("/analisi") ? "analisi" : href.endsWith("/budget") ? "budget" : "abbonamenti";
   return (
     <EmptyState
       icon={tab.icon}

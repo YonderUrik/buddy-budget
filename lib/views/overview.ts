@@ -45,6 +45,8 @@ export interface OverviewInputs {
   /** Transactions from MONTH_PACE_LOOKBACK months before this month to its end (as the web fetches them). */
   monthTransactions: Transaction[];
   budgets: Budget[];
+  /** Totals of Liquidità · Budget for this month (carried leftover and single-month amounts); absent = standing amounts. */
+  budgetTotals?: { available: number; spent: number } | null;
   /** `GET /api/investments/overview?period=1mese` payload, as the browser receives it (JSON); null on error. */
   investments: InvestmentData | null;
   debts: DebtsViewData | null;
@@ -82,7 +84,8 @@ export function buildOverviewView(input: OverviewInputs): OverviewView {
   const series = input.includePension ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
   const composition = buildCompositionItems(input.accounts, investments, debts, pension ? { ...pension, excluded: !input.includePension } : null, language);
-  const pace = computeMonthPace(input.monthTransactions, input.budgets, today);
+  const basePace = computeMonthPace(input.monthTransactions, input.budgets, today);
+  const pace = input.budgetTotals ? { ...basePace, budgetTotal: input.budgetTotals.available, budgetSpent: input.budgetTotals.spent } : basePace;
   const monthLabel = new Intl.DateTimeFormat(locale, { month: "long" }).format(today);
   const dues = debtsData?.nextDue ?? [];
   const voice = buildVoiceLines({

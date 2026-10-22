@@ -2,7 +2,8 @@ import "server-only";
 import { and, asc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
-import { budgets, type Budget } from "@/lib/db/schema/budgets";
+import { budgetMonths, budgets, type Budget, type BudgetMonth } from "@/lib/db/schema/budgets";
+import { ROLLOVER_MAX_MONTHS, shiftMonth } from "@/lib/calc/budget-plan";
 import { categories, type Category } from "@/lib/db/schema/categories";
 import { notificationPreferences } from "@/lib/db/schema/notifications";
 import { transactions, type Transaction } from "@/lib/db/schema/transactions";
@@ -54,6 +55,8 @@ export interface NotificationDeps {
   loadTransactions(userId: string, fromIso: string): Promise<Transaction[]>;
   loadCategories(userId: string): Promise<Category[]>;
   loadBudgets(userId: string): Promise<Budget[]>;
+  /** Month amounts of the budgets (history and single months); absent = only the standing amounts. */
+  loadBudgetMonths?(userId: string): Promise<BudgetMonth[]>;
   loadDue(userId: string, now: Date): Promise<DebtDueItem[]>;
   /** Portafoglio ritagliato sul periodo del riepilogo; null senza investimenti. */
   loadInvestments(userId: string, range: { from: string; to: string }, now: Date): Promise<InvestmentDigest | null>;
@@ -121,6 +124,7 @@ export const databaseDeps: NotificationDeps = {
     db.select().from(transactions).where(and(eq(transactions.userId, userId), gte(transactions.date, fromIso))),
   loadCategories: (userId) => db.select().from(categories).where(eq(categories.userId, userId)),
   loadBudgets: (userId) => db.select().from(budgets).where(eq(budgets.userId, userId)),
+  loadBudgetMonths: (userId) => db.select().from(budgetMonths).where(eq(budgetMonths.userId, userId)),
   async loadDue(userId, now) {
     const { debts, events } = await loadUserDebts(userId);
     return buildDebtsView(debts, events, romeDate(now).iso).overview.nextDue;
@@ -283,10 +287,13 @@ export async function runNotifications(options: {
       const budgetRows = await deps.loadBudgets(user.id);
       if (budgetRows.length > 0) {
         const { year, month } = romeDate(now);
+        // Back far enough for the leftover carried from past months and the usual rest of the month.
+        const from = shiftMonth(`${year}-${String(month).padStart(2, "0")}`, -ROLLOVER_MAX_MONTHS);
         const alerts = findBudgetAlerts({
-          transactions: await deps.loadTransactions(user.id, `${year}-${String(month).padStart(2, "0")}-01`),
+          transactions: await deps.loadTransactions(user.id, `${from}-01`),
           categories: await deps.loadCategories(user.id),
           budgets: budgetRows,
+          months: (await deps.loadBudgetMonths?.(user.id)) ?? [],
           alreadySent: await deps.loadSentKeys(user.id, "budget", now),
           now,
         });
@@ -303,10 +310,15 @@ export async function runNotifications(options: {
     if (preferences.digestEnabled && isDigestDay(preferences.digestFrequency, now)) {
       const period = digestPeriod(preferences.digestFrequency, now);
       if (!(await deps.loadSentKeys(user.id, "digest", now)).has(period.key)) {
+        const digestBudgets = await deps.loadBudgets(user.id);
+        // A monthly summary with budgets needs the months before too, for the leftover they carried.
+        const windowStart = digestWindowStartIso(preferences.digestFrequency, now);
+        const from = preferences.digestFrequency === "mensile" && digestBudgets.length > 0 ? `${shiftMonth(windowStart.slice(0, 7), -ROLLOVER_MAX_MONTHS)}-01` : windowStart;
         const data = buildDigest({
-          transactions: await deps.loadTransactions(user.id, digestWindowStartIso(preferences.digestFrequency, now)),
+          transactions: await deps.loadTransactions(user.id, from),
           categories: await deps.loadCategories(user.id),
-          budgets: await deps.loadBudgets(user.id),
+          budgets: digestBudgets,
+          months: digestBudgets.length > 0 ? ((await deps.loadBudgetMonths?.(user.id)) ?? []) : [],
           frequency: preferences.digestFrequency,
           now,
           investments: await loadDigestInvestments(user, digestRange(preferences.digestFrequency, now)),

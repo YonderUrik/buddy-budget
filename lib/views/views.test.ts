@@ -13,7 +13,8 @@ import { buildLiquidityMonth } from "./liquidity-month";
 import { buildOverviewView } from "./overview";
 import { sampleIndexes } from "./investments";
 import { buildWhatsNew } from "./meta";
-import { accountExtrasSchema, liquidityAnalysisSchema, liquidityMonthSchema, overviewViewSchema } from "./schemas";
+import { accountExtrasSchema, budgetMonthViewSchema, liquidityAnalysisSchema, liquidityMonthSchema, overviewViewSchema } from "./schemas";
+import { buildBudgetMonthView } from "./budget-month";
 
 const TODAY = new Date(2026, 9, 18);
 const NOW = new Date(2026, 9, 18, 12, 0, 0);
@@ -40,7 +41,7 @@ const transactions = [
   tx("2026-09-05", -100, groceries.id),
   tx("2026-08-07", -80, groceries.id),
 ];
-const budgets: Budget[] = [{ id: uuid(300), userId: "u", categoryId: groceries.id, monthlyAmount: "200.00", createdAt: NOW, updatedAt: NOW } as Budget];
+const budgets: Budget[] = [{ id: uuid(300), userId: "u", categoryId: groceries.id, monthlyAmount: "200.00", rollover: false, rolloverFrom: null, createdAt: NOW, updatedAt: NOW }];
 const connections = [
   { accountId: uuid(1), connectionId: uuid(400), institutionName: "Banca Demo", status: "linked" as const, consentExpiresAt: "2026-10-22T10:00:00.000Z", lastSyncedAt: "2026-10-18T09:00:00.000Z", eligible: true, nextEligibleAt: null, syncsRemainingToday: 4 },
 ];
@@ -93,6 +94,15 @@ describe("buildLiquidityMonth", () => {
     const month = buildLiquidityMonth({ ...input, language: "en", categories: english });
     expect(month.budgets[0]?.name).toBe("Groceries");
     expect(month.groups[0]?.label).toBe("Needs");
+  });
+});
+
+describe("buildBudgetMonthView", () => {
+  it("matches the contract: plan, history and proposals of the current month", () => {
+    const view = budgetMonthViewSchema.parse(buildBudgetMonthView({ currency: "EUR", month: "2026-10", today: TODAY, transactions, categories, budgets, months: [] }));
+    expect(view).toMatchObject({ month: "2026-10", when: "current", today: "2026-10-18" });
+    expect(view.categories[0]).toMatchObject({ categoryId: groceries.id, spent: 150, history: expect.any(Array) });
+    expect(view.categories[0]?.history.map((h) => h.month)).toEqual(["2026-09", "2026-08", "2026-07"]);
   });
 });
 

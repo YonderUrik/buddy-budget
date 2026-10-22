@@ -12,6 +12,7 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { authSession, authUser } from "@/lib/db/schema/auth";
 import { budgets } from "@/lib/db/schema/budgets";
+import { monthKey } from "@/lib/calc/budget-plan";
 import { subscriptions } from "@/lib/db/schema/subscriptions";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
@@ -295,6 +296,8 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
     { userId: userId, categoryId: cat("Spesa"), monthlyAmount: "420.00" },
     { userId: userId, categoryId: cat("Shopping"), monthlyAmount: "150.00" },
     { userId: userId, categoryId: cat("Abbonamenti"), monthlyAmount: "30.00" },
+    // An occasional expense saved up month by month: the leftover of the last months is carried into this one.
+    { userId: userId, categoryId: cat("Casa & Arredamento"), monthlyAmount: "60.00", rollover: true, rolloverFrom: monthKey(new Date(today.getFullYear(), today.getMonth() - 5, 1)) },
   ]);
 
   // Abbonamenti: Giulia confirmed hers and discarded the mortgage; the insurance and the (stopped) newspaper are left to decide.

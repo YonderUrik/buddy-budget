@@ -23,6 +23,7 @@ import {
   type SettingsGroupId,
 } from "@/components/domain/settings";
 import { LoadError, PAGE_TITLE } from "@/components/domain/shared";
+import { PlanSection } from "@/components/domain/billing";
 import { track } from "@/lib/analytics";
 import { useUserSettingsQuery } from "@/lib/queries/user-settings";
 
@@ -92,6 +93,7 @@ function ImpostazioniContent() {
           content={{
             account: (
               <>
+                <PlanSection />
                 <ProfileSection settings={settings} />
                 <PasswordSection settings={settings} recentLogin={recentLogin} />
                 <SessionsSection />

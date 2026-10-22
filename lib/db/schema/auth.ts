@@ -50,6 +50,10 @@ export const authUser = pgTable("auth_user", {
   lastActiveAt: timestamp("last_active_at", { withTimezone: true }).notNull().defaultNow(),
   /** Quando è partito l'avviso «account inattivo»; null = nessun avviso in corso. Un nuovo accesso lo azzera (cron `inactive-accounts`). */
   inactivityWarnedAt: timestamp("inactivity_warned_at", { withTimezone: true }),
+  /** Pro access lasts until this instant (paid or trial subscription, free grant); null = Free plan. Written only by `lib/billing/entitlement.ts`, read by the proxy with the session. */
+  proUntil: timestamp("pro_until", { withTimezone: true }),
+  /** Where the current Pro access comes from (`PRO_SOURCES`: subscription, trial, grant); null on the Free plan. */
+  proSource: text("pro_source"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

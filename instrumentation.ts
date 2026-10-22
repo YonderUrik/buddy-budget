@@ -9,6 +9,8 @@ export async function register() {
     // What a self-hoster most often needs to check: which sign-in methods and which email transport are on.
     const { describeInstance } = await import("@/lib/instance/config");
     logger.info("app.instance.configured", { instance: describeInstance() });
+    const { describeBilling } = await import("@/lib/billing/config");
+    logger.info("app.billing.configured", { instance: describeBilling() });
   }
 }
 

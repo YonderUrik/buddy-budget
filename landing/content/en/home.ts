@@ -14,7 +14,7 @@ import { SECURITY_SOURCES_EN } from "./security";
 /** Title and description of the English pages (root layout and home). */
 export const SITE_TITLE_EN = "BuddyBudget: open-source personal finance, all in one number";
 export const SITE_DESCRIPTION_EN =
-  "Bank accounts, investments, pension and debts in one net worth, updated every day, with Italian taxes worked out. Upload your bank statement; a read-only bank connection is coming soon. Open source and self-hostable, free during the beta.";
+  "Bank accounts, investments, pension and debts in one net worth, updated every day, with Italian taxes worked out. Upload your bank statement; a read-only bank connection is coming soon. Open source and self-hostable; Cash is free, the rest is Pro.";
 export const OG_ALT_EN = "BuddyBudget: all your money, in one number";
 
 /** Countries whose banks can be linked, with English names (same codes as `SUPPORTED.countries`). */
@@ -24,7 +24,7 @@ const BANK_LIST_EN = `${BANKS_EN.slice(0, -1).map((c) => c.name).join(", ")} and
 
 /** Frequently asked questions of the English home, also the FAQPage structured data of `/en`. */
 export const FAQ_EN: readonly FaqItem[] = [
-  { question: "Is it free?", answer: "Yes, during the beta. If that changes we'll say so first, and you can take everything with you in a ZIP file." },
+  { question: "Is it free?", answer: "The Cash section is, with no end date. Pro unlocks everything else for €1.99 a month or €20 a year, with a 14-day free trial; until Pro starts, everything is unlocked. If you install it on your own servers everything is free, and your data comes with you in a ZIP file." },
   {
     question: "Which countries and languages?",
     answer: `Italy in Italian and English, Germany in German and English, every other country in any of the three. You pick the currency. Italy has every feature. Germany has partial 2026 tax estimates, with the limits written out; the pension comes after a review. Other countries get everything except pension and taxes. Banks can be connected in ${BANK_LIST_EN}.`,

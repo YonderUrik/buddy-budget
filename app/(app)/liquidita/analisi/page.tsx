@@ -8,6 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDownToLineIcon, PieChartIcon, PiggyBankIcon } from "lucide-react";
+import { ProNudge } from "@/components/domain/billing";
 import { LoadError } from "@/components/domain/shared";
 import { MoneyHero } from "@/components/domain/net-worth";
 import {
@@ -188,6 +189,11 @@ export default function LiquiditaAnalisiPage() {
           </section>
         </div>
       </div>
+      <ProNudge
+        place="analisi"
+        title="Dove arrivi con questi risparmi?"
+        text="Con Pro le Analitiche lo calcolano dai tuoi dati: simulazioni, obiettivi di risparmio e la data in cui potresti smettere di lavorare."
+      />
     </div>
   );
 }

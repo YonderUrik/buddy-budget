@@ -30,7 +30,7 @@ import { withCountryLocks } from "@/components/layout/country-locks";
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
+import { AppSidebar, NAV_ITEMS, type NavBadge, type NavLock } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
 import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
@@ -61,13 +61,20 @@ interface InnerShellProps {
   sidebarExtra?: React.ReactNode;
   navBadges?: Record<string, NavBadge>;
   onOpenSupport?: () => void;
+  navLocks?: Record<string, NavLock>;
+  promo?: (place: "sidebar" | "menu") => React.ReactNode;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, navLocks, promo }: InnerShellProps) {
   const { t: tr } = useLocalization();
   const { productCountry } = useLocalization();
-  const navigation = withCountryLocks(NAV_ITEMS, productCountry);
+  // The country lock comes first (no plan unlocks rules the app does not have), then the caller's locks (e.g. the plan).
+  const navigation = withCountryLocks(NAV_ITEMS, productCountry).map((item) =>
+    item.locked || !navLocks?.[item.href] ? item : { ...item, locked: navLocks[item.href] },
+  );
   const { mobileOpen, closeMobile } = useSidebar();
+  // The promo sits under the sidebar's own extra (it reads the slot's state like any other module).
+  const sidebarSlot = promo ? <>{sidebarExtra}{promo("sidebar")}</> : sidebarExtra;
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
   const openMore = useCallback(() => setMoreOpen(true), []);
@@ -117,7 +124,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} />
+          <AppSidebar items={navigation} activeHref={activeHref} badges={navBadges} extra={sidebarSlot} onOpenSupport={onOpenSupport} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -158,6 +165,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
           activeHref={activeHref}
           badges={navBadges}
           extra={sidebarExtra}
+          promo={promo?.("menu")}
           onAction={(target) => track("more_menu_clicked", { target })}
         />
       ) : null}
@@ -191,10 +199,11 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
         >
           <AppSidebar
             forceExpanded
+            items={navigation}
             activeHref={activeHref}
             onClose={closeMobile}
             badges={navBadges}
-            extra={sidebarExtra}
+            extra={sidebarSlot}
           />
         </div>
         </>
@@ -221,16 +230,26 @@ interface AppShellProps {
   topbarLeading?: (fallback: React.ReactNode) => React.ReactNode;
   /** Shown at the top of the scrolling content, above the page (e.g. a desktop back button). */
   contentHeader?: React.ReactNode;
+  /**
+   * Extra locks by item `href` (e.g. the sections of a higher plan): the item stays in the menu, dimmed with the lock's
+   * badge, and opens the lock's page. An item the country already locks keeps the country lock.
+   */
+  navLocks?: Record<string, NavLock>;
+  /**
+   * An invitation shown in the navigation (e.g. to a higher plan): rendered under the sidebar's extra (`sidebar`) and at
+   * the top of the phone's «Altro» sheet (`menu`). Nothing when it returns null.
+   */
+  promo?: (place: "sidebar" | "menu") => React.ReactNode;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, navLocks, promo }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader} navLocks={navLocks} promo={promo}>
         {children}
       </InnerShell>
     </SidebarProvider>

@@ -21,7 +21,7 @@ describe("GET /api/legal", () => {
     expect(await response.json()).toEqual({
       version: LEGAL_VERSION,
       language: "it",
-      specificClauseSections: ["Responsabilità", "Sospensione e chiusura", "Modifiche ai termini", "Legge applicabile, foro e contatti"],
+      specificClauseSections: ["Piani, prezzi e rinnovo", "Responsabilità", "Sospensione e chiusura", "Modifiche ai termini", "Legge applicabile, foro e contatti"],
       documents: LEGAL_LINKS.map((link) => ({ id: link.id, label: link.label, url: link.href })),
       privacyEmail: PRIVACY_EMAIL,
     });
@@ -30,7 +30,7 @@ describe("GET /api/legal", () => {
   it("translates labels from ?language= or Accept-Language", async () => {
     const english = await (await call("?language=en")).json();
     expect(english.documents.map((d: { label: string }) => d.label)).toEqual(["Privacy", "Terms", "Cookies"]);
-    expect(english.specificClauseSections[0]).toBe("Liability");
+    expect(english.specificClauseSections.slice(0, 2)).toEqual(["Plans, prices and renewal", "Liability"]);
     const german = await (await call("", { "Accept-Language": "de-DE,de;q=0.9" })).json();
     expect(german).toMatchObject({ language: "de", version: LEGAL_VERSION });
     expect(german.documents[1].label).toBe("Nutzungsbedingungen");

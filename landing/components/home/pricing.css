@@ -1,0 +1,31 @@
+/* Prices (2026-10-21): two plan cells, Free on the field and Pro on navy; the price at display size, no boxes or lines
+   inside a cell; the facts under them as a row of plain sentences. */
+.pricing h2 { max-width: 14em; }
+.pr-plans { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; margin-top: 64px; align-items: stretch; }
+.pr-plan { display: flex; flex-direction: column; gap: 20px; padding: 40px; border-radius: 28px; background: var(--bg-alt); }
+.pr-plan.pro { background: var(--navy); color: var(--on-navy); }
+.pr-plan h3 { font: 300 clamp(44px, 4.4vw, 64px) / 0.9 var(--f-d); letter-spacing: -0.01em; }
+.pr-price { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.pr-amount { font: 400 clamp(64px, 7.4vw, 120px) / 0.9 var(--f-d); letter-spacing: -0.01em; }
+.pr-plan.pro .pr-amount { color: var(--sun); }
+.pr-per { font: 500 18px var(--f-b); color: var(--ink2); }
+.pr-plan.pro .pr-per, .pr-alt { color: var(--on-navy2); }
+.pr-alt { margin-top: -8px; font-size: 17px; line-height: 1.45; }
+.pr-lines { display: grid; gap: 12px; margin: 8px 0 0; padding: 0; list-style: none; }
+.pr-lines li { position: relative; padding-left: 30px; font-size: 17px; line-height: 1.45; }
+.pr-lines li::before { content: ""; position: absolute; left: 2px; top: 0.42em; width: 14px; height: 8px; border-left: 2.5px solid var(--a-pos); border-bottom: 2.5px solid var(--a-pos); rotate: -45deg; }
+.pr-plan.pro .pr-lines li::before { border-color: var(--sun); }
+.pr-plan.pro .btn { margin-top: auto; align-self: flex-start; }
+.pr-plan.pro .pr-lines { margin-bottom: 16px; }
+.pr-notes { display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 32px 0 0; padding: 0; list-style: none; color: var(--ink2); font-size: 16px; line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .pr-plans { grid-template-columns: minmax(0, 1fr); }
+  .pr-plan.pro { order: -1; }
+}
+@media (max-width: 600px) {
+  .pr-plans { margin-top: 40px; }
+  .pr-plan { padding: 28px 24px; border-radius: 24px; }
+  .pr-plan.pro .btn { align-self: stretch; justify-content: center; }
+  .pr-notes { flex-direction: column; }
+}

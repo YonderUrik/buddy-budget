@@ -5,7 +5,9 @@ import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { ACCOUNT_DEACTIVATED_CODE, LEGAL_ACCEPTANCE_REQUIRED_CODE, ONBOARDING_REQUIRED_CODE, accountGate, accountGateErrorBody } from "@/lib/account/gates";
-import { logger, recordPublicDemoEvent } from "@/lib/observability";
+import { logger, recordPlanBlock, recordPublicDemoEvent } from "@/lib/observability";
+import { PLAN_REQUIRED_CODE, PRO_PAGE_PATH, isPlanPathAvailable, proAreaOf } from "@/lib/billing";
+import { planForUser } from "@/lib/billing/plan-for-user";
 import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemoUserId, isReadOnlyMethod, publicDemoSessionProfile } from "@/lib/public-demo/config";
 
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
@@ -14,7 +16,8 @@ import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemo
 // /api/gocardless/callback/native and /banca/ritorno hand the system browser back to the native app after bank consent:
 // that browser has no session, and neither touches any state (the app completes the link with its bearer token).
 // /reimposta-password receives the emailed password reset link (the token in the address is the authorisation).
-const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/legal", "/api/meta", "/api/cron", "/api/metrics", "/api/email", "/api/gocardless/callback/native", "/banca/ritorno", "/disiscrizione", "/_next", "/favicon.ico"];
+// /api/stripe/webhook is called by Stripe and authenticated by its signature.
+const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/legal", "/api/meta", "/api/cron", "/api/metrics", "/api/email", "/api/stripe/webhook", "/api/gocardless/callback/native", "/banca/ritorno", "/disiscrizione", "/_next", "/favicon.ico"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";
@@ -133,6 +136,21 @@ export async function proxy(request: NextRequest) {
     logger.info("country.feature.blocked", { country: profile.productCountry });
     if (pathname.startsWith("/api/")) return NextResponse.json({ code: "country_feature_unavailable", error: translate(profile.language, COUNTRY_UNAVAILABLE_MESSAGE) }, { status: 403 });
     return NextResponse.redirect(appUrl(request, "/country-unavailable"));
+  }
+
+  // Free plan (where billing applies): Liquidità stays open, the Pro areas lead to the plans page. After the country
+  // check on purpose: a screen hidden in a country is never offered as Pro.
+  if (!isPlanPathAvailable(planForUser(session.user).tier, pathname)) {
+    const area = proAreaOf(pathname);
+    logger.info("billing.plan.blocked", { proArea: area ?? "api" });
+    if (pathname.startsWith("/api/")) {
+      recordPlanBlock("api", "api");
+      return NextResponse.json({ code: PLAN_REQUIRED_CODE, error: translate(profile.language, "Questa funzione fa parte di BuddyBudget Pro.") }, { status: 402 });
+    }
+    recordPlanBlock(area ?? "other", "page");
+    const target = appUrl(request, PRO_PAGE_PATH);
+    if (area) target.searchParams.set("da", area);
+    return NextResponse.redirect(target);
   }
   return NextResponse.next();
 }

@@ -34,6 +34,7 @@ const EXACT_NAMES: Record<string, string> = {
   "/importazioni": "Importazioni",
   "/impostazioni": "Impostazioni",
   "/aiuto": "Aiuto",
+  "/pro": "Pro",
 };
 
 /** Detail pages, matched by prefix (the id after it is not shown). */
@@ -53,6 +54,7 @@ const PARENTS: readonly (readonly [prefix: string, parent: ParentPage])[] = [
   ["/importazioni", { href: "/liquidita", label: "Liquidità" }],
   ["/conti/collega/", { href: "/liquidita/conti", label: "Conti" }],
   ["/country-unavailable", PANORAMICA],
+  ["/pro", { href: "/impostazioni", label: "Impostazioni" }],
 ];
 
 /**

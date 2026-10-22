@@ -66,7 +66,8 @@ describe("language pairs", () => {
   it("the English menu and footer link pages that exist", () => {
     const enPaths = new Set<string>(Object.values(EN_PATHS));
     for (const link of [...UI.en.nav.links, ...UI.en.footer.links]) {
-      if (link.href.startsWith("/en")) expect(enPaths.has(link.href), link.href).toBe(true);
+      // An anchor on an English page (`/en#pricing`) counts as that page.
+      if (link.href.startsWith("/en")) expect(enPaths.has(link.href.split("#")[0]), link.href).toBe(true);
       else expect(link.label, `${link.href} is Italian-only: say so`).toMatch(/\(Italian\)$/);
     }
   });

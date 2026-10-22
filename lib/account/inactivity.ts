@@ -7,6 +7,7 @@ import { hashUserId, logger as defaultLogger, recordInactiveAccounts, type Logge
 import { INACTIVITY_MAX_ACTIONS_PER_RUN } from "./constants";
 import { sendAccountEmail } from "./emails";
 import { deleteUserAccount } from "./lifecycle";
+import { hasPaidSubscription } from "@/lib/billing/server";
 import { decideInactivity, deletionDueAt, inactiveDays, warningCutoff, type InactivityRunMode } from "./inactivity-policy";
 
 /** Utente da valutare: solo ciò che serve a decidere e a scrivergli. */
@@ -36,8 +37,8 @@ export interface InactivityDeps {
   sendDeleted(email: string, userId: string, language?: Language): Promise<void>;
   deleteAccount(userId: string): Promise<void>;
   /**
-   * Motivo per cui l'account NON va toccato anche se inattivo (null = nessuno). Oggi nessuna regola;
-   * qui entrerà l'abbonamento a pagamento attivo o in prova, quando esisterà.
+   * Why the account must NOT be touched although inactive (null = none): today a Pro subscription that is paid or in
+   * its trial (`paid_subscription`).
    */
   exemptionReason(userId: string): Promise<string | null>;
 }
@@ -131,8 +132,8 @@ export const databaseDeps: InactivityDeps = {
     await sendAccountEmail(email, "inactivity_deleted", { userId, language });
   },
   deleteAccount: deleteUserAccount,
-  async exemptionReason() {
-    return null;
+  async exemptionReason(userId) {
+    return (await hasPaidSubscription(userId)) ? "paid_subscription" : null;
   },
 };
 

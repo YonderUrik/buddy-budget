@@ -56,6 +56,15 @@ export const serverEnvSchema = z.object({
   /** Chiave pubblica (`pk_…`) di Logo.dev per i loghi degli strumenti; assente = solo icone locali. */
   LOGODEV_PUBLISHABLE_KEY: z.string().optional(),
   OPENFIGI_API_KEY: z.string().optional(),
+  // Billing (lib/billing/config.ts): `off` (default, everyone has everything), `pilot` (Free/Pro only for the emails in
+  // BILLING_PILOT_EMAILS) or `on`. Never active on a self-hosted install. Without the Stripe keys it stays off.
+  BILLING_MODE: z.preprocess((value) => (value === "" ? undefined : value), z.enum(["off", "pilot", "on"]).optional()),
+  BILLING_PILOT_EMAILS: optionalSecret,
+  STRIPE_SECRET_KEY: optionalSecret,
+  STRIPE_WEBHOOK_SECRET: optionalSecret,
+  STRIPE_PRICE_MONTHLY: optionalSecret,
+  STRIPE_PRICE_YEARLY: optionalSecret,
+  STRIPE_PORTAL_CONFIGURATION: optionalSecret,
   // Chiave dei campi cifrati nel database (32 byte in base64, vedi lib/crypto/field-encryption.ts). Facoltativa: senza,
   // i campi si scrivono in chiaro come prima. Una volta usata non va più tolta né cambiata, o i dati cifrati non si rileggono.
   DATA_ENCRYPTION_KEY: optionalSecret.refine((value) => value === undefined || Buffer.from(value, "base64").length === 32, "32 byte in base64"),

@@ -18,6 +18,9 @@ export type TransactionDetailSource = "movimenti" | "categorizza" | "abbonamenti
 
 export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
+/** Where an invitation to Pro sits (mirrors `PRO_NUDGE_PLACES` in components/domain/billing; lib does not import UI). */
+export type ProNudgePlaceEvent = "sidebar" | "menu" | "conti" | "analisi" | "impostazioni";
+
 /**
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
@@ -77,6 +80,22 @@ export interface ProductEvents {
   welcome_summary_item_clicked: { item: WelcomeItemKind };
   /** «Esplora con dati d'esempio» avviato. */
   demo_started: undefined;
+  /** Plans page opened; `from`: the locked Pro area or the invitation the user came from, `none` when opened directly. */
+  pro_page_viewed: { from: "panoramica" | "investimenti" | "pensione" | "debiti" | "analitiche" | ProNudgePlaceEvent | "none" };
+  /** A Pro section tapped in the menu by a Free account (locked entry «Pro»). */
+  pro_lock_opened: { area: "panoramica" | "investimenti" | "pensione" | "debiti" | "analitiche" };
+  /** An invitation to Pro tapped by a Free account (`place`: sidebar, phone menu, a Liquidità tab, Settings). */
+  pro_nudge_opened: { place: ProNudgePlaceEvent };
+  /** An invitation to Pro closed («Non mostrare per ora», hidden for 30 days in that browser). */
+  pro_nudge_dismissed: { place: ProNudgePlaceEvent };
+  /** Stripe Checkout opened for Pro; `trial`: the 14 free days apply. */
+  pro_checkout_started: { interval: "month" | "year"; trial: boolean };
+  /** Back from Checkout with Pro active. */
+  pro_activated: { source: "subscription" | "trial" | "grant" };
+  /** Stripe Customer Portal opened (change plan, card, cancel). */
+  pro_portal_opened: undefined;
+  /** Access code redeemed; `forGood`: the code gives Pro without an end. */
+  access_code_redeemed: { forGood: boolean };
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
   demo_cleared: { from: "banner" | "panoramica" };
   /** Public demo (`/demo`) opened, once per browser session; `language` and `country` are the demo's. */
@@ -285,7 +304,7 @@ export interface ProductEvents {
   /** A section the user's country does not have yet was tapped (menu entry marked «Presto nel tuo paese»): how many people want it there. */
   country_feature_requested: { section: "pensione"; country: "DE" | "OTHER" };
   settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
-  more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
+  more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" | "promo" };
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
   notifications_toggled: { kind: "digest" | "budget" | "deadlines" | "goals"; enabled: boolean };
   /** Consenso alle proposte dell'assistente in Impostazioni. */

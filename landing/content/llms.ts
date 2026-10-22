@@ -51,7 +51,7 @@ export function buildLlmsTxt(): string {
     "",
     "- App web di finanza personale in italiano per chi vive in Italia: conto, investimenti, fondo pensione e mutuo sommati in un patrimonio netto aggiornato ogni giorno, con spese, budget del mese, rendimenti, tasse e rate nello stesso posto.",
     "- Calcola le tasse sugli investimenti con le regole italiane (zainetto fiscale a quattro anni, ETF armonizzati, titoli di Stato al 12,5%, imposta di bollo). Sono stime, non consulenza.",
-    "- Gratuita durante la beta. Si usa dal browser e si installa come PWA; non è nei negozi di app.",
+    "- Liquidità gratis senza scadenza; il resto con Pro (1,99 € al mese o 20 € all'anno, 14 giorni di prova). Gratis per chi la installa sui propri server. Si usa dal browser e si installa come PWA; non è nei negozi di app.",
     "- I movimenti della banca entrano dall'estratto conto (CSV o Excel); il collegamento in sola lettura con l'Open Banking (PSD2) arriva presto. I server sono in Germania; i dati si esportano in un file ZIP.",
     `- Non è una banca, non è un broker e non dà consigli di investimento.${SOURCE_URL ? ` Il codice è pubblico (${SOURCE_LICENSE}): ${SOURCE_URL}` : ""}`,
     `- Sito: ${SITE_URL} · App: ${APP_URL}`,

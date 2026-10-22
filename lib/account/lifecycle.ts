@@ -32,6 +32,7 @@ import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { deleteRequisition } from "@/lib/gocardless/client";
+import { cancelSubscriptionsForDeletion, setSubscriptionsCancelAtPeriodEnd } from "@/lib/billing/server";
 import { redis } from "@/lib/redis/client";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { toJobView } from "@/lib/sync-jobs/view";
@@ -201,6 +202,8 @@ export async function resetUserAccount(userId: string): Promise<void> {
  * sessioni comprese) e lo stato su Redis. Gli strumenti di mercato comuni restano; quelli manuali dell'utente no.
  */
 export async function deleteUserAccount(userId: string): Promise<void> {
+  // First: a Stripe failure stops the deletion, so no card is charged for an account that no longer exists.
+  await cancelSubscriptionsForDeletion(userId);
   await revokeBankConsents(userId);
   // Transazione esplicita: stesso esito della cascata, ma le righe con FK senza cascata (transazioni→categorie)
   // vanno via prima, così l'ordine non dipende da come Postgres risolve la cascata.
@@ -226,12 +229,15 @@ export async function scheduleAccountDeletion(userId: string, currentSessionId: 
     await tx.update(authUser).set({ deletionScheduledAt: deletionAt, updatedAt: now }).where(eq(authUser.id, userId));
     await tx.delete(authSession).where(and(eq(authSession.userId, userId), ne(authSession.id, currentSessionId)));
   });
+  // Pro stops renewing during the 30 days; reactivating turns the renewal back on.
+  await setSubscriptionsCancelAtPeriodEnd(userId, true);
   return deletionAt;
 }
 
 /** Annulla la disattivazione (riattivazione entro il periodo di ripensamento). */
 export async function cancelAccountDeletion(userId: string): Promise<void> {
   await db.update(authUser).set({ deletionScheduledAt: null, updatedAt: new Date() }).where(eq(authUser.id, userId));
+  await setSubscriptionsCancelAtPeriodEnd(userId, false);
 }
 
 

@@ -61,7 +61,7 @@ EMAIL_FROM=BuddyBudget <budget@example.com>
 
 After changing `.env`, run `docker compose up -d`: the boot line `app.instance.configured` in `docker compose logs app` shows what is on, e.g. `self-hosted password=on link=email google=off email=smtp signups=first-account`.
 
-Not part of a self-hosted install: the read-only public demo, deleting accounts unused for 90 days, product analytics, and the Terms of the hosted service (whoever runs the install is responsible for it).
+Not part of a self-hosted install: the Free and Pro plans of the hosted service (every section is open, `BILLING_MODE` and the Stripe keys are ignored), the read-only public demo, deleting accounts unused for 90 days, product analytics, and the Terms of the hosted service (whoever runs the install is responsible for it).
 
 ## HTTPS and domain
 

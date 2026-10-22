@@ -21,9 +21,9 @@ describe("groupForModel", () => {
     expect(groups.find((g) => g.direction === "entrata")?.transactionIds).toEqual(["3"]);
   });
 
-  it("segna come bloccati i trasferimenti", () => {
+  it("include i trasferimenti", () => {
     const [group] = groupForModel([row("1", "Bonifico a favore di Qualcuno", -50)]);
-    expect(group.blocked).toBe("operazione");
+    expect(group.blocked).toBeNull();
   });
 
   it("usa il testo grezzo della banca per riconoscere un pagamento con carta", () => {
@@ -42,7 +42,7 @@ describe("directionOf", () => {
 });
 
 describe("pickExamples", () => {
-  it("prende al massimo due esempi per categoria, dai più frequenti, e salta i bloccati", () => {
+  it("prende al massimo due esempi per categoria, inclusi i trasferimenti", () => {
     const names = new Map([["c1", "Spesa"], ["c2", "Casa"]]);
     const examples = pickExamples(
       [
@@ -54,8 +54,8 @@ describe("pickExamples", () => {
       ],
       names
     );
-    expect(examples.map((e) => e.category)).toEqual(["Spesa", "Spesa", "Casa"]);
-    expect(examples.map((e) => e.name)).toEqual(["Coop", "Conad", "IKEA"]);
+    expect(examples.map((e) => e.category)).toEqual(["Spesa", "Spesa", "Casa", "Casa"]);
+    expect(examples.map((e) => e.name)).toEqual(["Coop", "Conad", "Bonifico Affitto", "IKEA"]);
   });
 });
 

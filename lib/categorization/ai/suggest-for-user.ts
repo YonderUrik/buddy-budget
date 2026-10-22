@@ -9,7 +9,7 @@ import { logger, recordCategorizationAiRequest, recordCategorizationSuggestions,
 import { countExampleRows, groupForModel, pickExamples, type MerchantGroup } from "./groups";
 
 /** Versione del prompt e dello stato inviato: va incrementata a ogni modifica che può cambiare le risposte. */
-export const AI_PROMPT_VERSION = 2;
+export const AI_PROMPT_VERSION = 4;
 /** Tetto di esercenti nuovi per esecuzione: argine alla spesa dopo un import molto grande. */
 export const MAX_GROUPS_PER_RUN = 120;
 /** Movimenti categorizzati più recenti da cui si scelgono gli esempi per il modello. */
@@ -20,6 +20,14 @@ export const MAX_GROUPS_MANUAL_RUN = 600;
 export const MANUAL_RUN_BUDGET_MS = 240_000;
 
 export type SuggestOutcome = "disabled" | "no_key" | "nothing_to_do" | "done" | "failed";
+
+/** Real merchant counts emitted before classification and after each completed batch. */
+export interface SuggestProgress {
+  processed: number;
+  total: number;
+  stored: number;
+  blocked: number;
+}
 
 export interface SuggestResult {
   outcome: SuggestOutcome;
@@ -40,7 +48,7 @@ export function categorizationModel(): string {
  */
 export async function suggestCategoriesForUser(
   userId: string,
-  options: { log?: Logger; fetchImpl?: typeof fetch; maxGroups?: number; budgetMs?: number } = {}
+  options: { log?: Logger; fetchImpl?: typeof fetch; maxGroups?: number; budgetMs?: number; onProgress?: (progress: SuggestProgress) => Promise<void> } = {}
 ): Promise<SuggestResult> {
   const log = options.log ?? logger;
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
@@ -56,7 +64,7 @@ export async function suggestCategoriesForUser(
   const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
   const fallback = userCategories.find((category) => category.isFallback);
   if (!fallback) return result;
-  const options_ = userCategories.filter((category) => !category.isFallback && category.type !== "trasferimento");
+  const options_ = userCategories.filter((category) => !category.isFallback);
   if (options_.length === 0) return result;
 
   const pending = await db
@@ -79,10 +87,12 @@ export async function suggestCategoriesForUser(
 
   const groups = groupForModel(pending.map((row) => ({ ...row, amount: Number(row.amount) })));
   const fresh = groups.filter((group) => !knownKeys.has(`${group.merchantKey}::${group.direction}`));
-  const sendable = fresh.filter((group) => !group.blocked).slice(0, options.maxGroups ?? MAX_GROUPS_PER_RUN);
-  result.blocked = fresh.length - fresh.filter((group) => !group.blocked).length;
-  recordCategorizationSuggestions("blocked", result.blocked);
-  if (sendable.length === 0) return result;
+  const sendable = fresh.slice(0, options.maxGroups ?? MAX_GROUPS_PER_RUN);
+  await options.onProgress?.({ processed: 0, total: sendable.length, stored: 0, blocked: result.blocked });
+  if (sendable.length === 0) {
+    log.info("categorization.ai.skipped", { reason: "no_eligible_merchants", rejected: result.blocked });
+    return result;
+  }
 
   // Raggruppati in memoria: le descrizioni possono essere cifrate nel database e un GROUP BY non le unirebbe.
   const categorizedRows = await db
@@ -128,7 +138,7 @@ export async function suggestCategoriesForUser(
     } catch (error) {
       recordCategorizationAiRequest("error", Date.now() - startedAt);
       log.warn("categorization.ai.request.failed", { error, count: batch.length });
-      return { ...result, outcome: result.stored > 0 ? "done" : "failed" };
+      return { ...result, outcome: "failed" };
     }
 
     const rows = decisions.flatMap((decision) => {
@@ -157,6 +167,7 @@ export async function suggestCategoriesForUser(
       if (inserted === null) break;
       result.stored += inserted.length;
     }
+    await options.onProgress?.({ processed: start + batch.length, total: sendable.length, stored: result.stored, blocked: result.blocked });
   }
 
   recordCategorizationSuggestions("stored", result.stored);

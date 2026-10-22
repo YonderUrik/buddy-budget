@@ -117,6 +117,8 @@ export const MERCHANT_ALIASES: readonly MerchantAlias[] = [
   a("\\bHO\\.? ?MOBILE\\b", "Ho. Mobile"),
   a("\\bKENA ?MOBILE\\b", "Kena Mobile"),
   a("\\bSKY( ITALIA)?\\b", "Sky"),
+  // Ticketing merchant: recognize the brand, not arbitrary PayPal counterparties.
+  a("\\bTICKETRAUS\\b", "Ticketraus"),
   // Assicurazioni, salute, sport
   a("\\bUNIPOL(SAI)?\\b", "UnipolSai"),
   a("\\bGENERALI\\b", "Generali"),

@@ -45,7 +45,7 @@ export function AiCategorizationSection() {
           label={tr("Proponi le categorie con l'AI")}
           hint={
             data.available
-              ? tr("Se attivo, il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone) viene inviato a OpenRouter insieme alle categorie e alle tue eventuali istruzioni, solo verso fornitori che non conservano i dati (zero data retention). Puoi revocare in ogni momento.")
+              ? tr("Se attivo, il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento (senza importi, date, IBAN o note) viene inviato a OpenRouter insieme alle categorie e alle tue eventuali istruzioni, solo verso fornitori che non conservano i dati (zero data retention). Puoi revocare in ogni momento.")
               : tr("Il servizio non è configurato su questo server.")
           }
           htmlFor="assistente-categorie"

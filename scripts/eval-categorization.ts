@@ -47,7 +47,7 @@ interface GoldenRow {
   categoryType: CategoryType;
   /** Movimenti dell'esercente: il peso nelle metriche. */
   count: number;
-  /** Escluso dalla prova perché sembra un trasferimento o un pagamento a una persona. */
+  /** Legacy input flag, cleared when loading: all names and transaction types are classified. */
   skipped: boolean;
   /** Ancora «Da categorizzare»: non ha una verità di riferimento, entra solo nel report. */
   uncategorized?: boolean;
@@ -67,7 +67,6 @@ const EXAMPLES_PER_CATEGORY = 2;
 const MAX_EXAMPLES = 40;
 const TEST_SHARE = 0.3;
 /** Operazioni che non descrivono un esercente: restano fuori dalla prova e non partono mai. */
-const NON_MERCHANT = /\b(bonifico|giroconto|giro conto|trasferimento|ricarica|prelievo|prelevamento|bollo|f24|stipendio)\b/i;
 
 function arg(name: string): string | undefined {
   return process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -150,7 +149,7 @@ async function extract() {
       category,
       categoryType: vote.type,
       count,
-      skipped: NON_MERCHANT.test(group.name),
+      skipped: false,
     };
   });
 
@@ -165,7 +164,7 @@ async function extract() {
       category: "",
       categoryType: "voluta",
       count: entry.n,
-      skipped: NON_MERCHANT.test(entry.name),
+      skipped: false,
       uncategorized: true,
     });
   }
@@ -201,8 +200,8 @@ function loadGolden(dir: string): { golden: GoldenRow[]; categoryOptions: JevCat
   for (const row of golden) {
     const prepared = prepareMerchantForModel(row.name);
     row.sendName = prepared.name;
-    row.blockReason = prepared.blocked;
-    row.skipped = row.skipped || prepared.blocked !== null;
+    row.blockReason = null;
+    row.skipped = false;
   }
   const path = join(dir, "categories.json");
   const described: CategoryDescription[] = existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as CategoryDescription[]) : [];
@@ -310,8 +309,7 @@ async function report() {
   const examplePicks = pickExamples(sendable.filter((row) => !row.uncategorized && !isTestRow(row.key)));
   const exampleKeys = new Set(examplePicks.map((e) => e.key));
   const examples = examplePicks.map(({ name, category }) => ({ name, category }));
-  const blocked = golden.filter((row) => row.blockReason);
-  console.log(`Non inviati: ${blocked.filter((r) => r.blockReason === "persona").length} come persone, ${blocked.filter((r) => r.blockReason === "operazione").length} come operazioni.`);
+  console.log("Tutti i nomi e tipi di movimento sono inclusi nella valutazione.");
   console.log(`Report: ${sendable.length} esercenti da classificare (${golden.length - sendable.length} esclusi), esempi: ${examples.length}, modello: ${model}`);
 
   const decisions = new Map<string, { category: string; confidence: number; second: string; secondConfidence: number }>();

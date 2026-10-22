@@ -11,10 +11,10 @@ import type { GenerationJob } from "./generation";
 const job: GenerationJob = { id: "job", status: "running", processed: 0, total: 0, stored: 0, blocked: 0, startedAt: Date.now(), updatedAt: Date.now() };
 const log = createLogger({ write: () => {} });
 beforeEach(() => { vi.resetAllMocks(); });
-it("publishes completion when every merchant is privacy-blocked", async () => {
-  vi.mocked(suggestCategoriesForUser).mockResolvedValue({ outcome: "nothing_to_do", stored: 0, blocked: 12 });
+it("publishes completion when no new work remains", async () => {
+  vi.mocked(suggestCategoriesForUser).mockResolvedValue({ outcome: "nothing_to_do", stored: 0, blocked: 0 });
   await runGeneration("user", job, log);
-  expect(writeGenerationJob).toHaveBeenLastCalledWith("user", expect.objectContaining({ status: "done", blocked: 12, stored: 0 }));
+  expect(writeGenerationJob).toHaveBeenLastCalledWith("user", expect.objectContaining({ status: "done", blocked: 0, stored: 0 }));
 });
 it("reports provider failure even after partial success", async () => {
   vi.mocked(suggestCategoriesForUser).mockImplementation(async (_user, options) => {

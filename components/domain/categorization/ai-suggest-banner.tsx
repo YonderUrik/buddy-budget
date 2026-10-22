@@ -103,7 +103,7 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
           <DialogHeader>
             <DialogTitle>{tr("Attivare l'assistente per le categorie?")}</DialogTitle>
             <DialogDescription>
-              {tr("Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati.")}{" "}
+              {tr("Inviamo a un servizio di intelligenza artificiale il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento (senza importi, date, IBAN o note), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati.")}{" "}
               {autoApplyEnabled
                 ? tr("Quando è abbastanza sicura l'app mette la categoria da sola, e la ritrovi in «Messe dall'app», dove puoi cambiarla; le altre le scegli tu.")
                 : tr("Le proposte restano da confermare.")}{" "}

@@ -33,8 +33,6 @@ export interface MovementDetailAiProps {
 /** Text for an answer without a category, in the user's language. */
 function noAnswerText(result: Exclude<SingleSuggestion, { status: "ok" }>, tr: (source: string) => string): string {
   switch (result.status) {
-    case "blocked":
-      return tr("Sembra un trasferimento o un pagamento a una persona: per riservatezza non lo mandiamo all'AI.");
     case "limited":
       return tr("Hai chiesto molte volte nell'ultima ora: riprova più tardi.");
     case "disabled":

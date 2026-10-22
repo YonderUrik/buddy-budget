@@ -4,7 +4,7 @@ import type { GenerationJob } from "./generation";
 import { writeGenerationJob } from "./generation-store";
 import type { Logger } from "@/lib/observability";
 
-/** Runs in after(); publishes completion even when privacy rules leave nothing eligible. */
+/** Runs in after(); publishes completion even when no new work remains. */
 export async function runGeneration(userId: string, initial: GenerationJob, log: Logger): Promise<void> {
   let job = initial;
   const publish = async (patch: Partial<GenerationJob>) => {

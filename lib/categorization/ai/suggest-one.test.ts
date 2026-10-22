@@ -59,13 +59,10 @@ describe("suggestCategoryForTransaction", () => {
     expect(await db.select({ categoryId: transactions.categoryId }).from(transactions).where(eq(transactions.id, id))).toEqual([{ categoryId: fallbackId }]);
   });
 
-  it("asks nothing without consent, without a key, for transfers or over the limit", async () => {
+  it("asks nothing without consent, without a key or over the limit", async () => {
     const id = await addTransaction("Negozio Rossi", fallbackId);
     const fetchImpl = answer("Svago");
     expect(await suggestCategoryForTransaction(userId, id, { fetchImpl, consumeQuota: async () => false })).toEqual({ status: "limited" });
-
-    const transfer = await addTransaction("Bonifico a favore di Mario Rossi", fallbackId);
-    expect(await suggestCategoryForTransaction(userId, transfer, { fetchImpl })).toMatchObject({ status: "blocked" });
 
     vi.stubEnv("OPENROUTER_API_KEY", "");
     expect(await suggestCategoryForTransaction(userId, id, { fetchImpl })).toEqual({ status: "no_key" });
@@ -73,6 +70,19 @@ describe("suggestCategoryForTransaction", () => {
     await db.update(authUser).set({ aiCategorizationConsentAt: null }).where(eq(authUser.id, userId));
     expect(await suggestCategoryForTransaction(userId, id, { fetchImpl })).toEqual({ status: "disabled" });
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it.each(["Mario Rossi", "PAYPAL *MARIO ROSSI", "Bonifico a favore di Mario Rossi", "Prelievo contanti", "Stipendio Acme"])("sends %s to the model", async (description) => {
+    const id = await addTransaction(description, fallbackId);
+    const fetchImpl = answer("Svago");
+    expect(await suggestCategoryForTransaction(userId, id, { fetchImpl })).toMatchObject({ status: "ok", categoryId: leisureId });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("can recommend a transfer category", async () => {
+    const [transferCategory] = await db.insert(categories).values({ userId, name: "Giroconti", type: "trasferimento" }).returning();
+    const id = await addTransaction("Bonifico a favore di Mario Rossi", fallbackId);
+    expect(await suggestCategoryForTransaction(userId, id, { fetchImpl: answer("Giroconti") })).toMatchObject({ status: "ok", categoryId: transferCategory.id });
   });
 
   it("fails softly on a model error and ignores someone else's transaction", async () => {

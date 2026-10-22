@@ -41,12 +41,11 @@ export async function suggestCategoryForTransaction(
   if (!apiKey) return { status: "no_key" };
 
   const prepared = prepareMerchantForModel(transaction.rawDescription ?? transaction.description);
-  if (prepared.blocked) return { status: "blocked", reason: prepared.blocked };
   if (options.consumeQuota && !(await options.consumeQuota())) return { status: "limited" };
 
   const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
   const fallback = userCategories.find((category) => category.isFallback);
-  const choices = userCategories.filter((category) => !category.isFallback && category.type !== "trasferimento");
+  const choices = userCategories.filter((category) => !category.isFallback);
   if (choices.length === 0) return { status: "failed" };
 
   const key = merchantKey(transaction.description);

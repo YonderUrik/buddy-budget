@@ -12,7 +12,7 @@ export interface UseAiGenerationOptions {
   refetch: () => Promise<unknown>;
 }
 
-/** Drive progress and completion from the server job, including blocked-only and failed runs. */
+/** Drive progress and completion from the server job, including no-work and failed runs. */
 export function useAiGeneration({ groups, refetch }: UseAiGenerationOptions) {
   const { t: tr } = useLocalization();
   const { data: assistant } = useAiCategorizationQuery();

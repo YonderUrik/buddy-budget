@@ -41,13 +41,32 @@ it("non salva una risposta in volo se le istruzioni sono cambiate", async () => 
   expect(await suggestCategoriesForUser(userId, { fetchImpl })).toMatchObject({ stored: 0 });
   expect(await db.select().from(categorizationSuggestions).where(eq(categorizationSuggestions.userId, userId))).toHaveLength(0);
 });
-it("reports zero eligible groups when all descriptions are ambiguous people", async () => {
+it("sends personal names in batch categorization", async () => {
   await db.update(transactions).set({ description: "Mario Rossi" }).where(eq(transactions.userId, userId));
-  const fetchImpl = vi.fn();
+  const fetchImpl = vi.fn<typeof fetch>(async () => Response.json({ answers: { m0: { type: "choice", choice: "Svago", confidence: 0.8 } } }));
   const onProgress = vi.fn();
-  expect(await suggestCategoriesForUser(userId, { fetchImpl, onProgress })).toEqual({ outcome: "nothing_to_do", stored: 0, blocked: 1 });
-  expect(onProgress).toHaveBeenCalledWith({ processed: 0, total: 0, stored: 0, blocked: 1 });
+  expect(await suggestCategoriesForUser(userId, { fetchImpl, onProgress })).toEqual({ outcome: "done", stored: 1, blocked: 0 });
+  expect(fetchImpl).toHaveBeenCalledTimes(1);
+  expect(JSON.parse(fetchImpl.mock.calls[0][1]!.body as string).state.merchants[0].name).toBe("Mario Rossi");
+  expect(onProgress).toHaveBeenLastCalledWith({ processed: 1, total: 1, stored: 1, blocked: 0 });
+});
+it("finishes without a provider request when nothing remains", async () => {
+  await db.delete(transactions).where(eq(transactions.userId, userId));
+  const fetchImpl = vi.fn();
+  expect(await suggestCategoriesForUser(userId, { fetchImpl })).toEqual({ outcome: "nothing_to_do", stored: 0, blocked: 0 });
   expect(fetchImpl).not.toHaveBeenCalled();
+});
+it("sends transfers and can save a transfer suggestion in a batch", async () => {
+  await db.update(transactions).set({ description: "Bonifico a favore di Mario Rossi" }).where(eq(transactions.userId, userId));
+  const [transfer] = await db.insert(categories).values({ userId, name: "Giroconti", type: "trasferimento" }).returning();
+  const fetchImpl = vi.fn(async (_url, options) => {
+    const body = JSON.parse(options!.body as string);
+    expect(body.questions.m0.criteria).toHaveProperty("Giroconti");
+    return Response.json({ answers: { m0: { type: "choice", choice: "Giroconti", confidence: 0.9 } } });
+  }) as unknown as typeof fetch;
+  expect(await suggestCategoriesForUser(userId, { fetchImpl })).toMatchObject({ outcome: "done", stored: 1 });
+  const [saved] = await db.select().from(categorizationSuggestions).where(eq(categorizationSuggestions.userId, userId));
+  expect(saved.categoryId).toBe(transfer.id);
 });
 it("keeps a partial provider failure distinguishable from success", async () => {
   let requests = 0;
@@ -59,4 +78,23 @@ it("keeps a partial provider failure distinguishable from success", async () => 
   }) as unknown as typeof fetch;
   expect(await suggestCategoriesForUser(userId, { fetchImpl, onProgress })).toMatchObject({ outcome: "failed", stored: 5 });
   expect(onProgress).toHaveBeenLastCalledWith({ processed: 5, total: 12, stored: 5, blocked: 0 });
+});
+
+it("includes all transaction types in the same batch workflow", async () => {
+  const [original] = await db.select().from(transactions).where(eq(transactions.userId, userId));
+  await db.delete(transactions).where(eq(transactions.userId, userId));
+  await db.insert(categories).values([{ userId, name: "Stipendio", type: "entrata" }, { userId, name: "Giroconti", type: "trasferimento" }]);
+  const descriptions = ["Mario Rossi", "PAYPAL *GIULIA BIANCHI", "Bonifico a favore di Luca Verdi", "Prelievo contanti", "F24", "Stipendio Acme"];
+  await db.insert(transactions).values(descriptions.map((description, i) => ({ userId, accountId: original.accountId, categoryId: original.categoryId, description, amount: i === 5 ? "1000" : "-10", date: "2026-10-22" })));
+  const sent: { name: string; isIncome: boolean }[] = [];
+  const fetchImpl = vi.fn(async (_url, options) => {
+    const body = JSON.parse(options!.body as string);
+    sent.push(...body.state.merchants);
+    return Response.json({ answers: Object.fromEntries(body.state.merchants.map((merchant: { isIncome: boolean }, i: number) => [`m${i}`, { type: "choice", choice: merchant.isIncome ? "Stipendio" : "Svago", confidence: 0.8 }])) });
+  }) as unknown as typeof fetch;
+  expect(await suggestCategoriesForUser(userId, { fetchImpl })).toMatchObject({ outcome: "done", stored: 6, blocked: 0 });
+  expect(sent).toHaveLength(6);
+  expect(sent.some((merchant) => merchant.name === "Mario Rossi")).toBe(true);
+  expect(sent.some((merchant) => merchant.name === "Giulia Bianchi")).toBe(true);
+  expect(sent.filter((merchant) => merchant.isIncome)).toHaveLength(1);
 });

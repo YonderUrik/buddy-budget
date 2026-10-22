@@ -1,4 +1,3 @@
-import type { BlockReason } from "../privacy-filter";
 import { prepareMerchantForModel } from "../privacy-filter";
 import { merchantKey } from "../merchant-key";
 
@@ -18,8 +17,8 @@ export interface MerchantGroup {
   /** Nome pulito da inviare al modello (l'unico testo che esce dal server). */
   sendName: string;
   mcc: string | null;
-  /** Se presente il gruppo non va mai inviato (trasferimento o persona). */
-  blocked: BlockReason | null;
+  /** Compatibility field: no transaction is excluded because of its name or type. */
+  blocked: null;
   transactionIds: string[];
 }
 
@@ -31,7 +30,7 @@ export function directionOf(amount: number): SuggestionDirection {
 /**
  * Raggruppa le transazioni da categorizzare per esercente e direzione (stessa chiave di Categorizza), così una
  * sola domanda al modello vale per tutti i movimenti dell'esercente. Il testo da inviare viene dal testo grezzo
- * della banca quando c'è, perché il filtro privacy riconosce meglio i pagamenti con carta.
+ * della banca quando c'è, per ripulire il testo di contorno senza escludere alcun tipo di movimento.
  */
 export function groupForModel(rows: UncategorizedRow[]): MerchantGroup[] {
   const groups = new Map<string, MerchantGroup>();
@@ -70,7 +69,7 @@ export const MAX_EXAMPLES = 40;
 
 /**
  * Esempi dalle scelte passate dell'utente, per insegnare a Jev il suo modo di classificare: i più frequenti, al
- * massimo due per categoria. Gli esercenti che il filtro privacy blocca non diventano mai esempi.
+ * massimo due per categoria, includendo anche nomi di persone e trasferimenti.
  */
 export function pickExamples(
   rows: CategorizedExampleRow[],
@@ -85,7 +84,6 @@ export function pickExamples(
     const used = perCategory.get(category) ?? 0;
     if (used >= EXAMPLES_PER_CATEGORY) continue;
     const prepared = prepareMerchantForModel(row.rawDescription ?? row.description);
-    if (prepared.blocked) continue;
     perCategory.set(category, used + 1);
     examples.push({ name: prepared.name, category });
   }

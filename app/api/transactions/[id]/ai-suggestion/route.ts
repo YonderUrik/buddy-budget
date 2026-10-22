@@ -26,7 +26,7 @@ async function consumeSingleSuggestionQuota(userId: string): Promise<boolean> {
 
 /**
  * POST /api/transactions/[id]/ai-suggestion — «Chiedi all'AI» from a transaction's detail: which category the model
- * would give it. Answers `{ status }` (ok with `categoryId` and `confidence`, disabled, no_key, blocked, limited,
+ * would give it. Answers `{ status }` (ok with `categoryId` and `confidence`, disabled, no_key, limited,
  * failed) and writes nothing; 404 when the transaction does not exist or belongs to someone else.
  */
 async function handlePost(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

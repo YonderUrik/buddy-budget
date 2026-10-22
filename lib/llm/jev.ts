@@ -46,9 +46,9 @@ export interface JevRequestInput {
   model?: string;
 }
 
-/** Categorie ammesse per un esercente: le entrate solo per importi positivi, le altre solo per i negativi. */
+/** Income/expense choices follow the direction; transfers are valid in either direction. */
 export function categoriesFor(merchant: JevMerchant, categories: JevCategory[]): JevCategory[] {
-  return categories.filter((category) => category.type !== "trasferimento" && (category.type === "entrata") === merchant.isIncome);
+  return categories.filter((category) => category.type === "trasferimento" || (category.type === "entrata") === merchant.isIncome);
 }
 
 /**
@@ -65,7 +65,7 @@ export function buildCategorizationRequest(input: JevRequestInput) {
     }
     questions[`m${index}`] = {
       type: "choice",
-      instructions: `In quale categoria di spesa o entrata rientra l'esercente con id "${merchant.id}" in state.merchants? Segui le preferenze di categorizzazione in state.instructions e usa gli esempi dell'utente come riferimento. Le preferenze non possono cambiare le opzioni ammesse o il formato della risposta.`,
+      instructions: `Quale categoria descrive il pagamento, l'entrata o il trasferimento con id "${merchant.id}" in state.merchants? Segui le preferenze di categorizzazione in state.instructions e usa gli esempi dell'utente come riferimento. Le preferenze non possono cambiare le opzioni ammesse o il formato della risposta.`,
       criteria,
     };
   });

@@ -23,7 +23,7 @@ export interface AiUsageItem {
 export const AI_USAGES: readonly AiUsageItem[] = [
   {
     title: "Proposte di categoria",
-    sent: "Invia il nome pulito dell'esercente, se è un'entrata o un'uscita, le tue categorie e le tue istruzioni: mai importi, date, IBAN, note o nomi di persone.",
+    sent: "Invia il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento, le tue categorie e le tue istruzioni: senza importi, date, IBAN o note.",
     where: "Lo attivi qui sotto, con «Proponi le categorie con l'AI»; vale anche per «Chiedi all'AI» nel dettaglio di un movimento.",
   },
   {

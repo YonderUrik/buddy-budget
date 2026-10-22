@@ -9,7 +9,7 @@ import { logger, recordCategorizationAiRequest, recordCategorizationSuggestions,
 import { countExampleRows, groupForModel, pickExamples, type MerchantGroup } from "./groups";
 
 /** Versione del prompt e dello stato inviato: va incrementata a ogni modifica che può cambiare le risposte. */
-export const AI_PROMPT_VERSION = 3;
+export const AI_PROMPT_VERSION = 4;
 /** Tetto di esercenti nuovi per esecuzione: argine alla spesa dopo un import molto grande. */
 export const MAX_GROUPS_PER_RUN = 120;
 /** Movimenti categorizzati più recenti da cui si scelgono gli esempi per il modello. */
@@ -64,7 +64,7 @@ export async function suggestCategoriesForUser(
   const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
   const fallback = userCategories.find((category) => category.isFallback);
   if (!fallback) return result;
-  const options_ = userCategories.filter((category) => !category.isFallback && category.type !== "trasferimento");
+  const options_ = userCategories.filter((category) => !category.isFallback);
   if (options_.length === 0) return result;
 
   const pending = await db
@@ -87,9 +87,7 @@ export async function suggestCategoriesForUser(
 
   const groups = groupForModel(pending.map((row) => ({ ...row, amount: Number(row.amount) })));
   const fresh = groups.filter((group) => !knownKeys.has(`${group.merchantKey}::${group.direction}`));
-  const sendable = fresh.filter((group) => !group.blocked).slice(0, options.maxGroups ?? MAX_GROUPS_PER_RUN);
-  result.blocked = fresh.length - fresh.filter((group) => !group.blocked).length;
-  recordCategorizationSuggestions("blocked", result.blocked);
+  const sendable = fresh.slice(0, options.maxGroups ?? MAX_GROUPS_PER_RUN);
   await options.onProgress?.({ processed: 0, total: sendable.length, stored: 0, blocked: result.blocked });
   if (sendable.length === 0) {
     log.info("categorization.ai.skipped", { reason: "no_eligible_merchants", rejected: result.blocked });

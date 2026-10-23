@@ -1,6 +1,6 @@
 /** Panoramica first steps: checklist step definitions and pure visibility rules (no DB or UI dependency). */
 
-export const START_STEP_IDS = ["conto", "import", "investimento", "debito", "pensione", "obiettivo"] as const;
+export const START_STEP_IDS = ["conto", "import", "investimento", "debito", "pensione", "obiettivo", "gruppo"] as const;
 export type StartStepId = (typeof START_STEP_IDS)[number];
 
 /** What the user wants to keep an eye on, chosen at the end of onboarding: it decides which steps the checklist asks for. */
@@ -26,18 +26,18 @@ export function focusOptionsFor(pensionAvailable: boolean): readonly StartFocusO
   return pensionAvailable ? START_FOCUS_OPTIONS : START_FOCUS_OPTIONS.filter((o) => o.id !== "pensione");
 }
 
-/** Steps asked when the user picked nothing (or signed up before the question existed): the original four. */
-export const DEFAULT_START_STEP_IDS: readonly StartStepId[] = ["conto", "import", "investimento", "obiettivo"];
+/** Steps asked when the user picked nothing (or signed up before the question existed): the original four, then the group. */
+export const DEFAULT_START_STEP_IDS: readonly StartStepId[] = ["conto", "import", "investimento", "obiettivo", "gruppo"];
 
 /** Step that each focus adds to the checklist. */
 const FOCUS_STEP: Record<StartFocus, StartStepId> = { spese: "import", investimenti: "investimento", debiti: "debito", pensione: "pensione" };
 
 /**
- * Steps for this user, in a fixed order: the account always comes first and the target last, the others follow the
- * focus. `pensionAvailable` is false where the pension section is hidden (Germany), so the step never points to it.
+ * Steps for this user, in a fixed order: the account always comes first, then what the focus asks, the target, and last
+ * the quiet offer to share expenses with someone (asked to everyone, skippable). `pensionAvailable` is false where the pension section is hidden (Germany), so the step never points to it.
  */
 export function startStepsFor(focus: readonly StartFocus[] | null | undefined, options: { pensionAvailable: boolean }): StartStepId[] {
-  const wanted = new Set<StartStepId>(focus && focus.length > 0 ? ["conto", ...focus.map((f) => FOCUS_STEP[f]), "obiettivo"] : DEFAULT_START_STEP_IDS);
+  const wanted = new Set<StartStepId>(focus && focus.length > 0 ? ["conto", ...focus.map((f) => FOCUS_STEP[f]), "obiettivo", "gruppo"] : DEFAULT_START_STEP_IDS);
   if (!options.pensionAvailable) wanted.delete("pensione");
   return START_STEP_IDS.filter((id) => wanted.has(id));
 }
@@ -61,6 +61,9 @@ export const NEW_ACCOUNT_HREF = "/liquidita/conti?nuovo=1";
 export const GOAL_PARAM = "traguardo";
 /** Link che apre subito «Il tuo traguardo» in Analitiche. */
 export const GOAL_HREF = `/analitiche?${GOAL_PARAM}=1`;
+
+/** Where «Dividi le spese con qualcuno» starts: the «Nuovo gruppo» flow. */
+export const NEW_GROUP_HREF = "/groups/new";
 
 export const START_STEPS: readonly StartStepDef[] = [
   {
@@ -110,6 +113,14 @@ export const START_STEPS: readonly StartStepDef[] = [
     href: GOAL_HREF,
     cta: "Fissa il traguardo",
     done: "Traguardo fissato",
+  },
+  {
+    id: "gruppo",
+    title: "Dividi le spese con qualcuno",
+    description: "Con chi vivi o con cui viaggi, anche se non è su BuddyBudget: l'app tiene il conto di chi deve cosa.",
+    href: NEW_GROUP_HREF,
+    cta: "Crea un gruppo",
+    done: "Gruppo creato",
   },
 ];
 

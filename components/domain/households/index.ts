@@ -36,3 +36,5 @@ export { PersonPicker, PeopleFor } from "./person-chips";
 export type { PersonChipsProps } from "./person-chips";
 export { MembersSection } from "./members-section";
 export type { MembersSectionProps } from "./members-section";
+export { GroupInviteCard } from "./group-invite-card";
+export type { GroupInviteCardProps } from "./group-invite-card";

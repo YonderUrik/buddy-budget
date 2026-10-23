@@ -13,7 +13,7 @@ import {
   type StartStepId,
 } from "./steps";
 
-const none: Record<StartStepId, boolean> = { conto: false, import: false, investimento: false, debito: false, pensione: false, obiettivo: false };
+const none: Record<StartStepId, boolean> = { conto: false, import: false, investimento: false, debito: false, pensione: false, obiettivo: false, gruppo: false };
 
 describe("buildDemoData", () => {
   const today = new Date(2026, 9, 10);
@@ -76,17 +76,17 @@ describe("checklist", () => {
 
 describe("startStepsFor", () => {
   const it_ = { pensionAvailable: true };
-  it("keeps the original four when nothing was chosen", () => {
-    expect(startStepsFor(null, it_)).toEqual(["conto", "import", "investimento", "obiettivo"]);
-    expect(startStepsFor([], it_)).toEqual(["conto", "import", "investimento", "obiettivo"]);
+  it("keeps the original four, then the group, when nothing was chosen", () => {
+    expect(startStepsFor(null, it_)).toEqual(["conto", "import", "investimento", "obiettivo", "gruppo"]);
+    expect(startStepsFor([], it_)).toEqual(["conto", "import", "investimento", "obiettivo", "gruppo"]);
   });
-  it("follows the focus, with the account first and the target last", () => {
-    expect(startStepsFor(["debiti"], it_)).toEqual(["conto", "debito", "obiettivo"]);
-    expect(startStepsFor(["pensione", "spese"], it_)).toEqual(["conto", "import", "pensione", "obiettivo"]);
-    expect(startStepsFor(["spese", "investimenti", "debiti", "pensione"], it_)).toEqual(["conto", "import", "investimento", "debito", "pensione", "obiettivo"]);
+  it("follows the focus, with the account first, then the target and the group last", () => {
+    expect(startStepsFor(["debiti"], it_)).toEqual(["conto", "debito", "obiettivo", "gruppo"]);
+    expect(startStepsFor(["pensione", "spese"], it_)).toEqual(["conto", "import", "pensione", "obiettivo", "gruppo"]);
+    expect(startStepsFor(["spese", "investimenti", "debiti", "pensione"], it_)).toEqual(["conto", "import", "investimento", "debito", "pensione", "obiettivo", "gruppo"]);
   });
   it("never asks for the pension where that section is hidden", () => {
-    expect(startStepsFor(["pensione", "debiti"], { pensionAvailable: false })).toEqual(["conto", "debito", "obiettivo"]);
+    expect(startStepsFor(["pensione", "debiti"], { pensionAvailable: false })).toEqual(["conto", "debito", "obiettivo", "gruppo"]);
     expect(focusOptionsFor(false).map((o) => o.id)).toEqual(["spese", "investimenti", "debiti"]);
   });
 });

@@ -30,8 +30,8 @@ describe("dati d'esempio", () => {
   it("crea conti e movimenti demo, li esclude dai passi e li azzera", async () => {
     const userId = await makeUser();
     const before = await loadStartStatus(userId);
-    expect(before.steps).toEqual({ conto: false, import: false, investimento: false, debito: false, pensione: false, obiettivo: false });
-    expect(before.stepIds).toEqual(["conto", "import", "investimento", "obiettivo"]);
+    expect(before.steps).toEqual({ conto: false, import: false, investimento: false, debito: false, pensione: false, obiettivo: false, gruppo: false });
+    expect(before.stepIds).toEqual(["conto", "import", "investimento", "obiettivo", "gruppo"]);
     expect(before.demoActive).toBe(false);
 
     const result = await startDemo(userId);
@@ -117,14 +117,27 @@ describe("skipped steps", () => {
     expect(status.skipped).toEqual(["debito"]);
     expect(status.completed).toBe(false);
     await setStepSkipped(userId, "obiettivo", true);
+    await setStepSkipped(userId, "gruppo", true);
     await setStepSkipped(userId, "conto", true);
     status = await loadStartStatus(userId);
-    expect(status.skipped).toEqual(["debito", "obiettivo"]);
+    expect(status.skipped).toEqual(["debito", "obiettivo", "gruppo"]);
     expect(status.completed).toBe(true);
     await setStepSkipped(userId, "obiettivo", false);
     status = await loadStartStatus(userId);
-    expect(status.skipped).toEqual(["debito"]);
+    expect(status.skipped).toEqual(["debito", "gruppo"]);
     expect(status.completed).toBe(false);
+  });
+
+  it("does not reopen a checklist completed before the group step existed", async () => {
+    const userId = await makeUser();
+    await setStartFocus(userId, ["debiti"]);
+    await db.insert(accounts).values({ userId, name: "Conto", type: "Conto corrente", balance: "10" });
+    await setStepSkipped(userId, "debito", true);
+    await setStepSkipped(userId, "obiettivo", true);
+    await db.update(authUser).set({ startChecklistCompletedAt: new Date() }).where(eq(authUser.id, userId));
+    const status = await loadStartStatus(userId);
+    expect(status.steps.gruppo).toBe(false);
+    expect(status.completed).toBe(true);
   });
 });
 
@@ -134,7 +147,7 @@ describe("focus", () => {
     await setStartFocus(userId, ["debiti"]);
     const status = await loadStartStatus(userId);
     expect(status.focus).toEqual(["debiti"]);
-    expect(status.stepIds).toEqual(["conto", "debito", "obiettivo"]);
+    expect(status.stepIds).toEqual(["conto", "debito", "obiettivo", "gruppo"]);
     expect(status.completed).toBe(false);
   });
 
@@ -142,6 +155,6 @@ describe("focus", () => {
     const userId = await makeUser();
     await db.update(authUser).set({ productCountry: "DE", language: "de" }).where(eq(authUser.id, userId));
     await setStartFocus(userId, ["pensione", "investimenti"]);
-    expect((await loadStartStatus(userId)).stepIds).toEqual(["conto", "investimento", "obiettivo"]);
+    expect((await loadStartStatus(userId)).stepIds).toEqual(["conto", "investimento", "obiettivo", "gruppo"]);
   });
 });

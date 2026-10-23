@@ -7,6 +7,7 @@ import { authUser } from "@/lib/db/schema/auth";
 import { budgets } from "@/lib/db/schema/budgets";
 import { debts } from "@/lib/db/schema/debts";
 import { goals } from "@/lib/db/schema/goals";
+import { householdMembers } from "@/lib/db/schema/households";
 import { investmentTransactions } from "@/lib/db/schema/investments";
 import { pensionFunds } from "@/lib/db/schema/pension";
 import { transactions } from "@/lib/db/schema/transactions";
@@ -73,13 +74,17 @@ export async function loadStartStatus(userId: string): Promise<StartStatus> {
         or exists(select 1 from ${goals} where ${goals.userId} = ${userId})
         or exists(select 1 from ${analyticsAssumptions} where ${analyticsAssumptions.userId} = ${userId} and ${analyticsAssumptions.data} <> '{}'::jsonb)
       ) as obiettivo,
+      exists(select 1 from ${householdMembers} where ${householdMembers.userId} = ${userId}) as gruppo,
       exists(select 1 from ${accounts} where ${accounts.userId} = ${userId} and ${accounts.isDemo}) as demo
   `);
   const steps = Object.fromEntries(START_STEP_IDS.map((id) => [id, row[id as StartStepId] === true])) as Record<StartStepId, boolean>;
   const focus = parseStartFocus(user?.focus);
   const stepIds = startStepsFor(focus, { pensionAvailable: isCountryPathAvailable(user?.productCountry ?? "IT", "/pensione") });
   const skipped = parseSkippedSteps(user?.skipped);
-  const completed = allStepsSettled(steps, stepIds, skipped);
+  // The group step came after many people had finished: for whoever already completed the checklist it does not count,
+  // so it never brings the checklist back (Panoramica offers groups on its own).
+  const required = user?.completedAt ? stepIds.filter((id) => id !== "gruppo") : stepIds;
+  const completed = allStepsSettled(steps, required, skipped);
   let justCompleted = false;
   if (completed && !user?.completedAt) {
     await db.update(authUser).set({ startChecklistCompletedAt: new Date() }).where(eq(authUser.id, userId));

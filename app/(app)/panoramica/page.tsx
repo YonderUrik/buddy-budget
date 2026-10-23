@@ -15,7 +15,7 @@ import {
 } from "@/components/domain/net-worth";
 import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
 import { GoalsPanoramicaSection, useGoalFormatters } from "@/components/domain/goals";
-import { HouseholdScope } from "@/components/domain/households";
+import { GroupInviteCard, HouseholdScope } from "@/components/domain/households";
 import { EmptyState, LoadError } from "@/components/domain/shared";
 import { StartChecklistSection } from "@/components/domain/start";
 import { WhatsNewSection } from "@/components/domain/whats-new";
@@ -46,8 +46,8 @@ import { usePensionQuery } from "@/lib/queries/pension";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useChartRefreshState } from "@/lib/queries/chart-refresh";
-import { NEW_ACCOUNT_HREF, shouldShowChecklist } from "@/lib/start";
-import { useStartQuery } from "@/lib/queries/start";
+import { NEW_ACCOUNT_HREF, NEW_GROUP_HREF, shouldShowChecklist } from "@/lib/start";
+import { useStartQuery, useStartSkipMutation } from "@/lib/queries/start";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { useHydrated } from "@/lib/hooks/use-hydrated";
 
@@ -64,6 +64,7 @@ const TILE_MONTH = "mese";
 const TILE_DUES = "scadenze";
 const TILE_INVESTMENTS = "investimenti";
 const TILE_GOALS = "obiettivi";
+const TILE_GROUPS = "gruppi";
 
 
 export default function PanoramicaPage() {
@@ -107,6 +108,9 @@ export default function PanoramicaPage() {
   // I primi passi sono un di più: se non caricano, la Panoramica funziona lo stesso.
   const startQuery = useStartQuery();
   const startStatus = startQuery.data;
+  const skipStep = useStartSkipMutation();
+  // The group offer of «Primi passi», once the checklist is out of sight: closing it skips that step for good.
+  const showGroupInvite = Boolean(startStatus && !startStatus.demoActive && !shouldShowChecklist(startStatus) && !startStatus.steps.gruppo && !startStatus.skipped.includes("gruppo"));
   const renewalAlerts = buildRenewalAlerts(connectionsQuery.data ?? [], today);
 
   const isLoading =
@@ -234,6 +238,14 @@ export default function PanoramicaPage() {
                   positions={investments.positions}
                   currency={currency}
                   onLinkClick={() => track("overview_tile_clicked", { tile: TILE_INVESTMENTS })}
+                />
+              ) : null}
+              {showGroupInvite ? (
+                <GroupInviteCard
+                  href={NEW_GROUP_HREF}
+                  onCreateClick={() => track("overview_tile_clicked", { tile: TILE_GROUPS })}
+                  onDismiss={() => skipStep.mutate({ step: "gruppo", skipped: true })}
+                  dismissing={skipStep.isPending}
                 />
               ) : null}
             </div>

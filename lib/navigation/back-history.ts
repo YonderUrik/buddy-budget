@@ -36,10 +36,14 @@ const EXACT_NAMES: Record<string, string> = {
   "/aiuto": "Aiuto",
 };
 
+/** One-way flows: once finished, «‹» skips them (after creating a group it leads to Gruppi, not back to the form). */
+const NOT_BACK_TARGETS = new Set(["/groups/new"]);
+
 /** Detail pages, matched by prefix (the id after it is not shown). */
 const PREFIX_NAMES: readonly (readonly [prefix: string, name: string])[] = [
   ["/investimenti/titoli/", "Titolo"],
   ["/analitiche/obiettivi/", "Obiettivo"],
+  ["/groups/", "Gruppo"],
 ];
 
 const PANORAMICA = { href: "/panoramica", label: "Panoramica" };
@@ -53,6 +57,7 @@ const PARENTS: readonly (readonly [prefix: string, parent: ParentPage])[] = [
   ["/importazioni", { href: "/liquidita", label: "Liquidità" }],
   ["/conti/collega/", { href: "/liquidita/conti", label: "Conti" }],
   ["/country-unavailable", PANORAMICA],
+  ["/groups/", { href: "/impostazioni?sezione=gruppi", label: "Gruppi" }],
 ];
 
 /**
@@ -94,6 +99,7 @@ export function screenKey(href: string): string {
 
 /** Name of an app screen, or `null` for pages the button should not lead back to (callbacks, unknown addresses). */
 export function pageName(path: string): string | null {
+  if (NOT_BACK_TARGETS.has(path)) return null;
   const exact = EXACT_NAMES[path];
   if (exact) return exact;
   for (const [prefix, name] of PREFIX_NAMES) {

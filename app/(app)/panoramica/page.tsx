@@ -15,6 +15,7 @@ import {
 } from "@/components/domain/net-worth";
 import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
 import { GoalsPanoramicaSection, useGoalFormatters } from "@/components/domain/goals";
+import { HouseholdScope } from "@/components/domain/households";
 import { EmptyState, LoadError } from "@/components/domain/shared";
 import { StartChecklistSection } from "@/components/domain/start";
 import { WhatsNewSection } from "@/components/domain/whats-new";
@@ -170,6 +171,7 @@ export default function PanoramicaPage() {
 
       <RenewalBanner alerts={renewalAlerts} renewHref={`${RENEW_PATH}panoramica`} />
 
+      <HouseholdScope currency={currency}>
       {isLoading ? (
         <div className="flex flex-col gap-6" aria-busy="true">
           <div className="h-80 animate-pulse rounded-xl bg-muted" />
@@ -238,6 +240,7 @@ export default function PanoramicaPage() {
           </div>
         </>
       )}
+      </HouseholdScope>
     </div>
   );
 }

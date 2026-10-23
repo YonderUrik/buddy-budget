@@ -6,6 +6,8 @@ import { BackHistoryRecorder } from "@/components/domain/shared";
 import { PersonalImportIsland } from "@/components/domain/personal-import";
 import { SyncProgressIndicator } from "@/components/domain/sync";
 import { WelcomeToast } from "@/components/domain/welcome";
+// Direct file import: the layout loads on every page and needs only this from the groups barrel.
+import { PendingInviteRedirect } from "@/components/domain/households/pending-invite-redirect";
 import { QuickReportProvider } from "@/components/domain/support";
 // Direct file import: the auth barrel also carries the login preview, which the app layout must not load.
 import { RememberReturningUser } from "@/components/domain/auth/remember-returning-user";
@@ -33,6 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <DemoBannerContainer />
               <StartProgressWatcher />
               <WelcomeToast />
+              <PendingInviteRedirect />
             </>
           )}
           {children}

@@ -9,6 +9,7 @@
 import * as React from "react";
 import { CategoryAvatar } from "@/components/domain/categories";
 import { MerchantLogo } from "@/components/domain/categorization";
+import { MovementHouseholdChoice } from "@/components/domain/households";
 import { PAGE_TITLE_FACE } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { DialogTitle } from "@/components/ui/dialog";
@@ -118,6 +119,15 @@ export function MovementDetailView({ detail, partial, categories, usage, currenc
           <MovementDetailAi key={transaction.id} transactionId={transaction.id} currentCategoryId={transaction.categoryId} categories={selectable} onUse={(categoryId) => choose(categoryId, false)} />
         )}
       </div>
+
+      <MovementHouseholdChoice
+        key={`household-${transaction.id}`}
+        transactionId={transaction.id}
+        merchant={transaction.description}
+        amount={full}
+        currency={currency}
+        shareable={!isIncome && !isTransfer}
+      />
 
       <dl className="flex flex-col gap-4">
         <Fact label={tr("Da dove arriva")}>{partial ? <Placeholder className="w-48" /> : originText(origin)}</Fact>

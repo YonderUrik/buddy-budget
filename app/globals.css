@@ -25,6 +25,12 @@
   --color-sun-hover: var(--sun-hover);
   --color-on-sun: var(--on-sun);
   --color-risk-1: var(--risk-1);
+  --color-person-1: var(--person-1);
+  --color-person-2: var(--person-2);
+  --color-person-3: var(--person-3);
+  --color-person-4: var(--person-4);
+  --color-person-5: var(--person-5);
+  --color-person-6: var(--person-6);
   --color-risk-2: var(--risk-2);
   --color-risk-3: var(--risk-3);
   --color-risk-4: var(--risk-4);
@@ -110,6 +116,13 @@
   --sun: #ffb703;
   --sun-hover: #d99500;
   --on-sun: #18181b;
+  /* Members of a group (avatars and their share of a bar): the viewer is always person-1. */
+  --person-1: #15738b;
+  --person-2: #c2690a;
+  --person-3: #2f7d57;
+  --person-4: #7c4dbd;
+  --person-5: #b4416e;
+  --person-6: #5b6472;
   --risk-1: #2f7d57;
   --risk-2: #b89a1e;
   --risk-3: #d9731a;
@@ -222,6 +235,12 @@
   --neg: #d2887b;
   --neg-soft: rgba(210, 136, 123, 0.14);
   --highlight: #3a2f12;
+  --person-1: #4bb3cc;
+  --person-2: #f0a742;
+  --person-3: #5fc08b;
+  --person-4: #b293e6;
+  --person-5: #e98bb0;
+  --person-6: #a0a8b6;
   --risk-1: #5bb98a;
   --risk-2: #d4b43c;
   --risk-3: #ea8a3a;

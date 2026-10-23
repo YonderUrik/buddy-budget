@@ -330,6 +330,13 @@
       "when": 1792444157101,
       "tag": "0048_bank_connection_interest",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1792700544677,
+      "tag": "0049_households",
+      "breakpoints": true
     }
   ]
 }

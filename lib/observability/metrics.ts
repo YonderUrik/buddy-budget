@@ -173,6 +173,7 @@ interface MetricsState {
   analyticsDigest: Counter<"outcome">;
   analyticsDigestCompute: Histogram<string>;
   goalActions: Counter<"action" | "kind">;
+  householdActions: Counter<"action">;
   categorizationAiRequests: Counter<"outcome">;
   categorizationAiDuration: Histogram<string>;
   categorizationSuggestions: Counter<"event">;
@@ -286,6 +287,12 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}goal_actions_total`,
     help: "Azioni degli utenti sugli obiettivi di risparmio (creato, modificato, eliminato, raggiunto, riaperto, riordinato) per tipo di obiettivo.",
     labelNames: ["action", "kind"],
+    registers: r,
+  });
+  state.householdActions = new Counter({
+    name: `${METRIC_PREFIX}household_actions_total`,
+    help: "Actions on groups (created, invite_sent, invite_accepted, sharing_changed, expense_shared, settled, left).",
+    labelNames: ["action"],
     registers: r,
   });
   state.subscriptionsDetect = new Histogram({
@@ -640,6 +647,14 @@ export function recordSubscriptionAction(action: SubscriptionAction): void {
 /** Registra un'azione su un obiettivo di risparmio; `kind` è il tipo di obiettivo (enum chiuso) o `all` per il riordino. */
 export function recordGoalAction(action: GoalAction, kind: string): void {
   metrics().goalActions.inc({ action, kind });
+}
+
+/** What happened in a group (closed enum). */
+export type HouseholdAction = "created" | "invite_sent" | "invite_accepted" | "sharing_changed" | "expense_shared" | "settled" | "left";
+
+/** Records an action on a group. */
+export function recordHouseholdAction(action: HouseholdAction): void {
+  metrics().householdActions.inc({ action });
 }
 
 /** Registra la durata di un rilevamento degli abbonamenti. */

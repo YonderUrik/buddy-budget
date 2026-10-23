@@ -18,6 +18,7 @@ import {
   sumBalances,
 } from "@/components/domain/accounts";
 import { EmptyState, LoadError } from "@/components/domain/shared";
+import { SharedAccountsSection } from "@/components/domain/households";
 import { AccountLine, LIQUIDITY_ACCOUNT_PARAM, LIQUIDITY_HREF, SectionTitle, useLiquidity, useLiquidityActions } from "@/components/domain/liquidity";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
@@ -30,6 +31,7 @@ import { accountFollowsTransactions, buildAccountBalanceSeries } from "@/lib/liq
 
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
+import { useSharedAccountsQuery } from "@/lib/queries/households";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { isAccountSyncing } from "@/lib/sync-jobs/view";
@@ -82,6 +84,8 @@ export default function LiquiditaContiPage() {
   const { data: accounts, isLoading, isError, refetch } = useAccountsQuery();
   const connections = useBankConnectionsStatusQuery().data ?? [];
   const syncJobs = useSyncJobsQuery().data ?? [];
+  // Groups are optional: without them (or if they fail) Conti shows only the viewer's accounts.
+  const shared = useSharedAccountsQuery().data;
   const from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - TREND_DAYS);
   const transactions = useTransactionsQuery(toDateKey(from), toDateKey(today), "tutte").data ?? [];
 
@@ -137,6 +141,7 @@ export default function LiquiditaContiPage() {
                     currency={currency}
                     status={status.label}
                     statusTone={status.tone}
+                    sharedWith={shared?.mine[account.id]}
                     trend={accountFollowsTransactions(account) ? buildAccountBalanceSeries(account, transactions, from, today).map((p) => p.value) : undefined}
                     onOpen={() => {
                       track("account_details_opened", { kind: account.source === "auto" ? "collegato" : "manuale" });
@@ -150,6 +155,7 @@ export default function LiquiditaContiPage() {
           </section>
         ))
       )}
+      {shared ? <SharedAccountsSection accounts={shared.withMe} currency={currency} /> : null}
       {list.length > 0 && (
         <div className="flex flex-wrap gap-2.5">
           <Button className="h-11 gap-1.5" onClick={addAccount}>

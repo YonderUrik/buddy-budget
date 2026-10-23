@@ -3,7 +3,7 @@ import { AuthFootLinks, AuthFrame, BrandLink } from "@/components/domain/auth";
 
 const BRAND_NAME = "BuddyBudget";
 /** Nell'onboarding resta solo il form: l'anteprima serve a chi non è ancora entrato. */
-const ASIDE_HIDDEN_ON = ["/onboarding"] as const;
+const ASIDE_HIDDEN_ON = ["/onboarding", "/invite"] as const;
 
 /** Layout delle pagine di autenticazione/onboarding: pannello del form a sinistra, anteprima della Panoramica a destra (non nell'onboarding). */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {

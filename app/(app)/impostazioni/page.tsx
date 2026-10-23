@@ -6,6 +6,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import { HouseholdsSettingsSection } from "@/components/domain/households";
 import {
   DangerZoneSection,
   DataSection,
@@ -97,6 +98,7 @@ function ImpostazioniContent() {
                 <SessionsSection />
               </>
             ),
+            gruppi: <HouseholdsSettingsSection />,
             aspetto: (
               <>
                 <PreferencesSection settings={settings} />

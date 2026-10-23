@@ -24,11 +24,13 @@ export interface AccountLineProps {
   status: string;
   statusTone: "ok" | "neutral" | "progress" | "warning";
   trend?: readonly number[];
+  /** Groups the account is shown to («Noi due»): a line under the status. */
+  sharedWith?: readonly string[];
   onOpen: () => void;
   onShowMovements: () => void;
 }
 
-export function AccountLine({ name, type, color, icon, balance, currency, status, statusTone, trend, onOpen, onShowMovements }: AccountLineProps) {
+export function AccountLine({ name, type, color, icon, balance, currency, status, statusTone, trend, sharedWith, onOpen, onShowMovements }: AccountLineProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -50,6 +52,9 @@ export function AccountLine({ name, type, color, icon, balance, currency, status
             {StatusIcon && <StatusIcon className={cn("size-3.5 shrink-0", statusTone === "progress" && "motion-safe:animate-spin")} aria-hidden="true" />}
             {status}
           </span>
+          {sharedWith && sharedWith.length > 0 ? (
+            <span className="block truncate text-sm text-primary">{tr("In comune: {0}", { 0: sharedWith.map((g) => `«${g}»`).join(", ") })}</span>
+          ) : null}
         </span>
         {trend && (
           <span className="hidden sm:block">

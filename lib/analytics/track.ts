@@ -161,6 +161,19 @@ export interface ProductEvents {
   /** Segnato come raggiunto (`achieved: true`) o rimesso tra quelli aperti. */
   goal_achieved: { kind: GoalKind; achieved: boolean };
   goal_reordered: { count: number };
+  /** Group created («Gruppi»); `accounts`: accounts shown to it, `netWorth`: the net worth total is shown. */
+  household_created: { accounts: number; netWorth: boolean };
+  household_sharing_changed: { accounts: number; netWorth: boolean };
+  /** Invitation to a group: sent by email by the app, or a link copied to share by hand. */
+  household_invite_sent: { channel: "email" | "link" };
+  household_invite_accepted: { accounts: number; netWorth: boolean };
+  household_left: undefined;
+  /** «Pareggiate»: `transfers` is how many payments even the group out. */
+  household_settled: { transfers: number };
+  /** Who pays an expense changed: shared with a group or not; `remember`: also the merchant's next ones. */
+  household_expense_changed: { shared: boolean; remember: boolean };
+  /** The Panoramica switch moved between «Io» and a group. */
+  household_view_opened: { view: "io" | "gruppo" };
   /** Da dove si è aperta la vista Obiettivi: Panoramica, novità, email o Analitiche. */
   goals_opened: { from: "panoramica" | "novita" | "email" | "analitiche" };
   /** Dettaglio di un abbonamento aperto dalla lista; `decision`: lo stato in cui era. */
@@ -278,7 +291,7 @@ export interface ProductEvents {
   country_changed: { from: "settings"; country: "IT" | "DE" | "OTHER" };
   /** A section the user's country does not have yet was tapped (menu entry marked «Presto nel tuo paese»): how many people want it there. */
   country_feature_requested: { section: "pensione"; country: "DE" | "OTHER" };
-  settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
+  settings_group_opened: { group: "account" | "gruppi" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
   more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
   notifications_toggled: { kind: "digest" | "budget" | "deadlines" | "goals"; enabled: boolean };

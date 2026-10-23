@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.86.1](https://github.com/YonderUrik/buddy-budget/compare/v0.86.0...v0.86.1) (2026-10-23)
+
+
+### Correzioni
+
+* let Google read the app's robots.txt and tidy landing signals for indexing ([#494](https://github.com/YonderUrik/buddy-budget/issues/494)) ([8d065c2](https://github.com/YonderUrik/buddy-budget/commit/8d065c26c5297ba2909a3b67031dfab4a212ca9c))
+
 ## [0.86.0](https://github.com/YonderUrik/buddy-budget/compare/v0.85.2...v0.86.0) (2026-10-22)
 
 

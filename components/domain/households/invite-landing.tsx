@@ -24,12 +24,16 @@ export interface InviteLandingProps {
   householdName: string;
   inviterName: string;
   memberNames: string[];
+  /** The name the group gave the invited person («Luca»). */
+  personName: string;
+  /** Expenses already written for them in the group. */
+  expenseCount: number;
   /** Signed in: the viewer's accounts for the sharing choice; null when signed out. */
   accounts: ShareableAccount[] | null;
   currency: string;
 }
 
-export function InviteLanding({ token, status, householdName, inviterName, memberNames, accounts, currency }: InviteLandingProps) {
+export function InviteLanding({ token, status, householdName, inviterName, memberNames, personName, expenseCount, accounts, currency }: InviteLandingProps) {
   const { t: tr } = useLocalization();
   const accept = useAcceptInviteMutation(token);
   const [sharing, setSharing] = React.useState<SharingPayload | null>(null);
@@ -72,16 +76,21 @@ export function InviteLanding({ token, status, householdName, inviterName, membe
     <div className="flex flex-col gap-6">
       <div className="flex items-center">
         <PersonAvatar initial={inviterName.charAt(0).toUpperCase()} slot={1} name={inviterName} size="lg" />
-        <PersonAvatar initial="?" slot={0} name={tr("Tu")} size="lg" className="-ml-3 ring-4 ring-card" />
+        <PersonAvatar initial={personName ? personName.charAt(0).toUpperCase() : "?"} slot={0} name={tr("Tu")} size="lg" className="-ml-3 ring-4 ring-card" />
       </div>
       <div className="flex flex-col gap-3">
         <h1 className={AUTH_TITLE}>{tr("{0} ti invita in «{1}»", { 0: inviterName, 1: householdName })}</h1>
         <p className="text-text-2">
-          {others.length > 0
-            ? tr("Nel gruppo ci sono già {0} e {1}. ", { 0: inviterName, 1: others.join(", ") })
-            : ""}
+          {others.length > 0 ? tr("Nel gruppo ci sono già {0} e {1}. ", { 0: inviterName, 1: others.join(", ") }) : ""}
           {tr("Gestite i soldi insieme: ognuno tiene il suo account e vedete solo quello che ciascuno sceglie di mostrare.")}
         </p>
+        {personName ? (
+          <p className="rounded-2xl bg-foreground/[0.04] px-4 py-3 text-sm">
+            {expenseCount > 0
+              ? tr("Ti hanno già messo nel gruppo come «{0}», con {1} spese da dividere: entrando prendi il tuo posto e le trovi lì.", { 0: personName, 1: expenseCount })
+              : tr("Ti hanno già messo nel gruppo come «{0}»: entrando prendi il tuo posto.", { 0: personName })}
+          </p>
+        ) : null}
       </div>
 
       {signedIn ? (
@@ -106,12 +115,12 @@ export function InviteLanding({ token, status, householdName, inviterName, membe
         <>
           <ul className="flex flex-col gap-2 text-sm text-text-2">
             <li>{tr("Il tuo patrimonio e i tuoi conti restano tuoi: scegli tu cosa mostrare, dopo essere entrato.")}</li>
-            <li>{tr("Le spese che mettete in comune si dividono in parti uguali e l'app tiene il conto di chi deve cosa.")}</li>
+            <li>{tr("Ogni spesa si divide tra le persone per cui è stata fatta, e l'app tiene il conto di chi deve cosa.")}</li>
           </ul>
           <Link href={`/login?redirect=${encodeURIComponent(`/invite/${token}`)}`} className={cn(buttonVariants(), AUTH_PRIMARY_BUTTON, "h-12 w-fit px-6")}>
             {tr("Entra o crea un account")}
           </Link>
-          <p className="text-sm text-text-3">{tr("Dopo l'accesso torni qui per scegliere cosa mostrare.")}</p>
+          <p className="text-sm text-text-3">{tr("Dopo l'accesso torni qui per scegliere cosa mostrare. Se non vuoi un account, il gruppo continua a dividere le spese con te lo stesso.")}</p>
         </>
       )}
     </div>

@@ -1,37 +1,51 @@
 "use client";
 
 /**
- * Invite someone to a group: by email (the app sends it) or with a link to paste in a chat. On a phone the link opens
- * the share sheet (WhatsApp, Messages...); elsewhere it is copied. Says what happened in one line.
+ * Invite someone added by name to join with their own account: by email (the app sends it) or with a link to paste
+ * in a chat. On a phone the link opens the share sheet (WhatsApp, Messages...); elsewhere it is copied. Says what
+ * happened in one line. Joining is optional: the group works with them as a name too.
  */
 
 import * as React from "react";
 import { CheckIcon, LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useLocalization } from "@/lib/localization/provider";
-import { useCreateInviteMutation } from "@/lib/queries/households";
 import { INVITE_TTL_DAYS } from "@/lib/households/constants";
+import { useLocalization } from "@/lib/localization/provider";
+import { useInviteMemberMutation } from "@/lib/queries/households";
 
 export interface InvitePanelProps {
   householdId: string;
   householdName: string;
+  /** The person added by name who gets the invitation. */
+  memberId: string;
+  personName: string;
   /** Called after an invitation went out (email sent or link shared). */
   onInvited?: () => void;
 }
 
 type Outcome = { kind: "email"; email: string; emailed: boolean } | { kind: "link"; shared: boolean } | null;
 
-export function InvitePanel({ householdId, householdName, onInvited }: InvitePanelProps) {
+/** Shares an invitation link: the share sheet on a phone, the clipboard elsewhere. True when the sheet was used. */
+export async function shareInviteLink(url: string, text: string): Promise<boolean> {
+  let shared = false;
+  if (typeof navigator !== "undefined" && navigator.share && window.matchMedia("(pointer: coarse)").matches) {
+    shared = await navigator.share({ text, url }).then(() => true, () => false);
+  }
+  if (!shared) await navigator.clipboard?.writeText(`${text} ${url}`).catch(() => undefined);
+  return shared;
+}
+
+export function InvitePanel({ householdId, householdName, memberId, personName, onInvited }: InvitePanelProps) {
   const { t: tr } = useLocalization();
   const [email, setEmail] = React.useState("");
   const [outcome, setOutcome] = React.useState<Outcome>(null);
-  const invite = useCreateInviteMutation(householdId);
+  const invite = useInviteMemberMutation(householdId);
 
   async function sendEmail() {
     const address = email.trim();
     if (!address) return;
-    const result = await invite.mutateAsync(address).catch(() => null);
+    const result = await invite.mutateAsync({ memberId, email: address }).catch(() => null);
     if (!result) return;
     setOutcome({ kind: "email", email: address, emailed: result.emailed });
     setEmail("");
@@ -39,14 +53,9 @@ export function InvitePanel({ householdId, householdName, onInvited }: InvitePan
   }
 
   async function shareLink() {
-    const result = await invite.mutateAsync(null).catch(() => null);
+    const result = await invite.mutateAsync({ memberId, email: null }).catch(() => null);
     if (!result) return;
-    const text = tr("Gestiamo i soldi insieme su BuddyBudget, nel gruppo «{0}»:", { 0: householdName });
-    let shared = false;
-    if (typeof navigator !== "undefined" && navigator.share && window.matchMedia("(pointer: coarse)").matches) {
-      shared = await navigator.share({ text, url: result.url }).then(() => true, () => false);
-    }
-    if (!shared) await navigator.clipboard?.writeText(`${text} ${result.url}`).catch(() => undefined);
+    const shared = await shareInviteLink(result.url, tr("Ti ho messo nel gruppo «{0}» su BuddyBudget, per dividere le spese:", { 0: householdName }));
     setOutcome({ kind: "link", shared });
     onInvited?.();
   }
@@ -59,7 +68,7 @@ export function InvitePanel({ householdId, householdName, onInvited }: InvitePan
           type="email"
           inputMode="email"
           autoComplete="off"
-          placeholder={tr("Email di chi vuoi invitare")}
+          placeholder={tr("Email di {0}", { 0: personName })}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => {
@@ -67,8 +76,8 @@ export function InvitePanel({ householdId, householdName, onInvited }: InvitePan
             e.preventDefault();
             void sendEmail();
           }}
-          className="h-11 flex-1 rounded-full px-4"
-          aria-label={tr("Email di chi vuoi invitare")}
+          className="h-11 rounded-full bg-card px-4 sm:flex-1"
+          aria-label={tr("Email di {0}", { 0: personName })}
         />
         <Button type="button" variant="sun" className="h-11 rounded-full px-5" onClick={sendEmail} disabled={invite.isPending || !email.trim()}>
           {tr("Invia l'invito")}
@@ -90,7 +99,7 @@ export function InvitePanel({ householdId, householdName, onInvited }: InvitePan
               : tr("Link copiato: incollalo in WhatsApp o dove vuoi. Vale {0} giorni.", { 0: INVITE_TTL_DAYS })}
         </p>
       ) : (
-        <p className="text-sm text-text-2">{tr("Il link vale {0} giorni. Chi non ha un account lo crea dal link.", { 0: INVITE_TTL_DAYS })}</p>
+        <p className="text-sm text-text-2">{tr("Con il suo account {0} vede il gruppo e segna le sue spese. Il link vale {1} giorni.", { 0: personName, 1: INVITE_TTL_DAYS })}</p>
       )}
       {invite.isError ? <p className="text-sm text-neg">{invite.error.message}</p> : null}
     </div>

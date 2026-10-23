@@ -1,6 +1,6 @@
 "use client";
 
-/** Confirmations of the group: leaving it, and evening it out («Pareggiate»). */
+/** Confirmations of the group: leaving it, evening it out («Pareggiate»), removing someone added by name. */
 
 import {
   AlertDialog,
@@ -80,6 +80,40 @@ export function SettleDialog({ open, onOpenChange, lines, pending, onConfirm }: 
           <AlertDialogCancel>{tr("Non ancora")}</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} disabled={pending}>
             {pending ? tr("Salvataggio…") : tr("Sì, pareggiate")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+export interface RemovePersonDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** First name of the person added by name. */
+  name: string;
+  pending: boolean;
+  error: string | null;
+  onConfirm: () => void;
+}
+
+/** Removing someone added by name: what happens to the expenses written for them. */
+export function RemovePersonDialog({ open, onOpenChange, name, pending, error, onConfirm }: RemovePersonDialogProps) {
+  const { t: tr } = useLocalization();
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{tr("Togliere {0} dal gruppo?", { 0: name })}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {tr("Le spese pagate da {0} spariscono dal conto tra voi. Quelle fatte anche per {0} si dividono tra chi resta.", { 0: name })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {error ? <p className="text-sm text-destructive">{tr(error)}</p> : null}
+        <AlertDialogFooter>
+          <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} disabled={pending} variant="destructive">
+            {pending ? tr("Un attimo…") : tr("Togli {0}", { 0: name })}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

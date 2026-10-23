@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * The group page: who is in and who is invited, invite someone else, what the viewer shows the group (changeable at
- * any time), and «Esci dal gruppo». The group's numbers live in Panoramica («Apri in Panoramica»).
+ * The group page: who is in (also people added by name, with their invitation), adding someone, what the viewer
+ * shows the group (changeable at any time), and «Esci dal gruppo». The group's numbers live in Panoramica («Apri in
+ * Panoramica») and its expenses in «Spese del gruppo».
  */
 
 import * as React from "react";
@@ -17,16 +18,15 @@ import {
   useHouseholdOverviewQuery,
   useHouseholdSettingsQuery,
   useLeaveHouseholdMutation,
-  useRevokeInviteMutation,
   useUpdateHouseholdMutation,
   type SharingPayload,
 } from "@/lib/queries/households";
 import { cn } from "@/lib/utils";
 import { balanceHeadline } from "./balance-text";
 import { LeaveHouseholdDialog } from "./confirm-dialogs";
-import { InvitePanel } from "./invite-panel";
+import { MembersSection } from "./members-section";
 import { peopleNames } from "./people-names";
-import { PersonAvatar, PersonStack } from "./person-avatar";
+import { PersonStack } from "./person-avatar";
 import { initialSharing, SharingChoices } from "./sharing-choices";
 
 export interface HouseholdPageProps {
@@ -39,13 +39,12 @@ const sameSharing = (a: SharingPayload, b: SharingPayload) =>
 
 export function HouseholdPage({ householdId, currency }: HouseholdPageProps) {
   const { t: tr, locale } = useLocalization();
-  const { formatCurrency, formatDateWithYear } = localizedFormats(locale);
+  const { formatCurrency } = localizedFormats(locale);
   const money = (n: number) => formatCurrency(n, currency);
   const router = useRouter();
   const { data, isLoading, isError, refetch } = useHouseholdSettingsQuery(householdId);
   const overview = useHouseholdOverviewQuery(householdId, new Date().toISOString().slice(0, 7)).data;
   const update = useUpdateHouseholdMutation(householdId);
-  const revoke = useRevokeInviteMutation(householdId);
   const leave = useLeaveHouseholdMutation(householdId);
   const [draft, setDraft] = React.useState<SharingPayload | null>(null);
   const [leaving, setLeaving] = React.useState(false);
@@ -56,7 +55,8 @@ export function HouseholdPage({ householdId, currency }: HouseholdPageProps) {
   const saved = initialSharing(data.mine.accounts, data.mine);
   const value = draft ?? saved;
   const dirty = !sameSharing(value, saved);
-  const others = data.members.filter((m) => !m.isMe);
+  // Only people with an account see anything: those added by name are not told about leaving.
+  const others = data.members.filter((m) => !m.isMe && m.userId);
 
   async function save() {
     await update.mutateAsync({ sharing: value });
@@ -76,46 +76,19 @@ export function HouseholdPage({ householdId, currency }: HouseholdPageProps) {
         <PersonStack people={data.members} size="lg" />
         <h1 className={PAGE_TITLE}>{data.name}</h1>
         <p className="text-text-2">{peopleNames(data.members, tr)}</p>
-        <Link href={`/panoramica?group=${householdId}`} className={cn(buttonVariants({ variant: "secondary" }), "h-11 w-fit rounded-full px-5")}>
-          {tr("Apri in Panoramica")}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/panoramica?group=${householdId}`} className={cn(buttonVariants({ variant: "secondary" }), "h-11 w-fit rounded-full px-5")}>
+            {tr("Apri in Panoramica")}
+          </Link>
+          <Link href={`/groups/${householdId}/expenses`} className={cn(buttonVariants({ variant: "secondary" }), "h-11 w-fit rounded-full px-5")}>
+            {tr("Spese del gruppo")}
+          </Link>
+        </div>
       </header>
 
       <section className="flex flex-col gap-3">
         <h2 className={SECTION_TITLE}>{tr("Chi c'è")}</h2>
-        <ul className="flex flex-col gap-1">
-          {data.members.map((m) => (
-            <li key={m.userId} className="flex min-h-14 items-center gap-3.5 py-1.5">
-              <PersonAvatar initial={m.initial} slot={m.slot} name={m.name} size="md" />
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold">{m.isMe ? tr("Tu") : m.name}</span>
-                <span className="block text-sm text-text-2">
-                  {[
-                    m.sharesNetWorth ? tr("mostra il patrimonio totale") : tr("non mostra il patrimonio"),
-                    m.sharedAccounts === 0 ? tr("nessun conto") : m.sharedAccounts === 1 ? tr("1 conto") : tr("{0} conti", { 0: m.sharedAccounts }),
-                  ].join(" · ")}
-                </span>
-              </span>
-            </li>
-          ))}
-          {data.invites.map((invite) => (
-            <li key={invite.id} className="flex min-h-14 items-center gap-3.5 py-1.5">
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-sm text-text-3">?</span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold">{invite.email ? tr("In attesa di {0}", { 0: invite.email }) : tr("Link in attesa")}</span>
-                <span className="block text-sm text-text-2">{tr("Scade il {0}", { 0: formatDateWithYear(invite.expiresAt.slice(0, 10)) })}</span>
-              </span>
-              <Button variant="ghost" className="h-10 rounded-full px-3" onClick={() => revoke.mutate(invite.id)} disabled={revoke.isPending}>
-                {tr("Annulla")}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className={SECTION_TITLE}>{tr("Invita qualcun altro")}</h2>
-        <InvitePanel householdId={householdId} householdName={data.name} />
+        <MembersSection householdId={householdId} householdName={data.name} members={data.members} />
       </section>
 
       <section className="flex flex-col gap-3">
@@ -136,7 +109,7 @@ export function HouseholdPage({ householdId, currency }: HouseholdPageProps) {
         <p className="text-sm text-text-2">
           {others.length > 0
             ? tr("{0} smette subito di vedere quello che fai vedere tu, e tu il suo. I tuoi dati restano tuoi.", { 0: peopleNames(others.map((o) => ({ ...o, isMe: false })), tr) })
-            : tr("Sei l'unico nel gruppo: uscendo il gruppo sparisce.")}
+            : tr("Sei l'unico con un account: uscendo il gruppo sparisce, con le spese scritte dentro.")}
         </p>
         <Button variant="outline" className="h-11 w-fit rounded-full px-5 text-neg" onClick={() => setLeaving(true)}>
           {tr("Esci da «{0}»", { 0: data.name })}

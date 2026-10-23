@@ -6,7 +6,7 @@ import { transactionChoiceSchema } from "@/lib/validation/households";
 
 type Context = { params: Promise<{ id: string }> };
 
-/** Who pays an expense: a group (equal parts), only the viewer, or what a merchant rule decides. */
+/** Who pays an expense: a group (for everyone or some people), only the viewer, or what a merchant rule decides. */
 async function handleGet(request: NextRequest, { params }: Context) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
@@ -23,14 +23,14 @@ async function handlePut(request: NextRequest, { params }: Context) {
   const parsed = transactionChoiceSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
   try {
-    await setTransactionChoice(session.user.id, (await params).id, parsed.data.householdId, parsed.data.rule);
+    await setTransactionChoice(session.user.id, (await params).id, parsed.data.householdId, parsed.data.forMemberIds, parsed.data.rule);
   } catch (error) {
     const response = householdErrorResponse(error);
     if (!response) throw error;
     return response;
   }
   if (parsed.data.householdId) recordHouseholdAction("expense_shared");
-  requestLogger().info("household.expense.updated", { outcome: parsed.data.householdId ? "shared" : "mine" });
+  requestLogger().info("household.expense.updated", { outcome: parsed.data.householdId ? (parsed.data.forMemberIds ? "shared_some" : "shared") : "mine" });
   return new Response(null, { status: 204 });
 }
 

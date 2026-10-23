@@ -1,23 +1,27 @@
 "use client";
 
 /**
- * The group view in Panoramica: the net worth of the members who show it (with each one's part), «Tra voi», the
- * month's household spending (shared accounts and expenses marked «in comune»), the shared accounts.
+ * The group view in Panoramica: the net worth of the members who show it (with each one's part), «Tra voi» with
+ * «Aggiungi una spesa», the month's spending (shared accounts, expenses marked «in comune», expenses written in the
+ * group), the shared accounts.
  */
 
+import * as React from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, PlusIcon } from "lucide-react";
 import { AccountAvatar } from "@/components/domain/accounts";
 import { CategoryAvatar } from "@/components/domain/categories";
 // Direct file import: the net-worth barrel carries the charts.
 import { MoneyHero } from "@/components/domain/net-worth/money-hero";
 import { SECTION_TITLE } from "@/components/domain/shared";
+import { Button } from "@/components/ui/button";
 import type { HouseholdOverview } from "@/lib/households/types";
 import { localizedFormats } from "@/lib/localization/format";
 import { useLocalization } from "@/lib/localization/provider";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { cn } from "@/lib/utils";
+import { GroupExpenseDialog } from "./group-expense-dialog";
 import { HouseholdBalanceCard } from "./household-balance-card";
 import { joinNames } from "./people-names";
 import { PERSON_FILL_CLASSES, PersonAvatar } from "./person-avatar";
@@ -29,9 +33,10 @@ export interface HouseholdOverviewViewProps {
 
 export function HouseholdOverviewView({ overview, currency }: HouseholdOverviewViewProps) {
   const { t: tr, locale } = useLocalization();
+  const [adding, setAdding] = React.useState(false);
   const { formatCurrency } = localizedFormats(locale);
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
-  const person = (id: string) => overview.members.find((m) => m.userId === id);
+  const person = (id: string) => overview.members.find((m) => m.id === id);
   const monthName = new Intl.DateTimeFormat(locale, { month: "long" }).format(new Date(`${overview.month}T12:00:00`));
   const { netWorth, spending } = overview;
   const positiveTotal = netWorth ? netWorth.parts.reduce((s, p) => s + Math.max(p.amount, 0), 0) : 0;
@@ -45,15 +50,15 @@ export function HouseholdOverviewView({ overview, currency }: HouseholdOverviewV
           {netWorth.parts.length > 1 && positiveTotal > 0 ? (
             <div className="flex h-3 gap-1 overflow-hidden rounded-full" aria-hidden="true">
               {netWorth.parts.map((p) => (
-                <span key={p.userId} className={cn("h-full rounded-full", PERSON_FILL_CLASSES[(person(p.userId)?.slot ?? 0) % PERSON_FILL_CLASSES.length])} style={{ flexGrow: Math.max(p.amount, 0) / positiveTotal }} />
+                <span key={p.memberId} className={cn("h-full rounded-full", PERSON_FILL_CLASSES[(person(p.memberId)?.slot ?? 0) % PERSON_FILL_CLASSES.length])} style={{ flexGrow: Math.max(p.amount, 0) / positiveTotal }} />
               ))}
             </div>
           ) : null}
           <ul className="flex flex-wrap gap-x-6 gap-y-2">
             {netWorth.parts.map((p) => {
-              const who = person(p.userId);
+              const who = person(p.memberId);
               return who ? (
-                <li key={p.userId} className="flex items-center gap-2">
+                <li key={p.memberId} className="flex items-center gap-2">
                   <PersonAvatar initial={who.initial} slot={who.slot} name={who.name} size="xs" />
                   <span className="text-sm text-text-2">{who.isMe ? tr("Tu") : who.name}</span>
                   <span className="font-heading font-semibold tabular-nums">{money(p.amount)}</span>
@@ -61,15 +66,27 @@ export function HouseholdOverviewView({ overview, currency }: HouseholdOverviewV
               ) : null;
             })}
           </ul>
-          {netWorth.hiddenUserIds.length > 0 ? (
+          {netWorth.hiddenMemberIds.length > 0 ? (
             <p className="text-sm text-text-3">
-              {tr("Non mostrano il patrimonio: {0}", { 0: joinNames(netWorth.hiddenUserIds.map((id) => (person(id)?.isMe ? tr("tu") : (person(id)?.name ?? ""))), tr) })}
+              {tr("Non mostrano il patrimonio: {0}", { 0: joinNames(netWorth.hiddenMemberIds.map((id) => (person(id)?.isMe ? tr("tu") : (person(id)?.name ?? ""))), tr) })}
             </p>
           ) : null}
         </section>
       ) : null}
 
-      <HouseholdBalanceCard overview={overview} currency={currency} />
+      <div className="flex flex-col gap-3">
+        <HouseholdBalanceCard overview={overview} currency={currency} />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Button variant="sun" className="h-11 gap-2 rounded-full px-5" onClick={() => setAdding(true)}>
+            <PlusIcon className="size-4" aria-hidden="true" />
+            {tr("Aggiungi una spesa")}
+          </Button>
+          <Link href={`/groups/${overview.id}/expenses`} className="text-sm font-semibold text-primary hover:underline">
+            {tr("Tutte le spese del gruppo")}
+          </Link>
+        </div>
+      </div>
+      <GroupExpenseDialog open={adding} onOpenChange={setAdding} householdId={overview.id} members={overview.members} currency={currency} expense={null} />
 
       <section aria-labelledby="household-spending" className="flex flex-col gap-3">
         <h2 id="household-spending" className={SECTION_TITLE}>{tr("Spese in comune a {0}", { 0: monthName })}</h2>

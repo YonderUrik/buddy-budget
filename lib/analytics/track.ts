@@ -170,8 +170,17 @@ export interface ProductEvents {
   household_left: undefined;
   /** «Pareggiate»: `transfers` is how many payments even the group out. */
   household_settled: { transfers: number };
-  /** Who pays an expense changed: shared with a group or not; `remember`: also the merchant's next ones. */
-  household_expense_changed: { shared: boolean; remember: boolean };
+  /**
+   * Who pays an expense changed: shared with a group or not; `remember`: also the merchant's next ones; `people`: for
+   * everyone, some of the group, or only someone else (paid entirely for them).
+   */
+  household_expense_changed: { shared: boolean; remember: boolean; people: "all" | "some" | "other" };
+  /** Someone added to a group by name; `invite`: how they were invited right away, if at all. */
+  household_person_added: { invite: "email" | "none" };
+  household_person_removed: undefined;
+  /** «Aggiungi una spesa» in a group, or a change to one; same `people` as above, `paidByMe`: the viewer paid it. */
+  household_group_expense_saved: { mode: "create" | "edit"; people: "all" | "some" | "other"; paidByMe: boolean };
+  household_group_expense_deleted: undefined;
   /** The Panoramica switch moved between «Io» and a group. */
   household_view_opened: { view: "io" | "gruppo" };
   /** Da dove si è aperta la vista Obiettivi: Panoramica, novità, email o Analitiche. */

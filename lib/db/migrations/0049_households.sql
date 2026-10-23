@@ -6,9 +6,24 @@ CREATE TABLE "household_accounts" (
 	CONSTRAINT "household_accounts_household_id_account_id_pk" PRIMARY KEY("household_id","account_id")
 );
 --> statement-breakpoint
+CREATE TABLE "household_expenses" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"household_id" uuid NOT NULL,
+	"paid_by_member_id" uuid NOT NULL,
+	"amount" numeric(12, 2) NOT NULL,
+	"description" text NOT NULL,
+	"date" date NOT NULL,
+	"category_id" uuid,
+	"for_member_ids" uuid[],
+	"created_by" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "household_invites" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"household_id" uuid NOT NULL,
+	"member_id" uuid NOT NULL,
 	"invited_by" text NOT NULL,
 	"email" text,
 	"token_hash" text NOT NULL,
@@ -21,18 +36,22 @@ CREATE TABLE "household_invites" (
 );
 --> statement-breakpoint
 CREATE TABLE "household_members" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"household_id" uuid NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" text,
+	"display_name" text,
 	"shares_net_worth" boolean DEFAULT false NOT NULL,
-	"joined_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "household_members_household_id_user_id_pk" PRIMARY KEY("household_id","user_id")
+	"added_by" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"joined_at" timestamp with time zone,
+	CONSTRAINT "household_members_household_user_unique" UNIQUE("household_id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "household_settlements" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"household_id" uuid NOT NULL,
-	"from_user_id" text NOT NULL,
-	"to_user_id" text NOT NULL,
+	"from_member_id" uuid NOT NULL,
+	"to_member_id" uuid NOT NULL,
 	"amount" numeric(12, 2) NOT NULL,
 	"created_by" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
@@ -44,6 +63,7 @@ CREATE TABLE "household_split_rules" (
 	"household_id" uuid NOT NULL,
 	"merchant_key" text NOT NULL,
 	"from_date" date NOT NULL,
+	"for_member_ids" uuid[],
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "household_split_rules_user_merchant_unique" UNIQUE("user_id","merchant_key")
 );
@@ -52,6 +72,7 @@ CREATE TABLE "household_splits" (
 	"transaction_id" uuid PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"household_id" uuid,
+	"for_member_ids" uuid[],
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -66,14 +87,20 @@ CREATE TABLE "households" (
 ALTER TABLE "household_accounts" ADD CONSTRAINT "household_accounts_household_id_households_id_fk" FOREIGN KEY ("household_id") REFERENCES "public"."households"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_accounts" ADD CONSTRAINT "household_accounts_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_accounts" ADD CONSTRAINT "household_accounts_user_id_auth_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "household_expenses" ADD CONSTRAINT "household_expenses_household_id_households_id_fk" FOREIGN KEY ("household_id") REFERENCES "public"."households"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "household_expenses" ADD CONSTRAINT "household_expenses_paid_by_member_id_household_members_id_fk" FOREIGN KEY ("paid_by_member_id") REFERENCES "public"."household_members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "household_expenses" ADD CONSTRAINT "household_expenses_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "household_expenses" ADD CONSTRAINT "household_expenses_created_by_auth_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."auth_user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_invites" ADD CONSTRAINT "household_invites_household_id_households_id_fk" FOREIGN KEY ("household_id") REFERENCES "public"."households"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "household_invites" ADD CONSTRAINT "household_invites_member_id_household_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."household_members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_invites" ADD CONSTRAINT "household_invites_invited_by_auth_user_id_fk" FOREIGN KEY ("invited_by") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_invites" ADD CONSTRAINT "household_invites_accepted_by_auth_user_id_fk" FOREIGN KEY ("accepted_by") REFERENCES "public"."auth_user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_members" ADD CONSTRAINT "household_members_household_id_households_id_fk" FOREIGN KEY ("household_id") REFERENCES "public"."households"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_members" ADD CONSTRAINT "household_members_user_id_auth_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "household_members" ADD CONSTRAINT "household_members_added_by_auth_user_id_fk" FOREIGN KEY ("added_by") REFERENCES "public"."auth_user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_settlements" ADD CONSTRAINT "household_settlements_household_id_households_id_fk" FOREIGN KEY ("household_id") REFERENCES "public"."households"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "household_settlements" ADD CONSTRAINT "household_settlements_from_user_id_auth_user_id_fk" FOREIGN KEY ("from_user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "household_settlements" ADD CONSTRAINT "household_settlements_to_user_id_auth_user_id_fk" FOREIGN KEY ("to_user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "household_settlements" ADD CONSTRAINT "household_settlements_from_member_id_household_members_id_fk" FOREIGN KEY ("from_member_id") REFERENCES "public"."household_members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "household_settlements" ADD CONSTRAINT "household_settlements_to_member_id_household_members_id_fk" FOREIGN KEY ("to_member_id") REFERENCES "public"."household_members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_settlements" ADD CONSTRAINT "household_settlements_created_by_auth_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."auth_user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_split_rules" ADD CONSTRAINT "household_split_rules_user_id_auth_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "household_split_rules" ADD CONSTRAINT "household_split_rules_household_id_households_id_fk" FOREIGN KEY ("household_id") REFERENCES "public"."households"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -82,7 +109,9 @@ ALTER TABLE "household_splits" ADD CONSTRAINT "household_splits_user_id_auth_use
 ALTER TABLE "household_splits" ADD CONSTRAINT "household_splits_household_id_households_id_fk" FOREIGN KEY ("household_id") REFERENCES "public"."households"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "households" ADD CONSTRAINT "households_created_by_auth_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."auth_user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "household_accounts_user_idx" ON "household_accounts" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "household_expenses_household_idx" ON "household_expenses" USING btree ("household_id","date");--> statement-breakpoint
 CREATE INDEX "household_invites_household_idx" ON "household_invites" USING btree ("household_id");--> statement-breakpoint
 CREATE INDEX "household_members_user_idx" ON "household_members" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "household_members_household_idx" ON "household_members" USING btree ("household_id");--> statement-breakpoint
 CREATE INDEX "household_settlements_household_idx" ON "household_settlements" USING btree ("household_id");--> statement-breakpoint
 CREATE INDEX "household_splits_household_idx" ON "household_splits" USING btree ("household_id");

@@ -650,7 +650,18 @@ export function recordGoalAction(action: GoalAction, kind: string): void {
 }
 
 /** What happened in a group (closed enum). */
-export type HouseholdAction = "created" | "invite_sent" | "invite_accepted" | "sharing_changed" | "expense_shared" | "settled" | "left";
+export type HouseholdAction =
+  | "created"
+  | "person_added"
+  | "person_removed"
+  | "invite_sent"
+  | "invite_accepted"
+  | "sharing_changed"
+  | "expense_shared"
+  | "group_expense_saved"
+  | "group_expense_deleted"
+  | "settled"
+  | "left";
 
 /** Records an action on a group. */
 export function recordHouseholdAction(action: HouseholdAction): void {

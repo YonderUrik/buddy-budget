@@ -35,11 +35,11 @@ export function PersonAvatar({ initial, slot, name, size = "sm", className }: Pe
 }
 
 /** Overlapping avatars of a group's members, with a ring of the page background between them. */
-export function PersonStack({ people, size = "sm", className }: { people: readonly { userId: string; initial: string; slot: number; name: string }[]; size?: PersonAvatarProps["size"]; className?: string }) {
+export function PersonStack({ people, size = "sm", className }: { people: readonly { id: string; initial: string; slot: number; name: string }[]; size?: PersonAvatarProps["size"]; className?: string }) {
   return (
     <span className={cn("inline-flex items-center", className)}>
       {people.map((p, i) => (
-        <PersonAvatar key={p.userId} initial={p.initial} slot={p.slot} name={p.name} size={size} className={cn(i > 0 && "-ml-2 ring-2 ring-background")} />
+        <PersonAvatar key={p.id} initial={p.initial} slot={p.slot} name={p.name} size={size} className={cn(i > 0 && "-ml-2 ring-2 ring-background")} />
       ))}
     </span>
   );

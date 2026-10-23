@@ -18,6 +18,8 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
       householdName={preview?.householdName ?? ""}
       inviterName={preview?.inviterName ?? ""}
       memberNames={preview?.memberNames ?? []}
+      personName={preview?.personName ?? ""}
+      expenseCount={preview?.expenseCount ?? 0}
       accounts={accounts}
       currency={session?.user.currency ?? "EUR"}
     />

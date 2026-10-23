@@ -2,8 +2,8 @@
 
 /**
  * «Nuovo gruppo» in three steps: the name (with ready-made ones), what the creator shows the group (the app has
- * already ticked the usual choices), then the invitation. The group exists from step two, so the invitation can go
- * out by email or as a link; «Fatto» opens the group page.
+ * already ticked the usual choices), then who is in: people added by name, invited by email or link only if wanted.
+ * The group exists from step two; «Fatto» opens the group page.
  */
 
 import * as React from "react";
@@ -15,9 +15,9 @@ import { HOUSEHOLD_NAME_MAX, HOUSEHOLD_NAME_SUGGESTIONS, looksLikeHouseholdAccou
 import type { ShareableAccount } from "@/lib/households/types";
 import { useLocalization } from "@/lib/localization/provider";
 import { useAccountsQuery } from "@/lib/queries/accounts";
-import { useCreateHouseholdMutation, type SharingPayload } from "@/lib/queries/households";
+import { useCreateHouseholdMutation, useHouseholdSettingsQuery, type SharingPayload } from "@/lib/queries/households";
 import { cn } from "@/lib/utils";
-import { InvitePanel } from "./invite-panel";
+import { MembersSection } from "./members-section";
 import { initialSharing, SharingChoices } from "./sharing-choices";
 
 const STEPS = 3;
@@ -44,6 +44,7 @@ export function NewHouseholdFlow({ currency, doneHref = (id) => `/groups/${id}` 
   const [sharing, setSharing] = React.useState<SharingPayload | null>(null);
   const [createdId, setCreatedId] = React.useState<string | null>(null);
   const create = useCreateHouseholdMutation();
+  const settings = useHouseholdSettingsQuery(createdId);
   const value = sharing ?? initialSharing(accounts);
 
   async function submit(event: React.FormEvent) {
@@ -72,7 +73,7 @@ export function NewHouseholdFlow({ currency, doneHref = (id) => `/groups/${id}` 
       <StepStage stepKey={flow.index} direction={flow.direction}>
         {flow.index === 0 ? (
           <div className="flex flex-col gap-5">
-            <StepHeading title="Come chiamate il gruppo?" description="Lo vede chi ne fa parte. Puoi stare in più gruppi: la coppia, la casa con i coinquilini, la famiglia." />
+            <StepHeading title="Come chiamate il gruppo?" description="Lo vede chi ne fa parte. Puoi stare in più gruppi: la coppia, la casa con i coinquilini, la famiglia, un viaggio." />
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -102,8 +103,8 @@ export function NewHouseholdFlow({ currency, doneHref = (id) => `/groups/${id}` 
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <StepHeading title="Chi inviti?" description="Chi accetta sceglie a sua volta cosa far vedere. Puoi invitare anche più tardi dalla pagina del gruppo." />
-            {createdId ? <InvitePanel householdId={createdId} householdName={name.trim()} /> : null}
+            <StepHeading title="Chi c'è con te?" description="Aggiungi le persone con il loro nome: dividete le spese anche se non sono su BuddyBudget. Invitarle è facoltativo, e si fa anche dopo." />
+            {settings.data ? <MembersSection householdId={settings.data.id} householdName={settings.data.name} members={settings.data.members} compact /> : <div className="h-40 animate-pulse rounded-3xl bg-muted" aria-busy="true" />}
           </div>
         )}
       </StepStage>

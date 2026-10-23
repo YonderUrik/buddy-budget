@@ -27,6 +27,9 @@ export function HouseholdBalanceCard({ overview, currency }: HouseholdBalanceCar
   const { balance, members } = overview;
   const even = balance.transfers.length === 0;
   const lines = balance.transfers.map((t) => transferLine(t, members, money, tr));
+  const headline = balanceHeadline(balance.mine, balance.transfers, members, money, tr);
+  /** The passages under the headline, without the one it already says. */
+  const others = balance.transfers.map((t, i) => ({ t, line: lines[i] })).filter((x) => x.line !== headline);
   const paid = balance.paid.filter((p) => p.amount > 0);
 
   async function confirm() {
@@ -39,24 +42,31 @@ export function HouseholdBalanceCard({ overview, currency }: HouseholdBalanceCar
     <section aria-labelledby="household-balance" className="flex flex-col gap-4 rounded-3xl bg-foreground/[0.05] p-5 sm:p-6">
       <div className="flex flex-col gap-1">
         <h2 id="household-balance" className="text-base font-medium text-text-2">{tr("Tra voi")}</h2>
-        <p className="font-heading text-2xl font-semibold tabular-nums sm:text-3xl">{balanceHeadline(balance.mine, balance.transfers, members, money, tr)}</p>
+        <p className="font-heading text-2xl font-semibold tabular-nums sm:text-3xl">{headline}</p>
         {balance.expenseCount > 0 ? (
           <p className="text-sm text-text-2">
             {balance.expenseCount === 1 ? tr("1 spesa in comune dall'ultimo pareggio") : tr("{0} spese in comune dall'ultimo pareggio", { 0: balance.expenseCount })}
-            {paid.length > 0 ? `: ${paid.map((p) => `${members.find((m) => m.userId === p.userId)?.isMe ? tr("tu") : members.find((m) => m.userId === p.userId)?.name} ${money(p.amount)}`).join(", ")}` : ""}
+            {paid.length > 0
+              ? `: ${paid
+                  .map((p) => {
+                    const who = members.find((m) => m.id === p.memberId);
+                    return `${who?.isMe ? tr("tu") : who?.name} ${money(p.amount)}`;
+                  })
+                  .join(", ")}`
+              : ""}
           </p>
         ) : (
-          <p className="text-sm text-text-2">{tr("Apri una spesa e scegli «In comune con» per dividerla: l'app tiene il conto.")}</p>
+          <p className="text-sm text-text-2">{tr("Aggiungi una spesa qui, o apri una spesa del tuo conto e scegli «In comune con»: l'app tiene il conto.")}</p>
         )}
       </div>
-      {members.length > 2 && !even ? (
+      {members.length > 2 && others.length > 0 ? (
         <ul className="flex flex-col gap-2">
-          {balance.transfers.map((t, i) => {
-            const from = members.find((m) => m.userId === t.fromUserId);
+          {others.map(({ t, line }) => {
+            const from = members.find((m) => m.id === t.from);
             return (
-              <li key={`${t.fromUserId}-${t.toUserId}`} className="flex items-center gap-3">
+              <li key={`${t.from}-${t.to}`} className="flex items-center gap-3">
                 {from ? <PersonAvatar initial={from.initial} slot={from.slot} name={from.name} size="sm" /> : null}
-                <span className="flex-1">{lines[i]}</span>
+                <span className="flex-1">{line}</span>
               </li>
             );
           })}

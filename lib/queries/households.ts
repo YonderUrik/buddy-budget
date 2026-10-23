@@ -2,9 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
+import { splitKind } from "@/lib/households/balance";
 import type {
   HouseholdAccountRow,
   HouseholdAccountTransaction,
+  HouseholdExpenseEntry,
   HouseholdOverview,
   HouseholdPerson,
   HouseholdSettings,
@@ -56,10 +58,11 @@ export function useHouseholdsQuery() {
   });
 }
 
-/** The group page. */
-export function useHouseholdSettingsQuery(id: string) {
+/** The group page (and the last step of «Nuovo gruppo», once the group exists). */
+export function useHouseholdSettingsQuery(id: string | null) {
   return useQuery({
     queryKey: [...HOUSEHOLDS_QUERY_KEY, id, "settings"],
+    enabled: Boolean(id),
     queryFn: () => getJson<HouseholdSettings>(`/api/households/${id}`, "Impossibile caricare il gruppo"),
   });
 }
@@ -89,6 +92,16 @@ export function useSharedAccountsQuery() {
     queryKey: [...HOUSEHOLDS_QUERY_KEY, "shared-accounts"],
     staleTime: HOUSEHOLDS_STALE_MS,
     queryFn: () => getJson<SharedAccountsView>("/api/households/shared-accounts", "Impossibile caricare i conti in comune"),
+  });
+}
+
+/** The group's expenses that count between the members. */
+export function useHouseholdExpensesQuery(id: string) {
+  return useQuery({
+    queryKey: [...HOUSEHOLDS_QUERY_KEY, id, "expenses"],
+    staleTime: HOUSEHOLDS_STALE_MS,
+    queryFn: () =>
+      getJson<{ members: HouseholdPerson[]; expenses: HouseholdExpenseEntry[]; lastSettledAt: string | null }>(`/api/households/${id}/expenses`, "Impossibile caricare le spese del gruppo"),
   });
 }
 
@@ -130,13 +143,80 @@ export function useUpdateHouseholdMutation(id: string) {
   });
 }
 
-/** Sends (or only creates, for a copied link) an invitation; answers the link. */
-export function useCreateInviteMutation(id: string) {
+/** Adds someone by name; with an email the app also invites them. Answers their member id and the invitation link. */
+export function useAddPersonMutation(id: string) {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: (email: string | null) => send<{ url: string; emailed: boolean }>(`/api/households/${id}/invites`, "POST", { email }, "Impossibile creare l'invito"),
-    onSuccess: (_data, email) => {
-      track("household_invite_sent", { channel: email ? "email" : "link" });
+    mutationFn: (input: { name: string; email: string | null }) =>
+      send<{ id: string; url: string | null; emailed: boolean }>(`/api/households/${id}/members`, "POST", input, "Impossibile aggiungere la persona"),
+    onSuccess: (_data, input) => {
+      track("household_person_added", { invite: input.email ? "email" : "none" });
+      return invalidate();
+    },
+  });
+}
+
+/** Removes someone added by name. */
+export function useRemovePersonMutation(id: string) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (memberId: string) => send<null>(`/api/households/${id}/members/${memberId}`, "DELETE", undefined, "Impossibile togliere la persona"),
+    onSuccess: () => {
+      track("household_person_removed");
+      return invalidate();
+    },
+  });
+}
+
+/** Invites someone added by name (or only creates the link to share by hand); answers the link. */
+export function useInviteMemberMutation(id: string) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: { memberId: string; email: string | null }) =>
+      send<{ url: string; emailed: boolean }>(`/api/households/${id}/members/${input.memberId}/invite`, "POST", { email: input.email }, "Impossibile creare l'invito"),
+    onSuccess: (_data, input) => {
+      track("household_invite_sent", { channel: input.email ? "email" : "link" });
+      return invalidate();
+    },
+  });
+}
+
+/** An expense written in the group, as the form sends it. */
+export interface GroupExpensePayload {
+  description: string;
+  amount: number;
+  date: string;
+  paidByMemberId: string;
+  forMemberIds: string[] | null;
+  categoryId: string | null;
+}
+
+/** Writes (`expenseId` null) or changes an expense of the group. `myMemberId` only feeds the analytics event. */
+export function useSaveGroupExpenseMutation(id: string, myMemberId: string | null) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: { expenseId: string | null; expense: GroupExpensePayload }) =>
+      input.expenseId
+        ? send<null>(`/api/households/${id}/expenses/${input.expenseId}`, "PATCH", input.expense, "Impossibile salvare la spesa")
+        : send<{ id: string }>(`/api/households/${id}/expenses`, "POST", input.expense, "Impossibile salvare la spesa"),
+    onSuccess: (_data, input) => {
+      track("household_group_expense_saved", {
+        mode: input.expenseId ? "edit" : "create",
+        people: splitKind(input.expense.forMemberIds, input.expense.paidByMemberId),
+        paidByMe: input.expense.paidByMemberId === myMemberId,
+      });
+      return invalidate();
+    },
+  });
+}
+
+/** Deletes an expense written in the group. */
+export function useDeleteGroupExpenseMutation(id: string) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (expenseId: string) => send<null>(`/api/households/${id}/expenses/${expenseId}`, "DELETE", undefined, "Impossibile eliminare la spesa"),
+    onSuccess: () => {
+      track("household_group_expense_deleted");
       return invalidate();
     },
   });
@@ -187,13 +267,14 @@ export function useSettleHouseholdMutation(id: string) {
   });
 }
 
-/** Sets who pays an expense. */
+/** Sets who pays an expense: the group and who it is for (null = everyone). `myMemberId` only feeds analytics. */
 export function useSetTransactionHouseholdMutation(transactionId: string) {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: (input: { householdId: string | null; rule: "set" | "clear" | "keep" }) => send<null>(`/api/transactions/${transactionId}/household`, "PUT", input, "Impossibile salvare"),
+    mutationFn: (input: { householdId: string | null; forMemberIds: string[] | null; rule: "set" | "clear" | "keep"; myMemberId?: string }) =>
+      send<null>(`/api/transactions/${transactionId}/household`, "PUT", { householdId: input.householdId, forMemberIds: input.forMemberIds, rule: input.rule }, "Impossibile salvare"),
     onSuccess: (_data, input) => {
-      track("household_expense_changed", { shared: input.householdId !== null, remember: input.rule === "set" });
+      track("household_expense_changed", { shared: input.householdId !== null, remember: input.rule === "set", people: splitKind(input.forMemberIds, input.myMemberId ?? "") });
       return invalidate();
     },
   });

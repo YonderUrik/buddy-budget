@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * «In comune con» in a transaction's detail: «Solo mia» or one of the viewer's groups, in equal parts. Choosing a group
- * also sends the merchant's next expenses there (the toast offers «Solo questa»); a merchant rule shows where it
- * came from. Hidden for people without groups, income and transfers; on a shared account it only says so.
+ * «In comune con» in a transaction's detail: «Solo mia» or one of the viewer's groups, then «Per chi»: everyone (the
+ * default), some people, or only someone else (paid entirely for them). Choosing a group also sends the merchant's
+ * next expenses there (the toast offers «Solo questa»); a merchant rule shows where it came from and follows a change
+ * of people. Hidden for people without groups, income and transfers; on a shared account it only says so.
  */
 
 import { toast } from "sonner";
@@ -11,6 +12,8 @@ import { SegmentedControl } from "@/components/domain/shared";
 import { localizedFormats } from "@/lib/localization/format";
 import { useLocalization } from "@/lib/localization/provider";
 import { useHouseholdsQuery, useSetTransactionHouseholdMutation, useTransactionHouseholdQuery } from "@/lib/queries/households";
+import { splitLine } from "./balance-text";
+import { PeopleFor } from "./person-chips";
 
 /** Value of «Solo mia» in the switch. */
 const MINE = "mine";
@@ -46,29 +49,36 @@ export function MovementHouseholdChoice({ transactionId, merchant, amount, curre
 
   const current = choice.householdId ?? MINE;
   const group = groups.find((g) => g.id === choice.householdId);
-  const others = group?.members.filter((m) => !m.isMe) ?? [];
-  const share = group ? amount / group.members.length : 0;
+  const me = group?.members.find((m) => m.isMe);
+  const money = (n: number) => formatCurrency(n, currency);
 
   function choose(value: string) {
     const householdId = value === MINE ? null : value;
     if (householdId === choice!.householdId && choice!.source === "manuale") return;
-    const name = groups.find((g) => g.id === householdId)?.name;
+    const chosen = groups.find((g) => g.id === householdId);
+    const myMemberId = chosen?.members.find((m) => m.isMe)?.id;
     set.mutate(
-      { householdId, rule: householdId ? "set" : "keep" },
+      { householdId, forMemberIds: null, rule: householdId ? "set" : "keep", myMemberId },
       {
         onSuccess: () => {
           if (householdId) {
-            toast.success(tr("In comune con «{0}», anche le prossime da {1}", { 0: name ?? "", 1: merchant }), {
-              action: { label: tr("Solo questa"), onClick: () => set.mutate({ householdId, rule: "clear" }) },
+            toast.success(tr("In comune con «{0}», anche le prossime da {1}", { 0: chosen?.name ?? "", 1: merchant }), {
+              action: { label: tr("Solo questa"), onClick: () => set.mutate({ householdId, forMemberIds: null, rule: "clear", myMemberId }) },
             });
           } else if (choice!.ruleHouseholdId) {
             toast.success(tr("Solo tua, questa volta"), {
-              action: { label: tr("Anche le prossime"), onClick: () => set.mutate({ householdId: null, rule: "clear" }) },
+              action: { label: tr("Anche le prossime"), onClick: () => set.mutate({ householdId: null, forMemberIds: null, rule: "clear" }) },
             });
           }
         },
       }
     );
+  }
+
+  /** New people for the expense; a merchant rule for this group follows them. */
+  function choosePeople(forMemberIds: string[] | null) {
+    if (!group) return;
+    set.mutate({ householdId: group.id, forMemberIds, rule: choice!.ruleHouseholdId === group.id ? "set" : "keep", myMemberId: me?.id });
   }
 
   return (
@@ -83,17 +93,19 @@ export function MovementHouseholdChoice({ transactionId, merchant, amount, curre
           stretch={groups.length < 3}
         />
       </div>
-      {group ? (
-        <p className="text-sm text-text-2">
-          {others.length === 1
-            ? tr("A metà con {0}: ti deve {1} per questa spesa.", { 0: others[0].name, 1: formatCurrency(share, currency) })
-            : tr("In parti uguali con {0}: {1} a testa.", { 0: others.map((o) => o.name).join(", "), 1: formatCurrency(share, currency) })}{" "}
-          {choice.source === "regola"
-            ? tr("Messa qui dall'app: le spese da {0} vanno in «{1}».", { 0: merchant, 1: group.name })
-            : choice.ruleHouseholdId === group.id
-              ? tr("Anche le prossime da {0} vanno qui da sole.", { 0: merchant })
-              : null}
-        </p>
+      {group && me ? (
+        <>
+          <p className="mt-1 text-sm font-medium">{tr("Per chi")}</p>
+          <PeopleFor people={group.members} value={choice.forMemberIds} onChange={choosePeople} ariaLabel="Per chi" />
+          <p className="text-sm text-text-2">
+            {splitLine(amount, me.id, choice.forMemberIds, group.members, money, tr)}{" "}
+            {choice.source === "regola"
+              ? tr("Messa qui dall'app: le spese da {0} vanno in «{1}».", { 0: merchant, 1: group.name })
+              : choice.ruleHouseholdId === group.id
+                ? tr("Anche le prossime da {0} vanno qui da sole.", { 0: merchant })
+                : null}
+          </p>
+        </>
       ) : (
         <p className="text-sm text-text-2">{tr("La paghi tu e conta solo per te.")}</p>
       )}

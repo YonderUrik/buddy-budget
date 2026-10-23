@@ -1,5 +1,5 @@
 {
-  "id": "fb34da81-8e79-453e-9f05-3681293f55c2",
+  "id": "cb88f90b-a711-4e48-a232-4a1d6dc1b20f",
   "prevId": "fd718886-a665-44c0-b8ac-ecfb9da19add",
   "version": "7",
   "dialect": "postgresql",
@@ -5960,6 +5960,163 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.household_expenses": {
+      "name": "household_expenses",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "paid_by_member_id": {
+          "name": "paid_by_member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount": {
+          "name": "amount",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "for_member_ids": {
+          "name": "for_member_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "household_expenses_household_idx": {
+          "name": "household_expenses_household_idx",
+          "columns": [
+            {
+              "expression": "household_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "household_expenses_household_id_households_id_fk": {
+          "name": "household_expenses_household_id_households_id_fk",
+          "tableFrom": "household_expenses",
+          "tableTo": "households",
+          "columnsFrom": [
+            "household_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "household_expenses_paid_by_member_id_household_members_id_fk": {
+          "name": "household_expenses_paid_by_member_id_household_members_id_fk",
+          "tableFrom": "household_expenses",
+          "tableTo": "household_members",
+          "columnsFrom": [
+            "paid_by_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "household_expenses_category_id_categories_id_fk": {
+          "name": "household_expenses_category_id_categories_id_fk",
+          "tableFrom": "household_expenses",
+          "tableTo": "categories",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "household_expenses_created_by_auth_user_id_fk": {
+          "name": "household_expenses_created_by_auth_user_id_fk",
+          "tableFrom": "household_expenses",
+          "tableTo": "auth_user",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.household_invites": {
       "name": "household_invites",
       "schema": "",
@@ -5973,6 +6130,12 @@
         },
         "household_id": {
           "name": "household_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -6058,6 +6221,19 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
+        "household_invites_member_id_household_members_id_fk": {
+          "name": "household_invites_member_id_household_members_id_fk",
+          "tableFrom": "household_invites",
+          "tableTo": "household_members",
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
         "household_invites_invited_by_auth_user_id_fk": {
           "name": "household_invites_invited_by_auth_user_id_fk",
           "tableFrom": "household_invites",
@@ -6103,6 +6279,13 @@
       "name": "household_members",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "household_id": {
           "name": "household_id",
           "type": "uuid",
@@ -6113,7 +6296,13 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "shares_net_worth": {
           "name": "shares_net_worth",
@@ -6122,12 +6311,24 @@
           "notNull": true,
           "default": false
         },
-        "joined_at": {
-          "name": "joined_at",
+        "added_by": {
+          "name": "added_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -6136,6 +6337,21 @@
           "columns": [
             {
               "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "household_members_household_idx": {
+          "name": "household_members_household_idx",
+          "columns": [
+            {
+              "expression": "household_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -6173,18 +6389,32 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "household_members_added_by_auth_user_id_fk": {
+          "name": "household_members_added_by_auth_user_id_fk",
+          "tableFrom": "household_members",
+          "tableTo": "auth_user",
+          "columnsFrom": [
+            "added_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "household_members_household_id_user_id_pk": {
-          "name": "household_members_household_id_user_id_pk",
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "household_members_household_user_unique": {
+          "name": "household_members_household_user_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "household_id",
             "user_id"
           ]
         }
       },
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -6206,15 +6436,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "from_user_id": {
-          "name": "from_user_id",
-          "type": "text",
+        "from_member_id": {
+          "name": "from_member_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "to_user_id": {
-          "name": "to_user_id",
-          "type": "text",
+        "to_member_id": {
+          "name": "to_member_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -6269,12 +6499,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "household_settlements_from_user_id_auth_user_id_fk": {
-          "name": "household_settlements_from_user_id_auth_user_id_fk",
+        "household_settlements_from_member_id_household_members_id_fk": {
+          "name": "household_settlements_from_member_id_household_members_id_fk",
           "tableFrom": "household_settlements",
-          "tableTo": "auth_user",
+          "tableTo": "household_members",
           "columnsFrom": [
-            "from_user_id"
+            "from_member_id"
           ],
           "columnsTo": [
             "id"
@@ -6282,12 +6512,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "household_settlements_to_user_id_auth_user_id_fk": {
-          "name": "household_settlements_to_user_id_auth_user_id_fk",
+        "household_settlements_to_member_id_household_members_id_fk": {
+          "name": "household_settlements_to_member_id_household_members_id_fk",
           "tableFrom": "household_settlements",
-          "tableTo": "auth_user",
+          "tableTo": "household_members",
           "columnsFrom": [
-            "to_user_id"
+            "to_member_id"
           ],
           "columnsTo": [
             "id"
@@ -6349,6 +6579,12 @@
           "type": "date",
           "primaryKey": false,
           "notNull": true
+        },
+        "for_member_ids": {
+          "name": "for_member_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -6421,6 +6657,12 @@
         "household_id": {
           "name": "household_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "for_member_ids": {
+          "name": "for_member_ids",
+          "type": "uuid[]",
           "primaryKey": false,
           "notNull": false
         },

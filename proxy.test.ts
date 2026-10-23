@@ -6,7 +6,7 @@ import { LEGAL_VERSION } from "@/lib/legal";
 import { isPublicPath } from "./proxy";
 
 describe("isPublicPath", () => {
-  it.each(["/api/health", "/api/health/ready", "/api/legal", "/api/cron/gocardless-sync", "/api/metrics", "/api/auth/callback/google", "/favicon.ico", "/api/email/unsubscribe", "/disiscrizione", "/api/gocardless/callback/native", "/banca/ritorno"])(
+  it.each(["/api/health", "/api/health/ready", "/api/legal", "/api/cron/gocardless-sync", "/api/metrics", "/api/auth/callback/google", "/favicon.ico", "/api/email/unsubscribe", "/disiscrizione", "/api/gocardless/callback/native", "/banca/ritorno", "/robots.txt"])(
     "%s è pubblico",
     (path) => {
       expect(isPublicPath(path)).toBe(true);

@@ -1,6 +1,6 @@
 # SEO and indexing: audit, keywords, plan (2026-10-02)
 
-Market: Italy, Italian. Domain to rank: `buddybudget.io` (landing). `app.buddybudget.io` stays out of the index (`noindex` + `robots.txt` with `Disallow: /`, already the case).
+Market: Italy, Italian. Domain to rank: `buddybudget.io` (landing). `app.buddybudget.io` stays out of the index (`robots.txt` with `Disallow: /` except `/login`, which carries `noindex`; until 2026-10-23 the app's `robots.txt` redirected to the sign-in page, so Google crawled the app).
 
 ## 1. Technical audit of the landing
 
@@ -12,7 +12,7 @@ Market: Italy, Italian. Domain to rank: `buddybudget.io` (landing). `app.buddybu
 | Open Graph / Twitter | no image, `summary` card | `og.png` 1200×630, `summary_large_image` card |
 | Structured data | none | JSON-LD: Organization, WebSite, SoftwareApplication (FinanceApplication, price 0), FAQPage |
 | Text with keywords | brand-only H1 ("Quanto vali, davvero?"), generic hero paragraph | hero paragraph with "app per gestire budget, investimenti, fondo pensione e debiti" ("app to manage budget, investments, pension fund and debts") + FAQ section (8 questions) |
-| Sitemap / robots | present, without `lastmod` | `lastmod` added; legal pages excluded while in draft |
+| Sitemap / robots | present, without `lastmod` | `lastmod` added, then removed on 2026-10-23 (it was the build date on every page, which Google learns to ignore) |
 | Rendering | static export: all text is already in the HTML | unchanged (ok) |
 | Image alt | screenshots with descriptive alt, decorative ones with `alt=""` | unchanged (ok) |
 | hreflang | not needed (Italian only) | to be added when i18n arrives |

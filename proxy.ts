@@ -13,8 +13,9 @@ import { PUBLIC_DEMO_READ_ONLY_CODE, PUBLIC_DEMO_READ_ONLY_MESSAGE, isPublicDemo
 // /api/legal serves the current legal version and document links, needed before sign-in and while legal-gated.
 // /api/gocardless/callback/native and /banca/ritorno hand the system browser back to the native app after bank consent:
 // that browser has no session, and neither touches any state (the app completes the link with its bearer token).
+// /robots.txt must answer itself: redirected to /login, Google read the sign-in page as robots.txt (= crawl everything).
 // /reimposta-password receives the emailed password reset link (the token in the address is the authorisation).
-const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/legal", "/api/meta", "/api/cron", "/api/metrics", "/api/email", "/api/gocardless/callback/native", "/banca/ritorno", "/disiscrizione", "/_next", "/favicon.ico"];
+const PUBLIC_PATH_PREFIXES = ["/login", "/reimposta-password", "/demo", "/api/auth", "/api/health", "/api/legal", "/api/meta", "/api/cron", "/api/metrics", "/api/email", "/api/gocardless/callback/native", "/banca/ritorno", "/disiscrizione", "/_next", "/favicon.ico", "/robots.txt"];
 
 /** Unica pagina accessibile a un account disattivato. */
 const DEACTIVATED_PAGE_PATH = "/account-disattivato";

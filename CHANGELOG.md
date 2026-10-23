@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.86.0](https://github.com/YonderUrik/buddy-budget/compare/v0.85.2...v0.86.0) (2026-10-22)
+
+
+### Novità
+
+* budget of the month with proposals, rollover and one-month amounts ([#492](https://github.com/YonderUrik/buddy-budget/issues/492)) ([549119e](https://github.com/YonderUrik/buddy-budget/commit/549119e8d1d1e57ce5dfbe3e84b932bff4a74aea))
+
+
+### Correzioni
+
+* classify all transaction types and report AI job completion ([#491](https://github.com/YonderUrik/buddy-budget/issues/491)) ([5d8e97c](https://github.com/YonderUrik/buddy-budget/commit/5d8e97cb1d3bd27c60a0f8f22fd981d13ed82df5))
+
 ## [0.85.2](https://github.com/YonderUrik/buddy-budget/compare/v0.85.1...v0.85.2) (2026-10-22)
 
 

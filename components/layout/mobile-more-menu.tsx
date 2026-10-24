@@ -35,6 +35,7 @@ export type MoreMenuAction = "sezione" | "impostazioni" | "aiuto" | "importi" | 
 
 /** Spiegazione di una riga per `href`, in italiano semplice: cosa si trova dentro la sezione. */
 export const MORE_MENU_HINTS: Record<string, string> = {
+  "/debiti": "Mutuo e prestiti: rate, interessi e quando finisci",
   "/pensione": "Fondi, rendimento e a quanto arriverai",
   "/analitiche": "Quando arrivi al traguardo e cosa cambia con le tue ipotesi",
 };

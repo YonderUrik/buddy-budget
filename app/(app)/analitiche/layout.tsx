@@ -7,22 +7,17 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import * as React from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HelpCircle, Plus } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { ANALYTICS_TABS, GOALS_BASE_PATH, WalkthroughDialog } from "@/components/domain/analytics";
 import { LoadError, SectionHeading, SectionTabs } from "@/components/domain/shared";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { AnalyticsProvider, useAnalytics } from "@/lib/analitiche/analytics-context";
 import { GOAL_PARAM } from "@/lib/start";
 
 const DISCLAIMER =
   "Stime a scopo informativo basate su ipotesi tue, non previsioni né consulenza finanziaria o fiscale. Le regole fiscali sono semplificate: verificale prima di decisioni importanti.";
-
-/** Indirizzo che apre il form «Nuovo obiettivo» nella vista Obiettivi. */
-const NEW_GOAL_HREF = `${GOALS_BASE_PATH}?nuovo=1`;
 
 function Header({ action }: { action?: React.ReactNode }) {
   const { t: tr } = useLocalization();
@@ -46,23 +41,14 @@ function Header({ action }: { action?: React.ReactNode }) {
   );
 }
 
-/** Vista Obiettivi: testata con «Nuovo obiettivo»; il dettaglio di un obiettivo ha la sua testata. */
+/** Obiettivi view: heading (a new goal comes from «Aggiungi» or the empty state); a goal's detail has its own heading. */
 function GoalsShell({ children }: { children: React.ReactNode }) {
   const { t: tr } = useLocalization();
   const pathname = usePathname();
   const detail = pathname.length > GOALS_BASE_PATH.length + 1;
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      {detail ? null : (
-        <Header
-          action={
-            <Link href={NEW_GOAL_HREF} scroll={false} className={cn(buttonVariants({ variant: "sun" }), "h-11 shrink-0 sm:h-9")}>
-              <Plus className="size-4" aria-hidden="true" />
-              <span className="max-sm:sr-only">{tr("Nuovo obiettivo")}</span>
-            </Link>
-          }
-        />
-      )}
+      {detail ? null : <Header />}
       {children}
       <p className="text-xs text-muted-foreground">{tr(DISCLAIMER)}</p>
     </div>

@@ -39,6 +39,8 @@ export { InstrumentManualForm } from "./instrument-manual-form";
 export type { InstrumentManualFormProps } from "./instrument-manual-form";
 export { RegisterOperationForm } from "./register-operation-form";
 export type { RegisterOperationFormProps, RegisterOperationInitial } from "./register-operation-form";
+export { RegisterOperationDialog } from "./register-operation-dialog";
+export type { RegisterOperationDialogProps } from "./register-operation-dialog";
 export { ManualPriceDialog } from "./manual-price-dialog";
 export type { ManualPriceDialogProps } from "./manual-price-dialog";
 export { prefillPurchase } from "./register-operation-form.state";

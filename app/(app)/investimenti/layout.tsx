@@ -3,16 +3,17 @@ import { useLocalization } from "@/lib/localization/provider";
 import { isCountryPathAvailable } from "@/lib/localization/config";
 
 /**
- * Layout di Investimenti: titolo, bottoni Importa/Registra, schede (Portafoglio, Proventi, Tasse) e i dialog
- * condivisi. Usa la stessa query della scheda Portafoglio al periodo di default: nessuna richiesta in più.
- * La pagina di un singolo titolo è una scheda a sé: niente intestazione né schede, solo i dialog condivisi.
+ * Investimenti layout: title, «Importazioni fatte», tabs (Portafoglio, Proventi, Tasse) and the shared dialogs (the empty
+ * state and the tabs open them; a new operation or broker statement otherwise comes from the app-wide «Aggiungi»). It
+ * reads the same query as the Portafoglio tab at the default period: no extra request.
+ * A single security's page stands on its own: no heading or tabs, only the shared dialogs.
  */
 
-import { FormDialogContent, SectionHeading } from "@/components/domain/shared";
+import { SectionHeading } from "@/components/domain/shared";
 import * as React from "react";
 import { BrokerSelectionProvider } from "@/lib/investments/broker-selection";
 import { usePathname } from "next/navigation";
-import { DatabaseIcon, Plus, Upload } from "lucide-react";
+import { DatabaseIcon } from "lucide-react";
 import {
   ImportManagementDialog,
   InvestmentImportDialog,
@@ -20,15 +21,10 @@ import {
   InvestmentsActionsProvider,
   InvestmentsTabs,
   INVESTMENTS_TABS,
-  PanelDialogHeader,
-  RegisterOperationForm,
+  RegisterOperationDialog,
   type RegisterOperationInitial,
 } from "@/components/domain/investments";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
-import { heldInstruments, toTransactionInputs } from "@/lib/investments/view";
-import { toDateKey } from "@/lib/calc/net-worth";
-import { startOfDay } from "@/lib/calc/expenses";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 
@@ -49,10 +45,6 @@ export default function InvestimentiLayout({ children }: { children: React.React
 
   const data = overview.data;
   const currency = data?.currency ?? "EUR";
-  const suggestions = React.useMemo(
-    () => (data ? heldInstruments(toTransactionInputs(data), new Map(data.instruments.map((i) => [i.id, i])), toDateKey(startOfDay(new Date()))) : []),
-    [data]
-  );
 
   return (
     <BrokerSelectionProvider><InvestmentsActionsProvider value={actions}>
@@ -61,18 +53,9 @@ export default function InvestimentiLayout({ children }: { children: React.React
           <div className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-3">
               <SectionHeading title={tr("Investimenti")} tabs={tabs} activeHref={pathname} analyticsKey="investimenti" />
-              <div className="flex shrink-0 gap-2">
-                <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label={tr("Importazioni fatte")} title={tr("Importazioni fatte")}>
-                  <DatabaseIcon size={16} aria-hidden="true" />
-                </Button>
-                {/* Su mobile solo icone: con le etichette la testata era più larga dello schermo e la pagina scorreva di lato. */}
-                <Button variant="outline" className="size-11 gap-1.5 sm:size-auto" onClick={() => setImportOpen(true)} aria-label={tr("Importa")}>
-                  <Upload size={15} aria-hidden="true" />{" "}<span className="hidden sm:inline">{tr("Importa")}</span>
-                </Button>
-                <Button variant="sun" className="size-11 gap-1.5 sm:size-auto" onClick={() => setRegisterInitial({ instrument: null })} aria-label={tr("Registra operazione")}>
-                  <Plus size={15} aria-hidden="true" />{" "}<span className="hidden sm:inline">{tr("Registra")}</span>
-                </Button>
-              </div>
+              <Button variant="ghost" size="icon" className="size-11 shrink-0 sm:size-9" onClick={() => setManagementOpen(true)} aria-label={tr("Importazioni fatte")} title={tr("Importazioni fatte")}>
+                <DatabaseIcon size={16} aria-hidden="true" />
+              </Button>
             </div>
             <InvestmentsTabs activeHref={pathname} />
           </div>
@@ -81,19 +64,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
         {children}
       </div>
 
-      <Dialog open={registerInitial !== null} onOpenChange={(open) => !open && setRegisterInitial(null)}>
-        <FormDialogContent>
-          <PanelDialogHeader icon={Plus} title={tr("Registra operazione")} description={tr("Un acquisto, una vendita, un dividendo o un altro movimento del portafoglio.")} color="var(--swatch-indigo)" />
-          {registerInitial ? (
-            <RegisterOperationForm
-              currency={currency}
-              initial={registerInitial}
-              heldInstruments={suggestions}
-              onSuccess={() => setRegisterInitial(null)}
-            />
-          ) : null}
-        </FormDialogContent>
-      </Dialog>
+      <RegisterOperationDialog initial={registerInitial} onClose={() => setRegisterInitial(null)} />
       <ImportManagementDialog open={managementOpen} onOpenChange={setManagementOpen} />
       <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} />
     </InvestmentsActionsProvider></BrokerSelectionProvider>

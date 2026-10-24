@@ -440,3 +440,11 @@
   background-color: var(--primary);
   color: var(--primary-foreground);
 }
+
+/* «Aggiungi» opened from the sidebar: the panel sits next to the button and the page behind is dimmed only lightly. */
+@media (min-width: 768px) {
+  body:has([data-quick-add-anchored]) [data-slot="dialog-overlay"] {
+    background-color: rgb(0 0 0 / 0.08);
+    backdrop-filter: none;
+  }
+}

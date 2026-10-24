@@ -17,7 +17,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     id: "import-csv",
     question: "Come importo i movimenti o le operazioni da un file?",
     answer:
-      "Da Liquidità → Conti puoi aggiungere un conto importando un CSV, e da Investimenti → Operazioni importi gli estratti del broker. Gestisci e cancella gli import da «Gestione importazioni».",
+      "Tocca «Aggiungi» (il + nella barra in basso, o in cima al menu sul computer) e scegli «Movimenti da un file» per il CSV o l'Excel della banca, o «Il rendiconto del broker» per gli investimenti. Gestisci e cancella gli import da «Gestione importazioni».",
   },
   {
     id: "categoria-sbagliata",

@@ -7,6 +7,7 @@ import { PersonalImportIsland } from "@/components/domain/personal-import";
 import { SyncProgressIndicator } from "@/components/domain/sync";
 import { WelcomeToast } from "@/components/domain/welcome";
 import { QuickReportProvider } from "@/components/domain/support";
+import { QuickAddProvider } from "@/components/domain/quick-add";
 // Direct file import: the auth barrel also carries the login preview, which the app layout must not load.
 import { RememberReturningUser } from "@/components/domain/auth/remember-returning-user";
 import { auth } from "@/lib/auth";
@@ -22,6 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <PrivacyProvider initialHidden={session?.user.hideAmounts === true}>
       <QuickReportProvider>
       <BackHistoryRecorder />
+      <QuickAddProvider>
       <AttentionShell sidebarExtra={<SidebarInsightsSlot />}>
         <PrivacyBoundary>
           {isPublicDemo ? (
@@ -39,6 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {isPublicDemo ? <PublicDemoFooter /> : null}
         </PrivacyBoundary>
       </AttentionShell>
+      </QuickAddProvider>
       <SyncProgressIndicator>
         <PersonalImportIsland />
       </SyncProgressIndicator>

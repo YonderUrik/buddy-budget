@@ -52,8 +52,8 @@ async function completed(id) {
     await personal.screenshot({ path: out + '/personal-imported.png', fullPage: true });
     console.log('Personal fallback imported, support delivery captured');
     const broker = await pageFor(browser, 'e2e-broker');
-    await broker.goto(origin + '/investimenti/operazioni');
-    await broker.getByRole('button', {name:'Importa',exact:true}).click();
+    // The broker statement form opens from the app-wide «Aggiungi» link.
+    await broker.goto(origin + '/investimenti/operazioni?aggiungi=rendiconto');
     await broker.getByRole('checkbox').check();
     const brokerId = await uploaded(broker, () => broker.locator('input[type=file]').setInputFiles({ name: 'synthetic-broker.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) }));
     await broker.getByText("La lettura standard non è riuscita.", { exact: false }).waitFor();

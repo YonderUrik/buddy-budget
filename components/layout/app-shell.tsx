@@ -32,7 +32,8 @@ import { withCountryLocks } from "@/components/layout/country-locks";
 import { useCallback, useEffect, useState } from "react";
 import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
-import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
+import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BOTTOM_NAV_HREFS_WITH_ACTION, BottomNav } from "@/components/layout/bottom-nav";
+import type { ShellAction } from "@/components/layout/shell-action";
 import { useCompactOnScroll } from "@/components/layout/use-compact-on-scroll";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
 import { SectionTransition } from "@/components/layout/section-transition";
@@ -65,15 +66,18 @@ interface InnerShellProps {
   sidebarExtra?: React.ReactNode;
   navBadges?: Record<string, NavBadge>;
   onOpenSupport?: () => void;
+  addAction?: ShellAction;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, addAction }: InnerShellProps) {
   const { t: tr } = useLocalization();
   const { productCountry } = useLocalization();
   const navigation = withCountryLocks(NAV_ITEMS, productCountry);
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
+  // With the main action beside the bar one section moves to «Altro», so every label still fits on a phone.
+  const bottomHrefs: readonly string[] = addAction ? BOTTOM_NAV_HREFS_WITH_ACTION : BOTTOM_NAV_HREFS;
   // Reading down the page: the bottom bar gets compact and the top bar folds away, both come back on the way up.
   const scrolledDown = useCompactOnScroll(MAIN_CONTENT_ID);
   const openMore = useCallback(() => setMoreOpen(true), []);
@@ -123,7 +127,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} />
+          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} addAction={addAction} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -148,6 +152,8 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
       {bottomNav ? (
         <BottomNav
           items={navigation}
+          primaryHrefs={bottomHrefs}
+          action={addAction}
           activeHref={activeHref}
           badges={navBadges}
           onOpenMore={openMore}
@@ -161,7 +167,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
         <MobileMoreMenu
           open={moreOpen}
           onClose={closeMore}
-          items={navigation.filter((i) => !(BOTTOM_NAV_HREFS as readonly string[]).includes(i.href))}
+          items={navigation.filter((i) => !bottomHrefs.includes(i.href))}
           activeHref={activeHref}
           badges={navBadges}
           extra={sidebarExtra}
@@ -202,6 +208,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
             onClose={closeMobile}
             badges={navBadges}
             extra={sidebarExtra}
+            addAction={addAction}
           />
         </div>
         </>
@@ -228,16 +235,18 @@ interface AppShellProps {
   topbarLeading?: (fallback: React.ReactNode) => React.ReactNode;
   /** Shown at the top of the scrolling content, above the page (e.g. a desktop back button). */
   contentHeader?: React.ReactNode;
+  /** Main action always at hand (e.g. «Aggiungi»): in the bottom bar on the phone, in the sidebar on desktop. */
+  addAction?: ShellAction;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, addAction }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader} addAction={addAction}>
         {children}
       </InnerShell>
     </SidebarProvider>

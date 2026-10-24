@@ -21,7 +21,9 @@ Dependabot already uses `chore(deps)`: it does not trigger a release.
 2. When you want to ship to production, review and **merge the release PR**. It is the only manual step.
 3. On merge, release-please creates the `vX.Y.Z` tag and the GitHub Release with the notes; in the same run the CI builds the images with the tags `X.Y.Z`, `sha-xxxxxxx` and `main` and updates the tag in the infra repo (app, migrate, landing), from which ArgoCD does the rollout. Deploys appear in the *Deployments* tab (environments `production` and `landing`).
 
-Normal merges build the images (`sha-…`, `main`) but do **not** deploy them: deployment happens only on releases.
+Normal merges build the images (`sha-…`, including full commit tags, and `main`)
+and publish a staging candidate after checks pass. The staging host pulls successful
+candidates; **production deployment happens only on releases**. See [staging](staging.md).
 
 ## One-time configuration
 
@@ -43,7 +45,7 @@ Normal merges build the images (`sha-…`, `main`) but do **not** deploy them: d
 
 ## Images and auto-merge
 
-- The images (app, migrator, landing) are built and published only in the run of the release PR merge, with tags `sha-…`, `main` and `X.Y.Z`. A normal push to `main` only runs the tests and keeps the release PR up to date.
+- App, migrator and CSV worker images are built on every push to `main`, tagged with the short and full commit SHA and `main`. Releases additionally publish `X.Y.Z` and `latest`. Landing images remain release-only. Successful app checks and all three published images produce a `staging-candidate` deployment record for the staging host to consume.
 - `automerge.yml` enables auto-merge (squash) on Dependabot patch PRs and on `bot/landing-screens`. It requires "Allow auto-merge" in the repo settings and the required checks in branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): the protection decides when to merge. The release PR and every minor/major remain manual.
 
 ## Dependencies: patch only

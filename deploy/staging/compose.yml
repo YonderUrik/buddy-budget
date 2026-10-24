@@ -1,0 +1,158 @@
+name: buddybudget-staging
+
+x-service: &service
+  restart: unless-stopped
+  dns: [1.1.1.1, 9.9.9.9]
+  logging:
+    driver: local
+    options: {max-size: 10m, max-file: '3'}
+  security_opt: [no-new-privileges:true]
+
+x-app-env: &app-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?}@postgres:5432/buddybudget?sslmode=disable
+  REDIS_URL: redis://redis:6379
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?}
+  BETTER_AUTH_URL: ${APP_URL:?}
+  APP_URL: ${APP_URL:?}
+  CRON_SECRET: ${CRON_SECRET:?}
+  DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?}
+  PERSONAL_CSV_ENCRYPTION_KEY: ${PERSONAL_CSV_ENCRYPTION_KEY:?}
+  SELF_HOSTED: 'false'
+  AUTH_PASSWORD: 'false'
+  ALLOW_SIGNUPS: 'true'
+  # Capture every email locally, including sign-in links. Never inherit a live provider.
+  SMTP_URL: smtp://mailpit:1025
+  EMAIL_FROM: BuddyBudget Staging <staging@example.test>
+  RESEND_API_KEY: ''
+  GOOGLE_CLIENT_ID: ''
+  GOOGLE_CLIENT_SECRET: ''
+  GOCARDLESS_SECRET_ID: ''
+  GOCARDLESS_SECRET_KEY: ''
+  BANK_CONNECTIONS_OPEN: 'false'
+  GOCARDLESS_CLEANUP_MODE: 'off'
+  INACTIVITY_CLEANUP_MODE: 'dry-run'
+  NOTIFICATIONS_MODE: execute
+  PUBLIC_DEMO_ENABLED: 'true'
+  SUPPORT_EMAIL_TO: ''
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+  OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-v4.1-flash}
+  LOG_LEVEL: info
+
+services:
+  postgres:
+    <<: *service
+    image: postgres:17-alpine
+    mem_limit: 768m
+    cpus: 1
+    environment:
+      POSTGRES_USER: buddybudget
+      POSTGRES_DB: buddybudget
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U buddybudget -d buddybudget]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    <<: *service
+    image: redis:7-alpine
+    mem_limit: 192m
+    cpus: 0.25
+    command: [redis-server, --save, '', --appendonly, 'no', --maxmemory, 128mb, --maxmemory-policy, noeviction]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  mailpit:
+    <<: *service
+    image: axllent/mailpit@sha256:0790692be935ea4420d085694f7985b1f692ca6a8771ab0e0bd8ba75ac180498
+    mem_limit: 192m
+    cpus: 0.25
+    environment:
+      MP_WEBROOT: /mail/
+      MP_MAX_MESSAGES: '200'
+      MP_MAX_AGE: 7d
+      MP_DISABLE_VERSION_CHECK: 'true'
+      MP_LABEL: BuddyBudget staging — test email only
+
+  migrate:
+    <<: *service
+    image: ghcr.io/yonderurik/buddy-budget-migrate:${BUDDYBUDGET_VERSION:?}
+    restart: 'no'
+    mem_limit: 768m
+    cpus: 1
+    environment: *app-env
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  app:
+    <<: *service
+    image: ghcr.io/yonderurik/buddy-budget:${BUDDYBUDGET_VERSION:?}
+    mem_limit: 1536m
+    cpus: 2
+    environment: *app-env
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+      mailpit: {condition: service_started}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+
+  csv-worker:
+    <<: *service
+    image: ghcr.io/yonderurik/buddy-budget-csv-worker:${BUDDYBUDGET_VERSION:?}
+    profiles: [ai]
+    mem_limit: 1024m
+    cpus: 1
+    environment: *app-env
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+
+  cron:
+    <<: *service
+    image: alpine:3.21
+    mem_limit: 64m
+    cpus: 0.1
+    environment:
+      CRON_SECRET: ${CRON_SECRET:?}
+    volumes: [./scheduler.sh:/scheduler.sh:ro]
+    command: [sh, /scheduler.sh]
+    depends_on:
+      app: {condition: service_healthy}
+
+  gateway:
+    <<: *service
+    image: nginx@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+    mem_limit: 96m
+    cpus: 0.25
+    ports: ['127.0.0.1:3080:80']
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${STAGING_ROOT:?}/secrets/htpasswd:/etc/nginx/htpasswd:ro
+    depends_on:
+      app: {condition: service_healthy}
+
+  tunnel:
+    <<: *service
+    image: cloudflare/cloudflared@sha256:b269e8abd07a5bf6f3f4be65d5050b2174eca89c56a0241a8ff32a16aec454e4
+    profiles: [public]
+    user: '1000:1000'
+    mem_limit: 192m
+    cpus: 0.5
+    command: [tunnel, --no-autoupdate, --config, /etc/cloudflared/config.yml, run]
+    volumes:
+      - ${STAGING_ROOT:?}/secrets/cloudflare:/etc/cloudflared:ro
+    depends_on: [gateway]
+
+volumes:
+  postgres-data:

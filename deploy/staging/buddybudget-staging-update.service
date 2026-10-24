@@ -1,0 +1,9 @@
+[Unit]
+Description=Deploy the latest tested BuddyBudget staging candidate
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/buddy-budget-staging
+ExecStart=/usr/bin/python3 %h/buddy-budget-staging/update.py
+TimeoutStartSec=15min
+UMask=0077

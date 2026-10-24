@@ -74,7 +74,8 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
-  const bottomNavCompact = useCompactOnScroll(MAIN_CONTENT_ID, bottomNav);
+  // Reading down the page: the bottom bar gets compact and the top bar folds away, both come back on the way up.
+  const scrolledDown = useCompactOnScroll(MAIN_CONTENT_ID);
   const openMore = useCallback(() => setMoreOpen(true), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);
 
@@ -110,7 +111,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} leading={topbarLeading} />
+      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} leading={topbarLeading} collapsed={scrolledDown} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -151,7 +152,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
           badges={navBadges}
           onOpenMore={openMore}
           onTabClick={(key) => track("bottom_nav_clicked", { tab: BOTTOM_NAV_TABS[key] ?? "altro" })}
-          compact={bottomNavCompact}
+          compact={scrolledDown}
         />
       ) : null}
 

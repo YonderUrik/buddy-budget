@@ -12,6 +12,8 @@ import { useLocalization } from "@/lib/localization/provider";
  * - Brand/logo testuale, che è un link alla pagina iniziale dell'app (`/`)
  * - Hamburger button (apre il drawer via SidebarContext)
  * Tema e «Nascondi importi» stanno nel menu utente del drawer o in «Altro».
+ * With `collapsed` the row folds away (scrolling down the page, together with the compact bottom bar) and comes back on
+ * the way up; the status bar strip under the notch stays.
  *
  * Riusabilità: accetta `brandName` come prop per essere
  * adattata ad altre app senza modifiche al componente.
@@ -21,7 +23,9 @@ import type * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, MessageCircleQuestion } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { useSidebar } from "@/components/layout/sidebar-context";
+import { BAR_RESIZE_TRANSITION } from "@/lib/motion/springs";
 
 // ---------------------------------------------------------------------------
 // Componente
@@ -39,10 +43,16 @@ interface MobileTopbarProps {
    * to render. An element marked `data-topbar-back` takes the brand's place too, so a long label has room.
    */
   leading?: (fallback: React.ReactNode) => React.ReactNode;
+  /** Folds the row away (the user is reading down the page), leaving only the status bar strip. Default: false. */
+  collapsed?: boolean;
 }
 
-export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true, onOpenSupport, leading }: MobileTopbarProps) {
+/** Height of the bar's row (rem), under the status bar strip: the iOS navigation bar height. */
+const MOBILE_TOPBAR_ROW_REM = 2.75;
+
+export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true, onOpenSupport, leading, collapsed = false }: MobileTopbarProps) {
   const { t: tr } = useLocalization();
+  const reduced = useReducedMotion() ?? false;
   const { openMobile } = useSidebar();
 
   // Hamburger (without it, an empty square keeps the brand centred).
@@ -68,12 +78,20 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
       className={[
         "group md:hidden",
         // Below the notch/camera cutout when the page is drawn under the status bar (0 in a normal browser tab).
-        "grid box-content h-14 grid-cols-[1fr_auto_1fr] items-center gap-2 pt-[env(safe-area-inset-top)]",
+        "box-content pt-[env(safe-area-inset-top)]",
         "bg-sidebar border-b border-sidebar-border",
-        "px-4 shrink-0",
+        "shrink-0",
       ].join(" ")}
       aria-label={tr("Barra di navigazione")}
     >
+      {/* The row folds away while reading down the page; only the status bar strip stays. */}
+      <motion.div
+        initial={false}
+        animate={collapsed ? { height: 0, opacity: 0 } : { height: `${MOBILE_TOPBAR_ROW_REM}rem`, opacity: 1 }}
+        transition={reduced ? { duration: 0 } : BAR_RESIZE_TRANSITION}
+        inert={collapsed}
+        className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 overflow-hidden px-4"
+      >
       <div className="col-start-1 row-start-1 flex min-w-0 items-center justify-self-start group-has-[[data-topbar-back]]:col-span-2">
         {leading ? leading(menuSlot) : menuSlot}
       </div>
@@ -107,6 +125,7 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
       ) : (
         <span className="col-start-3 row-start-1 size-9 justify-self-end" aria-hidden="true" />
       )}
+      </motion.div>
     </header>
   );
 }

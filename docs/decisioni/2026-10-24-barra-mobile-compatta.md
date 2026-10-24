@@ -7,3 +7,7 @@ tab bar. The logic is a pure function (`lib/navigation/compact-on-scroll.ts`, te
 changes nothing. After the first video Daniele asked for a smoother movement and a more transparent «Liquid Glass» bar: the size now follows one 280 ms iOS-like ease (the sheets' curve) with the labels fading and blurring out, and the capsule is a translucent glass (theme tokens `--glass*`) over a blurred, more saturated page, opaque where `backdrop-filter` is missing. Reduced motion swaps the animation for an instant change. The capsule also keeps clear of the side safe areas, and the mobile top bar pads below the notch/camera cutout (as already done in the native-app PR). The content keeps the full bar's bottom space,
 so nothing jumps. Same behaviour in the browser and in the Capacitor app (safe area unchanged). No new signal: no new
 action or outcome to observe.
+
+With the notch padding the top bar felt too tall to Daniele: its row is now 44 px (iOS navigation bar height, was 56) and
+it folds away while reading down the page, together with the compact bottom bar, leaving only the status bar strip;
+it comes back on the way up and at the top.

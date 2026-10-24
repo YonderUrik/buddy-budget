@@ -112,7 +112,7 @@ export default function CategorizzaPage() {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4 max-md:min-h-[calc(100dvh-3.5rem-var(--bottom-nav-offset,0px)-env(safe-area-inset-bottom))] sm:gap-6 sm:p-6 md:gap-5">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4 max-md:min-h-[calc(100dvh-2.75rem-env(safe-area-inset-top)-var(--bottom-nav-offset,0px)-env(safe-area-inset-bottom))] sm:gap-6 sm:p-6 md:gap-5">
       {/* In basso: il menu «⋯» sta all'altezza del titolo, non del link in alto. */}
       <div className="flex items-end gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">

@@ -76,8 +76,8 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
-  // With the main action in the middle of the bar one section moves to «Altro», so the action sits at the centre.
-  const bottomHrefs: readonly string[] = addAction && addAction.placement !== "beside" ? BOTTOM_NAV_HREFS_WITH_ACTION : BOTTOM_NAV_HREFS;
+  // With the main action beside the bar one section moves to «Altro», so every label still fits on a phone.
+  const bottomHrefs: readonly string[] = addAction ? BOTTOM_NAV_HREFS_WITH_ACTION : BOTTOM_NAV_HREFS;
   // Reading down the page: the bottom bar gets compact and the top bar folds away, both come back on the way up.
   const scrolledDown = useCompactOnScroll(MAIN_CONTENT_ID);
   const openMore = useCallback(() => setMoreOpen(true), []);

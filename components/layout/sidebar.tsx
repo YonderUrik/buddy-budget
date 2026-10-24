@@ -335,7 +335,7 @@ interface AppSidebarProps {
   extra?: React.ReactNode;
   /** Apre il foglio «Scrivici» (segnalazione rapida); senza, il pulsante non compare. */
   onOpenSupport?: () => void;
-  /** Main action (e.g. «Aggiungi»): a pill under the logo or a round button next to it. */
+  /** Main action (e.g. «Aggiungi»): a pill under the logo (a yellow round button when the sidebar is collapsed). */
   addAction?: ShellAction;
 }
 
@@ -421,38 +421,22 @@ export function AppSidebar({
           </>
         )}
       </Link>
-      {addAction && addAction.sidebar === "round" && !isCollapsed ? (
-        <button
-          type="button"
-          onClick={(event) => {
-            addAction.onClick(event.currentTarget);
-            onClose?.();
-          }}
-          aria-label={tr(addAction.label)}
-          title={tr(addAction.label)}
-          aria-haspopup="dialog"
-          className="ml-auto flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-sun text-on-sun transition-colors hover:bg-sun-hover"
-        >
-          <addAction.icon className="size-5" strokeWidth={2.25} aria-hidden="true" />
-        </button>
-      ) : null}
     </div>
   );
 
   // Main action under the logo: a pill with the label (a round button when the sidebar is collapsed).
   const addRow =
-    addAction && (addAction.sidebar !== "round" || isCollapsed) ? (
+    addAction ? (
       <div className={cn("px-2 pb-2", isCollapsed && "flex justify-center")}>
         <button
           type="button"
           onClick={(event) => {
-            addAction.onClick(event.currentTarget);
+            addAction.onClick(event.currentTarget, "sidebar");
             onClose?.();
           }}
           aria-label={isCollapsed ? tr(addAction.label) : undefined}
           title={isCollapsed ? tr(addAction.label) : undefined}
           aria-haspopup="dialog"
-          aria-keyshortcuts={addAction.shortcut}
           className={cn(
             "group/add flex cursor-pointer items-center rounded-full text-sm font-medium text-sidebar-foreground transition-colors duration-150",
             isCollapsed ? "size-11 justify-center bg-sun text-on-sun hover:bg-sun-hover" : "h-11 w-full gap-3 bg-sidebar-accent pr-4 pl-1.5 hover:bg-sidebar-accent/70"
@@ -466,11 +450,6 @@ export function AppSidebar({
                 <addAction.icon className="size-4" strokeWidth={2.5} aria-hidden="true" />
               </span>
               <span className="truncate">{tr(addAction.label)}</span>
-              {addAction.shortcut ? (
-                <span className="ml-auto rounded-md border border-sidebar-border px-1.5 text-xs leading-5 text-sidebar-foreground/60" aria-hidden="true">
-                  {addAction.shortcut}
-                </span>
-              ) : null}
             </>
           )}
         </button>

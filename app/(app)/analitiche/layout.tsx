@@ -41,7 +41,7 @@ function Header({ action }: { action?: React.ReactNode }) {
   );
 }
 
-/** Vista Obiettivi: testata (a new goal comes from «Aggiungi» or the empty state); il dettaglio di un obiettivo ha la sua testata. */
+/** Obiettivi view: heading (a new goal comes from «Aggiungi» or the empty state); a goal's detail has its own heading. */
 function GoalsShell({ children }: { children: React.ReactNode }) {
   const { t: tr } = useLocalization();
   const pathname = usePathname();

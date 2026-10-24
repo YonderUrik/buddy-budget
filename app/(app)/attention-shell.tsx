@@ -11,7 +11,8 @@ import { PageBackBar, TopBarBack } from "@/components/domain/shared";
 const renderTopBarBack = (fallback: React.ReactNode) => <TopBarBack fallback={fallback} />;
 
 /**
- * AppShell with the «Scrivici» button and the app-wide «‹» back button (top bar on the phone, above the page on desktop).
+ * AppShell with the «Scrivici» button, the app-wide «Aggiungi» (middle of the bottom bar, top of the sidebar) and the
+ * app-wide «‹» back button (top bar on the phone, above the page on desktop).
  * Liquidità has no count badge in the navigation: transactions to decide are shown inside the section («Da decidere»).
  */
 export function AttentionShell({ children, sidebarExtra }: { children: React.ReactNode; sidebarExtra?: React.ReactNode }) {
@@ -23,10 +24,7 @@ export function AttentionShell({ children, sidebarExtra }: { children: React.Rea
         ? {
             label: "Aggiungi",
             icon: Plus,
-            placement: quickAdd.style.placement,
-            sidebar: quickAdd.style.sidebar,
-            shortcut: quickAdd.style.shortcut,
-            onClick: (anchor) => quickAdd.open(anchor.closest("aside") ? "sidebar" : "barra", anchor),
+            onClick: (anchor, origin) => quickAdd.open(origin === "sidebar" ? "sidebar" : "barra", anchor),
           }
         : undefined,
     [quickAdd]

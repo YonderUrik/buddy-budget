@@ -2,9 +2,9 @@
 
 
 /**
- * Scheda Portafoglio di Investimenti, la più essenziale: quanto vale e quanto ha guadagnato, e le posizioni (con la ricerca di un titolo e quelli seguiti).
- * Performance, diversificazione, proventi, tasse e operazioni hanno le loro schede; titolo, schede e dialog
- * "Registra"/"Importa" sono nel layout.
+ * Portafoglio tab of Investimenti, the most essential one: what it is worth and what it earned, and the positions (with
+ * the security search and the watched ones). Performance, diversification, income, taxes and operations have their own
+ * tabs; title, tabs and the register and import dialogs live in the layout.
  */
 
 import { track } from "@/lib/analytics";

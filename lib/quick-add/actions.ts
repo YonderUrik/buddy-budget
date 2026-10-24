@@ -1,7 +1,7 @@
 /**
- * «Aggiungi»: everything the global add button offers, grouped by the section that holds it. Data and pure rules only
- * (texts are Italian source keys translated by the UI); the sheet and the forms it opens live in
- * `components/domain/quick-add`.
+ * «Aggiungi»: everything the global add button offers, split by how often people add it (a movement every week, an
+ * account once). Data and pure rules only (texts are Italian source keys translated by the UI); the chooser and the forms
+ * it opens live in `components/domain/quick-add`.
  */
 
 import { isCountryPathAvailable } from "@/lib/localization/config";
@@ -9,7 +9,7 @@ import { isCountryPathAvailable } from "@/lib/localization/config";
 export const QUICK_ADD_SECTION_IDS = ["liquidita", "investimenti", "debiti", "pensione", "analitiche"] as const;
 export type QuickAddSectionId = (typeof QUICK_ADD_SECTION_IDS)[number];
 
-export const QUICK_ADD_ACTION_IDS = ["movimento", "conto", "file", "abbonamento", "operazione", "rendiconto", "debito", "pensione", "obiettivo"] as const;
+export const QUICK_ADD_ACTION_IDS = ["movimento", "operazione", "file", "rendiconto", "conto", "abbonamento", "debito", "pensione", "obiettivo"] as const;
 export type QuickAddActionId = (typeof QUICK_ADD_ACTION_IDS)[number];
 
 /** Actions that open a form over the current page; the others go to the page where the thing is added. */
@@ -39,17 +39,25 @@ export function isQuickAddForm(id: QuickAddActionId): id is QuickAddFormId {
 export interface QuickAddSection {
   id: QuickAddSectionId;
   title: string;
-  /** Root of the section: the current page inside it puts its group first. */
+  /** Root of the section: the current page inside it decides the `here` of the product events. */
   path: string;
 }
+
+/**
+ * How often people add it: `frequent` things (movements, investment operations, and the files that bring them in) come
+ * first and bigger; `occasional` ones (an account, a subscription, a loan, the pension fund, a goal) are added once or a
+ * few times and sit below, smaller.
+ */
+export type QuickAddTier = "frequent" | "occasional";
 
 export interface QuickAddAction {
   id: QuickAddActionId;
   section: QuickAddSectionId;
-  /** Full name in the list («Un movimento»). */
+  tier: QuickAddTier;
+  /** Full name («Un movimento»): the answer to «Cosa vuoi aggiungere?». */
   title: string;
-  /** Short name on a tile («Movimento»). */
-  short: string;
+  /** Shorter name for a small tile («Conto»); the title when missing. */
+  short?: string;
   /** One line on what it is, in plain words. */
   description: string;
   /** Page the thing lives on: the action exists only where the user's country has that page. */
@@ -64,30 +72,29 @@ export const QUICK_ADD_SECTIONS: readonly QuickAddSection[] = [
   { id: "analitiche", title: "Obiettivi", path: "/analitiche" },
 ];
 
+/** In the order they are shown: the frequent ones as two pairs (typed by hand, then from a file), then the others. */
 export const QUICK_ADD_ACTIONS: readonly QuickAddAction[] = [
-  { id: "movimento", section: "liquidita", title: "Un movimento", short: "Movimento", description: "Una spesa o un'entrata su un conto manuale", path: "/liquidita" },
-  { id: "conto", section: "liquidita", title: "Un conto", short: "Conto", description: "A mano, con il nome e il saldo di oggi", path: "/liquidita/conti" },
-  { id: "file", section: "liquidita", title: "Movimenti da un file", short: "Movimenti da file", description: "Il CSV o l'Excel della tua banca", path: "/importazioni" },
-  { id: "abbonamento", section: "liquidita", title: "Un abbonamento", short: "Abbonamento", description: "Ne seguiamo gli addebiti tra i movimenti", path: "/liquidita/abbonamenti" },
-  { id: "operazione", section: "investimenti", title: "Un'operazione", short: "Operazione", description: "Un acquisto, una vendita o un dividendo", path: "/investimenti" },
-  { id: "rendiconto", section: "investimenti", title: "Il rendiconto del broker", short: "Rendiconto broker", description: "Tutte le operazioni da un file", path: "/investimenti" },
-  { id: "debito", section: "debiti", title: "Un mutuo o un prestito", short: "Mutuo o prestito", description: "Calcoliamo il piano rate e gli interessi", path: "/debiti" },
-  { id: "pensione", section: "pensione", title: "Il fondo pensione", short: "Fondo pensione", description: "Un nuovo fondo o i valori di oggi", path: "/pensione/dati" },
-  { id: "obiettivo", section: "analitiche", title: "Un obiettivo di risparmio", short: "Obiettivo", description: "Una casa, un viaggio, un cuscinetto", path: "/analitiche/obiettivi" },
+  { id: "movimento", section: "liquidita", tier: "frequent", title: "Un movimento", description: "Una spesa o un'entrata su un conto manuale", path: "/liquidita" },
+  { id: "operazione", section: "investimenti", tier: "frequent", title: "Un'operazione", description: "Un acquisto, una vendita o un dividendo", path: "/investimenti" },
+  { id: "file", section: "liquidita", tier: "frequent", title: "Movimenti da un file", description: "Il CSV o l'Excel della tua banca", path: "/importazioni" },
+  { id: "rendiconto", section: "investimenti", tier: "frequent", title: "Il rendiconto del broker", description: "Tutte le operazioni da un file", path: "/investimenti" },
+  { id: "conto", section: "liquidita", tier: "occasional", title: "Un conto", short: "Conto", description: "A mano, con il nome e il saldo di oggi", path: "/liquidita/conti" },
+  { id: "abbonamento", section: "liquidita", tier: "occasional", title: "Un abbonamento", short: "Abbonamento", description: "Ne seguiamo gli addebiti tra i movimenti", path: "/liquidita/abbonamenti" },
+  { id: "debito", section: "debiti", tier: "occasional", title: "Un mutuo o un prestito", short: "Mutuo o prestito", description: "Calcoliamo il piano rate e gli interessi", path: "/debiti" },
+  { id: "pensione", section: "pensione", tier: "occasional", title: "Il fondo pensione", short: "Fondo pensione", description: "Un nuovo fondo o i valori di oggi", path: "/pensione/dati" },
+  { id: "obiettivo", section: "analitiche", tier: "occasional", title: "Un obiettivo di risparmio", short: "Obiettivo", description: "Una casa, un viaggio, un cuscinetto", path: "/analitiche/obiettivi" },
 ];
 
 /** Where «Aggiungi» was opened from, for the product events (`link`: an address with `?aggiungi=`). */
-export const QUICK_ADD_SOURCES = ["barra", "sidebar", "tastiera", "link"] as const;
+export const QUICK_ADD_SOURCES = ["barra", "sidebar", "link"] as const;
 export type QuickAddSource = (typeof QUICK_ADD_SOURCES)[number];
 
 /** Page area «Aggiungi» was opened on, for the product events (closed set: never a path). */
 export type QuickAddArea = QuickAddSectionId | "panoramica" | "altro";
 
-export interface QuickAddGroup {
-  section: QuickAddSection;
-  actions: QuickAddAction[];
-  /** The user is on a page of this section: its group comes first. */
-  current: boolean;
+export interface QuickAddMenu {
+  frequent: QuickAddAction[];
+  occasional: QuickAddAction[];
 }
 
 const within = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
@@ -103,18 +110,21 @@ export function quickAddArea(pathname: string): QuickAddArea {
   return sectionOf(pathname) ?? (within(pathname, "/panoramica") ? "panoramica" : "altro");
 }
 
+/** True when the action belongs to the section of `pathname` (it tells the events whether people add where they are). */
+export function isQuickAddHere(id: QuickAddActionId, pathname: string): boolean {
+  return QUICK_ADD_ACTIONS.find((a) => a.id === id)?.section === sectionOf(pathname);
+}
+
+/** Section name shown next to an action. */
+export function quickAddSectionTitle(id: QuickAddSectionId): string {
+  return QUICK_ADD_SECTIONS.find((s) => s.id === id)?.title ?? "";
+}
+
 /**
- * Groups offered to a user of `country` standing on `pathname`: actions whose page the country does not have are left
- * out (the Italian pension fund outside Italy), empty sections disappear, and the section of the current page comes
- * first. The order is otherwise fixed, so the same thing is always in the same place.
+ * What a user of `country` can add, frequent first: actions whose page the country does not have are left out (the
+ * Italian pension fund outside Italy). The order never depends on the page, so the same thing is always in the same place.
  */
-export function quickAddGroups(country: string, pathname: string): QuickAddGroup[] {
-  const here = sectionOf(pathname);
-  const groups = QUICK_ADD_SECTIONS.map((section) => ({
-    section,
-    actions: QUICK_ADD_ACTIONS.filter((a) => a.section === section.id && isCountryPathAvailable(country, a.path)),
-    current: section.id === here,
-  })).filter((g) => g.actions.length > 0);
-  const current = groups.filter((g) => g.current);
-  return [...current, ...groups.filter((g) => !g.current)];
+export function quickAddMenu(country: string): QuickAddMenu {
+  const offered = QUICK_ADD_ACTIONS.filter((a) => isCountryPathAvailable(country, a.path));
+  return { frequent: offered.filter((a) => a.tier === "frequent"), occasional: offered.filter((a) => a.tier === "occasional") };
 }

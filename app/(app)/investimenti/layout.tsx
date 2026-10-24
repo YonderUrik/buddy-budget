@@ -3,10 +3,10 @@ import { useLocalization } from "@/lib/localization/provider";
 import { isCountryPathAvailable } from "@/lib/localization/config";
 
 /**
- * Layout di Investimenti: titolo, «Importazioni fatte», schede (Portafoglio, Proventi, Tasse) e i dialog condivisi
- * (the empty state and the tabs open them; a new operation or broker statement otherwise comes from the app-wide
- * «Aggiungi»). Usa la stessa query della scheda Portafoglio al periodo di default: nessuna richiesta in più.
- * La pagina di un singolo titolo è una scheda a sé: niente intestazione né schede, solo i dialog condivisi.
+ * Investimenti layout: title, «Importazioni fatte», tabs (Portafoglio, Proventi, Tasse) and the shared dialogs (the empty
+ * state and the tabs open them; a new operation or broker statement otherwise comes from the app-wide «Aggiungi»). It
+ * reads the same query as the Portafoglio tab at the default period: no extra request.
+ * A single security's page stands on its own: no heading or tabs, only the shared dialogs.
  */
 
 import { SectionHeading } from "@/components/domain/shared";

@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * Struttura di Liquidità: stato condiviso, testata con schede e i dialog globali (nuovo movimento, nuovo conto, rinnovo
- * del collegamento). Le schede sono pagine vere dentro `children`; nei link del banner e dell'email `?rinnova=` apre il rinnovo.
+ * Liquidità frame: shared state, heading with tabs and the section's dialogs (new movement and new account for the empty
+ * states, renewing a bank connection). Tabs are real pages inside `children`; `?rinnova=` in the banner and email links
+ * opens the renewal. Adding from anywhere else goes through the app-wide «Aggiungi».
  */
 
 import * as React from "react";

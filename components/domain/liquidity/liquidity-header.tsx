@@ -2,7 +2,7 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * Testata di Liquidità: titolo (su telefono è il selettore delle viste), sottotitolo e le schede della sezione.
+ * Liquidità heading: title (on the phone it opens the views), subtitle and the section's tabs.
  * Adding a movement, an account or a file goes through the app-wide «Aggiungi» (bottom bar, sidebar).
  */
 

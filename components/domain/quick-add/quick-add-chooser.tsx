@@ -1,19 +1,18 @@
 "use client";
 
 /**
- * Chooser of «Aggiungi»: what can be added, by section, with the section of the current page first. Three layouts:
- * `list` (name and one line each, under the section name), `tiles` (a grid of short names, the section under each) and
- * `search` (a field that filters a compact list, arrows and Enter on the keyboard).
+ * Chooser of «Aggiungi»: the things added often come first and bigger, the ones added once or a few times sit below,
+ * smaller. On the phone they are tiles (two big pairs, then a row of small ones); from the tablet up a list (name and one
+ * line for the frequent ones, one compact line with the section for the others). Both are drawn and CSS shows one, so the
+ * layout follows the screen without waiting for JavaScript.
  */
 
-import * as React from "react";
 import {
   CreditCardIcon,
   FileSpreadsheetIcon,
   LandmarkIcon,
   ReceiptTextIcon,
   RepeatIcon,
-  SearchIcon,
   TargetIcon,
   TrendingUpIcon,
   UmbrellaIcon,
@@ -21,171 +20,147 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLocalization } from "@/lib/localization/provider";
-import type { QuickAddActionId, QuickAddGroup } from "@/lib/quick-add/actions";
+import { quickAddSectionTitle, type QuickAddActionId, type QuickAddMenu } from "@/lib/quick-add/actions";
 import { cn } from "@/lib/utils";
-
-export type QuickAddLayout = "list" | "tiles" | "search";
 
 /** Icon of each action. */
 export const QUICK_ADD_ICONS: Record<QuickAddActionId, LucideIcon> = {
   movimento: ReceiptTextIcon,
-  conto: LandmarkIcon,
-  file: FileSpreadsheetIcon,
-  abbonamento: RepeatIcon,
   operazione: TrendingUpIcon,
+  file: FileSpreadsheetIcon,
   rendiconto: UploadIcon,
+  conto: LandmarkIcon,
+  abbonamento: RepeatIcon,
   debito: CreditCardIcon,
   pensione: UmbrellaIcon,
   obiettivo: TargetIcon,
 };
 
+/** Title above the things added once or a few times. */
+const OCCASIONAL_TITLE = "Ogni tanto";
+
 export interface QuickAddChooserProps {
-  groups: QuickAddGroup[];
-  layout?: QuickAddLayout;
+  menu: QuickAddMenu;
   onSelect: (id: QuickAddActionId) => void;
-  /** Focus the search field on open (desktop only: on the phone it would raise the keyboard over the list). */
-  autoFocusSearch?: boolean;
 }
 
-const ICON_TILE = "flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary";
-const GROUP_TITLE = "px-3 pb-1 text-sm font-medium text-text-3";
+const FOCUS = "outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const GROUP_TITLE = "text-sm font-medium text-text-3";
+/** Yellow disc of a frequent thing: the brand colour of the main actions. */
+const FREQUENT_ICON = "flex size-10 shrink-0 items-center justify-center rounded-full bg-sun text-on-sun";
 
-function ListLayout({ groups, onSelect }: Pick<QuickAddChooserProps, "groups" | "onSelect">) {
+/** Phone: two big pairs (typed, then from a file), then three small tiles per row. */
+function Tiles({ menu, onSelect }: QuickAddChooserProps) {
   const { t: tr } = useLocalization();
   return (
-      <div className="flex flex-col">
-        {groups.map((group) => (
-          <section key={group.section.id} aria-label={tr(group.section.title)} className="flex flex-col pt-3 first:pt-0">
-            <h3 className={GROUP_TITLE}>
-              {tr(group.section.title)}
-              {group.current ? <span className="text-text-3/80"> · {tr("qui")}</span> : null}
-            </h3>
-            {group.actions.map((action) => {
-              const Icon = QUICK_ADD_ICONS[action.id];
-              return (
-                <button
-                  key={action.id}
-                  type="button"
-                  onClick={() => onSelect(action.id)}
-                  className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left outline-none transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring active:bg-muted"
-                >
-                  <span className={ICON_TILE}>
-                    <Icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold leading-tight">{tr(action.title)}</span>
-                    <span className="block text-xs leading-snug text-text-2">{tr(action.description)}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </section>
-        ))}
-      </div>
-  );
-}
-
-function TilesLayout({ groups, onSelect }: Pick<QuickAddChooserProps, "groups" | "onSelect">) {
-  const { t: tr } = useLocalization();
-  return (
-    <ul className="grid grid-cols-3 gap-2" role="list">
-      {groups.flatMap((group) =>
-        group.actions.map((action) => {
+    <div className="flex flex-col gap-4 md:hidden">
+      <ul className="grid grid-cols-2 gap-2" role="list">
+        {menu.frequent.map((action) => {
           const Icon = QUICK_ADD_ICONS[action.id];
           return (
             <li key={action.id}>
               <button
                 type="button"
                 onClick={() => onSelect(action.id)}
-                title={tr(action.description)}
-                className={cn(
-                  "flex h-full min-h-24 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl px-1.5 py-3 text-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                  group.current ? "bg-sun/15 hover:bg-sun/25" : "bg-muted/70 hover:bg-muted"
-                )}
+                className={cn("flex h-full min-h-28 w-full cursor-pointer flex-col items-start gap-3 rounded-2xl bg-muted/70 p-3.5 text-left transition-colors active:bg-muted dark:bg-background/70", FOCUS)}
               >
-                <span className="flex size-10 items-center justify-center rounded-full bg-background text-primary">
+                <span className={FREQUENT_ICON}>
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
-                <span className="text-[13px] font-semibold leading-tight text-balance">{tr(action.short)}</span>
-              </button>
-            </li>
-          );
-        })
-      )}
-    </ul>
-  );
-}
-
-function SearchLayout({ groups, onSelect, autoFocusSearch }: Pick<QuickAddChooserProps, "groups" | "onSelect" | "autoFocusSearch">) {
-  const { t: tr } = useLocalization();
-  const [query, setQuery] = React.useState("");
-  const [active, setActive] = React.useState(0);
-  const needle = query.trim().toLocaleLowerCase();
-  const rows = groups.flatMap((group) =>
-    group.actions
-      .map((action) => ({ action, group }))
-      .filter(({ action }) => !needle || [action.title, action.short, action.description, group.section.title].some((text) => tr(text).toLocaleLowerCase().includes(needle)))
-  );
-  const activeIndex = Math.min(active, Math.max(rows.length - 1, 0));
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="flex h-11 items-center gap-2 rounded-full bg-muted px-4 text-text-2 focus-within:ring-2 focus-within:ring-ring">
-        <SearchIcon className="size-4 shrink-0" aria-hidden="true" />
-        <input
-          type="search"
-          value={query}
-          autoFocus={autoFocusSearch}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setActive(0);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowDown") {
-              event.preventDefault();
-              setActive((i) => Math.min(i + 1, rows.length - 1));
-            } else if (event.key === "ArrowUp") {
-              event.preventDefault();
-              setActive((i) => Math.max(i - 1, 0));
-            } else if (event.key === "Enter" && rows[activeIndex]) {
-              event.preventDefault();
-              onSelect(rows[activeIndex].action.id);
-            }
-          }}
-          placeholder={tr("Movimento, mutuo, obiettivo…")}
-          aria-label={tr("Cerca cosa aggiungere")}
-          className="min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-text-3"
-        />
-      </label>
-      <ul className="flex flex-col" role="list">
-        {rows.map(({ action, group }, index) => {
-          const Icon = QUICK_ADD_ICONS[action.id];
-          return (
-            <li key={action.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(action.id)}
-                onPointerMove={() => setActive(index)}
-                className={cn(
-                  "flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                  index === activeIndex && "md:bg-muted"
-                )}
-              >
-                <Icon className="size-[18px] shrink-0 text-primary" aria-hidden="true" />
-                <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{tr(action.title)}</span>
-                <span className="shrink-0 text-xs text-text-3">{tr(group.section.title)}</span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-[15px] font-semibold leading-tight">{tr(action.title)}</span>
+                  <span className="text-xs leading-snug text-text-2">{tr(action.description)}</span>
+                </span>
               </button>
             </li>
           );
         })}
-        {rows.length === 0 ? <li className="px-3 py-4 text-sm text-text-2">{tr("Niente con questo nome.")}</li> : null}
       </ul>
+      <section className="flex flex-col gap-1.5" aria-label={tr(OCCASIONAL_TITLE)}>
+        <h3 className={cn(GROUP_TITLE, "px-1")}>{tr(OCCASIONAL_TITLE)}</h3>
+        <ul className="grid grid-cols-3 gap-2" role="list">
+          {menu.occasional.map((action) => {
+            const Icon = QUICK_ADD_ICONS[action.id];
+            return (
+              <li key={action.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(action.id)}
+                  aria-label={tr(action.title)}
+                  className={cn("flex h-full min-h-19 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl bg-muted/40 px-1.5 py-2.5 text-center transition-colors active:bg-muted dark:bg-background/40", FOCUS)}
+                >
+                  <Icon className="size-5 text-primary" aria-hidden="true" />
+                  <span className="text-[13px] font-medium leading-tight text-balance">{tr(action.short ?? action.title)}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     </div>
   );
 }
 
-/** The chooser in the chosen layout; it only reports the choice, the caller opens the form. */
-export function QuickAddChooser({ groups, layout = "list", onSelect, autoFocusSearch = false }: QuickAddChooserProps) {
-  if (layout === "tiles") return <TilesLayout groups={groups} onSelect={onSelect} />;
-  if (layout === "search") return <SearchLayout groups={groups} onSelect={onSelect} autoFocusSearch={autoFocusSearch} />;
-  return <ListLayout groups={groups} onSelect={onSelect} />;
+/** Tablet and desktop: the frequent things with one line each, then the others on one compact line with their section. */
+function List({ menu, onSelect }: QuickAddChooserProps) {
+  const { t: tr } = useLocalization();
+  return (
+    <div className="hidden flex-col gap-3 md:flex">
+      <ul className="flex flex-col" role="list">
+        {menu.frequent.map((action) => {
+          const Icon = QUICK_ADD_ICONS[action.id];
+          return (
+            <li key={action.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(action.id)}
+                className={cn("flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-muted focus-visible:bg-muted", FOCUS)}
+              >
+                <span className={FREQUENT_ICON}>
+                  <Icon className="size-5" aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-semibold leading-tight">{tr(action.title)}</span>
+                  <span className="block text-xs leading-snug text-text-2">{tr(action.description)}</span>
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      <section className="flex flex-col" aria-label={tr(OCCASIONAL_TITLE)}>
+        <h3 className={cn(GROUP_TITLE, "px-2 pb-1")}>{tr(OCCASIONAL_TITLE)}</h3>
+        <ul className="flex flex-col" role="list">
+          {menu.occasional.map((action) => {
+            const Icon = QUICK_ADD_ICONS[action.id];
+            return (
+              <li key={action.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(action.id)}
+                  className={cn("flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-xl px-2 text-left transition-colors hover:bg-muted focus-visible:bg-muted", FOCUS)}
+                >
+                  <span className="flex size-10 shrink-0 items-center justify-center">
+                    <Icon className="size-[18px] text-primary" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{tr(action.title)}</span>
+                  <span className="shrink-0 text-xs text-text-3">{tr(quickAddSectionTitle(action.section))}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    </div>
+  );
+}
+
+/** The chooser; it only reports the choice, the caller opens the form. */
+export function QuickAddChooser({ menu, onSelect }: QuickAddChooserProps) {
+  return (
+    <>
+      <Tiles menu={menu} onSelect={onSelect} />
+      <List menu={menu} onSelect={onSelect} />
+    </>
+  );
 }

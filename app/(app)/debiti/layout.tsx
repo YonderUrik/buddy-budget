@@ -2,9 +2,9 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * Layout di Debiti: titolo e il dialog "Aggiungi debito", che vive qui così ogni scheda (e lo stato vuoto) può aprirlo;
- * a new loan otherwise comes from the app-wide «Aggiungi».
- * Il dettaglio di un finanziamento ha la sua testata con «‹ Debiti»: lì il titolo della sezione non si ripete.
+ * Debiti layout: title and the add-debt dialog, which lives here so every tab (and the empty state) can open it; a new
+ * loan otherwise comes from the app-wide «Aggiungi».
+ * A loan's detail has its own heading with «‹ Debiti»: the section title is not repeated there.
  */
 
 import * as React from "react";

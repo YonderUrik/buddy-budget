@@ -3,10 +3,12 @@ import type { ReactNode } from "react";
 import type { HomeContent } from "@/content/home";
 import { HOME_PATH } from "@/content/locales";
 import { SITE_URL } from "@/content/site";
+import { projectActivity, readChangelog } from "@/lib/changelog";
 import { otherLocale } from "@/lib/i18n";
 import { JsonLd } from "../json-ld";
 import { SiteFooter } from "../site-footer";
 import { SiteNav } from "../site-nav";
+import { Activity } from "./activity";
 import { Closing } from "./closing";
 import { Faq } from "./faq";
 import { Hero } from "./hero";
@@ -27,7 +29,7 @@ export interface HomePageProps {
  * The home in one language, after the taste-skill direction «Type and nothing else» (2026-10-17): the statement alone
  * on the navy field, the real Panoramica as the first picture, the four places as a live sum the visitor can rewrite,
  * what the number tells you (four real screens), the net after tax on the yellow field, why to trust it as a table
- * with the code under it, the questions, the close on the navy field. The bar is sticky and takes the colours of the
+ * with the code and the founder's name under it, the work counted (no users to count before launch), the questions, the close on the navy field. The bar is sticky and takes the colours of the
  * field under it (`data-field`).
  */
 export function HomePage({ content, secondary, before }: HomePageProps) {
@@ -41,6 +43,7 @@ export function HomePage({ content, secondary, before }: HomePageProps) {
     mainEntity: content.faq.items.map((q) => ({ "@type": "Question", name: q.question, acceptedAnswer: { "@type": "Answer", text: q.answer } })),
   };
   const alternate = HOME_PATH[otherLocale(locale)];
+  const activity = readChangelog();
   return (
     <>
       <JsonLd data={faqJsonLd} />
@@ -51,7 +54,8 @@ export function HomePage({ content, secondary, before }: HomePageProps) {
         <SumList places={content.places} sum={content.sum} locale={locale} />
         <Showcase text={content.showcase} locale={locale} />
         <TaxCompare text={content.tax} />
-        <Trust text={content.trust} hood={content.hood} />
+        <Trust text={content.trust} hood={content.hood} links={{ about: content.activity.about.href, changelog: content.activity.changelog.href }} />
+        <Activity text={content.activity} activity={activity ? projectActivity(activity) : null} />
         <Faq text={content.faq} />
         <Closing
           title={content.close.title}

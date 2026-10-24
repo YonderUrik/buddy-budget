@@ -34,6 +34,8 @@ export interface UiText {
     pages: string;
     other: string;
     status: string;
+    /** Next to the status: the dated history of releases. */
+    changelog: NavLink;
   };
   /** `aria-label` of the language menu. */
   language: string;
@@ -78,6 +80,7 @@ export const UI: Record<Locale, UiText> = {
         { href: CONTENT_PATHS.schermate, label: "Schermate" },
         { href: CONTENT_PATHS.strumenti, label: "Calcolatori" },
         { href: CONTENT_PATHS.sicurezza, label: "Sicurezza" },
+        { href: CONTENT_PATHS.about, label: "Chi c'è dietro" },
         { href: LEGAL_PATHS.privacy, label: "Privacy" },
         { href: LEGAL_PATHS.termini, label: "Termini" },
         { href: LEGAL_PATHS.cookie, label: "Cookie" },
@@ -85,6 +88,7 @@ export const UI: Record<Locale, UiText> = {
       pages: "Pagine del sito",
       other: "Codice, stato e supporto",
       status: "Stato del servizio",
+      changelog: { href: CONTENT_PATHS.changelog, label: "Novità" },
     },
     language: "Lingua",
     content: {
@@ -123,6 +127,7 @@ export const UI: Record<Locale, UiText> = {
         { href: EN_PATHS.screens, label: "Screens" },
         { href: EN_PATHS.security, label: "Security" },
         { href: EN_PATHS.calculators, label: "Calculators" },
+        { href: EN_PATHS.about, label: "Who's behind it" },
         { href: EN_PATHS.privacy, label: "Privacy" },
         { href: EN_PATHS.terms, label: "Terms" },
         { href: EN_PATHS.cookies, label: "Cookies" },
@@ -130,6 +135,7 @@ export const UI: Record<Locale, UiText> = {
       pages: "Site pages",
       other: "Code, status and support",
       status: "Service status",
+      changelog: { href: EN_PATHS.changelog, label: "Changelog" },
     },
     language: "Language",
     content: {

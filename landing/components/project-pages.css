@@ -1,0 +1,23 @@
+/* «Chi c'è dietro» and the changelog: content-page text, links as underlined words, rows told apart by tone steps. */
+.pj-sec h2 { margin-top: 72px; }
+.pj-sec:first-child h2 { margin-top: 0; }
+.cp .pj-links { display: flex; flex-wrap: wrap; gap: 0 24px; }
+.cp .pj-links a { min-height: 44px; display: inline-flex; align-items: center; }
+.pj-contact { display: grid; gap: 4px; margin: 0; max-width: 66ch; }
+.pj-contact > div { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; align-items: center; min-height: 52px; padding: 6px 20px; border-radius: 14px; background: var(--bg-alt); }
+.pj-contact dt { color: var(--ink2); font-size: 15px; }
+.pj-contact dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
+
+.cp .pj-note { font-size: 15px; }
+.pj-log { list-style: none; margin: 48px 0 0; padding: 0; display: grid; gap: 56px; }
+.cp .pj-rel h2 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin: 0 0 16px; font-size: clamp(36px, 4vw, 56px); }
+.pj-rel h2 span { font: 500 15px var(--f-b); color: var(--ink2); }
+.cp .pj-rel ul { list-style: none; padding: 0; margin: 0; gap: 4px; max-width: none; }
+.cp .pj-rel li { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; align-items: baseline; padding: 12px 20px; border-radius: 14px; background: var(--bg-alt); color: var(--ink); font-size: 16px; line-height: 1.5; }
+.pj-kind { font-size: 14px; font-weight: 600; color: var(--ink2); }
+[data-kind="feat"] .pj-kind { color: var(--ink); }
+.cp .pj-pr { color: var(--ink2); font-weight: 500; font-size: 14px; white-space: nowrap; }
+@media (max-width: 600px) {
+  .pj-contact > div { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 12px 16px; }
+  .cp .pj-rel li { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 12px 16px; }
+}

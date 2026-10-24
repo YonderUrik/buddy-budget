@@ -192,3 +192,25 @@
   .win { border-radius: 14px; }
   .panel .fig { font-size: clamp(48px, 15vw, 64px); }
 }
+
+/* ---------- «ancora niente iscritti da contare»: the work counted, three figures on the navy field ---------- */
+.act-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 32px 64px; align-items: end; }
+.act h2 { font: 300 clamp(52px, 7vw, 112px) / 0.9 var(--f-d); letter-spacing: -0.01em; }
+.act-head p { font-size: 18px; line-height: 1.5; max-width: 40ch; color: var(--on-navy2); }
+.act-figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; margin: 72px 0 0; }
+.act-figs > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+.act-figs dd { margin: 0; font: 300 clamp(72px, 9vw, 160px) / 0.85 var(--f-d); letter-spacing: -0.02em; white-space: nowrap; }
+.act-figs dt { margin-top: 16px; font: 600 18px / 1.4 var(--f-b); max-width: 26ch; }
+.act-foot { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 32px; margin-top: 48px; }
+.act-foot p { flex-basis: 100%; margin-top: 20px; font-size: 14px; color: var(--on-navy2); }
+@media (max-width: 1000px) {
+  .act-head { grid-template-columns: minmax(0, 1fr); }
+  .act-figs { grid-template-columns: minmax(0, 1fr); gap: 36px; margin-top: 48px; }
+  .act-figs dd { font-size: clamp(72px, 22vw, 128px); }
+}
+@media (max-width: 600px) {
+  .act h2 { font-size: clamp(44px, 12.4vw, 64px); }
+}
+.code .who-links { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 8px; font-size: 15px; }
+.code .who-links a { color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); min-height: 44px; display: inline-flex; align-items: center; }
+.code .who-links a:hover { text-decoration-color: currentColor; }

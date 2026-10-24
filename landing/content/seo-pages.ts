@@ -15,6 +15,9 @@ export const CONTENT_PATHS = {
   funzioni: "/funzioni",
   schermate: "/schermate",
   sicurezza: "/sicurezza",
+  /** New routes take English paths (rule of 2026-10-19), also on the Italian site. */
+  about: "/about",
+  changelog: "/changelog",
 } as const;
 
 export interface Source {

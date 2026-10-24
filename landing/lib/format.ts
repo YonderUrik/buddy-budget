@@ -27,3 +27,16 @@ export function money(n: number, locale: Locale): string {
   const digits = groupThousandsIn(Math.abs(n), locale);
   return locale === "en" ? `${sign}€${digits}` : `${sign}${digits} €`;
 }
+
+const MONTHS: Record<Locale, readonly string[]> = {
+  it: ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"],
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+};
+
+/** ISO date (YYYY-MM-DD) in words: «3 ottobre 2026», "October 3, 2026"; `short` drops the year. Hand-made for the same hydration reason. */
+export function longDate(iso: string, locale: Locale, short = false): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const month = MONTHS[locale][m - 1];
+  if (locale === "en") return short ? `${month} ${d}` : `${month} ${d}, ${y}`;
+  return short ? `${d} ${month}` : `${d} ${month} ${y}`;
+}

@@ -9,6 +9,8 @@ import { FIELD_ENCRYPTION_LIVE } from "../security";
 import { SUPPORTED, type BankCountry } from "../sheet";
 import { SOURCE_LICENSE, SOURCE_URL, type FaqItem } from "../site";
 import type { HomeContent } from "../home";
+import { FOUNDER } from "../project";
+import { PROJECT_EN } from "./project";
 import { SECURITY_SOURCES_EN } from "./security";
 
 /** Title and description of the English pages (root layout and home). */
@@ -216,8 +218,9 @@ export const HOME_EN: HomeContent = {
       copy: "Copy",
       copied: "Copied",
     },
-    who: "One person builds it, in Turin, Italy. Write to",
-    whoTail: "and you'll hear back from them.",
+    who: `One person builds it, ${FOUNDER.name}, in Turin, Italy. Write to`,
+    whoTail: "and you'll hear back directly.",
+    people: { about: "Who's behind it", profile: `${FOUNDER.handle} on GitHub`, changelog: "Changelog, with dates" },
     facts: [
       { label: "License", value: "AGPL-3.0" },
       { label: "Stack", value: "TypeScript · Next.js · Postgres · Redis" },
@@ -229,6 +232,7 @@ export const HOME_EN: HomeContent = {
       { label: "Security", value: "SECURITY.md", path: "/blob/main/SECURITY.md" },
     ],
   },
+  activity: PROJECT_EN.activity,
   faq: { title: "Before you sign up.", items: FAQ_EN },
   close: {
     title: "Your number, from tomorrow morning.",

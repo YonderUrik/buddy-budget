@@ -23,6 +23,8 @@ export const EN_PATHS = {
   loanAmortization: "/en/calculators/loan-amortization",
   savingsGoal: "/en/calculators/savings-goal",
   guideZainetto: "/en/guides/zainetto-fiscale",
+  about: "/en/about",
+  changelog: "/en/changelog",
 } as const;
 
 export interface PagePair {
@@ -44,6 +46,8 @@ export const PAGE_PAIRS: readonly PagePair[] = [
   { it: CONTENT_PATHS.ammortamento, en: EN_PATHS.loanAmortization },
   { it: CONTENT_PATHS.obiettivo, en: EN_PATHS.savingsGoal },
   { it: CONTENT_PATHS.guidaZainetto, en: EN_PATHS.guideZainetto },
+  { it: CONTENT_PATHS.about, en: EN_PATHS.about },
+  { it: CONTENT_PATHS.changelog, en: EN_PATHS.changelog },
 ];
 
 /** Home of each language: where the switch goes from a page that has no counterpart. */

@@ -33,6 +33,7 @@ Type and colour carry the page; pictures arrive later, large and few, and they a
 - Headline first, 5–7 words, everyday Italian: say what happens, not how it is built. One sentence under it.
 - Technical facts come right after, smaller, never in the headline: that is how the page speaks to both registers.
 - Only facts verifiable in the product, the infra repo or a cited source; figures from the demo screenshots, labelled as a made-up person. No user counts, reviews or promises. No filler lines.
+- Trust before launch (2026-10-24): the founder by name (`content/project.ts`), never a photo or social profile he hasn't chosen; counts only of the work (releases from `CHANGELOG.md`, `lib/changelog.ts`), never invented users, ratings or quotes. Testimonials go on the page only when real people give them, with permission.
 
 ## Motion
 
@@ -43,7 +44,7 @@ Type and colour carry the page; pictures arrive later, large and few, and they a
 
 ## Components
 
-- `components/home/`: `Hero`, `SumList` (the live sum: amounts are fields; `sum_edited`, `sum_reset`), `Showcase` (tabs + snap track, desktop screen or phone capture), `TaxCompare`, `Trust` (table + the code and `CopyCommand`), `Faq`, `Closing` (shared with `ContentPage`).
+- `components/home/`: `Hero`, `SumList` (the live sum: amounts are fields; `sum_edited`, `sum_reset`), `Showcase` (tabs + snap track, desktop screen or phone capture), `TaxCompare`, `Trust` (table + the code and `CopyCommand`, the founder's name and links), `Activity` (release counts from the changelog, navy), `Faq`, `Closing` (shared with `ContentPage`).
 - `SiteNav`: sticky, colour by chapter, sentence-case links; full-screen navy sheet under 1000 px.
 - `SiteFooter`: navy, three columns, the wordmark across the width cut by the bottom edge.
 - `ScreenCrop`, `AppShot`, `PhoneShot`: real screenshots with rounded corners and nothing else.
@@ -52,7 +53,7 @@ Type and colour carry the page; pictures arrive later, large and few, and they a
 
 ## Languages
 
-- Italian at the root (`app/(it)/`, `<html lang="it">`), English under `/en` (`app/en/`, `<html lang="en" data-screens="en">`): two root layouts, so switching language is a full page load. English pages: home, `/en/security`, `/en/features`, `/en/features/investments`, `/en/screens`, `/en/privacy`, `/en/terms`, `/en/cookies`, the calculators under `/en/calculators` and `/en/guides/zainetto-fiscale` (pairs in `content/locales.ts`, which also builds hreflang it/en/x-default).
+- Italian at the root (`app/(it)/`, `<html lang="it">`), English under `/en` (`app/en/`, `<html lang="en" data-screens="en">`): two root layouts, so switching language is a full page load. English pages: home, `/en/security`, `/en/features`, `/en/features/investments`, `/en/screens`, `/en/privacy`, `/en/terms`, `/en/cookies`, the calculators under `/en/calculators`, `/en/guides/zainetto-fiscale`, `/en/about` and `/en/changelog` (pairs in `content/locales.ts`, which also builds hreflang it/en/x-default).
 - Copy lives per language: `content/en/*`, `content/ui.ts` (nav, footer, shared strings), `content/screen-text.ts`, and the `en` text of each catalog entry in `lib/features/catalog.ts`. Components take the content and a `locale` prop; they never hardcode a language.
 - English copy is plain American English written for the page, not translated line by line; Italian tax terms keep their name with a short explanation (zainetto fiscale, bollo). The English calculators and guide apply Italian tax law and say so. The legal texts are translated in full and say that the Italian text is the binding version.
 - «IT / EN» switch in the nav (from 1000 px), the phone menu and the footer; it goes to the same page in the other language, or to that language's home. The Italian home shows a yellow bar «This page is also available in English» only to browsers that don't prefer Italian (set before paint, dismissible, remembered in localStorage).

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { HoodText, TrustText } from "@/content/home";
+import { FOUNDER } from "@/content/project";
 import { SOURCE_URL, SUPPORT_EMAIL } from "@/content/site";
 import { rise } from "@/lib/motion/rise";
 import { GithubMark } from "../github-mark";
@@ -11,9 +12,10 @@ import { CopyCommand } from "./copy-command";
  * «Cosa fa l'app con i tuoi dati» (taste-skill section «Statement cell, dark rows»): a light cell with the heading in
  * three zigzag lines, the two plain sentences and the link to the full page, butted against a navy cell of rows (four
  * facts, then the limits) told apart by two navy tones, never by lines. Each row: title, one paragraph, three plain
- * terms. Below, the code itself: the links to read it and the commands to run it at home.
+ * terms. Below, the code itself: the links to read it and the commands to run it at home, and who builds it, by name,
+ * with the links to `/about`, the founder's GitHub profile and the dated changelog.
  */
-export function Trust({ text, hood }: { text: TrustText; hood: HoodText }) {
+export function Trust({ text, hood, links }: { text: TrustText; hood: HoodText; links: { about: string; changelog: string } }) {
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec trust" field="light" aria-labelledby="sicurezza-t">
       <div className="tr-split">
@@ -59,6 +61,11 @@ export function Trust({ text, hood }: { text: TrustText; hood: HoodText }) {
             ) : null}
             <p className="who">
               {hood.who} <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> {hood.whoTail}
+            </p>
+            <p className="who-links">
+              <Link href={links.about}>{hood.people.about}</Link>
+              <a href={FOUNDER.profile} target="_blank" rel="noopener noreferrer">{hood.people.profile}</a>
+              <Link href={links.changelog}>{hood.people.changelog}</Link>
             </p>
           </div>
           {SOURCE_URL ? (

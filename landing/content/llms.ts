@@ -23,6 +23,8 @@ const PAGES: readonly { path: string; title: string; text: string }[] = [
   { path: CONTENT_PATHS.funzioni, title: "Tutte le funzioni", text: "Elenco completo per area, con lo stato di ognuna." },
   { path: CONTENT_PATHS.sicurezza, title: "Sicurezza e privacy", text: "Cosa viene salvato e cosa no, il percorso dei dati per chi ha già una banca collegata (PSD2, tramite GoCardless; i collegamenti nuovi arrivano presto), server in Germania, export e cancellazione, limiti dichiarati." },
   { path: CONTENT_PATHS.schermate, title: "Schermate", text: "Screenshot dell'app vera con dati di esempio." },
+  { path: CONTENT_PATHS.about, title: "Chi c'è dietro", text: "Chi costruisce BuddyBudget (Daniele Roccaforte, Torino), perché esiste, come è fatto, chi ha contribuito e i contatti." },
+  { path: CONTENT_PATHS.changelog, title: "Novità", text: "Ogni versione rilasciata con la data e cosa è cambiato, presa dal CHANGELOG.md del codice." },
 ];
 
 /** English pages, for assistants answering in English (the Italian pages are listed in `PAGES`, in Italian). */
@@ -40,6 +42,8 @@ const PAGES_EN: readonly { path: string; title: string; text: string }[] = [
   { path: EN_PATHS.loanAmortization, title: "Loan amortization calculator", text: "Monthly payment, interest and early repayment of mortgages and loans." },
   { path: EN_PATHS.savingsGoal, title: "Savings goal calculator", text: "How many months it takes to reach an amount with a monthly deposit and a return, and how much a month it takes to get there by a date." },
   { path: EN_PATHS.guideZainetto, title: "Guide to the zainetto fiscale", text: "How Italian capital losses can be used for four years, with examples and official sources." },
+  { path: EN_PATHS.about, title: "Who's behind it", text: "Who builds BuddyBudget (Daniele Roccaforte, Turin), why it exists, how it's made, who contributed and how to get in touch." },
+  { path: EN_PATHS.changelog, title: "Changelog", text: "Every release with its date and what changed, read from the code's CHANGELOG.md." },
 ];
 
 /** Builds the text of `/llms.txt`. */

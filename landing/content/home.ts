@@ -8,6 +8,7 @@
 import type { Locale } from "@/lib/i18n";
 import type { ByRules, RuleNeed } from "@/lib/visitor-country";
 import type { ScreenId } from "./screens";
+import { FOUNDER, PROJECT_IT, type ActivityText } from "./project";
 import { CONTENT_PATHS, SOURCES, type Source } from "./seo-pages";
 import { FIELD_ENCRYPTION_LIVE, SECURITY_SOURCES } from "./security";
 import { SUPPORTED, type BankCountry, type SupportedSource } from "./sheet";
@@ -338,6 +339,8 @@ export interface HoodText {
   command: { label: string; lines: readonly string[]; copy: string; copied: string };
   who: string;
   whoTail: string;
+  /** Under the contact line: who builds it (`/about`), the founder's public profile, the dated changelog. */
+  people: { about: string; profile: string; changelog: string };
   facts: readonly HoodFact[];
 }
 
@@ -360,8 +363,9 @@ export const UNDER_HOOD = {
     copy: "Copia",
     copied: "Copiato",
   },
-  who: "Dietro c'è una persona, a Torino. Scrivi a",
-  whoTail: "e ti risponde lei.",
+  who: `Dietro c'è una persona, ${FOUNDER.name}, a Torino. Scrivi a`,
+  whoTail: "e ti risponde direttamente.",
+  people: { about: "Chi c'è dietro", profile: `${FOUNDER.handle} su GitHub`, changelog: "Novità, con le date" },
   facts: [
     { label: "Licenza", value: "AGPL-3.0" },
     { label: "Stack", value: "TypeScript · Next.js · Postgres · Redis" },
@@ -404,6 +408,8 @@ export interface HomeContent {
   tax: TaxText;
   trust: TrustText;
   hood: HoodText;
+  /** «Ancora niente iscritti da contare»: the releases counted, above the questions (`content/project.ts`). */
+  activity: ActivityText;
   faq: { title: string; items: readonly FaqItem[] };
   close: CloseText;
 }
@@ -417,6 +423,7 @@ export const HOME_IT: HomeContent = {
   tax: TAX,
   trust: TRUST,
   hood: UNDER_HOOD,
+  activity: PROJECT_IT.activity,
   faq: { title: FAQ_HOME.title, items: FAQ },
   close: CLOSE,
 };

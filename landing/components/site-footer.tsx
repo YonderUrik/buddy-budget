@@ -42,6 +42,7 @@ export function SiteFooter({ locale = "it", alternate }: SiteFooterProps) {
             </SourceLink>
           ) : null}
           <a href={STATUS_URL} target="_blank" rel="noopener noreferrer">{t.footer.status}</a>
+          <Link href={t.footer.changelog.href}>{t.footer.changelog.label}</Link>
           <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
         </nav>
       </div>

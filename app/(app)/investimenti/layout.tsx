@@ -41,7 +41,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
   const [registerInitial, setRegisterInitial] = React.useState<RegisterOperationInitial | null>(null);
   const [importOpen, setImportOpen] = React.useState(false);
   const [managementOpen, setManagementOpen] = React.useState(false);
-  const actions = React.useMemo(() => ({ openRegister: setRegisterInitial, openImport: () => setImportOpen(true), openImportManagement: () => setManagementOpen(true) }), []);
+  const actions = React.useMemo(() => ({ openRegister: setRegisterInitial, openImport: () => setImportOpen(true) }), []);
 
   const data = overview.data;
   const currency = data?.currency ?? "EUR";
@@ -66,7 +66,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
 
       <RegisterOperationDialog initial={registerInitial} onClose={() => setRegisterInitial(null)} />
       <ImportManagementDialog open={managementOpen} onOpenChange={setManagementOpen} />
-      <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} />
+      <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} onManageImports={() => setManagementOpen(true)} />
     </InvestmentsActionsProvider></BrokerSelectionProvider>
   );
 }

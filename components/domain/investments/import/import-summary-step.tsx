@@ -14,7 +14,6 @@ import type { ImportResult } from "@/lib/investments/import/types";
 import { DialogSection, DialogSections } from "../dialog-parts";
 import { ImportNotice } from "./import-notice";
 import { PreviewNumbers } from "./import-preview-parts";
-import { useInvestmentsActions } from "../investments-actions";
 
 export interface ImportSummaryStepProps {
   result: ImportResult;
@@ -28,8 +27,13 @@ export interface ImportSummaryStepProps {
   hasCashMovements?: boolean;
   /** Il file è un rendiconto di un broker: i dati originali restano conservati e gestibili da «Gestisci importazioni». */
   keepsOriginal?: boolean;
-  /** Chiamata quando si segue un link di «Cosa fare ora»: serve a chiudere il dialog. */
+  /** Called when a «Cosa fare ora» link is followed: it closes the dialog. */
   onNavigate?: () => void;
+  /**
+   * Opens «Gestisci importazioni» (whoever mounts the import knows where that list lives: the Investimenti layout or
+   * «Aggiungi»); without it the step names the list without a button, so it never depends on the page it opens over.
+   */
+  onManageImports?: () => void;
 }
 
 /** Errori elencati per riga. */
@@ -48,9 +52,8 @@ function Fact({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashMovements = false, keepsOriginal = false, onNavigate }: ImportSummaryStepProps) {
+export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashMovements = false, keepsOriginal = false, onNavigate, onManageImports }: ImportSummaryStepProps) {
   const { t: tr, language } = useLocalization();
-  const { openImportManagement } = useInvestmentsActions();
   if (done) {
     return (
       <DialogSections>
@@ -77,7 +80,7 @@ export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashM
             ) : null}
             {keepsOriginal ? (
               <li>{tr("Il file è nella lista delle importazioni: da")}{" "}
-                <button type="button" onClick={() => { onNavigate?.(); openImportManagement(); }} className="font-medium text-primary hover:underline">{tr("Gestisci importazioni")}</button>{" "}{tr("puoi vederlo, sostituirlo o cancellarlo.")}</li>
+                {onManageImports ? <button type="button" onClick={onManageImports} className="font-medium text-primary hover:underline">{tr("Gestisci importazioni")}</button> : <span className="font-medium text-foreground">{tr("Gestisci importazioni")}</span>}{" "}{tr("puoi vederlo, sostituirlo o cancellarlo.")}</li>
             ) : null}
             <li>{tr("I prezzi storici si scaricano in background: il grafico si completa entro qualche minuto.")}</li>
           </ul>

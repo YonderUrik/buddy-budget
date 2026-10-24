@@ -37,11 +37,13 @@ import { ReportErrorLink } from "@/components/domain/support";
 export interface InvestmentImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Valuta dell'utente, proposta per crypto e strumenti manuali creati durante l'abbinamento. */
+  /** User's currency, proposed for crypto and manual instruments created while matching. */
   currency: string;
+  /** Opens the list of imports from the summary's «Gestisci importazioni», after this dialog closes. */
+  onManageImports?: () => void;
 }
 
-function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi", aiFallbackEnabled, onAiFallbackChange }: { aiFallbackEnabled: boolean; onAiFallbackChange: (enabled: boolean) => void; currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
+function ImportWizard({ currency, onClose, onFiles, onManageImports, initialFile, finishLabel = "Chiudi", aiFallbackEnabled, onAiFallbackChange }: { aiFallbackEnabled: boolean; onAiFallbackChange: (enabled: boolean) => void; currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; onManageImports?: () => void; initialFile?: PreparedStatementFile; finishLabel?: string }) {
   const { t: tr, language } = useLocalization();
   const s = useInvestmentImport(initialFile, aiFallbackEnabled);
   const [direction, setDirection] = React.useState<StepDirection>(1);
@@ -116,7 +118,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
           />
         ) : null}
         {s.step === "summary" && s.result ? (
-          <ImportSummaryStep result={s.result} rows={s.rows} newInstruments={newInstruments} done={s.done} hasCashMovements={cashCount > 0} keepsOriginal={s.statement !== null} onNavigate={onClose} />
+          <ImportSummaryStep result={s.result} rows={s.rows} newInstruments={newInstruments} done={s.done} hasCashMovements={cashCount > 0} keepsOriginal={s.statement !== null} onNavigate={onClose} onManageImports={onManageImports} />
         ) : null}
         </StepStage>
       </div>
@@ -167,7 +169,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
 }
 
 /** Keep every selected statement separate, including previews, failures and completed-file progress. */
-function ImportSession({ currency, onClose }: { currency: string; onClose: () => void }) {
+function ImportSession({ currency, onClose, onManageImports }: { currency: string; onClose: () => void; onManageImports?: () => void }) {
   const { t: tr } = useLocalization();
   const [files, setFiles] = useState<PreparedStatementFile[]>([]);
   const [index, setIndex] = useState(0);
@@ -202,17 +204,19 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
   return <>
     {fallbackJobs.map(job => <p key={job.id} role="status" className="text-sm">{job.name}: {tr("Analisi AI avviata")} · <Link className="text-primary underline" href={`/importazioni?job=${job.id}`}>{tr("Segui l'analisi")}</Link></p>)}
     {files.length ? <ImportBatchProgress files={files} index={index} /> : null}
-    <ImportWizard key={files.length ? index : "single"} currency={currency} aiFallbackEnabled={aiFallbackEnabled} onAiFallbackChange={setAiFallbackEnabled} initialFile={files[index]} onFiles={loadFiles} onClose={files.length ? () => setIndex((i) => i + 1) : onClose} finishLabel={files.length ? "File successivo" : "Chiudi"} />
+    <ImportWizard key={files.length ? index : "single"} currency={currency} aiFallbackEnabled={aiFallbackEnabled} onAiFallbackChange={setAiFallbackEnabled} initialFile={files[index]} onFiles={loadFiles} onManageImports={onManageImports} onClose={files.length ? () => setIndex((i) => i + 1) : onClose} finishLabel={files.length ? "File successivo" : "Chiudi"} />
   </>;
 }
 
-export function InvestmentImportDialog({ open, onOpenChange, currency }: InvestmentImportDialogProps) {
+export function InvestmentImportDialog({ open, onOpenChange, currency, onManageImports }: InvestmentImportDialogProps) {
   const { t: tr } = useLocalization();
+  // The whole dialog closes (also mid-batch), then the list opens.
+  const manageImports = onManageImports ? () => { onOpenChange(false); onManageImports(); } : undefined;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FormDialogContent size="wide">
         <PanelDialogHeader icon={UploadIcon} title={tr("Importa operazioni")} description={tr("Carica il file del tuo broker: lo leggo, ti mostro cosa importerei e importo solo quando confermi.")} color="var(--primary)" />
-        {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} /> : null}
+        {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} onManageImports={manageImports} /> : null}
       </FormDialogContent>
     </Dialog>
   );

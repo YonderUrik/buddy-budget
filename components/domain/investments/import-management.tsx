@@ -20,7 +20,6 @@ import { ImportHistoryList } from "./import-history-list";
 import { ResetInvestments } from "./reset-investments";
 import { Disclosure } from "./disclosure";
 import { PanelSection } from "./panel-section";
-import { useInvestmentsActions } from "./investments-actions";
 import { markHistoryRefreshPending } from "@/lib/queries/history-refresh-signal";
 
 type DeletionPreview = { token: string; name: string; cashCount: number; investmentCount: number; uploads: { id: string; createdAt: string }[] };
@@ -31,8 +30,11 @@ async function personalRequest(id: string, token?: string): Promise<DeletionPrev
   return data;
 }
 
-/** Importazioni fatte e loro gestione; per i rendiconti dei broker l'eliminazione include i caricamenti successivi che ne dipendono. */
-export function ImportManagement({ embedded = false }: { embedded?: boolean } = {}) {
+/**
+ * Imports made and their management; for broker statements deleting one also removes the later uploads that depend on it.
+ * `onImport` draws «Importa un file» in the page-section version (the dialog version has none).
+ */
+export function ImportManagement({ embedded = false, onImport }: { embedded?: boolean; onImport?: () => void } = {}) {
   const { t: tr, locale } = useLocalization();
   const query = useBrokerStatementsQuery();
   const personal = usePersonalImportsQuery();
@@ -43,7 +45,6 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
   } });
   const deletionPreview = useMutation({ mutationFn: (id: string) => personalRequest(id), onSuccess: (preview, id) => { personalDeletion.reset(); setPersonalSelection({ id, preview }); } });
   const deletion = useDeleteStatementImportMutation();
-  const { openImport } = useInvestmentsActions();
   const [selection, setSelection] = useState<{ id: string; ids: string[]; items: string[] } | null>(null);
   const [showAll, setShowAll] = useState(false);
   const documents = query.data?.statements ?? [];
@@ -74,7 +75,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
 
   const Shell = embedded ? EmbeddedShell : PanelShell;
   return (
-    <Shell onImport={openImport}>
+    <Shell onImport={onImport}>
       {loading ? <p role="status" className="text-sm text-muted-foreground">{tr("Caricamento importazioni…")}</p> : null}
       {query.isError ? <p role="alert" className="text-sm text-destructive">{tr("Non riesco a leggere i rendiconti.")}{" "}<button type="button" className="font-medium underline" onClick={() => query.refetch()}>{tr("Riprova")}</button></p> : null}
       {personal.isError ? <p role="alert" className="text-sm text-destructive">{tr("Non riesco a leggere i CSV personali.")}{" "}<button type="button" className="font-medium underline" onClick={() => personal.refetch()}>{tr("Riprova")}</button></p> : null}
@@ -137,15 +138,15 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
 }
 
 /** Contenitore dentro il dialog: niente intestazione, il titolo è quello del dialog. */
-function EmbeddedShell({ children }: { children: React.ReactNode; onImport: () => void }) {
+function EmbeddedShell({ children }: { children: React.ReactNode; onImport?: () => void }) {
   return <div className="flex flex-col gap-4">{children}</div>;
 }
 
-/** Contenitore come sezione di pagina, con il pulsante «Importa un file». */
-function PanelShell({ children, onImport }: { children: React.ReactNode; onImport: () => void }) {
+/** Container as a page section, with «Importa un file» when the caller can open the import. */
+function PanelShell({ children, onImport }: { children: React.ReactNode; onImport?: () => void }) {
   const { t: tr } = useLocalization();
   return (
-    <PanelSection icon={DatabaseIcon} title={tr("Importazioni")} color="var(--swatch-slate)" description={IMPORT_EXPLANATION} action={<Button variant="outline" size="sm" onClick={onImport}><UploadIcon className="size-4" aria-hidden="true" />{" "}{tr("Importa un file")}</Button>}>
+    <PanelSection icon={DatabaseIcon} title={tr("Importazioni")} color="var(--swatch-slate)" description={IMPORT_EXPLANATION} action={onImport ? <Button variant="outline" size="sm" onClick={onImport}><UploadIcon className="size-4" aria-hidden="true" />{" "}{tr("Importa un file")}</Button> : undefined}>
       {children}
     </PanelSection>
   );

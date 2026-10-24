@@ -3,13 +3,15 @@
 /**
  * Forms opened by «Aggiungi» over the current page: the same dialogs the sections use, with the data they need read
  * here. Loaded only when the user picks one (`next/dynamic` in the provider), so the app layout stays light.
+ * They sit outside every section's layout, so everything they need comes through props: a section's actions hook
+ * (`useInvestmentsActions`, `useDebtsActions`…) throws here and takes the whole app down.
  */
 
 import * as React from "react";
 import { AddAccountDialog } from "@/components/domain/liquidity/add-account-dialog";
 import { AddDebtDialog } from "@/components/domain/debts";
 import { AddTransactionDialog } from "@/components/domain/expenses";
-import { InvestmentImportDialog, RegisterOperationDialog } from "@/components/domain/investments";
+import { ImportManagementDialog, InvestmentImportDialog, RegisterOperationDialog } from "@/components/domain/investments";
 import { AddSubscriptionDialog } from "@/components/domain/subscriptions";
 import { authClient } from "@/lib/auth/client";
 import { startOfDay } from "@/lib/calc/expenses";
@@ -38,6 +40,8 @@ export function QuickAddForms({ form, onClose, onSwitch }: QuickAddFormsProps) {
   // The portfolio query starts with the first operation form and then stays, so the form can animate out.
   const [operationUsed, setOperationUsed] = React.useState(form === "operazione");
   if (form === "operazione" && !operationUsed) setOperationUsed(true);
+  // «Gestisci importazioni» at the end of a broker statement: the list opens here too, not only inside Investimenti.
+  const [importsOpen, setImportsOpen] = React.useState(false);
 
   return (
     <>
@@ -45,7 +49,8 @@ export function QuickAddForms({ form, onClose, onSwitch }: QuickAddFormsProps) {
       <AddAccountDialog open={form === "conto"} onOpenChange={change} currency={currency} />
       <AddSubscriptionDialog open={form === "abbonamento"} onOpenChange={change} categories={categories ?? []} today={today} />
       {operationUsed ? <RegisterOperationDialog initial={form === "operazione" ? NEW_OPERATION : null} onClose={onClose} /> : null}
-      <InvestmentImportDialog open={form === "rendiconto"} onOpenChange={change} currency={currency} />
+      <InvestmentImportDialog open={form === "rendiconto"} onOpenChange={change} currency={currency} onManageImports={() => setImportsOpen(true)} />
+      <ImportManagementDialog open={importsOpen} onOpenChange={setImportsOpen} />
       <AddDebtDialog open={form === "debito"} onOpenChange={change} currency={currency} />
     </>
   );

@@ -15,8 +15,6 @@ import { prefillPurchase } from "./register-operation-form.state";
 export interface InvestmentsActions {
   openRegister: (initial: RegisterOperationInitial) => void;
   openImport: () => void;
-  /** Apre il dialog «Importazioni» (file caricati e loro gestione). */
-  openImportManagement: () => void;
 }
 
 const InvestmentsActionsContext = React.createContext<InvestmentsActions | null>(null);

@@ -33,12 +33,16 @@ import { useCallback, useEffect, useState } from "react";
 import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
 import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
+import { useCompactOnScroll } from "@/components/layout/use-compact-on-scroll";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
 import { SectionTransition } from "@/components/layout/section-transition";
 import { track } from "@/lib/analytics";
 import { useBottomNav } from "@/lib/hooks/use-sidebar-preferences";
 import { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";
 import { cn } from "@/lib/utils";
+
+/** Id of the page's scrolling container: the bottom bar follows its scroll. */
+const MAIN_CONTENT_ID = "main-content";
 
 /** Nome della scheda per le statistiche d'uso, dall'href della voce (tipo chiuso: mai percorsi o id). */
 const BOTTOM_NAV_TABS: Record<string, "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro"> = {
@@ -70,6 +74,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
+  const bottomNavCompact = useCompactOnScroll(MAIN_CONTENT_ID, bottomNav);
   const openMore = useCallback(() => setMoreOpen(true), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);
 
@@ -122,7 +127,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
 
         {/* ── Contenuto principale ── */}
         <main
-          id="main-content"
+          id={MAIN_CONTENT_ID}
           className={cn(
             // Unico contenitore che scorre: mai di lato (un elemento che sborda non deve aprire una seconda barra).
             "flex-1 overflow-x-hidden overflow-y-auto",
@@ -146,6 +151,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
           badges={navBadges}
           onOpenMore={openMore}
           onTabClick={(key) => track("bottom_nav_clicked", { tab: BOTTOM_NAV_TABS[key] ?? "altro" })}
+          compact={bottomNavCompact}
         />
       ) : null}
 

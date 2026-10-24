@@ -10,6 +10,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { ChevronRight } from "lucide-react";
 import { usePersistedFlag } from "@/lib/hooks/use-persisted-flag";
+import { SIDEBAR_ISLAND_CLASS } from "@/lib/sidebar/island";
 import { cn } from "@/lib/utils";
 
 /** Prefisso delle chiavi localStorage con lo stato aperto/chiuso delle sezioni. */
@@ -27,6 +28,8 @@ export interface CollapsibleSectionProps {
   action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  /** `card`: the section is its own island of the desktop sidebar, with a stronger title; `rule` (default): a line above. */
+  variant?: "rule" | "card";
 }
 
 export function CollapsibleSection({
@@ -38,12 +41,16 @@ export function CollapsibleSection({
   action,
   children,
   className,
+  variant = "rule",
 }: CollapsibleSectionProps) {
   const { t: tr } = useLocalization();
   const [open, setOpen] = usePersistedFlag(`${COLLAPSIBLE_STORAGE_PREFIX}${id}`, defaultOpen);
   const panelId = React.useId();
   return (
-    <section data-sidebar-module="" className={cn("border-t border-sidebar-border pt-2", className)} aria-label={tr(title)}>
+    <section
+      className={cn(variant === "card" ? cn(SIDEBAR_ISLAND_CLASS, "p-2") : "border-t border-sidebar-border pt-2", className)}
+      aria-label={tr(title)}
+    >
       <div className="flex items-center gap-1">
         <button
           type="button"
@@ -52,8 +59,9 @@ export function CollapsibleSection({
           aria-controls={panelId}
           className={cn(
             "flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1.5 text-left",
-            "text-xs font-medium text-sidebar-foreground/60",
-            "transition-colors hover:text-sidebar-foreground"
+            variant === "card"
+              ? "text-sm font-semibold text-sidebar-foreground"
+              : "text-xs font-medium text-sidebar-foreground/60 transition-colors hover:text-sidebar-foreground"
           )}
         >
           <ChevronRight

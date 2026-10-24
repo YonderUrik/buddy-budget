@@ -10,6 +10,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import Link from "next/link";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarFire } from "@/lib/sidebar/types";
+import { SIDEBAR_ISLAND_SKELETON_CLASS } from "@/lib/sidebar/island";
 import { localizedSidebarFormats } from "./sidebar-insights.utils";
 
 export interface SidebarFireModuleProps {
@@ -22,6 +23,8 @@ export interface SidebarFireModuleProps {
   onNavigate?: () => void;
   /** Chiamata al clic sul modulo (per le statistiche d'uso). */
   onItemClick?: () => void;
+  /** Desktop islands: the module is its own card (`CollapsibleSection` variant `card`). */
+  cards?: boolean;
 }
 
 export function SidebarFireModule({
@@ -32,13 +35,20 @@ export function SidebarFireModule({
   analyticsHref = "/analitiche",
   onNavigate,
   onItemClick,
+  cards = false,
 }: SidebarFireModuleProps) {
   const { fireBarWidth, formatFireProgress, formatSidebarAmount, formatYearsToFire } = localizedSidebarFormats(useLocalization().language);
 
   const { t: tr } = useLocalization();
   if (collapsed) return null;
   if (loading) {
-    return <div className="mt-1 h-16 animate-pulse rounded-lg bg-sidebar-accent" aria-busy="true" />;
+    return cards ? (
+      <div className={SIDEBAR_ISLAND_SKELETON_CLASS} aria-busy="true">
+        <div className="h-16 animate-pulse rounded-2xl bg-sidebar-accent" />
+      </div>
+    ) : (
+      <div className="mt-1 h-16 animate-pulse rounded-lg bg-sidebar-accent" aria-busy="true" />
+    );
   }
   if (!data) return null;
   const { progress, target, wealth, yearsToFire, currency } = data;
@@ -53,6 +63,7 @@ export function SidebarFireModule({
 
   return (
     <CollapsibleSection
+      variant={cards ? "card" : "rule"}
       id="fire"
       title={tr("Obiettivo FIRE")}
       summary={hasProgress ? formatFireProgress(progress) : undefined}

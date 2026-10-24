@@ -10,6 +10,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import Link from "next/link";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarDeadlines } from "@/lib/sidebar/types";
+import { SIDEBAR_ISLAND_SKELETON_CLASS } from "@/lib/sidebar/island";
 import { cn } from "@/lib/utils";
 import { localizedSidebarFormats, formatDeadlineDay } from "./sidebar-insights.utils";
 
@@ -22,20 +23,29 @@ export interface SidebarDeadlinesProps {
   onNavigate?: () => void;
   /** Chiamata al clic su una scadenza (per le statistiche d'uso). */
   onItemClick?: () => void;
+  /** Desktop islands: the module is its own card (`CollapsibleSection` variant `card`). */
+  cards?: boolean;
 }
 
-export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNavigate, onItemClick }: SidebarDeadlinesProps) {
+export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNavigate, onItemClick, cards = false }: SidebarDeadlinesProps) {
   const { formatDeadlineDay, formatSidebarAmount } = localizedSidebarFormats(useLocalization().language);
 
   const { t: tr } = useLocalization();
   if (collapsed) return null;
   if (loading) {
-    return <div className="mt-1 h-14 animate-pulse rounded-lg bg-sidebar-accent" aria-busy="true" />;
+    return cards ? (
+      <div className={SIDEBAR_ISLAND_SKELETON_CLASS} aria-busy="true">
+        <div className="h-14 animate-pulse rounded-2xl bg-sidebar-accent" />
+      </div>
+    ) : (
+      <div className="mt-1 h-14 animate-pulse rounded-lg bg-sidebar-accent" aria-busy="true" />
+    );
   }
   if (!data || data.items.length === 0) return null;
   const overdue = data.items.filter((i) => i.overdue).length;
   return (
     <CollapsibleSection
+      variant={cards ? "card" : "rule"}
       id="scadenze"
       title={tr("Prossime scadenze")}
       summary={data.items[0] ? formatDeadlineSummary(data.items[0].date) : undefined}

@@ -7,6 +7,7 @@
 export { AnimatedList, type AnimatedListItem, type AnimatedListProps } from "./animated-list";
 export { AnimatedNumber, type AnimatedNumberProps } from "./animated-number";
 export { BlurText, type BlurTextProps } from "./blur-text";
+export { HoverHighlight, HOVER_TARGET_ATTRIBUTE, type HoverHighlightMode, type HoverHighlightProps } from "./hover-highlight";
 export { MotionProvider } from "./motion-provider";
 export { TextMorph, type TextMorphProps } from "./text-morph";
 export { TextShimmer, type TextShimmerProps } from "./text-shimmer";

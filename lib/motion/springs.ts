@@ -12,6 +12,12 @@ export const SPRING_SOFT = { type: "spring", stiffness: 260, damping: 28 } as co
 /** Molla con un piccolo rimbalzo: pillole delle schede, isola dei lavori in corso. */
 export const SPRING_BOUNCY = { type: "spring", stiffness: 380, damping: 26 } as const;
 
+/** iOS-like ease-out (fast start, long soft landing), the same curve as the bottom sheets: for size changes that follow a gesture. */
+export const EASE_IOS = [0.32, 0.72, 0, 1] as const;
+
+/** Size change of a bar that follows the scroll (the phone bottom bar): smooth, no overshoot, under 300 ms. */
+export const BAR_RESIZE_TRANSITION = { type: "tween", duration: 0.28, ease: EASE_IOS } as const;
+
 /** Media query del movimento ridotto chiesto dal sistema. */
 export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 

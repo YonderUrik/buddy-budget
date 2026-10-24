@@ -20,7 +20,7 @@ import { motion, useReducedMotion } from "motion/react";
 
 import type { NavBadge, NavItem } from "@/components/layout/sidebar";
 import { usePendingNavHref } from "@/components/layout/use-pending-nav";
-import { SPRING_SNAPPY } from "@/lib/motion/springs";
+import { BAR_RESIZE_TRANSITION, SPRING_SNAPPY } from "@/lib/motion/springs";
 import { cn } from "@/lib/utils";
 
 /** Items shown in the bar: the four most used sections, the rest is under «Altro». */
@@ -35,6 +35,8 @@ const BOTTOM_NAV_BAR_REM = 4;
 const BOTTOM_NAV_COMPACT_BAR_REM = 3;
 /** Gap between the capsule and the bottom edge (rem), above the home indicator in the app. */
 const BOTTOM_NAV_GAP_REM = 0.75;
+/** Gap between the capsule and the side edges of the screen (rem). */
+const BOTTOM_NAV_SIDE_REM = 0.75;
 /** Space the bar takes at the bottom (rem): the content leaves this much room so it never ends up under it. */
 export const BOTTOM_NAV_HEIGHT_REM = BOTTOM_NAV_BAR_REM + BOTTOM_NAV_GAP_REM * 2;
 
@@ -63,7 +65,7 @@ function ActivePill() {
     <motion.span
       layoutId="bottom-nav-pill"
       transition={SPRING_SNAPPY}
-      className="absolute inset-x-0 inset-y-1 rounded-full bg-sidebar-accent"
+      className="absolute inset-x-0 inset-y-1 rounded-full bg-glass-pill"
       aria-hidden="true"
     />
   );
@@ -71,16 +73,25 @@ function ActivePill() {
 
 const TAB_CLASS = "relative flex min-w-0 flex-1 flex-col items-center justify-center rounded-full text-[11px] font-medium transition-colors";
 
-/** Tab label: folds away (height and opacity) while the bar is compact. */
-function TabLabel({ compact, transition, children }: { compact: boolean; transition: object; children: React.ReactNode }) {
+/** Tab label: folds away while the bar is compact. The text fades, blurs and sinks a little as its line closes, and comes
+ * back once the bar has made room for it, so icons glide instead of jumping. */
+function TabLabel({ compact, reduced, children }: { compact: boolean; reduced: boolean; children: React.ReactNode }) {
+  const size = reduced ? { duration: 0 } : BAR_RESIZE_TRANSITION;
   return (
     <motion.span
       initial={false}
-      animate={compact ? { height: 0, opacity: 0, marginTop: 0 } : { height: "auto", opacity: 1, marginTop: 2 }}
-      transition={transition}
-      className="relative z-10 block max-w-full overflow-hidden truncate px-0.5 leading-none tracking-tight"
+      animate={compact ? { height: 0, marginTop: 0 } : { height: "auto", marginTop: 2 }}
+      transition={size}
+      className="relative z-10 block max-w-full overflow-hidden"
     >
-      {children}
+      <motion.span
+        initial={false}
+        animate={compact ? { opacity: 0, y: 4, scale: 0.9, filter: "blur(2px)" } : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        transition={reduced ? { duration: 0 } : compact ? { duration: 0.14, ease: "easeOut" } : { duration: 0.2, delay: 0.08, ease: "easeOut" }}
+        className="block truncate px-0.5 leading-none tracking-tight"
+      >
+        {children}
+      </motion.span>
     </motion.span>
   );
 }
@@ -92,18 +103,30 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
   const primary = primaryHrefs.flatMap((href) => items.filter((i) => i.href === href && !i.comingSoon && !i.locked));
   const current = pendingHref ?? activeHref ?? pathname;
   const inPrimary = primary.some((i) => isActivePath(current, i.href));
-  // Reduced motion: the bar still changes size, at once instead of with a spring.
-  const transition = useReducedMotion() ? { duration: 0 } : SPRING_SNAPPY;
+  // Reduced motion: the bar still changes size, at once instead of gliding.
+  const reduced = useReducedMotion() ?? false;
 
   return (
     <motion.nav
       initial={false}
       animate={{ height: `${compact ? BOTTOM_NAV_COMPACT_BAR_REM : BOTTOM_NAV_BAR_REM}rem` }}
-      transition={transition}
+      transition={reduced ? { duration: 0 } : BAR_RESIZE_TRANSITION}
       data-compact={compact ? "" : undefined}
       aria-label={tr("Navigazione principale")}
-      className="fixed inset-x-3 z-30 flex rounded-full border border-sidebar-border bg-sidebar/90 px-1 shadow-lg shadow-black/10 supports-backdrop-filter:backdrop-blur-xl md:hidden"
-      style={{ bottom: `calc(${BOTTOM_NAV_GAP_REM}rem + env(safe-area-inset-bottom))` }}
+      className={cn(
+        "fixed z-30 flex rounded-full border border-glass-edge px-1 md:hidden",
+        // «Liquid Glass»: translucent fill, the page blurred and more saturated behind it, light on the top edge.
+        "bg-glass shadow-[inset_0_1px_0_var(--glass-highlight),0_10px_30px_-6px_var(--glass-shadow)]",
+        "supports-backdrop-filter:backdrop-blur-2xl supports-backdrop-filter:backdrop-saturate-[1.8]",
+        // Without backdrop-filter the fill would be too thin to read the labels over the page.
+        "not-supports-backdrop-filter:bg-sidebar"
+      )}
+      // Away from the screen edges and from the notch/camera cutout when the phone is turned sideways.
+      style={{
+        bottom: `calc(${BOTTOM_NAV_GAP_REM}rem + env(safe-area-inset-bottom))`,
+        left: `max(${BOTTOM_NAV_SIDE_REM}rem, env(safe-area-inset-left))`,
+        right: `max(${BOTTOM_NAV_SIDE_REM}rem, env(safe-area-inset-right))`,
+      }}
     >
       {primary.map((item) => {
         const active = isActivePath(current, item.href);
@@ -119,7 +142,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
               startNav(item.href);
               onTabClick?.(item.href);
             }}
-            className={cn(TAB_CLASS, active ? "text-sidebar-primary" : "text-sidebar-foreground/60")}
+            className={cn(TAB_CLASS, active ? "text-sidebar-primary" : "text-sidebar-foreground/70")}
           >
             {active ? <ActivePill /> : null}
             <span className="relative flex h-7 w-10 items-center justify-center">
@@ -127,13 +150,13 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
               {showBadge ? (
                 <span
                   aria-label={tr(badge.ariaLabel)}
-                  className="absolute -top-0.5 -right-1.5 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sidebar-primary px-1 text-[10px] font-bold leading-none text-sidebar-primary-foreground tabular-nums ring-2 ring-sidebar"
+                  className="absolute -top-0.5 -right-1.5 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sidebar-primary px-1 text-[10px] font-bold leading-none text-sidebar-primary-foreground tabular-nums ring-2 ring-background"
                 >
                   {badge.countLabel ?? badge.count}
                 </span>
               ) : null}
             </span>
-            <TabLabel compact={compact} transition={transition}>
+            <TabLabel compact={compact} reduced={reduced}>
               {tr(item.label)}
             </TabLabel>
           </Link>
@@ -146,13 +169,13 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
           onOpenMore();
         }}
         aria-haspopup="dialog"
-        className={cn(TAB_CLASS, !inPrimary ? "text-sidebar-primary" : "text-sidebar-foreground/60")}
+        className={cn(TAB_CLASS, !inPrimary ? "text-sidebar-primary" : "text-sidebar-foreground/70")}
       >
         {!inPrimary ? <ActivePill /> : null}
         <span className="relative flex h-7 w-10 items-center justify-center">
           <MoreHorizontal className="relative z-10 size-6" aria-hidden="true" />
         </span>
-        <TabLabel compact={compact} transition={transition}>
+        <TabLabel compact={compact} reduced={reduced}>
           {tr(MORE_LABEL)}
         </TabLabel>
       </button>

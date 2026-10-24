@@ -67,7 +67,8 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
     <header
       className={[
         "group md:hidden",
-        "grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-2",
+        // Below the notch/camera cutout when the page is drawn under the status bar (0 in a normal browser tab).
+        "grid box-content h-14 grid-cols-[1fr_auto_1fr] items-center gap-2 pt-[env(safe-area-inset-top)]",
         "bg-sidebar border-b border-sidebar-border",
         "px-4 shrink-0",
       ].join(" ")}

@@ -12,6 +12,7 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import { formatCurrency, privateNumberFormat } from "@/lib/format";
 import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
+import { SPOTLIGHT_CARD } from "./spotlight-style";
 
 const KIND_ICONS: Record<CommandKind, LucideIcon> = { spesa: ReceiptTextIcon, entrata: BanknoteIcon, acquisto: TrendingUpIcon, vendita: TrendingDownIcon, dividendo: CoinsIcon };
 const KIND_TITLES: Record<CommandKind, string> = { spesa: "Spesa", entrata: "Entrata", acquisto: "Acquisto", vendita: "Vendita", dividendo: "Dividendo" };
@@ -64,7 +65,7 @@ export function CommandCard({ draft, instrument, selected, currency, phone = fal
         className={cn(
           "flex w-full cursor-pointer flex-col gap-3 text-left transition-colors duration-100",
           // On the phone the card is the block itself (like the other result cards); on desktop it lights up when chosen.
-          phone ? "rounded-3xl bg-card/80 p-4 active:bg-card dark:bg-foreground/[0.07] dark:active:bg-foreground/10" : "rounded-2xl p-3",
+          phone ? cn("rounded-3xl p-4", SPOTLIGHT_CARD) : "rounded-2xl p-3",
           !phone && (lit ? "bg-sun text-on-sun" : "bg-foreground/[0.05] hover:bg-foreground/[0.08]")
         )}
       >

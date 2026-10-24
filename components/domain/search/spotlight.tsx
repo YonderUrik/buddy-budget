@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * «Cerca» in the Spotlight style of macOS and iOS 26. On a computer: a glass capsule floating in the upper part of the
- * screen over the page (not dimmed), four round buttons beside it to narrow the search before typing, and the results
- * growing out of the capsule as you type. On the phone: the page blurred behind, the results in rounded cards and the
- * field at the bottom above the keyboard, where the thumb is. Arrow keys move, Enter opens, Esc closes.
+ * «Cerca» in the Spotlight style of macOS and iOS 26. On a computer: a glass capsule floating over the page (not
+ * dimmed), four round glass buttons beside it to narrow the search before typing, and the results growing out of the
+ * capsule as you type. On the phone: the page blurred behind, the results in glass cards and the field at the bottom
+ * above the keyboard, where the thumb is. Arrow keys move, Enter opens, Esc closes.
  */
 
 import * as React from "react";
+import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { LoaderCircleIcon, PlusIcon, ReceiptTextIcon, SearchIcon, SettingsIcon, TrendingUpIcon, XIcon, type LucideIcon } from "lucide-react";
 import type { CommandDraft } from "@/lib/commands";
@@ -17,14 +18,13 @@ import { useLocalization } from "@/lib/localization/provider";
 import { SPRING_BOUNCY, SPRING_SNAPPY } from "@/lib/motion/springs";
 import type { SearchHit } from "@/lib/search/types";
 import { cn } from "@/lib/utils";
+import { SpotlightExamples } from "./spotlight-examples";
 import { SpotlightResults } from "./spotlight-results";
+import { SPOTLIGHT_CARD, SPOTLIGHT_COVER, SPOTLIGHT_GLASS } from "./spotlight-style";
 import { SPOTLIGHT_FILTERS, useSpotlight, type SpotlightBlock, type SpotlightFilter, type SpotlightItem } from "./use-spotlight";
 
 /** Width below which the phone layout is used (Tailwind `sm`). */
 const PHONE_MAX_WIDTH = 639;
-const GLASS =
-  "border border-glass-edge bg-popover/80 shadow-[inset_0_1px_0_var(--glass-highlight),0_24px_60px_-12px_var(--glass-shadow)] supports-backdrop-filter:bg-popover/65 supports-backdrop-filter:backdrop-blur-2xl supports-backdrop-filter:backdrop-saturate-[1.8]";
-
 const FILTER_INFO: Record<SpotlightFilter, { icon: LucideIcon; label: string }> = {
   movimenti: { icon: ReceiptTextIcon, label: "Movimenti e conti" },
   investimenti: { icon: TrendingUpIcon, label: "Titoli" },
@@ -97,6 +97,11 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
   const contentRef = React.useRef<HTMLDivElement>(null);
   const contentHeight = useContentHeight(contentRef);
   const optionId = (index: number) => `${listId}-${index}`;
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const tryExample = (sentence: string) => {
+    setText(sentence);
+    inputRef.current?.focus();
+  };
 
   // A new query or filter starts again from the first row.
   const [lastKey, setLastKey] = React.useState(`${query}|${filter}`);
@@ -143,6 +148,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
 
   const input = (
     <input
+      ref={inputRef}
       autoFocus
       value={text}
       onChange={(event) => setText(event.target.value)}
@@ -158,7 +164,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
       autoComplete="off"
       autoCorrect="off"
       spellCheck={false}
-      className={cn("min-w-0 flex-1 bg-transparent outline-none placeholder:text-text-3", phone ? "text-[17px]" : "text-[22px] font-light tracking-tight")}
+      className={cn("min-w-0 flex-1 bg-transparent outline-none placeholder:text-text-3", phone ? "text-[17px]" : "text-2xl font-light tracking-tight")}
     />
   );
   const spinner = waiting ? <LoaderCircleIcon className="size-4 shrink-0 animate-spin text-text-3" aria-hidden="true" /> : null;
@@ -172,7 +178,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
   if (phone) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label={tr("Cerca in BuddyBudget")}>
-        <motion.div className="absolute inset-0 bg-background/70 supports-backdrop-filter:backdrop-blur-2xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} onClick={onClose} />
+        <motion.div className={cn("absolute inset-0", SPOTLIGHT_COVER)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} onClick={onClose} />
         <motion.div
           className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3"
           initial={{ opacity: 0, y: 12 }}
@@ -180,6 +186,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
           exit={{ opacity: 0, y: 12, transition: { duration: 0.15 } }}
           transition={SPRING_SNAPPY}
         >
+          {text === "" && !filter ? <SpotlightExamples phone onPick={tryExample} className="pt-2 pb-5" /> : null}
           {empty ? <p className="px-3 pt-6 text-center text-sm text-text-2">{tr("Niente con «{0}».", { 0: text.trim() })}</p> : results}
         </motion.div>
         <motion.div
@@ -190,12 +197,12 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
           exit={{ y: 90, opacity: 0, transition: { duration: 0.18 } }}
           transition={SPRING_BOUNCY}
         >
-          <label className={cn("flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-full px-4", GLASS)}>
-            <SearchIcon className="size-5 shrink-0 text-text-3" aria-hidden="true" />
+          <label className={cn("flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-full px-4", SPOTLIGHT_CARD)}>
+            <SearchIcon className="size-5 shrink-0 text-text-2" aria-hidden="true" />
             {input}
             {spinner}
           </label>
-          <button type="button" onClick={onClose} aria-label={tr("Chiudi")} className={cn("flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full", GLASS)}>
+          <button type="button" onClick={onClose} aria-label={tr("Chiudi")} className={cn("flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full", SPOTLIGHT_CARD)}>
             <XIcon className="size-5" aria-hidden="true" />
           </button>
         </motion.div>
@@ -203,19 +210,22 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
     );
   }
 
-  const open = blocks.length > 0 || empty;
+  const examples = text === "" && !filter;
+  const open = blocks.length > 0 || empty || examples;
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={tr("Cerca in BuddyBudget")} onPointerDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div className="pointer-events-none mx-auto mt-[16vh] flex w-[min(760px,calc(100vw-2rem))] items-start gap-2.5">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={tr("Cerca in BuddyBudget")}>
+      {/* The page stays as it is behind (Spotlight does not dim it); a click outside the capsule closes. */}
+      <div className="absolute inset-0" onPointerDown={onClose} />
+      <div className="pointer-events-none relative mx-auto mt-[18vh] flex w-[min(760px,calc(100vw-2rem))] items-start gap-2.5">
         <motion.div
-          className={cn("pointer-events-auto min-w-0 flex-1 overflow-hidden rounded-[30px]", GLASS)}
+          className={cn("pointer-events-auto min-w-0 flex-1 overflow-hidden rounded-[30px]", SPOTLIGHT_GLASS)}
           initial={{ opacity: 0, scale: 0.94, y: -12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.97, y: -6, transition: { duration: 0.14 } }}
           transition={SPRING_BOUNCY}
         >
-          <div className="flex h-[60px] items-center gap-3 px-5">
-            <SearchIcon className="size-6 shrink-0 text-text-3" strokeWidth={1.75} aria-hidden="true" />
+          <div className="flex h-16 items-center gap-3.5 px-5">
+            <SearchIcon className="size-6 shrink-0 text-text-2" strokeWidth={2} aria-hidden="true" />
             {filter ? (
               <button type="button" onClick={() => setFilter(null)} className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-foreground/[0.07] pr-2 pl-3 text-sm font-medium">
                 {tr(FILTER_INFO[filter].label)}
@@ -228,9 +238,17 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
           <motion.div initial={false} animate={{ height: open ? contentHeight : 0 }} transition={SPRING_SNAPPY} className="overflow-hidden">
             <div ref={contentRef}>
               {open ? (
-                <div className="max-h-[min(58vh,560px)] overflow-y-auto overscroll-contain border-t border-glass-edge px-2 pt-2.5 pb-2">
-                  {empty ? <p className="px-3 py-6 text-center text-sm text-text-2">{tr("Niente con «{0}». Prova con una parola sola, un importo come 45,90 o un ISIN.", { 0: text.trim() })}</p> : results}
-                </div>
+                <>
+                  <div className="max-h-[min(58vh,560px)] overflow-y-auto overscroll-contain border-t border-glass-edge px-2 pt-3 pb-2">
+                    {examples ? <SpotlightExamples onPick={tryExample} className="pb-2" /> : null}
+                    {empty ? <p className="px-3 py-6 text-center text-sm text-text-2">{tr("Niente con «{0}». Prova con una parola sola, un importo come 45,90 o un ISIN.", { 0: text.trim() })}</p> : examples ? null : results}
+                  </div>
+                  <div className="flex h-10 items-center gap-2 border-t border-glass-edge px-5 text-xs text-text-3">
+                    <Image src="/brand/logo-mark.svg" alt="" width={11} height={14} className="h-3.5 w-auto" aria-hidden="true" />
+                    <span className="font-medium text-text-2">BuddyBudget</span>
+                    <span className="ml-auto">{tr("↑↓ per scegliere · ⏎ per aprire · esc per chiudere")}</span>
+                  </div>
+                </>
               ) : null}
             </div>
           </motion.div>
@@ -252,7 +270,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
                     initial={{ opacity: 0, scale: 0.7, x: -16 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     transition={{ ...SPRING_BOUNCY, delay: 0.04 + index * 0.035 }}
-                    className={cn("flex size-[60px] cursor-pointer items-center justify-center rounded-full transition-colors", on ? "bg-sun text-on-sun shadow-[0_24px_60px_-12px_var(--glass-shadow)]" : cn(GLASS, "text-text-2 hover:text-foreground"))}
+                    className={cn("flex size-16 cursor-pointer items-center justify-center rounded-full transition-colors", on ? "bg-sun text-on-sun shadow-[0_12px_32px_-12px_var(--spotlight-shadow)]" : cn(SPOTLIGHT_GLASS, "text-text-2 hover:text-foreground"))}
                   >
                     <Icon className="size-[22px]" strokeWidth={1.75} aria-hidden="true" />
                   </motion.button>

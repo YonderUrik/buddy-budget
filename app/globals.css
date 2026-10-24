@@ -47,6 +47,8 @@
   --color-glass: var(--glass);
   --color-glass-edge: var(--glass-edge);
   --color-glass-pill: var(--glass-pill);
+  --color-spotlight: var(--spotlight);
+  --color-spotlight-edge: var(--spotlight-edge);
   --color-island-foreground: var(--island-foreground);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
@@ -191,6 +193,12 @@
   --glass-highlight: rgb(255 255 255 / 0.9);
   --glass-shadow: rgb(15 23 42 / 0.12);
   --glass-pill: rgb(0 0 0 / 0.06);
+  /* «Cerca» (Spotlight): frosted glass that lets the page through but stands apart from it thanks to a crisp edge, a
+     light on the top edge and a deep shadow. */
+  --spotlight: rgb(248 248 250 / 0.66);
+  --spotlight-edge: rgb(0 0 0 / 0.13);
+  --spotlight-highlight: rgb(255 255 255 / 0.85);
+  --spotlight-shadow: rgb(15 23 42 / 0.3);
   /* Isola dei lavori in corso: sempre scura, in entrambi i temi (come l'isola dei telefoni). */
   --island: #0f0f12;
   --island-foreground: #f4f4f5;
@@ -307,6 +315,10 @@
   --glass-highlight: rgb(255 255 255 / 0.14);
   --glass-shadow: rgb(0 0 0 / 0.4);
   --glass-pill: rgb(255 255 255 / 0.1);
+  --spotlight: rgb(40 40 46 / 0.62);
+  --spotlight-edge: rgb(255 255 255 / 0.16);
+  --spotlight-highlight: rgb(255 255 255 / 0.12);
+  --spotlight-shadow: rgb(0 0 0 / 0.6);
 }
 
 @layer base {

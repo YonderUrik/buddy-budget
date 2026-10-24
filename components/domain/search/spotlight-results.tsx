@@ -10,6 +10,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
 import { AiRow, CommandCard } from "./command-card";
 import { SearchRow } from "./search-row";
+import { SPOTLIGHT_CARD } from "./spotlight-style";
 import type { SpotlightBlock, SpotlightItem } from "./use-spotlight";
 
 /** Rows after this one appear together (no long cascade). */
@@ -38,7 +39,7 @@ export function SpotlightResults({ blocks, query, active, currency, phone = fals
         <section key={block.id} aria-label={block.title ? tr(block.title) : undefined}>
           {block.title ? <h3 className={cn("px-3 pb-1 font-medium text-text-3", phone ? "text-[13px]" : "text-xs")}>{tr(block.title)}</h3> : null}
           {/* On the phone a block is a rounded card; the command block is a card on its own. */}
-          <div className={cn("flex flex-col", phone && block.items[0]?.type !== "command" && "rounded-3xl bg-card/80 p-1.5 dark:bg-foreground/[0.07]")}>
+          <div className={cn("flex flex-col", phone && block.items[0]?.type !== "command" && cn("rounded-3xl p-1.5", SPOTLIGHT_CARD))}>
             {block.items.map((item, itemIndex) => {
               const position = starts[blockIndex] + itemIndex;
               const common = { id: optionId(position), selected: position === active, phone, onPick: () => onPick(item, position), onHover: () => onHover(position) };

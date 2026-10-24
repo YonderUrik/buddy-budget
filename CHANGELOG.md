@@ -2,6 +2,21 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.87.0](https://github.com/YonderUrik/buddy-budget/compare/v0.86.1...v0.87.0) (2026-10-24)
+
+
+### Novità
+
+* compact glass bars while scrolling on the phone ([#498](https://github.com/YonderUrik/buddy-budget/issues/498)) ([b72c0d0](https://github.com/YonderUrik/buddy-budget/commit/b72c0d0040bc87a8be2b1f292cfcfc3a468ecf74))
+* desktop sidebar as islands with a sliding hover ([#501](https://github.com/YonderUrik/buddy-budget/issues/501)) ([20cb688](https://github.com/YonderUrik/buddy-budget/commit/20cb6889f322816ca4c798fbcf61fa1535a97978))
+* shorten the Panoramica month sentence to two short lines ([#500](https://github.com/YonderUrik/buddy-budget/issues/500)) ([f18cd20](https://github.com/YonderUrik/buddy-budget/commit/f18cd20a93cd844c682030930f325132f0f9e8d1))
+
+
+### Correzioni
+
+* **deps:** bump the patch group in /landing with 4 updates ([#496](https://github.com/YonderUrik/buddy-budget/issues/496)) ([d7caf0f](https://github.com/YonderUrik/buddy-budget/commit/d7caf0f31f9eb367147e7eb73d270b658e0b8dbe))
+* **deps:** bump the patch group with 5 updates ([#497](https://github.com/YonderUrik/buddy-budget/issues/497)) ([88c406c](https://github.com/YonderUrik/buddy-budget/commit/88c406c5764640310c0508e145277e1ac146fac2))
+
 ## [0.86.1](https://github.com/YonderUrik/buddy-budget/compare/v0.86.0...v0.86.1) (2026-10-23)
 
 

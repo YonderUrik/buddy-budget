@@ -2,6 +2,20 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.88.0](https://github.com/YonderUrik/buddy-budget/compare/v0.87.0...v0.88.0) (2026-10-24)
+
+
+### Novità
+
+* **landing:** link the Instagram profile in the footer ([#503](https://github.com/YonderUrik/buddy-budget/issues/503)) ([5945dc5](https://github.com/YonderUrik/buddy-budget/commit/5945dc5ad20df0ad165fe786976e2a35f29774b5))
+* one «Aggiungi» for the whole app, frequent things first ([#507](https://github.com/YonderUrik/buddy-budget/issues/507)) ([441d176](https://github.com/YonderUrik/buddy-budget/commit/441d1761222c57bfcf70cb4dcfa9fb1450360a3e))
+
+
+### Correzioni
+
+* cap the stretching hover and use it in the app's lists ([#506](https://github.com/YonderUrik/buddy-budget/issues/506)) ([63a11b2](https://github.com/YonderUrik/buddy-budget/commit/63a11b2d1d91a103edeb37f1e977813088f397db))
+* landing SEO findings from the heycatch audit ([#504](https://github.com/YonderUrik/buddy-budget/issues/504)) ([ee9b082](https://github.com/YonderUrik/buddy-budget/commit/ee9b0822e88dab5d008eb005b5c8ac616a29974b))
+
 ## [0.87.0](https://github.com/YonderUrik/buddy-budget/compare/v0.86.1...v0.87.0) (2026-10-24)
 
 

@@ -222,7 +222,7 @@ function NavLink({
         shape,
         "transition-colors duration-150",
         "text-sidebar-foreground/70 hover:text-sidebar-accent-foreground",
-        active ? (look === "islands" ? "text-on-sun hover:text-on-sun" : "text-sidebar-accent-foreground") : !sliding && "hover:bg-sidebar-accent",
+        active ? (look.startsWith("islands") ? "text-on-sun hover:text-on-sun" : "text-sidebar-accent-foreground") : !sliding && "hover:bg-sidebar-accent",
         collapsed && "justify-center px-2"
       )}
     >
@@ -231,10 +231,10 @@ function NavLink({
         <motion.span
           layoutId="sidebar-active-pill"
           transition={SPRING_SNAPPY}
-          className={cn("absolute inset-0", shape, look === "islands" ? "bg-sun" : "bg-sidebar-accent")}
+          className={cn("absolute inset-0", shape, look.startsWith("islands") ? "bg-sun" : "bg-sidebar-accent")}
           aria-hidden="true"
         >
-          {look === "islands" ? null : (
+          {look.startsWith("islands") ? null : (
             <span className={cn("absolute bg-sun", sliding ? "inset-y-3 left-2 w-1 rounded-full" : "inset-y-2 left-0 w-1 rounded-r-full")} />
           )}
         </motion.span>
@@ -306,7 +306,7 @@ function UserAvatar({ initials, image }: { initials: string; image?: string | nu
 }
 
 /** Sidebar styles being compared (prototype: picked from localStorage `bb-sidebar-style`). */
-export type SidebarStyle = "today" | "card" | "islands" | "navy";
+export type SidebarStyle = "today" | "card" | "islands" | "islands-modules" | "navy";
 
 function useSidebarStyle(): SidebarStyle {
   return React.useSyncExternalStore(
@@ -448,7 +448,7 @@ export function AppSidebar({
   const navList = (
         <LayoutGroup id={navGroupId}>
           <HoverHighlight
-            mode={look === "islands" ? "stretch" : "follow"}
+            mode={look.startsWith("islands") ? "stretch" : "follow"}
             highlightClassName={cn("rounded-full", look === "navy" ? "bg-sidebar-accent/70" : "bg-sidebar-accent")}
             className={floating ? "" : "contents"}
           >
@@ -484,6 +484,54 @@ export function AppSidebar({
   const extraContent = extra ? (
     <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose }}>{extra}</SidebarSlotProvider>
   ) : null;
+
+  const userMenu = (
+          <DropdownMenuContent side="top" align="start" className="w-56">
+            <div className="px-2 py-1.5">
+              <p className="text-sm font-medium">{userName}</p>
+              <p className="text-xs text-muted-foreground truncate">{session?.user.email ?? ""}</p>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(settingsHref);
+                onClose?.();
+              }}
+              className="cursor-pointer"
+            >
+              <Settings className="mr-2 size-4" aria-hidden="true" />{tr("Impostazioni")}</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(pathname.startsWith(supportHref) ? supportHref : `${supportHref}?da=${encodeURIComponent(pathname)}`);
+                onClose?.();
+              }}
+              className="cursor-pointer"
+            >
+              <LifeBuoy className="mr-2 size-4" aria-hidden="true" />{tr("Aiuto e segnalazioni")}</DropdownMenuItem>
+            <DropdownMenuCheckboxItem
+              checked={hidden}
+              onCheckedChange={(checked) => {
+                toggleHidden();
+                track("amounts_hidden_toggled", { enabled: checked, source: "menu_utente" });
+              }}
+              className="cursor-pointer"
+            >
+              <Eye className="mr-2 size-4" aria-hidden="true" />{tr("Nascondi gli importi")}</DropdownMenuCheckboxItem>
+            <ThemeSubmenu
+              onChange={(choice) =>
+                track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
+              }
+            />
+            <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
+              <LogOut className="mr-2 size-4" aria-hidden="true" />{tr("Esci")}</DropdownMenuItem>
+            {look.startsWith("islands") ? (
+              <>
+                <DropdownMenuSeparator />
+                <AppVersionLabel className="px-2 py-1 text-xs text-muted-foreground" />
+              </>
+            ) : null}
+          </DropdownMenuContent>
+  );
 
   // Footer: user card, support, collapse button.
   const footer = (
@@ -534,45 +582,7 @@ export function AppSidebar({
               </div>
             )}
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56">
-            <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">{userName}</p>
-              <p className="text-xs text-muted-foreground truncate">{session?.user.email ?? ""}</p>
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(settingsHref);
-                onClose?.();
-              }}
-              className="cursor-pointer"
-            >
-              <Settings className="mr-2 size-4" aria-hidden="true" />{tr("Impostazioni")}</DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(pathname.startsWith(supportHref) ? supportHref : `${supportHref}?da=${encodeURIComponent(pathname)}`);
-                onClose?.();
-              }}
-              className="cursor-pointer"
-            >
-              <LifeBuoy className="mr-2 size-4" aria-hidden="true" />{tr("Aiuto e segnalazioni")}</DropdownMenuItem>
-            <DropdownMenuCheckboxItem
-              checked={hidden}
-              onCheckedChange={(checked) => {
-                toggleHidden();
-                track("amounts_hidden_toggled", { enabled: checked, source: "menu_utente" });
-              }}
-              className="cursor-pointer"
-            >
-              <Eye className="mr-2 size-4" aria-hidden="true" />{tr("Nascondi gli importi")}</DropdownMenuCheckboxItem>
-            <ThemeSubmenu
-              onChange={(choice) =>
-                track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
-              }
-            />
-            <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
-              <LogOut className="mr-2 size-4" aria-hidden="true" />{tr("Esci")}</DropdownMenuItem>
-          </DropdownMenuContent>
+          {userMenu}
         </DropdownMenu>
 
         {/* Bottone collapse (solo desktop, non nel drawer mobile) */}
@@ -612,7 +622,60 @@ export function AppSidebar({
 
   const navyVars = look === "navy" ? NAVY_VARS : undefined;
 
-  if (look === "islands") {
+  const iconButton = "flex size-9 shrink-0 items-center justify-center rounded-full text-sidebar-foreground/60 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-foreground";
+  const firstName = userName.split(" ")[0];
+  const compactFooter = (
+    <div className={cn("flex items-center gap-1 p-2", isCollapsed && "flex-col")}>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className={cn(
+            "flex min-w-0 items-center gap-2.5 rounded-full p-1 transition-colors duration-150 hover:bg-sidebar-accent",
+            isCollapsed ? "justify-center" : "flex-1 pr-3"
+          )}
+          aria-label={tr("Opzioni utente")}
+        >
+          <UserAvatar initials={userInitials} image={userImage} />
+          {!isCollapsed && (
+            <span className="truncate text-sm font-medium text-sidebar-foreground">{firstName}</span>
+          )}
+        </DropdownMenuTrigger>
+        {userMenu}
+      </DropdownMenu>
+      {onOpenSupport ? (
+        <button
+          type="button"
+          onClick={() => {
+            onOpenSupport();
+            onClose?.();
+          }}
+          className={iconButton}
+          aria-label={tr("Scrivici")}
+          title={tr("Scrivici")}
+        >
+          <MessageCircleQuestion className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
+      {!forceExpanded && (
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          className={iconButton}
+          aria-label={isCollapsed ? tr("Espandi sidebar") : tr("Comprimi sidebar")}
+          title={isCollapsed ? tr("Espandi sidebar") : tr("Comprimi sidebar")}
+        >
+          {isCollapsed ? <ChevronRight className="size-4" aria-hidden="true" /> : <ChevronLeft className="size-4" aria-hidden="true" />}
+        </button>
+      )}
+    </div>
+  );
+
+  /** How the summary modules read inside the middle island: one titled island, or one island per module. */
+  const moduleTitles =
+    "[&_section[data-sidebar-module]]:border-0 [&_section[data-sidebar-module]]:pt-0 [&_section[data-sidebar-module]>div>button]:text-sm [&_section[data-sidebar-module]>div>button]:font-semibold [&_section[data-sidebar-module]>div>button]:text-sidebar-foreground";
+
+
+  if (look.startsWith("islands")) {
+    const perModule = look === "islands-modules";
     return (
       <div className={cn("flex h-full flex-col gap-3 p-3 pr-0 transition-[width] duration-300 ease-in-out", isCollapsed ? "w-[76px]" : "w-[252px]")}>
         <div className={cn(card, "shrink-0 overflow-hidden")}>
@@ -620,11 +683,31 @@ export function AppSidebar({
           <nav className="px-2 pb-3" aria-label={tr("Menu")}>{navList}</nav>
         </div>
         {extraContent ? (
-          <div className={cn(card, "sidebar-nav min-h-0 flex-1 overflow-y-auto px-2 py-1")}>{extraContent}</div>
+          perModule ? (
+            <div
+              className={cn(
+                "sidebar-nav min-h-0 flex-1 overflow-y-auto",
+                moduleTitles,
+                "[&_div:has(>section[data-sidebar-module])]:mt-0 [&_div:has(>section[data-sidebar-module])]:gap-3",
+                "flex flex-col gap-3 [&_section[data-sidebar-module]]:rounded-[24px] [&_section[data-sidebar-module]]:border [&_section[data-sidebar-module]]:border-sidebar-border [&_section[data-sidebar-module]]:bg-sidebar [&_section[data-sidebar-module]]:p-2"
+              )}
+            >
+              {extraContent}
+            </div>
+          ) : (
+            <section className={cn(card, "flex min-h-0 flex-1 flex-col overflow-hidden")} aria-label={tr("In breve")}>
+              {!isCollapsed ? (
+                <h2 className="shrink-0 px-5 pt-4 pb-1 font-display text-2xl leading-none text-sidebar-foreground">{tr("In breve")}</h2>
+              ) : null}
+              <div className={cn("sidebar-nav min-h-0 flex-1 overflow-y-auto px-2 pb-2 [&_section[data-sidebar-module]]:mt-2", moduleTitles)}>
+                {extraContent}
+              </div>
+            </section>
+          )
         ) : (
           <div className="flex-1" />
         )}
-        <div className={cn(card, "shrink-0 overflow-hidden")}>{footer}</div>
+        <div className={cn(card, "shrink-0 overflow-hidden")}>{compactFooter}</div>
       </div>
     );
   }

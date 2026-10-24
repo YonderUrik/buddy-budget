@@ -43,7 +43,7 @@ export function CollapsibleSection({
   const [open, setOpen] = usePersistedFlag(`${COLLAPSIBLE_STORAGE_PREFIX}${id}`, defaultOpen);
   const panelId = React.useId();
   return (
-    <section className={cn("border-t border-sidebar-border pt-2", className)} aria-label={tr(title)}>
+    <section data-sidebar-module="" className={cn("border-t border-sidebar-border pt-2", className)} aria-label={tr(title)}>
       <div className="flex items-center gap-1">
         <button
           type="button"

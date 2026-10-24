@@ -1,6 +1,6 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
-/** Testata della Panoramica: saluto (che entra parola per parola) e due-tre frasi che dicono com'è il mese e cosa aspetta l'utente. */
+/** Panoramica header: the greeting (entering word by word), the date and up to two short lines on the month and the next instalment. */
 
 import type { ReactNode } from "react";
 import { BlurText } from "@/components/motion";
@@ -22,7 +22,7 @@ export function OverviewVoice({ firstName, dateLabel, dateAside, ...input }: Ove
   const lines = buildVoiceLines({ ...input, language });
   const greeting = t(greetingFor(input.today.getHours()));
   return (
-    <header className="flex flex-col gap-3">
+    <header className="flex flex-col gap-2">
       <div>
         <BlurText as="h1" className={cn(PAGE_TITLE_FACE, "text-[2.75rem] sm:text-[3.5rem]")}>
           {`${greeting}${firstName ? `, ${firstName}` : ""}`}
@@ -33,21 +33,24 @@ export function OverviewVoice({ firstName, dateLabel, dateAside, ...input }: Ove
         </div>
       </div>
       {lines.length > 0 ? (
-      <p className="max-w-[60ch] text-lg leading-relaxed text-text-2 sm:text-xl">
-        {lines.map((line) => (
-          <span key={line.key}>
-            {line.segments.map((segment, index) =>
-              segment.strong ? (
-                <strong key={index} className="whitespace-nowrap font-heading font-medium text-foreground">
-                  {segment.text}
-                </strong>
-              ) : (
-                <span key={index}>{segment.text}</span>
-              )
-            )}{" "}
-          </span>
-        ))}
-      </p>
+        <ul className="flex flex-col gap-0.5 text-[15px] leading-snug text-text-2 sm:text-base">
+          {lines.map((line) => (
+            <li key={line.key}>
+              {line.segments.map((segment, index) =>
+                segment.strong ? (
+                  <strong
+                    key={index}
+                    className={cn("whitespace-nowrap font-heading font-medium", segment.tone === "neg" ? "text-neg" : segment.tone === "pos" ? "text-pos" : "text-foreground")}
+                  >
+                    {segment.text}
+                  </strong>
+                ) : (
+                  <span key={index}>{segment.text}</span>
+                )
+              )}
+            </li>
+          ))}
+        </ul>
       ) : null}
     </header>
   );

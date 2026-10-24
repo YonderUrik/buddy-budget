@@ -335,7 +335,7 @@ Permanent redirects in [`next.config.ts`](../../next.config.ts) keep old paths w
 | `net-worth/` | Daily snapshots, history rebuilds, scheduler |
 | `notifications/` | Digest and alert emails, preferences, unsubscribe tokens, cron run |
 | `observability/` | Logger, metrics, `withRoute`, ops store, redaction, user hashing |
-| `overview/` | Panoramica ("Overview") sentence builder |
+| `overview/` | Panoramica ("Overview") header lines: one short line on the month against the usual («Ottobre: 2662 € spesi, +880 € sul solito», gap in red above / green below) and one on the instalment due within 14 days |
 | `pension/` | Pension fund data, limits, import, context |
 | `personal-import/` | AI-assisted personal CSV import queue and worker |
 | `queries/` | TanStack Query hooks per area (client only) |

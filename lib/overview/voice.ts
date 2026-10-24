@@ -3,10 +3,11 @@ import { LANGUAGE_LOCALES, type Language } from "@/lib/localization/config";
 import { formatCurrency } from "@/lib/format";
 import type { MonthPace } from "@/lib/calc/month-pace";
 
-/** Pezzo di frase: `strong` evidenzia le cifre che contano. */
+/** Piece of a line: `strong` highlights the figures that matter, `tone` colours a gap from the usual (above = neg). */
 export interface VoiceSegment {
   text: string;
   strong?: boolean;
+  tone?: "pos" | "neg";
 }
 
 export interface VoiceLine {
@@ -40,9 +41,10 @@ export function greetingFor(hour: number): string {
 }
 
 /**
- * Le frasi con cui la Panoramica "parla": come va il mese rispetto al solito, e la prossima scadenza vicina.
- * Una frase compare solo se ha qualcosa da dire; senza storico non si inventa un confronto, e senza spese né storico
- * non si dice nulla del mese.
+ * The short lines under the Panoramica greeting: what the month has cost so far against the usual, and the next
+ * instalment due soon. One line each, short enough to fit a phone row («Ottobre: 2662 € spesi, +880 € sul solito»).
+ * A line appears only when it has something to say: without history there is no comparison, and with no spending and
+ * no history nothing is said about the month.
  */
 export function buildVoiceLines(input: VoiceInput): VoiceLine[] {
   const { pace, monthLabel, currency, nextDue, today } = input;
@@ -55,31 +57,36 @@ export function buildVoiceLines(input: VoiceInput): VoiceLine[] {
 
   const diff = pace.typicalSoFar === null ? null : pace.spentSoFar - pace.typicalSoFar;
   const tolerance = pace.typicalSoFar === null ? 0 : Math.max(pace.typicalSoFar * VOICE_PACE_TOLERANCE, 1);
-  if (pace.typicalSoFar === null && pace.spentSoFar === 0) {
-    // Nothing spent and no history (a new user, or no transactions yet): «finora hai speso 0 €» would say nothing.
-  } else if (diff === null || pace.typicalSoFar === null) {
-    lines.push({ key: "pace", segments: [{ text: tr("{month}: finora hai speso ", { month: capitalize(monthLabel) }) }, { text: money(pace.spentSoFar), strong: true }, { text: "." }] });
-  } else if (Math.abs(diff) <= tolerance) {
-    lines.push({ key: "pace", segments: [{ text: tr("{month} procede in linea con il solito: ", { month: capitalize(monthLabel) }) }, { text: money(pace.spentSoFar), strong: true }, { text: tr(" spesi.") }] });
-  } else {
-    const above = diff > 0;
-    lines.push({
-      key: "pace",
-      segments: [
-        { text: tr(above ? "{month} è partito sopra il solito: " : "{month} è partito sotto il solito: ", { month: capitalize(monthLabel) }) },
-        { text: money(pace.spentSoFar), strong: true },
-        { text: tr(" spesi, ") },
-        { text: tr(above ? "{amount} in più" : "{amount} in meno", { amount: money(Math.abs(diff)) }), strong: true },
-        { text: tr(" della tua media a questo punto.") },
-      ],
-    });
+  // Nothing spent and no history (a new user, or no transactions yet): «0 € spesi» would say nothing.
+  if (pace.typicalSoFar !== null || pace.spentSoFar !== 0) {
+    const spent: VoiceSegment[] = [
+      { text: tr("{month}: ", { month: capitalize(monthLabel) }) },
+      { text: money(pace.spentSoFar), strong: true },
+      { text: tr(" spesi") },
+    ];
+    if (diff === null) {
+      lines.push({ key: "pace", segments: spent });
+    } else if (Math.abs(diff) <= tolerance) {
+      lines.push({ key: "pace", segments: [...spent, { text: tr(", come al solito") }] });
+    } else {
+      const above = diff > 0;
+      lines.push({
+        key: "pace",
+        segments: [
+          ...spent,
+          { text: ", " },
+          { text: `${above ? "+" : "−"}${money(Math.abs(diff))}`, strong: true, tone: above ? "neg" : "pos" },
+          { text: tr(" sul solito") },
+        ],
+      });
+    }
   }
 
   if (nextDue) {
     const days = Math.round((new Date(`${nextDue.date}T00:00:00`).getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) / MS_PER_DAY);
     if (days <= VOICE_DUE_HORIZON_DAYS) {
-      const when = days < 0 ? tr("è scaduta") : days === 0 ? tr("scade oggi") : tr("scade il {date}", { date: DAY_MONTH.format(new Date(`${nextDue.date}T00:00:00`)) });
-      lines.push({ key: "due", segments: [{ text: tr("La rata {name} {when}: ", { name: nextDue.name, when }) }, { text: money(nextDue.amount), strong: true }, { text: "." }] });
+      const when = days < 0 ? tr(", scaduta") : days === 0 ? tr(" oggi") : tr(" il {date}", { date: DAY_MONTH.format(new Date(`${nextDue.date}T00:00:00`)) });
+      lines.push({ key: "due", segments: [{ text: tr("Rata {name}: ", { name: nextDue.name }) }, { text: money(nextDue.amount), strong: true }, { text: when }] });
     }
   }
   return lines;

@@ -1,4 +1,5 @@
 "use client";
+import { HoverHighlight } from "@/components/motion";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -57,6 +58,7 @@ export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNav
         ) : undefined
       }
     >
+      <HoverHighlight mode="stretch" highlightClassName="rounded-lg bg-sidebar-accent">
       <ul className="flex flex-col">
         {data.items.map((item) => {
           const { day, month } = formatDeadlineDay(item.date);
@@ -68,7 +70,8 @@ export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNav
                   onItemClick?.();
                   onNavigate?.();
                 }}
-                className="flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-sidebar-accent focus-visible:bg-sidebar-accent focus-visible:outline-none"
+                data-hover-target=""
+                className="flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 focus-visible:outline-none"
               >
                 <span
                   className={cn(
@@ -90,6 +93,7 @@ export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNav
           );
         })}
       </ul>
+      </HoverHighlight>
     </CollapsibleSection>
   );
 }

@@ -80,7 +80,7 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
   );
 
   return (
-    <li className="relative px-4 transition-colors hover:bg-muted/40 sm:px-6">
+    <li className="relative px-4 sm:px-6" data-hover-target="">
       <div className={cn("grid items-center gap-x-4", POSITIONS_GRID_COLUMNS)}>
         {/* Strumento: il nome porta alla pagina del titolo; sotto md il pulsante a destra apre i dettagli */}
         <div className="flex min-w-0 items-center gap-1">

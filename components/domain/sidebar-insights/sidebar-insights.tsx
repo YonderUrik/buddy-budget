@@ -1,4 +1,5 @@
 "use client";
+import { HoverHighlight } from "@/components/motion";
 import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
@@ -196,7 +197,7 @@ export function SidebarInsights({
               {portfolio.totalGainPct !== null ? tr(" · {0} in totale", {0: formatSignedPct(portfolio.totalGainPct)}) : ""}
             </p>
           </div>
-          <div className="mt-1 flex flex-col">
+          <HoverHighlight mode="stretch" highlightClassName="rounded-lg bg-sidebar-accent" className="mt-1 flex flex-col">
             {portfolio.holdings.slice(0, MAX_HOLDINGS_SHOWN).map((h) => (
               <InsightRow
                 key={h.instrumentId}
@@ -210,7 +211,7 @@ export function SidebarInsights({
                 onNavigate={onNavigate}
               />
             ))}
-          </div>
+          </HoverHighlight>
           {portfolio.holdings.length > MAX_HOLDINGS_SHOWN ? (
             <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>{tr("Mostra tutti (")}{portfolio.holdings.length}{") →"}</Link>
           ) : null}
@@ -233,7 +234,7 @@ export function SidebarInsights({
           }
           action={eye("watchlist")}
         >
-          <div className="flex flex-col">
+          <HoverHighlight mode="stretch" highlightClassName="rounded-lg bg-sidebar-accent" className="flex flex-col">
             {watchlist.slice(0, MAX_WATCHLIST_SHOWN).map((w) => (
               <InsightRow
                 key={w.instrumentId}
@@ -247,7 +248,7 @@ export function SidebarInsights({
                 onNavigate={onNavigate}
               />
             ))}
-          </div>
+          </HoverHighlight>
           {watchlist.length > MAX_WATCHLIST_SHOWN ? (
             <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>{tr("Mostra tutti (")}{watchlist.length}{") →"}</Link>
           ) : null}

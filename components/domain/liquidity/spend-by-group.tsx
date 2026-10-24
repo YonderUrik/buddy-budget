@@ -1,4 +1,5 @@
 "use client";
+import { HoverHighlight } from "@/components/motion";
 import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
@@ -129,13 +130,15 @@ function GroupBlock({ group, total, currency, visible, open, highlighted, locked
         <ChevronDownIcon className={cn("size-5 shrink-0 text-text-2 transition-transform motion-reduce:transition-none", open && "rotate-180")} aria-hidden="true" />
       </button>
       {open && (
-        <ul id={panelId} className="flex flex-col gap-0.5 px-2 pb-2">
+        <HoverHighlight mode="stretch" highlightClassName="rounded-xl bg-foreground/[0.06]" className="px-2 pb-2">
+        <ul id={panelId} className="flex flex-col gap-0.5">
           {shown.map((c) => (
             <li key={c.id}>
               <button
                 type="button"
                 onClick={() => onPickCategory?.(c.id)}
-                className="flex min-h-12 w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left hover:bg-foreground/[0.06] focus-visible:outline-2 focus-visible:outline-ring"
+                data-hover-target=""
+                className="flex min-h-12 w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left focus-visible:outline-2 focus-visible:outline-ring"
               >
                 <CategoryAvatar color={c.color as CategoryColor} icon={c.icon as CategoryIcon} size={15} className="size-8" />
                 <span className="min-w-0 flex-1">
@@ -154,6 +157,7 @@ function GroupBlock({ group, total, currency, visible, open, highlighted, locked
             </li>
           )}
         </ul>
+        </HoverHighlight>
       )}
     </li>
   );

@@ -306,6 +306,11 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history: `page-dates.mjs` dates each page by its last commit, for the sitemap's lastmod.
+          fetch-depth: 0
+      - name: Date delle pagine
+        run: node landing/scripts/page-dates.mjs
       # The screenshots are not on main (see docs/landing-screens.md): the image needs them in the build context.
       - name: Scarica gli screenshot
         run: node landing/scripts/pull-screens.mjs

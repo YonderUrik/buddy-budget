@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
+import { JsonLd, pageJsonLd } from "@/components/json-ld";
 import { LegalPage } from "@/components/legal-page";
 import { PRIVACY } from "@/content/legal";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { pageMetadata } from "@/lib/page-metadata";
 
-export const metadata: Metadata = pageMetadata("it", {
+const META = {
   title: `${PRIVACY.title} · BuddyBudget`,
   description: PRIVACY.description,
-  alternates: languageAlternates("/privacy", "it"),
-});
+};
+
+export const metadata: Metadata = pageMetadata("it", { ...META, alternates: languageAlternates("/privacy", "it") });
 
 export default function Page() {
-  return <LegalPage doc={PRIVACY} alternate={EN_PATHS.privacy} />;
+  return (
+    <>
+      <JsonLd data={pageJsonLd({ locale: "it", path: "/privacy", ...META })} />
+      <LegalPage doc={PRIVACY} alternate={EN_PATHS.privacy} />
+    </>
+  );
 }

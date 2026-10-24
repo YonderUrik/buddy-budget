@@ -3,11 +3,11 @@ import "./security-page.css";
 import { ArrowDown } from "lucide-react";
 import { counterpart } from "@/content/locales";
 import type { SecurityContent } from "@/content/security";
-import { SITE_URL } from "@/content/site";
-import { otherLocale, SCHEMA_LANGUAGE } from "@/lib/i18n";
+import { otherLocale } from "@/lib/i18n";
 import { ContentPage } from "./content-page";
 import { FactList } from "./fact-list";
-import { JsonLd } from "./json-ld";
+import { FlowDiagram } from "./viz/viz";
+import { JsonLd, pageJsonLd } from "./json-ld";
 import { RichText } from "./rich-text";
 import { Sources } from "./sources";
 
@@ -21,11 +21,12 @@ export function SecurityPage({ content, path, home }: { content: SecurityContent
   const { page, locale, flow, stored, limits, controls } = content;
   return (
     <ContentPage title={page.h1} lead={page.lead} current={path} locale={locale} alternate={counterpart(path, otherLocale(locale))} disclaimer={false} wide crumbs={[{ href: home, label: "BuddyBudget" }, { label: page.crumb }]} ctaTitle={page.ctaTitle} ctaText={page.ctaText} ctaLocation="sicurezza">
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: page.h1, description: page.description, inLanguage: SCHEMA_LANGUAGE[locale], url: `${SITE_URL}${path}` }} />
+      <JsonLd data={pageJsonLd({ locale, path, title: page.title, description: page.description })} />
 
       <section className="sp-sec sp-first" aria-labelledby="sp-flow">
         <h2 id="sp-flow">{flow.title}</h2>
         <p className="sp-lede">{flow.lede}</p>
+        <FlowDiagram steps={flow.nodes} links={flow.links} description={flow.diagram} />
         <ol className="sp-path">
           {flow.nodes.map((n, i) => (
             <li key={n.id} className="sp-step">

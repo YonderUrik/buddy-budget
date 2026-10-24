@@ -7,7 +7,7 @@
   "packageManager": "pnpm@11.5.0",
   "scripts": {
     "dev": "node scripts/pull-screens.mjs --if-missing && next dev --port 3100",
-    "build": "node scripts/pull-screens.mjs --if-missing && next build && node scripts/generate-markdown.mjs",
+    "build": "node scripts/pull-screens.mjs --if-missing && node scripts/page-dates.mjs && next build && node scripts/generate-markdown.mjs",
     "lint": "eslint",
     "typecheck": "node scripts/pull-screens.mjs --if-missing && tsc --noEmit",
     "test": "node scripts/pull-screens.mjs --if-missing && vitest run",

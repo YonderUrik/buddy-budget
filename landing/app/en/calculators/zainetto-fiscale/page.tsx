@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, pageJsonLd } from "@/components/json-ld";
 import { Sources } from "@/components/sources";
 import { ZainettoCalculator } from "@/components/tools/zainetto-calculator";
 import { SOURCES_CHECKED_EN, SOURCES_EN, SOURCES_SUMMARY_EN, ZAINETTO_PAGE_EN } from "@/content/en/tools";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT } from "@/content/seo-pages";
-import { SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata("en", {
@@ -30,7 +29,7 @@ export default function Page() {
       ctaText="In BuddyBudget, your losses, their four-year expiry, bollo (stamp duty) and the tax on a sale you are thinking about are worked out from your trades. There's no spreadsheet to redo every year."
       ctaLocation="calcolatore_zainetto"
     >
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "Zainetto fiscale calculator", url: `${SITE_URL}${EN_PATHS.zainetto}`, inLanguage: "en", description: ZAINETTO_PAGE_EN.description, isPartOf: { "@id": `${SITE_URL}/#website` } }} />
+      <JsonLd data={pageJsonLd({ locale: "en", path: EN_PATHS.zainetto, title: ZAINETTO_PAGE_EN.title, description: ZAINETTO_PAGE_EN.description })} />
       <ZainettoCalculator locale="en" />
       <p className="note">Simplified estimate: a single income category, no statutory rounding, and no special weighting for government bonds. It does not replace your broker&apos;s statement or an adviser.</p>
       <h2>How the calculation works</h2>

@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import { ContentPage } from "@/components/content-page";
 import { ByRulesText } from "@/components/by-rules";
 import { FeatureAreas, featureCountByRules } from "@/components/feature-areas";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, pageJsonLd } from "@/components/json-ld";
 import { FEATURE_AREAS, FEATURES } from "@/content/catalog.generated";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
-import { SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/page-metadata";
 
-const TITLE = "All BuddyBudget features: accounts, investments, pension and debts";
+const TITLE = "BuddyBudget features: accounts, investments and debts";
 const DESCRIPTION = "Everything BuddyBudget does, area by area: accounts, transactions, investments with Italian taxes, debts and net worth.";
 
 export const metadata: Metadata = pageMetadata("en", {
@@ -32,7 +31,7 @@ export default function Page() {
       ctaText="Import your bank statement or add an account by hand, and see the whole picture in a few minutes."
       ctaLocation="funzioni"
     >
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${EN_PATHS.features}`, inLanguage: "en" }} />
+      <JsonLd data={pageJsonLd({ locale: "en", path: EN_PATHS.features, title: TITLE, description: DESCRIPTION })} />
       <FeatureAreas locale="en" />
     </ContentPage>
   );

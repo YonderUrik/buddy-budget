@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, pageJsonLd } from "@/components/json-ld";
 import { languageAlternates } from "@/content/locales";
 import { ZainettoCalculator } from "@/components/tools/zainetto-calculator";
 import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
-import { SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/page-metadata";
 
-const TITLE = "Calcolatore zainetto fiscale: minusvalenze e imposta sulle plusvalenze";
-const DESCRIPTION = "Calcola quanto puoi compensare con le minusvalenze degli ultimi 4 anni e quanta imposta paghi su una plusvalenza di azioni, ETF o titoli di Stato. Gratis, senza registrazione.";
+const TITLE = "Calcolatore zainetto fiscale: minusvalenze e imposta";
+const DESCRIPTION = "Calcola quanto compensi con le minusvalenze degli ultimi 4 anni e l'imposta su una plusvalenza di azioni, ETF o titoli di Stato. Gratis, senza account.";
 
 export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
@@ -22,7 +21,7 @@ export const metadata: Metadata = pageMetadata("it", {
 export default function Page() {
   return (
     <ContentPage title="Calcolatore dello zainetto fiscale" lead={<>Inserisci la plusvalenza dell&apos;anno e le minusvalenze che ti porti dietro: vedi quali puoi ancora usare, quante ne compensi e quanta imposta paghi.</>} current={CONTENT_PATHS.zainetto} crumbs={[{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.strumenti, label: "Calcolatori" }, { label: "Zainetto fiscale" }]} ctaTitle="Lo zainetto si aggiorna da solo." ctaText="In BuddyBudget minusvalenze, scadenze a 4 anni, bollo e imposta di una vendita ipotetica si calcolano dalle tue operazioni. Non c'è un foglio da rifare ogni anno." ctaLocation="calcolatore_zainetto">
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "Calcolatore zainetto fiscale", url: `${SITE_URL}${CONTENT_PATHS.zainetto}`, inLanguage: "it-IT", description: DESCRIPTION, isPartOf: { "@id": `${SITE_URL}/#website` } }} />
+      <JsonLd data={pageJsonLd({ locale: "it", path: CONTENT_PATHS.zainetto, title: TITLE, description: DESCRIPTION })} />
       <ZainettoCalculator />
       <p className="note">Stima semplificata: una sola categoria di reddito, nessun arrotondamento di legge, regole dei titoli di Stato non ponderate. Non sostituisce il rendiconto del tuo intermediario né un consulente.</p>
       <h2>Come funziona il calcolo</h2>

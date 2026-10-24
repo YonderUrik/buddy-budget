@@ -30,7 +30,7 @@ export const SECURITY_EN: SecurityContent = {
   page: {
     h1: "What happens to your data",
     title: "Security and privacy: how BuddyBudget handles your data",
-    description: "What we store and what we don't, where the servers are, how you delete everything and how the read-only bank connection (PSD2) works for people who already have it. With official sources.",
+    description: "What we store and what we don't, where the servers are, how you delete everything and how the read-only bank link (PSD2) works for those who have it.",
     lead: "The app can't move money. Here is the path the data takes for people who have a bank connected, what we keep and what we don't, with the sources to check.",
     kicker: "Security and privacy",
     crumb: "Security and privacy",
@@ -51,6 +51,7 @@ export const SECURITY_EN: SecurityContent = {
     lede: "The bank connection isn't taking new accounts for now and is coming back soon; people who already have it keep it. This is how it works: your login details stay with your bank, and only balances and transactions reach BuddyBudget, read-only.",
     links: ["Login and confirmation", "Read-only consent", "Balances and transactions"],
     neverTitle: "Never.",
+    diagram: "Diagram of the data path: you give your login and confirmation only to your bank; the bank gives GoCardless a read-only consent; GoCardless passes only balances and transactions to BuddyBudget, on servers in Germany.",
     nodes: [
       {
         id: "tu",

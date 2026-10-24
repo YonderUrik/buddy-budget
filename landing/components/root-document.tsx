@@ -5,7 +5,7 @@ import "@fontsource-variable/sofia-sans-extra-condensed";
 import "@/app/globals.css";
 import { BrandSprite } from "@/components/brand";
 import { RiseObserver } from "@/components/rise-observer";
-import { APP_URL, OG_IMAGE, SITE_NAME, SITE_URL } from "@/content/site";
+import { APP_URL, OG_IMAGE, SAME_AS, SITE_NAME, SITE_URL } from "@/content/site";
 import { HTML_LANG, LOCALES, OG_LOCALE, SCHEMA_LANGUAGE, type Locale } from "@/lib/i18n";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import { LANG_HINT_STORAGE_KEY } from "@/lib/lang-hint";
@@ -72,7 +72,7 @@ export function rootMetadata(locale: Locale, text: RootMetaText): Metadata {
 const JSON_LD = {
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/icons/icon-512.png` },
+    { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/icons/icon-512.png`, sameAs: SAME_AS },
     { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: SITE_NAME, inLanguage: LOCALES.map((l) => SCHEMA_LANGUAGE[l]), publisher: { "@id": `${SITE_URL}/#organization` } },
   ],
 };

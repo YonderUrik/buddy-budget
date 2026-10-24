@@ -33,8 +33,8 @@ export interface InvestmentsPageContent {
 export const INVESTMENTS_IT: InvestmentsPageContent = {
   locale: "it",
   path: CONTENT_PATHS.funzioneInvestimenti,
-  title: "Tracciare gli investimenti con le tasse italiane: ETF, azioni, BTP",
-  description: "Rendimento vero, confronto con un indice, rischio, diversificazione, zaino fiscale, bollo e imposta di una vendita ipotetica: gli investimenti di BuddyBudget, pensati per le regole italiane.",
+  title: "Investimenti con le tasse italiane: ETF, azioni, BTP",
+  description: "Rendimento vero, confronto con un indice, rischio, zaino fiscale, bollo e imposta di una vendita prima di farla: gli investimenti con le regole italiane.",
   h1: "Investimenti, con le tasse italiane",
   lead: "ETF, azioni, BTP, fondi e crypto in un solo posto, accanto ai tuoi conti e ai tuoi debiti. Il rendimento è calcolato dalle tue operazioni e le tasse seguono le regole italiane.",
   kicker: "Funzioni",
@@ -59,8 +59,8 @@ export const INVESTMENTS_IT: InvestmentsPageContent = {
 export const INVESTMENTS_EN: InvestmentsPageContent = {
   locale: "en",
   path: EN_PATHS.featureInvestments,
-  title: "Track your investments with Italian taxes: ETFs, stocks, government bonds",
-  description: "Real returns, comparison with an index, risk, diversification, tax-loss carryforward, stamp duty and the tax on a sale before you make it: BuddyBudget's investments, built around the Italian rules.",
+  title: "Track investments with Italian taxes: ETFs, stocks, BTPs",
+  description: "Real returns, index comparison, risk, tax-loss carryforward, stamp duty and the tax on a sale before you make it: investments under Italian rules.",
   h1: "Investments, with Italian taxes",
   lead: "ETFs, stocks, government bonds, funds and crypto in one place, next to your accounts and your debts. Returns are worked out from your own trades and the taxes follow the Italian rules; for Germany there are partial 2026 estimates.",
   kicker: "Features",

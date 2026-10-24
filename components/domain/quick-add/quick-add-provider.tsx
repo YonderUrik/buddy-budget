@@ -8,10 +8,20 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLocalization } from "@/lib/localization/provider";
-import { isQuickAddForm, quickAddGroups, QUICK_ADD_PAGE_HREFS, type QuickAddActionId, type QuickAddFormId } from "@/lib/quick-add/actions";
+import { track } from "@/lib/analytics";
+import {
+  isQuickAddForm,
+  quickAddArea,
+  quickAddGroups,
+  QUICK_ADD_PAGE_HREFS,
+  QUICK_ADD_PARAM,
+  type QuickAddActionId,
+  type QuickAddFormId,
+  type QuickAddSource,
+} from "@/lib/quick-add/actions";
 import { cn } from "@/lib/utils";
 import { QuickAddChooser, type QuickAddLayout } from "./quick-add-chooser";
 
@@ -48,9 +58,6 @@ function readStyle(): QuickAddStyle {
   }
 }
 
-/** Where the chooser was opened from. */
-export type QuickAddSource = "barra" | "sidebar" | "tastiera";
-
 export interface QuickAddApi {
   /** Opens the chooser; `anchor` is the button that opened it (the desktop panel sits next to it). */
   open: (source: QuickAddSource, anchor?: HTMLElement | null) => void;
@@ -68,13 +75,27 @@ export function useQuickAdd(): QuickAddApi | null {
 
 const subscribeNoop = () => () => {};
 
+/** Opens «Aggiungi» from a link with `?aggiungi=`, then takes the parameter out of the address (a reload does not reopen it). */
+function LinkOpener({ onLink }: { onLink: (target: string) => void }) {
+  const target = useSearchParams().get(QUICK_ADD_PARAM);
+  React.useEffect(() => {
+    if (!target) return;
+    const params = new URLSearchParams(window.location.search);
+    params.delete(QUICK_ADD_PARAM);
+    const query = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    onLink(target);
+  }, [target, onLink]);
+  return null;
+}
+
 export function QuickAddProvider({ children }: { children: React.ReactNode }) {
   const { t: tr, productCountry } = useLocalization();
   const router = useRouter();
   const pathname = usePathname();
   const styleId = React.useSyncExternalStore(subscribeNoop, readStyle, () => "a" as const);
   const style = QUICK_ADD_STYLES[styleId];
-  const [chooser, setChooser] = React.useState<{ open: boolean; anchor: DOMRect | null }>({ open: false, anchor: null });
+  const [chooser, setChooser] = React.useState<{ open: boolean; anchor: DOMRect | null; source: QuickAddSource }>({ open: false, anchor: null, source: "barra" });
   const [form, setForm] = React.useState<QuickAddFormId | null>(null);
   // The forms' code loads at the first pick and then stays, so a closing form can animate out.
   const [formsLoaded, setFormsLoaded] = React.useState(false);
@@ -90,9 +111,13 @@ export function QuickAddProvider({ children }: { children: React.ReactNode }) {
     },
     [router]
   );
-  const open = React.useCallback((_source: QuickAddSource, anchor?: HTMLElement | null) => {
-    setChooser({ open: true, anchor: anchor?.getBoundingClientRect() ?? null });
-  }, []);
+  const open = React.useCallback(
+    (source: QuickAddSource, anchor?: HTMLElement | null) => {
+      setChooser({ open: true, anchor: anchor?.getBoundingClientRect() ?? null, source });
+      track("quick_add_opened", { source, area: quickAddArea(pathname) });
+    },
+    [pathname]
+  );
 
   // Desktop shortcut (option C): the key alone, outside text fields.
   React.useEffect(() => {
@@ -109,12 +134,29 @@ export function QuickAddProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [style.shortcut, open]);
 
+  const fromLink = React.useCallback(
+    (target: string) => {
+      if (!isQuickAddForm(target as QuickAddActionId)) {
+        open("link");
+        return;
+      }
+      const id = target as QuickAddFormId;
+      track("quick_add_chosen", { action: id, source: "link", here: groups.some((g) => g.current && g.actions.some((a) => a.id === id)) });
+      start(id);
+    },
+    [open, start, groups]
+  );
+
   const api = React.useMemo(() => ({ open, start, style }), [open, start, style]);
   const anchored = style.panel === "anchored" && chooser.anchor !== null;
 
   return (
     <QuickAddContext.Provider value={api}>
       {children}
+      {/* `useSearchParams` needs its own Suspense boundary in a layout. */}
+      <React.Suspense fallback={null}>
+        <LinkOpener onLink={fromLink} />
+      </React.Suspense>
       <Dialog open={chooser.open} onOpenChange={(next) => !next && setChooser((s) => ({ ...s, open: false }))}>
         <DialogContent
           className={cn(
@@ -136,6 +178,8 @@ export function QuickAddProvider({ children }: { children: React.ReactNode }) {
             autoFocusSearch={style.layout === "search" && typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches}
             onSelect={(id) => {
               setChooser((s) => ({ ...s, open: false }));
+              const here = groups.some((g) => g.current && g.actions.some((a) => a.id === id));
+              track("quick_add_chosen", { action: id, source: chooser.source, here });
               start(id);
             }}
           />

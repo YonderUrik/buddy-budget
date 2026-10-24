@@ -1,18 +1,13 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Struttura di Liquidità: stato condiviso, testata con schede e i dialog globali (nuovo movimento, nuovo conto, rinnovo
  * del collegamento). Le schede sono pagine vere dentro `children`; nei link del banner e dell'email `?rinnova=` apre il rinnovo.
  */
 
-import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ReceiptTextIcon } from "lucide-react";
-import { AddTransactionForm } from "@/components/domain/expenses";
-import { PanelDialogHeader } from "@/components/domain/investments/light";
-import { Dialog } from "@/components/ui/dialog";
+import { usePathname, useSearchParams } from "next/navigation";
+import { AddTransactionDialog } from "@/components/domain/expenses";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import { useAccountsQuery } from "@/lib/queries/accounts";
@@ -25,14 +20,11 @@ import { LiquidityHeader } from "./liquidity-header";
 import { LiquidityNoAccounts, NO_ACCOUNT_TABS } from "./liquidity-no-accounts";
 import { LIQUIDITY_ACCOUNT_PARAM, LIQUIDITY_TABS } from "./liquidity-nav";
 
-const IMPORT_HREF = "/importazioni";
 const SUBTITLE = "Conti, saldi e movimenti in un posto solo";
 
 function Frame({ children }: { children: React.ReactNode }) {
-  const { t: tr } = useLocalization();
   useMarkMovementsSeen();
   const pathname = usePathname();
-  const router = useRouter();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { data: categories } = useCategoriesQuery();
@@ -67,20 +59,16 @@ function Frame({ children }: { children: React.ReactNode }) {
   return (
     <LiquidityActionsProvider value={actions}>
       <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6">
-        <LiquidityHeader subtitle={SUBTITLE} tabs={LIQUIDITY_TABS} activeHref={pathname} onAddTransaction={actions.addTransaction} onAddAccount={addAccount} onImport={() => router.push(IMPORT_HREF)} />
+        <LiquidityHeader subtitle={SUBTITLE} tabs={LIQUIDITY_TABS} activeHref={pathname} />
         {needsAccount ? <LiquidityNoAccounts href={pathname} onAddAccount={addAccount} /> : children}
       </div>
-      <Dialog open={addTransactionOpen} onOpenChange={setAddTransactionOpen}>
-        <FormDialogContent>
-                    <PanelDialogHeader className="pr-10" icon={ReceiptTextIcon} title={tr("Nuovo movimento")} description={tr("Una spesa o un'entrata su un conto manuale.")} />
-          <AddTransactionForm
-            categories={categories ?? []}
-            currency={currency}
-            onSuccess={() => setAddTransactionOpen(false)}
-            onAddAccount={() => { setAddTransactionOpen(false); addAccount(); }}
-          />
-        </FormDialogContent>
-      </Dialog>
+      <AddTransactionDialog
+        open={addTransactionOpen}
+        onOpenChange={setAddTransactionOpen}
+        categories={categories ?? []}
+        currency={currency}
+        onAddAccount={() => { setAddTransactionOpen(false); addAccount(); }}
+      />
       <AddAccountDialog
         open={accountDialog.open}
         onOpenChange={(open) => setAccountDialog((s) => ({ ...s, open }))}

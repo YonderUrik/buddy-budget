@@ -1,5 +1,7 @@
 /** Panoramica first steps: checklist step definitions and pure visibility rules (no DB or UI dependency). */
 
+import { quickAddHref } from "@/lib/quick-add/actions";
+
 export const START_STEP_IDS = ["conto", "import", "budget", "investimento", "debito", "pensione", "obiettivo"] as const;
 export type StartStepId = (typeof START_STEP_IDS)[number];
 
@@ -101,7 +103,8 @@ export const START_STEPS: readonly StartStepDef[] = [
     id: "debito",
     title: "Aggiungi il mutuo o un prestito",
     description: "Importo, tasso e durata: calcoliamo il piano rate, quanto paghi di interessi e quando finisci.",
-    href: "/debiti",
+    // Opens the loan form straight away (the app-wide «Aggiungi» reads `?aggiungi=`).
+    href: quickAddHref("/debiti", "debito"),
     cta: "Aggiungi un finanziamento",
     done: "Finanziamento aggiunto",
   },

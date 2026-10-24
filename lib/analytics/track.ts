@@ -7,6 +7,7 @@ import type { GoalKind } from "@/lib/goals/constants";
 import type { Attribution } from "./attribution";
 import type { WelcomeItemKind } from "@/lib/welcome/types";
 import type { SingleSuggestionStatus } from "@/lib/categorization/ai/single-suggestion";
+import type { QuickAddActionId, QuickAddArea, QuickAddSource } from "@/lib/quick-add/actions";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import" | "goal";
@@ -273,6 +274,10 @@ export interface ProductEvents {
   sidebar_module_toggled: { module: SidebarModuleId | "barra_in_basso"; enabled: boolean };
   /** Clic su un elemento dei moduli della barra laterale (scadenza o obiettivo FIRE). */
   sidebar_module_clicked: { module: "scadenze" | "fire" };
+  /** «Aggiungi» opened from the bottom bar, the sidebar or its keyboard shortcut; `area`: the part of the app the user was on. */
+  quick_add_opened: { source: QuickAddSource; area: QuickAddArea };
+  /** Something picked in «Aggiungi»; `here`: it belongs to the section the user was on. The form's own events follow. */
+  quick_add_chosen: { action: QuickAddActionId; source: QuickAddSource; here: boolean };
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */

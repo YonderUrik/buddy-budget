@@ -20,6 +20,15 @@ export const WHATS_NEW_MAX_AGE_DAYS = 45;
 
 export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
   {
+    id: "aggiungi-da-ovunque",
+    date: "2026-10-24",
+    title: "Aggiungi, da ovunque",
+    summary:
+      "Un solo pulsante per aggiungere un movimento, un conto, un'operazione, un mutuo o un obiettivo: il + nella barra in basso sul telefono, «Aggiungi» in cima al menu sul computer. Il modulo si apre sopra la pagina in cui sei.",
+    href: "/panoramica?aggiungi=1",
+    ctaLabel: "Prova «Aggiungi»",
+  },
+  {
     id: "budget-del-mese",
     date: "2026-10-22",
     title: "Budget del mese",

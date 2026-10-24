@@ -23,6 +23,14 @@ export const QUICK_ADD_PAGE_HREFS: Record<Exclude<QuickAddActionId, QuickAddForm
   obiettivo: "/analitiche/obiettivi?nuovo=1",
 };
 
+/** Query parameter that opens «Aggiungi» from a link: a form id opens that form, any other value the chooser. */
+export const QUICK_ADD_PARAM = "aggiungi";
+
+/** Address of `path` that opens a form (or, without `form`, the chooser) once loaded, e.g. from «Primi passi». */
+export function quickAddHref(path: string, form?: QuickAddFormId): string {
+  return `${path}?${QUICK_ADD_PARAM}=${form ?? "1"}`;
+}
+
 /** True when the action opens a form over the current page instead of going to another page. */
 export function isQuickAddForm(id: QuickAddActionId): id is QuickAddFormId {
   return (QUICK_ADD_FORM_IDS as readonly string[]).includes(id);
@@ -68,6 +76,13 @@ export const QUICK_ADD_ACTIONS: readonly QuickAddAction[] = [
   { id: "obiettivo", section: "analitiche", title: "Un obiettivo di risparmio", short: "Obiettivo", description: "Una casa, un viaggio, un cuscinetto", path: "/analitiche/obiettivi" },
 ];
 
+/** Where «Aggiungi» was opened from, for the product events (`link`: an address with `?aggiungi=`). */
+export const QUICK_ADD_SOURCES = ["barra", "sidebar", "tastiera", "link"] as const;
+export type QuickAddSource = (typeof QUICK_ADD_SOURCES)[number];
+
+/** Page area «Aggiungi» was opened on, for the product events (closed set: never a path). */
+export type QuickAddArea = QuickAddSectionId | "panoramica" | "altro";
+
 export interface QuickAddGroup {
   section: QuickAddSection;
   actions: QuickAddAction[];
@@ -77,16 +92,28 @@ export interface QuickAddGroup {
 
 const within = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
 
+/** Section of `pathname` among those «Aggiungi» knows (the file import page counts as Liquidità). */
+function sectionOf(pathname: string): QuickAddSectionId | null {
+  if (within(pathname, "/importazioni")) return "liquidita";
+  return QUICK_ADD_SECTIONS.find((s) => within(pathname, s.path))?.id ?? null;
+}
+
+/** Area of the page for the product events: a section, Panoramica, or anything else. */
+export function quickAddArea(pathname: string): QuickAddArea {
+  return sectionOf(pathname) ?? (within(pathname, "/panoramica") ? "panoramica" : "altro");
+}
+
 /**
  * Groups offered to a user of `country` standing on `pathname`: actions whose page the country does not have are left
  * out (the Italian pension fund outside Italy), empty sections disappear, and the section of the current page comes
  * first. The order is otherwise fixed, so the same thing is always in the same place.
  */
 export function quickAddGroups(country: string, pathname: string): QuickAddGroup[] {
+  const here = sectionOf(pathname);
   const groups = QUICK_ADD_SECTIONS.map((section) => ({
     section,
     actions: QUICK_ADD_ACTIONS.filter((a) => a.section === section.id && isCountryPathAvailable(country, a.path)),
-    current: within(pathname, section.path) || (section.id === "liquidita" && within(pathname, "/importazioni")),
+    current: section.id === here,
   })).filter((g) => g.actions.length > 0);
   const current = groups.filter((g) => g.current);
   return [...current, ...groups.filter((g) => !g.current)];

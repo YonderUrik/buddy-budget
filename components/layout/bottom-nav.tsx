@@ -6,7 +6,8 @@ import { useLocalization } from "@/lib/localization/provider";
  *
  * Bottom tab bar, phone only (< 768px): a floating rounded capsule inset from the screen edges, like the iOS 26 tab bar,
  * with icon and label per section, the "to sort" badge where needed and a last «Altro» tab that opens the full menu.
- * «Altro» is active when the current page is not one of the tabs.
+ * «Altro» is active when the current page is not one of the tabs. With `compact` (the user is scrolling down the page) the
+ * capsule gets lower and the labels fade out, leaving the icons; it grows back on the way up.
  *
  * Reusability: items, badges and active item come from outside; `primaryHrefs` picks which items sit in the bar.
  */
@@ -15,11 +16,11 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 import type { NavBadge, NavItem } from "@/components/layout/sidebar";
 import { usePendingNavHref } from "@/components/layout/use-pending-nav";
-import { SPRING_SNAPPY } from "@/lib/motion/springs";
+import { BAR_RESIZE_TRANSITION, SPRING_SNAPPY } from "@/lib/motion/springs";
 import { cn } from "@/lib/utils";
 
 /** Items shown in the bar: the four most used sections, the rest is under «Altro». */
@@ -30,8 +31,12 @@ const MORE_LABEL = "Altro";
 
 /** Height of the floating capsule (rem). */
 const BOTTOM_NAV_BAR_REM = 4;
+/** Height of the capsule while compact (rem): icons only, still a 48 px touch target. */
+const BOTTOM_NAV_COMPACT_BAR_REM = 3;
 /** Gap between the capsule and the bottom edge (rem), above the home indicator in the app. */
 const BOTTOM_NAV_GAP_REM = 0.75;
+/** Gap between the capsule and the side edges of the screen (rem). */
+const BOTTOM_NAV_SIDE_REM = 0.75;
 /** Space the bar takes at the bottom (rem): the content leaves this much room so it never ends up under it. */
 export const BOTTOM_NAV_HEIGHT_REM = BOTTOM_NAV_BAR_REM + BOTTOM_NAV_GAP_REM * 2;
 
@@ -46,6 +51,8 @@ export interface BottomNavProps {
   onOpenMore: () => void;
   /** Tocco su una scheda (`href` della voce, o «altro»), per le statistiche d'uso. */
   onTabClick?: (key: string) => void;
+  /** Lower capsule with icons only, while the page is scrolled down (labels stay for screen readers). */
+  compact?: boolean;
 }
 
 function isActivePath(pathname: string, href: string): boolean {
@@ -58,27 +65,68 @@ function ActivePill() {
     <motion.span
       layoutId="bottom-nav-pill"
       transition={SPRING_SNAPPY}
-      className="absolute inset-x-0 inset-y-1 rounded-full bg-sidebar-accent"
+      className="absolute inset-x-0 inset-y-1 rounded-full bg-glass-pill"
       aria-hidden="true"
     />
   );
 }
 
-const TAB_CLASS = "relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition-colors";
+const TAB_CLASS = "relative flex min-w-0 flex-1 flex-col items-center justify-center rounded-full text-[11px] font-medium transition-colors";
 
-export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, badges, onOpenMore, onTabClick }: BottomNavProps) {
+/** Tab label: folds away while the bar is compact. The text fades, blurs and sinks a little as its line closes, and comes
+ * back once the bar has made room for it, so icons glide instead of jumping. */
+function TabLabel({ compact, reduced, children }: { compact: boolean; reduced: boolean; children: React.ReactNode }) {
+  const size = reduced ? { duration: 0 } : BAR_RESIZE_TRANSITION;
+  return (
+    <motion.span
+      initial={false}
+      animate={compact ? { height: 0, marginTop: 0 } : { height: "auto", marginTop: 2 }}
+      transition={size}
+      className="relative z-10 block max-w-full overflow-hidden"
+    >
+      <motion.span
+        initial={false}
+        animate={compact ? { opacity: 0, y: 4, scale: 0.9, filter: "blur(2px)" } : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        transition={reduced ? { duration: 0 } : compact ? { duration: 0.14, ease: "easeOut" } : { duration: 0.2, delay: 0.08, ease: "easeOut" }}
+        className="block truncate px-0.5 leading-none tracking-tight"
+      >
+        {children}
+      </motion.span>
+    </motion.span>
+  );
+}
+
+export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, badges, onOpenMore, onTabClick, compact = false }: BottomNavProps) {
   const { t: tr } = useLocalization();
   const pathname = usePathname();
   const [pendingHref, startNav] = usePendingNavHref();
   const primary = primaryHrefs.flatMap((href) => items.filter((i) => i.href === href && !i.comingSoon && !i.locked));
   const current = pendingHref ?? activeHref ?? pathname;
   const inPrimary = primary.some((i) => isActivePath(current, i.href));
+  // Reduced motion: the bar still changes size, at once instead of gliding.
+  const reduced = useReducedMotion() ?? false;
 
   return (
-    <nav
+    <motion.nav
+      initial={false}
+      animate={{ height: `${compact ? BOTTOM_NAV_COMPACT_BAR_REM : BOTTOM_NAV_BAR_REM}rem` }}
+      transition={reduced ? { duration: 0 } : BAR_RESIZE_TRANSITION}
+      data-compact={compact ? "" : undefined}
       aria-label={tr("Navigazione principale")}
-      className="fixed inset-x-3 z-30 flex rounded-full border border-sidebar-border bg-sidebar/90 px-1 shadow-lg shadow-black/10 supports-backdrop-filter:backdrop-blur-xl md:hidden"
-      style={{ height: `${BOTTOM_NAV_BAR_REM}rem`, bottom: `calc(${BOTTOM_NAV_GAP_REM}rem + env(safe-area-inset-bottom))` }}
+      className={cn(
+        "fixed z-30 flex rounded-full border border-glass-edge px-1 md:hidden",
+        // «Liquid Glass»: translucent fill, the page blurred and more saturated behind it, light on the top edge.
+        "bg-glass shadow-[inset_0_1px_0_var(--glass-highlight),0_10px_30px_-6px_var(--glass-shadow)]",
+        "supports-backdrop-filter:backdrop-blur-2xl supports-backdrop-filter:backdrop-saturate-[1.8]",
+        // Without backdrop-filter the fill would be too thin to read the labels over the page.
+        "not-supports-backdrop-filter:bg-sidebar"
+      )}
+      // Away from the screen edges and from the notch/camera cutout when the phone is turned sideways.
+      style={{
+        bottom: `calc(${BOTTOM_NAV_GAP_REM}rem + env(safe-area-inset-bottom))`,
+        left: `max(${BOTTOM_NAV_SIDE_REM}rem, env(safe-area-inset-left))`,
+        right: `max(${BOTTOM_NAV_SIDE_REM}rem, env(safe-area-inset-right))`,
+      }}
     >
       {primary.map((item) => {
         const active = isActivePath(current, item.href);
@@ -94,7 +142,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
               startNav(item.href);
               onTabClick?.(item.href);
             }}
-            className={cn(TAB_CLASS, active ? "text-sidebar-primary" : "text-sidebar-foreground/60")}
+            className={cn(TAB_CLASS, active ? "text-sidebar-primary" : "text-sidebar-foreground/70")}
           >
             {active ? <ActivePill /> : null}
             <span className="relative flex h-7 w-10 items-center justify-center">
@@ -102,13 +150,15 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
               {showBadge ? (
                 <span
                   aria-label={tr(badge.ariaLabel)}
-                  className="absolute -top-0.5 -right-1.5 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sidebar-primary px-1 text-[10px] font-bold leading-none text-sidebar-primary-foreground tabular-nums ring-2 ring-sidebar"
+                  className="absolute -top-0.5 -right-1.5 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sidebar-primary px-1 text-[10px] font-bold leading-none text-sidebar-primary-foreground tabular-nums ring-2 ring-background"
                 >
                   {badge.countLabel ?? badge.count}
                 </span>
               ) : null}
             </span>
-            <span className="relative z-10 max-w-full truncate px-0.5 leading-none tracking-tight">{tr(item.label)}</span>
+            <TabLabel compact={compact} reduced={reduced}>
+              {tr(item.label)}
+            </TabLabel>
           </Link>
         );
       })}
@@ -119,14 +169,16 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
           onOpenMore();
         }}
         aria-haspopup="dialog"
-        className={cn(TAB_CLASS, !inPrimary ? "text-sidebar-primary" : "text-sidebar-foreground/60")}
+        className={cn(TAB_CLASS, !inPrimary ? "text-sidebar-primary" : "text-sidebar-foreground/70")}
       >
         {!inPrimary ? <ActivePill /> : null}
         <span className="relative flex h-7 w-10 items-center justify-center">
           <MoreHorizontal className="relative z-10 size-6" aria-hidden="true" />
         </span>
-        <span className="relative z-10 leading-none">{tr(MORE_LABEL)}</span>
+        <TabLabel compact={compact} reduced={reduced}>
+          {tr(MORE_LABEL)}
+        </TabLabel>
       </button>
-    </nav>
+    </motion.nav>
   );
 }

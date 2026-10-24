@@ -44,6 +44,9 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
   --color-island: var(--island);
+  --color-glass: var(--glass);
+  --color-glass-edge: var(--glass-edge);
+  --color-glass-pill: var(--glass-pill);
   --color-island-foreground: var(--island-foreground);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
@@ -181,6 +184,13 @@
   --sidebar-accent-foreground: #18181b;
   --sidebar-border: #e4e4e7;
   --sidebar-ring: #15738b;
+  /* Floating glass (phone bottom bar, «Liquid Glass» style): translucent fill over a blurred, saturated backdrop,
+     a hairline edge, a light catching the top edge and a soft drop shadow. */
+  --glass: rgb(255 255 255 / 0.55);
+  --glass-edge: rgb(0 0 0 / 0.06);
+  --glass-highlight: rgb(255 255 255 / 0.9);
+  --glass-shadow: rgb(15 23 42 / 0.12);
+  --glass-pill: rgb(0 0 0 / 0.06);
   /* Isola dei lavori in corso: sempre scura, in entrambi i temi (come l'isola dei telefoni). */
   --island: #0f0f12;
   --island-foreground: #f4f4f5;
@@ -292,6 +302,11 @@
   --sidebar-accent-foreground: #ececef;
   --sidebar-border: #2a2a2f;
   --sidebar-ring: #219ebc;
+  --glass: rgb(28 28 32 / 0.5);
+  --glass-edge: rgb(255 255 255 / 0.09);
+  --glass-highlight: rgb(255 255 255 / 0.14);
+  --glass-shadow: rgb(0 0 0 / 0.4);
+  --glass-pill: rgb(255 255 255 / 0.1);
 }
 
 @layer base {

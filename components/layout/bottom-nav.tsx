@@ -19,12 +19,15 @@ import { MoreHorizontal } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
 import type { NavBadge, NavItem } from "@/components/layout/sidebar";
+import type { ShellAction } from "@/components/layout/shell-action";
 import { usePendingNavHref } from "@/components/layout/use-pending-nav";
 import { BAR_RESIZE_TRANSITION, SPRING_SNAPPY } from "@/lib/motion/springs";
 import { cn } from "@/lib/utils";
 
 /** Items shown in the bar: the four most used sections, the rest is under «Altro». */
 export const BOTTOM_NAV_HREFS = ["/panoramica", "/liquidita", "/investimenti", "/debiti"] as const;
+/** Items shown when the main action sits in the middle of the bar: three sections, the action, «Altro». */
+export const BOTTOM_NAV_HREFS_WITH_ACTION = ["/panoramica", "/liquidita", "/investimenti"] as const;
 
 /** Label of the tab that opens the full menu. */
 const MORE_LABEL = "Altro";
@@ -53,6 +56,8 @@ export interface BottomNavProps {
   onTabClick?: (key: string) => void;
   /** Lower capsule with icons only, while the page is scrolled down (labels stay for screen readers). */
   compact?: boolean;
+  /** Main action (e.g. «Aggiungi»): a yellow round button in the middle of the bar or beside it. */
+  action?: ShellAction;
 }
 
 function isActivePath(pathname: string, href: string): boolean {
@@ -96,7 +101,31 @@ function TabLabel({ compact, reduced, children }: { compact: boolean; reduced: b
   );
 }
 
-export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, badges, onOpenMore, onTabClick, compact = false }: BottomNavProps) {
+/** Yellow round button of the main action; it shrinks with the bar. */
+function ActionButton({ action, compact, reduced, beside }: { action: ShellAction; compact: boolean; reduced: boolean; beside: boolean }) {
+  const { t: tr } = useLocalization();
+  const Icon = action.icon;
+  const size = beside ? (compact ? BOTTOM_NAV_COMPACT_BAR_REM : BOTTOM_NAV_BAR_REM) : compact ? 2.5 : 3.25;
+  return (
+    <motion.button
+      type="button"
+      initial={false}
+      animate={{ width: `${size}rem`, height: `${size}rem` }}
+      transition={reduced ? { duration: 0 } : BAR_RESIZE_TRANSITION}
+      onClick={(event) => action.onClick(event.currentTarget)}
+      aria-label={tr(action.label)}
+      aria-haspopup="dialog"
+      className={cn(
+        "flex shrink-0 cursor-pointer items-center justify-center self-center rounded-full bg-sun text-on-sun transition-colors active:bg-sun-hover",
+        beside && "shadow-[0_10px_30px_-6px_var(--glass-shadow)]"
+      )}
+    >
+      <Icon className={beside ? "size-7" : "size-6"} strokeWidth={2.25} aria-hidden="true" />
+    </motion.button>
+  );
+}
+
+export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, badges, onOpenMore, onTabClick, compact = false, action }: BottomNavProps) {
   const { t: tr } = useLocalization();
   const pathname = usePathname();
   const [pendingHref, startNav] = usePendingNavHref();
@@ -105,22 +134,13 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
   const inPrimary = primary.some((i) => isActivePath(current, i.href));
   // Reduced motion: the bar still changes size, at once instead of gliding.
   const reduced = useReducedMotion() ?? false;
+  // In the middle: as many tabs on its left as on its right («Altro» counts as the last tab).
+  const centerAction = action && action.placement !== "beside" ? action : null;
+  const centerIndex = Math.ceil((primary.length + 1) / 2);
 
   return (
-    <motion.nav
-      initial={false}
-      animate={{ height: `${compact ? BOTTOM_NAV_COMPACT_BAR_REM : BOTTOM_NAV_BAR_REM}rem` }}
-      transition={reduced ? { duration: 0 } : BAR_RESIZE_TRANSITION}
-      data-compact={compact ? "" : undefined}
-      aria-label={tr("Navigazione principale")}
-      className={cn(
-        "fixed z-30 flex rounded-full border border-glass-edge px-1 md:hidden",
-        // «Liquid Glass»: translucent fill, the page blurred and more saturated behind it, light on the top edge.
-        "bg-glass shadow-[inset_0_1px_0_var(--glass-highlight),0_10px_30px_-6px_var(--glass-shadow)]",
-        "supports-backdrop-filter:backdrop-blur-2xl supports-backdrop-filter:backdrop-saturate-[1.8]",
-        // Without backdrop-filter the fill would be too thin to read the labels over the page.
-        "not-supports-backdrop-filter:bg-sidebar"
-      )}
+    <div
+      className="fixed z-30 flex items-end gap-2 md:hidden"
       // Away from the screen edges and from the notch/camera cutout when the phone is turned sideways.
       style={{
         bottom: `calc(${BOTTOM_NAV_GAP_REM}rem + env(safe-area-inset-bottom))`,
@@ -128,14 +148,30 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
         right: `max(${BOTTOM_NAV_SIDE_REM}rem, env(safe-area-inset-right))`,
       }}
     >
-      {primary.map((item) => {
+    <motion.nav
+      initial={false}
+      animate={{ height: `${compact ? BOTTOM_NAV_COMPACT_BAR_REM : BOTTOM_NAV_BAR_REM}rem` }}
+      transition={reduced ? { duration: 0 } : BAR_RESIZE_TRANSITION}
+      data-compact={compact ? "" : undefined}
+      aria-label={tr("Navigazione principale")}
+      className={cn(
+        "flex min-w-0 flex-1 rounded-full border border-glass-edge px-1",
+        // «Liquid Glass»: translucent fill, the page blurred and more saturated behind it, light on the top edge.
+        "bg-glass shadow-[inset_0_1px_0_var(--glass-highlight),0_10px_30px_-6px_var(--glass-shadow)]",
+        "supports-backdrop-filter:backdrop-blur-2xl supports-backdrop-filter:backdrop-saturate-[1.8]",
+        // Without backdrop-filter the fill would be too thin to read the labels over the page.
+        "not-supports-backdrop-filter:bg-sidebar"
+      )}
+    >
+      {primary.map((item, index) => {
         const active = isActivePath(current, item.href);
         const badge = badges?.[item.href];
         const showBadge = badge !== undefined && badge.count > 0;
         const Icon = item.icon;
         return (
+          <React.Fragment key={item.href}>
+          {centerAction && index === centerIndex ? <ActionButton action={centerAction} compact={compact} reduced={reduced} beside={false} /> : null}
           <Link
-            key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
             onClick={() => {
@@ -160,8 +196,10 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
               {tr(item.label)}
             </TabLabel>
           </Link>
+          </React.Fragment>
         );
       })}
+      {centerAction && centerIndex >= primary.length ? <ActionButton action={centerAction} compact={compact} reduced={reduced} beside={false} /> : null}
       <button
         type="button"
         onClick={() => {
@@ -180,5 +218,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
         </TabLabel>
       </button>
     </motion.nav>
+    {action && action.placement === "beside" ? <ActionButton action={action} compact={compact} reduced={reduced} beside /> : null}
+    </div>
   );
 }

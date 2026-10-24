@@ -11,13 +11,14 @@
 export { AppShell } from "@/components/layout/app-shell";
 export { AppSidebar, NAV_ITEMS } from "@/components/layout/sidebar";
 export type { NavItem, NavBadge, NavLock } from "@/components/layout/sidebar";
+export type { ShellAction } from "@/components/layout/shell-action";
 export { withCountryLocks, countryLock, COUNTRY_UNAVAILABLE_PATH } from "@/components/layout/country-locks";
 export { AppVersionLabel } from "@/components/layout/app-version-label";
 export { MobileTopbar } from "@/components/layout/mobile-topbar";
 export { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";
 export { SidebarSlotProvider, useSidebarSlot } from "@/components/layout/sidebar-slot";
 export type { SidebarSlotState } from "@/components/layout/sidebar-slot";
-export { BottomNav, BOTTOM_NAV_HREFS } from "@/components/layout/bottom-nav";
+export { BottomNav, BOTTOM_NAV_HREFS, BOTTOM_NAV_HREFS_WITH_ACTION } from "@/components/layout/bottom-nav";
 export type { BottomNavProps } from "@/components/layout/bottom-nav";
 export { MobileMoreMenu, MORE_MENU_HINTS } from "@/components/layout/mobile-more-menu";
 export type { MobileMoreMenuProps, MoreMenuAction } from "@/components/layout/mobile-more-menu";

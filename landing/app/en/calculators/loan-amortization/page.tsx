@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, pageJsonLd } from "@/components/json-ld";
 import { Sources } from "@/components/sources";
 import { AmmortamentoCalculator } from "@/components/tools/ammortamento-calculator";
 import { AMMORTAMENTO_PAGE_EN, SOURCES_CHECKED_EN, SOURCES_EN, SOURCES_SUMMARY_EN } from "@/content/en/tools";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT } from "@/content/seo-pages";
-import { SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata("en", {
@@ -30,7 +29,7 @@ export default function Page() {
       ctaText="BuddyBudget works out the TAEG (the Italian APR) and compares paying off early with surroga (moving the mortgage to another bank), with interest saved, penalty and costs. The debt counts in your net worth."
       ctaLocation="calcolatore_ammortamento"
     >
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "Loan amortization calculator", url: `${SITE_URL}${EN_PATHS.loanAmortization}`, inLanguage: "en", description: AMMORTAMENTO_PAGE_EN.description, isPartOf: { "@id": `${SITE_URL}/#website` } }} />
+      <JsonLd data={pageJsonLd({ locale: "en", path: EN_PATHS.loanAmortization, title: AMMORTAMENTO_PAGE_EN.title, description: AMMORTAMENTO_PAGE_EN.description })} />
       <AmmortamentoCalculator locale="en" />
       <p className="note">Fixed-payment (French) schedule, with the TAN (the nominal annual rate) and monthly payments. It leaves out arrangement fees, insurance and variable rates: for the real cost you need the TAEG (the APR) in your contract.</p>
       <h2>Same payment, less interest each month</h2>

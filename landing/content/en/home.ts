@@ -14,7 +14,7 @@ import { SECURITY_SOURCES_EN } from "./security";
 /** Title and description of the English pages (root layout and home). */
 export const SITE_TITLE_EN = "BuddyBudget: open-source personal finance, all in one number";
 export const SITE_DESCRIPTION_EN =
-  "Bank accounts, investments, pension and debts in one net worth, updated every day, with Italian taxes worked out. Upload your bank statement; a read-only bank connection is coming soon. Open source and self-hostable, free during the beta.";
+  "Bank accounts, investments, pension and debts in one net worth, updated every day, with Italian taxes worked out. Open source, free during the beta.";
 export const OG_ALT_EN = "BuddyBudget: all your money, in one number";
 
 /** Countries whose banks can be linked, with English names (same codes as `SUPPORTED.countries`). */

@@ -10,6 +10,7 @@ import type { Tool } from "../tools";
 /** The legal sources of `SOURCES`, with English labels and the same links (the documents themselves are in Italian). */
 export const SOURCES_EN = {
   tuir68: { label: "Article 68 of the TUIR (Presidential Decree 917/1986), capital gains and losses: offsetting, and carrying losses forward \"no later than the fourth\" year", href: SOURCES.tuir68.href },
+  dlgs461: { label: "Legislative Decree 461/1997, article 6: regime amministrato, and the certificate that carries losses over when a securities account is closed", href: SOURCES.dlgs461.href },
   circolare19e: { label: "Agenzia delle Entrate (the Italian Revenue Agency), Circular 19/E of 27 June 2014: taxation of financial income (26% rate, government bonds at 12.5%)", href: SOURCES.circolare19e.href },
   quadroRt: { label: "Agenzia delle Entrate, Quadro RT: capital gains and losses in the Italian tax return", href: SOURCES.quadroRt.href },
   guidaMutuo: { label: "Banca d'Italia (the Bank of Italy), «Il mutuo ipotecario in parole semplici», its plain-words guide to mortgages: a home mortgage can be paid off early with no fees or penalties", href: SOURCES.guidaMutuo.href },
@@ -30,16 +31,16 @@ export const TOOLS_EN: readonly Tool[] = [
 
 /** Texts of the list of calculators (`/en/calculators`). */
 export const TOOLS_PAGE_EN = {
-  title: "Free calculators: zainetto fiscale, loan amortization, savings goal",
-  description: "Three free calculators, no account needed: the Italian tax on a capital gain after past losses (zainetto fiscale), the payment and interest of a loan, and how long it takes to reach a savings goal.",
+  title: "Free calculators: zainetto fiscale, loans and savings",
+  description: "Three free calculators, no account: Italian tax on a gain after past losses (zainetto fiscale), a loan's payment, the time to reach a savings goal.",
   h1: "Calculators",
   lead: "The same engines as the app, open to everyone and with no account. They are estimates for information only, and the tax figures follow Italian tax law. The official sources are at the bottom of each page.",
 } as const;
 
 /** Texts of the zainetto fiscale calculator (`/en/calculators/zainetto-fiscale`). */
 export const ZAINETTO_PAGE_EN = {
-  title: "Zainetto fiscale calculator: Italian tax on a capital gain after past losses",
-  description: "Work out how much of your capital losses from the last 4 years you can offset, and how much Italian tax you pay on a gain from stocks, ETFs or government bonds. Free, no sign-up.",
+  title: "Zainetto fiscale calculator: Italian capital gains tax",
+  description: "Work out how much of your losses from the last 4 years you can offset, and the Italian tax on a gain from stocks, ETFs or government bonds. Free.",
   h1: "Zainetto fiscale calculator",
   lead: "Enter this year's capital gain and the losses you carry from earlier years. See which ones you can still use, how much they offset and how much tax you pay. The zainetto fiscale is Italy's tax-loss carryforward, and the calculator applies Italian tax law.",
 } as const;
@@ -47,15 +48,15 @@ export const ZAINETTO_PAGE_EN = {
 /** Texts of the loan amortization calculator (`/en/calculators/loan-amortization`). */
 export const AMMORTAMENTO_PAGE_EN = {
   title: "Loan amortization calculator with early repayment",
-  description: "Work out the monthly payment, the total interest and the full fixed-payment schedule of a mortgage or a loan, and see how much you save by paying part of it off early. Free.",
+  description: "Work out the monthly payment, total interest and full schedule of a mortgage or loan, and how much you save by paying part of it off early. Free.",
   h1: "Loan amortization calculator",
   lead: "Amount, rate and term: get the monthly payment, how much interest you pay and the full schedule, month by month. Then try paying off part of the principal early.",
 } as const;
 
 /** Texts of the savings goal calculator (`/en/calculators/savings-goal`). */
 export const OBIETTIVO_PAGE_EN = {
-  title: "Savings goal calculator: how long it takes to reach an amount",
-  description: "Work out how many months it takes to reach an amount with what you already have and what you put aside each month, with or without a return, and how much you would need each month to get there by a date. Free, no sign-up.",
+  title: "Savings goal calculator: how long to reach an amount",
+  description: "Work out how many months it takes to reach an amount with what you have and save each month, and how much a month gets you there by a date. Free.",
   h1: "Savings goal calculator",
   lead: "An amount to reach, what you already have and how much you put aside each month: see how long it takes, and how much you would need each month to get there by a date.",
 } as const;
@@ -64,6 +65,6 @@ export const OBIETTIVO_PAGE_EN = {
 export const GUIDE_ZAINETTO_EN = {
   h1: "Zainetto fiscale: what it is and how to use your capital losses",
   /** Different from the h1 on purpose, as on the Italian page. */
-  title: "Zainetto fiscale: a guide to Italian tax-loss carryforward, with examples",
+  title: "Zainetto fiscale: Italian tax-loss carryforward guide",
   description: "What the zainetto fiscale is and how the 4 years to offset losses on stocks and ETFs work under Italian tax law, with worked examples and a free calculator.",
 } as const;

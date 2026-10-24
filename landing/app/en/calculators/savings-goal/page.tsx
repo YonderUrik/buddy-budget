@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, pageJsonLd } from "@/components/json-ld";
 import { ObiettivoCalculator } from "@/components/tools/obiettivo-calculator";
 import { OBIETTIVO_PAGE_EN } from "@/content/en/tools";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT } from "@/content/seo-pages";
-import { SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata("en", {
@@ -29,7 +28,7 @@ export default function Page() {
       ctaText="In BuddyBudget, what you put aside each month is read from your connected accounts. You create a goal, choose which accounts or investments the money comes from, and see when you get there, whether your savings cover every goal and how far each one moves the year you can stop working."
       ctaLocation="calcolatore_obiettivo"
     >
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: OBIETTIVO_PAGE_EN.h1, url: `${SITE_URL}${EN_PATHS.savingsGoal}`, inLanguage: "en", description: OBIETTIVO_PAGE_EN.description, isPartOf: { "@id": `${SITE_URL}/#website` } }} />
+      <JsonLd data={pageJsonLd({ locale: "en", path: EN_PATHS.savingsGoal, title: OBIETTIVO_PAGE_EN.title, description: OBIETTIVO_PAGE_EN.description })} />
       <ObiettivoCalculator locale="en" />
       <p className="note">Simplified estimate: equal deposits at the end of each month, a steady return compounded monthly, no tax on the return and no inflation. A savings account or a fund grows differently.</p>
       <h2>How the calculation works</h2>

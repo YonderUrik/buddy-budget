@@ -12,7 +12,9 @@ Market: Italy, Italian. Domain to rank: `buddybudget.io` (landing). `app.buddybu
 | Open Graph / Twitter | no image, `summary` card | `og.png` 1200×630, `summary_large_image` card |
 | Structured data | none | JSON-LD: Organization, WebSite, SoftwareApplication (FinanceApplication, price 0), FAQPage |
 | Text with keywords | brand-only H1 ("Quanto vali, davvero?"), generic hero paragraph | hero paragraph with "app per gestire budget, investimenti, fondo pensione e debiti" ("app to manage budget, investments, pension fund and debts") + FAQ section (8 questions) |
-| Sitemap / robots | present, without `lastmod` | `lastmod` added, then removed on 2026-10-23 (it was the build date on every page, which Google learns to ignore) |
+| Sitemap / robots | present, without `lastmod` | `lastmod` added, then removed on 2026-10-23 (it was the build date on every page, which Google learns to ignore); back on 2026-10-24 as each page's last content commit (`landing/scripts/page-dates.mjs`), with a daily IndexNow ping (`.github/workflows/indexnow.yml`) |
+| Title and description lengths | unchecked | since 2026-10-24 `pageMetadata` stops the build outside 30-60 / 110-160 characters |
+| Page structured data | some pages only | since 2026-10-24 every page has a `WebPage` (or `Article`) node from `pageJsonLd`, with `headline` = title and `dateModified`; Organization has `sameAs` (`SAME_AS` in `content/site.ts`) |
 | Rendering | static export: all text is already in the HTML | unchanged (ok) |
 | Image alt | screenshots with descriptive alt, decorative ones with `alt=""` | unchanged (ok) |
 | hreflang | not needed (Italian only) | to be added when i18n arrives |

@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { AppShot } from "./app-shot";
 import { ContentPage } from "./content-page";
-import { JsonLd } from "./json-ld";
+import { JsonLd, pageJsonLd } from "./json-ld";
 import { Sources } from "./sources";
 import { counterpart } from "@/content/locales";
 import type { InvestmentsPageContent } from "@/content/feature-investments";
-import { SITE_URL } from "@/content/site";
 import { RULES_NOTES } from "@/content/rules-needs";
-import { otherLocale, SCHEMA_LANGUAGE } from "@/lib/i18n";
+import { otherLocale } from "@/lib/i18n";
 import { needsAttr } from "@/lib/visitor-country";
 import { RulesNote } from "./by-rules";
 
@@ -19,7 +18,7 @@ export function InvestmentsPage({ content: c }: { content: InvestmentsPageConten
   const features = c.crumbs.find((crumb, i) => i > 0 && crumb.href)?.href;
   return (
     <ContentPage title={c.h1} lead={c.lead} current={features} locale={c.locale} alternate={counterpart(c.path, otherLocale(c.locale))} crumbs={c.crumbs} ctaTitle={c.ctaTitle} ctaText={c.ctaText} ctaLocation="funzione_investimenti">
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: c.title, description: c.description, url: `${SITE_URL}${c.path}`, inLanguage: SCHEMA_LANGUAGE[c.locale] }} />
+      <JsonLd data={pageJsonLd({ locale: c.locale, path: c.path, title: c.title, description: c.description })} />
       <AppShot id="investimenti" className="cp-shot" locale={c.locale} priority />
       <div className="fn-grid">
         {c.blocks.map((b) => (

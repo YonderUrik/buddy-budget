@@ -67,6 +67,8 @@ export interface FlowContent {
   nodes: readonly FlowNode[];
   /** Word that opens the «never» sentence of each step. */
   neverTitle: string;
+  /** The path of the diagram in one sentence: its text equivalent for screen readers and search engines. */
+  diagram: string;
 }
 
 /** The data path when you connect a bank, step by step. */
@@ -76,6 +78,7 @@ export const FLOW = {
   /** Cosa viaggia su ogni collegamento, nell'ordine dei nodi. */
   links: ["Credenziali e conferma", "Consenso in sola lettura", "Saldi e movimenti"],
   neverTitle: "Mai.",
+  diagram: "Schema del percorso dei dati: credenziali e conferma le dai solo alla tua banca; la banca dà a GoCardless un consenso in sola lettura; GoCardless passa a BuddyBudget, su server in Germania, soltanto saldi e movimenti.",
   nodes: [
     {
       id: "tu",
@@ -224,7 +227,7 @@ export const LIMITS = {
 export const SECURITY_PAGE = {
   h1: "Cosa succede ai tuoi dati",
   title: "Sicurezza e privacy: come BuddyBudget tratta i tuoi dati",
-  description: "Cosa salviamo e cosa no, dove sono i server, come cancelli tutto e come funziona il collegamento alla banca in sola lettura (PSD2) per chi lo ha già. Con le fonti ufficiali.",
+  description: "Cosa salviamo e cosa no, dove sono i server, come cancelli tutto e come funziona la banca collegata in sola lettura (PSD2) per chi ce l'ha. Con le fonti.",
   lead: "L'app non può spostare soldi. Qui c'è il percorso dei dati di chi ha una banca collegata, cosa teniamo e cosa no, con le fonti per controllare.",
 } as const;
 

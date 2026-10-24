@@ -16,10 +16,15 @@ export const STATUS_URL = process.env.NEXT_PUBLIC_STATUS_URL ?? "https://stats.u
 export const SOURCE_LICENSE = "AGPL-3.0";
 
 export const SITE_NAME = "BuddyBudget";
-/** Home title: brand + the promise + the words people search for (conti, investimenti, pensione, mutuo), within ~60 characters. */
-export const SITE_TITLE = "BuddyBudget: conti, investimenti, pensione e mutuo in un numero";
+/**
+ * Profiles BuddyBudget owns, for `sameAs` in the Organization structured data: only real accounts of the project. The
+ * Buy Me a Coffee page stays off the landing (decision of 2026-10-17); add LinkedIn or Product Hunt here once they exist.
+ */
+export const SAME_AS: readonly string[] = ["https://github.com/YonderUrik/buddy-budget", "https://www.instagram.com/yourbuddybudget/"];
+/** Home title: brand + the promise + the words people search for (conti, investimenti, pensione, mutuo), 30-60 characters (longer titles are cut in results). */
+export const SITE_TITLE = "BuddyBudget: conti, investimenti, pensione e mutuo";
 export const SITE_DESCRIPTION =
-  "Conto, investimenti, fondo pensione e mutuo in un numero solo, aggiornato ogni giorno con le tasse italiane già calcolate. Carichi l'estratto conto della banca; il collegamento diretto arriva presto. Gratis durante la beta, codice aperto.";
+  "Conto, investimenti, fondo pensione e mutuo in un numero solo, aggiornato ogni giorno con le tasse italiane già calcolate. Gratis in beta, codice aperto.";
 /** Preview image for social networks and rich results (1200×630, see `scripts/make-og-image.mjs`). */
 export const OG_IMAGE = { url: "/og.png", width: 1200, height: 630, alt: "BuddyBudget: tutti i tuoi soldi, in un numero solo" } as const;
 

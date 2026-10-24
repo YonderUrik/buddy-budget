@@ -12,6 +12,8 @@ export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buddybudg
 export const SOURCE_URL = process.env.NEXT_PUBLIC_SOURCE_URL ?? "";
 /** Public status page (UptimeRobot, free plan: not on our domain). */
 export const STATUS_URL = process.env.NEXT_PUBLIC_STATUS_URL ?? "https://stats.uptimerobot.com/BCuTWm0Ukg";
+/** The brand's social profiles (today only Instagram): footer link and `sameAs` of the organisation's structured data. */
+export const INSTAGRAM_URL = "https://www.instagram.com/yourbuddybudget/";
 /** License of the code, shown next to the link. */
 export const SOURCE_LICENSE = "AGPL-3.0";
 

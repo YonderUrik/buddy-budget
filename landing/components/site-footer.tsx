@@ -1,11 +1,13 @@
 import "./site-footer.css";
 import Link from "next/link";
 import { languageHrefs } from "@/content/locales";
-import { SOURCE_LICENSE, SOURCE_URL, STATUS_URL, SUPPORT_EMAIL } from "@/content/site";
+import { INSTAGRAM_URL, SOURCE_LICENSE, SOURCE_URL, STATUS_URL, SUPPORT_EMAIL } from "@/content/site";
 import { UI } from "@/content/ui";
 import type { Locale } from "@/lib/i18n";
 import { GithubMark } from "./github-mark";
+import { InstagramMark } from "./instagram-mark";
 import { LangSwitch } from "./lang-switch";
+import { SocialLink } from "./social-link";
 import { SourceLink } from "./source-link";
 
 /** Name drawn across the footer, decorative (the brand is already in the bar). */
@@ -19,7 +21,7 @@ export interface SiteFooterProps {
 
 /**
  * Footer, the same on every page, on the navy field: three columns above (the name, the main pages, language, code,
- * status and support) and the name drawn across the whole width below, cut by the page's bottom edge (taste-skill
+ * Instagram, status and support) and the name drawn across the whole width below, cut by the page's bottom edge (taste-skill
  * footer «Columns above, wordmark below»). Texts from `UI[locale]`.
  */
 export function SiteFooter({ locale = "it", alternate }: SiteFooterProps) {
@@ -41,6 +43,10 @@ export function SiteFooter({ locale = "it", alternate }: SiteFooterProps) {
               GitHub · {SOURCE_LICENSE}
             </SourceLink>
           ) : null}
+          <SocialLink className="gh" href={INSTAGRAM_URL} network="instagram">
+            <InstagramMark />
+            Instagram
+          </SocialLink>
           <a href={STATUS_URL} target="_blank" rel="noopener noreferrer">{t.footer.status}</a>
           <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
         </nav>

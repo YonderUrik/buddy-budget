@@ -17,7 +17,7 @@ import { useSidebarDeadlinesQuery, useSidebarFireQuery, useSidebarSummaryQuery }
 
 export function SidebarInsightsSlot() {
   const { features } = useLocalization();
-  const { collapsed, onNavigate } = useSidebarSlot();
+  const { collapsed, onNavigate, cards } = useSidebarSlot();
   const { hidden, toggle } = usePrivacy();
   const [showToday] = useSidebarModule("oggi");
   const [showPortfolio] = useSidebarModule("portafoglio");
@@ -28,7 +28,7 @@ export function SidebarInsightsSlot() {
   const summary = useSidebarSummaryQuery(summaryNeeded);
   const deadlines = useSidebarDeadlinesQuery(showDeadlines);
   const fire = useSidebarFireQuery(showFire && features.retirement);
-  const common = { summary: summary.data, loading: summary.isLoading, hidden, onToggleHidden: toggle, collapsed, onNavigate };
+  const common = { summary: summary.data, loading: summary.isLoading, hidden, onToggleHidden: toggle, collapsed, onNavigate, cards };
   return (
     <>
       {/* Patrimonio, poi i promemoria brevi (scadenze, FIRE), poi portafoglio e watchlist che sono più lunghi: così i moduli
@@ -40,6 +40,7 @@ export function SidebarInsightsSlot() {
           loading={deadlines.isLoading}
           hidden={hidden}
           collapsed={collapsed}
+          cards={cards}
           onNavigate={onNavigate}
           onItemClick={() => track("sidebar_module_clicked", { module: "scadenze" })}
         />
@@ -50,6 +51,7 @@ export function SidebarInsightsSlot() {
           loading={fire.isLoading}
           hidden={hidden}
           collapsed={collapsed}
+          cards={cards}
           onNavigate={onNavigate}
           onItemClick={() => track("sidebar_module_clicked", { module: "fire" })}
         />

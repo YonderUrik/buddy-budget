@@ -12,6 +12,8 @@ export interface SidebarSlotState {
   collapsed: boolean;
   /** Da chiamare quando si naviga da un link dello slot (chiude il drawer mobile). */
   onNavigate?: () => void;
+  /** Desktop sidebar made of islands: every module draws itself as a separate card. */
+  cards?: boolean;
 }
 
 const SidebarSlotContext = React.createContext<SidebarSlotState>({ collapsed: false });

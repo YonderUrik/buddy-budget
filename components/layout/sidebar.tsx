@@ -52,6 +52,8 @@ import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
 import { usePendingNavHref } from "@/components/layout/use-pending-nav";
 import { authClient } from "@/lib/auth/client";
 import { SPRING_SNAPPY } from "@/lib/motion/springs";
+import { SIDEBAR_ISLAND_CLASS } from "@/lib/sidebar/island";
+import { HoverHighlight } from "@/components/motion";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -135,6 +137,7 @@ function NavLink({
   active = false,
   badge,
   onNavigate,
+  islands = false,
 }: {
   item: NavItem;
   collapsed: boolean;
@@ -142,10 +145,13 @@ function NavLink({
   /** Badge con contatore: pallino sull'icona nella sidebar compatta, numero a destra in quella espansa. */
   badge?: NavBadge;
   onNavigate?: () => void;
+  /** Desktop islands: pill-shaped item, yellow pill when active, hover drawn by the list's `HoverHighlight`. */
+  islands?: boolean;
 }) {
   const { t: tr } = useLocalization();
   const Icon = item.icon;
   const showBadge = badge !== undefined && badge.count > 0;
+  const shape = islands ? "rounded-full" : "rounded-lg";
 
   if (item.locked) {
     const lock = item.locked;
@@ -158,9 +164,12 @@ function NavLink({
           lock.onOpen?.();
           onNavigate?.();
         }}
+        data-hover-target={islands ? "" : undefined}
         className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150",
-          "text-sidebar-foreground/45 hover:bg-sidebar-accent hover:text-sidebar-foreground/70",
+          "relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+          shape,
+          "text-sidebar-foreground/45 hover:text-sidebar-foreground/70",
+          !islands && "hover:bg-sidebar-accent",
           collapsed && "justify-center px-2"
         )}
       >
@@ -207,23 +216,30 @@ function NavLink({
       title={collapsed ? tr(item.label) : undefined}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
+      data-hover-target={islands ? "" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+        "group relative flex items-center gap-3 py-2.5 text-sm font-medium",
+        islands ? "px-4" : "px-3",
+        shape,
         "transition-colors duration-150",
         "text-sidebar-foreground/70 hover:text-sidebar-accent-foreground",
-        active ? "text-sidebar-accent-foreground" : "hover:bg-sidebar-accent",
+        active
+          ? islands
+            ? "text-on-sun hover:text-on-sun"
+            : "text-sidebar-accent-foreground"
+          : !islands && "hover:bg-sidebar-accent",
         collapsed && "justify-center px-2"
       )}
     >
-      {/* Active item background with the brand-yellow marker: one per list, it slides between items (`layoutId`). */}
+      {/* Active item background (yellow pill in the islands, grey with a yellow marker in the drawer): one per list, it slides between items (`layoutId`). */}
       {active ? (
         <motion.span
           layoutId="sidebar-active-pill"
           transition={SPRING_SNAPPY}
-          className="absolute inset-0 rounded-lg bg-sidebar-accent"
+          className={cn("absolute inset-0", shape, islands ? "bg-sun" : "bg-sidebar-accent")}
           aria-hidden="true"
         >
-          <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-sun" />
+          {islands ? null : <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-sun" />}
         </motion.span>
       ) : null}
       <span className="relative z-10 flex shrink-0">
@@ -284,6 +300,13 @@ function UserAvatar({ initials, image }: { initials: string; image?: string | nu
     </div>
   );
 }
+
+/** Every block of the desktop sidebar is an island: a separate card with rounded corners. */
+const ISLAND = SIDEBAR_ISLAND_CLASS;
+
+/** Round icon buttons in the account island. */
+const ISLAND_ICON_BUTTON =
+  "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-sidebar-foreground/60 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-foreground";
 
 /** Store vuoto: distingue il render server (false) da quello client (true). */
 const subscribeNoop = () => () => {};
@@ -356,97 +379,200 @@ export function AppSidebar({
 
   // In modalità forceExpanded (drawer mobile) la sidebar è sempre espansa.
   const isCollapsed = forceExpanded ? false : collapsed;
+  // The desktop sidebar is made of islands; the mobile drawer keeps a single panel.
+  const islands = !forceExpanded;
+  const firstName = userName.split(" ")[0];
 
-  return (
-    <aside
+  // Header: logo and brand (back to the start page).
+  const header = (
+    <div
       className={cn(
-        "flex h-full flex-col bg-sidebar border-r border-sidebar-border",
-        "transition-[width] duration-300 ease-in-out overflow-hidden",
-        isCollapsed ? "w-[64px]" : "w-[240px]"
+        "flex h-16 shrink-0 items-center",
+        !islands && "border-b border-sidebar-border",
+        isCollapsed ? "justify-center px-2" : "px-5"
       )}
-      aria-label={tr("Navigazione principale")}
     >
-      {/* ── Header: Logo / Brand (torna alla pagina iniziale) ── */}
-      <div
+      <Link
+        href="/"
+        onClick={onClose}
+        aria-label={tr("BuddyBudget: torna alla pagina iniziale")}
         className={cn(
-          "flex h-16 shrink-0 items-center border-b border-sidebar-border",
-          isCollapsed ? "justify-center px-2" : "px-5"
+          "flex min-w-0 items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          isCollapsed ? "justify-center p-1" : "gap-2"
         )}
       >
-        <Link
-          href="/"
-          onClick={onClose}
-          aria-label={tr("BuddyBudget: torna alla pagina iniziale")}
-          className={cn(
-            "flex min-w-0 items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            isCollapsed ? "justify-center p-1" : "gap-2"
-          )}
-        >
-          {isCollapsed ? (
+        {isCollapsed ? (
+          <Image src="/brand/logo-mark.svg" alt={""} width={28} height={34} className="h-8 w-auto" aria-hidden="true" />
+        ) : (
+          <>
             <Image
               src="/brand/logo-mark.svg"
               alt={""}
-              width={28}
-              height={34}
-              className="h-8 w-auto"
+              width={24}
+              height={29}
+              className="h-6 w-auto shrink-0"
               aria-hidden="true"
             />
-          ) : (
-            <>
-              <Image
-                src="/brand/logo-mark.svg"
-                alt={""}
-                width={24}
-                height={29}
-                className="h-6 w-auto shrink-0"
-                aria-hidden="true"
+            <span className="font-heading text-base font-bold text-sidebar-foreground truncate">{tr("BuddyBudget")}</span>
+          </>
+        )}
+      </Link>
+    </div>
+  );
+
+  const navList = (
+    <LayoutGroup id={navGroupId}>
+      <HoverHighlight mode="stretch" highlightClassName="rounded-full bg-sidebar-accent">
+        <ul className="flex flex-col gap-0.5" role="list">
+          {withCountryLocks(items, productCountry).map((item) => (
+            <li key={item.href}>
+              <NavLink
+                item={item}
+                collapsed={isCollapsed}
+                islands={islands}
+                active={
+                  pendingHref
+                    ? pendingHref === item.href
+                    : activeHref
+                      ? activeHref === item.href
+                      : isActivePath(pathname, item.href)
+                }
+                badge={badges?.[item.href]}
+                onNavigate={() => {
+                  startNav(item.href);
+                  onClose?.();
+                }}
               />
-              <span className="font-heading text-base font-bold text-sidebar-foreground truncate">{tr("BuddyBudget")}</span>
-            </>
-          )}
-        </Link>
+            </li>
+          ))}
+        </ul>
+      </HoverHighlight>
+    </LayoutGroup>
+  );
+
+  const extraContent = extra ? (
+    <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose, cards: islands }}>{extra}</SidebarSlotProvider>
+  ) : null;
+
+  // Account menu, opened by the avatar. In the islands the e-mail and the build version live only here.
+  const userMenu = (
+    <DropdownMenuContent side="top" align="start" className="w-56">
+      <div className="px-2 py-1.5">
+        <p className="text-sm font-medium">{userName}</p>
+        <p className="text-xs text-muted-foreground truncate">{session?.user.email ?? ""}</p>
       </div>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={() => {
+          router.push(settingsHref);
+          onClose?.();
+        }}
+        className="cursor-pointer"
+      >
+        <Settings className="mr-2 size-4" aria-hidden="true" />{tr("Impostazioni")}</DropdownMenuItem>
+      <DropdownMenuItem
+        onClick={() => {
+          router.push(pathname.startsWith(supportHref) ? supportHref : `${supportHref}?da=${encodeURIComponent(pathname)}`);
+          onClose?.();
+        }}
+        className="cursor-pointer"
+      >
+        <LifeBuoy className="mr-2 size-4" aria-hidden="true" />{tr("Aiuto e segnalazioni")}</DropdownMenuItem>
+      <DropdownMenuCheckboxItem
+        checked={hidden}
+        onCheckedChange={(checked) => {
+          toggleHidden();
+          track("amounts_hidden_toggled", { enabled: checked, source: "menu_utente" });
+        }}
+        className="cursor-pointer"
+      >
+        <Eye className="mr-2 size-4" aria-hidden="true" />{tr("Nascondi gli importi")}</DropdownMenuCheckboxItem>
+      <ThemeSubmenu
+        onChange={(choice) =>
+          track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
+        }
+      />
+      <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
+        <LogOut className="mr-2 size-4" aria-hidden="true" />{tr("Esci")}</DropdownMenuItem>
+      {islands ? (
+        <>
+          <DropdownMenuSeparator />
+          <AppVersionLabel className="px-2 py-1 text-xs text-muted-foreground" />
+        </>
+      ) : null}
+    </DropdownMenuContent>
+  );
 
-      {/* ── Navigazione ── */}
-      <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label={tr("Menu")}>
-        <LayoutGroup id={navGroupId}>
-          <ul className="flex flex-col gap-0.5" role="list">
-            {withCountryLocks(items, productCountry).map((item) => {
-              return (
-                <li key={item.href}>
-                  <NavLink
-                    item={item}
-                    collapsed={isCollapsed}
-                    active={
-                      pendingHref
-                        ? pendingHref === item.href
-                        : activeHref
-                          ? activeHref === item.href
-                          : isActivePath(pathname, item.href)
-                    }
-                    badge={badges?.[item.href]}
-                    onNavigate={() => {
-                      startNav(item.href);
-                      onClose?.();
-                    }}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        </LayoutGroup>
-        {extra ? (
-          <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose }}>{extra}</SidebarSlotProvider>
-        ) : null}
-      </nav>
-
-      {/* ── Footer: card utente + toggle tema + collapse button ── */}
+  if (islands) {
+    return (
       <div
         className={cn(
-          "shrink-0 border-t border-sidebar-border",
-          isCollapsed ? "px-2 py-3" : "px-4 py-3"
+          "group/islands flex h-full flex-col gap-3 py-3 pl-3 transition-[width] duration-300 ease-in-out",
+          isCollapsed ? "w-[76px]" : "w-[252px]"
         )}
       >
+        {/* With every summary module turned off the menu island grows down to the account island. */}
+        <aside
+          className={cn(ISLAND, "shrink-0 overflow-hidden group-has-[[data-sidebar-modules]:empty]/islands:flex-1")}
+          aria-label={tr("Navigazione principale")}
+        >
+          {header}
+          <nav className="px-2 pb-3" aria-label={tr("Menu")}>
+            {navList}
+          </nav>
+        </aside>
+        {/* Summary modules: each one draws its own island (`cards` in the slot); hidden modules leave no gap. */}
+        <div data-sidebar-modules="" className="sidebar-nav flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto empty:hidden">
+          {extraContent}
+        </div>
+        <div className={cn(ISLAND, "flex shrink-0 items-center gap-1 p-2", isCollapsed && "flex-col")}>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                "flex min-w-0 cursor-pointer items-center gap-2.5 rounded-full p-1 transition-colors duration-150 hover:bg-sidebar-accent",
+                isCollapsed ? "justify-center" : "flex-1 pr-3"
+              )}
+              aria-label={tr("Opzioni utente")}
+            >
+              <UserAvatar initials={userInitials} image={userImage} />
+              {!isCollapsed && <span className="truncate text-sm font-medium text-sidebar-foreground">{firstName}</span>}
+            </DropdownMenuTrigger>
+            {userMenu}
+          </DropdownMenu>
+          {onOpenSupport ? (
+            <button
+              type="button"
+              onClick={onOpenSupport}
+              className={ISLAND_ICON_BUTTON}
+              aria-label={tr("Scrivici")}
+              title={tr("Scrivici")}
+            >
+              <MessageCircleQuestion className="size-4" aria-hidden="true" />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className={ISLAND_ICON_BUTTON}
+            aria-label={isCollapsed ? tr("Espandi sidebar") : tr("Comprimi sidebar")}
+            title={isCollapsed ? tr("Espandi sidebar") : tr("Comprimi sidebar")}
+          >
+            {isCollapsed ? <ChevronRight className="size-4" aria-hidden="true" /> : <ChevronLeft className="size-4" aria-hidden="true" />}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Mobile drawer: one full-height panel, unchanged.
+  return (
+    <aside className="flex h-full w-[240px] flex-col overflow-hidden border-r border-sidebar-border bg-sidebar" aria-label={tr("Navigazione principale")}>
+      {header}
+      <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label={tr("Menu")}>
+        {navList}
+        {extraContent}
+      </nav>
+      <div className="shrink-0 border-t border-sidebar-border px-4 py-3">
         {onOpenSupport ? (
           <button
             type="button"
@@ -454,15 +580,13 @@ export function AppSidebar({
               onOpenSupport();
               onClose?.();
             }}
-            title={isCollapsed ? tr("Scrivici") : undefined}
             className={cn(
               "mb-2 flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm text-sidebar-foreground/75",
-              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-150",
-              isCollapsed && "justify-center"
+              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-150"
             )}
           >
             <MessageCircleQuestion className="size-4 shrink-0" aria-hidden="true" />
-            {!isCollapsed && <span className="flex-1 text-left">{tr("Scrivici")}</span>}
+            <span className="flex-1 text-left">{tr("Scrivici")}</span>
           </button>
         ) : null}
         {/* Card utente — apre dropdown con logout */}
@@ -471,96 +595,20 @@ export function AppSidebar({
             className={cn(
               "flex w-full items-center gap-3 rounded-lg p-2 mb-3",
               "bg-sidebar-accent/50 hover:bg-sidebar-accent",
-              "transition-colors duration-150 cursor-pointer",
-              isCollapsed && "justify-center"
+              "transition-colors duration-150 cursor-pointer"
             )}
             aria-label={tr("Opzioni utente")}
           >
             <UserAvatar initials={userInitials} image={userImage} />
-            {!isCollapsed && (
-              <div className="min-w-0 flex-1 text-left">
-                <p className="truncate text-sm font-medium text-sidebar-foreground leading-tight">
-                  {userName}
-                </p>
-                <p className="truncate text-xs text-sidebar-foreground/60 leading-tight mt-0.5">
-                  {session?.user.email ?? ""}
-                </p>
-              </div>
-            )}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56">
-            <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">{userName}</p>
-              <p className="text-xs text-muted-foreground truncate">{session?.user.email ?? ""}</p>
+            <div className="min-w-0 flex-1 text-left">
+              <p className="truncate text-sm font-medium text-sidebar-foreground leading-tight">{userName}</p>
+              <p className="truncate text-xs text-sidebar-foreground/60 leading-tight mt-0.5">{session?.user.email ?? ""}</p>
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(settingsHref);
-                onClose?.();
-              }}
-              className="cursor-pointer"
-            >
-              <Settings className="mr-2 size-4" aria-hidden="true" />{tr("Impostazioni")}</DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(pathname.startsWith(supportHref) ? supportHref : `${supportHref}?da=${encodeURIComponent(pathname)}`);
-                onClose?.();
-              }}
-              className="cursor-pointer"
-            >
-              <LifeBuoy className="mr-2 size-4" aria-hidden="true" />{tr("Aiuto e segnalazioni")}</DropdownMenuItem>
-            <DropdownMenuCheckboxItem
-              checked={hidden}
-              onCheckedChange={(checked) => {
-                toggleHidden();
-                track("amounts_hidden_toggled", { enabled: checked, source: "menu_utente" });
-              }}
-              className="cursor-pointer"
-            >
-              <Eye className="mr-2 size-4" aria-hidden="true" />{tr("Nascondi gli importi")}</DropdownMenuCheckboxItem>
-            <ThemeSubmenu
-              onChange={(choice) =>
-                track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
-              }
-            />
-            <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
-              <LogOut className="mr-2 size-4" aria-hidden="true" />{tr("Esci")}</DropdownMenuItem>
-          </DropdownMenuContent>
+          </DropdownMenuTrigger>
+          {userMenu}
         </DropdownMenu>
-
-        {/* Bottone collapse (solo desktop, non nel drawer mobile) */}
-        {!forceExpanded && (
-          <button
-            onClick={toggleCollapsed}
-            className={cn(
-              "flex w-full items-center rounded-lg px-2 py-1.5",
-              "text-xs text-sidebar-foreground/40 hover:text-sidebar-foreground/70",
-              "hover:bg-sidebar-accent transition-colors duration-150",
-              isCollapsed ? "justify-center" : "gap-2"
-            )}
-            aria-label={isCollapsed ? tr("Espandi sidebar") : tr("Comprimi sidebar")}
-            title={isCollapsed ? tr("Espandi sidebar") : tr("Comprimi sidebar")}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="size-4" aria-hidden="true" />
-            ) : (
-              <>
-                <ChevronLeft className="size-4" aria-hidden="true" />
-                <span>{tr("Comprimi")}</span>
-              </>
-            )}
-          </button>
-        )}
-
         {/* Versione della build: cambia a ogni deploy */}
-        <AppVersionLabel
-          compact={isCollapsed}
-          className={cn(
-            "mt-2 text-sidebar-foreground/60",
-            isCollapsed ? "text-center" : "px-2"
-          )}
-        />
+        <AppVersionLabel className="mt-2 px-2 text-sidebar-foreground/60" />
       </div>
     </aside>
   );

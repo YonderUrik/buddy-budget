@@ -17,6 +17,7 @@ import type { SidebarSummary } from "@/lib/sidebar/types";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { cn } from "@/lib/utils";
 import { InsightRow } from "./insight-row";
+import { SIDEBAR_ISLAND_SKELETON_CLASS } from "@/lib/sidebar/island";
 import { localizedSidebarFormats } from "./sidebar-insights.utils";
 
 export interface SidebarInsightsProps {
@@ -38,6 +39,8 @@ export interface SidebarInsightsProps {
   show?: Partial<Record<"oggi" | "portafoglio" | "watchlist", boolean>>;
   /** Mostra l'occhio «nascondi importi» nella prima sezione visibile; da spegnere se un'altra istanza sopra lo mostra già. */
   privacyToggle?: boolean;
+  /** Desktop islands: the module is its own card (`CollapsibleSection` variant `card`). */
+  cards?: boolean;
 }
 
 const SECTION_LINK_CLASS = "block rounded-md px-1.5 py-1 text-xs font-semibold text-primary hover:underline";
@@ -90,6 +93,7 @@ export function SidebarInsights({
   titlesListHref = "/investimenti",
   show,
   privacyToggle = true,
+  cards = false,
 }: SidebarInsightsProps) {
   const { changeToneClass, formatSidebarAmount, formatSidebarPrice, formatSidebarSignedAmount, MAX_HOLDINGS_SHOWN, MAX_WATCHLIST_SHOWN } = localizedSidebarFormats(useLocalization().language);
 
@@ -100,7 +104,10 @@ export function SidebarInsights({
   const [pensionIncluded] = usePensionInNetWorth();
   if (loading) {
     return collapsed ? null : (
-      <div className="mt-2 flex flex-col gap-2 border-t border-sidebar-border pt-3" aria-busy="true">
+      <div
+        className={cn("flex flex-col gap-2", cards ? SIDEBAR_ISLAND_SKELETON_CLASS : "mt-2 border-t border-sidebar-border pt-3")}
+        aria-busy="true"
+      >
         <div className="h-4 w-24 animate-pulse rounded bg-sidebar-accent" />
         <div className="h-16 animate-pulse rounded-lg bg-sidebar-accent" />
       </div>
@@ -144,9 +151,10 @@ export function SidebarInsights({
   const watchAlerts = watchlist.reduce((sum, w) => sum + w.triggeredAlerts, 0);
 
   return (
-    <div className="mt-2 flex flex-col gap-1">
+    <div className={cn("flex flex-col", cards ? "gap-3" : "mt-2 gap-1")}>
       {netWorth ? (
         <CollapsibleSection
+          variant={cards ? "card" : "rule"}
           id="oggi"
           title={tr("Oggi")}
           summary={formatSidebarAmount(netWorthTotal, currency, hidden)}
@@ -170,6 +178,7 @@ export function SidebarInsights({
 
       {portfolio ? (
         <CollapsibleSection
+          variant={cards ? "card" : "rule"}
           id="portafoglio"
           title={tr("Portafoglio")}
           summary={formatSidebarAmount(portfolio.totalValue, currency, hidden)}
@@ -210,6 +219,7 @@ export function SidebarInsights({
 
       {watchlist.length > 0 ? (
         <CollapsibleSection
+          variant={cards ? "card" : "rule"}
           id="watchlist"
           title={tr("Watchlist")}
           defaultOpen={false}

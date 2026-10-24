@@ -18,10 +18,9 @@ export const SOURCE_LICENSE = "AGPL-3.0";
 export const SITE_NAME = "BuddyBudget";
 /**
  * Profiles BuddyBudget owns, for `sameAs` in the Organization structured data: only real accounts of the project. The
- * Buy Me a Coffee page stays off the landing (decision of 2026-10-17); add Instagram, LinkedIn or Product Hunt here
- * once they exist.
+ * Buy Me a Coffee page stays off the landing (decision of 2026-10-17); add LinkedIn or Product Hunt here once they exist.
  */
-export const SAME_AS: readonly string[] = ["https://github.com/YonderUrik/buddy-budget"];
+export const SAME_AS: readonly string[] = ["https://github.com/YonderUrik/buddy-budget", "https://www.instagram.com/yourbuddybudget/"];
 /** Home title: brand + the promise + the words people search for (conti, investimenti, pensione, mutuo), 30-60 characters (longer titles are cut in results). */
 export const SITE_TITLE = "BuddyBudget: conti, investimenti, pensione e mutuo";
 export const SITE_DESCRIPTION =

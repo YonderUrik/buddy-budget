@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, pageJsonLd } from "@/components/json-ld";
 import { TOOLS_EN, TOOLS_PAGE_EN } from "@/content/en/tools";
 import { EN_PATHS, languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT } from "@/content/seo-pages";
@@ -31,7 +31,7 @@ export default function Page() {
       ctaText="The zainetto, loan payments and savings are worked out from your own trades and transactions, with nothing to type in again."
       ctaLocation="strumenti"
     >
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: TOOLS_PAGE_EN.h1, url: `${SITE_URL}${EN_PATHS.calculators}`, inLanguage: "en", description: TOOLS_PAGE_EN.description, isPartOf: { "@id": `${SITE_URL}/#website` }, hasPart: TOOLS_EN.map((t) => ({ "@type": "WebPage", name: t.name, url: `${SITE_URL}${t.href}` })) }} />
+      <JsonLd data={pageJsonLd({ locale: "en", path: EN_PATHS.calculators, title: TOOLS_PAGE_EN.title, description: TOOLS_PAGE_EN.description, extra: { hasPart: TOOLS_EN.map((t) => ({ "@type": "WebPage", name: t.name, url: `${SITE_URL}${t.href}` })) } })} />
       <div className="related">
         {TOOLS_EN.map((t) => (
           <Link key={t.id} href={t.href} data-needs={needsAttr(t.needs)}>{t.name}<span>{t.text}</span></Link>

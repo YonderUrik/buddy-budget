@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { ContentPage } from "@/components/content-page";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, pageJsonLd } from "@/components/json-ld";
 import { ScreenGallery } from "@/components/screen-gallery";
 import { languageAlternates } from "@/content/locales";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
-import { SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/page-metadata";
 
-const TITLE = "Le schermate di BuddyBudget: conti, investimenti, pensione e debiti";
-const DESCRIPTION = "Tutte le schermate dell'app, area per area. Sono screenshot dell'app vera con dati di esempio inventati.";
+const TITLE = "Schermate di BuddyBudget: conti, investimenti, debiti";
+const DESCRIPTION = "Tutte le schermate dell'app, area per area: conti, movimenti, investimenti, pensione e debiti. Sono screenshot dell'app vera, con dati di esempio inventati.";
 
 export const metadata: Metadata = pageMetadata("it", {
   title: TITLE,
@@ -27,7 +26,7 @@ export default function Page() {
       ctaText="Accedi con un link via email o con Google e collega i tuoi conti: nessuna password da ricordare."
       ctaLocation="schermate"
     >
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.schermate}`, inLanguage: "it-IT" }} />
+      <JsonLd data={pageJsonLd({ locale: "it", path: CONTENT_PATHS.schermate, title: TITLE, description: DESCRIPTION })} />
       <ScreenGallery phoneOnMobile />
     </ContentPage>
   );

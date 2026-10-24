@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SplitBar } from "@/components/viz/viz";
+import { SplitBar, StackedBars } from "@/components/viz/viz";
 import { groupThousands, groupThousandsIn } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
 import { buildFrenchPlan, simulateEarlyRepayment } from "@/lib/tools/ammortamento";
@@ -47,6 +47,10 @@ interface AmmortamentoText {
   monthsLeft: string;
   newInstallment: string;
   schedule: string;
+  yearly: string;
+  /** Text equivalent of the yearly chart: first and last year in words. */
+  yearlyAlt: (first: { principal: string; interest: string }, last: { principal: string; interest: string }, years: number) => string;
+  yearLabel: (n: number) => string;
   columns: readonly [string, string, string, string];
   parse: (s: string) => number;
   amount: (n: number) => string;
@@ -76,6 +80,9 @@ const TEXT: Record<Locale, AmmortamentoText> = {
     monthsLeft: "Stessa rata: rate che restano",
     newInstallment: "Stessa durata: nuova rata",
     schedule: "Piano di ammortamento completo",
+    yearly: "Anno per anno: capitale e interessi",
+    yearlyAlt: (f, l, y) => `Grafico a barre delle rate pagate in ciascuno dei ${y} anni: il primo anno ${f.principal} di capitale e ${f.interest} di interessi, l'ultimo ${l.principal} di capitale e ${l.interest} di interessi.`,
+    yearLabel: (n) => `${n}° anno`,
     columns: ["Rata", "Quota capitale", "Quota interessi", "Debito residuo"],
     parse: num,
     amount: eur2,
@@ -103,11 +110,26 @@ const TEXT: Record<Locale, AmmortamentoText> = {
     monthsLeft: "Same payment: payments left",
     newInstallment: "Same term: new payment",
     schedule: "Full amortization schedule",
+    yearly: "Year by year: principal and interest",
+    yearlyAlt: (f, l, y) => `Bar chart of the payments made in each of the ${y} years: in the first year ${f.principal} of principal and ${f.interest} of interest, in the last ${l.principal} of principal and ${l.interest} of interest.`,
+    yearLabel: (n) => `Year ${n}`,
     columns: ["Payment", "Principal", "Interest", "Balance left"],
     parse: numEn,
     amount: eur2En,
   },
 };
+
+/** Principal and interest paid in each year of the plan (12 payments per year, the last one possibly shorter). */
+function byYear(rows: readonly { n: number; principal: number; interest: number }[]): { year: number; principal: number; interest: number }[] {
+  const years: { year: number; principal: number; interest: number }[] = [];
+  for (const r of rows) {
+    const year = Math.ceil(r.n / 12);
+    if (!years[year - 1]) years[year - 1] = { year, principal: 0, interest: 0 };
+    years[year - 1].principal += r.principal;
+    years[year - 1].interest += r.interest;
+  }
+  return years;
+}
 
 export interface AmmortamentoCalculatorProps {
   /** Language of the labels and of the amounts. */
@@ -129,6 +151,7 @@ export function AmmortamentoCalculator({ locale = "it" }: AmmortamentoCalculator
   const P = Math.max(0, parse(principal));
   const valid = P > 0 && parse(rate) >= 0;
   const plan = valid ? buildFrenchPlan(P, parse(rate), months) : null;
+  const yearly = plan ? byYear(plan.rows) : [];
   const afterMonths = Math.min(months - 1, Math.max(1, Math.round(parse(after) * 12)));
   const early = valid && months > 1 ? simulateEarlyRepayment({ principal: P, annualRatePct: parse(rate), months, afterMonths, extra: Math.max(0, parse(extra)), penaltyPct: Math.max(0, parse(penalty)) }) : null;
 
@@ -175,6 +198,16 @@ export function AmmortamentoCalculator({ locale = "it" }: AmmortamentoCalculator
           ) : null}
         </div>
       </div>
+      {plan && yearly.length > 1 ? (
+        <>
+          <h2>{t.yearly}</h2>
+          <StackedBars
+            bars={yearly.map((y) => ({ label: t.yearLabel(y.year), parts: [y.principal, y.interest] }))}
+            legend={[t.barPrincipal, t.barInterest]}
+            description={t.yearlyAlt({ principal: fmt(yearly[0].principal), interest: fmt(yearly[0].interest) }, { principal: fmt(yearly.at(-1)!.principal), interest: fmt(yearly.at(-1)!.interest) }, yearly.length)}
+          />
+        </>
+      ) : null}
       {plan ? (
         <div className="sched" tabIndex={0} role="region" aria-label={t.schedule}>
           <table>

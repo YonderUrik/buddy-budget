@@ -1,0 +1,53 @@
+name: IndexNow
+
+# Tells Bing, Yandex and the other IndexNow engines which landing pages changed, instead of waiting for a crawl.
+# Once a day it reads the live sitemap and sends the pages whose lastmod is in the last 3 days (the dates come from
+# `landing/scripts/page-dates.mjs`); run it by hand with "all" to send every page. The key is public on purpose:
+# IndexNow checks that `https://buddybudget.io/<key>.txt` (landing/public/) answers with the same key.
+
+on:
+  schedule:
+    - cron: "40 7 * * *"
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "Send every page of the sitemap, not only the recent ones"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  indexnow:
+    name: Invia le pagine cambiate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: https://buddybudget.io
+      KEY: 055f3b1d079746f8289b41ea7422b8c9
+      ALL: ${{ inputs.all && 'true' || 'false' }}
+    steps:
+      - name: Pagine cambiate e invio
+        run: |
+          curl -fsS "$SITE/sitemap.xml" -o sitemap.xml
+          python3 - <<'PY'
+          import datetime, json, os, re
+          xml = open("sitemap.xml").read()
+          since = (datetime.date.today() - datetime.timedelta(days=3)).isoformat()
+          urls = []
+          for block in re.findall(r"<url>(.*?)</url>", xml, re.S):
+              loc = re.search(r"<loc>(.*?)</loc>", block).group(1).strip()
+              mod = re.search(r"<lastmod>(.*?)</lastmod>", block)
+              if os.environ["ALL"] == "true" or (mod and mod.group(1)[:10] >= since):
+                  urls.append(loc)
+          host = os.environ["SITE"].split("//")[1]
+          body = {"host": host, "key": os.environ["KEY"], "keyLocation": f"{os.environ['SITE']}/{os.environ['KEY']}.txt", "urlList": urls}
+          json.dump(body, open("body.json", "w"))
+          print(f"{len(urls)} pages to send")
+          PY
+          if [ "$(python3 -c 'import json;print(len(json.load(open("body.json"))["urlList"]))')" = "0" ]; then echo "Nothing changed"; exit 0; fi
+          # 200 and 202 are both accepted (202: key still being checked).
+          status=$(curl -sS -o response.txt -w '%{http_code}' -X POST https://api.indexnow.org/indexnow -H "Content-Type: application/json; charset=utf-8" --data @body.json)
+          echo "IndexNow answered $status"; cat response.txt
+          case "$status" in 200|202) ;; *) exit 1 ;; esac

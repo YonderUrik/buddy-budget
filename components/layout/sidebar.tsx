@@ -507,18 +507,24 @@ export function AppSidebar({
     return (
       <div
         className={cn(
-          "flex h-full flex-col gap-3 py-3 pl-3 transition-[width] duration-300 ease-in-out",
+          "group/islands flex h-full flex-col gap-3 py-3 pl-3 transition-[width] duration-300 ease-in-out",
           isCollapsed ? "w-[76px]" : "w-[252px]"
         )}
       >
-        <aside className={cn(ISLAND, "shrink-0 overflow-hidden")} aria-label={tr("Navigazione principale")}>
+        {/* With every summary module turned off the menu island grows down to the account island. */}
+        <aside
+          className={cn(ISLAND, "shrink-0 overflow-hidden group-has-[[data-sidebar-modules]:empty]/islands:flex-1")}
+          aria-label={tr("Navigazione principale")}
+        >
           {header}
           <nav className="px-2 pb-3" aria-label={tr("Menu")}>
             {navList}
           </nav>
         </aside>
         {/* Summary modules: each one draws its own island (`cards` in the slot); hidden modules leave no gap. */}
-        <div className="sidebar-nav flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">{extraContent}</div>
+        <div data-sidebar-modules="" className="sidebar-nav flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto empty:hidden">
+          {extraContent}
+        </div>
         <div className={cn(ISLAND, "flex shrink-0 items-center gap-1 p-2", isCollapsed && "flex-col")}>
           <DropdownMenu>
             <DropdownMenuTrigger

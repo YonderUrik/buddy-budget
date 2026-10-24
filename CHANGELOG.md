@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.88.1](https://github.com/YonderUrik/buddy-budget/compare/v0.88.0...v0.88.1) (2026-10-24)
+
+
+### Correzioni
+
+* open the broker statement from «Aggiungi» without crashing the app ([#508](https://github.com/YonderUrik/buddy-budget/issues/508)) ([fe27813](https://github.com/YonderUrik/buddy-budget/commit/fe27813ee524b5d385fe6b74129374b124babf17))
+
 ## [0.88.0](https://github.com/YonderUrik/buddy-budget/compare/v0.87.0...v0.88.0) (2026-10-24)
 
 

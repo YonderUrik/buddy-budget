@@ -1,4 +1,5 @@
 "use client";
+import { HoverHighlight } from "@/components/motion";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -58,7 +59,8 @@ function ResultButton(props: {
       type="button"
       onClick={props.onClick}
       disabled={props.disabled}
-      className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none disabled:opacity-50"
+      data-hover-target={props.disabled ? undefined : ""}
+      className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left focus-visible:outline-none disabled:opacity-50"
     >
       <InstrumentIcon type={props.type} name={props.title} instrumentId={props.instrumentId} size="sm" />
       <span className="flex min-w-0 flex-1 flex-col">
@@ -107,7 +109,7 @@ export function InstrumentSearchResults({
   const visible = active ? groups.filter((g) => g.type === active) : groups;
 
   return (
-    <>
+    <HoverHighlight mode="stretch" highlightClassName="rounded-md bg-muted">
       {known.length ? (
         <div className="flex flex-col gap-0.5">
           <p className="px-2 pt-2 text-sm font-medium text-muted-foreground">{tr(knownTitle)}</p>
@@ -155,6 +157,6 @@ export function InstrumentSearchResults({
           </div>
         </div>
       ))}
-    </>
+    </HoverHighlight>
   );
 }

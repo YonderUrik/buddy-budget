@@ -1,4 +1,5 @@
 "use client";
+import { HoverHighlight } from "@/components/motion";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -52,7 +53,8 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
       ) : null}
 
       {/* Indice desktop */}
-      <nav aria-label={tr("Gruppi di impostazioni")} className="sticky top-6 hidden w-56 shrink-0 flex-col gap-1 md:flex">
+      <nav aria-label={tr("Gruppi di impostazioni")} className="sticky top-6 hidden w-56 shrink-0 md:block">
+        <HoverHighlight mode="stretch" highlightClassName="rounded-full bg-muted/70" className="flex flex-col gap-1">
         {groups.map((group) => {
           const active = group.id === current;
           return (
@@ -61,8 +63,9 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
               type="button"
               onClick={() => onSelect(group.id)}
               aria-current={active ? "page" : undefined}
+              data-hover-target=""
               className={cn(
-                "flex min-h-10 items-center rounded-full px-4 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex min-h-10 items-center rounded-full px-4 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active && "bg-muted"
               )}
             >
@@ -70,6 +73,7 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
             </button>
           );
         })}
+        </HoverHighlight>
       </nav>
 
       {/* Contenuto del gruppo */}

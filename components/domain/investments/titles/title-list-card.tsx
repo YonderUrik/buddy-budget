@@ -1,4 +1,5 @@
 "use client";
+import { HoverHighlight } from "@/components/motion";
 import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
@@ -39,14 +40,16 @@ export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: Titl
 
   const { t: tr } = useLocalization();
   return (
-    <ul className="-mx-4 sm:-mx-6">
+    <HoverHighlight mode="stretch" highlightClassName="rounded-2xl bg-muted/60" className="-mx-4 sm:-mx-6">
+    <ul>
           {items.map((item) => {
             const { instrument } = item;
             return (
               <li key={instrument.id}>
                 <Link
                   href={`${hrefBase}/${instrument.id}`}
-                  className="flex items-center gap-3 px-4 py-3 sm:px-6 transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
+                  data-hover-target=""
+                  className="flex items-center gap-3 px-4 py-3 sm:px-6 focus-visible:outline-none"
                 >
                   <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} />
                   <div className="min-w-0 flex-1">
@@ -83,5 +86,6 @@ export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: Titl
             );
           })}
     </ul>
+    </HoverHighlight>
   );
 }

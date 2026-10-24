@@ -38,7 +38,8 @@ export function InsightRow({ href, label, name, valueText, changePct, spark, ale
       href={href}
       onClick={onNavigate}
       title={name}
-      className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-sidebar-accent focus-visible:bg-sidebar-accent focus-visible:outline-none"
+      data-hover-target=""
+      className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 focus-visible:outline-none"
     >
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1 text-[13px] font-semibold leading-tight text-sidebar-foreground">

@@ -1,4 +1,5 @@
 "use client";
+import { HoverHighlight } from "@/components/motion";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -74,7 +75,8 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
               </span>
             ))}
           </div>
-          <ul className="-mx-4 sm:-mx-6">
+          <HoverHighlight mode="stretch" highlightClassName="rounded-2xl bg-muted/60" className="-mx-4 sm:-mx-6">
+          <ul>
             {rows.map((row) => (
               <PositionRowView
                 key={row.instrument.id}
@@ -88,6 +90,7 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
               />
             ))}
           </ul>
+          </HoverHighlight>
           {logosShown ? (
             <p className="text-xs text-muted-foreground">{tr("Loghi forniti da")}{" "}
               <a href={LOGO_SERVICE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{tr("Logo.dev")}</a>

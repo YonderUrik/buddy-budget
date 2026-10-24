@@ -1,5 +1,6 @@
 "use client";
 
+import { HoverHighlight } from "@/components/motion";
 import { Check } from "lucide-react";
 
 import { LANGUAGE_LOCALES, LANGUAGE_NAMES, LANGUAGES, type Language } from "@/lib/localization/config";
@@ -27,6 +28,7 @@ export interface LanguageOptionsProps {
 export function LanguageOptions({ value, onSelect, available = LANGUAGES, unavailableHint, currency = "EUR", label }: LanguageOptionsProps) {
   const today = new Date();
   return (
+    <HoverHighlight mode="stretch" highlightClassName="rounded-lg bg-muted">
     <div role="radiogroup" aria-label={label} className="flex flex-col gap-1">
       {LANGUAGES.map((language) => {
         const selected = language === value;
@@ -44,10 +46,11 @@ export function LanguageOptions({ value, onSelect, available = LANGUAGES, unavai
             aria-checked={selected}
             disabled={!enabled}
             lang={language}
+            data-hover-target={enabled && !selected ? "" : undefined}
             onClick={() => !selected && onSelect(language)}
             className={cn(
               "flex min-h-14 w-full items-center gap-3 rounded-lg px-3 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-              selected ? "bg-primary/10" : "enabled:hover:bg-muted",
+              selected && "bg-primary/10",
             )}
           >
             <Flag code={LANGUAGE_FLAGS[language]} size="lg" />
@@ -60,5 +63,6 @@ export function LanguageOptions({ value, onSelect, available = LANGUAGES, unavai
         );
       })}
     </div>
+    </HoverHighlight>
   );
 }

@@ -52,6 +52,7 @@ import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
 import { usePendingNavHref } from "@/components/layout/use-pending-nav";
 import { authClient } from "@/lib/auth/client";
 import { SPRING_SNAPPY } from "@/lib/motion/springs";
+import { HoverHighlight } from "@/components/motion/hover-highlight";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -135,7 +136,9 @@ function NavLink({
   active = false,
   badge,
   onNavigate,
+  look = "today",
 }: {
+  look?: SidebarStyle;
   item: NavItem;
   collapsed: boolean;
   active?: boolean;
@@ -146,6 +149,8 @@ function NavLink({
   const { t: tr } = useLocalization();
   const Icon = item.icon;
   const showBadge = badge !== undefined && badge.count > 0;
+  const sliding = look !== "today";
+  const shape = sliding ? "rounded-full" : "rounded-lg";
 
   if (item.locked) {
     const lock = item.locked;
@@ -158,9 +163,12 @@ function NavLink({
           lock.onOpen?.();
           onNavigate?.();
         }}
+        data-hover-target={sliding ? "" : undefined}
         className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150",
-          "text-sidebar-foreground/45 hover:bg-sidebar-accent hover:text-sidebar-foreground/70",
+          "relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+          shape,
+          "text-sidebar-foreground/45 hover:text-sidebar-foreground/70",
+          !sliding && "hover:bg-sidebar-accent",
           collapsed && "justify-center px-2"
         )}
       >
@@ -207,11 +215,14 @@ function NavLink({
       title={collapsed ? tr(item.label) : undefined}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
+      data-hover-target={sliding ? "" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+        "group relative flex items-center gap-3 py-2.5 text-sm font-medium",
+        sliding ? "pl-5 pr-3" : "px-3",
+        shape,
         "transition-colors duration-150",
         "text-sidebar-foreground/70 hover:text-sidebar-accent-foreground",
-        active ? "text-sidebar-accent-foreground" : "hover:bg-sidebar-accent",
+        active ? (look === "islands" ? "text-on-sun hover:text-on-sun" : "text-sidebar-accent-foreground") : !sliding && "hover:bg-sidebar-accent",
         collapsed && "justify-center px-2"
       )}
     >
@@ -220,10 +231,12 @@ function NavLink({
         <motion.span
           layoutId="sidebar-active-pill"
           transition={SPRING_SNAPPY}
-          className="absolute inset-0 rounded-lg bg-sidebar-accent"
+          className={cn("absolute inset-0", shape, look === "islands" ? "bg-sun" : "bg-sidebar-accent")}
           aria-hidden="true"
         >
-          <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-sun" />
+          {look === "islands" ? null : (
+            <span className={cn("absolute bg-sun", sliding ? "inset-y-3 left-2 w-1 rounded-full" : "inset-y-2 left-0 w-1 rounded-r-full")} />
+          )}
         </motion.span>
       ) : null}
       <span className="relative z-10 flex shrink-0">
@@ -242,7 +255,14 @@ function NavLink({
         )}
       </span>
       {!collapsed && (
-        <span className="relative z-10 truncate leading-none">{tr(item.label)}</span>
+        <span
+          className={cn(
+            "relative z-10 truncate leading-none",
+            look === "navy" && "transition-transform duration-200 ease-out motion-safe:group-hover:translate-x-1"
+          )}
+        >
+          {tr(item.label)}
+        </span>
       )}
       {showBadge && !collapsed && (
         <span
@@ -284,6 +304,26 @@ function UserAvatar({ initials, image }: { initials: string; image?: string | nu
     </div>
   );
 }
+
+/** Sidebar styles being compared (prototype: picked from localStorage `bb-sidebar-style`). */
+export type SidebarStyle = "today" | "card" | "islands" | "navy";
+
+function useSidebarStyle(): SidebarStyle {
+  return React.useSyncExternalStore(
+    subscribeNoop,
+    () => (localStorage.getItem("bb-sidebar-style") as SidebarStyle | null) ?? "today",
+    () => "today"
+  );
+}
+
+/** Prototype: the sidebar tokens repointed to the brand navy, in both themes. */
+const NAVY_VARS = {
+  "--sidebar": "var(--brand-navy)",
+  "--sidebar-foreground": "var(--on-brand-navy)",
+  "--sidebar-accent": "color-mix(in oklab, var(--on-brand-navy) 10%, transparent)",
+  "--sidebar-accent-foreground": "var(--on-brand-navy)",
+  "--sidebar-border": "transparent",
+} as React.CSSProperties;
 
 /** Store vuoto: distingue il render server (false) da quello client (true). */
 const subscribeNoop = () => () => {};
@@ -357,19 +397,16 @@ export function AppSidebar({
   // In modalità forceExpanded (drawer mobile) la sidebar è sempre espansa.
   const isCollapsed = forceExpanded ? false : collapsed;
 
-  return (
-    <aside
-      className={cn(
-        "flex h-full flex-col bg-sidebar border-r border-sidebar-border",
-        "transition-[width] duration-300 ease-in-out overflow-hidden",
-        isCollapsed ? "w-[64px]" : "w-[240px]"
-      )}
-      aria-label={tr("Navigazione principale")}
-    >
-      {/* ── Header: Logo / Brand (torna alla pagina iniziale) ── */}
+  const look = useSidebarStyle();
+  const floating = look !== "today";
+  const card = cn("bg-sidebar", floating && "rounded-[28px] border border-sidebar-border");
+  const rule = floating ? "" : "border-sidebar-border";
+
+  // Header: logo and brand (back to the start page).
+  const header = (
       <div
         className={cn(
-          "flex h-16 shrink-0 items-center border-b border-sidebar-border",
+          cn("flex h-16 shrink-0 items-center", !floating && "border-b", rule),
           isCollapsed ? "justify-center px-2" : "px-5"
         )}
       >
@@ -406,15 +443,21 @@ export function AppSidebar({
           )}
         </Link>
       </div>
+  );
 
-      {/* ── Navigazione ── */}
-      <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label={tr("Menu")}>
+  const navList = (
         <LayoutGroup id={navGroupId}>
-          <ul className="flex flex-col gap-0.5" role="list">
+          <HoverHighlight
+            mode={look === "islands" ? "stretch" : "follow"}
+            highlightClassName={cn("rounded-full", look === "navy" ? "bg-sidebar-accent/70" : "bg-sidebar-accent")}
+            className={floating ? "" : "contents"}
+          >
+          <ul className="relative flex flex-col gap-0.5" role="list">
             {withCountryLocks(items, productCountry).map((item) => {
               return (
                 <li key={item.href}>
                   <NavLink
+                    look={look}
                     item={item}
                     collapsed={isCollapsed}
                     active={
@@ -434,16 +477,19 @@ export function AppSidebar({
               );
             })}
           </ul>
+          </HoverHighlight>
         </LayoutGroup>
-        {extra ? (
-          <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose }}>{extra}</SidebarSlotProvider>
-        ) : null}
-      </nav>
+  );
 
-      {/* ── Footer: card utente + toggle tema + collapse button ── */}
+  const extraContent = extra ? (
+    <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose }}>{extra}</SidebarSlotProvider>
+  ) : null;
+
+  // Footer: user card, support, collapse button.
+  const footer = (
       <div
         className={cn(
-          "shrink-0 border-t border-sidebar-border",
+          cn("shrink-0", !floating && "border-t", rule),
           isCollapsed ? "px-2 py-3" : "px-4 py-3"
         )}
       >
@@ -562,6 +608,47 @@ export function AppSidebar({
           )}
         />
       </div>
+  );
+
+  const navyVars = look === "navy" ? NAVY_VARS : undefined;
+
+  if (look === "islands") {
+    return (
+      <div className={cn("flex h-full flex-col gap-3 p-3 pr-0 transition-[width] duration-300 ease-in-out", isCollapsed ? "w-[76px]" : "w-[252px]")}>
+        <div className={cn(card, "shrink-0 overflow-hidden")}>
+          {header}
+          <nav className="px-2 pb-3" aria-label={tr("Menu")}>{navList}</nav>
+        </div>
+        {extraContent ? (
+          <div className={cn(card, "sidebar-nav min-h-0 flex-1 overflow-y-auto px-2 py-1")}>{extraContent}</div>
+        ) : (
+          <div className="flex-1" />
+        )}
+        <div className={cn(card, "shrink-0 overflow-hidden")}>{footer}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("h-full", floating && "p-3 pr-0")}>
+    <aside
+      style={navyVars}
+      className={cn(
+        "flex h-full flex-col overflow-hidden",
+        card,
+        !floating && "border-r border-sidebar-border",
+        "transition-[width] duration-300 ease-in-out",
+        isCollapsed ? "w-[64px]" : "w-[240px]"
+      )}
+      aria-label={tr("Navigazione principale")}
+    >
+      {header}
+      <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label={tr("Menu")}>
+        {navList}
+        {extraContent}
+      </nav>
+      {footer}
     </aside>
+    </div>
   );
 }

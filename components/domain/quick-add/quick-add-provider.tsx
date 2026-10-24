@@ -25,14 +25,15 @@ import {
 } from "@/lib/quick-add/actions";
 import { cn } from "@/lib/utils";
 import { QuickAddChooser } from "./quick-add-chooser";
+import type { QuickAddPrefill } from "./prefill";
 
 const QuickAddForms = dynamic(() => import("./quick-add-forms").then((m) => m.QuickAddForms), { ssr: false });
 
 export interface QuickAddApi {
   /** Opens the chooser; from the sidebar `anchor` is its button, and on a tablet or computer the panel opens next to it. */
   open: (source: QuickAddSource, anchor?: HTMLElement | null) => void;
-  /** Opens one form directly, skipping the chooser. */
-  start: (id: QuickAddActionId) => void;
+  /** Opens one form directly, skipping the chooser; `prefill` gives it starting values. */
+  start: (id: QuickAddActionId, prefill?: QuickAddPrefill) => void;
 }
 
 const QuickAddContext = React.createContext<QuickAddApi | null>(null);
@@ -62,14 +63,16 @@ export function QuickAddProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [chooser, setChooser] = React.useState<{ open: boolean; anchor: DOMRect | null; source: QuickAddSource }>({ open: false, anchor: null, source: "barra" });
   const [form, setForm] = React.useState<QuickAddFormId | null>(null);
+  const [prefill, setPrefill] = React.useState<QuickAddPrefill | null>(null);
   // The forms' code loads at the first pick and then stays, so a closing form can animate out.
   const [formsLoaded, setFormsLoaded] = React.useState(false);
   const menu = React.useMemo(() => quickAddMenu(productCountry), [productCountry]);
 
   const start = React.useCallback(
-    (id: QuickAddActionId) => {
+    (id: QuickAddActionId, values?: QuickAddPrefill) => {
       if (isQuickAddForm(id)) {
         setFormsLoaded(true);
+        setPrefill(values ?? null);
         setForm(id);
       }
       else router.push(QUICK_ADD_PAGE_HREFS[id]);
@@ -132,7 +135,7 @@ export function QuickAddProvider({ children }: { children: React.ReactNode }) {
           />
         </DialogContent>
       </Dialog>
-      {formsLoaded ? <QuickAddForms form={form} onClose={() => setForm(null)} onSwitch={setForm} /> : null}
+      {formsLoaded ? <QuickAddForms form={form} prefill={prefill} onClose={() => setForm(null)} onSwitch={setForm} /> : null}
     </QuickAddContext.Provider>
   );
 }

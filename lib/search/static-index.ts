@@ -21,7 +21,21 @@ export interface StaticEntry {
   quickAdd?: string;
 }
 
-const page = (id: string, title: string, subtitle: string, href: string, keywords: string[] = []): StaticEntry => ({ id, group: "pagine", icon: "pagina", title, subtitle, href, keywords });
+/** Icon of a page: the one of its section in the menu, so «Budget del mese» looks like Liquidità. */
+const PAGE_ICONS: [prefix: string, icon: SearchIcon][] = [
+  ["/panoramica", "panoramica"],
+  ["/liquidita", "liquidita"],
+  ["/categorizza", "liquidita"],
+  ["/importazioni", "liquidita"],
+  ["/investimenti", "titolo"],
+  ["/pensione", "pensione"],
+  ["/debiti", "debito"],
+  ["/analitiche", "analitiche"],
+  ["/aiuto", "aiuto"],
+];
+const pageIcon = (href: string): SearchIcon => PAGE_ICONS.find(([prefix]) => href.startsWith(prefix))?.[1] ?? "pagina";
+
+const page = (id: string, title: string, subtitle: string, href: string, keywords: string[] = []): StaticEntry => ({ id, group: "pagine", icon: pageIcon(href), title, subtitle, href, keywords });
 const setting = (id: string, title: string, href: string, keywords: string[] = []): StaticEntry => ({ id, group: "pagine", icon: "impostazione", title, subtitle: "Impostazioni", href, keywords });
 
 /** Every screen and setting worth jumping to. */
@@ -81,4 +95,18 @@ export function searchStatic(query: string, country: string, translate: (key: st
     hits.push({ key: `${entry.group}:${entry.id}`, group: entry.group, icon: entry.icon, title, subtitle: translate(entry.subtitle), href: entry.quickAdd ? undefined : entry.href, quickAdd: entry.quickAdd, score });
   }
   return hits.sort((a, b) => b.score - a.score);
+}
+
+/** Every entry of one kind, for a filter chosen before typing (all settings, all «Aggiungi» actions). */
+export function staticEntriesOf(kind: "impostazione" | "azione", country: string, translate: (key: string) => string): SearchHit[] {
+  return STATIC_ENTRIES.filter((entry) => entry.icon === kind && (!entry.href || isCountryPathAvailable(country, entry.href.split("?")[0]))).map((entry) => ({
+    key: `${entry.group}:${entry.id}`,
+    group: entry.group,
+    icon: entry.icon,
+    title: translate(entry.title),
+    subtitle: translate(entry.subtitle),
+    href: entry.quickAdd ? undefined : entry.href,
+    quickAdd: entry.quickAdd,
+    score: 0,
+  }));
 }

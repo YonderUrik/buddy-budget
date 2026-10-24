@@ -8,7 +8,7 @@ import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { FormDialogContent } from "@/components/domain/shared";
 import { Dialog } from "@/components/ui/dialog";
 import type { Category } from "@/lib/db/schema/categories";
-import { AddTransactionForm } from "./add-transaction-form";
+import { AddTransactionForm, type TransactionPrefill } from "./add-transaction-form";
 
 export interface AddTransactionDialogProps {
   open: boolean;
@@ -17,15 +17,18 @@ export interface AddTransactionDialogProps {
   currency: string;
   /** Opens «Nuovo conto» instead, for a user without a manual account. */
   onAddAccount?: () => void;
+  /** Starting values; a new object starts the form again from them. */
+  initial?: TransactionPrefill;
 }
 
-export function AddTransactionDialog({ open, onOpenChange, categories, currency, onAddAccount }: AddTransactionDialogProps) {
+export function AddTransactionDialog({ open, onOpenChange, categories, currency, onAddAccount, initial }: AddTransactionDialogProps) {
+  const formKey = initial ? JSON.stringify(initial) : "nuovo";
   const { t: tr } = useLocalization();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FormDialogContent>
         <PanelDialogHeader className="pr-10" icon={ReceiptTextIcon} title={tr("Nuovo movimento")} description={tr("Una spesa o un'entrata su un conto manuale.")} />
-        <AddTransactionForm categories={categories} currency={currency} onSuccess={() => onOpenChange(false)} onAddAccount={onAddAccount} />
+        <AddTransactionForm key={formKey} categories={categories} currency={currency} onSuccess={() => onOpenChange(false)} onAddAccount={onAddAccount} initial={initial} />
       </FormDialogContent>
     </Dialog>
   );

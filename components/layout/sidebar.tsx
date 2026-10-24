@@ -459,7 +459,8 @@ export function AppSidebar({
       </div>
     ) : null;
 
-  // Search under «Aggiungi»: looks like a field, opens the search panel.
+  // Search under «Aggiungi»: looks like a field, opens the search panel. ⌘K on Apple devices, Ctrl K elsewhere.
+  const shortcutLabel = React.useSyncExternalStore(subscribeNoop, () => (/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"), () => "⌘K");
   const searchRow =
     searchAction ? (
       <div className={cn("px-2 pb-2", isCollapsed && "flex justify-center")}>
@@ -482,7 +483,7 @@ export function AppSidebar({
           {isCollapsed ? null : (
             <>
               <span className="min-w-0 flex-1 truncate text-left">{tr(searchAction.label)}</span>
-              <kbd className="flex h-6 shrink-0 items-center rounded-full bg-sidebar-accent px-2 font-sans text-xs text-sidebar-foreground/70">⌘K</kbd>
+              <kbd className="flex h-6 shrink-0 items-center rounded-full bg-sidebar-accent px-2 font-sans text-xs text-sidebar-foreground/70">{shortcutLabel}</kbd>
             </>
           )}
         </button>

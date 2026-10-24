@@ -24,6 +24,7 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "anali
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 import type { SearchGroupId } from "@/lib/search/types";
+import type { CommandKind, CommandSource } from "@/lib/commands/types";
 
 export interface ProductEvents {
   financial_sale_simulated: { country: "DE" };
@@ -284,6 +285,10 @@ export interface ProductEvents {
   search_opened: { source: "sidebar" | "barra" | "tastiera" };
   /** A search result opened; `group`: what it was, `position`: its row (0 = top), `length`: characters typed (never the text). */
   search_result_opened: { group: SearchGroupId; position: number; length: number };
+  /** A sentence typed in «Cerca» opened its «Aggiungi» form; `source`: read by the rules or by the AI, `complete`: nothing was missing. */
+  search_command_opened: { kind: CommandKind; source: CommandSource; complete: boolean };
+  /** «Chiedi all'AI» asked in «Cerca», with what came back (never the sentence). */
+  search_ai_asked: { outcome: string };
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */

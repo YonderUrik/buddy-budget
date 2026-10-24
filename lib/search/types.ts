@@ -1,5 +1,7 @@
 /** Shapes shared by the search API and the palette. */
 
+import type { Instrument } from "@/lib/db/schema/investments";
+
 export const SEARCH_GROUP_IDS = ["movimenti", "conti", "titoli", "categorie", "abbonamenti", "debiti", "obiettivi", "pensione", "pagine", "azioni"] as const;
 export type SearchGroupId = (typeof SEARCH_GROUP_IDS)[number];
 
@@ -12,6 +14,10 @@ export type SearchIcon =
   | "debito"
   | "obiettivo"
   | "pensione"
+  | "panoramica"
+  | "liquidita"
+  | "analitiche"
+  | "aiuto"
   | "pagina"
   | "impostazione"
   | "azione";
@@ -33,6 +39,8 @@ export interface SearchHit {
   href?: string;
   /** Opens «Aggiungi» on that form instead of going to a page. */
   quickAdd?: string;
+  /** The security itself (public data), so a sentence like «comprato 3 Apple» can open the operation form on it. */
+  instrument?: Instrument;
   /** Logo of the merchant or broker, when known. */
   logoUrl?: string | null;
   /** 3 best, 1 weakest: orders the groups and picks the top hit. */

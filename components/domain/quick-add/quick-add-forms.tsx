@@ -18,6 +18,7 @@ import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import type { QuickAddFormId } from "@/lib/quick-add/actions";
+import type { QuickAddPrefill } from "./prefill";
 
 /** A new operation starts from no instrument. */
 const NEW_OPERATION = { instrument: null };
@@ -28,10 +29,12 @@ export interface QuickAddFormsProps {
   onClose: () => void;
   /** Another form from inside this one (e.g. «Aggiungi un conto» from a movement without accounts). */
   onSwitch: (form: QuickAddFormId) => void;
+  /** Starting values for the form (a sentence typed in «Cerca»). */
+  prefill?: QuickAddPrefill | null;
 }
 
 /** The form picked in «Aggiungi», over whatever page is open. */
-export function QuickAddForms({ form, onClose, onSwitch }: QuickAddFormsProps) {
+export function QuickAddForms({ form, onClose, onSwitch, prefill }: QuickAddFormsProps) {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { data: categories } = useCategoriesQuery();
@@ -45,10 +48,10 @@ export function QuickAddForms({ form, onClose, onSwitch }: QuickAddFormsProps) {
 
   return (
     <>
-      <AddTransactionDialog open={form === "movimento"} onOpenChange={change} categories={categories ?? []} currency={currency} onAddAccount={() => onSwitch("conto")} />
+      <AddTransactionDialog open={form === "movimento"} onOpenChange={change} categories={categories ?? []} currency={currency} onAddAccount={() => onSwitch("conto")} initial={prefill?.movimento} />
       <AddAccountDialog open={form === "conto"} onOpenChange={change} currency={currency} />
       <AddSubscriptionDialog open={form === "abbonamento"} onOpenChange={change} categories={categories ?? []} today={today} />
-      {operationUsed ? <RegisterOperationDialog initial={form === "operazione" ? NEW_OPERATION : null} onClose={onClose} /> : null}
+      {operationUsed ? <RegisterOperationDialog key={prefill?.operazione ? JSON.stringify({ ...prefill.operazione, instrument: prefill.operazione.instrument?.id ?? null }) : "nuova"} initial={form === "operazione" ? (prefill?.operazione ?? NEW_OPERATION) : null} onClose={onClose} /> : null}
       <InvestmentImportDialog open={form === "rendiconto"} onOpenChange={change} currency={currency} onManageImports={() => setImportsOpen(true)} />
       <ImportManagementDialog open={importsOpen} onOpenChange={setImportsOpen} />
       <AddDebtDialog open={form === "debito"} onOpenChange={change} currency={currency} />

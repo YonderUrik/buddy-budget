@@ -61,6 +61,10 @@ export interface RegisterOperationInitial {
   /** Commissioni e cambio salvati, nella modifica di un'operazione. */
   fees?: number | null;
   fxRate?: number | null;
+  /** The price was written by the user (a sentence in «Cerca»): it wins over the market price of the date. */
+  priceFromUser?: boolean;
+  /** Name to search when no instrument is known yet (the picker opens with it). */
+  instrumentQuery?: string;
 }
 
 /** Operazione che il form sta modificando. */
@@ -99,7 +103,7 @@ export function RegisterOperationForm({ currency, initial, heldInstruments = [],
   const [quantity, setQuantity] = React.useState(numberText(initial?.quantity, formattingLocale));
   // null = il campo segue il prezzo proposto; una stringa = valore scritto dall'utente.
   // In modifica parte dal prezzo salvato, non da quello di mercato della data.
-  const [priceInput, setPriceInput] = React.useState<string | null>(editing ? numberText(initial?.price, formattingLocale) : null);
+  const [priceInput, setPriceInput] = React.useState<string | null>(editing || initial?.priceFromUser ? numberText(initial?.price, formattingLocale) : null);
   const [gross, setGross] = React.useState(numberText(roundCents(initial?.grossAmount), formattingLocale));
   const [fees, setFees] = React.useState(numberText(initial?.fees, formattingLocale));
   const [taxes, setTaxes] = React.useState(numberText(roundCents(initial?.taxes), formattingLocale));
@@ -175,7 +179,7 @@ export function RegisterOperationForm({ currency, initial, heldInstruments = [],
       {editing ? (
         <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-foreground">{instrument?.name ?? tr("Strumento")}</p>
       ) : (
-        <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={heldInstruments} />
+        <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={heldInstruments} initialQuery={initial?.instrumentQuery} />
       )}
     </Field>
   );

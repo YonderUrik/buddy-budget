@@ -35,6 +35,8 @@ export interface LandingEvents {
   catalog_area_selected: { area: FeatureArea };
   theme_toggled: { theme: "light" | "dark" };
   source_link_click: { location: "footer" | "sezione" };
+  /** A link to one of the brand's social profiles. */
+  social_link_click: { network: "instagram"; location: "footer" };
   /** Home, «Sotto il cofano»: the self-hosting commands copied. */
   self_host_command_copied: undefined;
   /** «‹» back link above the title of an internal page. */

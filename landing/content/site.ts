@@ -12,6 +12,8 @@ export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buddybudg
 export const SOURCE_URL = process.env.NEXT_PUBLIC_SOURCE_URL ?? "";
 /** Public status page (UptimeRobot, free plan: not on our domain). */
 export const STATUS_URL = process.env.NEXT_PUBLIC_STATUS_URL ?? "https://stats.uptimerobot.com/BCuTWm0Ukg";
+/** The brand's social profiles (today only Instagram): footer link and `sameAs` of the organisation's structured data. */
+export const INSTAGRAM_URL = "https://www.instagram.com/yourbuddybudget/";
 /** License of the code, shown next to the link. */
 export const SOURCE_LICENSE = "AGPL-3.0";
 
@@ -20,7 +22,7 @@ export const SITE_NAME = "BuddyBudget";
  * Profiles BuddyBudget owns, for `sameAs` in the Organization structured data: only real accounts of the project. The
  * Buy Me a Coffee page stays off the landing (decision of 2026-10-17); add LinkedIn or Product Hunt here once they exist.
  */
-export const SAME_AS: readonly string[] = ["https://github.com/YonderUrik/buddy-budget", "https://www.instagram.com/yourbuddybudget/"];
+export const SAME_AS: readonly string[] = ["https://github.com/YonderUrik/buddy-budget", INSTAGRAM_URL];
 /** Home title: brand + the promise + the words people search for (conti, investimenti, pensione, mutuo), 30-60 characters (longer titles are cut in results). */
 export const SITE_TITLE = "BuddyBudget: conti, investimenti, pensione e mutuo";
 export const SITE_DESCRIPTION =

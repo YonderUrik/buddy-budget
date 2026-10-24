@@ -22,7 +22,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import type * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, MessageCircleQuestion } from "lucide-react";
+import { Menu, MessageCircleQuestion, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { BAR_RESIZE_TRANSITION } from "@/lib/motion/springs";
@@ -43,6 +43,8 @@ interface MobileTopbarProps {
    * to render. An element marked `data-topbar-back` takes the brand's place too, so a long label has room.
    */
   leading?: (fallback: React.ReactNode) => React.ReactNode;
+  /** Opens the app-wide search: a magnifier on the right, before «Scrivici». */
+  onSearch?: (anchor: HTMLElement) => void;
   /** Folds the row away (the user is reading down the page), leaving only the status bar strip. Default: false. */
   collapsed?: boolean;
 }
@@ -50,7 +52,7 @@ interface MobileTopbarProps {
 /** Height of the bar's row (rem), under the status bar strip: the iOS navigation bar height. */
 const MOBILE_TOPBAR_ROW_REM = 2.75;
 
-export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true, onOpenSupport, leading, collapsed = false }: MobileTopbarProps) {
+export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true, onOpenSupport, onSearch, leading, collapsed = false }: MobileTopbarProps) {
   const { t: tr } = useLocalization();
   const reduced = useReducedMotion() ?? false;
   const { openMobile } = useSidebar();
@@ -113,18 +115,31 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
         {brandName}
       </Link>
 
-      {onOpenSupport ? (
-        <button
-          type="button"
-          onClick={onOpenSupport}
-          className="col-start-3 row-start-1 flex size-9 items-center justify-center justify-self-end rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          aria-label={tr("Scrivici: segnala un problema, una domanda o un'idea")}
-        >
-          <MessageCircleQuestion className="size-5" aria-hidden="true" />
-        </button>
-      ) : (
-        <span className="col-start-3 row-start-1 size-9 justify-self-end" aria-hidden="true" />
-      )}
+      <div className="col-start-3 row-start-1 flex items-center gap-1 justify-self-end">
+        {onSearch ? (
+          <button
+            type="button"
+            onClick={(event) => onSearch(event.currentTarget)}
+            className="flex size-9 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            aria-label={tr("Cerca")}
+            aria-haspopup="dialog"
+          >
+            <Search className="size-5" aria-hidden="true" />
+          </button>
+        ) : null}
+        {onOpenSupport ? (
+          <button
+            type="button"
+            onClick={onOpenSupport}
+            className="flex size-9 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            aria-label={tr("Scrivici: segnala un problema, una domanda o un'idea")}
+          >
+            <MessageCircleQuestion className="size-5" aria-hidden="true" />
+          </button>
+        ) : (
+          <span className="size-9" aria-hidden="true" />
+        )}
+      </div>
       </motion.div>
     </header>
   );

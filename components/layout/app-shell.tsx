@@ -67,9 +67,11 @@ interface InnerShellProps {
   navBadges?: Record<string, NavBadge>;
   onOpenSupport?: () => void;
   addAction?: ShellAction;
+  /** App-wide search: a field in the sidebar, a magnifier in the phone top bar. */
+  searchAction?: ShellAction;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, addAction }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, addAction, searchAction }: InnerShellProps) {
   const { t: tr } = useLocalization();
   const { productCountry } = useLocalization();
   const navigation = withCountryLocks(NAV_ITEMS, productCountry);
@@ -115,7 +117,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} leading={topbarLeading} collapsed={scrolledDown} />
+      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} onSearch={searchAction ? (el) => searchAction.onClick(el, "bottom-bar") : undefined} leading={topbarLeading} collapsed={scrolledDown} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -127,7 +129,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} addAction={addAction} />
+          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} addAction={addAction} searchAction={searchAction} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -237,16 +239,18 @@ interface AppShellProps {
   contentHeader?: React.ReactNode;
   /** Main action always at hand (e.g. «Aggiungi»): in the bottom bar on the phone, in the sidebar on desktop. */
   addAction?: ShellAction;
+  /** App-wide search: a field in the sidebar, a magnifier in the phone top bar. */
+  searchAction?: ShellAction;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, addAction }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport, topbarLeading, contentHeader, addAction, searchAction }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader} addAction={addAction}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport} topbarLeading={topbarLeading} contentHeader={contentHeader} addAction={addAction} searchAction={searchAction}>
         {children}
       </InnerShell>
     </SidebarProvider>

@@ -4,7 +4,8 @@ import * as React from "react";
 import { AppShell, type ShellAction } from "@/components/layout";
 import { useQuickReport } from "@/components/domain/support";
 import { useQuickAdd } from "@/components/domain/quick-add";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { useAppSearch } from "@/components/domain/search";
 import { PageBackBar, TopBarBack } from "@/components/domain/shared";
 
 /** «‹» back button in the phone top bar, in place of the brand when there is somewhere to go back to. */
@@ -29,6 +30,11 @@ export function AttentionShell({ children, sidebarExtra }: { children: React.Rea
         : undefined,
     [quickAdd]
   );
+  const search = useAppSearch();
+  const searchAction = React.useMemo<ShellAction | undefined>(
+    () => (search ? { label: "Cerca", icon: Search, onClick: (_anchor, origin) => search.open(origin === "sidebar" ? "sidebar" : "barra") } : undefined),
+    [search]
+  );
   return (
     <AppShell
       sidebarExtra={sidebarExtra}
@@ -36,6 +42,7 @@ export function AttentionShell({ children, sidebarExtra }: { children: React.Rea
       topbarLeading={renderTopBarBack}
       contentHeader={<PageBackBar />}
       addAction={addAction}
+      searchAction={searchAction}
     >
       {children}
     </AppShell>

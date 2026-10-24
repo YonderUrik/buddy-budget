@@ -337,6 +337,8 @@ interface AppSidebarProps {
   onOpenSupport?: () => void;
   /** Main action (e.g. «Aggiungi»): a pill under the logo (a yellow round button when the sidebar is collapsed). */
   addAction?: ShellAction;
+  /** App-wide search: a field-like row under «Aggiungi» with its keyboard shortcut (a round button when collapsed). */
+  searchAction?: ShellAction;
 }
 
 export function AppSidebar({
@@ -350,6 +352,7 @@ export function AppSidebar({
   extra,
   onOpenSupport,
   addAction,
+  searchAction,
 }: AppSidebarProps) {
   const { t: tr } = useLocalization();
   const { productCountry } = useLocalization();
@@ -456,6 +459,36 @@ export function AppSidebar({
       </div>
     ) : null;
 
+  // Search under «Aggiungi»: looks like a field, opens the search panel.
+  const searchRow =
+    searchAction ? (
+      <div className={cn("px-2 pb-2", isCollapsed && "flex justify-center")}>
+        <button
+          type="button"
+          onClick={(event) => {
+            searchAction.onClick(event.currentTarget, "sidebar");
+            onClose?.();
+          }}
+          aria-label={tr(searchAction.label)}
+          title={isCollapsed ? tr(searchAction.label) : undefined}
+          aria-haspopup="dialog"
+          aria-keyshortcuts="Meta+K Control+K"
+          className={cn(
+            "flex cursor-pointer items-center rounded-full text-sm text-sidebar-foreground/70 transition-colors duration-150 hover:text-sidebar-foreground",
+            isCollapsed ? "size-11 justify-center hover:bg-sidebar-accent" : "h-10 w-full gap-2.5 bg-sidebar-accent/45 pr-2 pl-3.5 hover:bg-sidebar-accent/70"
+          )}
+        >
+          <searchAction.icon className="size-[18px] shrink-0" aria-hidden="true" />
+          {isCollapsed ? null : (
+            <>
+              <span className="min-w-0 flex-1 truncate text-left">{tr(searchAction.label)}</span>
+              <kbd className="flex h-6 shrink-0 items-center rounded-full bg-sidebar-accent px-2 font-sans text-xs text-sidebar-foreground/70">⌘K</kbd>
+            </>
+          )}
+        </button>
+      </div>
+    ) : null;
+
   const navList = (
     <LayoutGroup id={navGroupId}>
       <HoverHighlight mode="stretch" highlightClassName="rounded-full bg-sidebar-accent">
@@ -554,6 +587,7 @@ export function AppSidebar({
         >
           {header}
           {addRow}
+          {searchRow}
           <nav className="px-2 pb-3" aria-label={tr("Menu")}>
             {navList}
           </nav>

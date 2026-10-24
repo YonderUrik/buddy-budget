@@ -23,6 +23,8 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "anali
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
+import type { SearchGroupId } from "@/lib/search/types";
+
 export interface ProductEvents {
   financial_sale_simulated: { country: "DE" };
   financial_plan_saved: { country: "DE"; section: "tax" | "income" | "pension" | "retirement" };
@@ -278,6 +280,10 @@ export interface ProductEvents {
   quick_add_opened: { source: QuickAddSource; area: QuickAddArea };
   /** Something picked in «Aggiungi»; `here`: it belongs to the section the user was on. The form's own events follow. */
   quick_add_chosen: { action: QuickAddActionId; source: QuickAddSource; here: boolean };
+  /** App-wide search opened: from the sidebar, the phone top bar or the keyboard shortcut (⌘K / Ctrl+K / «/»). */
+  search_opened: { source: "sidebar" | "barra" | "tastiera" };
+  /** A search result opened; `group`: what it was, `position`: its row (0 = top), `length`: characters typed (never the text). */
+  search_result_opened: { group: SearchGroupId; position: number; length: number };
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */

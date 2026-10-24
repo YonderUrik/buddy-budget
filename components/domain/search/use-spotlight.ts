@@ -14,7 +14,7 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import { useLocalization } from "@/lib/localization/provider";
 import { track } from "@/lib/analytics";
 import { arrangeHits, SEARCH_GROUP_TITLES } from "@/lib/search/groups";
-import { foldText } from "@/lib/search/normalize";
+import { foldText, matchScore } from "@/lib/search/normalize";
 import { searchStatic, staticEntriesOf } from "@/lib/search/static-index";
 import type { SearchGroupId, SearchHit, SearchResponse } from "@/lib/search/types";
 
@@ -103,7 +103,10 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
   const needsInstrument = draft !== null && (draft.kind === "acquisto" || draft.kind === "vendita" || draft.kind === "dividendo");
   const subject = needsInstrument ? foldText(draft.subject) : "";
   const subjectSearch = useSearch(subject);
-  const instrument = needsInstrument ? (subjectSearch.data?.hits.find((h) => h.group === "titoli" && h.instrument)?.instrument ?? null) : null;
+  // Only a security whose name starts with what was typed («Ap» is not SAP), also while an older answer is still shown.
+  const instrument = needsInstrument
+    ? (subjectSearch.data?.hits.find((h) => h.group === "titoli" && h.instrument && Math.max(matchScore(h.title, subject), h.instrument.isin?.toLowerCase() === subject ? 3 : 0) >= 2)?.instrument ?? null)
+    : null;
 
   const askAi = useMutation({
     mutationFn: async (sentence: string) => {

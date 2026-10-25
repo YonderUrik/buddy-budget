@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCommand, readNumber } from "./parse";
+import { isQuestion, parseCommand, readNumber } from "./parse";
 import { missingFields } from "./types";
 
 // Saturday 24 October 2026.
@@ -28,6 +28,36 @@ describe("parseCommand", () => {
     expect(parse("received 1,250.00 from Acme on 01/10")).toMatchObject({ kind: "entrata", amount: 1250, subject: "Acme", date: "2026-10-01", language: "en" });
     expect(parse("dividendo Apple 12,40 il 15/09")).toMatchObject({ kind: "dividendo", amount: 12.4, subject: "Apple", date: "2026-09-15" });
     expect(parse("l'altro ieri pagato 30 euro dall'idraulico")).toMatchObject({ kind: "spesa", amount: 30, subject: "Idraulico", date: "2026-10-22" });
+  });
+
+  it("reads everyday sentences in the three languages", () => {
+    expect(parse("pagato 12 € al bar ieri")).toMatchObject({ kind: "spesa", amount: 12, currency: "EUR", subject: "Bar", date: "2026-10-23", language: "it" });
+    expect(parse("bonifico ricevuto da Marco 50 €")).toMatchObject({ kind: "entrata", amount: 50, subject: "Bonifico da Marco" });
+    expect(parse("ho venduto 2 Tesla a 250 dollari il 3 ottobre")).toMatchObject({ kind: "vendita", quantity: 2, price: 250, currency: "USD", subject: "Tesla", date: "2026-10-03" });
+    expect(parse("paid 12 at Starbucks yesterday")).toMatchObject({ kind: "spesa", amount: 12, subject: "Starbucks", date: "2026-10-23", language: "en" });
+    expect(parse("spent €45.90 at Tesco today")).toMatchObject({ kind: "spesa", amount: 45.9, currency: "EUR", subject: "Tesco", date: "2026-10-24" });
+    expect(parse("dividend from Apple 12.40")).toMatchObject({ kind: "dividendo", amount: 12.4, subject: "Apple", language: "en" });
+    expect(parse("45,90 € bei Lidl ausgegeben")).toMatchObject({ kind: "spesa", amount: 45.9, subject: "Lidl", language: "de" });
+    expect(parse("Dividende Apple 12,40 €")).toMatchObject({ kind: "dividendo", amount: 12.4, subject: "Apple", language: "de" });
+  });
+
+  it("names a movement after its noun when the verb repeats it", () => {
+    expect(parse("Gehalt 2.300 € erhalten")).toMatchObject({ kind: "entrata", amount: 2300, subject: "Gehalt", language: "de" });
+    expect(parse("ricevuto lo stipendio 2.300 €")).toMatchObject({ kind: "entrata", amount: 2300, subject: "Stipendio" });
+  });
+
+  it("reads last week's weekday", () => {
+    expect(parse("I paid 30 dollars to the plumber last monday")).toMatchObject({ amount: 30, currency: "USD", subject: "Plumber", date: "2026-10-19" });
+    expect(parse("pagato 20 € dal fornaio sabato scorso")).toMatchObject({ subject: "Fornaio", date: "2026-10-17" });
+    expect(parse("pagato 20 € dal fornaio sabato")?.date).toBe("2026-10-24");
+    expect(parse("letzten Montag 15 € bei Edeka bezahlt")).toMatchObject({ subject: "Edeka", date: "2026-10-19" });
+  });
+
+  it("leaves questions to the search", () => {
+    expect(parse("quanto ho speso a ottobre")).toBeNull();
+    expect(parse("how much did I spend on groceries")).toBeNull();
+    expect(parse("wie viel habe ich bei Rewe ausgegeben")).toBeNull();
+    expect(parse("ho pagato l'affitto?")).toBeNull();
   });
 
   it("guesses a spending from an amount with a currency and a name", () => {
@@ -68,5 +98,15 @@ describe("readNumber", () => {
     expect(readNumber("45,90", "it")).toBe(45.9);
     expect(readNumber("1.234,56", "de")).toBe(1234.56);
     expect(readNumber("99999999", "it")).toBeNull();
+  });
+});
+
+describe("isQuestion", () => {
+  it("spots a question by its first word or its mark, in any of the three languages", () => {
+    expect(isQuestion("Quanto ho speso")).toBe(true);
+    expect(isQuestion("  what did I buy")).toBe(true);
+    expect(isQuestion("Wann kam das Gehalt")).toBe(true);
+    expect(isQuestion("speso 20 €?")).toBe(true);
+    expect(isQuestion("pagato 20 € al bar")).toBe(false);
   });
 });

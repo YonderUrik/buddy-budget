@@ -59,6 +59,16 @@ const EDGE_WORDS = new Set([
   "von", "vom", "bei", "beim", "im", "fur", "der", "die", "das", "den", "dem", "ein", "eine", "einen", "zu", "zum", "zur", "mit", "am", "an",
 ]);
 
+/** First words of a question («quanto ho speso a ottobre?»): a question is a search, never something to add. */
+const QUESTION_WORDS = new Set([
+  "quanto", "quanta", "quanti", "quante", "quando", "dove", "cosa", "perche", "quale", "quali", "qual", "chi",
+  "how", "what", "when", "where", "which", "why", "who",
+  "wie", "wieviel", "wo", "was", "wann", "welche", "welcher", "welches", "warum", "wer",
+]);
+
+/** Words that turn a weekday into the one of last week («lunedì scorso», «last monday», «letzten Montag»). */
+const LAST_WORDS = new Set(["scorso", "scorsa", "last", "letzten", "letzter", "letzte", "vergangenen"]);
+
 /** Units after a quantity («3 azioni», «10 shares», «5 Stück»). */
 const UNITS = new Set(["azioni", "azione", "quote", "quota", "titoli", "pezzi", "pz", "shares", "share", "units", "unit", "stuck", "stk", "aktien", "aktie", "anteile", "anteil"]);
 /** Words that make the next number a price per unit («a 50», «at 50», «@ 50», «zu 50»). */
@@ -180,7 +190,11 @@ function takeDate(tokens: Token[], today: Date): string {
     const weekday = WEEKDAYS.findIndex((names) => names.includes(token.folded));
     if (weekday >= 0) {
       token.used = true;
-      return isoDate(daysBefore(today, (today.getDay() - weekday + 7) % 7));
+      const index = tokens.indexOf(token);
+      const last = [tokens[index - 1], tokens[index + 1]].find((near) => near && !near.used && LAST_WORDS.has(near.folded));
+      if (last) last.used = true;
+      const daysAgo = (today.getDay() - weekday + 7) % 7;
+      return isoDate(daysBefore(today, daysAgo === 0 && last ? 7 : daysAgo));
     }
     const iso = token.folded.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (iso) {
@@ -222,19 +236,29 @@ function takeDate(tokens: Token[], today: Date): string {
   return isoDate(today);
 }
 
-/** The first verb or noun of any language, with its kind and language; marks it used. */
+/**
+ * The first verb or noun of any language, with its kind and language. Every other word of the same kind is used up too
+ * («Gehalt 2.300 € erhalten», «ricevuto lo stipendio»), and a descriptive noun among them names the movement.
+ */
 function takeVerb(tokens: Token[]): { kind: CommandKind; language: CommandLanguage; noun: string | null } | null {
   for (const token of tokens) {
     for (const language of ["it", "en", "de"] as const) {
       for (const [kind, words] of Object.entries(VERBS[language]) as Array<[CommandKind, string[]]>) {
-        if (words.includes(token.folded)) {
-          token.used = true;
-          return { kind, language, noun: DESCRIPTIVE_NOUNS.has(token.folded) ? token.raw : null };
-        }
+        if (!words.includes(token.folded)) continue;
+        const sameKind = tokens.filter((other) => !other.used && (["it", "en", "de"] as const).some((l) => VERBS[l][kind].includes(other.folded)));
+        for (const other of sameKind) other.used = true;
+        return { kind, language, noun: sameKind.find((other) => DESCRIPTIVE_NOUNS.has(other.folded))?.raw ?? null };
       }
     }
   }
   return null;
+}
+
+/** A question («quanto ho speso a ottobre?», «how much did I spend»): searched, never read as something to add. */
+export function isQuestion(text: string): boolean {
+  if (text.includes("?")) return true;
+  const first = text.trim().split(/\s+/)[0] ?? "";
+  return QUESTION_WORDS.has(fold(first));
 }
 
 /** Guesses the language of a sentence without a verb from its little words (Italian by default). */
@@ -247,7 +271,7 @@ function guessLanguage(tokens: Token[]): CommandLanguage {
 
 /** Reads `text` (at most `COMMAND_MAX_LENGTH` characters) into a draft, or null when it does not look like something to add. */
 export function parseCommand(text: string, today = new Date()): CommandDraft | null {
-  if (text.length > COMMAND_MAX_LENGTH) return null;
+  if (text.length > COMMAND_MAX_LENGTH || isQuestion(text)) return null;
   const tokens = tokenize(text);
   if (tokens.length < 2) return null;
   const verb = takeVerb(tokens);
@@ -301,7 +325,9 @@ export function parseCommand(text: string, today = new Date()): CommandDraft | n
   while (rest.length > 0 && EDGE_WORDS.has(rest[rest.length - 1].folded)) rest.pop();
   let subject = rest.map((token) => token.raw).join(" ").replace(/' /g, "'").trim();
   if (subject === "" && verb?.noun) subject = verb.noun.charAt(0).toLocaleUpperCase() + verb.noun.slice(1);
-  if (subject !== "" && subject === subject.toLocaleLowerCase()) subject = subject.charAt(0).toLocaleUpperCase() + subject.slice(1);
+  // «bonifico da Marco» → «Bonifico da Marco», while a name written with its own capitals («iPhone», «eBay») stays as it is.
+  const firstWord = subject.split(" ")[0];
+  if (firstWord !== "" && firstWord === firstWord.toLocaleLowerCase()) subject = subject.charAt(0).toLocaleUpperCase() + subject.slice(1);
 
   return { kind: verb?.kind ?? "spesa", amount, quantity, price, currency, date, subject: subject.slice(0, 60), language, source: "regole", guessed: verb === null };
 }

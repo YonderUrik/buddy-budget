@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { parseCommand, type CommandDraft } from "@/lib/commands";
+import { isQuestion, parseCommand, type CommandDraft } from "@/lib/commands";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { useLocalization } from "@/lib/localization/provider";
 import { track } from "@/lib/analytics";
@@ -127,7 +127,7 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
   });
 
   const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const offerAi = !filter && (draft === null || draft.guessed) && words >= AI_MIN_WORDS && text.trim().length >= AI_MIN_LENGTH && aiForText?.status !== "ok";
+  const offerAi = !filter && (draft === null || draft.guessed) && !isQuestion(text) && words >= AI_MIN_WORDS && text.trim().length >= AI_MIN_LENGTH && aiForText?.status !== "ok";
 
   const blocks = React.useMemo<SpotlightBlock[]>(() => {
     if (query === "") {

@@ -2,10 +2,10 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * «Assistente per le categorie» section (name quoted by the privacy policy): where the app uses AI (summary), the explicit consent (off by default) to send the
- * cleaned merchant name to an external service for category proposals, and the choice to let safe proposals (90% and
- * up, from past choices or from the AI) apply on their own, listed in Categorizza → «Messe dall'app». Only the AI rows
- * carry the «Usa l'AI» tag.
+ * «Assistente AI» section (name quoted by the privacy policy): where the app uses AI (summary), the explicit consent (off
+ * by default) to send the cleaned merchant name to an external service for category proposals and, on a tap of «Chiedi
+ * all'AI» in «Cerca», the sentence typed there; and the choice to let safe proposals (70% and up, from past choices or
+ * from the AI) apply on their own, listed in Categorizza → «Messe dall'app». Only the AI rows carry the «Usa l'AI» tag.
  */
 
 import { AiCategorizationInstructions } from "./ai-categorization-instructions";
@@ -29,10 +29,10 @@ export function AiCategorizationSection() {
   return (
     <SettingsSection
       id="impostazioni-assistente-categorie"
-      title={tr("Assistente per le categorie")}
+      title={tr("Assistente AI")}
       icon={Sparkles}
       preview={<CategoryProposalPreview />}
-      description={tr("Propone una categoria per i movimenti nuovi di sincronizzazioni e importazioni. Quelle in dubbio le scegli tu; se vuoi, quando è abbastanza sicura l'app la mette da sola e la ritrovi in Categorizza.")}
+      description={tr("Propone una categoria per i movimenti nuovi di sincronizzazioni e importazioni e, in «Cerca», legge le frasi che le regole non capiscono quando tocchi «Chiedi all'AI». Le categorie in dubbio le scegli tu; se vuoi, quando è abbastanza sicura l'app la mette da sola e la ritrovi in Categorizza.")}
     >
       <AiUsageSummary />
       {isLoading ? (
@@ -42,10 +42,10 @@ export function AiCategorizationSection() {
       ) : (
         <SettingsRow
           ai
-          label={tr("Proponi le categorie con l'AI")}
+          label={tr("Usa l'assistente AI")}
           hint={
             data.available
-              ? tr("Se attivo, il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento (senza importi, date, IBAN o note) viene inviato a OpenRouter insieme alle categorie e alle tue eventuali istruzioni, solo verso fornitori che non conservano i dati (zero data retention). Puoi revocare in ogni momento.")
+              ? tr("Se attivo, per le categorie il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento (senza importi, date, IBAN o note) viene inviato a OpenRouter insieme alle categorie e alle tue eventuali istruzioni; in «Cerca», solo quando tocchi «Chiedi all'AI», la frase che hai scritto. Solo verso fornitori che non conservano i dati (zero data retention). Puoi revocare in ogni momento.")
               : tr("Il servizio non è configurato su questo server.")
           }
           htmlFor="assistente-categorie"
@@ -57,7 +57,7 @@ export function AiCategorizationSection() {
             onCheckedChange={(checked) =>
               update.mutate(checked, { onSuccess: () => track("ai_categorization_toggled", { enabled: checked }) })
             }
-            aria-label={tr("Proponi le categorie con l'AI")}
+            aria-label={tr("Usa l'assistente AI")}
           />
         </SettingsRow>
       )}

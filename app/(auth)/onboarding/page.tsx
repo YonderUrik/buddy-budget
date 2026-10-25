@@ -144,8 +144,9 @@ export default function OnboardingPage() {
                 <p>{tr("Quando arrivano movimenti nuovi dalla banca o da un file, un assistente basato su intelligenza artificiale propone una categoria per ogni esercente.")}</p>
                 <p>{tr("Quando l'app è abbastanza sicura mette la categoria da sola, e la ritrovi in Categorizza, sotto «Messe dall'app», dove puoi cambiarla. Le altre le scegli tu, una carta alla volta. Se preferisci scegliere sempre tu, lo spegni in Impostazioni.")}</p>
                 <p>{tr("Per farlo inviamo a OpenRouter il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento (senza importi, date, IBAN o note), in modalità zero data retention: lo ricevono solo fornitori che non conservano i dati e non li usano per l'addestramento.")}</p>
+                <p>{tr("Con lo stesso assistente, in «Cerca» puoi chiedere all'AI di leggere una frase che le regole non capiscono: riceve solo quella frase, e solo quando tocchi «Chiedi all'AI».")}</p>
               </div>
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border p-4 text-sm font-medium text-foreground">{tr("Proponi le categorie")}<Switch checked={assistantEnabled} onCheckedChange={setAssistantEnabled} disabled={loading} aria-label={tr("Proponi le categorie")} />
+              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border p-4 text-sm font-medium text-foreground">{tr("Usa l'assistente AI")}<Switch checked={assistantEnabled} onCheckedChange={setAssistantEnabled} disabled={loading} aria-label={tr("Usa l'assistente AI")} />
               </label>
             </>
           ) : step === "notifiche" ? (

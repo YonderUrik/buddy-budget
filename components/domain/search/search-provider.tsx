@@ -17,6 +17,7 @@ import { useQuickAdd, type QuickAddPrefill } from "@/components/domain/quick-add
 import { track } from "@/lib/analytics";
 import type { CommandDraft } from "@/lib/commands";
 import type { Instrument } from "@/lib/db/schema/investments";
+import { AI_ASSISTANT_SETTINGS_HREF } from "@/lib/llm/assistant-settings";
 import { useLocalization } from "@/lib/localization/provider";
 import { STATIC_ENTRIES } from "@/lib/search/static-index";
 import type { QuickAddActionId } from "@/lib/quick-add/actions";
@@ -172,6 +173,11 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     [quickAdd]
   );
 
+  const openAiSettings = React.useCallback(() => {
+    setState((s) => ({ ...s, open: false }));
+    router.push(AI_ASSISTANT_SETTINGS_HREF);
+  }, [router]);
+
   const api = React.useMemo<SearchApi>(() => ({ open, isOpen: state.open }), [open, state.open]);
   const fromLink = React.useCallback((text: string) => open("link", text), [open]);
   const mounted = React.useSyncExternalStore(() => () => {}, () => true, () => false);
@@ -185,7 +191,7 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       {mounted
         ? createPortal(
             <AnimatePresence>
-              {state.open ? <Spotlight key="spotlight" initialText={state.initial} idle={idle} onClose={close} onPickHit={pickHit} onCommand={runCommand} /> : null}
+              {state.open ? <Spotlight key="spotlight" initialText={state.initial} idle={idle} onClose={close} onPickHit={pickHit} onCommand={runCommand} onOpenAiSettings={openAiSettings} /> : null}
             </AnimatePresence>,
             document.body
           )

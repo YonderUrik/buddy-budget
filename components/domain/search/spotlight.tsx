@@ -81,9 +81,11 @@ export interface SpotlightProps {
   onClose: () => void;
   onPickHit: (hit: SearchHit, position: number, text: string) => void;
   onCommand: (draft: CommandDraft, instrument: Instrument | null) => void;
+  /** «Chiedi all'AI» without the assistant turned on: goes to where it is turned on. */
+  onOpenAiSettings: () => void;
 }
 
-export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: SpotlightProps) {
+export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, onOpenAiSettings }: SpotlightProps) {
   const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -121,6 +123,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
   function pick(item: SpotlightItem, position: number) {
     if (item.type === "ai") {
       if (item.status === "idle" || item.status === "failed") askAi();
+      else if (item.status === "disabled") onOpenAiSettings();
       return;
     }
     if (item.type === "command") onCommand(item.draft, item.instrument);

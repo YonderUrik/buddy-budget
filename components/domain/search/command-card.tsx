@@ -111,7 +111,7 @@ export function AiRow({ status, selected, phone = false, id, onPick, onHover }: 
     loading: "Sto leggendo la frase…",
     none: "Non sembra una spesa, un'entrata o un'operazione",
     invalid: "Frase troppo lunga o senza parole",
-    disabled: "Prima attiva l'assistente AI in Impostazioni › Notifiche e AI",
+    disabled: "Prima accendi l'assistente AI: tocca per aprire le Impostazioni",
     unavailable: "Non disponibile in questa versione",
     limited: "Hai fatto molte domande: riprova tra un po'",
     busy: "Oggi ha già risposto a troppe domande: riprova domani",

@@ -18,6 +18,7 @@ This file lists the direction. Each line links to its decision when there is one
 - [x] Subscriptions detected from transactions ([decision](docs/decisioni/2026-10-10-abbonamenti.md))
 - [x] CSV import for any bank, with AI-written parsers ([guide](docs/personal-csv-import.md))
 - [x] Summary and alert emails, all opt-in ([decision](docs/decisioni/2026-10-10-email-riepilogo-e-avvisi.md))
+- [x] One search for the whole app, where a typed sentence in Italian, English or German fills the form to add it ([decision](docs/decisioni/2026-10-25-cerca.md))
 
 ## Phase 3: Investments and Italian taxes (done)
 

@@ -16,7 +16,7 @@ import { movementsLink } from "@/lib/liquidity/links";
 import { foldText, matchScore, parseAmountQuery } from "./normalize";
 import type { SearchHit, SearchResponse } from "./types";
 
-/** Movements read for the text match: the last two years (older ones: «Cerca in tutto lo storico» in Movimenti). */
+/** Movements read for the text match: the last two years (older ones: the text search in Movimenti, over the period chosen there). */
 export const MOVEMENT_WINDOW_MONTHS = 24;
 /** Hard cap on movements decrypted per search, whatever the window holds. */
 export const MOVEMENT_SCAN_LIMIT = 6000;

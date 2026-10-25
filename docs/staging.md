@@ -1,24 +1,48 @@
 # Staging server
 
 BuddyBudget runs on the staging server with dedicated Docker networks, database,
-volumes, secrets and a Cloudflare tunnel. Staging publishes only a password-protected
-gateway on `127.0.0.1:3080`; its database, Redis and app have no host ports.
+volumes and secrets. Its database, Redis and app have no host ports.
 
-Intended public address: **https://staging.buddybudget.io**.
+Address: **https://staging.buddybudget.io**, reachable **only from the Tailscale
+network** (tailnet `tail52c123.ts.net`). Decided by Daniele on 2026-10-25.
 
-The initial deployment currently uses **https://budget-staging.mariovallone.com**
-as a temporary address. The existing Cloudflare origin certificate is scoped to
-`mariovallone.com`; the permanent address needs routing configured in the
-`buddybudget.io` zone before switching the live deployment.
+## How the tailnet-only access works
 
-For the final deployment, use `https://staging.buddybudget.io` as the origin passed
-to `init.py`. For the existing installation, configure and verify the new DNS/tunnel
-route, then change the tunnel's hostname and `APP_URL` in the host `.env` together.
+- **DNS**: `staging.buddybudget.io` is a public `A` record in the Cloudflare zone,
+  *DNS only* (grey cloud), pointing to the staging host's Tailscale address
+  (`100.85.66.41`). Anyone can resolve the name, but `100.64.0.0/10` addresses are
+  not routable on the internet: only devices signed in to the tailnet can connect.
+  A plain `A` record (not a `CNAME` to `.ts.net`) also resolves reliably on Windows.
+- **Gateway**: the password-protected nginx gateway publishes HTTPS only on
+  `${TAILSCALE_IP}:443` (`compose.yml`). Nothing listens on the LAN or on a public
+  interface, and there is no Cloudflare tunnel.
+- **Certificate**: `buddybudget.io` sends HSTS with `includeSubDomains`, so staging
+  needs a real certificate. The `certs` service (certbot, `certs.sh`) gets it from
+  Let's Encrypt with the Cloudflare DNS-01 challenge, checks renewal twice a day,
+  and nginx reloads every 6 hours to pick it up. It needs `CLOUDFLARE_DNS_API_TOKEN`:
+  a Cloudflare API token from the "Edit zone DNS" template, limited to the
+  `buddybudget.io` zone.
+- **Tailnet policy**: the people who use staging need access to the
+  `buddybudget-staging` device on port 443 in the Tailscale access controls.
+
+### Switching an existing installation
+
+1. In Cloudflare, create `A staging.buddybudget.io → 100.85.66.41`, proxy off.
+2. Create the Cloudflare token above.
+3. On the host, in `~/buddy-budget-staging/.env`: set
+   `APP_URL=https://staging.buddybudget.io`, add `STAGING_DOMAIN=staging.buddybudget.io`,
+   `TAILSCALE_IP=100.85.66.41`, `ACME_EMAIL=<owner email>` and
+   `CLOUDFLARE_DNS_API_TOKEN=<token>`, and remove `COMPOSE_PROFILES=public`.
+4. Roll out (the updater does it once this configuration is on `main`); the old
+   `tunnel` container is removed by `--remove-orphans`. Then delete the old tunnel
+   and its `budget-staging.mariovallone.com` route in Cloudflare.
+5. Check from a device on the tailnet that the page opens with a valid certificate,
+   and from a device off the tailnet (e.g. a phone on mobile data with Tailscale off)
+   that the connection fails.
+
 Compose derives `BETTER_AUTH_URL` from `APP_URL`, so sign-in links and codes use the
 same origin. If Google sign-in is enabled, register
 `https://staging.buddybudget.io/api/auth/callback/google` as its staging callback.
-Verify HTTPS, protected access and email sign-in on the permanent address before
-retiring the temporary route.
 
 Initial live verification on 2026-10-25: upgraded from `0.82.0` to `0.88.0`,
 verified captured-email sign-in and sample accounts, and restored a backup into
@@ -156,10 +180,12 @@ journalctl --user -u buddybudget-staging-update.service -n 60
 python3 ~/buddy-budget-staging/update.py
 ```
 
-Initial installation: create a separate Cloudflare tunnel with its credentials
-in `secrets/cloudflare/credentials.json`, run `init.py` with the public origin,
-then run `update.py --bootstrap <reviewed configuration directory> --version X.Y.Z`.
-`init.py` generates every secret and the tunnel config, and refuses to replace
+Initial installation: join the tailnet first (`install-tailscale.sh`), run `init.py`
+with `https://staging.buddybudget.io` (it reads the Tailscale address and writes
+`STAGING_DOMAIN` and `TAILSCALE_IP`), add the provider credentials, the Cloudflare
+DNS token and `ACME_EMAIL` to `.env`, create the DNS record it prints, then run
+`update.py --bootstrap <reviewed configuration directory> --version X.Y.Z`.
+`init.py` generates every secret and refuses to replace
 an existing `.env`. Install the four user units and enable the timers. Enable user
 lingering so they run without a logged-in session.
 

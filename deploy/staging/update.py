@@ -14,7 +14,7 @@ import sys
 import urllib.request
 
 REPO = "YonderUrik/buddy-budget"
-FILES = ("compose.yml", "nginx.conf", "scheduler.sh")
+FILES = ("compose.yml", "nginx.conf", "scheduler.sh", "certs.sh")
 
 
 def fetch(url):

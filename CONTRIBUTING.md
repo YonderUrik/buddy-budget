@@ -14,7 +14,7 @@ Thanks for your interest. The project is developed by a single person: before wr
 2. Start the environment following the [README](README.md#local-development).
 3. Before opening the PR: `pnpm lint`, `pnpm test`, `pnpm exec tsc --noEmit`.
 4. A schema change requires `pnpm db:generate` and the committed migration. The database is never changed by hand.
-5. Fill in the PR template: say what changes for people using the app and how you verified it.
+5. Fill in the PR template: say what changes for people using the app and how you verified it. Screenshots and videos go in the PR description, never in the repository: the `Repo weight` check fails a PR that adds heavy files (`scripts/check-file-sizes.mjs`).
 6. The PR title follows Conventional Commits (`feat: …` new feature, `fix: …` fix, `chore:`/`docs:` with no effect on the version): release-please computes the version from it. See [docs/rilasci.md](docs/rilasci.md).
 
 ## Conventions in brief

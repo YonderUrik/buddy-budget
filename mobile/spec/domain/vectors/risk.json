@@ -1,0 +1,525 @@
+{
+  "topic": "risk",
+  "source": "lib/calc/risk.ts, lib/calc/risk-extras.ts, lib/investments/title-stats.ts",
+  "vectors": [
+    {
+      "id": "risk.sampleStd.basic",
+      "function": "sampleStd",
+      "input": {
+        "values": [
+          0.01,
+          -0.02,
+          0.015,
+          0.003,
+          -0.007,
+          0.012
+        ]
+      },
+      "expected": 0.0134077092252,
+      "tolerance": 1e-9,
+      "notes": "n-1 denominator."
+    },
+    {
+      "id": "risk.sampleStd.single",
+      "function": "sampleStd",
+      "input": {
+        "values": [
+          0.01
+        ]
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.correlation.basic",
+      "function": "correlation",
+      "input": {
+        "x": [
+          0.01,
+          -0.02,
+          0.015,
+          0.003,
+          -0.007,
+          0.012
+        ],
+        "y": [
+          0.008,
+          -0.015,
+          0.01,
+          0.002,
+          -0.004,
+          0.01
+        ]
+      },
+      "expected": 0.995940975664,
+      "tolerance": 1e-9,
+      "notes": "Pearson, clamped to [-1,1]; null if <2 pairs or a series has zero std."
+    },
+    {
+      "id": "risk.correlation.flat",
+      "function": "correlation",
+      "input": {
+        "x": [
+          0.01,
+          -0.02,
+          0.015,
+          0.003,
+          -0.007,
+          0.012
+        ],
+        "y": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.beta.basic",
+      "function": "beta",
+      "input": {
+        "x": [
+          0.01,
+          -0.02,
+          0.015,
+          0.003,
+          -0.007,
+          0.012
+        ],
+        "y": [
+          0.008,
+          -0.015,
+          0.01,
+          0.002,
+          -0.004,
+          0.01
+        ]
+      },
+      "expected": 1.35049437436,
+      "tolerance": 1e-9,
+      "notes": "cov(x,y)/var(y), both sample (n-1)."
+    },
+    {
+      "id": "risk.observationsPerYear.equities",
+      "function": "observationsPerYear",
+      "input": {
+        "observations": 252,
+        "calendarDays": 365
+      },
+      "expected": 252,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.observationsPerYear.empty",
+      "function": "observationsPerYear",
+      "input": {
+        "observations": 0,
+        "calendarDays": 10
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.riskObservations.dropFlatWeekends",
+      "function": "riskObservations",
+      "input": {
+        "daily": [
+          {
+            "date": "2026-01-02",
+            "ret": 0.01,
+            "gain": 1
+          },
+          {
+            "date": "2026-01-03",
+            "ret": 0,
+            "gain": 0
+          },
+          {
+            "date": "2026-01-04",
+            "ret": 0.002,
+            "gain": 0
+          },
+          {
+            "date": "2026-01-05",
+            "ret": null,
+            "gain": 0
+          },
+          {
+            "date": "2026-01-06",
+            "ret": 0,
+            "gain": 0
+          }
+        ]
+      },
+      "expected": [
+        {
+          "date": "2026-01-02",
+          "ret": 0.01
+        },
+        {
+          "date": "2026-01-04",
+          "ret": 0.002
+        },
+        {
+          "date": "2026-01-06",
+          "ret": 0
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "2026-01-03 is Saturday with ret 0 → dropped; Sunday 01-04 moved → kept; null dropped; weekday zero kept."
+    },
+    {
+      "id": "risk.computeDrawdown.recovery",
+      "function": "computeDrawdown",
+      "input": {
+        "baseKey": "2026-01-31",
+        "daily": [
+          {
+            "date": "2026-02-01",
+            "ret": 0.1,
+            "gain": 0
+          },
+          {
+            "date": "2026-02-02",
+            "ret": -0.2,
+            "gain": 0
+          },
+          {
+            "date": "2026-02-03",
+            "ret": 0.05,
+            "gain": 0
+          },
+          {
+            "date": "2026-02-04",
+            "ret": 0.2,
+            "gain": 0
+          },
+          {
+            "date": "2026-02-05",
+            "ret": -0.1,
+            "gain": 0
+          }
+        ]
+      },
+      "expected": {
+        "series": [
+          {
+            "date": "2026-02-01",
+            "drawdown": 0
+          },
+          {
+            "date": "2026-02-02",
+            "drawdown": -0.2
+          },
+          {
+            "date": "2026-02-03",
+            "drawdown": -0.16
+          },
+          {
+            "date": "2026-02-04",
+            "drawdown": 0
+          },
+          {
+            "date": "2026-02-05",
+            "drawdown": -0.1
+          }
+        ],
+        "max": {
+          "depth": -0.2,
+          "peakDate": "2026-02-01",
+          "troughDate": "2026-02-02",
+          "recoveryDate": "2026-02-04",
+          "current": -0.1
+        }
+      },
+      "tolerance": 1e-9,
+      "notes": "On the TWR index (not on value). recoveryDate = first day index ≥ previous peak."
+    },
+    {
+      "id": "risk.sharpeRatio.basic",
+      "function": "sharpeRatio",
+      "input": {
+        "returns": [
+          0.01,
+          -0.02,
+          0.015,
+          0.003,
+          -0.007,
+          0.012
+        ],
+        "perYear": 252,
+        "annualRiskFree": 0.03
+      },
+      "expected": 2.42434737604,
+      "tolerance": 1e-9,
+      "notes": "((mean - rf/perYear)/std) * sqrt(perYear)."
+    },
+    {
+      "id": "risk.averageRate.basic",
+      "function": "averageRate",
+      "input": {
+        "rates": [
+          {
+            "date": "2026-01-01",
+            "rate": 0.02
+          },
+          {
+            "date": "2026-01-04",
+            "rate": 0.025
+          }
+        ],
+        "dates": [
+          "2025-12-31",
+          "2026-01-02",
+          "2026-01-05"
+        ]
+      },
+      "expected": 0.0225,
+      "tolerance": 1e-9,
+      "notes": "Dates without a prior rate are skipped."
+    },
+    {
+      "id": "risk.pairCorrelation.commonDays",
+      "function": "pairCorrelation",
+      "input": {
+        "a": {
+          "2026-03-01": 100,
+          "2026-03-02": 102.624412954,
+          "2026-03-03": 102.92789228,
+          "2026-03-04": 100.723360024,
+          "2026-03-05": 98.1295925141,
+          "2026-03-06": 97.623227176,
+          "2026-03-07": 99.7617535054,
+          "2026-03-08": 102.670959796,
+          "2026-03-09": 103.76807474,
+          "2026-03-10": 102.136355456,
+          "2026-03-11": 99.3679366673,
+          "2026-03-12": 98.1000293803,
+          "2026-03-13": 99.590281246,
+          "2026-03-14": 102.56050111,
+          "2026-03-15": 104.371822067,
+          "2026-03-16": 103.45086352,
+          "2026-03-17": 100.73629005,
+          "2026-03-18": 98.8158075244,
+          "2026-03-19": 99.5470382597,
+          "2026-03-20": 102.349631629,
+          "2026-03-21": 104.738835752,
+          "2026-03-22": 104.609966916,
+          "2026-03-23": 102.173446072,
+          "2026-03-24": 99.7613387875,
+          "2026-03-25": 99.683264914
+        },
+        "b": {
+          "2026-03-01": 50.44328031,
+          "2026-03-02": 51.4453372781,
+          "2026-03-03": 51.1185578183,
+          "2026-03-04": 49.7633814588,
+          "2026-03-05": 48.6257510949,
+          "2026-03-06": 48.7515988367,
+          "2026-03-07": 50.0252208507,
+          "2026-03-09": 51.3532577506,
+          "2026-03-10": 50.1866816353,
+          "2026-03-11": 48.8484712854,
+          "2026-03-12": 48.5689711251,
+          "2026-03-13": 49.605152313,
+          "2026-03-14": 51.0043546433,
+          "2026-03-15": 51.4801579464,
+          "2026-03-16": 50.5951108597,
+          "2026-03-17": 49.1629215931,
+          "2026-03-18": 48.5003383534,
+          "2026-03-19": 49.2165371156,
+          "2026-03-20": 50.6530480406,
+          "2026-03-21": 51.4891496088,
+          "2026-03-22": 50.9561338942,
+          "2026-03-23": 49.5440530868,
+          "2026-03-24": 48.5511677686,
+          "2026-03-25": 48.8903321224
+        }
+      },
+      "expected": 0.950589732718,
+      "tolerance": 1e-9,
+      "notes": "Returns computed only between consecutive COMMON dates; needs ≥20 return pairs."
+    },
+    {
+      "id": "risk.sortinoRatio.basic",
+      "function": "sortinoRatio",
+      "input": {
+        "returns": [
+          0.01,
+          -0.02,
+          0.015,
+          0.003,
+          -0.007,
+          0.012
+        ],
+        "perYear": 252,
+        "annualRiskFree": 0
+      },
+      "expected": 3.97598582136,
+      "tolerance": 1e-9,
+      "notes": "Downside deviation divides by n (not n-1)."
+    },
+    {
+      "id": "risk.calmarRatio.basic",
+      "function": "calmarRatio",
+      "input": {
+        "annualReturn": 0.12,
+        "maxDrawdown": 0.3
+      },
+      "expected": 0.4,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.historicalTailRisk.100",
+      "function": "historicalTailRisk",
+      "input": {
+        "returns": "[(i-50)/1000 for i in 0..99]",
+        "confidence": 0.95
+      },
+      "expected": {
+        "var": 0.046,
+        "cvar": 0.048
+      },
+      "tolerance": 1e-9,
+      "notes": "cut = max(1, floor(n*(1-c))); VaR = -sorted[cut-1]; CVaR = -mean(sorted[0..cut))."
+    },
+    {
+      "id": "risk.historicalTailRisk.tooFew",
+      "function": "historicalTailRisk",
+      "input": {
+        "returns": [
+          0.01,
+          -0.02,
+          0.015,
+          0.003,
+          -0.007,
+          0.012
+        ]
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.riskContributions.twoAssets",
+      "function": "riskContributions",
+      "input": {
+        "items": "a: weight 0.6, returns sin(i)/100 for i=0..59; b: weight 0.4, returns cos(1.3 i)/200 for i=0..59"
+      },
+      "expected": [
+        {
+          "id": "a",
+          "weight": 0.6,
+          "riskShare": 0.905212601355
+        },
+        {
+          "id": "b",
+          "weight": 0.4,
+          "riskShare": 0.0947873986447
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.concentration.basic",
+      "function": "concentration",
+      "input": {
+        "weights": [
+          50,
+          30,
+          20
+        ]
+      },
+      "expected": {
+        "hhi": 0.38,
+        "effectiveN": 2.63157894737
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.annualizedReturn.basic",
+      "function": "annualizedReturn",
+      "input": {
+        "returns": [
+          0.01,
+          -0.02,
+          0.015,
+          0.003,
+          -0.007,
+          0.012
+        ],
+        "perYear": 252
+      },
+      "expected": 0.692995490234,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.computeTitleStats.synthetic",
+      "function": "computeTitleStats",
+      "input": {
+        "closes": "every 3 days from 2025-09-01 for i=0..400 step 3: date=2025-09-01+i days (UTC), close=round4(100 + 0.05 i + 4 sin(i/10))",
+        "today": "2026-10-05"
+      },
+      "expected": {
+        "lastClose": 123.1819,
+        "lastDate": "2026-10-05",
+        "dayChange": -0.00325446396422,
+        "returns": {
+          "1M": 0.0657431752566,
+          "3M": 0.0960550457083,
+          "6M": 0.0966561317605,
+          "1A": 0.219393381443,
+          "YTD": 0.186109883423
+        },
+        "high52": 123.6482,
+        "low52": 98.3399,
+        "fromHigh": -0.00377118308233,
+        "volatility": 0.0837990728401,
+        "maxDrawdown": -0.0597917531428
+      },
+      "tolerance": 1e-9,
+      "notes": "Start close may be up to 10 days before the target date, else period omitted. YTD starts from last close on/before Dec 31 of previous year. 52w window = last.date - 365 days. Volatility needs > 20 closes in the window."
+    },
+    {
+      "id": "risk.computeTitleStats.empty",
+      "function": "computeTitleStats",
+      "input": {
+        "closes": [],
+        "today": "2026-10-18"
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "risk.downsampleCloses.basic",
+      "function": "downsampleCloses",
+      "input": {
+        "points": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "maxPoints": 4
+      },
+      "expected": [
+        0,
+        3,
+        6,
+        9
+      ],
+      "tolerance": 1e-9,
+      "notes": "index = round(i * (n-1)/(max-1)); JS Math.round is half-up toward +∞."
+    }
+  ]
+}

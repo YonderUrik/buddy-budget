@@ -1,0 +1,24 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # The spec repo is private: a fine-grained PAT with read access to it.
+          token: ${{ secrets.SPEC_REPO_TOKEN }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Core unit tests (shared golden vectors)
+        run: ./gradlew :core:test
+      - name: Build app
+        run: ./gradlew :app:assembleDebug

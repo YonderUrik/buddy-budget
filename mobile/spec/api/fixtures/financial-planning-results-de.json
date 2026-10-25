@@ -1,0 +1,474 @@
+{
+  "plan": {
+    "version": 1,
+    "country": "DE",
+    "tax": {
+      "year": 2026,
+      "futureForecast": "verified",
+      "joint": false,
+      "churchRate": 0,
+      "allowanceUsedElsewhere": 0,
+      "shareLosses": 0,
+      "generalLosses": 0,
+      "otherCapitalIncome": 0,
+      "verifiedForeignCredit": 0,
+      "historyConfirmed": false,
+      "fundKinds": {},
+      "priorAdvancesBySale": {},
+      "fundHistoryConfirmed": false
+    },
+    "fund": {
+      "kind": "unknown",
+      "startValue": 0,
+      "endValue": 0,
+      "distributions": 0,
+      "acquisitionMonth": 1
+    },
+    "pensions": [],
+    "pensionTax": {
+      "mode": "manual",
+      "insurance": "kvdr",
+      "additionalHealthRate": 0.029,
+      "childless": false,
+      "childrenUnder25": 0,
+      "otherInsuranceIncome": 0,
+      "voluntarySubsidy": false,
+      "annualPrivatePremium": 0,
+      "annualDeductiblePremium": 0,
+      "surchargeChildAllowance": 0,
+      "otherTaxableIncome": 0,
+      "otherDeductions": 0
+    },
+    "retirement": {
+      "liquidCapital": 0,
+      "annualSaving": 0,
+      "annualSpending": 0,
+      "yearsUntilRetirement": 0,
+      "realReturn": 0.02,
+      "withdrawalRate": 0.035,
+      "inflation": 0.02,
+      "pensionDeductionRate": 0.25,
+      "withdrawalTaxShare": 0
+    },
+    "crypto": [],
+    "cryptoOtherGains": 0,
+    "cryptoLossCarryforward": 0,
+    "otherTaxableIncome": 0
+  },
+  "revision": 0,
+  "results": {
+    "currency": "EUR",
+    "supported": true,
+    "sections": {
+      "tax": true,
+      "income": true,
+      "pension": false,
+      "retirement": false,
+      "simulations": false
+    },
+    "tax": {
+      "report": {
+        "events": [
+          {
+            "id": "74cb224c-a06c-4865-b14a-21220dbc6123",
+            "instrumentId": "e98f8067-dc26-4240-a7a0-c6d55c5d5d7c",
+            "date": "2026-02-20",
+            "gain": 8.158406399999999,
+            "taxable": 8.158406399999999,
+            "basket": "general"
+          },
+          {
+            "id": "10a24d83-4a9c-4615-a1c2-5de69fe3b776",
+            "instrumentId": "60b8b465-e257-4ca3-bcd9-eb1d723fe238",
+            "date": "2026-05-01",
+            "gain": 76.16973,
+            "taxable": 76.16973,
+            "basket": "general"
+          },
+          {
+            "id": "87308a4c-265a-45f0-ac36-2e35cacb88e7",
+            "instrumentId": "e98f8067-dc26-4240-a7a0-c6d55c5d5d7c",
+            "date": "2026-05-21",
+            "gain": 8.2765728,
+            "taxable": 8.2765728,
+            "basket": "general"
+          },
+          {
+            "id": "25e84ca3-fb10-4226-aa99-551441261d39",
+            "instrumentId": "0a76766e-60a1-4970-8fd4-cc6a90c90e55",
+            "date": "2026-06-20",
+            "gain": 152,
+            "taxable": 152,
+            "basket": "general"
+          },
+          {
+            "id": "c3f00e54-ad79-4a49-a7cb-eddecec51681",
+            "instrumentId": "4667778f-876a-4dec-8781-b6aa3b8a7380",
+            "date": "2026-08-15",
+            "gain": 155,
+            "taxable": 155,
+            "basket": "general"
+          },
+          {
+            "id": "cfb32246-5c0a-4b82-bbab-8cd430853cd1",
+            "instrumentId": "e98f8067-dc26-4240-a7a0-c6d55c5d5d7c",
+            "date": "2026-08-19",
+            "gain": 906.0267478200003,
+            "taxable": 906.0267478200003,
+            "basket": "shares"
+          },
+          {
+            "id": "f3d467f0-5e3d-4283-8d98-f234edbd42c0",
+            "instrumentId": "0a76766e-60a1-4970-8fd4-cc6a90c90e55",
+            "date": "2026-09-03",
+            "gain": 1425.384,
+            "taxable": 1425.384,
+            "basket": "shares"
+          },
+          {
+            "id": "7b5f068f-e68c-4ac6-80c7-58908377e824",
+            "instrumentId": "ae9b0025-8514-4677-819a-de9ac5707394",
+            "date": "2026-09-13",
+            "gain": 154.55000000000018,
+            "taxable": 154.55000000000018,
+            "basket": "general"
+          },
+          {
+            "id": "2f1dbbbc-e016-48ac-a182-93fa79d71ea0",
+            "instrumentId": "e98f8067-dc26-4240-a7a0-c6d55c5d5d7c",
+            "date": "2026-09-28",
+            "gain": 5.454546,
+            "taxable": 5.454546,
+            "basket": "general"
+          }
+        ],
+        "issues": [
+          {
+            "instrumentId": "",
+            "reason": "history"
+          },
+          {
+            "instrumentId": "574c06d0-e566-4aa8-a024-2701f240f174",
+            "reason": "classification"
+          },
+          {
+            "instrumentId": "574c06d0-e566-4aa8-a024-2701f240f174",
+            "reason": "fund-history"
+          },
+          {
+            "instrumentId": "d32f339a-2c04-496f-8cee-a99f7aafa1f7",
+            "reason": "unsupported"
+          }
+        ],
+        "recordedTaxes": 149.72,
+        "shareGains": 2331.4107478200003,
+        "generalIncome": 559.6092552000002,
+        "estimate": null
+      },
+      "fundAdvance": null,
+      "fundInstrumentIds": [
+        "f3441521-8992-4334-b156-2405cf846d9b",
+        "0eaf0dfe-0f6c-448a-996a-e7446a1e074c",
+        "b78b8bd5-96cf-4f24-a2a1-8ed269b39fa0",
+        "574c06d0-e566-4aa8-a024-2701f240f174",
+        "ca1ec800-5ac8-4195-9fab-115d581de853",
+        "4e6eae0a-efb4-437f-a8dd-c4fc65d34ed0"
+      ],
+      "fundSaleIds": []
+    },
+    "income": {
+      "events": [
+        {
+          "instrumentId": "574c06d0-e566-4aa8-a024-2701f240f174",
+          "kind": "dividendo",
+          "date": "2026-11-12",
+          "gross": 35.66,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "e98f8067-dc26-4240-a7a0-c6d55c5d5d7c",
+          "kind": "dividendo",
+          "date": "2026-11-22",
+          "gross": 5.454545454545454,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "574c06d0-e566-4aa8-a024-2701f240f174",
+          "kind": "dividendo",
+          "date": "2027-02-10",
+          "gross": 35.66,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "4667778f-876a-4dec-8781-b6aa3b8a7380",
+          "kind": "cedola",
+          "date": "2027-02-15",
+          "gross": 155,
+          "net": null,
+          "basis": "cedola",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "e98f8067-dc26-4240-a7a0-c6d55c5d5d7c",
+          "kind": "dividendo",
+          "date": "2027-02-20",
+          "gross": 5.454545454545454,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "60b8b465-e257-4ca3-bcd9-eb1d723fe238",
+          "kind": "dividendo",
+          "date": "2027-05-01",
+          "gross": 76.16974972796518,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "574c06d0-e566-4aa8-a024-2701f240f174",
+          "kind": "dividendo",
+          "date": "2027-05-11",
+          "gross": 35.66,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "e98f8067-dc26-4240-a7a0-c6d55c5d5d7c",
+          "kind": "dividendo",
+          "date": "2027-05-21",
+          "gross": 5.454545454545454,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "0a76766e-60a1-4970-8fd4-cc6a90c90e55",
+          "kind": "dividendo",
+          "date": "2027-06-20",
+          "gross": 76,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "574c06d0-e566-4aa8-a024-2701f240f174",
+          "kind": "dividendo",
+          "date": "2027-08-09",
+          "gross": 35.66,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "4667778f-876a-4dec-8781-b6aa3b8a7380",
+          "kind": "cedola",
+          "date": "2027-08-15",
+          "gross": 155,
+          "net": null,
+          "basis": "cedola",
+          "benchmark": false
+        },
+        {
+          "instrumentId": "e98f8067-dc26-4240-a7a0-c6d55c5d5d7c",
+          "kind": "dividendo",
+          "date": "2027-09-28",
+          "gross": 5.454545454545454,
+          "net": null,
+          "basis": "storico",
+          "benchmark": false
+        }
+      ],
+      "totalGross": 626.627931546147,
+      "bondsWithoutTerms": [],
+      "history": [
+        {
+          "year": 2026,
+          "months": [
+            {
+              "month": 1,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 2,
+              "gross": 43.81840639999999,
+              "withheld": 11.56,
+              "net": 32.2584064
+            },
+            {
+              "month": 3,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 4,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 5,
+              "gross": 120.1063028,
+              "withheld": 46.910000000000004,
+              "net": 73.1963028
+            },
+            {
+              "month": 6,
+              "gross": 152,
+              "withheld": 39.52,
+              "net": 112.47999999999999
+            },
+            {
+              "month": 7,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 8,
+              "gross": 190.66,
+              "withheld": 50.290000000000006,
+              "net": 140.37
+            },
+            {
+              "month": 9,
+              "gross": 5.454546,
+              "withheld": 1.44,
+              "net": 4.014545999999999
+            },
+            {
+              "month": 10,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 11,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 12,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            }
+          ],
+          "gross": 512.0392552000001,
+          "withheld": 149.72,
+          "net": 362.3192552
+        },
+        {
+          "year": 2025,
+          "months": [
+            {
+              "month": 1,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 2,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 3,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 4,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 5,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 6,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 7,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 8,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 9,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 10,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 11,
+              "gross": 41.9100032,
+              "withheld": 11.06,
+              "net": 30.850003199999996
+            },
+            {
+              "month": 12,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            }
+          ],
+          "gross": 41.9100032,
+          "withheld": 11.06,
+          "net": 30.850003199999996
+        }
+      ],
+      "issues": [
+        {
+          "instrumentId": "",
+          "reason": "history"
+        },
+        {
+          "instrumentId": "574c06d0-e566-4aa8-a024-2701f240f174",
+          "reason": "classification"
+        },
+        {
+          "instrumentId": "574c06d0-e566-4aa8-a024-2701f240f174",
+          "reason": "fund-history"
+        },
+        {
+          "instrumentId": "d32f339a-2c04-496f-8cee-a99f7aafa1f7",
+          "reason": "unsupported"
+        }
+      ]
+    }
+  }
+}

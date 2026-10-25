@@ -28,15 +28,15 @@ disabled until the workflow is merged and unattended updates are enabled.
 
 ## Access and test data
 
-**Email/AI change pending deployment:** the initial live installation still
-captures emails in Mailpit and has no AI worker. The configuration in this branch
-switches to real Resend delivery and enables the CSV worker. Deploy it only after
-provisioning the integration credentials below; reusing production provider keys
-requires explicit approval. No production credentials have been copied yet.
+**Email and AI enabled on 2026-10-25:** staging runs the production `0.88.1`
+release with real Resend delivery and the CSV worker. The owner explicitly approved
+reusing production's Resend credential/sender and the two OpenRouter credentials.
+The login-code flow was accepted by Resend's delivery simulator; AI categorization
+and CSV parser generation/execution passed synthetic tests. Mailpit is removed.
 
 The edge username is `staging`. The randomly generated password is recorded only
 on the host in `/home/mario/buddy-budget-staging/access.txt`; retrieve it over SSH.
-All pages, APIs and the inbox require this password. Search indexing is disabled
+All pages and APIs require this password. Search indexing is disabled
 through `X-Robots-Tag`.
 
 The app uses hosted behavior (`SELF_HOSTED=false`, email sign-in, open signup
@@ -59,6 +59,22 @@ is always enabled and shares the staging database and CSV encryption key with th
 app. No `ai` Compose profile is required. Reused provider credentials share their
 account billing, quotas and access scope; database, auth and encryption secrets
 remain independent. The updater removes the obsolete Mailpit container on rollout.
+
+### Handling provider credentials
+
+The approved copy selected only the Resend API key/sender and the app and worker
+OpenRouter keys. Selected fields were streamed through two encrypted SSH sessions
+using an operating-system pipe on the administrator's Mac. The relay never printed
+the payload or wrote it to a Mac file. It did not copy a production environment
+file, database credentials, authentication secrets or encryption keys.
+
+The receiver validated the allowlist and atomically updated the staging `.env`
+with mode `0600` inside a `0700` directory. It checked that all unrelated environment
+lines were preserved. Container configuration was verified using in-memory
+comparisons with only boolean results printed. No secret values or fingerprints
+were published in Git, chat or command output. Provider credentials are available
+to the authorized staging host administrator and the app/worker processes, as
+required for their operation.
 
 Google OAuth is initially disabled until separate staging credentials and a callback
 are configured. Bank credentials are absent, bank jobs are omitted, and new bank
@@ -150,7 +166,7 @@ lingering so they run without a logged-in session.
 ## Scheduled work, backups and recovery
 
 The stack schedules prices, net worth snapshots, account deletion, notifications
-(captured locally) and nightly sample-account resets. Daily backups run at 03:30
+(delivered through Resend) and nightly sample-account resets. Daily backups run at 03:30
 UTC and before every update, retaining the latest seven successful compressed
 SQL dumps in `backups/`. Secrets and dumps are readable only by the host user.
 These are local recovery copies of disposable test data, not an offsite backup
@@ -178,5 +194,5 @@ host's availability depends on its power and Internet connection.
 
 Run updater checks with `python3 -m unittest discover -s deploy/staging -p 'test_*.py'`.
 
-References: [Mailpit runtime options](https://mailpit.axllent.org/docs/configuration/runtime-options/),
+References: [Resend test delivery](https://resend.com/docs/dashboard/emails/send-test-emails),
 [Docker Compose services](https://docs.docker.com/reference/compose-file/services/).

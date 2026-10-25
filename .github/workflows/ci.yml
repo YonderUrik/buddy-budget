@@ -74,6 +74,10 @@ jobs:
           RESEND_FROM: staging@example.test
           OPENROUTER_API_KEY: ci-only-placeholder
           CSV_WORKER_OPENROUTER_API_KEY: ci-only-placeholder
+          STAGING_DOMAIN: staging.example.test
+          TAILSCALE_IP: 100.64.0.1
+          ACME_EMAIL: staging@example.test
+          CLOUDFLARE_DNS_API_TOKEN: ci-only-placeholder
         run: docker compose -f deploy/staging/compose.yml config --quiet
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7

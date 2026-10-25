@@ -270,7 +270,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand }: 
                     initial={{ opacity: 0, scale: 0.7, x: -16 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     transition={{ ...SPRING_BOUNCY, delay: 0.04 + index * 0.035 }}
-                    className={cn("flex size-16 cursor-pointer items-center justify-center rounded-full transition-colors", on ? "bg-sun text-on-sun shadow-[0_12px_32px_-12px_var(--spotlight-shadow)]" : cn(SPOTLIGHT_GLASS, "text-text-2 hover:text-foreground"))}
+                    className={cn("flex size-16 cursor-pointer items-center justify-center rounded-full transition-colors", on ? "bg-primary text-primary-foreground shadow-[0_12px_32px_-12px_var(--spotlight-shadow)]" : cn(SPOTLIGHT_GLASS, "text-text-2 hover:text-foreground"))}
                   >
                     <Icon className="size-[22px]" strokeWidth={1.75} aria-hidden="true" />
                   </motion.button>

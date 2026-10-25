@@ -66,11 +66,11 @@ export function CommandCard({ draft, instrument, selected, currency, phone = fal
           "flex w-full cursor-pointer flex-col gap-3 text-left transition-colors duration-100",
           // On the phone the card is the block itself (like the other result cards); on desktop it lights up when chosen.
           phone ? cn("rounded-3xl p-4", SPOTLIGHT_CARD) : "rounded-2xl p-3",
-          !phone && (lit ? "bg-sun text-on-sun" : "bg-foreground/[0.05] hover:bg-foreground/[0.08]")
+          !phone && (lit ? "bg-spotlight-lit text-on-spotlight-lit" : "bg-foreground/[0.05] hover:bg-foreground/[0.08]")
         )}
       >
         <span className="flex w-full items-center gap-3">
-          <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", lit ? "bg-on-sun text-sun" : "bg-sun text-on-sun")}>
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sun text-on-sun">
             <Icon className="size-5" aria-hidden="true" />
           </span>
           <span className="min-w-0 flex-1">
@@ -78,7 +78,7 @@ export function CommandCard({ draft, instrument, selected, currency, phone = fal
               {tr(KIND_TITLES[draft.kind])}
               {name ? <span className="font-normal"> · {name}</span> : null}
             </span>
-            <span className={cn("block truncate text-sm", lit ? "text-on-sun/75" : "text-text-2")}>{facts.join(" · ")}</span>
+            <span className={cn("block truncate text-sm", lit ? "text-on-spotlight-lit-2" : "text-text-2")}>{facts.join(" · ")}</span>
           </span>
           {total !== null ? (
             <span className={cn("shrink-0 font-heading tabular-nums", phone ? "text-lg" : "text-xl", !lit && draft.kind === "entrata" && "text-pos")}>
@@ -86,7 +86,7 @@ export function CommandCard({ draft, instrument, selected, currency, phone = fal
             </span>
           ) : null}
         </span>
-        <span className={cn("flex w-full flex-wrap items-center gap-x-3 gap-y-1 text-xs", lit ? "text-on-sun/75" : "text-text-3")}>
+        <span className={cn("flex w-full flex-wrap items-center gap-x-3 gap-y-1 text-xs", lit ? "text-on-spotlight-lit-2" : "text-text-3")}>
           {draft.source === "ai" ? (
             <span className="inline-flex items-center gap-1">
               <SparklesIcon className="size-3.5" aria-hidden="true" />
@@ -125,14 +125,14 @@ export function AiRow({ status, selected, phone = false, id, onPick, onHover }: 
         onClick={onPick}
         onMouseMove={onHover}
         disabled={status === "loading"}
-        className={cn("flex w-full cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-colors duration-100", phone ? "min-h-14" : "min-h-12", lit ? "bg-sun text-on-sun" : "hover:bg-foreground/5")}
+        className={cn("flex w-full cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-colors duration-100", phone ? "min-h-14" : "min-h-12", lit ? "bg-spotlight-lit text-on-spotlight-lit" : "hover:bg-foreground/5")}
       >
-        <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-full", lit ? "bg-on-sun/10" : "bg-foreground/[0.07] text-primary")}>
+        <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-full", lit ? "bg-spotlight-lit-icon text-on-spotlight-lit-icon" : "bg-foreground/[0.07] text-primary")}>
           <SparklesIcon className={cn("size-[18px]", status === "loading" && "animate-pulse")} aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[15px] font-medium leading-tight">{tr("Chiedi all'AI")}</span>
-          <span className={cn("block truncate text-xs", lit ? "text-on-sun/70" : "text-text-3")}>{tr(lines[status] ?? lines.idle)}</span>
+          <span className={cn("block truncate text-xs", lit ? "text-on-spotlight-lit-2" : "text-text-3")}>{tr(lines[status] ?? lines.idle)}</span>
         </span>
       </button>
     </div>

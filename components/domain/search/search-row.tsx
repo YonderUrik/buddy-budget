@@ -98,14 +98,14 @@ export function SearchRow({ hit, query, selected, top = false, phone = false, cu
         className={cn(
           "flex w-full cursor-pointer items-center gap-3 rounded-xl px-2.5 text-left transition-colors duration-100",
           top ? "min-h-15 py-2" : phone ? "min-h-14 py-2" : "min-h-11 py-1.5",
-          lit ? "bg-sun text-on-sun" : phone ? "active:bg-foreground/5" : "hover:bg-foreground/5"
+          lit ? "bg-spotlight-lit text-on-spotlight-lit" : phone ? "active:bg-foreground/5" : "hover:bg-foreground/5"
         )}
       >
         <span
           className={cn(
             "flex shrink-0 items-center justify-center rounded-full",
             top || phone ? "size-10" : "size-8",
-            action ? (lit ? "bg-on-sun text-sun" : "bg-sun text-on-sun") : lit ? "bg-on-sun/10 text-on-sun" : "bg-foreground/[0.07] text-primary"
+            action ? "bg-sun text-on-sun" : lit ? "bg-spotlight-lit-icon text-on-spotlight-lit-icon" : "bg-foreground/[0.07] text-primary"
           )}
         >
           <Icon className={top || phone ? "size-5" : "size-4"} aria-hidden="true" />
@@ -114,10 +114,10 @@ export function SearchRow({ hit, query, selected, top = false, phone = false, cu
           <span className={cn("block truncate leading-tight", top ? "text-[17px]" : "text-[15px]")}>
             <Highlighted text={hit.title} query={query} />
           </span>
-          {subtitle ? <span className={cn("block truncate text-xs leading-snug", lit ? "text-on-sun/70" : "text-text-3")}>{subtitle}</span> : null}
+          {subtitle ? <span className={cn("block truncate text-xs leading-snug", lit ? "text-on-spotlight-lit-2" : "text-text-3")}>{subtitle}</span> : null}
         </span>
         {hit.amount !== undefined ? (
-          <span className={cn("shrink-0 font-heading text-sm tabular-nums", lit ? "text-on-sun" : hit.amount > 0 && hit.icon === "movimento" ? "text-pos" : "text-text-2")}>
+          <span className={cn("shrink-0 font-heading text-sm tabular-nums", lit ? "text-on-spotlight-lit" : hit.amount > 0 && hit.icon === "movimento" ? "text-pos" : "text-text-2")}>
             {formatCurrency(hit.amount, currency, { locale })}
           </span>
         ) : null}

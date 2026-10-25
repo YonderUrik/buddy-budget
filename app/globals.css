@@ -49,6 +49,11 @@
   --color-glass-pill: var(--glass-pill);
   --color-spotlight: var(--spotlight);
   --color-spotlight-edge: var(--spotlight-edge);
+  --color-spotlight-lit: var(--spotlight-lit);
+  --color-on-spotlight-lit: var(--on-spotlight-lit);
+  --color-on-spotlight-lit-2: var(--on-spotlight-lit-2);
+  --color-spotlight-lit-icon: var(--spotlight-lit-icon);
+  --color-on-spotlight-lit-icon: var(--on-spotlight-lit-icon);
   --color-island-foreground: var(--island-foreground);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
@@ -199,6 +204,12 @@
   --spotlight-edge: rgb(0 0 0 / 0.13);
   --spotlight-highlight: rgb(255 255 255 / 0.85);
   --spotlight-shadow: rgb(15 23 42 / 0.3);
+  /* The chosen result: a light wash of the brand blue over the glass, its icon filled with the same blue. */
+  --spotlight-lit: color-mix(in oklab, var(--primary) 15%, transparent);
+  --on-spotlight-lit: var(--foreground);
+  --on-spotlight-lit-2: var(--text-2);
+  --spotlight-lit-icon: var(--primary);
+  --on-spotlight-lit-icon: var(--primary-foreground);
   /* Isola dei lavori in corso: sempre scura, in entrambi i temi (come l'isola dei telefoni). */
   --island: #0f0f12;
   --island-foreground: #f4f4f5;
@@ -319,6 +330,11 @@
   --spotlight-edge: rgb(255 255 255 / 0.16);
   --spotlight-highlight: rgb(255 255 255 / 0.12);
   --spotlight-shadow: rgb(0 0 0 / 0.6);
+  --spotlight-lit: color-mix(in oklab, var(--primary) 26%, transparent);
+  --on-spotlight-lit: var(--foreground);
+  --on-spotlight-lit-2: var(--text-2);
+  --spotlight-lit-icon: var(--primary);
+  --on-spotlight-lit-icon: var(--primary-foreground);
 }
 
 @layer base {

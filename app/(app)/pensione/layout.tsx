@@ -7,7 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { PENSION_TABS, PensionEmptyState, PensionFundSelector } from "@/components/domain/pension";
-import { LoadError, SectionHeading, SectionTabs } from "@/components/domain/shared";
+import { LoadError, PAGE_FRAME, SectionHeading, SectionTabs } from "@/components/domain/shared";
 import { PensionProvider, usePensionView } from "@/lib/pension/pension-context";
 import { useCreatePensionFundMutation } from "@/lib/queries/pension";
 
@@ -17,7 +17,7 @@ function PensioneShell({ children }: { children: React.ReactNode }) {
   const view = usePensionView();
   const createFund = useCreatePensionFundMutation();
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+    <div className={PAGE_FRAME}>
       <div className="flex flex-col gap-3">
         <SectionHeading
           title={tr("Pensione")}

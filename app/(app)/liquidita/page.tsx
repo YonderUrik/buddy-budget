@@ -6,7 +6,8 @@ import { useLocalization } from "@/lib/localization/provider";
 import Link from "next/link";
 import * as React from "react";
 import { ArrowLeftRightIcon } from "lucide-react";
-import { EmptyState, LoadError } from "@/components/domain/shared";
+import { cn } from "@/lib/utils";
+import { EmptyState, LoadError, PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 import {
   LIQUIDITY_HREF,
   LiquidityOverview,
@@ -80,8 +81,8 @@ export default function LiquiditaPage() {
     <div className="flex flex-col gap-8">
       <LiquidityOverview />
       <Link href="/importazioni" className="text-sm font-medium text-primary hover:underline">{tr("Importa da CSV o Excel →")}</Link>
-      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-        <div className="flex flex-col gap-2">
+      <div className={PAGE_SPLIT}>
+        <div className={cn(PAGE_SPLIT_MAIN, "gap-2")}>
           <MovementsToolbar
             searchText={searchText}
             onSearchTextChange={setSearchText}
@@ -123,6 +124,7 @@ export default function LiquiditaPage() {
           )}
         </div>
         <MonthAside
+          className={PAGE_SPLIT_SIDE}
           income={income}
           spent={spent}
           typicalSoFar={pace.typicalSoFar}

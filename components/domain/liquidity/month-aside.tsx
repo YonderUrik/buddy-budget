@@ -25,9 +25,11 @@ export interface MonthAsideProps {
   currency: string;
   analysisHref: string;
   fixHref: string;
+  /** Extra classes for the column (e.g. its place in the page split). */
+  className?: string;
 }
 
-export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currency, analysisHref, fixHref }: MonthAsideProps) {
+export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currency, analysisHref, fixHref, className }: MonthAsideProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -36,7 +38,7 @@ export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currenc
   const left = income - spent;
   const groupMax = Math.max(...EXPENSE_GROUP_KEYS.map((key) => groups[key]), 1);
   return (
-    <aside className="flex flex-col gap-8" aria-label={tr("Il mese")}>
+    <aside className={cn("flex flex-col gap-8", className)} aria-label={tr("Il mese")}>
       <section>
         <SectionTitle icon={CalendarDaysIcon} title={tr("Il mese")} color="var(--swatch-teal)" href={analysisHref} linkLabel={tr("Analisi")} />
         <div className="flex flex-col gap-1.5">

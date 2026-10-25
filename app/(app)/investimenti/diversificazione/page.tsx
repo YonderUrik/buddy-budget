@@ -21,6 +21,7 @@ import type { InstrumentType } from "@/lib/db/schema/investments";
 import { CURRENCY_EXPOSURE_THRESHOLD, computeCurrencyExposure } from "@/lib/investments/insights";
 import { INSTRUMENT_TYPE_LABELS, INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsView } from "@/lib/queries/investments-view";
+import { PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 
 function typeLabel(key: string): string {
   return INSTRUMENT_TYPE_LABELS[key as InstrumentType] ?? key;
@@ -46,8 +47,8 @@ export default function DiversificazionePage() {
       onRetry={() => overview.refetch()}
     >
       {view ? (
-        <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
-          <div className="flex flex-col gap-10 lg:col-span-3">
+        <div className={PAGE_SPLIT}>
+          <div className={PAGE_SPLIT_MAIN}>
           <PortfolioComposition
             currency={currency}
             groups={[
@@ -68,7 +69,7 @@ export default function DiversificazionePage() {
           />
           {view.analysis.exposureRows.length > 0 ? <DiversificationCard analysis={view.analysis} currency={currency} /> : null}
           </div>
-          <div className="flex flex-col gap-10 lg:col-span-2">
+          <div className={PAGE_SPLIT_SIDE}>
           <AllocationCard
             allocation={view.analysis.allocation}
             targets={view.analysis.targets}

@@ -125,7 +125,7 @@ export function CategoryBoard({ categories }: CategoryBoardProps) {
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 @2xl/main:grid-cols-2 @5xl/main:grid-cols-3">
         {sections.groups.map((group) =>
           column(group.key, group.key, {
             title: EXPENSE_GROUPS[group.key].label,

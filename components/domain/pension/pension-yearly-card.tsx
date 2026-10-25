@@ -10,6 +10,7 @@ import type { YearBreakdown } from "@/lib/calc/pension";
 import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 import { PensionYearlyTooltip } from "./pension-yearly-tooltip";
+import { PAGE_BLEED } from "@/components/domain/shared";
 
 export interface PensionYearlyCardProps {
   years: YearBreakdown[];
@@ -47,7 +48,7 @@ export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
       description={tr("Quanto hai versato e quanto ha reso il fondo in ogni anno, anche in percentuale: rendimento diviso per il valore a inizio anno più i versamenti. * anno in corso, non annualizzato.")}
     >
       <div className="flex flex-col gap-4">
-        <div className="-mx-4 sm:-mx-6">
+        <div className={PAGE_BLEED}>
           <ChartContainer config={CHART_CONFIG} className="w-full" style={{ height: CHART_HEIGHT }}>
             <BarChart data={data} stackOffset="sign" margin={{ left: 0, right: 0 }}>
               <XAxis dataKey="label" tickLine={false} axisLine={false} padding={{ left: 16, right: 16 }} />

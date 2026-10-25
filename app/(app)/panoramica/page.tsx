@@ -15,7 +15,7 @@ import {
 } from "@/components/domain/net-worth";
 import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
 import { GoalsPanoramicaSection, useGoalFormatters } from "@/components/domain/goals";
-import { EmptyState, LoadError } from "@/components/domain/shared";
+import { EmptyState, LoadError, PAGE_FRAME, PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 import { StartChecklistSection } from "@/components/domain/start";
 import { WhatsNewSection } from "@/components/domain/whats-new";
 import { track } from "@/lib/analytics";
@@ -159,7 +159,7 @@ export default function PanoramicaPage() {
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+    <div className={PAGE_FRAME}>
       <OverviewVoice
         firstName={hydrated ? session?.user.name?.split(" ")[0] : undefined}
         dateLabel={headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}
@@ -205,17 +205,17 @@ export default function PanoramicaPage() {
             onPensionIncludedChange={setPensionIncluded}
             refreshState={refreshState}
           />
-          <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
-            <div className="flex flex-col gap-10 lg:col-span-3">
+          <div className={PAGE_SPLIT}>
+            <div className={PAGE_SPLIT_MAIN}>
               <NetWorthCompositionRow items={compositionItems} currency={currency} title={tr("Dove sta il patrimonio")}
-                className="bg-transparent p-0 ring-0"
+                className="gap-4 bg-transparent ring-0 [--card-spacing:0px]"
                 onSliceSelect={(key) => {
                   if (key === "liquidita" || key === "investimenti" || key === "previdenza") track("overview_composition_slice_selected", { assetClass: key });
                 }}
               />
               <MonthPaceSection pace={pace} monthLabel={monthLabel} currency={currency} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_MONTH })} />
             </div>
-            <div className="flex flex-col gap-8 lg:col-span-2">
+            <div className={PAGE_SPLIT_SIDE}>
               <UpcomingDuesSection dues={dues} currency={currency} footnote={debtsFootnote} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_DUES })} />
               {goalsAvailable && goalsQuery.data ? (
                 <GoalsPanoramicaSection

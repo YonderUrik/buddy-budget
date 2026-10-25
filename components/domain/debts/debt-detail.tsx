@@ -21,7 +21,6 @@ import { PanelSection } from "@/components/domain/investments/light";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { todayIso } from "@/lib/debts/dates";
 import type { DebtView } from "@/lib/debts/view";
-import { cn } from "@/lib/utils";
 import { useBulkPayDebtMutation, useDeleteDebtEventMutation, useDeleteDebtMutation } from "@/lib/queries/debts";
 import { DebtEventDialog, type DebtEventDialogKind } from "./debt-event-dialog";
 import { DebtEventsList } from "./debt-events-list";
@@ -34,7 +33,7 @@ import { PayInstallmentDialog } from "./pay-installment-dialog";
 import { START_MODE_LABELS } from "./debt-status";
 import { DEBTS_COLORS } from "./debts-theme";
 import { errorToast } from "@/lib/support/request-report";
-import { PAGE_TITLE } from "@/components/domain/shared";
+import { PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE, PAGE_TITLE } from "@/components/domain/shared";
 
 export interface DebtDetailProps {
   debt: DebtView;
@@ -83,13 +82,13 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
           )
         }
       />
-      <div className="grid grid-cols-1 items-start gap-x-10 gap-y-10 lg:grid-cols-5">
+      <div className={PAGE_SPLIT}>
         {debt.plan.totals.finished ? null : (
-          <div className="min-w-0 lg:col-span-3">
+          <div className={PAGE_SPLIT_MAIN}>
             <DebtSimulationPanel debt={debt} currency={currency} onOpenEarly={() => setEarlyOpen(true)} />
           </div>
         )}
-        <div className={cn("min-w-0", debt.plan.totals.finished ? "lg:col-span-5" : "lg:col-span-2")}>
+        <div className={debt.plan.totals.finished ? "min-w-0 @4xl/main:col-span-5" : PAGE_SPLIT_SIDE}>
           <PanelSection icon={HistoryIcon} title={tr("Cosa hai registrato")} color={DEBTS_COLORS.events}>
             <DebtEventsList
               events={debt.events}

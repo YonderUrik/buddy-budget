@@ -24,6 +24,7 @@ import { projectPension, type ProjectionRates } from "@/lib/calc/pension";
 import { PensionChartTooltip } from "./pension-chart-tooltip";
 import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
+import { PAGE_BLEED } from "@/components/domain/shared";
 
 export interface PensionProjectionCardProps {
   startValue: number;
@@ -79,7 +80,7 @@ export function PensionProjectionCard({ startValue, defaultQuarterlyContribution
           ))}
         </dl>
 
-        <div className="-mx-4 sm:-mx-6">
+        <div className={PAGE_BLEED}>
           <ChartContainer config={CHART_CONFIG} className="w-full" style={{ height: CHART_HEIGHT }}>
             <ComposedChart data={points} margin={{ left: 0, right: 0 }}>
               <XAxis dataKey="year" tickLine={false} axisLine={false} tickFormatter={(y) => tr("{0}a", {0: y})} minTickGap={24} padding={{ left: 16, right: 16 }} />

@@ -9,7 +9,7 @@ import { isCountryPathAvailable } from "@/lib/localization/config";
  * A single security's page stands on its own: no heading or tabs, only the shared dialogs.
  */
 
-import { SectionHeading } from "@/components/domain/shared";
+import { PAGE_FRAME, SectionHeading } from "@/components/domain/shared";
 import * as React from "react";
 import { BrokerSelectionProvider } from "@/lib/investments/broker-selection";
 import { usePathname } from "next/navigation";
@@ -48,7 +48,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
 
   return (
     <BrokerSelectionProvider><InvestmentsActionsProvider value={actions}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+      <div className={PAGE_FRAME}>
         {isTitlePage ? null : (
           <div className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-3">

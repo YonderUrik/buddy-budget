@@ -83,7 +83,7 @@ export function ScenarioControls(props: ScenarioControlsProps) {
   const active = hasScenario(overrides);
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 @3xl/main:grid-cols-4">
         {rows.map((row) => {
           const spec = scenarioSlider(row.field, row.baseline);
           const value = overrides[row.field] ?? row.baseline;

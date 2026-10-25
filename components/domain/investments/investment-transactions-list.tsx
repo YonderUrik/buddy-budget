@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import * as React from "react";
-import { SegmentedControl } from "@/components/domain/shared";
+import { PAGE_BLEED, SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftRightIcon } from "lucide-react";
 import { PanelSection } from "./panel-section";
@@ -83,7 +83,7 @@ export function InvestmentTransactionsList({
       {months.length === 0 ? (
         <p className="text-sm text-muted-foreground">{tr("Nessuna operazione registrata.")}</p>
       ) : (
-        <div className="-mx-4 sm:-mx-6">
+        <div className={PAGE_BLEED}>
           {visible.map((group) => (
             <OperationMonthGroup
               key={group.key}

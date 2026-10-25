@@ -22,7 +22,7 @@ import {
   TitleStatsCard,
   useInvestmentsActions,
 } from "@/components/domain/investments";
-import { LoadError } from "@/components/domain/shared";
+import { LoadError, PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 import { TITLE_DEFAULT_CHART_PERIOD, type TitleChartPeriod } from "@/lib/investments/title-stats";
 import { useTitleAnalysisQuery, useWatchMutation } from "@/lib/queries/titles";
 
@@ -67,8 +67,8 @@ export default function TitoloPage() {
         stock={data.stock}
         dividends={data.dividends}
       />
-      <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
-        <div className="flex flex-col gap-10 lg:col-span-3">
+      <div className={PAGE_SPLIT}>
+        <div className={PAGE_SPLIT_MAIN}>
           <TitlePriceChart
             series={data.series}
             currency={instrument.currency}
@@ -83,7 +83,7 @@ export default function TitoloPage() {
           ) : null}
           {data.stats ? <TitleStatsCard stats={data.stats} currency={instrument.currency} /> : null}
         </div>
-        <div className="flex flex-col gap-10 lg:col-span-2">
+        <div className={PAGE_SPLIT_SIDE}>
           {data.position ? <TitlePositionCard position={data.position} currency={instrument.currency} /> : null}
           {data.stats ? <TitleRiskSection stats={data.stats} /> : null}
           <TitleInsideFunds funds={data.insideFunds} />

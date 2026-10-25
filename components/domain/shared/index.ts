@@ -31,6 +31,7 @@ export type { FormDialogContentProps, FormDialogSize } from "./form-dialog";
 export { InlineOrSheet } from "./inline-or-sheet";
 export type { InlineOrSheetLayout, InlineOrSheetProps } from "./inline-or-sheet";
 export { PAGE_TITLE, PAGE_TITLE_FACE, SECTION_TITLE } from "./page-title";
+export { PAGE_BLEED, PAGE_FRAME, PAGE_READABLE, PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "./page-layout";
 export { SimulationResult } from "./simulation-result";
 export type { SimulationResultProps, SimulationResultTone } from "./simulation-result";
 export { BackLink } from "./back-link";

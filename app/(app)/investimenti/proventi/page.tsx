@@ -18,7 +18,7 @@ import {
   MissingIncomeCard,
   useInvestmentsActions,
 } from "@/components/domain/investments";
-import { LoadError } from "@/components/domain/shared";
+import { LoadError, PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 import { startOfDay } from "@/lib/calc/expenses";
 import type { Instrument } from "@/lib/db/schema/investments";
 import type { MissingIncome } from "@/lib/investments/dividends";
@@ -97,15 +97,15 @@ function ItalianPage() {
       {pending > 0 ? (
         <p className="text-sm text-muted-foreground" role="status">{tr("Scarico lo storico dei dividendi di")}{" "}{pending === 1 ? tr("uno strumento") : tr("{0} strumenti", {0: pending})}{"…"}</p>
       ) : null}
-      <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
-        <div className="flex flex-col gap-10 lg:col-span-3">
+      <div className={PAGE_SPLIT}>
+        <div className={PAGE_SPLIT_MAIN}>
           {view.byMonth.length > 0 ? <IncomeMonthsCard payments={view.history.payments} instrumentsById={view.instrumentsById} years={view.byMonth} currency={currency} /> : null}
           {view.byInstrument.length > 0 ? (
             <IncomeInstrumentsCard payments={view.history.payments} rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
           ) : null}
           {view.byMonth.length === 0 ? <p className="rounded-xl bg-muted/50 p-6 text-sm text-muted-foreground">{tr("Nessun dividendo o cedola registrato.")}</p> : null}
         </div>
-        <div className="flex flex-col gap-10 lg:col-span-2">
+        <div className={PAGE_SPLIT_SIDE}>
           {view.missing.length > 0 ? (
             <MissingIncomeCard
               missing={view.missing}

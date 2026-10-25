@@ -10,7 +10,7 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { HelpCircle } from "lucide-react";
 import { ANALYTICS_TABS, GOALS_BASE_PATH, WalkthroughDialog } from "@/components/domain/analytics";
-import { LoadError, SectionHeading, SectionTabs } from "@/components/domain/shared";
+import { LoadError, PAGE_FRAME, SectionHeading, SectionTabs } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { AnalyticsProvider, useAnalytics } from "@/lib/analitiche/analytics-context";
@@ -47,7 +47,7 @@ function GoalsShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const detail = pathname.length > GOALS_BASE_PATH.length + 1;
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+    <div className={PAGE_FRAME}>
       {detail ? null : <Header />}
       {children}
       <p className="text-xs text-muted-foreground">{tr(DISCLAIMER)}</p>
@@ -96,7 +96,7 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+    <div className={PAGE_FRAME}>
       <Header
         action={
           <Button

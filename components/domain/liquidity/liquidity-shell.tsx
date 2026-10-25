@@ -20,6 +20,7 @@ import { LiquidityProvider } from "./liquidity-context";
 import { LiquidityHeader } from "./liquidity-header";
 import { LiquidityNoAccounts, NO_ACCOUNT_TABS } from "./liquidity-no-accounts";
 import { LIQUIDITY_ACCOUNT_PARAM, LIQUIDITY_TABS } from "./liquidity-nav";
+import { PAGE_FRAME } from "@/components/domain/shared";
 
 const SUBTITLE = "Conti, saldi e movimenti in un posto solo";
 
@@ -59,7 +60,7 @@ function Frame({ children }: { children: React.ReactNode }) {
 
   return (
     <LiquidityActionsProvider value={actions}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6">
+      <div className={PAGE_FRAME}>
         <LiquidityHeader subtitle={SUBTITLE} tabs={LIQUIDITY_TABS} activeHref={pathname} />
         {needsAccount ? <LiquidityNoAccounts href={pathname} onAddAccount={addAccount} /> : children}
       </div>

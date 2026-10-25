@@ -18,7 +18,7 @@ import {
   TaxRegimeNote,
   TaxYearCard,
 } from "@/components/domain/investments";
-import { LoadError } from "@/components/domain/shared";
+import { LoadError, PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 import { startOfDay } from "@/lib/calc/expenses";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { buildTaxView } from "@/lib/investments/tax-view";
@@ -47,8 +47,8 @@ function ItalianPage() {
   const manualLosses = view.carryforwards.map((c) => ({ year: c.year, amount: Number(c.amount) }));
   return (
     <>
-      <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
-        <div className="flex flex-col gap-10 lg:col-span-3">
+      <div className={PAGE_SPLIT}>
+        <div className={PAGE_SPLIT_MAIN}>
           {view.report.years.length > 0 ? (
             <TaxYearCard years={view.report.years} regime={view.regime} currency={currency} currentYear={view.currentYear} />
           ) : null}
@@ -65,7 +65,7 @@ function ItalianPage() {
           ) : null}
           <InstrumentTaxListCard instruments={view.rateListInstruments} resolved={view.resolved} onEdit={setEditing} />
         </div>
-        <div className="flex flex-col gap-10 lg:col-span-2">
+        <div className={PAGE_SPLIT_SIDE}>
           <LossCarryforwardCard losses={view.report.losses} carryforwards={view.carryforwards} currency={currency} currentYear={view.currentYear} />
           <TaxOpportunitiesCard opportunities={view.opportunities} instrumentsById={view.instrumentsById} currency={currency} currentYear={view.currentYear} />
         </div>

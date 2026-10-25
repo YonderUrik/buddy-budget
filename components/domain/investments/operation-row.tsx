@@ -82,7 +82,7 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
     remainingNote(insight),
   ].filter(Boolean);
   return (
-    <li className="flex items-center gap-3 px-4 py-3 sm:px-6">
+    <li className="flex items-center gap-3 px-4 py-3 sm:px-6 md:px-3">
       {instrument ? <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} size="sm" className="hidden sm:flex" /> : null}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">

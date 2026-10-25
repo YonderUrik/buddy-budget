@@ -11,7 +11,7 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { AddDebtDialog, DebtsActionsProvider } from "@/components/domain/debts";
 import { authClient } from "@/lib/auth/client";
-import { PAGE_TITLE } from "@/components/domain/shared";
+import { PAGE_FRAME, PAGE_TITLE } from "@/components/domain/shared";
 
 /** Pagine di dettaglio dei singoli finanziamenti. */
 const DETAIL_PAGES_BASE = "/debiti/finanziamenti";
@@ -25,7 +25,7 @@ export default function DebitiLayout({ children }: { children: React.ReactNode }
 
   return (
     <DebtsActionsProvider value={actions}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+      <div className={PAGE_FRAME}>
         <div className={isDetail ? "hidden" : "flex flex-col gap-3"}>
           <div>
             <h1 className={PAGE_TITLE}>{tr("Debiti")}</h1>

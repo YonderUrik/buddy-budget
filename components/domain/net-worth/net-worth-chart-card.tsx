@@ -11,7 +11,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { Area, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
-import { SegmentedControl } from "@/components/domain/shared";
+import { PAGE_BLEED, SegmentedControl } from "@/components/domain/shared";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
@@ -177,7 +177,7 @@ export function NetWorthChartCard({
       {hasHistory ? (
         <div className="flex flex-col gap-4">
           <p className="sr-only">{chartSummary}</p>
-          <div className="relative -mx-4 sm:-mx-6">
+          <div className={cn(PAGE_BLEED, "relative")}>
             <ChartRefreshNote state={refreshState} />
             <ChartContainer config={buildChartConfig(allClasses)} className={cn("aspect-auto h-60 w-full transition-opacity duration-200 sm:h-80", refreshState && "opacity-50")}>
               {isTotalView ? (

@@ -22,9 +22,10 @@ import {
   useRecentLogin,
   type SettingsGroupId,
 } from "@/components/domain/settings";
-import { LoadError, PAGE_TITLE } from "@/components/domain/shared";
+import { LoadError, PAGE_FRAME, PAGE_TITLE } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import { useUserSettingsQuery } from "@/lib/queries/user-settings";
+import { cn } from "@/lib/utils";
 
 /** Vecchi indirizzi con ancora (es. nelle email già inviate) → gruppo che oggi contiene quella sezione. */
 const LEGACY_HASH_GROUPS: Record<string, SettingsGroupId> = {
@@ -70,7 +71,7 @@ function ImpostazioniContent() {
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+    <div className={PAGE_FRAME}>
       {/* Su telefono, dentro un gruppo, in cima c'è «‹ Impostazioni»: il titolo della pagina lo ripeterebbe. */}
       <div className={selected ? "max-md:hidden" : undefined}>
         <h1 className={PAGE_TITLE}>{tr("Impostazioni")}</h1>
@@ -125,7 +126,7 @@ function ImpostazioniContent() {
 
 export default function ImpostazioniPage() {
   return (
-    <React.Suspense fallback={<div className="mx-auto h-64 max-w-5xl p-4 sm:p-6" aria-busy="true" />}>
+    <React.Suspense fallback={<div className={cn(PAGE_FRAME, "h-64")} aria-busy="true" />}>
       <ImpostazioniContent />
     </React.Suspense>
   );

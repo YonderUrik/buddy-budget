@@ -11,7 +11,8 @@ import { ReportForm } from "./report-form";
 import { useReportContext } from "./use-report-context";
 import { track } from "@/lib/analytics";
 import { REPORT_KINDS, STATUS_URL, type ReportKind } from "@/lib/support";
-import { PAGE_TITLE, SECTION_TITLE } from "@/components/domain/shared";
+import { PAGE_FRAME, PAGE_READABLE, PAGE_TITLE, SECTION_TITLE } from "@/components/domain/shared";
+import { cn } from "@/lib/utils";
 
 /** A help section: condensed title and one line of description, no icon tile (`icon` is kept for callers). */
 function Section({ id, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
@@ -39,7 +40,7 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
   const context = useReportContext(from);
   const initialKind = (REPORT_KINDS as readonly string[]).includes(kind ?? "") ? (kind as ReportKind) : undefined;
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-8 p-4 sm:gap-10 sm:p-6">
+    <div className={cn(PAGE_FRAME, PAGE_READABLE, "gap-8 sm:gap-10")}>
       <div>
         <h1 className={PAGE_TITLE}>{tr("Aiuto e segnalazioni")}</h1>
         <p className="text-sm text-muted-foreground">{tr("Puoi scriverci anche da qualsiasi pagina, con l'icona del fumetto, e dai messaggi d'errore.")}</p>

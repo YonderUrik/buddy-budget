@@ -8,7 +8,8 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDownToLineIcon, PieChartIcon, PiggyBankIcon } from "lucide-react";
-import { LoadError } from "@/components/domain/shared";
+import { cn } from "@/lib/utils";
+import { LoadError, PAGE_BLEED, PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 import { MoneyHero } from "@/components/domain/net-worth";
 import {
   LIQUIDITY_HREF,
@@ -126,7 +127,7 @@ export default function LiquiditaAnalisiPage() {
             {money(Math.abs(delta))}{" "}<span className="font-sans font-normal text-text-2">{tr("rispetto al periodo prima")}</span>
           </p>
         )}
-        <div className="-mx-4 mt-2 sm:-mx-6">
+        <div className={cn(PAGE_BLEED, "mt-2")}>
           <TrendChart
             points={curve.map((p) => ({ label: p.date, value: p.value }))}
             reference={typical ?? undefined}
@@ -138,8 +139,8 @@ export default function LiquiditaAnalisiPage() {
         </div>
         {typical && <p className="mt-2 text-sm text-text-2">{tr("La linea tratteggiata è la tua spesa media nello stesso tratto di mese.")}</p>}
       </section>
-      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <section aria-label={tr("Dove vanno i soldi")}>
+      <div className={PAGE_SPLIT}>
+        <section aria-label={tr("Dove vanno i soldi")} className={PAGE_SPLIT_MAIN}>
           <SectionTitle
             icon={PieChartIcon}
             title={tr("Dove vanno i soldi")}
@@ -160,7 +161,7 @@ export default function LiquiditaAnalisiPage() {
             />
           )}
         </section>
-        <div className="flex flex-col gap-8">
+        <div className={PAGE_SPLIT_SIDE}>
           <section aria-label={tr("Da dove arrivano")}>
             <SectionTitle icon={ArrowDownToLineIcon} title={tr("Da dove arrivano")} color="var(--pos)" />
             {sources.length === 0 ? (

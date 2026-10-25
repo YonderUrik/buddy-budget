@@ -135,7 +135,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
           id={MAIN_CONTENT_ID}
           className={cn(
             // Unico contenitore che scorre: mai di lato (un elemento che sborda non deve aprire una seconda barra).
-            "flex-1 overflow-x-hidden overflow-y-auto",
+            "@container/main flex-1 overflow-x-hidden overflow-y-auto",
             // Transizione coordinata con la sidebar per un resize fluido.
             "transition-[margin] duration-300 ease-in-out"
           )}

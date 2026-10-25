@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { parseDateOnly } from "@/lib/calc/expenses";
 import { useBackfillStatusQuery } from "@/lib/queries/investments";
 import { usePerformanceView } from "@/lib/queries/performance";
+import { PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 
 /** Rendimenti con anteprima alla data; grafico, rischio e heatmap condividono l’intervallo selezionato. */
 export default function PerformancePage() {
@@ -38,15 +39,15 @@ export default function PerformancePage() {
         <p className="text-sm">{tr("Intervallo selezionato sul grafico ·")}{" "}{periodLabel}</p>
         <Button variant="outline" size="sm" onClick={performance.resetSelection}>{tr("Torna al periodo scelto")}</Button>
       </div> : null}
-      <div className="grid min-w-0 grid-cols-1 gap-10 lg:grid-cols-5">
-      <div className="min-w-0 lg:col-span-3">
+      <div className={PAGE_SPLIT}>
+      <div className={PAGE_SPLIT_MAIN}>
       {view.returns ? <ReturnsCard returns={view.returns} inspected={performance.inspected}
         onInspect={performance.inspectDate} onSelectRange={performance.selectRange}
         benchmark={view.benchmark} benchmarkFirstPriceDate={view.benchmarkFirstPriceDate}
         benchmarkBackfill={benchmarkBackfill} currency={currency} />
         : <p role="status" className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">{tr("Nessuna operazione nell’intervallo scelto. Seleziona un altro periodo.")}</p>}
       </div>
-      <div className="min-w-0 lg:col-span-2">
+      <div className={PAGE_SPLIT_SIDE}>
       {view.analysis.risk ? <RiskCard risk={view.analysis.risk} period={performance.calculationPeriod}
         periodLabel={tr("Periodo del grafico · {0}", {0: periodLabel})} benchmarkName={view.benchmark?.name ?? null} currency={currency} /> : null}
       </div>

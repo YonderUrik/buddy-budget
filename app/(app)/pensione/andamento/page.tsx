@@ -8,6 +8,7 @@ import { PensionNoSnapshots, PensionSection, PensionTrendChart, PensionYearlyCar
 
 import { yearlyBreakdown } from "@/lib/calc/pension";
 import { usePensionView } from "@/lib/pension/pension-context";
+import { PAGE_BLEED } from "@/components/domain/shared";
 
 export default function PensioneAndamentoPage() {
   const { t: tr } = useLocalization();
@@ -16,7 +17,7 @@ export default function PensioneAndamentoPage() {
   return (
     <div className="flex flex-col gap-10">
       <PensionSection icon={ChartLineIcon} title={tr("Andamento del fondo")} color="var(--primary)" description={tr("I contributi versati e il controvalore del fondo, fotografia dopo fotografia.")}>
-        <div className="-mx-4 sm:-mx-6">
+        <div className={PAGE_BLEED}>
           <PensionTrendChart snapshots={snapshots} currency={currency} />
         </div>
       </PensionSection>

@@ -10,6 +10,7 @@ import { DebtsExitCard, DebtsHero, DebtsInterestCard, DebtsListCard, DebtsUpcomi
 import { authClient } from "@/lib/auth/client";
 import { yearlyInterestShares } from "@/lib/debts/overview-insights";
 import { useDebtsQuery } from "@/lib/queries/debts";
+import { PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 
 export default function DebitiPage() {
   const { data: session } = authClient.useSession();
@@ -25,12 +26,12 @@ export default function DebitiPage() {
       {data && interest ? (
         <div className="flex flex-col gap-8 sm:gap-10">
           <DebtsHero totalDebt={data.overview.totalDebt} currency={currency} openCount={open.length} freeDate={freeDate} />
-          <div className="grid grid-cols-1 items-start gap-x-10 gap-y-10 lg:grid-cols-5">
-            <div className="flex min-w-0 flex-col gap-10 lg:col-span-3">
+          <div className={PAGE_SPLIT}>
+            <div className={PAGE_SPLIT_MAIN}>
               <DebtsUpcomingCard items={data.overview.nextDue} debts={data.debts} currency={currency} />
               <DebtsListCard debts={data.debts} currency={currency} />
             </div>
-            <div className="flex min-w-0 flex-col gap-10 lg:col-span-2">
+            <div className={PAGE_SPLIT_SIDE}>
               <DebtsExitCard debts={data.debts} currency={currency} />
               <DebtsInterestCard interest={interest} currency={currency} />
             </div>

@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import type { ReactNode } from "react";
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { MoneyHero } from "@/components/domain/net-worth";
-import { InfoHint } from "@/components/domain/shared";
+import { InfoHint, PAGE_BLEED } from "@/components/domain/shared";
 import type { PensionPerformance, PensionSnapshot } from "@/lib/calc/pension";
 import { cn } from "@/lib/utils";
 import { localizedPensionFormats } from "./pension-format";
@@ -61,7 +61,7 @@ export function PensionHero({ name, performance, snapshots, currency, className 
         </span>
         <span className="text-text-2">{up ? tr("di guadagno") : tr("di perdita")}{" "}{tr("sui contributi versati")}</span>
       </p>
-      <div className="-mx-4 mt-2 sm:-mx-6">
+      <div className={cn(PAGE_BLEED, "mt-2")}>
         <PensionTrendChart snapshots={snapshots} currency={currency} />
       </div>
       <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">

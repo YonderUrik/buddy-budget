@@ -15,7 +15,7 @@ import {
   PersonalImportUpload,
 } from "@/components/domain/personal-import";
 import { usePersonalImportsQuery } from "@/lib/queries/personal-imports";
-import { PAGE_TITLE as PAGE_TITLE_CLASS } from "@/components/domain/shared";
+import { PAGE_FRAME, PAGE_READABLE, PAGE_TITLE as PAGE_TITLE_CLASS } from "@/components/domain/shared";
 import { cn } from "@/lib/utils";
 
 const LIST_ID = "le-tue-importazioni";
@@ -38,7 +38,7 @@ function PersonalImports() {
   const reportJob = receipt ? jobs?.find((j) => j.id === receipt.jobId) ?? ({ id: receipt.jobId } as NonNullable<typeof jobs>[number]) : selectedJob;
   const reportFile: PersonalImportReceiptFile = receipt?.file ?? { name: tr("Importazione del {0}", { 0: reportJob?.createdAt ? new Date(reportJob.createdAt).toLocaleDateString(formattingLocale, { day: "numeric", month: "long" }) : "" }).trim(), source: listing.data?.formats.find((f) => f.id === reportJob?.formatId)?.name ?? "File" };
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 sm:p-6">
+    <div className={cn(PAGE_FRAME, PAGE_READABLE, "gap-8 sm:gap-8")}>
       <header className="flex flex-col gap-2">
         <h1 className={cn("flex items-center gap-2", PAGE_TITLE_CLASS)}>
           <FileSpreadsheet className="size-7 text-muted-foreground" aria-hidden="true" />
@@ -62,7 +62,7 @@ function PersonalImports() {
 
       {receipt ? null : <div id="nuovo-import" className="scroll-mt-6"><PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobId, file) => { setSelected(jobId); setReceipt({ jobId, file }); }} /></div>}
       <div id={LIST_ID} className="scroll-mt-6"><PersonalImportList onRetry={() => { setReceipt(null); setSelected(null); requestAnimationFrame(() => document.getElementById("nuovo-import")?.scrollIntoView({ behavior: "smooth", block: "start" })); }} listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={setSelected} /></div>
-    </main>
+    </div>
   );
 }
 

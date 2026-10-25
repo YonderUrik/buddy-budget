@@ -89,7 +89,7 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
           </p>
         ) : (
           <>
-            <ChartContainer config={config} className="-mx-4 h-56 w-[calc(100%+2rem)] sm:-mx-6 sm:h-72 sm:w-[calc(100%+3rem)] lg:mx-0 lg:w-full">
+            <ChartContainer config={config} className="-mx-4 h-56 w-[calc(100%+2rem)] sm:-mx-6 sm:h-72 sm:w-[calc(100%+3rem)] md:mx-0 md:w-full">
               <AreaChart data={series} margin={{ left: 4, right: 8 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis

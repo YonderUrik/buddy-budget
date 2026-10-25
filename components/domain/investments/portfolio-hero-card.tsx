@@ -26,6 +26,7 @@ import type { ValueBreakdown } from "@/lib/investments/insights";
 
 import { cn } from "@/lib/utils";
 import { ValueBreakdownBar } from "./value-breakdown-bar";
+import { PAGE_BLEED } from "@/components/domain/shared";
 
 const CHART_CONFIG = {
   value: { label: "Valore", color: "var(--primary)" },
@@ -136,7 +137,7 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
       ) : null}
       {hasHistory ? (
         <div className="flex flex-col gap-3 max-sm:order-2">
-          <div className="-mx-4 sm:-mx-6">
+          <div className={PAGE_BLEED}>
             <ChartContainer config={CHART_CONFIG} className="aspect-auto h-60 w-full sm:h-80">
               <AreaChart data={chartData} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
                 <XAxis dataKey="label" hide />

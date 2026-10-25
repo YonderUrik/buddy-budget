@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { ChartRefreshNote, MoneyHero } from "@/components/domain/net-worth";
 import type { ChartRefreshState } from "@/lib/net-worth/refresh-status";
-import { PeriodSelector } from "@/components/domain/shared";
+import { PAGE_BLEED, PeriodSelector } from "@/components/domain/shared";
 
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { cn } from "@/lib/utils";
@@ -71,7 +71,7 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
           </p>
         )}
       </div>
-      <div className="relative -mx-4 mt-2 sm:-mx-6">
+      <div className={cn(PAGE_BLEED, "relative mt-2")}>
         <ChartRefreshNote state={refreshState} />
         <TrendChart points={points} description={tr(description)} height={260} className={cn("transition-opacity duration-200", refreshState && "opacity-50")} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
       </div>

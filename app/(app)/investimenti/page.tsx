@@ -26,6 +26,7 @@ import { computeConcentration, computeValueBreakdown } from "@/lib/investments/i
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useBackfillStatusQuery } from "@/lib/queries/investments";
 import { useInvestmentsView } from "@/lib/queries/investments-view";
+import { PAGE_SPLIT, PAGE_SPLIT_MAIN, PAGE_SPLIT_SIDE } from "@/components/domain/shared";
 
 export default function InvestimentiPage() {
 
@@ -70,8 +71,8 @@ export default function InvestimentiPage() {
               onRangeChange={setCustomRange}
               currency={currency}
             />
-            <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
-              <div className="flex flex-col gap-10 lg:col-span-3">
+            <div className={PAGE_SPLIT}>
+              <div className={PAGE_SPLIT_MAIN}>
                 <PositionsList
                   rows={view.summary.rows}
                   concentration={computeConcentration(view.summary.rows)}
@@ -89,7 +90,7 @@ export default function InvestimentiPage() {
                 />
                 <WatchedTitlesSection />
               </div>
-              <div className="flex flex-col gap-10 lg:col-span-2">
+              <div className={PAGE_SPLIT_SIDE}>
                 <DividendsSummaryCard income={view.income} currency={currency} />
                 <CostDetailsCard impact={view.costImpact} currency={currency} />
               </div>

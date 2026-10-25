@@ -4,9 +4,21 @@ BuddyBudget runs on the staging server with dedicated Docker networks, database,
 volumes, secrets and a Cloudflare tunnel. Staging publishes only a password-protected
 gateway on `127.0.0.1:3080`; its database, Redis and app have no host ports.
 
-Address: **https://budget-staging.mariovallone.com**. The server's existing
-Cloudflare origin certificate is scoped to `mariovallone.com`; moving staging to
-`staging.buddybudget.io` requires configuring that domain separately.
+Intended public address: **https://staging.buddybudget.io**.
+
+The initial deployment currently uses **https://budget-staging.mariovallone.com**
+as a temporary address. The existing Cloudflare origin certificate is scoped to
+`mariovallone.com`; the permanent address needs routing configured in the
+`buddybudget.io` zone before switching the live deployment.
+
+For the final deployment, use `https://staging.buddybudget.io` as the origin passed
+to `init.py`. For the existing installation, configure and verify the new DNS/tunnel
+route, then change the tunnel's hostname and `APP_URL` in the host `.env` together.
+Compose derives `BETTER_AUTH_URL` from `APP_URL`, so sign-in links and codes use the
+same origin. If Google sign-in is enabled, register
+`https://staging.buddybudget.io/api/auth/callback/google` as its staging callback.
+Verify HTTPS, protected access and email sign-in on the permanent address before
+retiring the temporary route.
 
 Initial live verification on 2026-10-25: upgraded from `0.82.0` to `0.88.0`,
 verified captured-email sign-in and sample accounts, and restored a backup into

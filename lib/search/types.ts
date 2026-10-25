@@ -37,6 +37,8 @@ export interface SearchHit {
   /** Amount shown on the right (signed, in the user's currency), for movements, accounts, positions. */
   amount?: number;
   href?: string;
+  /** One movement: opens its detail over the current page instead of going to a page. */
+  movementId?: string;
   /** Opens «Aggiungi» on that form instead of going to a page. */
   quickAdd?: string;
   /** The security itself (public data), so a sentence like «comprato 3 Apple» can open the operation form on it. */

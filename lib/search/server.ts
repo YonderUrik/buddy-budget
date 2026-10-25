@@ -12,6 +12,7 @@ import { and, desc, eq, gte, ilike, ne, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { accounts, categories, debts, goals, pensionFunds, subscriptions, transactions } from "@/lib/db/schema";
 import { searchKnownInstruments } from "@/lib/investments/instruments";
+import { movementsLink } from "@/lib/liquidity/links";
 import { foldText, matchScore, parseAmountQuery } from "./normalize";
 import type { SearchHit, SearchResponse } from "./types";
 
@@ -75,7 +76,8 @@ async function searchMovements(userId: string, query: string, now: Date): Promis
     count,
     account: row.account,
     amount: Number(row.amount),
-    href: count > 1 ? `/liquidita?cerca=${encodeURIComponent(row.description)}` : `/liquidita?movimento=${row.id}`,
+    // One movement opens its detail where the user is; the same merchant many times opens Movimenti on its name.
+    ...(count > 1 ? { href: movementsLink("text", row.description) } : { movementId: row.id }),
     score,
   }));
   const shown = ordered.slice(0, LIMITS.movimenti).reduce((sum, g) => sum + g.count, 0);
@@ -105,9 +107,9 @@ export async function searchEverything(userId: string, query: string, now = new 
   ]);
   const hits: SearchHit[] = [
     ...movements.hits,
-    ...accountRows.map<SearchHit>((a) => ({ key: `conti:${a.id}`, group: "conti", icon: "conto", title: a.name, subtitle: "Conto", amount: Number(a.balance), href: `/liquidita?conto=${a.id}`, score: matchScore(a.name, folded) })),
+    ...accountRows.map<SearchHit>((a) => ({ key: `conti:${a.id}`, group: "conti", icon: "conto", title: a.name, subtitle: "Conto", amount: Number(a.balance), href: movementsLink("account", a.id), score: matchScore(a.name, folded) })),
     ...instrumentRows.map<SearchHit>((i) => ({ key: `titoli:${i.id}`, group: "titoli", icon: "titolo", title: i.name, subtitle: [i.isin, i.currency].filter(Boolean).join(" · "), href: `/investimenti/titoli/${i.id}`, instrument: i, score: Math.max(1, matchScore(i.name, folded), i.isin?.toLowerCase() === folded ? 3 : 0) })),
-    ...categoryRows.map<SearchHit>((c) => ({ key: `categorie:${c.id}`, group: "categorie", icon: "categoria", title: c.name, subtitle: "Categoria · movimenti del mese", href: `/liquidita?categoria=${c.id}`, score: matchScore(c.name, folded) })),
+    ...categoryRows.map<SearchHit>((c) => ({ key: `categorie:${c.id}`, group: "categorie", icon: "categoria", title: c.name, subtitle: "Categoria", href: movementsLink("category", c.id), score: matchScore(c.name, folded) })),
     ...subscriptionRows.map<SearchHit>((s) => ({ key: `abbonamenti:${s.id}`, group: "abbonamenti", icon: "abbonamento", title: s.name ?? "", subtitle: `Abbonamento ${s.cadence ?? ""}`.trim(), amount: s.amount === null ? undefined : -Math.abs(Number(s.amount)), href: "/liquidita/abbonamenti", score: matchScore(s.name ?? "", folded) })),
     ...debtRows.map<SearchHit>((d) => ({ key: `debiti:${d.id}`, group: "debiti", icon: "debito", title: d.name, subtitle: "Debito", href: `/debiti/finanziamenti?id=${d.id}`, score: matchScore(d.name, folded) })),
     ...goalRows

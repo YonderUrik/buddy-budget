@@ -15,7 +15,7 @@ export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operat
 export type PeriodSurface = "investimenti" | "performance" | "analitiche";
 /** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
 /** Where the detail of a transaction was opened from. */
-export type TransactionDetailSource = "movimenti" | "categorizza" | "abbonamenti" | "esercente";
+export type TransactionDetailSource = "movimenti" | "categorizza" | "abbonamenti" | "esercente" | "cerca";
 
 export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
@@ -282,7 +282,7 @@ export interface ProductEvents {
   /** Something picked in «Aggiungi»; `here`: it belongs to the section the user was on. The form's own events follow. */
   quick_add_chosen: { action: QuickAddActionId; source: QuickAddSource; here: boolean };
   /** App-wide search opened: from the sidebar, the phone top bar or the keyboard shortcut (⌘K / Ctrl+K / «/»). */
-  search_opened: { source: "campo" | "altro" | "tirando" | "tastiera" };
+  search_opened: { source: "campo" | "altro" | "tirando" | "tastiera" | "link" };
   /** A search result opened; `group`: what it was, `position`: its row (0 = top), `length`: characters typed (never the text). */
   search_result_opened: { group: SearchGroupId; position: number; length: number };
   /** A sentence typed in «Cerca» opened its «Aggiungi» form; `source`: read by the rules or by the AI, `complete`: nothing was missing. */

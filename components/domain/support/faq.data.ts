@@ -20,6 +20,12 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
       "Tocca «Aggiungi» (il + nella barra in basso, o in cima al menu sul computer) e scegli «Movimenti da un file» per il CSV o l'Excel della banca, o «Il rendiconto del broker» per gli investimenti. Gestisci e cancella gli import da «Gestione importazioni».",
   },
   {
+    id: "cerca",
+    question: "Come trovo un movimento o aggiungo qualcosa scrivendo una frase?",
+    answer:
+      "Usa «Cerca»: sul computer il campo in alto a destra o ⌘K (Ctrl K su Windows), sul telefono tira giù la pagina dall'alto o tocca «Cerca» in «Altro». Trovi movimenti, conti, titoli, abbonamenti e impostazioni. Se scrivi una frase come «pagato 12 € al bar ieri» si apre il modulo già compilato, da controllare e salvare; se non la capisce puoi chiederla all'AI, che riceve soltanto la frase e solo se hai acceso l'assistente.",
+  },
+  {
     id: "categoria-sbagliata",
     question: "Una transazione ha la categoria sbagliata",
     answer:

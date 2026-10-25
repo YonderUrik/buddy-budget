@@ -20,6 +20,15 @@ export const WHATS_NEW_MAX_AGE_DAYS = 45;
 
 export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
   {
+    id: "cerca-ovunque",
+    date: "2026-10-25",
+    title: "Cerca, da ovunque",
+    summary:
+      "Trovi un movimento, un conto, un titolo o un'impostazione da qualsiasi pagina: ⌘K sul computer, tiri giù la pagina sul telefono. Scrivi «pagato 12 € al bar ieri» e si apre il modulo già compilato.",
+    href: "/panoramica?cerca=",
+    ctaLabel: "Prova «Cerca»",
+  },
+  {
     id: "aggiungi-da-ovunque",
     date: "2026-10-24",
     title: "Aggiungi, da ovunque",

@@ -2,12 +2,14 @@
 
 /**
  * App-wide search («Cerca»), mounted once in the signed-in layout: opened from the field above the page on desktop,
- * by pulling the page down on the phone (or the field heading «Altro»), ⌘K / Ctrl+K or «/» anywhere, or a `?cerca=` link. A result goes to its page or opens its «Aggiungi» form;
- * a sentence like «comprato 3 Apple a 50 € oggi» opens the form already filled in, to check and save. The last picks
- * are remembered on this device (never amounts) and shown on the phone before typing.
+ * by pulling the page down on the phone (or the field heading «Altro»), ⌘K / Ctrl+K or «/» anywhere, or a `?cerca=`
+ * link. A result goes to its page, opens its «Aggiungi» form or, for one movement, opens its detail over the current
+ * page; a sentence like «comprato 3 Apple a 50 € oggi» opens the form already filled in, to check and save. The last
+ * picks are remembered on this device (never amounts) and shown on the phone before typing.
  */
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import { AnimatePresence } from "motion/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -22,7 +24,9 @@ import type { SearchHit } from "@/lib/search/types";
 import { Spotlight } from "./spotlight";
 import type { SpotlightBlock } from "./use-spotlight";
 
-type SearchSource = "campo" | "altro" | "tirando" | "tastiera";
+const MovementDetailDialog = dynamic(() => import("@/components/domain/liquidity/light").then((m) => m.MovementDetailDialog), { ssr: false });
+
+type SearchSource = "campo" | "altro" | "tirando" | "tastiera" | "link";
 
 export interface SearchApi {
   open: (source: SearchSource) => void;
@@ -100,6 +104,8 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const quickAdd = useQuickAdd();
   const [state, setState] = React.useState<{ open: boolean; initial: string; recent: SearchHit[] }>({ open: false, initial: "", recent: [] });
+  // One movement's detail, opened over the current page; its code loads at the first pick and stays, so it can close animated.
+  const [movement, setMovement] = React.useState<{ id: string | null; loaded: boolean }>({ id: null, loaded: false });
   const returnFocus = React.useRef<HTMLElement | null>(null);
 
   const open = React.useCallback((source: SearchSource, initial = "") => {
@@ -149,7 +155,8 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       track("search_result_opened", { group: hit.group, position, length: text.trim().length });
       remember(hit);
       setState((s) => ({ ...s, open: false }));
-      if (hit.quickAdd && quickAdd) quickAdd.start(hit.quickAdd as QuickAddActionId);
+      if (hit.movementId) setMovement({ id: hit.movementId, loaded: true });
+      else if (hit.quickAdd && quickAdd) quickAdd.start(hit.quickAdd as QuickAddActionId);
       else if (hit.href) router.push(hit.href);
     },
     [quickAdd, router]
@@ -166,7 +173,7 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   );
 
   const api = React.useMemo<SearchApi>(() => ({ open, isOpen: state.open }), [open, state.open]);
-  const fromLink = React.useCallback((text: string) => open("tastiera", text), [open]);
+  const fromLink = React.useCallback((text: string) => open("link", text), [open]);
   const mounted = React.useSyncExternalStore(() => () => {}, () => true, () => false);
 
   return (
@@ -183,6 +190,7 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
             document.body
           )
         : null}
+      {movement.loaded ? <MovementDetailDialog transactionId={movement.id} onOpenChange={(isOpen) => !isOpen && setMovement((m) => ({ ...m, id: null }))} from="cerca" /> : null}
     </SearchContext.Provider>
   );
 }

@@ -18,7 +18,7 @@ Open <http://localhost:3000>. The migrations run on their own (`migrate` service
 
 Choose **Just me, on this computer** for automatic personal access, or **On a server or shared with others** for authenticated access. The wizard configures optional API keys, checks credentials without paid AI calls or test emails, saves private secrets atomically, and waits for readiness before showing the URL. OpenRouter enables the AI worker automatically. Settings shows which services are configured.
 
-For unreleased code or an arm64 machine, use `./scripts/selfhost-init.sh --build`. With configuration already saved, use `./scripts/selfhost-start.sh --build`. Without a startup option, the installer saves configuration only. `--defaults` saves a minimal server configuration without prompts.
+For unreleased code or an arm64 machine, use `./scripts/selfhost-init.sh --build`. Keep setup, API-key changes and startup in that same checkout. If a development server already uses port 3000, choose another local port in the wizard, such as 3100, and open the exact address printed by the launcher. With configuration already saved, use `./scripts/selfhost-start.sh --build`. Without a startup option, the installer saves configuration only. `--defaults` saves a minimal server configuration without prompts.
 
 In server mode the first page is «Crea il primo account» ("Create the first account"): name, email, password (at least 10 characters). That account is yours. After it, nobody else can sign up unless you allow it (below). Onboarding then asks for country, language and currency.
 

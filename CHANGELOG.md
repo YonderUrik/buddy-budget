@@ -2,6 +2,15 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.90.0](https://github.com/YonderUrik/buddy-budget/compare/v0.89.0...v0.90.0) (2026-10-25)
+
+
+### Novità
+
+* add guided self-hosting setup and personal local access ([#458](https://github.com/YonderUrik/buddy-budget/issues/458)) ([84d1735](https://github.com/YonderUrik/buddy-budget/commit/84d1735eae5351f08a938b9f0ab125b7462a457e))
+* **search:** answers, logos and AI questions in «Cerca» ([#517](https://github.com/YonderUrik/buddy-budget/issues/517)) ([9eda056](https://github.com/YonderUrik/buddy-budget/commit/9eda0566c04094ecce9306994f85056113995ebb))
+* **selfhost:** log personal-mode access and tidy PR docs ([#519](https://github.com/YonderUrik/buddy-budget/issues/519)) ([549768b](https://github.com/YonderUrik/buddy-budget/commit/549768b129ba0fbadb4a05d42005e72f9661cab5))
+
 ## [0.89.0](https://github.com/YonderUrik/buddy-budget/compare/v0.88.1...v0.89.0) (2026-10-25)
 
 

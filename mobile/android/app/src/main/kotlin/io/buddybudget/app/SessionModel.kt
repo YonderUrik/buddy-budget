@@ -64,8 +64,15 @@ class SessionModel(private val env: AppEnvironment) {
     /** Strings outside composition (toasts) in the current language. */
     fun strings(): LocalizedStrings = LocalizedStrings(env.context, language)
 
-    /** App launch: no token → login; otherwise load the bootstrap and route on its gate. */
+    /**
+     * App launch: no token → login; otherwise load the bootstrap and route on its gate. A second activity on a live
+     * session (file shared while the app runs) only refreshes: see [AppRoute.keepsRouteOnLaunch].
+     */
     suspend fun launch() {
+        if (AppRoute.keepsRouteOnLaunch(route, bootstrap != null)) {
+            refresh()
+            return
+        }
         language = env.preferences.signedOutLanguage
         if (env.api.session.readToken() == null) {
             route = AppRoute.SignedOut

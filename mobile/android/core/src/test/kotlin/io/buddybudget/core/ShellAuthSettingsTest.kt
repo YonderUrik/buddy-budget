@@ -146,6 +146,14 @@ class ShellAuthSettingsTest {
         assertFalse(AppRoute.reloadsShell(AppRoute.LegalAcceptance, AppRoute.LegalAcceptance))
     }
 
+    @Test fun IMP068_aSecondLaunchOnALiveSessionKeepsTheShell() {
+        assertTrue(AppRoute.keepsRouteOnLaunch(AppRoute.Main, hasBootstrap = true))
+        assertTrue(AppRoute.keepsRouteOnLaunch(AppRoute.Onboarding, hasBootstrap = true))
+        assertFalse(AppRoute.keepsRouteOnLaunch(AppRoute.Launching, hasBootstrap = false))
+        assertFalse(AppRoute.keepsRouteOnLaunch(AppRoute.SignedOut, hasBootstrap = false))
+        assertFalse(AppRoute.keepsRouteOnLaunch(AppRoute.Main, hasBootstrap = false))
+    }
+
     @Test fun SHELL014_destinationsOutsideBottomBarBelongToMore() {
         assertEquals(AppTab.More, AppDestination.Settings.tab)
         assertEquals(AppTab.Liquidity, AppDestination.Accounts.tab)

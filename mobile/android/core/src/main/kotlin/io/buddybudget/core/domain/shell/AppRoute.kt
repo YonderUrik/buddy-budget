@@ -58,6 +58,14 @@ enum class AppRoute {
         /** SHELL-056: leaving a gate screen for the app reloads the shell (its data failed while the gate was up). */
         fun reloadsShell(previous: AppRoute, next: AppRoute): Boolean =
             next == Main && (previous == LegalAcceptance || previous == AccountDeactivated)
+
+        /**
+         * IMP-068: a launch on a session that is already showing (a second activity opened by a file shared while the
+         * app runs) keeps its route and only re-reads the bootstrap: going back to [Launching] would tear down the shell
+         * that has just taken the shared file.
+         */
+        fun keepsRouteOnLaunch(current: AppRoute, hasBootstrap: Boolean): Boolean =
+            hasBootstrap && current != SignedOut && current != Launching && current != Unavailable
     }
 }
 

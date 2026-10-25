@@ -1,6 +1,7 @@
 import { authMethods } from "@/lib/instance/config";
 import { isLocalMode } from "./local-mode";
-export { isLocalMode, isLocalRequest, validateLocalMode, LOCAL_ENTRY_PATH, LOCAL_OWNER_ID, LOCAL_OWNER_EMAIL } from "./local-mode";
+export type { LocalRequestRejection } from "./local-mode";
+export { isLocalMode, isLocalRequest, localRequestRejection, validateLocalMode, LOCAL_ENTRY_PATH, LOCAL_MODE_PROVIDER_ID, LOCAL_OWNER_ID, LOCAL_OWNER_EMAIL } from "./local-mode";
 export interface LoginCapabilities {
   googleEnabled: boolean;
   emailDelivery: boolean;

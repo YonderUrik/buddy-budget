@@ -2,6 +2,7 @@ import "server-only";
 import { and, desc, eq, gt, ne } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authAccount, authSession } from "@/lib/db/schema/auth";
+import { LOCAL_MODE_PROVIDER_ID } from "@/lib/selfhost/local-mode";
 import { describeUserAgent, formatDevice } from "./user-agent";
 
 /** Sessione attiva come la vede la pagina Impostazioni: niente token né indirizzo IP. */
@@ -66,8 +67,8 @@ export async function revokeOtherSessions(userId: string, currentSessionId: stri
   return deleted.length;
 }
 
-/** Provider di accesso collegati all'utente (es. "google"). Il magic link via email non crea righe: è sempre disponibile. */
+/** Sign-in providers linked to the user (e.g. "google"). The email magic link creates no rows; the self-hosting mode marker is not a sign-in method and is left out. */
 export async function listLinkedProviders(userId: string): Promise<string[]> {
-  const rows = await db.select({ providerId: authAccount.providerId }).from(authAccount).where(eq(authAccount.userId, userId));
+  const rows = await db.select({ providerId: authAccount.providerId }).from(authAccount).where(and(eq(authAccount.userId, userId), ne(authAccount.providerId, LOCAL_MODE_PROVIDER_ID)));
   return [...new Set(rows.map((row) => row.providerId))];
 }

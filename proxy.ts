@@ -2,7 +2,7 @@ import { COUNTRY_UNAVAILABLE_MESSAGE, LANGUAGES, LANGUAGE_COOKIE, isCountryPathA
 import { translate } from "@/lib/localization/messages";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { isLocalMode, isLocalRequest, LOCAL_ENTRY_PATH } from "@/lib/selfhost";
+import { isLocalMode, localRequestRejection, LOCAL_ENTRY_PATH } from "@/lib/selfhost";
 import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { ACCOUNT_DEACTIVATED_CODE, LEGAL_ACCEPTANCE_REQUIRED_CODE, ONBOARDING_REQUIRED_CODE, accountGate, accountGateErrorBody } from "@/lib/account/gates";
@@ -50,7 +50,13 @@ export async function proxy(request: NextRequest) {
   const local = isLocalMode();
   // Internal health checks and cron jobs use their own URL/secret, never automatic login.
   const internal = ["/api/health", "/api/cron", "/api/metrics"].some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
-  if (local && !internal && !isLocalRequest(request)) return new NextResponse(null, { status: 403 });
+  if (local && !internal) {
+    const rejection = localRequestRejection(request);
+    if (rejection) {
+      logger.warn("selfhost.local_request.rejected", { reason: rejection });
+      return new NextResponse(null, { status: 403 });
+    }
+  }
   const localEntry = (target: string) => {
     const url = new URL(LOCAL_ENTRY_PATH, process.env.APP_URL!);
     url.searchParams.set("redirect", target);

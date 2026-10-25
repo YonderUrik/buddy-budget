@@ -10,7 +10,8 @@ const cashSchema = z.array(z.object({ currencyId: z.string(), amount: decimal })
 const eventSchema = z.object({
   id: z.string().min(1).max(200), timestamp: z.string().regex(TIMESTAMP), eventType: z.string(),
   title: z.string().max(1000), amount: z.object({ value: decimal, currency: z.string() }).nullish(),
-  status: z.string().optional(), cashAccountNumber: z.string().optional(),
+  // TR sends absent optional fields as explicit nulls (e.g. `cashAccountNumber: null`).
+  status: z.string().nullish(), cashAccountNumber: z.string().nullish(), deleted: z.boolean().nullish(),
 });
 const pageSchema = z.object({ items: z.array(eventSchema), cursors: z.object({ after: z.string().nullable().optional() }).optional() });
 const MAX_PAGES = 200;
@@ -60,6 +61,7 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
       seen.set(event.id, fingerprint);
       if (seen.size > MAX_MOVEMENTS) throw reject("too-many-events", { page });
       if (!event.amount) continue;
+      if (event.deleted) { unbooked++; continue; }
       if (event.status && !BOOKED_STATUSES.has(event.status)) {
         if (UNBOOKED_STATUSES.has(event.status)) { unbooked++; continue; }
         throw reject("unknown-status", { page, status: event.status, eventType: event.eventType });

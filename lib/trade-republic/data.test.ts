@@ -14,7 +14,8 @@ describe("Trade Republic direct cash reader", () => {
   it("accepts Trade Republic's colon-less offsets and skips movements that were never booked", async () => {
     const booked = { ...event("booked"), timestamp: "2026-10-01T10:00:00.016+0000" };
     const cancelled = { ...event("cancelled"), status: "CANCELED" };
-    const result = await readTradeRepublicCash(reader({ items: [booked, cancelled, { ...event("pending"), status: "PENDING" }] }), "2026-10-25");
+    const live = { ...booked, cashAccountNumber: null, status: "EXECUTED", deleted: false };
+    const result = await readTradeRepublicCash(reader({ items: [live, cancelled, { ...event("pending"), status: "PENDING" }, { ...event("gone"), deleted: true }] }), "2026-10-25");
     expect(result.movements).toEqual([{ id: "booked", date: "2026-10-01", amount: "-12.34", description: "Synthetic merchant" }]);
     await expect(readTradeRepublicCash(reader({ items: [{ ...event("odd"), status: "SOMETHING_NEW" }] }), "2026-10-25")).rejects.toThrow("invalid-response");
   });

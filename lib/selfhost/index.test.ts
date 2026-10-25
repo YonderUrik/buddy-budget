@@ -23,3 +23,8 @@ describe("self-hosted capabilities", () => {
     expect(supportRecipient({ SUPPORT_EMAIL_TO: "" })).toBe(SUPPORT_EMAIL);
   });
 });
+
+
+it("counts main's SMTP transport in the self-hosted service status", () => {
+  expect(instanceCapabilities({ SMTP_URL: "smtp://mail:25", EMAIL_FROM: "budget@example.test", NOTIFICATIONS_MODE: "execute" })).toMatchObject({ emailDelivery: true, notifications: true });
+});

@@ -6,7 +6,7 @@ Pick the section that matches what you want to do. The guides and [`architecture
 
 | Document | What it covers |
 | --- | --- |
-| [Self-hosting](self-hosting.md) | Docker Compose installation, what works without external services, HTTPS, updates, backups |
+| [Self-hosting](self-hosting.md) | Guided personal/server setup, Docker Compose, optional services, HTTPS, updates, backups and uninstall |
 | [Personal CSV import](personal-csv-import.md) | Importing a bank or broker CSV in any format, with AI-written parsers |
 | [Interactive Brokers import](ibkr-import.md) | Which statements to export and how they are reconciled |
 | [DEGIRO import](degiro-import.md) | `Account.csv` import and its limits |

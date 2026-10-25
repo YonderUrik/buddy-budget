@@ -85,7 +85,7 @@ export async function runSetup({ path, template = '', prompts, check = checkServ
       prompts.write(`${existing ? 'Disabled' : 'Skipped'}. ${section.skip || 'You can configure this later by rerunning setup.'}`);
       return;
     }
-    if (section.requiresEmail && !(values.RESEND_API_KEY && values.RESEND_FROM)) {
+    if (section.requiresEmail && !((values.RESEND_API_KEY || values.SMTP_URL) && (values.EMAIL_FROM || values.RESEND_FROM))) {
       prompts.write('Skipped: configure email delivery first. You can add a reports inbox when you rerun setup.');
       return;
     }

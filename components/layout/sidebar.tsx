@@ -531,8 +531,8 @@ export function AppSidebar({
           track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
         }
       />
-      <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
-        <LogOut className="mr-2 size-4" aria-hidden="true" />{tr("Esci")}</DropdownMenuItem>
+      {!local && <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
+        <LogOut className="mr-2 size-4" aria-hidden="true" />{tr("Esci")}</DropdownMenuItem>}
       {islands ? (
         <>
           <DropdownMenuSeparator />

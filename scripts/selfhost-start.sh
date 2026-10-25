@@ -49,11 +49,15 @@ fi
 # Read the running app's public configuration; never print any credential.
 docker compose "$@" exec -T app node -e '
 const url = (process.env.APP_URL || "http://localhost:3000").replace(/\/+$/, "");
-const email = Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM);
+const email = Boolean((process.env.RESEND_API_KEY || process.env.SMTP_URL) && (process.env.EMAIL_FROM || process.env.RESEND_FROM));
+const password = !["false", "0", "no"].includes((process.env.AUTH_PASSWORD || "").trim().toLowerCase());
 const local = process.env.SELFHOST_AUTH_MODE === "local";
 const lines = ["", "BuddyBudget is ready.", "", "1. Open this address in your browser:", "   " + url, "", local ? "2. Your personal account opens automatically. No sign-in is needed." : "2. Sign in:"];
 if (local) {
   lines.push("   BuddyBudget is restricted to this computer.");
+} else if (password) {
+  lines.push("   Create the first account with your email and a password, or sign in to your existing account.", "   No email service is needed for password sign-in.");
+  if (process.env.SELFHOST_OWNER_EMAIL) lines.push("   Moving a personal account to server mode? Set its password from this folder:", "     docker compose run --rm migrate pnpm auth:reset-password <your-email>", "   Replace <your-email> with the owner email you entered during setup.");
 } else if (email) {
   lines.push("   Enter your email address and request a sign-in link.", "   Open the email and click the link to continue.");
 } else {

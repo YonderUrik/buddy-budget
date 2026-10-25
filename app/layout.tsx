@@ -78,7 +78,7 @@ export default async function RootLayout({
         <InstanceProvider value={instance}><LocalizationProvider profile={profile}><QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MotionProvider>
-              <LocalModeProvider enabled={isLocalMode()} emailAvailable={!isLocalMode() || Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM && process.env.SELFHOST_OWNER_EMAIL)}>{children}</LocalModeProvider>
+              <LocalModeProvider enabled={isLocalMode()} emailAvailable={instance.auth.emailDelivery && (!isLocalMode() || Boolean(process.env.SELFHOST_OWNER_EMAIL))}>{children}</LocalModeProvider>
               <Toaster />
             </MotionProvider>
           </ThemeProvider>

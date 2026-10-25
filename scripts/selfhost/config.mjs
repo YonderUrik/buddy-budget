@@ -53,7 +53,7 @@ export function validateConfig(values, only) {
     ['RESEND_API_KEY', 'RESEND_FROM', 'Email: provide both a Resend API key and a sender address.'],
     ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'Google: provide both a Client ID and Client secret.'],
     ['GOCARDLESS_SECRET_ID', 'GOCARDLESS_SECRET_KEY', 'GoCardless: provide both a Secret ID and Secret key.'],
-  ]) if (Boolean(values[first]) !== Boolean(values[second])) add([first, second], label);
+  ]) if (Boolean(values[first]) !== Boolean(values[second] || (first === 'RESEND_API_KEY' && values.EMAIL_FROM))) add([first, second], label);
   if (values.RESEND_FROM && !/^(?:[^<>]+<)?[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>?$/.test(values.RESEND_FROM)) add(['RESEND_FROM'], 'Sender: enter a valid email address, e.g. BuddyBudget <budget@example.com>.');
   if (values.SUPPORT_EMAIL_TO && !/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(values.SUPPORT_EMAIL_TO)) add(['SUPPORT_EMAIL_TO'], 'Support reports: enter a valid recipient email address.');
   if (values.OLLAMA_BASE_URL) {
@@ -68,19 +68,21 @@ export function validateConfig(values, only) {
   return errors;
 }
 
+const emailConfigured = values => Boolean((values.RESEND_API_KEY || values.SMTP_URL) && (values.EMAIL_FROM || values.RESEND_FROM));
+
 /** Riassume ciò che la configurazione abilita, senza confonderlo con una verifica del servizio. */
 export function readiness(values) {
   return [
     { id: 'core', label: 'Manual accounts, transactions, budgets and standard imports', configured: true },
     { id: 'yahoo', label: 'Market prices and exchange rates (no Yahoo key needed)', configured: true },
     { id: 'openrouter', label: 'AI categories and custom CSV imports (worker included)', configured: Boolean(values.OPENROUTER_API_KEY) },
-    { id: 'resend', label: values.SELFHOST_AUTH_MODE === 'local' ? 'Optional email summaries and alerts' : 'Sign-in emails, summaries and alerts', configured: Boolean(values.RESEND_API_KEY && values.RESEND_FROM && (values.SELFHOST_AUTH_MODE !== 'local' || values.SELFHOST_OWNER_EMAIL)) },
+    { id: 'resend', label: values.SELFHOST_AUTH_MODE === 'local' ? 'Optional email summaries and alerts' : 'Sign-in emails, summaries and alerts', configured: Boolean(emailConfigured(values) && (values.SELFHOST_AUTH_MODE !== 'local' || values.SELFHOST_OWNER_EMAIL)) },
     { id: 'gocardless', label: 'Bank sync', configured: Boolean(values.GOCARDLESS_SECRET_ID && values.GOCARDLESS_SECRET_KEY) },
     { id: 'google', label: 'Google sign-in', configured: values.SELFHOST_AUTH_MODE !== 'local' && Boolean(values.GOOGLE_CLIENT_ID && values.GOOGLE_CLIENT_SECRET) },
     { id: 'logos', label: 'Logo.dev logos', configured: Boolean(values.LOGODEV_PUBLISHABLE_KEY) },
     { id: 'prices', label: 'Additional financial data providers', configured: ['ALPHAVANTAGE_API_KEY', 'TWELVEDATA_API_KEY', 'STOOQ_API_KEY', 'COINGECKO_API_KEY', 'OPENFIGI_API_KEY'].some(name => Boolean(values[name])) },
     { id: 'ollama', label: 'Portfolio commentary with Ollama', configured: Boolean(values.OLLAMA_BASE_URL) },
-    { id: 'support', label: 'Support reports to your own inbox', configured: Boolean(values.SUPPORT_EMAIL_TO && values.RESEND_API_KEY && values.RESEND_FROM) },
+    { id: 'support', label: 'Support reports to your own inbox', configured: Boolean(values.SUPPORT_EMAIL_TO && emailConfigured(values)) },
   ];
 }
 
@@ -93,7 +95,7 @@ export function prepareConfig(values) {
   const profiles = new Set((next.COMPOSE_PROFILES ?? '').split(',').filter(Boolean));
   if (next.OPENROUTER_API_KEY) profiles.add('ai'); else profiles.delete('ai');
   next.COMPOSE_PROFILES = [...profiles].join(',');
-  next.NOTIFICATIONS_MODE = next.RESEND_API_KEY && next.RESEND_FROM && (next.SELFHOST_AUTH_MODE !== 'local' || next.SELFHOST_OWNER_EMAIL) ? 'execute' : 'off';
+  next.NOTIFICATIONS_MODE = emailConfigured(next) && (next.SELFHOST_AUTH_MODE !== 'local' || next.SELFHOST_OWNER_EMAIL) ? 'execute' : 'off';
   return next;
 }
 

@@ -55,7 +55,6 @@ x-app-env: &app-env
   OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
   OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
 
-
 services:
   postgres:
     image: postgres:17-alpine

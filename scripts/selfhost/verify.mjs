@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { parseEnv } from 'node:util';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { readConfig, mergeConfig, validateConfig, saveConfig, prepareConfig } from './config.mjs';
+import { readConfig, mergeConfig, validateConfig, saveConfig, prepareConfig, readiness } from './config.mjs';
 import { checkService } from './checks.mjs';
 import { runSetup, terminalPrompts } from './setup.mjs';
 import { PassThrough, Writable } from 'node:stream';
@@ -302,7 +302,7 @@ if (args.includes('exec')) {
 }
 
 test('source startup builds first, handles the previous worker, waits for readiness and explains local sign-in', async () => temporary(async (path, dir) => {
-  const result = await startFixture(dir, {}, ['--build']);
+  const result = await startFixture(dir, { AUTH_PASSWORD: 'false' }, ['--build']);
   assert.equal(result.status, 0, result.stderr);
   assert(result.calls[0].includes('build'));
   assert(result.calls[1].includes('stop'));
@@ -315,7 +315,7 @@ test('source startup builds first, handles the previous worker, waits for readin
 }));
 
 test('published startup shows email instructions when delivery is configured', async () => temporary(async (path, dir) => {
-  const result = await startFixture(dir, { RESEND_API_KEY: 're_test', RESEND_FROM: 'budget@example.test' });
+  const result = await startFixture(dir, { AUTH_PASSWORD: 'false', RESEND_API_KEY: 're_test', RESEND_FROM: 'budget@example.test' });
   assert.equal(result.status, 0, result.stderr);
   assert(!result.calls.some(args => args.includes('build')));
   assert(result.stdout.includes('Open the email and click the link'));
@@ -482,4 +482,25 @@ test('personal email delivery needs a recipient before enabling notification job
   const values = mergeConfig({}, { SELFHOST_AUTH_MODE: 'local', RESEND_API_KEY: 're_test', RESEND_FROM: 'budget@example.test' });
   assert.equal(prepareConfig(values).NOTIFICATIONS_MODE, 'off');
   assert.equal(prepareConfig({ ...values, SELFHOST_OWNER_EMAIL: 'owner@example.test' }).NOTIFICATIONS_MODE, 'execute');
+});
+
+
+test('server startup defaults to password login without requiring an email service', async () => temporary(async (path, dir) => {
+  const result = await startFixture(dir, { AUTH_PASSWORD: '' });
+  assert.equal(result.status, 0, result.stderr);
+  assert(result.stdout.includes('Create the first account with your email and a password'));
+  assert(!result.stdout.includes('docker compose logs --since'));
+}));
+
+test('moving a personal account to password login explains how to set its password', async () => temporary(async (path, dir) => {
+  const result = await startFixture(dir, { SELFHOST_AUTH_MODE: 'server', AUTH_PASSWORD: '', SELFHOST_OWNER_EMAIL: 'owner@example.test' });
+  assert.equal(result.status, 0, result.stderr);
+  assert(result.stdout.includes('auth:reset-password <your-email>'));
+}));
+
+test('rerunning setup preserves SMTP delivery and enables its notification jobs', () => {
+  const configured = prepareConfig(mergeConfig({}, { APP_URL: 'http://localhost:3000' }));
+  const smtp = prepareConfig({ ...configured, SMTP_URL: 'smtp://mail:25', EMAIL_FROM: 'budget@example.test', SELFHOST_AUTH_MODE: 'server' });
+  assert.equal(smtp.NOTIFICATIONS_MODE, 'execute');
+  assert(readiness(smtp).find(service => service.id === 'resend').configured);
 });

@@ -10,15 +10,15 @@ export const SECTIONS = [
     { name: 'CATEGORIZATION_MODEL', label: 'Category suggestion model', default: 'typesafe/jev-1.13', advanced: true },
   ] },
   { id: 'yahoo', title: 'Market prices', description: 'Yahoo Finance is already included. You do not need an account or an API key.', check: true, fields: [] },
-  { id: 'resend', title: 'Sign-in emails and notifications', level: 'Recommended', description: 'Receive sign-in links by email, plus the summaries and alerts you choose in Settings.', needed: 'A Resend API key and a sender email address on a domain you have verified in Resend.', skip: 'Sign-in links will be available in the app logs. Email notifications will be off.', link: 'https://resend.com/api-keys', linkLabel: 'Create your API key', check: true, fields: [
+  { id: 'resend', title: 'Sign-in emails and notifications', level: 'Recommended', description: 'Receive sign-in links by email, plus the summaries and alerts you choose in Settings.', needed: 'A Resend API key and a sender email address on a domain you have verified in Resend.', skip: 'Sign in with your email and password. Email notifications will be off.', link: 'https://resend.com/api-keys', linkLabel: 'Create your API key', check: true, fields: [
     { name: 'RESEND_API_KEY', label: 'Resend API key', secret: true, required: true },
     { name: 'RESEND_FROM', label: 'Sender email address', required: true, help: 'Example: BuddyBudget <budget@example.com>. Use a domain verified in your Resend account.' },
   ] },
-  { id: 'gocardless', title: 'Bank sync', level: 'Optional', description: 'Automatically sync your bank balances and transactions.', needed: 'A Secret ID and Secret key from GoCardless Bank Account Data.', skip: 'Use manual accounts and CSV imports instead.', link: 'https://bankaccountdata.gocardless.com/', linkLabel: 'Get your bank API credentials', fields: [
+  { id: 'gocardless', title: 'Bank sync', level: 'Optional', description: 'Automatically sync your bank balances and transactions.', needed: 'Existing GoCardless Bank Account Data credentials; new registrations are no longer accepted.', skip: 'Use manual accounts and CSV imports instead.', link: 'https://bankaccountdata.gocardless.com/', linkLabel: 'Get your bank API credentials', fields: [
     { name: 'GOCARDLESS_SECRET_ID', label: 'GoCardless Secret ID', secret: true, required: true },
     { name: 'GOCARDLESS_SECRET_KEY', label: 'GoCardless Secret key', secret: true, required: true },
   ] },
-  { id: 'google', title: 'Google sign-in', level: 'Optional', description: 'Sign in with Google instead of using a sign-in link.', needed: 'An OAuth Client ID and Client secret from Google Cloud.', skip: 'Sign in with a link instead.', link: 'https://console.cloud.google.com/apis/credentials', linkLabel: 'Create OAuth credentials', fields: [
+  { id: 'google', title: 'Google sign-in', level: 'Optional', description: 'Sign in with Google instead of your password or an emailed link.', needed: 'An OAuth Client ID and Client secret from Google Cloud.', skip: 'Use your configured password or sign-in link instead.', link: 'https://console.cloud.google.com/apis/credentials', linkLabel: 'Create OAuth credentials', fields: [
     { name: 'GOOGLE_CLIENT_ID', label: 'Google Client ID', required: true },
     { name: 'GOOGLE_CLIENT_SECRET', label: 'Google Client secret', secret: true, required: true },
   ] },

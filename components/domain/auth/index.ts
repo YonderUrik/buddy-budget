@@ -13,7 +13,6 @@ export { AuthFootLinks } from "./auth-foot-links";
 export { BrandLink } from "./brand-link";
 export type { BrandLinkProps } from "./brand-link";
 export { LoginPanel } from "./login-panel";
-export { LoginScreen } from "./login-screen";
 export type { LoginPanelProps } from "./login-panel";
 export { PasswordLoginPanel } from "./password-login-panel";
 export type { PasswordLoginMode, PasswordLoginPanelProps } from "./password-login-panel";

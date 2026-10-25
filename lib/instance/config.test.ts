@@ -60,3 +60,10 @@ describe("instance summary", () => {
     expect(describeInstance({ AUTH_PASSWORD: "false" })).toContain("link=log");
   });
 });
+
+
+describe("personal local access", () => {
+  it("disables all interactive login methods and signups but preserves SMTP delivery", () => {
+    expect(authMethods({ SELF_HOSTED: "true", SELFHOST_AUTH_MODE: "local", AUTH_PASSWORD: "true", ALLOW_SIGNUPS: "true", GOOGLE_CLIENT_ID: "id", GOOGLE_CLIENT_SECRET: "secret", SMTP_URL: "smtp://mail:25", EMAIL_FROM: "budget@example.test" })).toEqual({ password: false, magicLink: false, google: false, emailDelivery: true, openSignup: false });
+  });
+});

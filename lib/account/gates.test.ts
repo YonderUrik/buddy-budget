@@ -15,6 +15,12 @@ describe("accountGate", () => {
     expect(accountGate({ ...active, onboardingCompleted: false, legalAcceptedVersion: null })).toBe("onboarding_required");
   });
 
+  it("never asks the read-only public demo accounts to accept the legal documents again", () => {
+    expect(accountGate({ ...active, id: "public-demo-it-en", legalAcceptedVersion: "2020-01-01" })).toBeNull();
+    expect(accountGate({ ...active, id: "user-1", legalAcceptedVersion: "2020-01-01" })).toBe("legal_acceptance_required");
+    expect(accountGate({ ...active, id: "public-demo-it-en", deletionScheduledAt: new Date() })).toBe("account_deactivated");
+  });
+
   it("gives the gate 403s stable codes, with the version to accept", () => {
     expect(accountGateErrorBody("account_deactivated")).toEqual({ code: "account_deactivated" });
     expect(accountGateErrorBody("legal_acceptance_required")).toEqual({ code: "legal_acceptance_required", version: LEGAL_VERSION });

@@ -153,9 +153,9 @@ describe("proxy con la demo pubblica", async () => {
   const { proxy } = await import("./proxy");
   const mockedGetSession = vi.mocked(auth.api.getSession);
 
-  function sessionAs(id: string) {
+  function sessionAs(id: string, legalAcceptedVersion: string = LEGAL_VERSION) {
     mockedGetSession.mockResolvedValue({
-      user: { id, language: "en", productCountry: "IT", onboardingCompleted: true, deletionScheduledAt: null, legalAcceptedVersion: LEGAL_VERSION },
+      user: { id, language: "en", productCountry: "IT", onboardingCompleted: true, deletionScheduledAt: null, legalAcceptedVersion },
       session: {},
     } as never);
   }
@@ -174,6 +174,13 @@ describe("proxy con la demo pubblica", async () => {
     expect(await blocked.json()).toMatchObject({ code: "demo_read_only" });
     expect((await call("/api/user/account", "DELETE")).status).toBe(403);
     expect((await call("/api/transactions/abc", "PATCH")).status).toBe(403);
+  });
+
+  it("opens the demo even when its accounts accepted an older legal version", async () => {
+    sessionAs("public-demo-it-en", "2020-01-01");
+    expect((await call("/panoramica")).headers.get("location")).toBeNull();
+    expect((await call("/api/transactions")).status).toBe(200);
+    expect((await call("/accetta-termini")).headers.get("location")).toBe("http://localhost/");
   });
 
   it("un utente vero scrive come sempre", async () => {

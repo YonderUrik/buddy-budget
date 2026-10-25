@@ -13,7 +13,7 @@ network** (tailnet `tail52c123.ts.net`). Decided by Daniele on 2026-10-25.
   (`100.85.66.41`). Anyone can resolve the name, but `100.64.0.0/10` addresses are
   not routable on the internet: only devices signed in to the tailnet can connect.
   A plain `A` record (not a `CNAME` to `.ts.net`) also resolves reliably on Windows.
-- **Gateway**: the password-protected nginx gateway publishes HTTPS only on
+- **Gateway**: the nginx gateway publishes HTTPS only on
   `${TAILSCALE_IP}:443` (`compose.yml`). Nothing listens on the LAN or on a public
   interface, and there is no Cloudflare tunnel.
 - **Certificate**: `buddybudget.io` sends HSTS with `includeSubDomains`, so staging
@@ -28,7 +28,7 @@ network** (tailnet `tail52c123.ts.net`). Decided by Daniele on 2026-10-25.
 ### Switching an existing installation
 
 Completed on 2026-10-25: the permanent hostname serves valid HTTPS on the
-Tailscale address. Password protection, application readiness and the login-code
+Tailscale address. Application readiness and the login-code
 request were verified from the administrator's Mac. The old public tunnel and
 temporary DNS route were deleted, and a post-cutover database backup succeeded.
 The DNS API token is stored only in the protected host environment and certificate
@@ -65,13 +65,13 @@ reusing production's Resend credential/sender and the two OpenRouter credentials
 The login-code flow was accepted by Resend's delivery simulator; AI categorization
 and CSV parser generation/execution passed synthetic tests. Mailpit is removed.
 
-The edge username is `staging`. The randomly generated password is recorded only
-on the host in `/home/mario/buddy-budget-staging/access.txt`; retrieve it over SSH.
-All pages and APIs require this password. Search indexing is disabled
-through `X-Robots-Tag`.
+Tailscale controls network access. There is no extra HTTP Basic Auth username or
+password; users sign in through the app's normal email-code flow. Access instructions
+are on the host in `/home/mario/buddy-budget-staging/access.txt`. Search indexing is
+disabled through `X-Robots-Tag`.
 
 The app uses hosted behavior (`SELF_HOSTED=false`, email sign-in, open signup
-behind the edge password). The updated configuration sends login codes, links and
+within the tailnet). The updated configuration sends login codes, links and
 notification emails through Resend to the actual recipient. Mailpit and its
 `/mail/` route are removed. `/demo?lang=en` opens the read-only sample accounts
 after the initial demo reset. Normal accounts can use the app's sample-data onboarding.

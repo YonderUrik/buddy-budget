@@ -25,11 +25,7 @@ if (root / ".env").exists():
     raise SystemExit("Staging .env already exists; leaving all secrets unchanged.")
 # The gateway publishes HTTPS only on this address (see compose.yml).
 tailscale_ip = subprocess.run(["tailscale", "ip", "-4"], capture_output=True, text=True, check=True).stdout.split()[0]
-password = secrets.token_urlsafe(24)
-hashed = subprocess.run(["openssl", "passwd", "-apr1", "-stdin"], input=password + "\n", capture_output=True, text=True, check=True).stdout.strip()
-(root / "secrets" / "htpasswd").write_text(f"staging:{hashed}\n")
-(root / "secrets" / "htpasswd").chmod(0o644)  # nginx's worker must read the mounted hash
-(root / "access.txt").write_text(f"BuddyBudget staging\nURL: {url}\nUsername: staging\nPassword: {password}\n\nSign in with your email address; login messages arrive in your mailbox.\n")
+(root / "access.txt").write_text(f"BuddyBudget staging\nURL: {url}\n\nConnect to the BuddyBudget Tailscale network, then sign in with your email address.\nLogin messages arrive in your mailbox. No extra browser username or password is required.\n")
 env = {
     "APP_URL": url,
     "STAGING_ROOT": str(root),
@@ -42,6 +38,6 @@ env = {
     "TAILSCALE_IP": tailscale_ip,
 }
 (root / ".env").write_text("".join(f"{key}={value}\n" for key, value in env.items()))
-print(f"Staging secrets created in {root}; credentials are in access.txt (not printed).")
+print(f"Staging secrets created in {root}; access instructions are in access.txt.")
 print("Provision the Resend sender/key, app/worker OpenRouter keys, CLOUDFLARE_DNS_API_TOKEN and ACME_EMAIL separately before deploying.")
 print(f"Then point {parsed.hostname} (A record, DNS only) to {tailscale_ip}.")

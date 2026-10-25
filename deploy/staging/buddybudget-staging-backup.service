@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up BuddyBudget staging test data
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/buddy-budget-staging
+ExecStart=/usr/bin/python3 %h/buddy-budget-staging/update.py --backup-only
+TimeoutStartSec=5min
+UMask=0077

@@ -25,6 +25,9 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "anali
  */
 import type { SearchGroupId } from "@/lib/search/types";
 import type { CommandKind, CommandSource } from "@/lib/commands/types";
+import type { DataQuestion } from "@/lib/commands/question";
+
+type DataQuestionKind = DataQuestion["kind"];
 
 export interface ProductEvents {
   financial_sale_simulated: { country: "DE" };
@@ -287,8 +290,10 @@ export interface ProductEvents {
   search_result_opened: { group: SearchGroupId; position: number; length: number };
   /** A sentence typed in «Cerca» opened its «Aggiungi» form; `source`: read by the rules or by the AI, `complete`: nothing was missing. */
   search_command_opened: { kind: CommandKind; source: CommandSource; complete: boolean };
-  /** «Chiedi all'AI» asked in «Cerca», with what came back (never the sentence). */
+  /** «Chiedi all'AI» asked in «Cerca», with what came back (never the sentence); `question` = a question about the user's data, answered. */
   search_ai_asked: { outcome: string };
+  /** «Cerca» answered a question about the user's data (once per kind per opening); `source`: read by the rules or by the AI. Never the question or the figure. */
+  search_answer_shown: { kind: DataQuestionKind; source: "regole" | "ai" };
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */

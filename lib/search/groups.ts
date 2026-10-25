@@ -7,6 +7,7 @@ import { SEARCH_GROUP_IDS, type SearchGroupId, type SearchHit } from "./types";
 
 /** Block titles (Italian source keys). */
 export const SEARCH_GROUP_TITLES: Record<SearchGroupId, string> = {
+  risposte: "Risposta",
   movimenti: "Movimenti",
   conti: "Conti",
   titoli: "Titoli",

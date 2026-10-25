@@ -8,7 +8,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { redis } from "@/lib/redis/client";
-import { COMMAND_MAX_LENGTH, type CommandDraft } from "./types";
+import { COMMAND_KINDS, COMMAND_MAX_LENGTH, type CommandDraft, type Interpretation } from "./types";
 
 export const COMMAND_AI_LIMITS = { perHour: 10, perDay: 40, servicePerDay: 3_000 } as const;
 const CACHE_SECONDS = 24 * 60 * 60;
@@ -52,19 +52,26 @@ export async function consumeCommandQuota(userId: string, now = new Date()): Pro
 const cacheKey = (userId: string, sentence: string, today: string) =>
   `commands:ai:cache:${createHash("sha256").update(`${userId}\n${today}\n${sentence.trim().toLocaleLowerCase()}`).digest("hex")}`;
 
-/** A previous answer to the same sentence today (null draft = «not something to add»), or undefined. */
-export async function cachedInterpretation(userId: string, sentence: string, today: string): Promise<CommandDraft | null | undefined> {
+/** A cached value: an interpretation, or a bare draft written before questions existed (kept for a day at most). */
+function readCached(value: unknown): Interpretation | null {
+  if (value === null || typeof value !== "object") return null;
+  if ("type" in value) return value as Interpretation;
+  return "kind" in value && (COMMAND_KINDS as readonly unknown[]).includes(value.kind) ? { type: "draft", draft: value as CommandDraft } : null;
+}
+
+/** A previous answer to the same sentence today (null = «neither something to add nor a question»), or undefined. */
+export async function cachedInterpretation(userId: string, sentence: string, today: string): Promise<Interpretation | null | undefined> {
   try {
     const value = await redis.get(cacheKey(userId, sentence, today));
-    return value === null ? undefined : (JSON.parse(value) as CommandDraft | null);
+    return value === null ? undefined : readCached(JSON.parse(value));
   } catch {
     return undefined;
   }
 }
 
-export async function cacheInterpretation(userId: string, sentence: string, today: string, draft: CommandDraft | null): Promise<void> {
+export async function cacheInterpretation(userId: string, sentence: string, today: string, interpretation: Interpretation | null): Promise<void> {
   try {
-    await redis.set(cacheKey(userId, sentence, today), JSON.stringify(draft), "EX", CACHE_SECONDS);
+    await redis.set(cacheKey(userId, sentence, today), JSON.stringify(interpretation), "EX", CACHE_SECONDS);
   } catch {
     // Without the cache the next identical question is just another counted call.
   }

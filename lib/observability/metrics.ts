@@ -141,12 +141,15 @@ export type NotificationDigestSectionOutcome = "included" | "absent" | "failed";
 export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
 /** Whether a «Cerca» query read every movement of its window or stopped at the scan cap (`MOVEMENT_SCAN_LIMIT`). */
 export type SearchMovementScan = "full" | "capped";
+/** Which question about the user's data a «Cerca» query was read as (`DataQuestion` kinds), «none» for a plain search. */
+export type SearchAnswerLabel = "none" | "totale" | "saldo" | "patrimonio" | "portafoglio" | "rata";
 /**
- * Outcome of one «Chiedi all'AI» question in «Cerca»: answered by the model (ok: a draft; none: not something to add),
+ * Outcome of one «Chiedi all'AI» question in «Cerca»: answered by the model (ok: a draft; question: a question about the
+ * user's data, answered by the server; none: neither),
  * answered from the 24 h cache, refused before the model (invalid sentence, no consent, unavailable: public demo or no
  * key/model; limit of the user or of the whole service; quota store down) or failed (timeout, error, bad answer).
  */
-export type CommandAiOutcome = "ok" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
+export type CommandAiOutcome = "ok" | "question" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge
@@ -200,7 +203,7 @@ interface MetricsState {
   notificationEmails: Counter<"kind" | "outcome">;
   notificationDigestSections: Counter<"section" | "outcome">;
   notificationUnsubscribes: Counter<"kind" | "source">;
-  searchQueries: Counter<"movements">;
+  searchQueries: Counter<"movements" | "answer">;
   searchDuration: Histogram<string>;
   commandAiRequests: Counter<"outcome">;
   commandAiDuration: Histogram<string>;
@@ -440,8 +443,8 @@ function createState(): MetricsState {
 
   state.searchQueries = new Counter({
     name: `${METRIC_PREFIX}search_queries_total`,
-    help: "«Cerca» queries over the user's data, by whether the movement scan read its whole window or stopped at the cap.",
-    labelNames: ["movements"],
+    help: "«Cerca» queries over the user's data, by whether the movement scan read its whole window or stopped at the cap, and by the question answered (none for a plain search).",
+    labelNames: ["movements", "answer"],
     registers: r,
   });
   state.searchDuration = new Histogram({
@@ -820,10 +823,10 @@ export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "
   metrics().publicDemoEvents.inc({ event, language, country });
 }
 
-/** Records one «Cerca» query over the user's data: its duration and whether the movement scan hit its cap. */
-export function recordSearchQuery(durationMs: number, movements: SearchMovementScan): void {
+/** Records one «Cerca» query over the user's data: its duration, whether the movement scan hit its cap and the question answered. */
+export function recordSearchQuery(durationMs: number, movements: SearchMovementScan, answer: SearchAnswerLabel = "none"): void {
   const m = metrics();
-  m.searchQueries.inc({ movements });
+  m.searchQueries.inc({ movements, answer });
   m.searchDuration.observe(durationMs / 1000);
 }
 

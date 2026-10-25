@@ -7,6 +7,8 @@ export interface SidebarHolding {
   name: string;
   /** Valore della posizione in valuta utente, null se manca il prezzo o il cambio. */
   value: number | null;
+  /** Gain not yet realised on the position (value minus cost), null without a price; used by «Cerca» answers. */
+  gain: number | null;
   /** Variazione dell'ultima chiusura rispetto alla precedente (frazione, 0,01 = 1%). */
   dayChangePct: number | null;
   /** Chiusure recenti in ordine di data, per la linea. */

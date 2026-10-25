@@ -15,7 +15,8 @@ import { authClient } from "@/lib/auth/client";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery } from "@/lib/queries/categories";
-import { LIQUIDITY_LINK_PARAMS } from "@/lib/liquidity/links";
+import { LIQUIDITY_LINK_PARAMS, LIQUIDITY_PERIOD_PARAMS } from "@/lib/liquidity/links";
+import { parseDateOnly } from "@/lib/calc/expenses";
 import { AddAccountDialog } from "./add-account-dialog";
 import { LiquidityActionsProvider } from "./liquidity-actions";
 import { LiquidityProvider, useLiquidity } from "./liquidity-context";
@@ -113,26 +114,34 @@ function scrollToMovements(framesLeft = LIST_WAIT_FRAMES) {
 
 /**
  * A link to Movimenti filtered by account, category or text sets that filter and clears the other two, also when
- * Liquidità is already open (the provider keeps its state across tabs), then takes the parameter out of the address so
- * the same link works again later. A category or a text scrolls to the list, which sits below the balance and its chart.
+ * Liquidità is already open (the provider keeps its state across tabs), and with `periodo` and `data` shows that year or
+ * month (an answer in «Cerca» such as «Serenis nel 2026»). Then it takes the parameters out of the address so the same
+ * link works again later. A category, a text or a period scrolls to the list, which sits below the balance and its chart.
  */
 function LinkFilters() {
   const params = useSearchParams();
-  const { setAccountId, setCategoryId, setSearchText } = useLiquidity();
+  const { setAccountId, setCategoryId, setSearchText, setPeriod, setReferenceDate } = useLiquidity();
   const account = params.get(LIQUIDITY_LINK_PARAMS.account);
   const category = params.get(LIQUIDITY_LINK_PARAMS.category);
   const text = params.get(LIQUIDITY_LINK_PARAMS.text);
+  const period = params.get(LIQUIDITY_PERIOD_PARAMS.period);
+  const date = params.get(LIQUIDITY_PERIOD_PARAMS.date);
   React.useEffect(() => {
-    if (account === null && category === null && text === null) return;
+    const onPeriod = (period === "anno" || period === "mese") && date !== null && /^\d{4}-\d{2}-\d{2}$/.test(date);
+    if (account === null && category === null && text === null && !onPeriod) return;
     setAccountId(account);
     setCategoryId(category);
     setSearchText(text ?? "");
+    if (onPeriod) {
+      setPeriod(period);
+      setReferenceDate(parseDateOnly(date));
+    }
     const rest = new URLSearchParams(window.location.search);
-    for (const name of Object.values(LIQUIDITY_LINK_PARAMS)) rest.delete(name);
+    for (const name of [...Object.values(LIQUIDITY_LINK_PARAMS), ...Object.values(LIQUIDITY_PERIOD_PARAMS)]) rest.delete(name);
     const query = rest.toString();
     window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
-    if (category !== null || text !== null) scrollToMovements();
-  }, [account, category, text, setAccountId, setCategoryId, setSearchText]);
+    if (category !== null || text !== null || onPeriod) scrollToMovements();
+  }, [account, category, text, period, date, setAccountId, setCategoryId, setSearchText, setPeriod, setReferenceDate]);
   return null;
 }
 

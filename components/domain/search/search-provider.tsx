@@ -159,7 +159,7 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   const pickHit = React.useCallback(
     (hit: SearchHit, position: number, text: string) => {
       track("search_result_opened", { group: hit.group, position, length: text.trim().length });
-      remember(hit);
+      if (hit.group !== "risposte") remember(hit);
       setState((s) => ({ ...s, open: false }));
       if (hit.movementId) setMovement({ id: hit.movementId, loaded: true });
       else if (hit.quickAdd && quickAdd) quickAdd.start(hit.quickAdd as QuickAddActionId);

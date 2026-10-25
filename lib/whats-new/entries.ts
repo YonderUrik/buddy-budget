@@ -20,6 +20,15 @@ export const WHATS_NEW_MAX_AGE_DAYS = 45;
 
 export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
   {
+    id: "cerca-domande",
+    date: "2026-10-26",
+    title: "Chiedi a «Cerca»",
+    summary:
+      "Scrivi «quanto ho speso da Netflix nel 2026?», «saldo» o «prossima rata»: la risposta arriva subito, calcolata sui tuoi dati, con il link ai movimenti che somma. Nei risultati vedi anche i loghi di esercenti e titoli.",
+    href: "/panoramica?cerca=quanto%20ho%20speso%20a%20ottobre%3F",
+    ctaLabel: "Prova una domanda",
+  },
+  {
     id: "cerca-ovunque",
     date: "2026-10-25",
     title: "Cerca, da ovunque",

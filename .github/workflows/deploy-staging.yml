@@ -1,0 +1,188 @@
+name: Deploy branch to staging
+run-name: Stage ${{ inputs.branch }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Repository branch to deploy (replaces the shared staging app)
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-branch-deployment
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.branch.outputs.sha }}
+    steps:
+      - uses: actions/github-script@v8
+        id: branch
+        env:
+          BRANCH: ${{ inputs.branch }}
+        with:
+          script: |
+            const { data } = await github.rest.repos.getBranch({
+              ...context.repo, branch: process.env.BRANCH
+            });
+            core.setOutput('sha', data.commit.sha);
+
+  lint-types:
+    name: Lint e tipi
+    needs: resolve
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm exec tsc --noEmit
+
+  # Tests run against a real Postgres and one file at a time (vitest.config.ts: fileParallelism false), so they cannot
+  # be parallelised within the same job: they are split into 2 jobs with one database each (vitest --shard).
+  test:
+    name: Test ${{ matrix.shard }}/2
+    needs: resolve
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: buddy_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    # Fake values used only by the tests: no external service is contacted with these credentials.
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/buddy_test
+      REDIS_URL: redis://localhost:6379
+      BETTER_AUTH_SECRET: ci-only-placeholder-secret-000000000000
+      BETTER_AUTH_URL: http://localhost:3000
+      APP_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: ci-google-id
+      GOOGLE_CLIENT_SECRET: ci-google-secret
+      RESEND_API_KEY: re_ci_placeholder
+      RESEND_FROM: ci@example.com
+      GOCARDLESS_SECRET_ID: ci-gocardless-id
+      GOCARDLESS_SECRET_KEY: ci-gocardless-key
+      CRON_SECRET: ci-only-placeholder-cron-secret-0000000
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - run: pnpm test --shard=${{ matrix.shard }}/2
+
+  image:
+    name: Immagine ${{ matrix.image }}
+    timeout-minutes: 60
+    needs: resolve
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - image: buddy-budget
+            target: runner
+          - image: buddy-budget-migrate
+            target: migrator
+          - image: buddy-budget-csv-worker
+            target: csv-worker
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+          persist-credentials: false
+      - uses: docker/setup-qemu-action@v4
+        if: vars.SELFHOST_IMAGES == 'true'
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          platforms: ${{ vars.SELFHOST_IMAGES == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          sbom: ${{ vars.SELFHOST_IMAGES == 'true' }}
+          push: true
+          tags: ghcr.io/yonderurik/${{ matrix.image }}:staging-${{ needs.resolve.outputs.sha }}
+          build-args: |
+            GIT_COMMIT_SHA=${{ needs.resolve.outputs.sha }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  request:
+    name: Request staging rollout
+    needs: [resolve, lint-types, test, image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/github-script@v8
+        env:
+          SHA: ${{ needs.resolve.outputs.sha }}
+          BRANCH: ${{ inputs.branch }}
+        with:
+          script: |
+            const { data } = await github.rest.repos.createDeployment({
+              ...context.repo, ref: process.env.SHA,
+              environment: 'staging-request', auto_merge: false,
+              required_contexts: [], production_environment: false,
+              description: `Manual staging request: ${process.env.BRANCH}`,
+              payload: { branch: process.env.BRANCH, run_id: context.runId }
+            });
+            await github.rest.repos.createDeploymentStatus({
+              ...context.repo, deployment_id: data.id, state: 'success',
+              auto_inactive: false,
+              description: 'Checks passed; request ready for staging server',
+              log_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
+            await core.summary.addHeading('Staging rollout requested')
+              .addRaw(`Branch: ${process.env.BRANCH}\n\nCommit: ${process.env.SHA}\n\n`)
+              .addRaw('The staging server checks requests every two minutes, backs up its database, and deploys the images. This workflow confirms the request, not live rollout success. ')
+              .addLink('Open staging over Tailscale', 'https://staging.buddybudget.io')
+              .addRaw(' and check /api/health for the commit. If the server is offline, the request waits until it reconnects.')
+              .write();

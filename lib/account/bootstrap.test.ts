@@ -38,6 +38,13 @@ describe("buildMeBootstrap", () => {
     });
   });
 
+  it("never asks a public demo account to accept an older legal version", () => {
+    const bootstrap = buildMeBootstrap(sessionWith({ id: "public-demo-it-en", legalAcceptedVersion: "2020-01-01" }));
+    expect(bootstrap.gate).toBeNull();
+    expect(bootstrap.legal.needsAcceptance).toBe(false);
+    expect(bootstrap.account.readOnlyDemo).toBe(true);
+  });
+
   it("derives the German capability map from the shared country policy", () => {
     const { capabilities, profile } = buildMeBootstrap(sessionWith({ productCountry: "DE", language: "de" }));
     expect(profile.availableLanguages).toEqual(["en", "de"]);

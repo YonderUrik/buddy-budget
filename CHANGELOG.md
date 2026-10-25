@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.89.0](https://github.com/YonderUrik/buddy-budget/compare/v0.88.1...v0.89.0) (2026-10-25)
+
+
+### Novità
+
+* add app-wide search (Cerca) with natural language command parsing ([#513](https://github.com/YonderUrik/buddy-budget/issues/513)) ([37db0c5](https://github.com/YonderUrik/buddy-budget/commit/37db0c53abc19255e822ec7bcc67c5c9c3fbb946))
+
 ## [0.88.1](https://github.com/YonderUrik/buddy-budget/compare/v0.88.0...v0.88.1) (2026-10-24)
 
 

@@ -14,6 +14,7 @@ export type { UserDataSummary, UserSessionView };
 
 /** Profilo e preferenze come li restituisce `GET /api/user/settings`. */
 export interface UserSettings {
+  instance?: import("@/lib/selfhost").InstanceCapabilities | null;
   productCountry: ProductCountry;
   language: "it" | "en" | "de";
   name: string;

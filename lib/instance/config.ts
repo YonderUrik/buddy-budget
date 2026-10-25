@@ -1,3 +1,4 @@
+import { isLocalMode } from "@/lib/selfhost/local-mode";
 import { emailTransport, isEmailConfigured } from "@/lib/email/transport";
 
 type Env = Record<string, string | undefined>;
@@ -42,14 +43,15 @@ export interface InstanceConfig {
  */
 export function authMethods(env: Env = process.env): AuthMethods {
   const selfHosted = isSelfHosted(env);
+  const local = isLocalMode(env);
   const emailDelivery = isEmailConfigured(env);
   const password = parseFlag(env.AUTH_PASSWORD) ?? (selfHosted || !emailDelivery);
   return {
-    password,
-    magicLink: emailDelivery || !password,
-    google: Boolean(env.GOOGLE_CLIENT_ID?.trim() && env.GOOGLE_CLIENT_SECRET?.trim()),
+    password: !local && password,
+    magicLink: !local && (emailDelivery || !password),
+    google: !local && Boolean(env.GOOGLE_CLIENT_ID?.trim() && env.GOOGLE_CLIENT_SECRET?.trim()),
     emailDelivery,
-    openSignup: parseFlag(env.ALLOW_SIGNUPS) ?? !selfHosted,
+    openSignup: !local && (parseFlag(env.ALLOW_SIGNUPS) ?? !selfHosted),
   };
 }
 

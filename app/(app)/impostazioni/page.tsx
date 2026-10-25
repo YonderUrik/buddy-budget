@@ -15,6 +15,7 @@ import {
   PreferencesSection,
   PrivacySection,
   ProfileSection,
+  InstanceSection,
   SessionsSection,
   SettingsHub,
   SidebarSection,
@@ -93,8 +94,9 @@ function ImpostazioniContent() {
             account: (
               <>
                 <ProfileSection settings={settings} />
-                <PasswordSection settings={settings} recentLogin={recentLogin} />
-                <SessionsSection />
+                {!settings.instance?.localMode && <PasswordSection settings={settings} recentLogin={recentLogin} />}
+                {!settings.instance?.localMode && <SessionsSection />}
+                {settings.instance && <InstanceSection status={settings.instance} />}
               </>
             ),
             aspetto: (
@@ -105,7 +107,7 @@ function ImpostazioniContent() {
             ),
             notifiche: (
               <>
-                <NotificationsSection email={settings.email} />
+                {(!settings.instance?.localMode || settings.instance.notifications) && <NotificationsSection email={settings.email} />}
                 <AiCategorizationSection />
               </>
             ),

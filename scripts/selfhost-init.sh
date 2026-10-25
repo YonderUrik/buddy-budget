@@ -1,44 +1,53 @@
 #!/bin/sh
-# Prepares the .env file for self-hosting: copies the example and generates the required secrets.
-# Never overwrites an existing .env.
-#
-#   ./scripts/selfhost-init.sh                              # the app at http://localhost:3000
-#   ./scripts/selfhost-init.sh https://budget.example.com   # behind your HTTPS reverse proxy
+# Configure only, or configure and start with --start / --build.
 set -eu
 cd "$(dirname "$0")/.."
 
-if [ -e .env ]; then
-  echo ".env already exists: leaving it as it is." >&2
+setup_mode=configure
+case "${1:-}" in
+  "") ;;
+  --start) setup_mode=images ;;
+  --build) setup_mode=build ;;
+  --defaults) setup_mode=defaults ;;
+  *) echo "Usage: ./scripts/selfhost-init.sh [--start|--build|--defaults]" >&2; exit 1 ;;
+esac
+
+if [ "$setup_mode" = defaults ]; then
+  if [ -e .env ]; then
+    echo ".env already exists. No changes made. Run without --defaults to edit it." >&2
+    exit 0
+  fi
+  random() { openssl rand -hex 32; }
+  umask 077
+  postgres_password=$(random)
+  auth_secret=$(random)
+  cron_secret=$(random)
+  sed \
+    -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$postgres_password|" \
+    -e "s|^BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=$auth_secret|" \
+    -e "s|^CRON_SECRET=.*|CRON_SECRET=$cron_secret|" \
+    .env.selfhost.example > .env
+  chmod 600 .env
+  echo "Configuration saved to .env. BuddyBudget has not been started."
+  echo "Next: check APP_URL in .env, then run ./scripts/selfhost-start.sh"
   exit 0
 fi
 
-command -v openssl >/dev/null 2>&1 || { echo "openssl is needed to generate the secrets." >&2; exit 1; }
+if command -v node >/dev/null 2>&1 && node -e 'if (Number(process.versions.node.split(".")[0]) < 24) process.exit(1)' 2>/dev/null; then
+  node scripts/selfhost/setup.mjs "--launch=$setup_mode"
+else
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "Setup requires Docker or Node.js 24 or later." >&2
+    exit 1
+  fi
+  # The wizard container cannot control Docker. Startup runs on the host afterward.
+  docker run --rm -it --init \
+    --user "$(id -u):$(id -g)" \
+    -v "$(pwd):/workspace" -w /workspace \
+    node:24-alpine node scripts/selfhost/setup.mjs "--launch=$setup_mode"
+fi
 
-app_url="${1:-http://localhost:3000}"
-case "$app_url" in
-  http://*|https://*) ;;
-  *) echo "The address must start with http:// or https:// (got: $app_url)." >&2; exit 1 ;;
+case "$setup_mode" in
+  build) exec ./scripts/selfhost-start.sh --build ;;
+  images) exec ./scripts/selfhost-start.sh ;;
 esac
-app_url="${app_url%/}"
-
-hex() { openssl rand -hex 32; }
-
-# `|` as the sed separator: hex, base64 and URL values never contain it.
-sed \
-  -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(hex)|" \
-  -e "s|^BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=$(hex)|" \
-  -e "s|^CRON_SECRET=.*|CRON_SECRET=$(hex)|" \
-  -e "s|^PERSONAL_CSV_ENCRYPTION_KEY=.*|PERSONAL_CSV_ENCRYPTION_KEY=$(openssl rand -base64 32)|" \
-  -e "s|^APP_URL=.*|APP_URL=$app_url|" \
-  .env.selfhost.example > .env
-chmod 600 .env
-
-cat <<MSG
-Created .env with random secrets (keep a copy of it with your backups).
-
-Next:
-  docker compose up -d
-  open $app_url and create the first account
-
-The first account is yours; nobody else can sign up unless you set ALLOW_SIGNUPS=true in .env.
-MSG

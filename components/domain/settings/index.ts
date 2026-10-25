@@ -6,6 +6,8 @@
  */
 
 export { ProfileSection } from "./profile-section";
+export { InstanceSection } from "./instance-section";
+export type { InstanceSectionProps } from "./instance-section";
 export type { ProfileSectionProps } from "./profile-section";
 export { PreferencesSection } from "./preferences-section";
 export type { PreferencesSectionProps } from "./preferences-section";

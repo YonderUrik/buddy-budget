@@ -8,6 +8,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { MotionProvider } from "@/components/motion";
 import Script from "next/script";
 import "./globals.css";
+import { LocalModeProvider } from "@/components/local-mode-provider";
+import { isLocalMode } from "@/lib/selfhost";
 import { PwaInstallTracker } from "@/components/analytics";
 import { instanceConfig } from "@/lib/instance/config";
 import { InstanceProvider } from "@/lib/instance/provider";
@@ -76,7 +78,7 @@ export default async function RootLayout({
         <InstanceProvider value={instance}><LocalizationProvider profile={profile}><QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MotionProvider>
-              {children}
+              <LocalModeProvider enabled={isLocalMode()} emailAvailable={instance.auth.emailDelivery && (!isLocalMode() || Boolean(process.env.SELFHOST_OWNER_EMAIL))}>{children}</LocalModeProvider>
               <Toaster />
             </MotionProvider>
           </ThemeProvider>

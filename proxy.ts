@@ -2,6 +2,7 @@ import { COUNTRY_UNAVAILABLE_MESSAGE, LANGUAGES, LANGUAGE_COOKIE, isCountryPathA
 import { translate } from "@/lib/localization/messages";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isLocalMode, isLocalRequest, LOCAL_ENTRY_PATH } from "@/lib/selfhost";
 import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 import { ACCOUNT_DEACTIVATED_CODE, LEGAL_ACCEPTANCE_REQUIRED_CODE, ONBOARDING_REQUIRED_CODE, accountGate, accountGateErrorBody } from "@/lib/account/gates";
@@ -46,6 +47,16 @@ function appUrl(request: NextRequest, path: string): URL {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  const local = isLocalMode();
+  // Internal health checks and cron jobs use their own URL/secret, never automatic login.
+  const internal = ["/api/health", "/api/cron", "/api/metrics"].some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  if (local && !internal && !isLocalRequest(request)) return new NextResponse(null, { status: 403 });
+  const localEntry = (target: string) => {
+    const url = new URL(LOCAL_ENTRY_PATH, process.env.APP_URL!);
+    url.searchParams.set("redirect", target);
+    return NextResponse.redirect(url);
+  };
+
   // Chi è già autenticato non deve rivedere il form di login.
   if (pathname === "/login") {
     const existing = await auth.api.getSession({ headers: request.headers });
@@ -64,7 +75,7 @@ export async function proxy(request: NextRequest) {
       response.cookies.set(LANGUAGE_COOKIE, chosen, { path: "/", maxAge: 31536000, sameSite: "lax", secure: clean.protocol === "https:" });
       return response;
     }
-    return NextResponse.next();
+    return local ? localEntry(safeRedirectPath(request.nextUrl.searchParams.get("redirect"))) : NextResponse.next();
   }
 
   if (isPublicPath(pathname)) {
@@ -77,6 +88,7 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return new NextResponse(null, { status: 401 });
     }
+    if (local) return localEntry(pathname + request.nextUrl.search);
     const loginUrl = appUrl(request, "/login");
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);

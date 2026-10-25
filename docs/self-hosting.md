@@ -1,25 +1,30 @@
 # Self-hosting with Docker
 
-BuddyBudget runs with one command on any machine with Docker (Linux, macOS, Windows with WSL2). The compose file starts the app, Postgres, Redis and a scheduler for the periodic jobs. You need no email server and no external account to start: sign-in is with email and password.
+BuddyBudget runs with one command on any machine with Docker (Linux, macOS, Windows with WSL2). The compose file starts the app, Postgres, Redis and a scheduler for the periodic jobs. You need no email server or external account to start. Personal mode opens one account automatically on this computer; server mode uses email and password.
 
 > **Images**: every release publishes public images on ghcr.io for amd64, with the version tag and `latest`. arm64 images (Raspberry Pi, Apple silicon servers) are published only when the maintainers enable them (see the end of this page); until then, on arm64, build from source.
 
 ## Up and running
 
-You need Docker with the Compose v2 plugin and `openssl`.
+You need Docker with the Compose v2 plugin. The wizard uses Node.js 24 or later, or a temporary Node container when Node is unavailable. `--defaults` also requires `openssl`.
 
 ```bash
 git clone https://github.com/YonderUrik/buddy-budget.git
 cd buddy-budget
-./scripts/selfhost-init.sh      # creates .env with random secrets
-docker compose up -d
+./scripts/selfhost-init.sh --start
 ```
 
 Open <http://localhost:3000>. The migrations run on their own (`migrate` service) and the app is ready in about a minute (`docker compose ps` shows `healthy`).
 
-The first page is «Crea il primo account» ("Create the first account"): name, email, password (at least 10 characters). That account is yours. After it, nobody else can sign up unless you allow it (below). Onboarding then asks for country, language and currency.
+Choose **Just me, on this computer** for automatic personal access, or **On a server or shared with others** for authenticated access. The wizard configures optional API keys, checks credentials without paid AI calls or test emails, saves private secrets atomically, and waits for readiness before showing the URL. OpenRouter enables the AI worker automatically. Settings shows which services are configured.
 
-Behind a domain, pass its address to the init script: `./scripts/selfhost-init.sh https://budget.example.com` (see «HTTPS and domain»).
+For unreleased code or an arm64 machine, use `./scripts/selfhost-init.sh --build`. Keep setup, API-key changes and startup in that same checkout. If a development server already uses port 3000, choose another local port in the wizard, such as 3100, and open the exact address printed by the launcher. With configuration already saved, use `./scripts/selfhost-start.sh --build`. Without a startup option, the installer saves configuration only. `--defaults` saves a minimal server configuration without prompts.
+
+In server mode the first page is «Crea il primo account» ("Create the first account"): name, email, password (at least 10 characters). That account is yours. After it, nobody else can sign up unless you allow it (below). Onboarding then asks for country, language and currency.
+
+Behind a domain, select server mode and enter its HTTPS address in the wizard (see «HTTPS and domain»).
+
+Personal mode requires a fresh database or the existing personal owner, `APP_BIND=127.0.0.1`, and a matching loopback HTTP address. It rejects foreign hosts, origins and cross-site requests. To move that account to server mode, rerun setup, select server, and enter a real owner email. Data and the account ID are preserved; automatic sessions are revoked. If password login is enabled, set the owner password with `docker compose run --rm migrate pnpm auth:reset-password you@example.com` before signing in.
 
 ## Accounts
 
@@ -65,7 +70,7 @@ Not part of a self-hosted install: the read-only public demo, deleting accounts 
 
 ## HTTPS and domain
 
-The compose file publishes the app only on `127.0.0.1`. To use it from other devices, put it behind a reverse proxy with HTTPS and set `APP_URL=https://budget.example.com` in `.env`, then `docker compose up -d`. Sign-in works only from the address in `APP_URL`. Example with [Caddy](https://caddyserver.com) (automatic certificate), `Caddyfile`:
+The compose file publishes the app only on `127.0.0.1`. To use it from other devices, put it behind a reverse proxy with HTTPS and set `APP_URL=https://budget.example.com` in `.env`, then `./scripts/selfhost-start.sh`. Use server mode for network access. Sign-in works only from the address in `APP_URL`. Example with [Caddy](https://caddyserver.com) (automatic certificate), `Caddyfile`:
 
 ```
 budget.example.com {
@@ -86,6 +91,12 @@ docker compose up -d
 ```
 
 The migrations run before the app. To pin a version, set `BUDDYBUDGET_VERSION=0.79.0` in `.env` ([releases](https://github.com/YonderUrik/buddy-budget/releases)). Take a backup before updating.
+
+## Uninstall or start over
+
+`./scripts/selfhost-uninstall.sh` removes the containers and network while keeping the database and `.env`. Restart with `./scripts/selfhost-start.sh` (add `--build` for this checkout).
+
+`./scripts/selfhost-uninstall.sh --purge` also deletes the database volume and `.env` after you type `DELETE`. Back up first. `--purge --yes` is an explicit unattended deletion. Source files, `.env.local`, images, build cache and other Compose projects are retained. If Docker removal fails, configuration is kept.
 
 ## Backup and restore
 

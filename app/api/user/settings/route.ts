@@ -8,6 +8,7 @@ import { listLinkedProviders } from "@/lib/account/sessions";
 import { readJson, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { resolveHomePage } from "@/lib/account/home-pages";
 import { updateUserSettingsSchema } from "@/lib/validation/user-settings";
+import { instanceCapabilities } from "@/lib/selfhost";
 import { requestLogger, withRoute } from "@/lib/observability";
 import { localizeDemo } from "@/lib/start/demo";
 
@@ -18,6 +19,7 @@ async function handleGet(request: NextRequest) {
   const { user } = session;
   const providers = await listLinkedProviders(user.id);
   return Response.json({
+    instance: process.env.SELF_HOSTED === "true" ? instanceCapabilities() : null,
     name: user.name,
     email: user.email,
     image: user.image ?? null,
@@ -30,7 +32,7 @@ async function handleGet(request: NextRequest) {
     createdAt: new Date(user.createdAt).toISOString(),
     googleLinked: providers.includes("google"),
     passwordSet: providers.includes("credential"),
-    recentLoginUntil: recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),
+    recentLoginUntil: process.env.SELF_HOSTED === "true" && instanceCapabilities().localMode ? "9999-12-31T00:00:00.000Z" : recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),
   });
 }
 

@@ -34,6 +34,7 @@ function hardNavigate(path: string) {
 
 export function DangerZoneSection({ settings, recentLogin }: DangerZoneSectionProps) {
   const { t: tr } = useLocalization();
+  const local = settings.instance?.localMode;
   const reset = useResetAccountMutation();
   const deactivate = useDeactivateAccountMutation();
   const remove = useDeleteAccountMutation();
@@ -48,7 +49,7 @@ export function DangerZoneSection({ settings, recentLogin }: DangerZoneSectionPr
       title={tr("Zona pericolosa")}
       tone="danger"
       icon={TriangleAlert}
-      description={tr("Azioni che cancellano i tuoi dati. Per sicurezza ti chiediamo di confermare la tua identità.")}
+      description={tr(local ? "Azioni che cancellano i tuoi dati. Conferma prima di continuare." : "Azioni che cancellano i tuoi dati. Per sicurezza ti chiediamo di confermare la tua identità.")}
     >
       <DangerActionDialog
         {...common}
@@ -91,6 +92,7 @@ export function DangerZoneSection({ settings, recentLogin }: DangerZoneSectionPr
         </div>
       </DangerActionDialog>
 
+      {local ? <p className="text-sm text-text-2">{tr("Per rimuovere l’installazione e il profilo personale, usa il comando di disinstallazione sul tuo computer.")}</p> : <>
       <DangerActionDialog
         {...common}
         title={tr("Disattiva l'account")}
@@ -160,6 +162,7 @@ export function DangerZoneSection({ settings, recentLogin }: DangerZoneSectionPr
           />
         </div>
       </DangerActionDialog>
+      </>}
     </SettingsSection>
   );
 }

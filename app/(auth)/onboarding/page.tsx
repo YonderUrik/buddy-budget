@@ -1,5 +1,7 @@
 "use client";
 
+import { useEmailAvailable } from "@/components/local-mode-provider";
+
 /**
  * Onboarding: main currency (EUR preselected), what to keep an eye on (decides the first steps in Panoramica, can be
  * skipped), proposed categories (confirm with one tap or customise), category assistant (only if the service exists, off
@@ -43,14 +45,15 @@ export default function OnboardingPage() {
   const [notifications, setNotifications] = useState<NotificationPreferences>({ ...NOTIFICATION_DEFAULTS });
   const [focus, setFocus] = useState<StartFocus[]>([]);
   const focusOptions = focusOptionsFor(isCountryPathAvailable(productCountry, "/pensione"));
-  const { selfHosted, auth } = useInstance();
+  const { selfHosted } = useInstance();
+  const emailAvailable = useEmailAvailable();
   // Self-hosted: no email step without an email service, no acceptance of the hosted service's Terms.
   const steps: OnboardingStep[] = [
     "valuta",
     "interessi",
     "categorie",
     ...(assistant?.available ? (["assistente"] as const) : []),
-    ...(auth.emailDelivery ? (["notifiche"] as const) : []),
+    ...(emailAvailable ? (["notifiche"] as const) : []),
     ...(selfHosted ? [] : (["conferme"] as const)),
   ];
   const needsConsent = !selfHosted;
@@ -76,7 +79,7 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           currency, productCountry, language,
           ...(needsConsent ? { legal: payload } : {}),
-          ...(auth.emailDelivery ? { notifications } : {}),
+          ...(emailAvailable ? { notifications } : {}),
           // A pension answer left over from a country change is dropped: the checklist must never point to a hidden section.
           focus: focus.filter((f) => focusOptions.some((o) => o.id === f)),
           ...(categorySetup.payload ? { categories: categorySetup.payload } : {}),

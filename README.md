@@ -72,13 +72,12 @@ App, Postgres, Redis and the scheduled jobs start with a single command:
 ```bash
 git clone https://github.com/YonderUrik/buddy-budget.git
 cd buddy-budget
-./scripts/selfhost-init.sh   # creates .env with random secrets
-docker compose up -d         # then open http://localhost:3000 and create the first account
+./scripts/selfhost-init.sh --start   # guided setup, then start and wait until ready
 ```
 
 The images are public on ghcr.io (`ghcr.io/yonderurik/buddy-budget`, `latest` follows the latest release; set `BUDDYBUDGET_VERSION` in `.env` to pin one). On an arm64 machine, or to run your own changes, build them from source: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
 
-Sign-in is with email and password, so no mail server is needed; the first account is yours and signups stay closed unless you open them. Email (any SMTP server, or Resend), Google sign-in, AI (OpenRouter) and bank connection (GoCardless) are optional. GoCardless no longer accepts new sign-ups, so on a new install you import bank CSVs instead. The guide [`docs/self-hosting.md`](docs/self-hosting.md) explains what works without external services, how to put the app behind HTTPS, how to update it and how to make backups.
+The wizard offers personal mode (automatic access restricted to this computer) or server mode (email and password, no mail server needed). In server mode, the first account is yours and signups stay closed unless you open them. To test unreleased changes, use `./scripts/selfhost-init.sh --build`; to restart a saved configuration, use `./scripts/selfhost-start.sh --build`. Remove containers with `./scripts/selfhost-uninstall.sh` (keeps data), or add `--purge` to erase the database and `.env` after confirmation. Email (any SMTP server, or Resend), Google sign-in, AI (OpenRouter) and bank connection (GoCardless) are optional. GoCardless no longer accepts new sign-ups, so on a new install you import bank CSVs instead. The guide [`docs/self-hosting.md`](docs/self-hosting.md) explains what works without external services, how to put the app behind HTTPS, how to update it and how to make backups.
 
 ### Local development
 

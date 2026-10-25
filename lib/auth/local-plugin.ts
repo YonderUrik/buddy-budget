@@ -1,6 +1,7 @@
 import { createAuthEndpoint, APIError } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { isLocalMode, isLocalRequest, LOCAL_ENTRY_PATH, LOCAL_OWNER_ID } from "@/lib/selfhost";
+import { hashUserId, logger } from "@/lib/observability";
 import { safeRedirectPath } from "./constants";
 
 /** Issue a normal signed session for the single local owner; no request can choose an account. */
@@ -17,6 +18,7 @@ export function localAccessPlugin() {
           const session = await ctx.context.internalAdapter.createSession(user.id);
           if (!session) throw new APIError("INTERNAL_SERVER_ERROR");
           await setSessionCookie(ctx, { session, user });
+          logger.info("selfhost.local_session.created", { user: hashUserId(user.id) });
         }
         ctx.setHeader("Cache-Control", "no-store");
         const target = new URL(safeRedirectPath(new URL(ctx.request.url).searchParams.get("redirect")), process.env.APP_URL!);

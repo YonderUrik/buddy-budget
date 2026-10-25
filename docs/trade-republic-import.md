@@ -13,5 +13,3 @@ Upload the full history of the main account (`account_type=DEFAULT`). The format
 - The update happens in a single transaction. Movements are identified by `transaction_id`; notes and categorizations survive the update. Deleting the import and restoring the history also delete the imported cash movements.
 
 Structural errors, duplicate IDs, future dates, unknown classes or TRADING operations block the entire file. No silent discarding. Limits: 5 MB, 5000 rows, 50 instruments. Different formats or further corporate events will need a new sample export.
-
-Verification performed on the local file provided: 885 rows = 17 investment transactions + 868 cash movements, 6 instruments, no errors in the quantity check. The personal CSV is not copied into the repository. The versioned tests use only synthetic data and also cover reimport, update and deletion on local Postgres.

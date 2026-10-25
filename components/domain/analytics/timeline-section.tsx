@@ -59,7 +59,7 @@ export function TimelineSection({ question, base, assumptions, plan, baseline }:
               );
             }}
           />
-          <ReferenceLine y={plan.target} stroke="var(--pos)" strokeDasharray="5 4" label={{ value: `Numero FIRE ${money(plan.target, currency)}`, position: "insideTopLeft", fill: "var(--pos)", fontSize: 11 }} />
+          <ReferenceLine y={plan.target} stroke="var(--pos)" strokeDasharray="5 4" label={{ value: `${tr("Numero FIRE")} ${money(plan.target, currency)}`, position: "insideTopLeft", fill: "var(--pos)", fontSize: 11 }} />
           {baselineSeries ? <Line dataKey="baseline" stroke="var(--color-baseline)" strokeWidth={1.8} strokeDasharray="4 4" dot={false} isAnimationActive={false} /> : null}
           <Area dataKey="wealth" stroke="var(--color-wealth)" strokeWidth={2.5} fill="var(--color-wealth)" fillOpacity={0.12} dot={false} isAnimationActive={false} />
         </ComposedChart>

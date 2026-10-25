@@ -1,0 +1,27 @@
+name: Repo weight
+
+# Fails a PR that adds heavy files (screenshots, videos, archives) that belong outside the repository.
+# Every byte committed stays in every clone forever. Rules and exemptions: scripts/check-file-sizes.mjs.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repo-size-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  size:
+    name: No heavy files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          # Only the tree is needed to measure the files, not their content.
+          filter: blob:none
+      - run: node scripts/check-file-sizes.mjs origin/${{ github.event.pull_request.base.ref }}

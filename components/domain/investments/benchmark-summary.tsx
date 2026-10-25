@@ -108,7 +108,7 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
     <div className="flex flex-col gap-2 rounded-lg bg-muted/50 p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="text-sm font-medium text-foreground">
-          {VERDICT_TEXT[verdict]}
+          {tr(VERDICT_TEXT[verdict])}
           {verdict !== "even" ? (
             <span className={cn("tabular-nums", difference < 0 ? "text-neg" : "text-pos")}> {"("}{formatSignedCurrency(difference, currency)}{")"}</span>
           ) : null}

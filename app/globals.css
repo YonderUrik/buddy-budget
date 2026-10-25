@@ -204,12 +204,12 @@
   --spotlight-edge: rgb(0 0 0 / 0.13);
   --spotlight-highlight: rgb(255 255 255 / 0.85);
   --spotlight-shadow: rgb(15 23 42 / 0.3);
-  /* The chosen result: a light wash of the brand blue over the glass, its icon filled with the same blue. */
-  --spotlight-lit: color-mix(in oklab, var(--primary) 15%, transparent);
+  /* The chosen result: a grey veil on the glass, no colour (as on iOS); its icon sits on a solid disc. */
+  --spotlight-lit: rgb(0 0 0 / 0.075);
   --on-spotlight-lit: var(--foreground);
-  --on-spotlight-lit-2: var(--text-2);
-  --spotlight-lit-icon: var(--primary);
-  --on-spotlight-lit-icon: var(--primary-foreground);
+  --on-spotlight-lit-2: var(--text-3);
+  --spotlight-lit-icon: var(--card);
+  --on-spotlight-lit-icon: var(--primary);
   /* Isola dei lavori in corso: sempre scura, in entrambi i temi (come l'isola dei telefoni). */
   --island: #0f0f12;
   --island-foreground: #f4f4f5;
@@ -330,11 +330,11 @@
   --spotlight-edge: rgb(255 255 255 / 0.16);
   --spotlight-highlight: rgb(255 255 255 / 0.12);
   --spotlight-shadow: rgb(0 0 0 / 0.6);
-  --spotlight-lit: color-mix(in oklab, var(--primary) 26%, transparent);
+  --spotlight-lit: rgb(255 255 255 / 0.11);
   --on-spotlight-lit: var(--foreground);
-  --on-spotlight-lit-2: var(--text-2);
-  --spotlight-lit-icon: var(--primary);
-  --on-spotlight-lit-icon: var(--primary-foreground);
+  --on-spotlight-lit-2: var(--text-3);
+  --spotlight-lit-icon: rgb(255 255 255 / 0.14);
+  --on-spotlight-lit-icon: var(--primary);
 }
 
 @layer base {

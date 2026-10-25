@@ -136,7 +136,14 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
       return filter ? [] : idle.filter((b) => b.items.length > 0);
     }
     const local = searchStatic(query, productCountry, (key) => tr(key));
-    const remote = query.length >= SERVER_MIN_LENGTH ? (server.data?.hits ?? []).map((h) => ({ ...h, subtitle: h.subtitle ? tr(h.subtitle) : undefined })) : [];
+    // While the answer for the latest text is on its way, the previous one stays only where it still matches what is typed
+    // («mutuo» results must not lead under «comprato»).
+    const stale = server.isPlaceholderData || query !== serverQuery;
+    const remote = query.length >= SERVER_MIN_LENGTH
+      ? (server.data?.hits ?? [])
+          .filter((h) => !stale || matchScore(h.title, query) > 0 || (h.subtitle !== undefined && matchScore(h.subtitle, query) > 0))
+          .map((h) => ({ ...h, subtitle: h.subtitle ? tr(h.subtitle) : undefined }))
+      : [];
     const allowed = filter ? new Set(FILTER_GROUPS[filter]) : null;
     const hits = [...remote, ...local].filter((h) => !allowed || allowed.has(h.group));
     const result: SpotlightBlock[] = [];
@@ -148,7 +155,7 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
     result.push(...arranged);
     if (offerAi && arranged.length > 0) result.push(aiBlock);
     return result;
-  }, [query, filter, idle, productCountry, tr, server.data, draft, instrument, offerAi, aiForText?.status]);
+  }, [query, serverQuery, filter, idle, productCountry, tr, server.data, server.isPlaceholderData, draft, instrument, offerAi, aiForText?.status]);
 
   const items = blocks.flatMap((b) => b.items);
   const waiting = query.length >= SERVER_MIN_LENGTH && (query !== serverQuery || server.isFetching);

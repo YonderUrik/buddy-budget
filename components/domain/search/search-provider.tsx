@@ -22,10 +22,15 @@ import { useLocalization } from "@/lib/localization/provider";
 import { STATIC_ENTRIES } from "@/lib/search/static-index";
 import type { QuickAddActionId } from "@/lib/quick-add/actions";
 import type { SearchHit } from "@/lib/search/types";
-import { Spotlight } from "./spotlight";
 import type { SpotlightBlock } from "./use-spotlight";
 
+const loadSpotlight = () => import("./spotlight").then((m) => m.Spotlight);
+// The panel, its parser and its results are loaded apart from every page, then fetched while the browser is idle so the
+// first ⌘K or pull opens without a wait.
+const Spotlight = dynamic(loadSpotlight, { ssr: false });
 const MovementDetailDialog = dynamic(() => import("@/components/domain/liquidity/light").then((m) => m.MovementDetailDialog), { ssr: false });
+/** How long after the page settles the panel's code is fetched, when the browser has no idle callback. */
+const PRELOAD_FALLBACK_MS = 2_000;
 
 type SearchSource = "campo" | "altro" | "tirando" | "tastiera" | "link";
 
@@ -181,6 +186,16 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   const api = React.useMemo<SearchApi>(() => ({ open, isOpen: state.open }), [open, state.open]);
   const fromLink = React.useCallback((text: string) => open("link", text), [open]);
   const mounted = React.useSyncExternalStore(() => () => {}, () => true, () => false);
+
+  React.useEffect(() => {
+    const preload = () => void loadSpotlight();
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(preload, { timeout: PRELOAD_FALLBACK_MS * 2 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(preload, PRELOAD_FALLBACK_MS);
+    return () => clearTimeout(id);
+  }, []);
 
   return (
     <SearchContext.Provider value={api}>

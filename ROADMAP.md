@@ -7,18 +7,20 @@ This file lists the direction. Each line links to its decision when there is one
 ## Phase 1: Foundation (done)
 
 - [x] Sign-in with email link and Google, onboarding with country, language and currency
-- [x] Manual accounts and bank connection via Open Banking (GoCardless, read-only)
+- [x] Manual accounts and bank connection via Open Banking (GoCardless, read-only; new connections paused on the hosted version, [decision](docs/decisioni/2026-10-19-collegamento-banca-in-arrivo.md))
 - [x] Panoramica (overview) with net worth by asset class over time
 - [x] Self-hosted infrastructure: k3s on a VPS, GitOps, backups, observability ([decision log](docs/decision-log.md))
 
 ## Phase 2: Everyday money (done)
 
 - [x] Transactions with split and exclusions, four spending groups, budget per category
-- [x] Rules and AI-assisted categorisation with a 90% auto-apply threshold ([decision](docs/decisioni/2026-10-12-categorizzazione-soglia-90.md))
+- [x] Rules and AI-assisted categorisation, applied on its own from 70% confidence, and the bank's own categories from imported files ([decision](docs/decisioni/2026-10-19-categorie-della-banca-negli-import.md))
 - [x] Subscriptions detected from transactions ([decision](docs/decisioni/2026-10-10-abbonamenti.md))
 - [x] CSV import for any bank, with AI-written parsers ([guide](docs/personal-csv-import.md))
 - [x] Summary and alert emails, all opt-in ([decision](docs/decisioni/2026-10-10-email-riepilogo-e-avvisi.md))
-- [x] One search for the whole app, where a typed sentence in Italian, English or German fills the form to add it ([decision](docs/decisioni/2026-10-25-cerca.md))
+- [x] Monthly budget: what you can still spend, per category, with rollover ([decision](docs/decisioni/2026-10-22-budget-del-mese.md))
+- [x] One «Add» button for the whole app ([decision](docs/decisioni/2026-10-24-pulsante-aggiungi.md))
+- [x] One search for the whole app that answers questions about your data, and turns a typed sentence in Italian, English or German into a filled-in form ([decision](docs/decisioni/2026-10-25-cerca.md), [answers](docs/decisioni/2026-10-25-cerca-domande-e-loghi.md))
 
 ## Phase 3: Investments and Italian taxes (done)
 
@@ -35,14 +37,13 @@ This file lists the direction. Each line links to its decision when there is one
 - [x] Analitiche: target year with «e se…» (what if) sliders, FIRE, Monte Carlo
 - [x] Savings goals ([decision](docs/decisioni/2026-10-15-obiettivi-di-risparmio.md))
 - [ ] Pianifica (plan): life scenarios such as buying a home or a job change
-- [ ] Separate Budget section with its own data model
 
 ## Phase 5: More countries and devices (in progress)
 
-- [x] Interface in Italian, English and German; Germany as a second product country with partial 2026 tax estimates ([decision](docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md))
+- [x] Interface in Italian, English and German; Germany as a second product country with partial 2026 tax estimates ([decision](docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md)); every other country gets the features that do not depend on local rules ([decision](docs/decisioni/2026-10-19-lingua-e-funzioni-dal-paese.md))
 - [x] Self-hosting with Docker ([guide](docs/self-hosting.md))
 - [x] Public read-only demo without an account, English landing and `latest` Docker images ([decision](docs/decisioni/2026-10-17-demo-pubblica.md))
-- [ ] Native iOS and Android app on the App Store and Google Play (Capacitor), push notifications and biometric unlock: **current focus**
+- [ ] Native iOS and Android apps on the App Store and Google Play, with push notifications and biometric unlock: **current focus**
 - [ ] German pension and simulators after the product review
 
 ## Phase 6: Next

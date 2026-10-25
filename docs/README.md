@@ -7,7 +7,6 @@ Pick the section that matches what you want to do. The guides and [`architecture
 | Document | What it covers |
 | --- | --- |
 | [Self-hosting](self-hosting.md) | Guided personal/server setup, Docker Compose, optional services, HTTPS, updates, backups and uninstall |
-| [Staging](staging.md) | Staging server setup, deployment, email, AI and recovery |
 | [Personal CSV import](personal-csv-import.md) | Importing a bank or broker CSV in any format, with AI-written parsers |
 | [Interactive Brokers import](ibkr-import.md) | Which statements to export and how they are reconciled |
 | [DEGIRO import](degiro-import.md) | `Account.csv` import and its limits |
@@ -40,6 +39,7 @@ Rules every contributor follows (component layers, observability, background job
 | [Contributing](../CONTRIBUTING.md) | Workflow, checks to run, conventions |
 | [Releases](rilasci.md) | Conventional Commits PR titles, release-please, deploy |
 | [Landing screenshots](landing-screens.md) | How the screenshots on the website are generated from the real app |
+| [Staging](staging.md) | The maintainers' staging server: deployment, email, AI and recovery |
 | [Accessibility](../ACCESSIBILITY.md) | Accessibility status and checklist |
 | [Security policy](../SECURITY.md) | How to report a vulnerability |
 

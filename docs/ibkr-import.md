@@ -4,7 +4,7 @@
 
 Import complete, consecutive English Activity Statement CSVs in chronological order, starting from the period with zero opening balances. The server re-reads the CSV: changing the transactions in the request does not change the imported data. Each broker account has a dedicated portfolio and a cash account, which may be negative. The account balance uses the NAV cash at the closing date, converted into the user's currency.
 
-All original records, including non-normalized sections, are kept in the account export. Rendiconti ("Statements") shows NAV, positions, cost/P&L reported by the broker and cash movements in the original currency. Deposits and currency transfers do not become budget income; commissions already included in trades are not charged twice.
+All original records, including non-normalized sections, are kept in the account export. Deposits and currency transfers do not become budget income; commissions already included in trades are not charged twice.
 
 Cash, quantity and period matching is required before the atomic save. A per-user lock and the document fingerprint prevent duplicates even with concurrent requests. A new CSV atomically replaces the statements it fully covers; preview and confirmation show the replaced periods and transactions. Partial overlaps require a wider export. Any later statements are kept only if cash and positions remain reconciled. An error fully restores the previous data. Transactions of the reconciled portfolio cannot be edited/deleted individually.
 
@@ -41,7 +41,7 @@ Feature catalog, landing copy and eight screenshots of the investment tabs updat
 
 ### Import management in Operazioni
 
-Management of imported CSVs is in the Operazioni tab, in «Gestisci importazioni» ("Manage imports", an expandable section initially collapsed) above the transaction list, even when there are no transactions. The Rendiconti tab and its summary in the Portfolio were removed; old links redirect to Operazioni. The document history and the replace and delete functions remain available without changing the saved data.
+Management of imported CSVs is in the Operazioni tab, in «Gestisci importazioni» ("Manage imports", an expandable section initially collapsed) above the transaction list, even when there are no transactions. The document history and the replace and delete functions are there.
 
 ## Start over after pre-existing imports
 

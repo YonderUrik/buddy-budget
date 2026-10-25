@@ -1,6 +1,6 @@
 # Personal CSVs
 
-From **Movimenti ("Transactions") → Importa un CSV personale ("Import a personal CSV")** or from the investment import picker, `/importazioni` opens. The user states the bank/broker and uploads a CSV file of at most 25 MB and 50,000 physical rows, with no requirements on headers, delimiters or number of columns. Explicit consent is recorded on the job with version `openrouter-raw-zdr-v3` and creation date.
+From **Aggiungi ("Add") → Movimenti da un file ("Transactions from a file")** or from the investment import picker, `/importazioni` opens. The user states the bank/broker and uploads a CSV file of at most 25 MB and 50,000 physical rows, with no requirements on headers, delimiters or number of columns. Explicit consent is recorded on the job with version `openrouter-raw-zdr-v3` and creation date.
 
 The interface shows about one hour and the corresponding expected local completion time. It is an estimate: no artificial wait is introduced, and an overrun is reported. The page refreshes every 10 seconds. The worker saves automatically after the checks and sends a completion or error email; no human confirmation is required.
 
@@ -12,7 +12,7 @@ Chosen model: [DeepSeek V4.1 Flash](https://openrouter.ai/deepseek/deepseek-v4.1
 
 Worker only: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `RESEND_API_KEY`, `RESEND_FROM`, `APP_URL`; any credentials of the exchange-rate providers already used by the project. The model must support JSON mode through a provider that accepts `zdr: true`, `data_collection: deny`, `require_parameters: true`. There is no fallback to providers that retain data. The model's context must hold the entire CSV; if the provider rejects the input, the job fails with an explicit message, without truncating the file. The OpenRouter key is not needed in the web pod.
 
-Run the migrations with `pnpm db:migrate`, the app with `pnpm dev`, the worker in another process with `pnpm worker:csv`. In production build the image with `docker build --target csv-worker ...`; the default final target remains the app. The release CI also publishes `buddy-budget-csv-worker` with the same version tag. Example Deployment in [deployment/personal-csv-worker.yaml](deployment/personal-csv-worker.yaml): replace the image and secret references in the infra repository before the release. Also configure the ingress body limit to at least 51 MiB: the 25 MiB CSV travels inside JSON. The Next proxy is configured at 51 MiB and the route checks the CSV's actual bytes. This change does not deploy anything or create production secrets.
+Run the migrations with `pnpm db:migrate`, the app with `pnpm dev`, the worker in another process with `pnpm worker:csv`. In production build the image with `docker build --target csv-worker ...`; the default final target remains the app. The release CI also publishes `buddy-budget-csv-worker` with the same version tag. Self-hosted installs start it with the `ai` profile of `docker-compose.yml` ([self-hosting](self-hosting.md)); the hosted version runs it as `buddy-budget-csv-worker` in the infra repository. Also configure the ingress body limit to at least 51 MiB: the 25 MiB CSV travels inside JSON. The Next proxy is configured at 51 MiB and the route checks the CSV's actual bytes. 
 
 ## Execution and data
 

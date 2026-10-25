@@ -37,7 +37,7 @@ const FILTER_GROUPS: Record<SpotlightFilter, SearchGroupId[]> = {
   aggiungi: ["azioni"],
 };
 
-export type AiStatus = "idle" | "loading" | "ok" | "none" | "invalid" | "disabled" | "unavailable" | "limited" | "failed";
+export type AiStatus = "idle" | "loading" | "ok" | "none" | "invalid" | "disabled" | "unavailable" | "limited" | "busy" | "failed";
 
 export type SpotlightItem =
   | { type: "hit"; key: string; hit: SearchHit }

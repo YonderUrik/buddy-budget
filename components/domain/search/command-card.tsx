@@ -114,6 +114,7 @@ export function AiRow({ status, selected, phone = false, id, onPick, onHover }: 
     disabled: "Prima attiva l'assistente AI in Impostazioni › Notifiche e AI",
     unavailable: "Non disponibile in questa versione",
     limited: "Hai fatto molte domande: riprova tra un po'",
+    busy: "Oggi ha già risposto a troppe domande: riprova domani",
     failed: "Non ha risposto: riprova",
   };
   const lit = selected && !phone;

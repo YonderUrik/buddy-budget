@@ -5,10 +5,12 @@ import {
   getMetricsRegistry,
   recordAuthEvent,
   recordClientError,
+  recordCommandAiRequest,
   recordCronRunMetric,
   recordGoCardlessApiRequest,
   recordGoCardlessSync,
   recordHttpRequest,
+  recordSearchQuery,
   recordTransactionsImported,
   resetMetricsForTests,
   statusClass,
@@ -68,6 +70,21 @@ describe("metriche applicative", () => {
     const t = await text();
     expect(t).toContain('buddybudget_client_errors_total{kind="sezione",area="investimenti",outcome="reported"} 1');
     expect(t).toContain('buddybudget_client_errors_total{kind="globale",area="altro",outcome="rate_limited"} 1');
+  });
+
+  it("records «Cerca» queries and «Chiedi all'AI» questions, timing only real model calls", async () => {
+    recordSearchQuery(120, "full");
+    recordSearchQuery(900, "capped");
+    recordCommandAiRequest("ok", 1500);
+    recordCommandAiRequest("cached");
+    recordCommandAiRequest("limited_service");
+    const out = await text();
+    expect(out).toContain('buddybudget_search_queries_total{movements="full"} 1');
+    expect(out).toContain('buddybudget_search_queries_total{movements="capped"} 1');
+    expect(out).toContain("buddybudget_search_duration_seconds_count 2");
+    expect(out).toContain('buddybudget_command_ai_requests_total{outcome="cached"} 1');
+    expect(out).toContain('buddybudget_command_ai_requests_total{outcome="limited_service"} 1');
+    expect(out).toContain("buddybudget_command_ai_request_duration_seconds_count 1");
   });
 
   it("espone build_info e metriche di processo", async () => {

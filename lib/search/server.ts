@@ -30,7 +30,7 @@ function windowStart(now: Date): string {
 }
 
 /** Movements whose description or note contains the query (decrypted here), newest first, plus exact amounts. */
-async function searchMovements(userId: string, query: string, now: Date): Promise<{ hits: SearchHit[]; more: number }> {
+async function searchMovements(userId: string, query: string, now: Date): Promise<{ hits: SearchHit[]; more: number; capped: boolean }> {
   const folded = foldText(query);
   const amount = parseAmountQuery(query);
   const [rows, byAmount] = await Promise.all([
@@ -79,11 +79,16 @@ async function searchMovements(userId: string, query: string, now: Date): Promis
     score,
   }));
   const shown = ordered.slice(0, LIMITS.movimenti).reduce((sum, g) => sum + g.count, 0);
-  return { hits, more: Math.max(0, seen.size - shown) };
+  return { hits, more: Math.max(0, seen.size - shown), capped: rows.length >= MOVEMENT_SCAN_LIMIT };
+}
+
+/** The response plus what only the server needs: whether the movement scan stopped at its cap (for the metric). */
+export interface SearchResult extends SearchResponse {
+  movementScanCapped: boolean;
 }
 
 /** Every group for one user and query, in parallel; each group is limited, the palette orders them. */
-export async function searchEverything(userId: string, query: string, now = new Date()): Promise<SearchResponse> {
+export async function searchEverything(userId: string, query: string, now = new Date()): Promise<SearchResult> {
   const started = performance.now();
   const q = like(query.trim());
   const folded = foldText(query);
@@ -112,5 +117,5 @@ export async function searchEverything(userId: string, query: string, now = new 
       .map<SearchHit>(({ g, score }) => ({ key: `obiettivi:${g.id}`, group: "obiettivi", icon: "obiettivo", title: g.name, subtitle: "Obiettivo", href: `/analitiche/obiettivi/${g.id}`, score })),
     ...pensionRows.map<SearchHit>((p) => ({ key: `pensione:${p.id}`, group: "pensione", icon: "pensione", title: p.name, subtitle: "Fondo pensione", href: "/pensione", score: matchScore(p.name, folded) })),
   ];
-  return { hits, moreMovements: movements.more, tookMs: Math.round(performance.now() - started) };
+  return { hits, moreMovements: movements.more, tookMs: Math.round(performance.now() - started), movementScanCapped: movements.capped };
 }

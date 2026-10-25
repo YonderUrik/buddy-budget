@@ -29,8 +29,11 @@ async function bump(key: string, ttlSeconds: number): Promise<number> {
   return count;
 }
 
-/** Counts one model question for the user and the service; false when a limit is reached or Redis is down. */
-export async function consumeCommandQuota(userId: string, now = new Date()): Promise<boolean> {
+/** Whether a model question may go: ok, over the user's or the service's limit, or refused because Redis is down. */
+export type QuotaVerdict = "ok" | "user_limit" | "service_limit" | "store_down";
+
+/** Counts one model question for the user and the service, and says whether it may go. */
+export async function consumeCommandQuota(userId: string, now = new Date()): Promise<QuotaVerdict> {
   const day = now.toISOString().slice(0, 10);
   const hour = now.toISOString().slice(0, 13);
   try {
@@ -39,9 +42,10 @@ export async function consumeCommandQuota(userId: string, now = new Date()): Pro
       bump(`commands:ai:d:${userId}:${day}`, CACHE_SECONDS),
       bump(`commands:ai:service:${day}`, CACHE_SECONDS),
     ]);
-    return perHour <= COMMAND_AI_LIMITS.perHour && perDay <= COMMAND_AI_LIMITS.perDay && service <= COMMAND_AI_LIMITS.servicePerDay;
+    if (service > COMMAND_AI_LIMITS.servicePerDay) return "service_limit";
+    return perHour <= COMMAND_AI_LIMITS.perHour && perDay <= COMMAND_AI_LIMITS.perDay ? "ok" : "user_limit";
   } catch {
-    return false;
+    return "store_down";
   }
 }
 

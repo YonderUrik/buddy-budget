@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
+import { bindRequestUser, recordSearchQuery, requestLogger, withRoute } from "@/lib/observability";
 import { searchEverything } from "@/lib/search/server";
 
 /** Below this the static part (pages, settings) answers alone: one letter would match half the movements. */
@@ -14,8 +14,9 @@ async function handleGet(request: NextRequest) {
   bindRequestUser(session.user.id);
   const query = (request.nextUrl.searchParams.get("q") ?? "").trim().slice(0, MAX_QUERY_LENGTH);
   if (query.length < MIN_QUERY_LENGTH) return Response.json({ hits: [], moreMovements: 0, tookMs: 0 });
-  const result = await searchEverything(session.user.id, query);
-  requestLogger().info("search.query.completed", { count: result.hits.length, durationMs: result.tookMs });
+  const { movementScanCapped, ...result } = await searchEverything(session.user.id, query);
+  recordSearchQuery(result.tookMs, movementScanCapped ? "capped" : "full");
+  requestLogger().info("search.query.completed", { count: result.hits.length, durationMs: result.tookMs, ...(movementScanCapped ? { outcome: "capped" } : {}) });
   return Response.json(result, { headers: { "Cache-Control": "private, no-store" } });
 }
 

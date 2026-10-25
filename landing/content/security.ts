@@ -74,7 +74,7 @@ export interface FlowContent {
 /** The data path when you connect a bank, step by step. */
 export const FLOW = {
   title: "Il percorso, per chi ha una banca collegata.",
-  lede: "Il collegamento alla banca per ora non accetta conti nuovi e torna presto; chi l'ha già lo tiene. Così funziona: le credenziali restano alla banca e verso BuddyBudget arrivano solo saldi e movimenti, in sola lettura.",
+  lede: "Trade Republic ha un modulo diretto in BuddyBudget: numero e PIN servono solo ad accedere, la sessione viene conservata cifrata. Non è un consenso PSD2 in sola lettura. Il percorso qui sotto riguarda Open Banking, che per ora non accetta conti nuovi e torna presto; chi l'ha già lo tiene. Così funziona: le credenziali restano alla banca e verso BuddyBudget arrivano solo saldi e movimenti, in sola lettura.",
   /** Cosa viaggia su ogni collegamento, nell'ordine dei nodi. */
   links: ["Credenziali e conferma", "Consenso in sola lettura", "Saldi e movimenti"],
   neverTitle: "Mai.",

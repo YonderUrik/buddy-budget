@@ -88,7 +88,7 @@ export default function LiquiditaContiPage() {
   const list = accounts ?? [];
   const reconnectIds = new Set(connections.filter((c) => needsRenewal(computeConnectionHealth(c, today).state)).map((c) => c.accountId));
   const bankByAccountId = new Map(connections.map((c) => [c.accountId, c.institutionName]));
-  const syncInfoById = new Map(connections.map((c) => [c.accountId, { lastSyncedAt: c.lastSyncedAt, eligible: c.eligible, nextEligibleAt: c.nextEligibleAt, syncsRemainingToday: c.syncsRemainingToday }]));
+  const syncInfoById = new Map(connections.map((c) => [c.accountId, { provider: c.provider, lastSyncedAt: c.lastSyncedAt, eligible: c.eligible, nextEligibleAt: c.nextEligibleAt, syncsRemainingToday: c.syncsRemainingToday }]));
   const groups = groupAccounts(list, bankByAccountId);
   const alerts = buildRenewalAlerts(connections, today);
   const open = list.find((a) => a.id === openId) ?? null;

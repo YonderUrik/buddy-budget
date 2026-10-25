@@ -103,28 +103,26 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
             <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? tr("Rinnova il collegamento") : copy.title} description={renew && view === "banca" ? tr("Scegli di nuovo la tua banca per rinnovare il consenso.") : copy.description} />
       {view === "scelta" ? (
         <div className="flex flex-col gap-3">
-          {paused ? null : (
-            <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")} disabled={unavailable !== null}>
-              {unavailable ? (
-                <ChoiceBody icon={ZapIcon} color="var(--text-3)" title={tr("Collega la tua banca")} badge={unavailable.badge} description={tr(unavailable.description)} unavailable />
-              ) : (
-                <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} badge={tr("Automatico")} description={tr("Saldi e movimenti si aggiornano da soli, in sola lettura.")} />
-              )}
-            </button>
-          )}
+          <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")}>
+            <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} description={tr("Trade Republic disponibile. Scegli la banca per vedere i collegamenti supportati.")} />
+          </button>
           <button type="button" className={CHOICE_CLASS} onClick={() => go("manuale")}>
             <ChoiceBody icon={PencilLineIcon} color="var(--swatch-indigo)" title={tr("Conto manuale")} description={tr("Per contanti, carte prepagate o qualsiasi banca: il saldo lo aggiorni tu.")} />
           </button>
           <Link href="/importazioni" className={CHOICE_CLASS} onClick={() => { track("account_add_path_chosen", { path: "importa" }); onClose(); }}>
             <ChoiceBody icon={FileSpreadsheetIcon} color="var(--swatch-amber)" title={tr("Importa un file CSV o Excel")} description={tr("Carica l'estratto conto: lo leggiamo e crei il conto con i suoi movimenti.")} />
           </Link>
-          {paused ? <BankComingSoon interested={capacity?.interested ?? false} canRequest={!selfHosted} /> : null}
         </div>
       ) : view === "banca" ? (
         <button type="button" onClick={() => setView("scelta")} className="-mt-2 inline-flex min-h-11 w-fit cursor-pointer items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground sm:min-h-9">
           <ArrowLeftIcon className="size-4" aria-hidden="true" />{" "}{tr("Cambia modo")}</button>
       ) : null}
-      {view === "banca" ? <ConnectBankFlow onChooseManual={() => setView("manuale")} /> : null}
+      {view === "banca" ? <div className="flex flex-col gap-4">
+        <Link href="/conti/trade-republic" className={CHOICE_CLASS} onClick={onClose}>
+          <ChoiceBody icon={LandmarkIcon} color="var(--primary)" title="Trade Republic" description={tr("Collegamento diretto al conto in EUR, con conferma nell'app Trade Republic.")} badge={tr("Disponibile")} />
+        </Link>
+        {paused ? <BankComingSoon interested={capacity?.interested ?? false} canRequest={!selfHosted} /> : unavailable ? <p className="text-sm text-muted-foreground">{tr(unavailable.description)}</p> : <ConnectBankFlow onChooseManual={() => setView("manuale")} />}
+      </div> : null}
       {view === "manuale" ? <AddAccountForm currency={currency} onSuccess={onClose} onExit={() => setView("scelta")} /> : null}
     </>
   );

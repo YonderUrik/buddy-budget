@@ -30,6 +30,8 @@ import type { DataQuestion } from "@/lib/commands/question";
 type DataQuestionKind = DataQuestion["kind"];
 
 export interface ProductEvents {
+  trade_republic_login_started: undefined;
+  trade_republic_connected: undefined;
   financial_sale_simulated: { country: "DE" };
   financial_plan_saved: { country: "DE"; section: "tax" | "income" | "pension" | "retirement" };
   /** Segnalazione inviata da «Aiuto e segnalazioni»; `withContext`: l'utente ha lasciato il contesto tecnico allegato. */

@@ -28,6 +28,7 @@ export interface Institution {
 }
 
 export interface BankConnectionStatus {
+  provider?: "gocardless" | "trade-republic";
   accountId: string;
   /** Connessione a cui appartiene il conto (più conti possono condividerla). */
   connectionId: string;
@@ -101,9 +102,10 @@ export function useBankConnectionsStatusQuery() {
   return useQuery({
     queryKey: ["gocardless", "connections", "status"],
     queryFn: async (): Promise<BankConnectionStatus[]> => {
-      const response = await fetch("/api/gocardless/connections");
-      if (!response.ok) throw new Error(pageText("Impossibile caricare lo stato delle connessioni"));
-      return response.json();
+      const responses = await Promise.all([fetch("/api/gocardless/connections"), fetch("/api/trade-republic/connections")]);
+      if (responses.some(response => !response.ok)) throw new Error(pageText("Impossibile caricare lo stato delle connessioni"));
+      const [openBanking, tradeRepublic] = await Promise.all(responses.map(response => response.json()));
+      return [...openBanking, ...tradeRepublic];
     },
   });
 }
@@ -172,12 +174,12 @@ export class SyncNotAvailableError extends Error {
 }
 
 /** Avvia un sync manuale come job in background; l'avanzamento compare nel pannello globale. Gli errori immediati vanno in un toast. */
-export function useSyncAccountMutation() {
+export function useSyncAccountMutation(provider: "gocardless" | "trade-republic" = "gocardless") {
   const queryClient = useQueryClient();
   const { locale } = useLocalization();
   return useMutation({
     mutationFn: async (accountId: string): Promise<{ jobId: string }> => {
-      const response = await fetch(`/api/gocardless/accounts/${accountId}/sync`, { method: "POST" });
+      const response = await fetch(`/api/${provider}/accounts/${accountId}/sync`, { method: "POST" });
       const body = await response.json().catch(() => ({ status: "unknown" }));
       if (!response.ok) throw new SyncNotAvailableError(body);
       return body as { jobId: string };

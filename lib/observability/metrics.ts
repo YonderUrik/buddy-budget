@@ -166,6 +166,8 @@ export interface AsyncGaugeDeps {
 }
 
 interface MetricsState {
+  tradeRepublic: Counter<"action" | "outcome">;
+  tradeRepublicDuration: Histogram<"action" | "outcome">;
   registry: Registry;
   deps: AsyncGaugeDeps;
   httpRequests: Counter<"route" | "method" | "status_class">;
@@ -392,6 +394,8 @@ function createState(): MetricsState {
     labelNames: ["trigger", "outcome"],
     registers: r,
   });
+  state.tradeRepublicDuration = new Histogram({ name: `${METRIC_PREFIX}trade_republic_request_seconds`, help: "Direct TR login and sync duration.", labelNames: ["action", "outcome"], buckets: DURATION_BUCKETS_SECONDS, registers: r });
+  state.tradeRepublic = new Counter({ name: `${METRIC_PREFIX}trade_republic_requests_total`, help: "Direct Trade Republic login and sync outcomes.", labelNames: ["action", "outcome"], registers: r });
   state.gcConnect = new Counter({
     name: `${METRIC_PREFIX}gocardless_connect_attempts_total`,
     help: "Richieste di collegamento bancario per tipo (nuova banca o rinnovo) ed esito (avviata, bloccata da un limite, rifiutata da GoCardless, fallita).",
@@ -835,4 +839,10 @@ export function recordCommandAiRequest(outcome: CommandAiOutcome, durationMs?: n
   const m = metrics();
   m.commandAiRequests.inc({ outcome });
   if (durationMs !== undefined) m.commandAiDuration.observe(durationMs / 1000);
+}
+
+/** Count direct TR outcomes without account identifiers or authentication material. */
+export function recordTradeRepublicRequest(action: "login" | "sync", outcome: "success" | "error", durationMs: number): void {
+  metrics().tradeRepublic.inc({ action, outcome });
+  metrics().tradeRepublicDuration.observe({ action, outcome }, durationMs / 1000);
 }

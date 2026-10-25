@@ -9,6 +9,7 @@ export {
   statusClass,
   assertStaticRouteName,
   recordHttpRequest,
+  recordTradeRepublicRequest,
   recordGoCardlessSync,
   recordGoCardlessApiRequest,
   recordTransactionsImported,

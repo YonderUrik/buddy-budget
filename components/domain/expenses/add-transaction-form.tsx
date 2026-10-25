@@ -32,6 +32,16 @@ export interface AddTransactionFormProps {
   onSuccess?: () => void;
   /** Se presente, senza conti manuali il form offre di crearne uno al volo. */
   onAddAccount?: () => void;
+  /** Starting values (e.g. from a sentence typed in «Cerca»); the user still checks and saves. */
+  initial?: TransactionPrefill;
+}
+
+/** Values a new movement can start from. */
+export interface TransactionPrefill {
+  direction: "spesa" | "entrata";
+  amount: number | null;
+  description: string;
+  date: string;
 }
 
 type Direction = "spesa" | "entrata";
@@ -59,7 +69,7 @@ function yesterdayDateString(): string {
 
 const TRANSACTION_STEPS = 2;
 
-export function AddTransactionForm({ categories, currency, onSuccess, onAddAccount }: AddTransactionFormProps) {
+export function AddTransactionForm({ categories, currency, onSuccess, onAddAccount, initial }: AddTransactionFormProps) {
   const { t: tr } = useLocalization();
   const idBase = React.useId();
   const flow = useStepFlow(TRANSACTION_STEPS);
@@ -69,11 +79,11 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
   const { data: categoryUsage } = useCategoryUsageQuery();
 
   const [accountIdOverride, setAccountIdOverride] = React.useState<string | null>(null);
-  const [direction, setDirection] = React.useState<Direction>("spesa");
-  const [description, setDescription] = React.useState("");
+  const [direction, setDirection] = React.useState<Direction>(initial?.direction ?? "spesa");
+  const [description, setDescription] = React.useState(initial?.description ?? "");
   const [categoryIdOverride, setCategoryIdOverride] = React.useState<string | null>(null);
-  const [amountValue, setAmountValue] = React.useState<number | null>(null);
-  const [date, setDate] = React.useState(todayDateString());
+  const [amountValue, setAmountValue] = React.useState<number | null>(initial?.amount ?? null);
+  const [date, setDate] = React.useState(initial?.date ?? todayDateString());
   const [errors, setErrors] = React.useState<FieldErrors>({});
   const [added, setAdded] = React.useState(0);
   const amountRef = React.useRef<HTMLDivElement>(null);

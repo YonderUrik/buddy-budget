@@ -14,13 +14,12 @@ import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import type { SingleSuggestion } from "@/lib/categorization/ai/single-suggestion";
 import type { Category } from "@/lib/db/schema/categories";
+import { AI_ASSISTANT_SETTINGS_HREF as AI_SETTINGS_HREF } from "@/lib/llm/assistant-settings";
 import { useLocalization } from "@/lib/localization/provider";
 import { useAiCategorizationQuery } from "@/lib/queries/notifications";
 import { useAiSuggestionMutation } from "@/lib/queries/transactions";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 
-/** Where the assistant is turned on. */
-const AI_SETTINGS_HREF = "/impostazioni#impostazioni-assistente-categorie";
 
 export interface MovementDetailAiProps {
   transactionId: string;

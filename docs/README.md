@@ -18,7 +18,7 @@ Start from the [architecture overview](architecture/overview.md), then open the 
 
 | Area | Document |
 | --- | --- |
-| The whole system: layers, request lifecycle, data, security | [architecture/overview.md](architecture/overview.md) |
+| The whole system: layers, request lifecycle, data, security, «Aggiungi» and «Cerca» | [architecture/overview.md](architecture/overview.md) |
 | Background jobs and scheduled tasks (cron) | [architecture/background-jobs.md](architecture/background-jobs.md) |
 | Bank connection (Open Banking) and imports | [architecture/bank-sync-and-imports.md](architecture/bank-sync-and-imports.md) |
 | Categories, rules, AI suggestions, budgets, subscriptions | [architecture/categorisation.md](architecture/categorisation.md) |

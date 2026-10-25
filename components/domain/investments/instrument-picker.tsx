@@ -32,6 +32,8 @@ export interface InstrumentPickerProps {
   /** Il chiamante avvia il recupero storico dopo aver salvato la selezione. */
   deferHistory?: boolean;
   className?: string;
+  /** Text already in the search when nothing is chosen (e.g. «Apple» from a sentence typed in «Cerca»); the list opens with it. */
+  initialQuery?: string;
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -54,10 +56,11 @@ export function InstrumentPicker({
   disabled = false,
   deferHistory = false,
   className,
+  initialQuery = "",
 }: InstrumentPickerProps) {
   const { t: tr } = useLocalization();
-  const [open, setOpen] = React.useState(false);
-  const [query, setQuery] = React.useState("");
+  const [open, setOpen] = React.useState(value === null && initialQuery !== "");
+  const [query, setQuery] = React.useState(value === null ? initialQuery : "");
   const search = useInstrumentSearchQuery(query);
   const create = useCreateInstrumentMutation({ deferHistory });
   const suggestionRank = new Map(suggestions.map((i, index) => [i.id, index]));

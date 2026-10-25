@@ -15,7 +15,7 @@ export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operat
 export type PeriodSurface = "investimenti" | "performance" | "analitiche";
 /** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
 /** Where the detail of a transaction was opened from. */
-export type TransactionDetailSource = "movimenti" | "categorizza" | "abbonamenti" | "esercente";
+export type TransactionDetailSource = "movimenti" | "categorizza" | "abbonamenti" | "esercente" | "cerca";
 
 export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
@@ -23,6 +23,9 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "anali
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
+import type { SearchGroupId } from "@/lib/search/types";
+import type { CommandKind, CommandSource } from "@/lib/commands/types";
+
 export interface ProductEvents {
   financial_sale_simulated: { country: "DE" };
   financial_plan_saved: { country: "DE"; section: "tax" | "income" | "pension" | "retirement" };
@@ -278,6 +281,14 @@ export interface ProductEvents {
   quick_add_opened: { source: QuickAddSource; area: QuickAddArea };
   /** Something picked in «Aggiungi»; `here`: it belongs to the section the user was on. The form's own events follow. */
   quick_add_chosen: { action: QuickAddActionId; source: QuickAddSource; here: boolean };
+  /** App-wide search opened: from the sidebar, the phone top bar or the keyboard shortcut (⌘K / Ctrl+K / «/»). */
+  search_opened: { source: "campo" | "altro" | "tirando" | "tastiera" | "link" };
+  /** A search result opened; `group`: what it was, `position`: its row (0 = top), `length`: characters typed (never the text). */
+  search_result_opened: { group: SearchGroupId; position: number; length: number };
+  /** A sentence typed in «Cerca» opened its «Aggiungi» form; `source`: read by the rules or by the AI, `complete`: nothing was missing. */
+  search_command_opened: { kind: CommandKind; source: CommandSource; complete: boolean };
+  /** «Chiedi all'AI» asked in «Cerca», with what came back (never the sentence). */
+  search_ai_asked: { outcome: string };
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */

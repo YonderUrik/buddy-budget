@@ -1,10 +1,13 @@
 import { BarChart3, Gauge, Landmark, ListOrdered, Repeat, Tags } from "lucide-react";
 import type { SectionTab } from "@/components/domain/shared";
+import { LIQUIDITY_LINK_PARAMS } from "@/lib/liquidity/links";
 
 /** Radice della sezione Liquidità. */
 export const LIQUIDITY_HREF = "/liquidita";
-/** Nome del parametro d'indirizzo che apre Liquidità già filtrata per conto. */
-export const LIQUIDITY_ACCOUNT_PARAM = "conto";
+/** Address parameter that opens Liquidità already filtered by account (the others: `LIQUIDITY_LINK_PARAMS`). */
+export const LIQUIDITY_ACCOUNT_PARAM = LIQUIDITY_LINK_PARAMS.account;
+/** Id of the tools above the list of Movimenti: a link filtered by category or text scrolls there. */
+export const MOVEMENTS_LIST_ID = "elenco-movimenti";
 
 /** Schede di Liquidità: i movimenti sono la radice; Categorie e regole raccoglie la gestione. */
 export const LIQUIDITY_TABS: readonly SectionTab[] = [

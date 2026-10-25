@@ -18,7 +18,7 @@ export interface SettingsGroupInfo {
 export const SETTINGS_GROUPS: readonly SettingsGroupInfo[] = [
   { id: "account", label: "Account", summary: "Il tuo profilo e i dispositivi collegati", icon: UserRound },
   { id: "aspetto", label: "Aspetto e uso", summary: "Valuta, tema, pagina iniziale e barra laterale", icon: Palette },
-  { id: "notifiche", label: "Notifiche e AI", summary: "Email di riepilogo e avvisi, assistente per le categorie e dove l'app usa l'AI", icon: Bell },
+  { id: "notifiche", label: "Notifiche e AI", summary: "Email di riepilogo e avvisi, assistente AI e dove l'app usa l'AI", icon: Bell },
   { id: "privacy", label: "Privacy e dati", summary: "Statistiche anonime, esportazione e informative", icon: ShieldCheck },
   { id: "pericolo", label: "Zona pericolosa", summary: "Azzera i dati, disattiva o elimina l'account", icon: TriangleAlert, danger: true },
 ];

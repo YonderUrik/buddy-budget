@@ -4,7 +4,7 @@ import { useInstance } from "@/lib/instance/provider";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * «Dove l'app usa l'AI»: the three places where data can reach an AI model, what is sent each time and the switch or
+ * «Dove l'app usa l'AI»: the four places where data can reach an AI model, what is sent each time and the switch or
  * checkbox that allows it. Everything not listed here (calculations, rules, bank sync, alerts) never uses AI. Every request
  * asks OpenRouter for zero data retention (`OPENROUTER_PRIVACY` in lib/llm), so the closing line holds on self-hosted installs too;
  * only the link to the privacy policy is hosted-only.
@@ -24,7 +24,12 @@ export const AI_USAGES: readonly AiUsageItem[] = [
   {
     title: "Proposte di categoria",
     sent: "Invia il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento, le tue categorie e le tue istruzioni: senza importi, date, IBAN o note.",
-    where: "Lo attivi qui sotto, con «Proponi le categorie con l'AI»; vale anche per «Chiedi all'AI» nel dettaglio di un movimento.",
+    where: "Lo attivi qui sotto, con «Usa l'assistente AI»; vale anche per «Chiedi all'AI» nel dettaglio di un movimento.",
+  },
+  {
+    title: "Frasi in «Cerca»",
+    sent: "Invia soltanto la frase che hai scritto, la data di oggi e la lingua dell'app: nient'altro del tuo account.",
+    where: "Solo quando tocchi «Chiedi all'AI» in «Cerca», con «Usa l'assistente AI» acceso qui sotto.",
   },
   {
     title: "Importazione di un estratto conto in un formato nuovo",

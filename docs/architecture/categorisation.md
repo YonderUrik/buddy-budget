@@ -62,7 +62,7 @@ new rows (sync, CSV, manual) ─> fallback category
 | `budgets` | `monthlyAmount` per category (the amount that repeats from now on), `rollover` and `rolloverFrom` (`YYYY-MM`), unique per user and category | [`budgets.ts`](../../lib/db/schema/budgets.ts) |
 | `budget_months` | Month amounts of a budget: standing rows (`singleMonth = false`, from that month on) keep the past when the amount changes; single-month rows replace one month | [`budgets.ts`](../../lib/db/schema/budgets.ts) |
 | `subscriptions` | only the user's decisions (`confermato`, `escluso`, `terminato`) and manual subscriptions, keyed by `key` | [`subscriptions.ts`](../../lib/db/schema/subscriptions.ts) |
-| `auth_user` columns | `aiCategorizationConsentAt`, `aiCategorizationInstructions`, `categorizationAutoApply` (default true), `autoCategorizedSeenAt` (unused since 2026-10-19, to drop in a later migration) | [`auth.ts`](../../lib/db/schema/auth.ts) |
+| `auth_user` columns | `aiCategorizationConsentAt` (the «Assistente AI» consent in Impostazioni, shared since 2026-10-25 with «Chiedi all'AI» in «Cerca», overview §4.19), `aiCategorizationInstructions`, `categorizationAutoApply` (default true), `autoCategorizedSeenAt` (unused since 2026-10-19, to drop in a later migration) | [`auth.ts`](../../lib/db/schema/auth.ts) |
 
 On `transactions`: `categoryId`, `excludedAmount` (same sign as `amount`, magnitude not above it), `categorySource`, `categoryConfidence`, `categorizedAt`, `description` (cleaned name), `rawDescription` (bank text), `merchantCategoryCode` and `bankCategory` (the bank's own label from an imported file, encrypted, kept also when it did not map).
 

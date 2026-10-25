@@ -1,7 +1,7 @@
 import type * as React from "react";
 
-/** Where the shell drew the button that was pressed. */
-export type ShellActionOrigin = "bottom-bar" | "sidebar";
+/** Where the shell drew the button that was pressed, or the gesture that opened the action («pull»: the page pulled down). */
+export type ShellActionOrigin = "bottom-bar" | "sidebar" | "more-menu" | "pull";
 
 /**
  * A main action of the app (e.g. «Aggiungi») that the shell keeps always at hand: a round button in the middle of the

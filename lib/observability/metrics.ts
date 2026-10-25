@@ -139,6 +139,14 @@ export type NotificationDigestSection = "investments" | "goals";
 export type NotificationDigestSectionOutcome = "included" | "absent" | "failed";
 /** Da dove arriva una disiscrizione: link nell'email, one-click del client di posta (RFC 8058) o preferenze in app. */
 export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
+/** Whether a «Cerca» query read every movement of its window or stopped at the scan cap (`MOVEMENT_SCAN_LIMIT`). */
+export type SearchMovementScan = "full" | "capped";
+/**
+ * Outcome of one «Chiedi all'AI» question in «Cerca»: answered by the model (ok: a draft; none: not something to add),
+ * answered from the 24 h cache, refused before the model (invalid sentence, no consent, unavailable: public demo or no
+ * key/model; limit of the user or of the whole service; quota store down) or failed (timeout, error, bad answer).
+ */
+export type CommandAiOutcome = "ok" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge
@@ -192,6 +200,10 @@ interface MetricsState {
   notificationEmails: Counter<"kind" | "outcome">;
   notificationDigestSections: Counter<"section" | "outcome">;
   notificationUnsubscribes: Counter<"kind" | "source">;
+  searchQueries: Counter<"movements">;
+  searchDuration: Histogram<string>;
+  commandAiRequests: Counter<"outcome">;
+  commandAiDuration: Histogram<string>;
 }
 
 function createState(): MetricsState {
@@ -423,6 +435,31 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}notification_unsubscribes_total`,
     help: "Disiscrizioni dalle email di riepilogo e avvisi, per tipo (o all) e provenienza.",
     labelNames: ["kind", "source"],
+    registers: r,
+  });
+
+  state.searchQueries = new Counter({
+    name: `${METRIC_PREFIX}search_queries_total`,
+    help: "«Cerca» queries over the user's data, by whether the movement scan read its whole window or stopped at the cap.",
+    labelNames: ["movements"],
+    registers: r,
+  });
+  state.searchDuration = new Histogram({
+    name: `${METRIC_PREFIX}search_duration_seconds`,
+    help: "Time to answer one «Cerca» query over the user's data (all groups, movements decrypted included).",
+    buckets: DURATION_BUCKETS_SECONDS,
+    registers: r,
+  });
+  state.commandAiRequests = new Counter({
+    name: `${METRIC_PREFIX}command_ai_requests_total`,
+    help: "«Chiedi all'AI» questions in «Cerca» by outcome: model answers, cache hits, refusals before the model, limits and failures.",
+    labelNames: ["outcome"],
+    registers: r,
+  });
+  state.commandAiDuration = new Histogram({
+    name: `${METRIC_PREFIX}command_ai_request_duration_seconds`,
+    help: "Duration of one model call for «Chiedi all'AI» in «Cerca» (cache hits and refusals excluded).",
+    buckets: DURATION_BUCKETS_SECONDS,
     registers: r,
   });
 
@@ -781,4 +818,18 @@ export function recordStartEvent(event: StartEvent): void {
 /** Public demo events; `language` (it/en/de) and `country` (IT/DE/OTHER) are the demo's profile, both closed enums. */
 export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "en" | "de", country: "IT" | "DE" | "OTHER"): void {
   metrics().publicDemoEvents.inc({ event, language, country });
+}
+
+/** Records one «Cerca» query over the user's data: its duration and whether the movement scan hit its cap. */
+export function recordSearchQuery(durationMs: number, movements: SearchMovementScan): void {
+  const m = metrics();
+  m.searchQueries.inc({ movements });
+  m.searchDuration.observe(durationMs / 1000);
+}
+
+/** Records one «Chiedi all'AI» question in «Cerca»; `durationMs` only when the model was actually called. */
+export function recordCommandAiRequest(outcome: CommandAiOutcome, durationMs?: number): void {
+  const m = metrics();
+  m.commandAiRequests.inc({ outcome });
+  if (durationMs !== undefined) m.commandAiDuration.observe(durationMs / 1000);
 }

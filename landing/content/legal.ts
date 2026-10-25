@@ -5,7 +5,7 @@
  */
 
 /** Versione dei documenti (data dell'ultima modifica sostanziale). */
-export const LEGAL_VERSION = "2026-10-22";
+export const LEGAL_VERSION = "2026-10-25";
 
 export const LEGAL_OWNER = {
   name: "Daniele Roccaforte",
@@ -28,6 +28,8 @@ export const LOG_DAYS = 30;
 export const CSV_PREVIEW_DAYS = 7;
 /** Registro degli invii delle email di riepilogo e avviso (`NOTIFICATION_LOG_RETENTION_DAYS` nell'app). */
 export const NOTIFICATION_LOG_DAYS = 90;
+/** Answer of «Chiedi all'AI» in «Cerca» kept to avoid asking the same sentence twice (`CACHE_SECONDS` in lib/commands/guard.ts). */
+export const COMMAND_CACHE_HOURS = 24;
 
 /** Segnalazioni al supporto: tempo massimo di conservazione dopo la chiusura. */
 export const SUPPORT_MONTHS = 12;
@@ -70,7 +72,8 @@ export const PRIVACY: LegalDocument = {
         "Dati finanziari che inserisci tu o che importi: conti, saldi, transazioni (con descrizione, note, controparte e, se il file importato la contiene, la categoria scritta dalla tua banca), categorie, budget, investimenti, debiti, fondi pensione e patrimonio netto. Le descrizioni possono contenere informazioni su abitudini, acquisti o contesti personali: non ti chiediamo mai di inserire dati sulla salute, sulle opinioni o altre categorie particolari, ma possono emergere dai testi delle transazioni.",
         "Dati bancari: se hai già un conto collegato con Open Banking (oggi non se ne collegano di nuovi), tramite GoCardless riceviamo i conti e le transazioni che autorizzi. Non vediamo né conserviamo le credenziali della tua banca.",
         "File che carichi per l'import: estratti conto e rendiconti (per esempio CSV o file dei broker). Se scegli l'import con intelligenza artificiale, il file viene conservato cifrato solo per il tempo dell'elaborazione (vedi la sezione dedicata).",
-        "Proposte di categoria: se attivi l'assistente, per ogni esercente conserviamo il nome normalizzato, la categoria proposta e se l'hai confermata o corretta (mai importi o date), insieme alla data del tuo consenso.",
+        "Proposte di categoria: se attivi l'assistente AI, per ogni esercente conserviamo il nome normalizzato, la categoria proposta e se l'hai confermata o corretta (mai importi o date), insieme alla data del tuo consenso.",
+        "Ricerche in «Cerca»: il testo che scrivi serve a cercare tra i tuoi dati e non viene conservato né scritto nei registri. Se tocchi «Chiedi all'AI», la risposta (il modulo proposto) resta in una memoria temporanea per evitare di chiedere due volte la stessa frase (vedi la sezione dedicata).",
         "Messaggi al supporto: se scrivi dalla pagina Aiuto, riceviamo il testo, l'indirizzo email dell'account e, se non lo togli, un contesto tecnico (pagina, versione dell'app, dimensioni e tema dello schermo, tipo di browser).",
         `Dati tecnici di accesso: data, indirizzo IP troncato (l'ultima parte viene azzerata) e tipo di dispositivo delle sessioni, visibili in Impostazioni, per proteggere l'account.`,
         "Registro dell'accettazione: la data e la versione dei Termini e dell'informativa che hai accettato.",
@@ -87,7 +90,7 @@ export const PRIVACY: LegalDocument = {
         "Inviarti email di servizio (link di accesso, avvisi di scadenza del collegamento bancario, esito degli import, conferme di disattivazione): esecuzione del contratto, art. 6.1.b. Queste email non si possono disattivare perché servono a usare l'account.",
         "Inviarti, solo se li attivi in Impostazioni → Notifiche, il riepilogo periodico (con le cifre di entrate, spese e budget che vedi già nell'app) e gli avvisi sui budget e sulle rate in scadenza: il tuo consenso, art. 6.1.a. Sono spenti finché non li scegli, ogni email ha il link per disattivarla con un clic (senza accedere) e puoi cambiare idea quando vuoi. Non inviamo email promozionali né consigli personalizzati.",
         "Analizzare con l'intelligenza artificiale un file di import non riconosciuto: il tuo consenso esplicito, art. 6.1.a, che dai prima di caricare il file e puoi non dare usando gli altri tipi di import o l'inserimento manuale. Il consenso non è condizione per usare il resto del servizio.",
-        "Proporti una categoria per i movimenti nuovi con un servizio di intelligenza artificiale (e, se lo scegli, applicare da sole le proposte più sicure): il tuo consenso esplicito, art. 6.1.a, che dai in Impostazioni (o nell'onboarding) e puoi revocare quando vuoi. Il consenso non è condizione per usare il resto del servizio: puoi categorizzare a mano o con le regole.",
+        "L'assistente AI: proporti una categoria per i movimenti nuovi con un servizio di intelligenza artificiale (e, se lo scegli, applicare da sole le proposte più sicure) e, quando tocchi «Chiedi all'AI» in «Cerca», leggere la frase che hai scritto: il tuo consenso esplicito, art. 6.1.a, che dai in Impostazioni (o nell'onboarding) e puoi revocare quando vuoi. Il consenso non è condizione per usare il resto del servizio: puoi categorizzare a mano o con le regole, e cercare o compilare i moduli senza AI.",
         "Rispondere ai messaggi inviati dalla pagina Aiuto: esecuzione del contratto, art. 6.1.b, per le richieste legate al tuo account; legittimo interesse, art. 6.1.f, per idee e segnalazioni generiche.",
         "Sicurezza, prevenzione degli abusi, diagnosi di errori e continuità del servizio (sessioni, log, backup): legittimo interesse, art. 6.1.f, bilanciato dal fatto che i log sono pseudonimizzati e di breve durata.",
         "Capire quali funzioni vengono usate per migliorare il prodotto, con statistiche anonime: legittimo interesse, art. 6.1.f. Puoi disattivarle in qualunque momento (vedi la pagina sui cookie).",
@@ -118,17 +121,26 @@ export const PRIVACY: LegalDocument = {
       id: "proposte-categorie",
       title: "Proposte di categoria con intelligenza artificiale",
       paragraphs: [
-        "Se lo attivi in Impostazioni → Assistente per le categorie (è spento finché non lo scegli), per i movimenti nuovi di sincronizzazioni e importazioni inviamo a un modello di intelligenza artificiale il nome pulito dell'esercente, la direzione (entrata o uscita) e l'elenco delle tue categorie, con qualche esempio di tue scelte passate e le istruzioni personali che scegli di inserire nelle Impostazioni. Evita di inserire dati personali o bancari nelle istruzioni. Non inviamo importi, date, IBAN, note, descrizioni complete dei movimenti, bonifici né nomi che sembrano di persona.",
+        "Se lo attivi in Impostazioni → Assistente AI (è spento finché non lo scegli), per i movimenti nuovi di sincronizzazioni e importazioni inviamo a un modello di intelligenza artificiale il nome pulito dell'esercente, la direzione (entrata o uscita) e l'elenco delle tue categorie, con qualche esempio di tue scelte passate e le istruzioni personali che scegli di inserire nelle Impostazioni. Evita di inserire dati personali o bancari nelle istruzioni. Non inviamo importi, date, IBAN, note, descrizioni complete dei movimenti, bonifici né nomi che sembrano di persona.",
         "Il servizio è OpenRouter, con la modalità zero data retention descritta nella sezione seguente. Il modello propone una categoria con un grado di sicurezza. Se in Impostazioni lasci attiva l'opzione «Lascia che l'app scelga quando è abbastanza sicura», le proposte sicure almeno al 70% si applicano senza chiederti conferma: le ritrovi in Categorizza → «Messe dall'app», con l'indicazione che vengono dall'intelligenza artificiale, e puoi cambiarle in ogni momento. Le altre proposte restano da confermare, e una scelta diventa una regola solo se lo chiedi tu. Puoi spegnere l'applicazione automatica o revocare il consenso in ogni momento: da quel momento non partono nuove richieste e le proposte già ricevute non si applicano più da sole.",
+      ],
+    },
+    {
+      id: "frasi-in-cerca",
+      title: "Frasi in «Cerca» con intelligenza artificiale",
+      paragraphs: [
+        "In «Cerca» puoi scrivere una frase come «pagato 12 € al bar ieri»: la leggono regole che girano nel tuo browser, senza intelligenza artificiale, e si apre il modulo già compilato. Solo se le regole non la capiscono e tocchi «Chiedi all'AI», con l'assistente AI acceso, la frase viene inviata a un modello di intelligenza artificiale tramite OpenRouter, con la modalità zero data retention descritta nella sezione seguente.",
+        "Al modello inviamo soltanto la frase che hai scritto (al massimo 160 caratteri), la data di oggi e la lingua dell'app: nessun altro dato del tuo account. Evita di scriverci dati di altre persone che non servono. La risposta compila un modulo che controlli e salvi tu: il modello non registra niente da solo.",
+        `La risposta resta per ${COMMAND_CACHE_HOURS} ore in una memoria temporanea, legata al tuo account e a un'impronta della frase (non alla frase in chiaro), così la stessa frase non viene chiesta di nuovo. Per evitare abusi ci sono limiti al numero di domande per persona e per giorno. Il testo delle ricerche e delle frasi non finisce nei registri tecnici.`,
       ],
     },
     {
       id: "zero-data-retention",
       title: "Zero data retention per l'intelligenza artificiale",
       paragraphs: [
-        "Ogni richiesta all'intelligenza artificiale (import di un file, proposte di categoria, «Chiedi all'AI» su un movimento) passa da OpenRouter con la modalità zero data retention: OpenRouter la manda solo a fornitori del modello che non conservano i dati dopo la risposta e non li usano per addestrare i modelli. Se nessun fornitore rispetta queste condizioni, la richiesta viene rifiutata e non parte.",
+        "Ogni richiesta all'intelligenza artificiale (import di un file, proposte di categoria, «Chiedi all'AI» su un movimento o in «Cerca») passa da OpenRouter con la modalità zero data retention: OpenRouter la manda solo a fornitori del modello che non conservano i dati dopo la risposta e non li usano per addestrare i modelli. Se nessun fornitore rispetta queste condizioni, la richiesta viene rifiutata e non parte.",
         "La condizione è imposta due volte: è scritta in ogni richiesta che parte dai nostri server ed è attiva nelle impostazioni del nostro account OpenRouter per tutti i modelli, così vale anche se una delle due venisse a mancare. OpenRouter non conserva il testo delle richieste e delle risposte; tiene i dati tecnici dell'uso (modello, quantità di testo elaborata, costo).",
-        `Cosa non copre: la modalità riguarda i fornitori a cui OpenRouter passa la richiesta, non quello che conserviamo noi. Da noi restano, come descritto nelle sezioni sopra, il risultato (le regole di lettura del file, la categoria proposta) e registri tecnici senza il contenuto delle richieste, per ${LOG_DAYS} giorni. Non usiamo strumenti aggiuntivi di OpenRouter come la ricerca sul web.`,
+        `Cosa non copre: la modalità riguarda i fornitori a cui OpenRouter passa la richiesta, non quello che conserviamo noi. Da noi restano, come descritto nelle sezioni sopra, il risultato (le regole di lettura del file, la categoria proposta, per ${COMMAND_CACHE_HOURS} ore il modulo proposto in «Cerca») e registri tecnici senza il contenuto delle richieste, per ${LOG_DAYS} giorni. Non usiamo strumenti aggiuntivi di OpenRouter come la ricerca sul web.`,
         "Vale per il servizio su buddybudget.io. Chi installa BuddyBudget sui propri server usa una propria chiave OpenRouter: le richieste continuano a chiedere la zero data retention, ma le impostazioni dell'account sono quelle di chi installa.",
       ],
     },
@@ -143,7 +155,7 @@ export const PRIVACY: LegalDocument = {
         "Cloudflare: instradamento del traffico, DNS e archiviazione (R2) delle copie di sicurezza del database.",
         "GoCardless: lettura dei conti bancari già collegati (oggi non se ne collegano di nuovi), ai sensi di PSD2.",
         "Resend: invio delle email di servizio e, se le attivi, di riepilogo e avvisi (usa il tuo indirizzo email e il testo delle email, che può contenere cifre del tuo budget) e consegna dei messaggi che scrivi al supporto.",
-        "OpenRouter e il fornitore del modello che questo seleziona, sempre in modalità zero data retention: solo se usi l'import con intelligenza artificiale o le proposte di categoria, con il tuo consenso (vedi le sezioni dedicate).",
+        "OpenRouter e il fornitore del modello che questo seleziona, sempre in modalità zero data retention: solo se usi l'import con intelligenza artificiale o l'assistente AI (proposte di categoria, «Chiedi all'AI»), con il tuo consenso (vedi le sezioni dedicate).",
         "Google: solo se scegli di accedere con Google; agisce come titolare autonomo per l'autenticazione.",
         "Strumenti di monitoraggio, avvisi tecnici e statistiche anonime (Umami), che gestiamo sui nostri server e che non ricevono dati finanziari né contenuti tuoi.",
       ],
@@ -166,6 +178,7 @@ export const PRIVACY: LegalDocument = {
         `Sessioni: scadono dopo ${SESSION_DAYS} giorni senza utilizzo e le sessioni scadute vengono cancellate. I link di accesso valgono ${MAGIC_LINK_MINUTES} minuti.`,
         `Import con intelligenza artificiale: file cancellato al termine dell'elaborazione, anteprima al massimo ${CSV_PREVIEW_DAYS} giorni, regole di lettura fino all'eliminazione dell'account.`,
         "Proposte di categoria: finché l'account esiste o fino al reset dei dati; revocando il consenso non partono nuove richieste.",
+        `«Chiedi all'AI» in «Cerca»: il modulo proposto ${COMMAND_CACHE_HOURS} ore; la frase non viene conservata.`,
         `Registri tecnici (log): ${LOG_DAYS} giorni.`,
         `Messaggi al supporto: nella casella di posta del titolare, il tempo necessario a rispondere e comunque non oltre ${SUPPORT_MONTHS} mesi dalla chiusura della richiesta. Eliminando l'account non vengono cancellati in automatico: puoi chiederne la cancellazione scrivendo a ${LEGAL_OWNER.email}.`,
         `Email di riepilogo e avvisi: le preferenze finché l'account esiste; il registro degli invii (solo chiavi tecniche per non ripetere lo stesso avviso, senza importi) ${NOTIFICATION_LOG_DAYS} giorni.`,
@@ -177,7 +190,7 @@ export const PRIVACY: LegalDocument = {
       id: "diritti",
       title: "I tuoi diritti",
       paragraphs: [
-        "Hai diritto di accedere ai tuoi dati, correggerli, cancellarli, limitarne il trattamento, riceverli in formato portabile e opporti al trattamento basato sul legittimo interesse (artt. 15-22 GDPR). Dove il trattamento si basa sul consenso (l'import con intelligenza artificiale e le proposte di categoria) puoi revocarlo in qualsiasi momento, senza effetto sul trattamento già avvenuto.",
+        "Hai diritto di accedere ai tuoi dati, correggerli, cancellarli, limitarne il trattamento, riceverli in formato portabile e opporti al trattamento basato sul legittimo interesse (artt. 15-22 GDPR). Dove il trattamento si basa sul consenso (l'import con intelligenza artificiale e l'assistente AI) puoi revocarlo in qualsiasi momento, senza effetto sul trattamento già avvenuto.",
       ],
       items: [
         "Accesso e portabilità: in Impostazioni scarichi un archivio ZIP con tutti i tuoi dati in JSON e CSV.",
@@ -250,7 +263,7 @@ export const TERMINI: LegalDocument = {
       paragraphs: [
         "Calcoli, stime, simulazioni, grafici, stime fiscali, proiezioni pensionistiche e commenti sui titoli hanno solo scopo informativo e si basano sui dati che inserisci e su ipotesi semplificate. Non sono una raccomandazione di investimento né una consulenza personalizzata e BuddyBudget non è un intermediario finanziario. Le regole fiscali e previdenziali cambiano e dipendono dalla tua situazione: prima di decidere rivolgiti a un professionista abilitato.",
         "I prezzi di mercato provengono da fonti di terzi, possono essere in ritardo o errati e sono chiusure di fine giornata, non quotazioni in tempo reale. Lo stesso vale per i dati ricevuti dalle banche tramite i collegamenti Open Banking già attivi: dipendono dalla banca e dal fornitore del collegamento.",
-        "L'import con intelligenza artificiale produce regole di lettura generate automaticamente: controlla che i movimenti importati corrispondano ai tuoi documenti. Le categorie messe dall'app (dalle tue regole, dalla categoria della banca nei file importati o dalle proposte più sicure, se lo hai scelto) possono essere sbagliate: le trovi indicate come messe dall'app, puoi cambiarle in ogni momento e sei tu a verificare che siano giuste.",
+        "L'import con intelligenza artificiale produce regole di lettura generate automaticamente: controlla che i movimenti importati corrispondano ai tuoi documenti. Una frase scritta in «Cerca», letta dalle regole o dall'intelligenza artificiale, compila soltanto un modulo: controlla importo, data e conto prima di salvarlo. Le categorie messe dall'app (dalle tue regole, dalla categoria della banca nei file importati o dalle proposte più sicure, se lo hai scelto) possono essere sbagliate: le trovi indicate come messe dall'app, puoi cambiarle in ogni momento e sei tu a verificare che siano giuste.",
         "Le richieste all'intelligenza artificiale passano da OpenRouter solo verso fornitori che non conservano i dati e non li usano per l'addestramento (zero data retention, vedi l'informativa sulla privacy); se nessuno è disponibile la funzione non risponde e i tuoi dati restano come sono.",
       ],
     },
@@ -323,7 +336,7 @@ export const COOKIE: LegalDocument = {
         `Cookie di sessione dell'app (app.buddybudget.io): ti tiene collegato dopo l'accesso, scade dopo ${SESSION_DAYS} giorni senza utilizzo e sparisce all'uscita.`,
         "Cookie di sicurezza temporanei durante l'accesso (per esempio quando scegli Google), necessari a completarlo.",
         "Lingua e paese: un cookie dell'app ricorda la lingua scelta (un anno); sul sito un cookie di un giorno contiene solo il paese da cui ti colleghi, che Cloudflare ricava dall'indirizzo IP, e serve a proporti la lingua giusta e a non mostrarti funzioni che nel tuo paese non ci sono ancora. L'indirizzo IP non viene salvato; il sito ricorda nell'archivio locale la lingua che scegli.",
-        "Archivio locale del browser: ricorda tema chiaro o scuro, stato della barra laterale, sezioni chiuse, scelta di nascondere gli importi, la scelta sulle statistiche e le preferenze delle schermate.",
+        "Archivio locale del browser: ricorda tema chiaro o scuro, stato della barra laterale, sezioni chiuse, scelta di nascondere gli importi, la scelta sulle statistiche, le preferenze delle schermate e gli ultimi cinque risultati che hai aperto da «Cerca» (il nome, senza importi), che restano solo su quel dispositivo.",
         "Per farti rientrare più in fretta, l'app ricorda su quel dispositivo l'email dell'ultimo account entrato (nell'archivio locale) e il metodo usato per l'ultimo accesso (un cookie che dura 30 giorni). Restano solo nel tuo browser: \"Non sei tu?\" nella pagina di accesso li cancella.",
         "Questi strumenti servono a erogare ciò che chiedi: per i cookie tecnici il Garante (Linee guida, par. 5) richiede solo l'informativa e non il consenso.",
       ],

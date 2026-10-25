@@ -9,6 +9,7 @@ import { track } from "@/lib/analytics";
 import { SegmentedControl } from "@/components/domain/shared";
 import type { TransactionDirection } from "@/lib/calc/expenses";
 import { cn } from "@/lib/utils";
+import { MOVEMENTS_LIST_ID } from "./liquidity-nav";
 
 const TYPE_OPTIONS = [
   { value: "tutte", label: "Tutti" },
@@ -33,7 +34,7 @@ export interface MovementsToolbarProps {
 export function MovementsToolbar(props: MovementsToolbarProps) {
   const { t: tr } = useLocalization();
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    <div id={MOVEMENTS_LIST_ID} className="flex scroll-mt-20 flex-wrap items-center gap-2.5">
       <label className="flex min-h-11 min-w-0 flex-1 basis-56 items-center gap-2 rounded-xl border border-input bg-card px-3">
         <SearchIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <input

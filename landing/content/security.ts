@@ -176,7 +176,7 @@ export const ANALYTICS_DATA = {
 } as const;
 
 /**
- * Where the app uses AI and what it sends: the same three places as «Dove l'app usa l'AI» in the app's Settings
+ * Where the app uses AI and what it sends: the same four places as «Dove l'app usa l'AI» in the app's Settings
  * (`components/domain/settings/ai-usage-summary.tsx`) and the request in `lib/llm/jev.ts` (merchant name, direction,
  * categories; `OPENROUTER_PRIVACY` in `lib/llm/openrouter.ts`, also enforced for all models in the OpenRouter account).
  */
@@ -184,11 +184,11 @@ export const AI_DATA = {
   question: "Dove entra l'AI, e cosa vede?",
   lede: "L'AI è spenta finché non dici sì. Calcoli, regole, sincronizzazione con la banca e avvisi non la usano mai.",
   rows: [
-    { label: "Quando", text: "Solo in tre punti: le proposte di categoria, l'importazione di un estratto conto in un formato nuovo e l'importazione degli investimenti quando la lettura normale non riesce." },
-    { label: "Cosa riceve", text: "Per le categorie, il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento, le tue categorie e le tue istruzioni: senza importi, date, IBAN o note. Per un'importazione, il file intero, perché deve capire com'è fatto." },
+    { label: "Quando", text: "Solo in quattro punti: le proposte di categoria, «Chiedi all'AI» in «Cerca» per una frase che le regole non capiscono, l'importazione di un estratto conto in un formato nuovo e l'importazione degli investimenti quando la lettura normale non riesce." },
+    { label: "Cosa riceve", text: "Per le categorie, il nome pulito della controparte, anche se è una persona, per tutti i tipi di movimento, le tue categorie e le tue istruzioni: senza importi, date, IBAN o note. In «Cerca», solo la frase che hai scritto, la data di oggi e la lingua. Per un'importazione, il file intero, perché deve capire com'è fatto." },
     { label: "A chi va", text: "A OpenRouter in modalità zero data retention: passa la richiesta solo a fornitori del modello che non conservano i dati dopo la risposta e non li usano per l'addestramento. Se nessuno lo garantisce, la richiesta non parte. La condizione è scritta in ogni richiesta ed è attiva anche nell'account OpenRouter di BuddyBudget, per tutti i modelli." },
     { label: "Cosa decide", text: "Propone, non comanda. Le tue regole vengono prima. Se lasci attiva l'opzione, si applicano da sole solo le proposte sicure almeno al 70%, segnate come messe dall'app e correggibili." },
-    { label: "Il limite", text: `Zero data retention è una regola di OpenRouter sui fornitori dei modelli, non un contratto che abbiamo firmato con loro. OpenRouter tiene i dati tecnici dell'uso (modello, quantità di testo, costo); noi teniamo il risultato (la categoria, le regole di lettura del file) e log tecnici senza il contenuto per ${LOG_DAYS} giorni.` },
+    { label: "Il limite", text: `Zero data retention è una regola di OpenRouter sui fornitori dei modelli, non un contratto che abbiamo firmato con loro. OpenRouter tiene i dati tecnici dell'uso (modello, quantità di testo, costo); noi teniamo il risultato (la categoria, le regole di lettura del file, per 24 ore il modulo proposto in «Cerca») e log tecnici senza il contenuto per ${LOG_DAYS} giorni.` },
     { label: "Come spegnerla", text: "Da Impostazioni revochi il consenso quando vuoi: da lì non parte più nessuna richiesta. Chi installa BuddyBudget sul proprio server può non configurare affatto l'AI: l'app funziona lo stesso." },
   ] satisfies readonly FactRow[],
 } as const;

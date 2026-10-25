@@ -1,9 +1,10 @@
 /**
- * Catalogo delle funzionalità di BuddyBudget: UNICA fonte di verità per la landing (catalogo "Tutte le funzioni",
- * conteggi), il pannello "In arrivo" del login e il test di coerenza con la sidebar. Solo dati, nessuna dipendenza:
- * la landing ne tiene una copia generata (`pnpm sync:features` in `landing/`), la CI fallisce se non è allineata.
- * Quando una funzione viene rilasciata, cambia stato o nasce, si aggiorna QUI e si lancia il sync. Solo funzioni che
- * contano da sole: i dettagli dell'interfaccia (ricerca, nomi puliti, scorciatoie, tema) restano dentro la voce che servono.
+ * Catalogue of BuddyBudget's features: the ONLY source of truth for the landing ("Tutte le funzioni" catalogue, counts),
+ * the "In arrivo" panel of the sign-in page and the consistency test with the sidebar. Data only, no dependencies: the
+ * landing keeps a generated copy (`pnpm sync:features` in `landing/`), CI fails when it is out of date. When a feature
+ * ships, changes status or is born, update it HERE and run the sync. Only features that count on their own: interface
+ * details (search inside a section, cleaned names, shortcuts, theme) stay inside the entry they serve; the app-wide
+ * «Cerca» with typed sentences is an entry of its own.
  */
 
 export const FEATURE_AREAS = ["Liquidità", "Investimenti", "Debiti", "Patrimonio", "Account"] as const;
@@ -46,6 +47,7 @@ export interface Feature {
  */
 const FEATURES_EN: Readonly<Record<string, FeatureText>> = {
   "csv-personali-ai": { name: "Personal CSVs with AI", description: "Upload the CSV of a bank or broker we don't know: we read it in the background and remember the institution and the columns of its format. If the saved reader fails, we try again with the AI you have authorized and send a technical report to support. If the file has your bank's own category column, transactions get the matching category right away. You get an email when the import is done." },
+  "cerca-ovunque": { name: "Search everywhere, even with a sentence", description: "Find a transaction, an account, a security, a subscription or a setting from any page: ⌘K on a computer, pull the page down on the phone. Type “bought 3 Apple at 50 € today” or “paid 12 € at the café yesterday” and the form opens already filled in, in Italian, English or German, for you to check and save. For a sentence it cannot read, you can ask the AI with one tap: it only gets the sentence." },
   "dall-ultima-visita": { name: "Since your last visit", description: "When you come back, a quiet notice tells you what happened while you were away (new transactions, price alerts that went off, subscriptions that went up) and what to sort out: transactions without a category, subscriptions to confirm, imports to check. One tap and you are there." },
   "primi-passi-e-dati-d-esempio": { name: "First steps and sample data", description: "Starting without a bank? The Overview shows four steps that tick themselves off (account, transactions, investment, goal), and you can try the app with sample data that resets with one tap." },
   "demo-senza-account": { name: "Demo without an account", description: "Open the app with the data of a sample account, for Italy or Germany, in Italian, English or German, without signing up: look at everything, nothing is saved." },
@@ -100,6 +102,7 @@ const f = (
 export const FEATURES: readonly Feature[] = [
   f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background e ricordiamo istituzione e colonne del formato. Se il lettore salvato fallisce, riproviamo con l’AI autorizzata e inviamo un report tecnico al supporto. Se il file ha la colonna con la categoria della banca, i movimenti prendono subito la categoria corrispondente. Ti avvisiamo per email a import finito.", "new"),
   f("primi-passi-e-dati-d-esempio", "Account", "Primi passi e dati d'esempio", "Dici cosa vuoi tenere sotto controllo e la Panoramica ti mostra un passo alla volta: conto, movimenti, investimenti, mutuo o fondo pensione. Ogni passo fatto ti porta al successivo, e puoi provare l'app con dati d'esempio, azzerabili con un tocco.", "new"),
+  f("cerca-ovunque", "Account", "Cerca ovunque, anche con una frase", "Trovi un movimento, un conto, un titolo, un abbonamento o un'impostazione da qualsiasi pagina: ⌘K sul computer, tiri giù la pagina sul telefono. Scrivi «comprato 3 Apple a 50 € oggi» o «pagato 12 € al bar ieri» e si apre il modulo già compilato, in italiano, inglese o tedesco, da controllare e salvare. Se una frase non la capisce, con un tocco la chiedi all'AI: riceve soltanto la frase.", "new"),
   f("dall-ultima-visita", "Account", "Dall'ultima visita", "Quando torni, un avviso discreto ti dice cosa è successo mentre eri via (movimenti arrivati, avvisi di prezzo scattati, abbonamenti aumentati) e cosa c'è da sistemare: movimenti senza categoria, abbonamenti da confermare, import da controllare. Un tocco e ci sei.", "new"),
   f("demo-senza-account", "Account", "Demo senza account", "Apri l'app con i dati di un account d'esempio, per l'Italia o la Germania, in italiano, inglese o tedesco, senza registrarti: guardi tutto, non si salva niente.", "new"),
   f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Saldi e movimenti che arrivano da soli dalla banca con l'Open Banking, in sola lettura. Arriva presto: intanto importi l'estratto conto, e con «Tienimi aggiornato» ti scriviamo quando è pronto.", "soon"),

@@ -25,6 +25,7 @@ export type { TransactionRowProps } from "./transaction-row";
 export { SplitSlider } from "./split-slider";
 export type { SplitSliderProps } from "./split-slider";
 export { AddTransactionForm } from "./add-transaction-form";
+export type { TransactionPrefill } from "./add-transaction-form";
 export type { AddTransactionFormProps } from "./add-transaction-form";
 export { AddTransactionDialog } from "./add-transaction-dialog";
 export type { AddTransactionDialogProps } from "./add-transaction-dialog";

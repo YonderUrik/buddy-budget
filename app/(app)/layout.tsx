@@ -8,6 +8,7 @@ import { SyncProgressIndicator } from "@/components/domain/sync";
 import { WelcomeToast } from "@/components/domain/welcome";
 import { QuickReportProvider } from "@/components/domain/support";
 import { QuickAddProvider } from "@/components/domain/quick-add";
+import { SearchProvider } from "@/components/domain/search";
 // Direct file import: the auth barrel also carries the login preview, which the app layout must not load.
 import { RememberReturningUser } from "@/components/domain/auth/remember-returning-user";
 import { auth } from "@/lib/auth";
@@ -24,6 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <QuickReportProvider>
       <BackHistoryRecorder />
       <QuickAddProvider>
+      <SearchProvider>
       <AttentionShell sidebarExtra={<SidebarInsightsSlot />}>
         <PrivacyBoundary>
           {isPublicDemo ? (
@@ -41,6 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {isPublicDemo ? <PublicDemoFooter /> : null}
         </PrivacyBoundary>
       </AttentionShell>
+      </SearchProvider>
       </QuickAddProvider>
       <SyncProgressIndicator>
         <PersonalImportIsland />

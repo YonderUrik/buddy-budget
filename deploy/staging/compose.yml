@@ -1,0 +1,168 @@
+name: buddybudget-staging
+
+x-service: &service
+  restart: unless-stopped
+  dns: [1.1.1.1, 9.9.9.9]
+  logging:
+    driver: local
+    options: {max-size: 10m, max-file: '3'}
+  security_opt: [no-new-privileges:true]
+
+x-app-env: &app-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?}@postgres:5432/buddybudget?sslmode=disable
+  REDIS_URL: redis://redis:6379
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?}
+  BETTER_AUTH_URL: ${APP_URL:?}
+  APP_URL: ${APP_URL:?}
+  CRON_SECRET: ${CRON_SECRET:?}
+  DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?}
+  PERSONAL_CSV_ENCRYPTION_KEY: ${PERSONAL_CSV_ENCRYPTION_KEY:?}
+  SELF_HOSTED: 'false'
+  AUTH_PASSWORD: 'false'
+  ALLOW_SIGNUPS: 'true'
+  # Match hosted production: login codes, links and notification emails use Resend.
+  SMTP_URL: ''
+  EMAIL_FROM: ''
+  RESEND_API_KEY: ${RESEND_API_KEY:?Configure the staging Resend API key}
+  RESEND_FROM: ${RESEND_FROM:?Configure the verified Resend sender}
+  GOOGLE_CLIENT_ID: ''
+  GOOGLE_CLIENT_SECRET: ''
+  GOCARDLESS_SECRET_ID: ''
+  GOCARDLESS_SECRET_KEY: ''
+  BANK_CONNECTIONS_OPEN: 'false'
+  GOCARDLESS_CLEANUP_MODE: 'off'
+  INACTIVITY_CLEANUP_MODE: 'dry-run'
+  NOTIFICATIONS_MODE: execute
+  PUBLIC_DEMO_ENABLED: 'true'
+  SUPPORT_EMAIL_TO: ''
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?Configure the staging categorization API key}
+  OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-v4.1-flash}
+  LOG_LEVEL: info
+
+services:
+  postgres:
+    <<: *service
+    image: postgres:17-alpine
+    mem_limit: 768m
+    cpus: 1
+    environment:
+      POSTGRES_USER: buddybudget
+      POSTGRES_DB: buddybudget
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U buddybudget -d buddybudget]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    <<: *service
+    image: redis:7-alpine
+    mem_limit: 192m
+    cpus: 0.25
+    command: [redis-server, --save, '', --appendonly, 'no', --maxmemory, 128mb, --maxmemory-policy, noeviction]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  migrate:
+    <<: *service
+    image: ghcr.io/yonderurik/buddy-budget-migrate:${BUDDYBUDGET_VERSION:?}
+    restart: 'no'
+    mem_limit: 768m
+    cpus: 1
+    environment: *app-env
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  app:
+    <<: *service
+    image: ghcr.io/yonderurik/buddy-budget:${BUDDYBUDGET_VERSION:?}
+    mem_limit: 1536m
+    cpus: 2
+    environment: *app-env
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+
+  csv-worker:
+    <<: *service
+    image: ghcr.io/yonderurik/buddy-budget-csv-worker:${BUDDYBUDGET_VERSION:?}
+    mem_limit: 1536m
+    cpus: 1
+    environment:
+      <<: *app-env
+      # Production has distinct OpenRouter credentials for the app and CSV worker.
+      OPENROUTER_API_KEY: ${CSV_WORKER_OPENROUTER_API_KEY:?Configure the staging CSV worker API key}
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+
+  cron:
+    <<: *service
+    image: alpine:3.21
+    mem_limit: 64m
+    cpus: 0.1
+    environment:
+      CRON_SECRET: ${CRON_SECRET:?}
+    volumes: [./scheduler.sh:/scheduler.sh:ro]
+    command: [sh, /scheduler.sh]
+    depends_on:
+      app: {condition: service_healthy}
+
+  # Let's Encrypt certificate for STAGING_DOMAIN via the Cloudflare DNS-01 challenge: the name points to a
+  # Tailscale address, so the HTTP challenge cannot reach it. Renewal is checked twice a day.
+  certs:
+    <<: *service
+    image: certbot/dns-cloudflare:v5.1.0
+    mem_limit: 128m
+    cpus: 0.25
+    entrypoint: [sh, /certs.sh]
+    environment:
+      STAGING_DOMAIN: ${STAGING_DOMAIN:?}
+      ACME_EMAIL: ${ACME_EMAIL:?Configure the Let's Encrypt account email}
+      CLOUDFLARE_DNS_API_TOKEN: ${CLOUDFLARE_DNS_API_TOKEN:?Configure the Cloudflare DNS token (zone DNS edit, buddybudget.io only)}
+    volumes:
+      - ./certs.sh:/certs.sh:ro
+      - ${STAGING_ROOT:?}/letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: [CMD, test, -s, /etc/letsencrypt/live/staging/fullchain.pem]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  # The only entry point: HTTPS bound to the host's Tailscale address. staging.buddybudget.io resolves to that
+  # address (public A record, DNS only), so only devices on the tailnet can connect; there is no public tunnel.
+  gateway:
+    <<: *service
+    image: nginx@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+    mem_limit: 96m
+    cpus: 0.25
+    ports: ['${TAILSCALE_IP:?}:443:443']
+    # Reloads every 6 hours so a renewed certificate is picked up without a restart.
+    command: [sh, -c, 'while sleep 6h; do nginx -s reload; done & exec nginx -g "daemon off;"']
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${STAGING_ROOT:?}/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      app: {condition: service_healthy}
+      certs: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, nginx, -t, -q]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:

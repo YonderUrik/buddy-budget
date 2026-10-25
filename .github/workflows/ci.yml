@@ -58,6 +58,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Staging updater checks
+        run: python3 -m unittest discover -s deploy/staging -p 'test_*.py'
+      - name: Validate staging Compose configuration
+        env:
+          STAGING_ROOT: /tmp/buddybudget-staging
+          APP_URL: https://staging.example.test
+          BUDDYBUDGET_VERSION: sha-0000000000000000000000000000000000000000
+          POSTGRES_PASSWORD: ci-only-placeholder
+          BETTER_AUTH_SECRET: ci-only-placeholder-secret-000000000000
+          CRON_SECRET: ci-only-placeholder-cron-secret-0000000
+          DATA_ENCRYPTION_KEY: ci-only-placeholder
+          PERSONAL_CSV_ENCRYPTION_KEY: ci-only-placeholder
+          RESEND_API_KEY: re_ci_only_placeholder
+          RESEND_FROM: staging@example.test
+          OPENROUTER_API_KEY: ci-only-placeholder
+          CSV_WORKER_OPENROUTER_API_KEY: ci-only-placeholder
+          STAGING_DOMAIN: staging.example.test
+          TAILSCALE_IP: 100.64.0.1
+          ACME_EMAIL: staging@example.test
+          CLOUDFLARE_DNS_API_TOKEN: ci-only-placeholder
+        run: docker compose -f deploy/staging/compose.yml config --quiet
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -166,9 +187,9 @@ jobs:
     # With SELFHOST_IMAGES=true (repo variable, see docs/self-hosting.md) the image is multi-architecture and slower to build.
     timeout-minutes: 60
     needs: [release]
-    # Images are needed only for the deploy, which uses the version tag: they are built in the release run, not on every push.
-    # They start in parallel with the tests; the deploy (below) waits for the checks to pass.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
+    # Staging needs every main commit. Production and latest still advance only on a release.
+    # Builds start alongside tests; staging-candidate and production both wait for the checks.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -198,6 +219,7 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
             type=sha,prefix=sha-
+            type=sha,prefix=sha-,format=long
             type=raw,value=main
             type=raw,value=${{ needs.release.outputs.version }},enable=${{ needs.release.outputs.is_release == 'true' }}
             type=raw,value=latest,enable=${{ needs.release.outputs.is_release == 'true' }}
@@ -214,6 +236,23 @@ jobs:
             GIT_COMMIT_SHA=${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  staging-candidate:
+    name: Publish tested staging candidate
+    needs: [check, image]
+    if: always() && !cancelled() && needs.image.result == 'success' && (needs.check.result == 'success' || needs.check.result == 'skipped') && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # GitHub records this job's SHA and success as a deployment. The laptop polls
+    # successful candidates; it never exposes SSH or executes pull-request jobs.
+    # This environment means ready for staging, not confirmation of a live rollout.
+    environment:
+      name: staging-candidate
+    steps:
+      - name: Candidate ready for the staging server
+        env:
+          COMMIT: ${{ github.sha }}
+        run: echo "All three sha-${COMMIT} images are published and checks passed."
 
   update-infra-tag:
     name: Deploy app (tag versione nel repo infra)

@@ -27,6 +27,13 @@ network** (tailnet `tail52c123.ts.net`). Decided by Daniele on 2026-10-25.
 
 ### Switching an existing installation
 
+Completed on 2026-10-25: the permanent hostname serves valid HTTPS on the
+Tailscale address. Password protection, application readiness and the login-code
+request were verified from the administrator's Mac. The old public tunnel and
+temporary DNS route were deleted, and a post-cutover database backup succeeded.
+The DNS API token is stored only in the protected host environment and certificate
+service; it is not committed. Automatic application updates remain disabled.
+
 1. In Cloudflare, create `A staging.buddybudget.io → 100.85.66.41`, proxy off.
 2. Create the Cloudflare token above.
 3. On the host, in `~/buddy-budget-staging/.env`: set

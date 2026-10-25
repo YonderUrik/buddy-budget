@@ -1,5 +1,7 @@
 /** A sentence typed in «Cerca» turned into something to add: what it is and the values found in it. */
 
+import type { DataQuestion } from "./question";
+
 export const COMMAND_KINDS = ["spesa", "entrata", "acquisto", "vendita", "dividendo"] as const;
 export type CommandKind = (typeof COMMAND_KINDS)[number];
 
@@ -53,3 +55,6 @@ export function missingFields(draft: CommandDraft): CommandMissing[] {
 export const COMMAND_MAX_VALUE = 10_000_000;
 /** Longest sentence the interpreter and the model accept. */
 export const COMMAND_MAX_LENGTH = 160;
+
+/** What «Chiedi all'AI» read in a sentence: something to add (a draft for its form) or a question for the server to answer. */
+export type Interpretation = { type: "draft"; draft: CommandDraft } | { type: "question"; question: DataQuestion };

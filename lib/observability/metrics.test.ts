@@ -75,16 +75,20 @@ describe("metriche applicative", () => {
   it("records «Cerca» queries and «Chiedi all'AI» questions, timing only real model calls", async () => {
     recordSearchQuery(120, "full");
     recordSearchQuery(900, "capped");
+    recordSearchQuery(300, "full", "totale");
     recordCommandAiRequest("ok", 1500);
+    recordCommandAiRequest("question", 1200);
     recordCommandAiRequest("cached");
     recordCommandAiRequest("limited_service");
     const out = await text();
-    expect(out).toContain('buddybudget_search_queries_total{movements="full"} 1');
-    expect(out).toContain('buddybudget_search_queries_total{movements="capped"} 1');
-    expect(out).toContain("buddybudget_search_duration_seconds_count 2");
+    expect(out).toContain('buddybudget_search_queries_total{movements="full",answer="none"} 1');
+    expect(out).toContain('buddybudget_search_queries_total{movements="capped",answer="none"} 1');
+    expect(out).toContain('buddybudget_search_queries_total{movements="full",answer="totale"} 1');
+    expect(out).toContain("buddybudget_search_duration_seconds_count 3");
+    expect(out).toContain('buddybudget_command_ai_requests_total{outcome="question"} 1');
     expect(out).toContain('buddybudget_command_ai_requests_total{outcome="cached"} 1');
     expect(out).toContain('buddybudget_command_ai_requests_total{outcome="limited_service"} 1');
-    expect(out).toContain("buddybudget_command_ai_request_duration_seconds_count 1");
+    expect(out).toContain("buddybudget_command_ai_request_duration_seconds_count 2");
   });
 
   it("espone build_info e metriche di processo", async () => {

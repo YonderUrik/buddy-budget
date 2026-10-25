@@ -11,11 +11,11 @@ const NOW = new Date(Date.UTC(2026, 9, 25, 12));
 const [alice, bob, carla] = ["alice", "bob", "carla"].map((name) => `test-search-${name}-${crypto.randomUUID()}`);
 
 /** One user with an account, a category and the given movements (newest dates first are fine: order does not matter). */
-async function seed(userId: string, accountName: string, movements: { description: string; date: string; amount?: string }[]) {
+async function seed(userId: string, accountName: string, movements: { description: string; date: string; amount?: string; excluded?: string }[]) {
   await db.insert(authUser).values({ id: userId, name: "Search test", email: `${userId}@example.test`, emailVerified: false, currency: "EUR" });
   const [account] = await db.insert(accounts).values({ userId, name: accountName, type: "Conto corrente", balance: "1000.00", source: "manuale" }).returning();
   const [category] = await db.insert(categories).values({ userId, name: `Svago ${userId.slice(-4)}`, type: "voluta" }).returning();
-  const rows = movements.map((m) => ({ userId, accountId: account.id, categoryId: category.id, description: m.description, amount: m.amount ?? "-10.00", date: m.date, source: "manuale" as const }));
+  const rows = movements.map((m) => ({ userId, accountId: account.id, categoryId: category.id, description: m.description, amount: m.amount ?? "-10.00", excludedAmount: m.excluded ?? "0", date: m.date, source: "manuale" as const }));
   for (let i = 0; i < rows.length; i += 1000) await db.insert(transactions).values(rows.slice(i, i + 1000));
 }
 
@@ -25,6 +25,10 @@ beforeAll(async () => {
     { description: "Netflix", date: "2026-09-17", amount: "-13.99" },
     { description: "Netflix", date: "2026-08-17", amount: "-13.99" },
     { description: "Bonifico a favore di Luca", date: "2026-10-18", amount: "-50.00" },
+    // Half of it split away with «Dividi», and a transfer excluded in full: only 30 € and nothing count.
+    { description: "Cena da Mario", date: "2026-10-03", amount: "-60.00", excluded: "-30.00" },
+    { description: "Giroconto", date: "2026-10-05", amount: "-200.00", excluded: "-200.00" },
+    { description: "Stipendio", date: "2026-10-27", amount: "2000.00" },
     // Older than the 24-month window: never read.
     { description: "Vecchio abbonamento palestra", date: "2024-08-01" },
   ]);
@@ -80,5 +84,42 @@ describe("searchEverything", () => {
     expect(capped.movementScanCapped).toBe(true);
     expect(capped.hits).toEqual([]);
     expect((await searchEverything(alice, "netflix", NOW)).movementScanCapped).toBe(false);
+  });
+});
+
+describe("answers to questions", () => {
+  const answerOf = async (userId: string, query: string) => (await searchEverything(userId, query, NOW)).hits.find((h) => h.group === "risposte");
+
+  it("sums one merchant over a year, on the user's movements only, and lists them too", async () => {
+    const result = await searchEverything(alice, "soldi spesi su Netflix nel 2026", NOW);
+    expect(result.question).toBe("totale");
+    expect(result.hits[0]).toMatchObject({
+      group: "risposte",
+      title: "Netflix",
+      amount: -41.97,
+      answer: { kind: "totale", direction: "uscite", count: 3, category: false, partial: false, source: "regole" },
+      href: "/liquidita?testo=netflix&periodo=anno&data=2026-01-01",
+    });
+    expect(result.hits.some((h) => h.group === "movimenti" && h.title === "Netflix")).toBe(true);
+    expect(await answerOf(bob, "soldi spesi su Netflix nel 2026")).toMatchObject({ amount: -13.99, answer: { count: 1 } });
+  });
+
+  it("sums a month after «Dividi», leaving out transfers excluded in full", async () => {
+    expect(await answerOf(alice, "spese di ottobre")).toMatchObject({ title: "", amount: -93.99, answer: { count: 3 }, href: "/liquidita?periodo=mese&data=2026-10-01" });
+    expect(await answerOf(alice, "entrate di ottobre")).toMatchObject({ amount: 2000, answer: { direction: "entrate", count: 1 } });
+  });
+
+  it("sums a category in SQL and says when part of a period is older than what «Cerca» reads", async () => {
+    const svago = await answerOf(alice, "quanto ho speso in svago quest'anno");
+    expect(svago).toMatchObject({ icon: "categoria", amount: -121.97, answer: { category: true, count: 5 } });
+    expect(svago?.href).toMatch(/^\/liquidita\?categoria=[0-9a-f-]{36}&periodo=anno&data=2026-01-01$/);
+    expect(await answerOf(alice, "quanto ho speso in palestra nel 2024")).toMatchObject({ amount: 0, answer: { count: 0, partial: true } });
+  });
+
+  it("answers balances only for the user's own accounts, and the next instalment when there is none", async () => {
+    expect(await answerOf(alice, "saldo conto di Alice")).toMatchObject({ title: "Conto di Alice", amount: 1000, answer: { kind: "saldo", accounts: 1 } });
+    expect(await answerOf(alice, "saldo")).toMatchObject({ title: "", amount: 1000, answer: { accounts: 1 } });
+    expect(await answerOf(alice, "saldo segreto")).toBeUndefined();
+    expect(await answerOf(alice, "prossima rata")).toMatchObject({ title: "", href: "/debiti", answer: { kind: "rata", date: null } });
   });
 });

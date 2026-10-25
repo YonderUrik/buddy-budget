@@ -1,18 +1,19 @@
 "use client";
 
 /**
- * «Prova a scrivere»: three sentences to try when «Cerca» opens empty, in the app language. They show at first sight
- * that the field searches and also turns a sentence into something to add; a tap writes the sentence in the field.
+ * «Prova a scrivere»: four sentences to try when «Cerca» opens empty, in the app language. They show at first sight
+ * that the field searches, turns a sentence into something to add and answers a question about the user's money; a tap
+ * writes the sentence in the field.
  */
 
 import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
 
-/** A setting that every account has, a movement and a trade: each one answers for any user, demo or real. */
+/** A setting that every account has, a movement, a trade and a question: each one answers for any user, demo or real. */
 const EXAMPLES: Record<string, readonly string[]> = {
-  it: ["tema scuro", "speso 12 € al bar", "comprato 3 Apple a 50 € oggi"],
-  en: ["dark theme", "spent €12 on coffee", "bought 3 Apple at 50 today"],
-  de: ["dunkles Design", "12 € im Café bezahlt", "3 Apple zu 50 gekauft"],
+  it: ["tema scuro", "speso 12 € al bar", "comprato 3 Apple a 50 € oggi", "quanto ho speso a ottobre?"],
+  en: ["dark theme", "spent €12 on coffee", "bought 3 Apple at 50 today", "how much did I spend in October?"],
+  de: ["dunkles Design", "12 € im Café bezahlt", "3 Apple zu 50 gekauft", "Wie viel habe ich im Oktober ausgegeben?"],
 };
 
 export interface SpotlightExamplesProps {

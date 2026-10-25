@@ -43,22 +43,62 @@ function useIsPhone(): boolean {
   return phone;
 }
 
-/** Height the on-screen keyboard takes from the bottom of the window (0 without one), so the phone field sits on top of it. */
-function useKeyboardInset(): number {
-  const [inset, setInset] = React.useState(0);
+/** Keyboard taller than this (px) counts as open: the field then drops the home-indicator space. */
+const KEYBOARD_MIN_HEIGHT = 120;
+
+/**
+ * The part of the screen the user actually sees (above the on-screen keyboard), followed as the keyboard opens, closes
+ * or iOS pans the page: the phone screen is drawn exactly there, so the field always sits on the keyboard and iOS has
+ * no reason to move anything while the user types. Null until measured or without `visualViewport`.
+ */
+function useVisibleArea(): { top: number; height: number; keyboard: boolean } | null {
+  const [area, setArea] = React.useState<{ top: number; height: number; keyboard: boolean } | null>(null);
   React.useEffect(() => {
     const viewport = window.visualViewport;
     if (!viewport) return;
-    const update = () => setInset(Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop));
+    let frame = 0;
+    const update = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const next = { top: Math.round(viewport.offsetTop), height: Math.round(viewport.height), keyboard: window.innerHeight - viewport.height > KEYBOARD_MIN_HEIGHT };
+        setArea((current) => (current && current.top === next.top && current.height === next.height ? current : next));
+      });
+    };
     update();
     viewport.addEventListener("resize", update);
     viewport.addEventListener("scroll", update);
     return () => {
+      cancelAnimationFrame(frame);
       viewport.removeEventListener("resize", update);
       viewport.removeEventListener("scroll", update);
     };
   }, []);
-  return inset;
+  return area;
+}
+
+/** Keeps the page behind from scrolling while `locked` (on iOS a scrollable page under the panel moves with the keyboard). */
+function usePageScrollLock(locked: boolean) {
+  React.useEffect(() => {
+    if (!locked) return;
+    const root = document.documentElement;
+    const previous = { overflow: root.style.overflow, overscroll: root.style.overscrollBehavior };
+    root.style.overflow = "hidden";
+    root.style.overscrollBehavior = "none";
+    return () => {
+      root.style.overflow = previous.overflow;
+      root.style.overscrollBehavior = previous.overscroll;
+    };
+  }, [locked]);
+}
+
+/** Scrolls `container` just enough to show the row `id` (never the page: `scrollIntoView` would also move the window). */
+function revealRow(container: HTMLElement | null, id: string) {
+  const row = document.getElementById(id);
+  if (!container || !row || !container.contains(row)) return;
+  const box = container.getBoundingClientRect();
+  const rowBox = row.getBoundingClientRect();
+  if (rowBox.top < box.top) container.scrollTop -= box.top - rowBox.top;
+  else if (rowBox.bottom > box.bottom) container.scrollTop += rowBox.bottom - box.bottom;
 }
 
 /** Height of `ref`'s content, followed as it changes (for the capsule that grows with the results). */
@@ -90,13 +130,17 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const phone = useIsPhone();
-  const keyboard = useKeyboardInset();
+  const visible = useVisibleArea();
+  usePageScrollLock(phone);
   const [text, setText] = React.useState(initialText);
   const [filter, setFilter] = React.useState<SpotlightFilter | null>(null);
   const [active, setActive] = React.useState(0);
   const listId = React.useId();
-  const { blocks, items, waiting, query, moreMovements, askAi } = useSpotlight({ text, filter, idle: phone ? idle : [] });
+  const { blocks, items, waiting, query, highlight, moreMovements, askAi } = useSpotlight({ text, filter, idle: phone ? idle : [] });
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  // Only a move with the arrow keys brings the chosen row into view; typing never scrolls anything.
+  const revealActive = React.useRef(false);
   const contentHeight = useContentHeight(contentRef);
   const optionId = (index: number) => `${listId}-${index}`;
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -112,7 +156,9 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
     setActive(0);
   }
   React.useEffect(() => {
-    document.getElementById(optionId(active))?.scrollIntoView({ block: "nearest" });
+    if (!revealActive.current) return;
+    revealActive.current = false;
+    revealRow(scrollRef.current, optionId(active));
   });
   React.useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
@@ -133,9 +179,11 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown") {
       event.preventDefault();
+      revealActive.current = true;
       setActive((i) => Math.min(items.length - 1, i + 1));
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
+      revealActive.current = true;
       setActive((i) => Math.max(0, i - 1));
     } else if (event.key === "Enter" && items[active]) {
       event.preventDefault();
@@ -173,16 +221,24 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
   const spinner = waiting ? <LoaderCircleIcon className="size-4 shrink-0 animate-spin text-text-3" aria-hidden="true" /> : null;
   const results = (
     <div id={listId} role="listbox" aria-label={tr("Risultati")}>
-      <SpotlightResults blocks={blocks} query={query} active={active} currency={currency} phone={phone} moreMovements={moreMovements} optionId={optionId} onPick={pick} onHover={setActive} />
+      <SpotlightResults blocks={blocks} query={highlight} active={active} currency={currency} phone={phone} moreMovements={moreMovements} optionId={optionId} onPick={pick} onHover={setActive} />
     </div>
   );
   const empty = query !== "" && blocks.length === 0 && !waiting;
 
   if (phone) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label={tr("Cerca in BuddyBudget")}>
-        <motion.div className={cn("absolute inset-0", SPOTLIGHT_COVER)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} onClick={onClose} />
+      <div
+        className="fixed inset-x-0 top-0 z-50 flex flex-col"
+        // Drawn over the visible part of the screen only: above the keyboard, where iOS has panned to.
+        style={visible ? { top: visible.top, height: visible.height } : { bottom: 0 }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={tr("Cerca in BuddyBudget")}
+      >
+        <motion.div className={cn("fixed inset-0", SPOTLIGHT_COVER)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} onClick={onClose} />
         <motion.div
+          ref={scrollRef}
           className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -194,7 +250,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
         </motion.div>
         <motion.div
           className="relative flex items-center gap-2 px-3 pt-2"
-          style={{ paddingBottom: `calc(max(env(safe-area-inset-bottom), 0.75rem) + ${keyboard}px)` }}
+          style={{ paddingBottom: visible?.keyboard ? "0.5rem" : "max(env(safe-area-inset-bottom), 0.75rem)" }}
           initial={{ y: 90, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 90, opacity: 0, transition: { duration: 0.18 } }}
@@ -242,7 +298,7 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
             <div ref={contentRef}>
               {open ? (
                 <>
-                  <div className="max-h-[min(58vh,560px)] overflow-y-auto overscroll-contain border-t border-glass-edge px-2 pt-3 pb-2">
+                  <div ref={scrollRef} className="max-h-[min(58vh,560px)] overflow-y-auto overscroll-contain border-t border-glass-edge px-2 pt-3 pb-2">
                     {examples ? <SpotlightExamples onPick={tryExample} className="pb-2" /> : null}
                     {empty ? <p className="px-3 py-6 text-center text-sm text-text-2">{tr("Niente con «{0}». Prova con una parola sola, un importo come 45,90 o un ISIN.", { 0: text.trim() })}</p> : examples ? null : results}
                   </div>

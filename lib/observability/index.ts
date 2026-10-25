@@ -76,6 +76,7 @@ export type {
   NotificationDigestSection,
   NotificationDigestSectionOutcome,
   NotificationUnsubscribeSource,
+  SearchAnswerLabel,
   SearchMovementScan,
   CommandAiOutcome,
   CronName,

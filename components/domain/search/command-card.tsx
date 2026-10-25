@@ -103,13 +103,13 @@ export function CommandCard({ draft, instrument, selected, currency, phone = fal
   );
 }
 
-/** «Chiedi all'AI» for a sentence the rules could not read, with what happened after asking. */
+/** «Chiedi all'AI» for a sentence or a question the rules could not read, with what happened after asking. */
 export function AiRow({ status, selected, phone = false, id, onPick, onHover }: { status: string; selected: boolean; phone?: boolean; id: string; onPick: () => void; onHover?: () => void }) {
   const { t: tr } = useLocalization();
   const lines: Record<string, string> = {
-    idle: "Prova a capire la frase e prepara il modulo",
+    idle: "Prova a capire la frase o la domanda",
     loading: "Sto leggendo la frase…",
-    none: "Non sembra una spesa, un'entrata o un'operazione",
+    none: "Non sembra una spesa, un'operazione o una domanda sui tuoi soldi",
     invalid: "Frase troppo lunga o senza parole",
     disabled: "Prima accendi l'assistente AI: tocca per aprire le Impostazioni",
     unavailable: "Non disponibile in questa versione",

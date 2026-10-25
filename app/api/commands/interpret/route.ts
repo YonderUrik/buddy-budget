@@ -6,9 +6,11 @@ import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { commandModel, interpretWithModel } from "@/lib/commands/ai";
 import { cacheInterpretation, cachedInterpretation, checkSentence, consumeCommandQuota } from "@/lib/commands/guard";
-import { COMMAND_LANGUAGES, COMMAND_MAX_LENGTH } from "@/lib/commands/types";
+import { COMMAND_LANGUAGES, COMMAND_MAX_LENGTH, type Interpretation } from "@/lib/commands/types";
 import { bindRequestUser, recordCommandAiRequest, requestLogger, withRoute, type CommandAiOutcome } from "@/lib/observability";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
+import { answerQuestion } from "@/lib/search/answers";
+import { MOVEMENT_SCAN_LIMIT, windowStart } from "@/lib/search/server";
 
 /** One short model call (8 s timeout) answered in the request: an exception to the job standard, like «Chiedi all'AI» on a transaction. */
 export const maxDuration = 20;
@@ -37,9 +39,10 @@ const QUOTA_REFUSAL = {
 
 /**
  * POST /api/commands/interpret — «Chiedi all'AI» in «Cerca»: a sentence the rules could not read becomes a draft to
- * add. Answers `{ status }`: ok (with `draft`), none (not something to add), invalid, disabled (no AI consent),
- * unavailable (public demo, no key or model), limited (the user's limit), busy (the service's daily ceiling), failed.
- * It never writes: the draft only fills a form.
+ * add, or a question about the user's data that this server answers (the model only reads the sentence, never the data).
+ * Answers `{ status }`: ok (with `draft`, or `answer`: the answer row), none (neither), invalid, disabled (no AI
+ * consent), unavailable (public demo, no key or model), limited (the user's limit), busy (the service's daily ceiling),
+ * failed. It never writes: the draft only fills a form.
  */
 async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -68,8 +71,17 @@ async function handlePost(request: NextRequest) {
   if (!apiKey || !model) return done("unavailable", "unavailable");
 
   const today = trustedToday(parsed.data.today);
+  /** The browser's answer for an interpretation: the draft as it is, a question computed here on the user's own rows. */
+  const reply = async (interpretation: Interpretation | null, outcome: CommandAiOutcome, modelMs?: number) => {
+    if (interpretation === null) return done("none", outcome, {}, modelMs);
+    if (interpretation.type === "draft") return done("ok", outcome, { draft: interpretation.draft }, modelMs);
+    const now = new Date(`${today}T12:00:00Z`);
+    const { hit } = await answerQuestion(userId, interpretation.question, { windowStart: windowStart(now), scanLimit: MOVEMENT_SCAN_LIMIT, source: "ai", now });
+    // A question naming something the user does not have («saldo» of an unknown account) has no row to show.
+    return hit ? done("ok", outcome, { answer: hit }, modelMs) : done("none", outcome, {}, modelMs);
+  };
   const cached = await cachedInterpretation(userId, sentence, today);
-  if (cached !== undefined) return cached ? done("ok", "cached", { draft: cached }) : done("none", "cached");
+  if (cached !== undefined) return reply(cached, "cached");
   const quota = await consumeCommandQuota(userId);
   if (quota !== "ok") {
     const refusal = QUOTA_REFUSAL[quota];
@@ -79,9 +91,10 @@ async function handlePost(request: NextRequest) {
 
   const started = performance.now();
   try {
-    const draft = await interpretWithModel(sentence, { apiKey, model, language: parsed.data.language, today });
-    await cacheInterpretation(userId, sentence, today, draft);
-    return draft ? done("ok", "ok", { draft }, performance.now() - started) : done("none", "none", {}, performance.now() - started);
+    const interpretation = await interpretWithModel(sentence, { apiKey, model, language: parsed.data.language, today });
+    const modelMs = performance.now() - started;
+    await cacheInterpretation(userId, sentence, today, interpretation);
+    return reply(interpretation, interpretation === null ? "none" : interpretation.type === "question" ? "question" : "ok", modelMs);
   } catch (error) {
     log.warn("commands.ai.failed", { error });
     return done("failed", "failed", {}, performance.now() - started);

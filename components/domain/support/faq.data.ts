@@ -21,9 +21,9 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
   },
   {
     id: "cerca",
-    question: "Come trovo un movimento o aggiungo qualcosa scrivendo una frase?",
+    question: "Come trovo un movimento, chiedo quanto ho speso o aggiungo qualcosa scrivendo una frase?",
     answer:
-      "Usa «Cerca»: sul computer il campo in alto a destra o ⌘K (Ctrl K su Windows), sul telefono tira giù la pagina dall'alto o tocca «Cerca» in «Altro». Trovi movimenti, conti, titoli, abbonamenti e impostazioni. Se scrivi una frase come «pagato 12 € al bar ieri» si apre il modulo già compilato, da controllare e salvare; se non la capisce puoi chiederla all'AI, che riceve soltanto la frase e solo se hai acceso l'assistente.",
+      "Usa «Cerca»: sul computer il campo in alto a destra o ⌘K (Ctrl K su Windows), sul telefono tira giù la pagina dall'alto o tocca «Cerca» in «Altro». Trovi movimenti, conti, titoli, abbonamenti e impostazioni. Puoi anche chiedere «quanto ho speso da Netflix nel 2026?», «spese di ottobre», «saldo», «patrimonio», «quanto vale Apple» o «prossima rata»: la cifra la calcola l'app sui tuoi dati e il risultato apre i movimenti che somma (con le parole, conta gli ultimi 24 mesi). Se scrivi una frase come «pagato 12 € al bar ieri» si apre il modulo già compilato, da controllare e salvare. Se non capisce la frase o la domanda puoi chiederla all'AI, che riceve soltanto la frase, mai le tue cifre, e solo se hai acceso l'assistente.",
   },
   {
     id: "categoria-sbagliata",

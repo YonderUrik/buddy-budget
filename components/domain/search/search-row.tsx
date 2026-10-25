@@ -1,6 +1,10 @@
 "use client";
 
-/** One result of «Cerca», in the Spotlight style: round icon, title with the typed words in bold, a grey second part, the amount on the right. */
+/**
+ * One result of «Cerca», in the Spotlight style: round icon (or the merchant logo, or the security's mark), title with the
+ * typed words in bold, a grey second part, the amount on the right. An answer to a question writes its own title and
+ * line from the figures the server computed.
+ */
 
 import {
   BarChart3Icon,
@@ -13,6 +17,7 @@ import {
   ReceiptTextIcon,
   RepeatIcon,
   SettingsIcon,
+  SigmaIcon,
   TagIcon,
   TargetIcon,
   TrendingUpIcon,
@@ -20,13 +25,17 @@ import {
   WalletIcon,
   type LucideIcon,
 } from "lucide-react";
+import { MerchantLogo } from "@/components/domain/categorization/light";
+import { InstrumentIcon } from "@/components/domain/investments/light";
 import { formatCurrency } from "@/lib/format";
 import { useLocalization } from "@/lib/localization/provider";
+import { answerLine, answerTitle } from "@/lib/search/answer-text";
 import { matchRanges } from "@/lib/search/normalize";
 import type { SearchHit, SearchIcon } from "@/lib/search/types";
 import { cn } from "@/lib/utils";
 
 export const SEARCH_ICONS: Record<SearchIcon, LucideIcon> = {
+  totale: SigmaIcon,
   movimento: ReceiptTextIcon,
   conto: LandmarkIcon,
   titolo: TrendingUpIcon,
@@ -67,6 +76,21 @@ function movementLine(hit: SearchHit, locale: string, tr: (key: string, values?:
   return (hit.count ?? 1) > 1 ? tr("{0} movimenti · l'ultimo il {1}", { 0: String(hit.count), 1: date }) : `${date} · ${hit.account ?? ""}`;
 }
 
+/** The round tile on the left: the merchant logo or the security's mark when there is one, the kind's icon otherwise. */
+function RowTile({ hit, big, lit }: { hit: SearchHit; big: boolean; lit: boolean }) {
+  const Icon = SEARCH_ICONS[hit.icon];
+  const size = big ? "size-10" : "size-8";
+  const tile = cn(
+    "flex shrink-0 items-center justify-center rounded-full",
+    size,
+    hit.icon === "azione" ? "bg-sun text-on-sun" : lit ? "bg-spotlight-lit-icon text-on-spotlight-lit-icon" : "bg-foreground/[0.07] text-primary"
+  );
+  const icon = <Icon className={big ? "size-5" : "size-4"} aria-hidden="true" />;
+  if (hit.instrument) return <InstrumentIcon type={hit.instrument.type} name={hit.instrument.name} instrumentId={hit.instrument.id} className={cn(size, "rounded-full")} />;
+  if (hit.logoPath) return <MerchantLogo name={hit.title} logoPath={hit.logoPath} className={size} fallback={<span className={cn(tile, "size-full")}>{icon}</span>} />;
+  return <span className={tile}>{icon}</span>;
+}
+
 export interface SearchRowProps {
   hit: SearchHit;
   query: string;
@@ -83,11 +107,11 @@ export interface SearchRowProps {
 
 export function SearchRow({ hit, query, selected, top = false, phone = false, currency, id, onPick, onHover }: SearchRowProps) {
   const { t: tr, locale } = useLocalization();
-  const Icon = SEARCH_ICONS[hit.icon];
-  const action = hit.icon === "azione";
+  const answer = hit.answer ? { ...hit, answer: hit.answer } : null;
   // Server subtitles are Italian keys («Conto», «Abbonamento mensile»); names and ISINs pass through unchanged.
-  const subtitle = hit.date ? movementLine(hit, locale, tr) : hit.subtitle ? tr(hit.subtitle) : undefined;
+  const subtitle = answer ? answerLine(answer, locale, currency, tr) : hit.date ? movementLine(hit, locale, tr) : hit.subtitle ? tr(hit.subtitle) : undefined;
   const lit = selected && !phone;
+  const income = hit.amount !== undefined && hit.amount > 0 && (hit.icon === "movimento" || (hit.answer?.kind === "totale" && hit.answer.direction === "entrate"));
   return (
     <div role="option" id={id} aria-selected={selected}>
       <button
@@ -101,23 +125,15 @@ export function SearchRow({ hit, query, selected, top = false, phone = false, cu
           lit ? "bg-spotlight-lit text-on-spotlight-lit" : phone ? "active:bg-foreground/5" : "hover:bg-foreground/5"
         )}
       >
-        <span
-          className={cn(
-            "flex shrink-0 items-center justify-center rounded-full",
-            top || phone ? "size-10" : "size-8",
-            action ? "bg-sun text-on-sun" : lit ? "bg-spotlight-lit-icon text-on-spotlight-lit-icon" : "bg-foreground/[0.07] text-primary"
-          )}
-        >
-          <Icon className={top || phone ? "size-5" : "size-4"} aria-hidden="true" />
-        </span>
+        <RowTile hit={hit} big={top || phone} lit={lit} />
         <span className="min-w-0 flex-1">
           <span className={cn("block truncate leading-tight", top ? "text-[17px]" : "text-[15px]")}>
-            <Highlighted text={hit.title} query={query} />
+            {answer ? answerTitle(answer, locale, tr) : <Highlighted text={hit.title} query={query} />}
           </span>
           {subtitle ? <span className={cn("block truncate text-xs leading-snug", lit ? "text-on-spotlight-lit-2" : "text-text-3")}>{subtitle}</span> : null}
         </span>
         {hit.amount !== undefined ? (
-          <span className={cn("shrink-0 font-heading text-sm tabular-nums", lit ? "text-on-spotlight-lit" : hit.amount > 0 && hit.icon === "movimento" ? "text-pos" : "text-text-2")}>
+          <span className={cn("shrink-0 font-heading tabular-nums", answer ? "text-base font-semibold" : "text-sm", lit ? "text-on-spotlight-lit" : income ? "text-pos" : answer ? "text-foreground" : "text-text-2")}>
             {formatCurrency(hit.amount, currency, { locale })}
           </span>
         ) : null}

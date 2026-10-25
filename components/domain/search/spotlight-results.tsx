@@ -2,7 +2,8 @@
 
 /**
  * The result blocks of «Cerca», shared by the desktop panel and the phone screen: a grey title per block and its rows.
- * On the phone every block is a rounded card, like the iOS lists. New rows fade in from slightly below, a few at a time.
+ * On the phone every block is a rounded card, like the iOS lists. New rows fade in (on a computer also from slightly
+ * below, a few at a time).
  */
 
 import { motion } from "motion/react";
@@ -44,7 +45,8 @@ export function SpotlightResults({ blocks, query, active, currency, phone = fals
               const position = starts[blockIndex] + itemIndex;
               const common = { id: optionId(position), selected: position === active, phone, onPick: () => onPick(item, position), onHover: () => onHover(position) };
               return (
-                <motion.div key={item.key} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ ...ROW_ENTER, delay: Math.min(position, STAGGER_ROWS) * 0.018 }}>
+                // On the phone rows only fade: nothing moves under the thumb while the user types.
+                <motion.div key={item.key} initial={phone ? { opacity: 0 } : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ ...ROW_ENTER, delay: phone ? 0 : Math.min(position, STAGGER_ROWS) * 0.018 }}>
                   {item.type === "hit" ? (
                     <SearchRow {...common} hit={item.hit} query={query} top={block.id === "top"} currency={currency} />
                   ) : item.type === "command" ? (

@@ -6,7 +6,9 @@
  * when the user asks («Chiedi all'AI»).
  */
 
+import { parseDataQuestion } from "./question";
 import { COMMAND_MAX_LENGTH, COMMAND_MAX_VALUE, type CommandCurrency, type CommandDraft, type CommandKind, type CommandLanguage } from "./types";
+import { fold, MONTHS } from "./words";
 
 interface Token {
   raw: string;
@@ -14,7 +16,6 @@ interface Token {
   used: boolean;
 }
 
-const fold = (value: string) => value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLocaleLowerCase("it");
 
 /** Verbs and nouns that say what the sentence is, per language (folded, no accents). */
 const VERBS: Record<CommandLanguage, Record<CommandKind, string[]>> = {
@@ -110,20 +111,6 @@ const WEEKDAYS: string[][] = [
   ["sabato", "saturday", "samstag"],
 ];
 
-const MONTHS: string[][] = [
-  ["gennaio", "gen", "january", "jan", "januar"],
-  ["febbraio", "feb", "february", "februar"],
-  ["marzo", "mar", "march", "marz"],
-  ["aprile", "apr", "april"],
-  ["maggio", "mag", "may", "mai"],
-  ["giugno", "giu", "june", "jun", "juni"],
-  ["luglio", "lug", "july", "jul", "juli"],
-  ["agosto", "ago", "august", "aug"],
-  ["settembre", "set", "september", "sep", "sept"],
-  ["ottobre", "ott", "october", "oct", "oktober", "okt"],
-  ["novembre", "nov", "november"],
-  ["dicembre", "dic", "december", "dec", "dezember", "dez"],
-];
 const monthIndex = (word: string) => MONTHS.findIndex((names) => names.includes(word.replace(/\.$/, "")));
 
 const isoDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -254,9 +241,9 @@ function takeVerb(tokens: Token[]): { kind: CommandKind; language: CommandLangua
   return null;
 }
 
-/** A question («quanto ho speso a ottobre?», «how much did I spend»): searched, never read as something to add. */
+/** A question («quanto ho speso a ottobre?», «soldi spesi su Serenis nel 2026», «saldo Fineco»): searched or answered, never read as something to add. */
 export function isQuestion(text: string): boolean {
-  if (text.includes("?")) return true;
+  if (text.includes("?") || parseDataQuestion(text) !== null) return true;
   const first = text.trim().split(/\s+/)[0] ?? "";
   return QUESTION_WORDS.has(fold(first));
 }

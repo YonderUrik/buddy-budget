@@ -33,7 +33,7 @@ describe("buildSidebarPortfolio", () => {
     expect(p.totalGain).toBeCloseTo(110, 6);
     expect(p.totalGainPct).toBeCloseTo(0.11, 6);
     expect(p.holdings).toEqual([
-      { instrumentId: "i1", label: "VWCE", name: "Vanguard All-World", value: 1110, dayChangePct: 111 / 110 - 1, spark: [110, 111], triggeredAlerts: 1 },
+      { instrumentId: "i1", label: "VWCE", name: "Vanguard All-World", value: 1110, gain: expect.closeTo(110, 6), dayChangePct: 111 / 110 - 1, spark: [110, 111], triggeredAlerts: 1 },
     ]);
   });
 

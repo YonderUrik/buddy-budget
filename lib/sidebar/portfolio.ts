@@ -51,6 +51,7 @@ export function buildSidebarPortfolio(input: BuildSidebarPortfolioInput): Sideba
       label: signal?.label ?? row.instrument.name,
       name: row.instrument.name,
       value: row.value,
+      gain: row.unrealizedGain,
       dayChangePct: signal?.dayChangePct ?? null,
       spark: signal?.spark ?? [],
       triggeredAlerts: signal?.triggeredAlerts ?? 0,

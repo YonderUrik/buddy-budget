@@ -2,17 +2,19 @@
 
 /**
  * State of the «Cerca» panel, apart from how it looks: what the user typed turned into blocks of results, the draft a
- * sentence describes («comprato 3 Apple a 50 € oggi»), and «Chiedi all'AI» for the sentences the rules cannot read.
+ * sentence describes («comprato 3 Apple a 50 € oggi»), the answer to a question about the user's data («spese di
+ * ottobre», computed by the server), and «Chiedi all'AI» for the sentences and questions the rules cannot read.
  * Pages and settings are matched in the browser at each keystroke; the user's data comes from `/api/search` after a
  * pause in typing; the AI is asked only when the user picks its row.
  */
 
 import * as React from "react";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { isQuestion, parseCommand, type CommandDraft } from "@/lib/commands";
+import { parseCommand, parseDataQuestion, type CommandDraft } from "@/lib/commands";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { useLocalization } from "@/lib/localization/provider";
 import { track } from "@/lib/analytics";
+import { isUsefulAnswer } from "@/lib/search/answer-text";
 import { arrangeHits, SEARCH_GROUP_TITLES } from "@/lib/search/groups";
 import { foldText, matchScore } from "@/lib/search/normalize";
 import { searchStatic, staticEntriesOf } from "@/lib/search/static-index";
@@ -31,8 +33,8 @@ export const SPOTLIGHT_FILTERS = ["movimenti", "investimenti", "impostazioni", "
 export type SpotlightFilter = (typeof SPOTLIGHT_FILTERS)[number];
 
 const FILTER_GROUPS: Record<SpotlightFilter, SearchGroupId[]> = {
-  movimenti: ["movimenti", "conti", "categorie", "abbonamenti"],
-  investimenti: ["titoli"],
+  movimenti: ["risposte", "movimenti", "conti", "categorie", "abbonamenti"],
+  investimenti: ["risposte", "titoli"],
   impostazioni: ["pagine"],
   aggiungi: ["azioni"],
 };
@@ -97,7 +99,7 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
 
   // The rules read the sentence at every keystroke; an AI answer replaces them only for the sentence it was asked about.
   const ruleDraft = React.useMemo(() => (filter && filter !== "aggiungi" ? null : parseCommand(text)), [text, filter]);
-  const [ai, setAi] = React.useState<{ sentence: string; status: AiStatus; draft: CommandDraft | null }>({ sentence: "", status: "idle", draft: null });
+  const [ai, setAi] = React.useState<{ sentence: string; status: AiStatus; draft: CommandDraft | null; answer: SearchHit | null }>({ sentence: "", status: "idle", draft: null, answer: null });
   const aiForText = ai.sentence === text.trim() ? ai : null;
   const draft = aiForText?.draft ?? ruleDraft;
   const needsInstrument = draft !== null && (draft.kind === "acquisto" || draft.kind === "vendita" || draft.kind === "dividendo");
@@ -115,19 +117,39 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sentence, language, today: localToday() }),
       });
-      if (!response.ok) return { status: "failed" as AiStatus, draft: null };
-      return (await response.json()) as { status: AiStatus; draft?: CommandDraft };
+      if (!response.ok) return { status: "failed" as AiStatus };
+      return (await response.json()) as { status: AiStatus; draft?: CommandDraft; answer?: SearchHit };
     },
-    onMutate: (sentence) => setAi({ sentence, status: "loading", draft: null }),
+    onMutate: (sentence) => setAi({ sentence, status: "loading", draft: null, answer: null }),
     onSuccess: (result, sentence) => {
-      track("search_ai_asked", { outcome: result.status });
-      setAi({ sentence, status: result.status, draft: result.draft ?? null });
+      track("search_ai_asked", { outcome: result.answer ? "question" : result.status });
+      if (result.answer?.answer) track("search_answer_shown", { kind: result.answer.answer.kind, source: "ai" });
+      setAi({ sentence, status: result.status, draft: result.draft ?? null, answer: result.answer ?? null });
     },
-    onError: (_error, sentence) => setAi({ sentence, status: "failed", draft: null }),
+    onError: (_error, sentence) => setAi({ sentence, status: "failed", draft: null, answer: null }),
   });
 
+  // A question about the user's data («spese di ottobre»): the server answers it first; its words are what to highlight.
+  const question = React.useMemo(() => (filter === "aggiungi" || filter === "impostazioni" ? null : parseDataQuestion(text)), [text, filter]);
+  const highlight = question && "subject" in question ? question.subject : query;
+  // While the answer for the latest text is on its way, the previous one is not for what is typed.
+  const stale = server.isPlaceholderData || query !== serverQuery;
+  const ruleAnswer = stale ? undefined : server.data?.hits.find((h) => h.group === "risposte");
+  const aiAnswer = aiForText?.answer ?? null;
+  const shownKinds = React.useRef(new Set<string>());
+  React.useEffect(() => {
+    const kind = ruleAnswer?.answer?.kind;
+    if (!kind || shownKinds.current.has(kind)) return;
+    shownKinds.current.add(kind);
+    track("search_answer_shown", { kind, source: "regole" });
+  }, [ruleAnswer]);
+
   const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const offerAi = !filter && (draft === null || draft.guessed) && !isQuestion(text) && words >= AI_MIN_WORDS && text.trim().length >= AI_MIN_LENGTH && aiForText?.status !== "ok";
+  // A question the rules answered with a figure needs no AI; one they read but could not answer is offered once the answer is in.
+  const answered = ruleAnswer?.answer ? isUsefulAnswer(ruleAnswer.answer) : false;
+  const answerPending = question !== null && (stale || server.isFetching);
+  const offerAi =
+    !filter && (draft === null || draft.guessed) && !answered && !answerPending && aiAnswer === null && words >= AI_MIN_WORDS && text.trim().length >= AI_MIN_LENGTH && aiForText?.status !== "ok";
 
   const blocks = React.useMemo<SpotlightBlock[]>(() => {
     if (query === "") {
@@ -137,27 +159,31 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
     }
     const local = searchStatic(query, productCountry, (key) => tr(key));
     // While the answer for the latest text is on its way, the previous one stays only where it still matches what is typed
-    // («mutuo» results must not lead under «comprato»).
-    const stale = server.isPlaceholderData || query !== serverQuery;
+    // («mutuo» results must not lead under «comprato»); an answer stays only for its own question, and gives way to the AI's.
     const remote = query.length >= SERVER_MIN_LENGTH
       ? (server.data?.hits ?? [])
-          .filter((h) => !stale || matchScore(h.title, query) > 0 || (h.subtitle !== undefined && matchScore(h.subtitle, query) > 0))
+          .filter((h) => (h.group === "risposte" ? !stale && aiAnswer === null : !stale || matchScore(h.title, query) > 0 || (h.subtitle !== undefined && matchScore(h.subtitle, query) > 0)))
           .map((h) => ({ ...h, subtitle: h.subtitle ? tr(h.subtitle) : undefined }))
       : [];
     const allowed = filter ? new Set(FILTER_GROUPS[filter]) : null;
     const hits = [...remote, ...local].filter((h) => !allowed || allowed.has(h.group));
     const result: SpotlightBlock[] = [];
     if (draft) result.push({ id: "comando", title: draft.source === "ai" ? "Capito dall'AI" : "Da aggiungere", items: [{ type: "command", key: "command", draft, instrument }] });
-    const arranged = arrangeHits(hits).map<SpotlightBlock>((b) => ({ id: b.id, title: b.id === "top" ? "Risultato migliore" : SEARCH_GROUP_TITLES[b.id], items: b.hits.map((hit) => ({ type: "hit", key: hit.key, hit })) }));
+    if (aiAnswer) result.push({ id: "ai-risposta", title: "Capito dall'AI", items: [{ type: "hit", key: `ai:${aiAnswer.key}`, hit: aiAnswer }] });
+    const arranged = arrangeHits(hits).map<SpotlightBlock>((b) => ({
+      id: b.id,
+      title: b.id === "top" ? (b.hits[0].group === "risposte" ? SEARCH_GROUP_TITLES.risposte : "Risultato migliore") : SEARCH_GROUP_TITLES[b.id],
+      items: b.hits.map((hit) => ({ type: "hit", key: hit.key, hit })),
+    }));
     const aiBlock: SpotlightBlock = { id: "ai", title: null, items: [{ type: "ai", key: "ai", status: aiForText?.status ?? "idle" }] };
     // The AI row leads when nothing else matched, and closes the list otherwise.
     if (offerAi && arranged.length === 0) result.push(aiBlock);
     result.push(...arranged);
     if (offerAi && arranged.length > 0) result.push(aiBlock);
     return result;
-  }, [query, serverQuery, filter, idle, productCountry, tr, server.data, server.isPlaceholderData, draft, instrument, offerAi, aiForText?.status]);
+  }, [query, filter, idle, productCountry, tr, server.data, stale, draft, instrument, offerAi, aiForText?.status, aiAnswer]);
 
   const items = blocks.flatMap((b) => b.items);
   const waiting = query.length >= SERVER_MIN_LENGTH && (query !== serverQuery || server.isFetching);
-  return { blocks, items, waiting, query, moreMovements: server.data?.moreMovements ?? 0, askAi: () => askAi.mutate(text.trim()) };
+  return { blocks, items, waiting, query, highlight, moreMovements: server.data?.moreMovements ?? 0, askAi: () => askAi.mutate(text.trim()) };
 }

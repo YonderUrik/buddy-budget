@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TradeRepublicError } from "./client";
 import type { TradeRepublicReader } from "./socket";
-import { countBy, describeIssues, describeShape, maskPattern, tradeRepublicDebug } from "./debug";
+import { countBy, describeIssues, describeShape, maskPattern, tradeRepublicDebug, tradeRepublicDebugEnabled } from "./debug";
 
 // TR sends Java-style offsets without a colon (`+0000`), which zod 4's `datetime({ offset: true })` rejects.
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/;
@@ -13,7 +13,8 @@ const eventSchema = z.object({
   // TR sends absent optional fields as explicit nulls (e.g. `cashAccountNumber: null`).
   status: z.string().nullish(), cashAccountNumber: z.string().nullish(), deleted: z.boolean().nullish(),
 });
-const pageSchema = z.object({ items: z.array(eventSchema), cursors: z.object({ after: z.string().nullable().optional() }).optional() });
+// Items are validated one by one, so staging diagnostics can report every malformed item in one pass.
+const pageSchema = z.object({ items: z.array(z.unknown()), cursors: z.object({ after: z.string().nullable().optional() }).optional() });
 const MAX_PAGES = 200;
 const MAX_FETCH_MS = 240_000;
 const MAX_MOVEMENTS = 20_000;
@@ -42,20 +43,38 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
   let after: string | undefined;
   let investmentEvents = 0;
   let unbooked = 0;
-  const reject = (check: string, details: Record<string, unknown> = {}, reason: "invalid-response" | "unsupported-event" | "unavailable" = "invalid-response") => {
+  type Reason = "invalid-response" | "unsupported-event" | "unavailable";
+  const reject = (check: string, details: Record<string, unknown> = {}, reason: Reason = "invalid-response") => {
     tradeRepublicDebug("rejected", { check, ...details });
     return new TradeRepublicError(reason);
   };
+  // Staging only: item-level problems are collected across the whole timeline and reported together,
+  // then the import still fails. Production stops at the first problem.
+  const collect = tradeRepublicDebugEnabled();
+  const problems: { check: string; reason: Reason; key: string }[] = [];
+  const itemProblem = (check: string, details: Record<string, unknown>, reason: Reason = "invalid-response") => {
+    if (!collect) throw reject(check, details, reason);
+    // Grouped across pages: the page number would split identical problems into separate rows.
+    const grouped = { ...details }; delete grouped.page;
+    problems.push({ check, reason, key: `${check} ${JSON.stringify(grouped)}` });
+  };
+  const allTypes: string[] = [];
   for (let page = 0; page < MAX_PAGES; page++) {
     if (Date.now() - startedAt > MAX_FETCH_MS) throw reject("fetch-timeout", { page }, "unavailable");
     const rawPage = await reader.read("timelineTransactions", after);
     debugPage(page, rawPage);
     const parsed = pageSchema.safeParse(rawPage);
     if (!parsed.success) throw reject("page-schema", { page, issues: describeIssues(parsed.error.issues) });
-    for (const event of parsed.data.items) {
+    for (const rawItem of parsed.data.items) {
+      const rawType = rawItem && typeof rawItem === "object" && "eventType" in rawItem ? String(rawItem.eventType) : "missing";
+      const rawStatus = rawItem && typeof rawItem === "object" && "status" in rawItem ? String(rawItem.status) : "missing";
+      allTypes.push(`${rawType}/${rawStatus}`);
+      const item = eventSchema.safeParse(rawItem);
+      if (!item.success) { itemProblem("item-schema", { page, eventType: rawType, issues: describeIssues(item.error.issues) }); continue; }
+      const event = item.data;
       const fingerprint = JSON.stringify(event);
       if (seen.has(event.id)) {
-        if (seen.get(event.id) !== fingerprint) throw reject("duplicate-id-changed", { page, eventType: event.eventType });
+        if (seen.get(event.id) !== fingerprint) itemProblem("duplicate-id-changed", { page, eventType: event.eventType });
         continue;
       }
       seen.set(event.id, fingerprint);
@@ -64,19 +83,23 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
       if (event.deleted) { unbooked++; continue; }
       if (event.status && !BOOKED_STATUSES.has(event.status)) {
         if (UNBOOKED_STATUSES.has(event.status)) { unbooked++; continue; }
-        throw reject("unknown-status", { page, status: event.status, eventType: event.eventType });
+        itemProblem("unknown-status", { page, status: event.status, eventType: event.eventType }); continue;
       }
       if (INVESTMENT_TYPES.has(event.eventType)) { investmentEvents++; continue; }
-      if (!CASH_TYPES.has(event.eventType)) throw reject("unsupported-event-type", { page, eventType: event.eventType, status: event.status ?? null }, "unsupported-event");
-      if (event.amount.currency !== "EUR") throw reject("foreign-currency", { page, eventType: event.eventType, currency: event.amount.currency });
-      if (Math.abs(event.amount.value) >= 1e10) throw reject("amount-out-of-range", { page, eventType: event.eventType });
-      if (event.timestamp.slice(0, 10) > today) throw reject("future-date", { page, eventType: event.eventType, timestamp: maskPattern(event.timestamp) });
+      if (!CASH_TYPES.has(event.eventType)) { itemProblem("unsupported-event-type", { page, eventType: event.eventType, status: event.status ?? null }, "unsupported-event"); continue; }
+      if (event.amount.currency !== "EUR") { itemProblem("foreign-currency", { page, eventType: event.eventType, currency: event.amount.currency }); continue; }
+      if (Math.abs(event.amount.value) >= 1e10) { itemProblem("amount-out-of-range", { page, eventType: event.eventType }); continue; }
+      if (event.timestamp.slice(0, 10) > today) { itemProblem("future-date", { page, eventType: event.eventType, timestamp: maskPattern(event.timestamp) }); continue; }
       movements.push({ id: event.id, date: event.timestamp.slice(0, 10), amount: event.amount.value.toFixed(2), description: event.title });
     }
     await onProgress?.(seen.size);
     const cursor = parsed.data.cursors?.after;
     if (!cursor) {
-      tradeRepublicDebug("timeline.done", { pages: page + 1, events: seen.size, movements: movements.length, investmentEvents, unbooked });
+      tradeRepublicDebug("timeline.done", { pages: page + 1, events: seen.size, movements: movements.length, investmentEvents, unbooked, problems: problems.length, typesAndStatuses: countBy(allTypes, value => value) });
+      if (problems.length) {
+        tradeRepublicDebug("timeline.problems", { total: problems.length, byKind: countBy(problems, problem => problem.key) });
+        throw new TradeRepublicError(problems[0].reason);
+      }
       return { balance: cash.data[0].amount.toFixed(2), movements, investmentEvents };
     }
     if (cursors.has(cursor)) throw reject("repeated-cursor", { page });

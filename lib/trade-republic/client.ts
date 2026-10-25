@@ -1,5 +1,6 @@
 /** Private Trade Republic web API adapter. Never expose cookies or provider responses to the browser. */
 import { createHash } from "node:crypto";
+import { describeError, tradeRepublicDebug } from "./debug";
 
 const API_ORIGIN = "https://api.traderepublic.com";
 const LOGIN_PATH = "/api/v2/auth/web/login";
@@ -43,7 +44,8 @@ export function createTradeRepublicClient(session: TradeRepublicSession, fetcher
         Cookie: Object.entries(session.cookies).map(([name, value]) => `${name}=${value}`).join("; "),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    }).catch(() => { throw new TradeRepublicError("unavailable"); });
+    }).catch(error => { tradeRepublicDebug("http.network_error", { method, path: debugPath(path), error: describeError(error) }); throw new TradeRepublicError("unavailable"); });
+    tradeRepublicDebug("http.response", { method, path: debugPath(path), status: response.status, contentType: response.headers.get("content-type"), setCookies: response.headers.getSetCookie().length });
     if (!response.ok) {
       throw new TradeRepublicError(response.status === 429 ? "rate-limited" : response.status === 401 || response.status === 403 ? "expired" : "unavailable");
     }
@@ -53,13 +55,13 @@ export function createTradeRepublicClient(session: TradeRepublicSession, fetcher
       if (separator < 1) continue;
       const name = pair.slice(0, separator);
       const value = pair.slice(separator + 1);
-      if (!/^[\w-]+$/.test(name) || /[\r\n;]/.test(value)) throw new TradeRepublicError("invalid-response");
+      if (!/^[\w-]+$/.test(name) || /[\r\n;]/.test(value)) { tradeRepublicDebug("http.invalid_cookie", { path: debugPath(path) }); throw new TradeRepublicError("invalid-response"); }
       if (value && !/;\s*max-age=0(?:;|$)/i.test(cookie)) session.cookies[name] = value;
       else delete session.cookies[name];
     }
     if (!expectJson || response.status === 204) return null;
     try { return await response.json(); }
-    catch { throw new TradeRepublicError("invalid-response"); }
+    catch { tradeRepublicDebug("http.invalid_json", { method, path: debugPath(path) }); throw new TradeRepublicError("invalid-response"); }
   }
   function processPath(): string {
     if (!session.processId) throw new TradeRepublicError("expired");
@@ -90,4 +92,9 @@ export function createTradeRepublicClient(session: TradeRepublicSession, fetcher
       await request(`${processPath()}/authenticator-verification`, "POST", { code });
     },
   };
+}
+
+/** Login process ids are one-use secrets: staging logs show the route only. */
+function debugPath(path: string): string {
+  return path.replace(/\/processes\/[^/]+/, "/processes/:id");
 }

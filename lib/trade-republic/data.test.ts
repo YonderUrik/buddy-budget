@@ -11,6 +11,13 @@ describe("Trade Republic direct cash reader", () => {
     expect(api.read.mock.calls).toEqual([["cash"], ["timelineTransactions", undefined], ["timelineTransactions", "next"]]);
     expect(progress).toHaveBeenLastCalledWith(3);
   });
+  it("accepts Trade Republic's colon-less offsets and skips movements that were never booked", async () => {
+    const booked = { ...event("booked"), timestamp: "2026-10-01T10:00:00.016+0000" };
+    const cancelled = { ...event("cancelled"), status: "CANCELED" };
+    const result = await readTradeRepublicCash(reader({ items: [booked, cancelled, { ...event("pending"), status: "PENDING" }] }), "2026-10-25");
+    expect(result.movements).toEqual([{ id: "booked", date: "2026-10-01", amount: "-12.34", description: "Synthetic merchant" }]);
+    await expect(readTradeRepublicCash(reader({ items: [{ ...event("odd"), status: "SOMETHING_NEW" }] }), "2026-10-25")).rejects.toThrow("invalid-response");
+  });
   it("imports dividend cash without treating securities purchases as expenses", async () => {
     const result = await readTradeRepublicCash(reader({ items: [event("dividend", "SSP_CORPORATE_ACTION_CASH", 2)] }), "2026-10-25");
     expect(result.movements[0].amount).toBe("2.00");

@@ -14,6 +14,7 @@ import { createTradeRepublicClient, TradeRepublicError } from "./client";
 import { openTradeRepublicSession, sealTradeRepublicSession } from "./session";
 import { openTradeRepublicReader } from "./socket";
 import { readTradeRepublicCash } from "./data";
+import { describeError, tradeRepublicDebug } from "./debug";
 
 /** Reserve the existing global sync job and account lock before scheduling background work. */
 export async function prepareTradeRepublicSync(userId: string, accountId: string, initial = false) {
@@ -36,22 +37,27 @@ export async function runTradeRepublicSync(userId: string, accountId: string, jo
   let reader: Awaited<ReturnType<typeof openTradeRepublicReader>> | undefined;
   try {
     const [connection] = await db.select().from(tradeRepublicConnections).where(and(eq(tradeRepublicConnections.userId, userId), eq(tradeRepublicConnections.accountId, accountId)));
+    tradeRepublicDebug("sync.start", { jobId, connection: !!connection, status: connection?.status ?? null });
     if (!connection) throw new TradeRepublicError("expired");
     activeSession = connection.session;
-    if (await getUserCurrency(userId) !== "EUR") throw new TradeRepublicError("invalid-response");
+    const currency = await getUserCurrency(userId);
+    if (currency !== "EUR") { tradeRepublicDebug("rejected", { check: "user-currency", currency }); throw new TradeRepublicError("invalid-response"); }
     const session = openTradeRepublicSession(connection.session);
+    tradeRepublicDebug("sync.session_opened", { cookieCount: Object.keys(session.cookies).length });
     await update({ phase: "balance" });
     await createTradeRepublicClient(session).refresh();
+    tradeRepublicDebug("sync.refreshed", { cookieCount: Object.keys(session.cookies).length });
     reader = await openTradeRepublicReader(session);
     await update({ phase: "fetching" });
     const data = await readTradeRepublicCash(reader, new Date().toISOString().slice(0, 10), async processed => { await update({ processed }); });
     reader.close(); reader = undefined;
+    tradeRepublicDebug("sync.fetched", { movements: data.movements.length, investmentEvents: data.investmentEvents });
     const categoryId = await getFallbackCategoryId(userId);
     await update({ phase: "saving", total: data.movements.length, processed: 0 });
     const inserted = await db.transaction(async tx => {
       // Serialize with reconnects and deletion; verify ownership and the session again under the lock.
       const [owned] = await tx.select().from(tradeRepublicConnections).where(and(eq(tradeRepublicConnections.id, connection.id), eq(tradeRepublicConnections.userId, userId))).for("update");
-      if (!owned || owned.session !== connection.session) throw new TradeRepublicError("unavailable");
+      if (!owned || owned.session !== connection.session) { tradeRepublicDebug("rejected", { check: "session-changed", owned: !!owned }); throw new TradeRepublicError("unavailable"); }
       let count = 0;
       for (let start = 0; start < data.movements.length; start += 50) {
         const chunk = data.movements.slice(start, start + 50);
@@ -69,6 +75,7 @@ export async function runTradeRepublicSync(userId: string, accountId: string, jo
     logger.info("trade_republic.sync.completed", { inserted, skipped: data.investmentEvents });
   } catch (error) {
     const expired = error instanceof TradeRepublicError && error.reason === "expired";
+    tradeRepublicDebug("sync.error", error instanceof TradeRepublicError ? { reason: error.reason } : { reason: "internal", error: describeError(error) });
     if (expired && activeSession) await db.update(tradeRepublicConnections).set({ status: "expired", session: "" }).where(and(eq(tradeRepublicConnections.userId, userId), eq(tradeRepublicConnections.accountId, accountId), eq(tradeRepublicConnections.session, activeSession)));
     await update({ phase: expired ? "expired" : "error" });
     recordTradeRepublicRequest("sync", "error", performance.now() - started);

@@ -8,13 +8,14 @@ import { tradeRepublicConnections } from "@/lib/db/schema/trade-republic";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { createTradeRepublicClient, TradeRepublicError, type TradeRepublicSession } from "./client";
 import { sealTradeRepublicSession } from "./session";
+import { describeIssues, tradeRepublicDebug } from "./debug";
 
 /** Verify the provider identity again on each connection, preventing cross-account reconnection. */
 export async function connectTradeRepublic(userId: string, session: TradeRepublicSession) {
   const client = createTradeRepublicClient(session);
   await client.refresh();
   const result = z.object({ personId: z.string().min(1), cashAccount: z.object({ iban: z.string().min(1) }) }).safeParse(await client.account());
-  if (!result.success) throw new TradeRepublicError("invalid-response");
+  if (!result.success) { tradeRepublicDebug("rejected", { check: "account-schema", issues: describeIssues(result.error.issues) }); throw new TradeRepublicError("invalid-response"); }
   const externalAccountHash = createHash("sha256").update(`${result.data.personId}:${result.data.cashAccount.iban}`).digest("hex");
   // The approval process is one-use and is no longer needed once the account has been verified.
   delete session.processId;

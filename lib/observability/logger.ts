@@ -102,6 +102,8 @@ export interface LogFields {
    * see `lib/auth/otp-dev-log.ts`). It is a short-lived secret: no other event may carry it.
    */
   devCode?: string;
+  /** Staging-only Trade Republic diagnostics (`lib/trade-republic/debug.ts`): JSON of shapes, enums, counts and masked patterns, never values. */
+  debug?: string;
   error?: unknown;
 }
 

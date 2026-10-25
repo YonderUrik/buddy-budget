@@ -7,7 +7,7 @@ import { getUserCurrency } from "@/lib/investments/operations";
 import { rejectIfDemoActive } from "@/lib/start/demo";
 import { resolveProfile } from "@/lib/localization/config";
 import { bindRequestUser, requestLogger, recordTradeRepublicRequest, withRoute } from "@/lib/observability";
-import { createTradeRepublicClient, TradeRepublicError, connectTradeRepublic, prepareTradeRepublicSync, runTradeRepublicSync, readPendingLogin, savePendingLogin, clearPendingLogin, allowTradeRepublicAttempt, withTradeRepublicLoginLock } from "@/lib/trade-republic";
+import { createTradeRepublicClient, TradeRepublicError, connectTradeRepublic, prepareTradeRepublicSync, runTradeRepublicSync, readPendingLogin, savePendingLogin, clearPendingLogin, allowTradeRepublicAttempt, withTradeRepublicLoginLock, tradeRepublicDebug, describeError } from "@/lib/trade-republic";
 
 export const maxDuration = 300;
 const inputSchema = z.discriminatedUnion("action", [
@@ -70,6 +70,7 @@ async function handlePost(request: NextRequest) {
     return response ?? Response.json({ error: "Una richiesta è già in corso. Riprova tra poco." }, { status: 409 });
   } catch (error) {
     const reason = error instanceof TradeRepublicError ? error.reason : "unavailable";
+    tradeRepublicDebug("login.error", { action: input.action, ...(error instanceof TradeRepublicError ? { reason } : { reason: "internal", error: describeError(error) }) });
     requestLogger().warn("trade_republic.login.failed", { reason });
     recordTradeRepublicRequest("login", "error", performance.now() - started);
     const messages = {

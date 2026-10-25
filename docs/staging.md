@@ -151,6 +151,36 @@ denied. Retain LAN SSH until private access has been tested.
 
 See [Tailscale's Linux installation guide](https://tailscale.com/docs/install/linux).
 
+### Deploy a branch for testing
+
+After this workflow is merged to the default branch, open GitHub **Actions →
+Deploy branch to staging → Run workflow**. Leave the workflow itself on `main`,
+enter the repository branch to test in **branch**, and start the run.
+
+The workflow resolves the branch to one exact commit, runs lint, type checks and
+both database-backed test shards, and builds app, migrator and CSV worker images
+with separate `staging-<commit>` tags. It publishes a `staging-request` only when
+all checks and builds pass. It does not publish production, `main` or `latest` tags.
+
+The server's `buddybudget-staging-manual.timer` checks these explicit requests
+every two minutes. It backs up the database and deploys the selected images using the
+current reviewed server configuration, preserving hostname, network controls and
+secrets even when the selected branch predates the staging setup. Only a healthy
+rollout updates `current.json`; failed rollouts retry on the next poll. A newer
+request replaces an older request. There is one shared staging site, not one per branch.
+
+The Actions summary confirms that the request is ready, not that the server has
+finished deploying. Connect to Tailscale, open `https://staging.buddybudget.io/api/health`
+and check its commit against the summary; readiness is at `/api/health/ready`.
+If a rollout fails, inspect `journalctl --user -u buddybudget-staging-manual.service`.
+Requests wait while the server is offline. No GitHub token, SSH key or Tailscale
+credential needs to be added to the server or workflow.
+
+Keep `buddybudget-staging-update.timer` disabled while testing branches, so an
+automatic `main` rollout does not replace the branch under test. Daily backups stay
+enabled. Install the reviewed updater and manual service/timer, reload user systemd,
+and enable `buddybudget-staging-manual.timer` to receive these requests.
+
 ### Application updates
 
 Source: [`deploy/staging/`](../deploy/staging/). Runtime root:
@@ -193,7 +223,8 @@ with `https://staging.buddybudget.io` (it reads the Tailscale address and writes
 DNS token and `ACME_EMAIL` to `.env`, create the DNS record it prints, then run
 `update.py --bootstrap <reviewed configuration directory> --version X.Y.Z`.
 `init.py` generates every secret and refuses to replace
-an existing `.env`. Install the four user units and enable the timers. Enable user
+an existing `.env`. Install the user units and enable the backup and manual-request
+timers. Enable the automatic main-update timer only when wanted. Enable user
 lingering so they run without a logged-in session.
 
 ## Scheduled work, backups and recovery

@@ -51,6 +51,46 @@ class RolloutTests(unittest.TestCase):
             self.assertEqual(update.candidate()["id"], 1)
             self.assertEqual(fetch.call_count, 3)
 
+    def test_manual_request_accepts_branch_and_requires_success(self):
+        deployments = [
+            {"id": 2, "ref": "feature", "statuses_url": "pending"},
+            {"id": 1, "ref": "feature", "statuses_url": "passed"},
+        ]
+        with patch.object(update, "fetch", side_effect=[json.dumps(deployments), '[{"state":"pending"}]', '[{"state":"success"}]']) as fetch:
+            self.assertEqual(update.candidate(manual=True)["id"], 1)
+            self.assertIn("environment=staging-request", fetch.call_args_list[0].args[0])
+
+    def test_completed_requests_do_not_fetch_statuses_again(self):
+        with patch.object(update, "fetch", return_value='[{"id": 2}]') as fetch:
+            self.assertIsNone(update.candidate(manual=True, after_id=2))
+            self.assertEqual(fetch.call_count, 1)
+
+    def test_manual_branch_reuses_reviewed_config_without_ancestry_check(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            release = root / "reviewed-config"
+            state = {"deployment_id": 1, "version": "sha-" + "a" * 40, "release": str(release)}
+            (root / "current.json").write_text(json.dumps(state))
+            target = {"id": 2, "sha": "b" * 40}
+            with patch.object(update.sys, "argv", ["update.py", "--root", directory, "--manual-only"]):
+                with patch.object(update, "candidate", return_value=target) as candidate:
+                    with patch.object(update, "fetch") as fetch:
+                        with patch.object(update, "deploy") as deploy:
+                            update.main()
+                            candidate.assert_called_once_with(manual=True, after_id=1)
+                            fetch.assert_not_called()
+                            deploy.assert_called_once_with(root.resolve(), release, "staging-" + "b" * 40, 2)
+
+    def test_manual_request_is_not_redeployed_after_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "current.json").write_text('{"deployment_id": 2}')
+            with patch.object(update.sys, "argv", ["update.py", "--root", directory, "--manual-only"]):
+                with patch.object(update, "candidate", return_value={"id": 2}):
+                    with patch.object(update, "deploy") as deploy:
+                        update.main()
+                        deploy.assert_not_called()
+
     def test_backup_is_valid_gzip_and_retains_seven(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

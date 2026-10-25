@@ -1,0 +1,9 @@
+[Unit]
+Description=Deploy explicitly requested BuddyBudget staging branches
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/buddy-budget-staging
+ExecStart=/usr/bin/python3 %h/buddy-budget-staging/update.py --manual-only
+TimeoutStartSec=15min
+UMask=0077

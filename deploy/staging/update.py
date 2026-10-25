@@ -23,10 +23,13 @@ def fetch(url):
         return response.read()
 
 
-def candidate():
-    deployments = json.loads(fetch(f"https://api.github.com/repos/{REPO}/deployments?environment=staging-candidate&per_page=5"))
+def candidate(manual=False, after_id=0):
+    environment = "staging-request" if manual else "staging-candidate"
+    deployments = json.loads(fetch(f"https://api.github.com/repos/{REPO}/deployments?environment={environment}&per_page=5"))
     for deployment in deployments:
-        if deployment["ref"] != "main":
+        if deployment["id"] <= after_id:
+            continue
+        if not manual and deployment["ref"] != "main":
             continue
         statuses = json.loads(fetch(deployment["statuses_url"]))
         if statuses and statuses[0]["state"] == "success":
@@ -77,6 +80,7 @@ def main():
     parser.add_argument("--root", type=Path, default=Path.home() / "buddy-budget-staging")
     parser.add_argument("--bootstrap", type=Path, help="Reviewed local release directory for initial/manual deployment")
     parser.add_argument("--version", help="Explicit published version with --bootstrap")
+    parser.add_argument("--manual-only", action="store_true", help="Deploy explicitly requested branches using the current reviewed server configuration")
     parser.add_argument("--backup-only", action="store_true", help="Back up the current staging database")
     args = parser.parse_args()
     os.umask(0o077)
@@ -93,21 +97,25 @@ def main():
             backup_database(root, compose, env, required=True)
             return
         if args.bootstrap:
-            if not args.version or not re.fullmatch(r"(?:\d+\.\d+\.\d+|sha-[a-f0-9]{40})", args.version):
+            if not args.version or not re.fullmatch(r"(?:\d+\.\d+\.\d+|(?:sha|staging)-[a-f0-9]{40})", args.version):
                 parser.error("--bootstrap requires a version or full SHA image tag")
             deploy(root, args.bootstrap.resolve(), args.version, 0)
             return
-        target = candidate()
+        current = json.loads((root / "current.json").read_text()) if (root / "current.json").exists() else {}
+        target = candidate(manual=True, after_id=current.get("deployment_id", 0)) if args.manual_only else candidate()
         if target is None:
             print("No tested staging candidate published yet.")
             return
-        current = json.loads((root / "current.json").read_text()) if (root / "current.json").exists() else {}
         # Delayed CI runs must not replace a newer deployed commit.
         if target["id"] <= current.get("deployment_id", 0):
             return
         sha = target["sha"]
         if not re.fullmatch(r"[a-f0-9]{40}", sha):
             raise ValueError("Invalid candidate SHA")
+        if args.manual_only:
+            # Branches change app images, not the reviewed host configuration or secrets.
+            deploy(root, Path(current["release"]), f"staging-{sha}", target["id"])
+            return
         previous = current.get("version", "")
         if previous.startswith("sha-") and previous != f"sha-{sha}":
             comparison = json.loads(fetch(f"https://api.github.com/repos/{REPO}/compare/{previous[4:]}...{sha}"))

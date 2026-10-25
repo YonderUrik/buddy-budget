@@ -1,0 +1,11 @@
+[Unit]
+Description=Check explicit staging deployment requests every two minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=2min
+RandomizedDelaySec=5s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

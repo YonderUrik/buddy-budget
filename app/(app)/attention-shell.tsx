@@ -5,15 +5,16 @@ import { AppShell, type ShellAction } from "@/components/layout";
 import { useQuickReport } from "@/components/domain/support";
 import { useQuickAdd } from "@/components/domain/quick-add";
 import { Plus, Search } from "lucide-react";
-import { useAppSearch } from "@/components/domain/search";
+import { SearchField, useAppSearch } from "@/components/domain/search";
 import { PageBackBar, TopBarBack } from "@/components/domain/shared";
 
 /** «‹» back button in the phone top bar, in place of the brand when there is somewhere to go back to. */
 const renderTopBarBack = (fallback: React.ReactNode) => <TopBarBack fallback={fallback} />;
 
 /**
- * AppShell with the «Scrivici» button, the app-wide «Aggiungi» (middle of the bottom bar, top of the sidebar) and the
- * app-wide «‹» back button (top bar on the phone, above the page on desktop).
+ * AppShell with the «Scrivici» button, the app-wide «Aggiungi» (middle of the bottom bar, top of the sidebar), «Cerca»
+ * (a field above the page on desktop, pulling the page down on the phone) and the app-wide «‹» back button (top bar on
+ * the phone, above the page on desktop).
  * Liquidità has no count badge in the navigation: transactions to decide are shown inside the section («Da decidere»).
  */
 export function AttentionShell({ children, sidebarExtra }: { children: React.ReactNode; sidebarExtra?: React.ReactNode }) {
@@ -30,17 +31,23 @@ export function AttentionShell({ children, sidebarExtra }: { children: React.Rea
         : undefined,
     [quickAdd]
   );
-  const search = useAppSearch();
+  // Only the opener (stable): the action must not change every time the panel opens or closes.
+  const openSearch = useAppSearch()?.open;
   const searchAction = React.useMemo<ShellAction | undefined>(
-    () => (search ? { label: "Cerca", icon: Search, onClick: (_anchor, origin) => search.open(origin === "sidebar" ? "sidebar" : "barra") } : undefined),
-    [search]
+    () => (openSearch ? { label: "Cerca", icon: Search, onClick: (_anchor, origin) => openSearch(origin === "pull" ? "tirando" : "altro") } : undefined),
+    [openSearch]
   );
   return (
     <AppShell
       sidebarExtra={sidebarExtra}
       onOpenSupport={() => openReport({ source: "pulsante" })}
       topbarLeading={renderTopBarBack}
-      contentHeader={<PageBackBar />}
+      contentHeader={
+        <>
+          <SearchField />
+          <PageBackBar />
+        </>
+      }
       addAction={addAction}
       searchAction={searchAction}
     >

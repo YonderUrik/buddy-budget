@@ -35,6 +35,9 @@ import { MobileTopbar } from "@/components/layout/mobile-topbar";
 import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BOTTOM_NAV_HREFS_WITH_ACTION, BottomNav } from "@/components/layout/bottom-nav";
 import type { ShellAction } from "@/components/layout/shell-action";
 import { useCompactOnScroll } from "@/components/layout/use-compact-on-scroll";
+import { usePullDown } from "@/components/layout/use-pull-down";
+import { PullDownHint } from "@/components/layout/pull-down-hint";
+import { useMediaQuery } from "@/lib/hooks/use-media-query";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
 import { SectionTransition } from "@/components/layout/section-transition";
 import { track } from "@/lib/analytics";
@@ -67,7 +70,7 @@ interface InnerShellProps {
   navBadges?: Record<string, NavBadge>;
   onOpenSupport?: () => void;
   addAction?: ShellAction;
-  /** App-wide search: a field in the sidebar, a magnifier in the phone top bar. */
+  /** App-wide search on the phone: pulling the page down from its top (as on the iPhone) and a field heading «Altro». */
   searchAction?: ShellAction;
 }
 
@@ -82,6 +85,8 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   const bottomHrefs: readonly string[] = addAction ? BOTTOM_NAV_HREFS_WITH_ACTION : BOTTOM_NAV_HREFS;
   // Reading down the page: the bottom bar gets compact and the top bar folds away, both come back on the way up.
   const scrolledDown = useCompactOnScroll(MAIN_CONTENT_ID);
+  const phone = useMediaQuery("(max-width: 767px)");
+  const pullTravel = usePullDown(MAIN_CONTENT_ID, phone && searchAction ? () => searchAction.onClick(document.body, "pull") : undefined);
   const openMore = useCallback(() => setMoreOpen(true), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);
 
@@ -117,7 +122,8 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} onSearch={searchAction ? (el) => searchAction.onClick(el, "bottom-bar") : undefined} leading={topbarLeading} collapsed={scrolledDown} />
+      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} leading={topbarLeading} collapsed={scrolledDown} />
+      {searchAction ? <PullDownHint distance={pullTravel} label={searchAction.label} icon={searchAction.icon} /> : null}
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -129,7 +135,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} addAction={addAction} searchAction={searchAction} />
+          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} addAction={addAction} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -173,6 +179,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
           activeHref={activeHref}
           badges={navBadges}
           extra={sidebarExtra}
+          search={searchAction ? { label: searchAction.label, icon: searchAction.icon, onOpen: (anchor) => searchAction.onClick(anchor, "more-menu") } : undefined}
           onAction={(target) => track("more_menu_clicked", { target })}
         />
       ) : null}
@@ -239,7 +246,7 @@ interface AppShellProps {
   contentHeader?: React.ReactNode;
   /** Main action always at hand (e.g. «Aggiungi»): in the bottom bar on the phone, in the sidebar on desktop. */
   addAction?: ShellAction;
-  /** App-wide search: a field in the sidebar, a magnifier in the phone top bar. */
+  /** App-wide search on the phone: pulling the page down from its top (as on the iPhone) and a field heading «Altro». */
   searchAction?: ShellAction;
 }
 

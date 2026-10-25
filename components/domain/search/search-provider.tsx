@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * App-wide search («Cerca»), mounted once in the signed-in layout: opened from the sidebar, the magnifier in the phone
- * top bar, ⌘K / Ctrl+K or «/» anywhere, or a `?cerca=` link. A result goes to its page or opens its «Aggiungi» form;
+ * App-wide search («Cerca»), mounted once in the signed-in layout: opened from the field above the page on desktop,
+ * by pulling the page down on the phone (or the field heading «Altro»), ⌘K / Ctrl+K or «/» anywhere, or a `?cerca=` link. A result goes to its page or opens its «Aggiungi» form;
  * a sentence like «comprato 3 Apple a 50 € oggi» opens the form already filled in, to check and save. The last picks
  * are remembered on this device (never amounts) and shown on the phone before typing.
  */
@@ -22,10 +22,12 @@ import type { SearchHit } from "@/lib/search/types";
 import { Spotlight } from "./spotlight";
 import type { SpotlightBlock } from "./use-spotlight";
 
-type SearchSource = "sidebar" | "barra" | "tastiera";
+type SearchSource = "campo" | "altro" | "tirando" | "tastiera";
 
 export interface SearchApi {
   open: (source: SearchSource) => void;
+  /** True while the panel is open (an entry point can step aside). */
+  isOpen: boolean;
 }
 
 const SearchContext = React.createContext<SearchApi | null>(null);
@@ -163,7 +165,7 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     [quickAdd]
   );
 
-  const api = React.useMemo(() => ({ open: (source: SearchSource) => open(source) }), [open]);
+  const api = React.useMemo<SearchApi>(() => ({ open, isOpen: state.open }), [open, state.open]);
   const fromLink = React.useCallback((text: string) => open("tastiera", text), [open]);
   const mounted = React.useSyncExternalStore(() => () => {}, () => true, () => false);
 

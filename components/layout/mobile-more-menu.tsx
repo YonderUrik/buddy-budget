@@ -5,7 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
  * MobileMoreMenu
  *
  * Menu «Altro» della barra in basso su mobile: una vista a tutto schermo (non il pannello laterale della sidebar)
- * pensata per il pollice e volutamente corta. Dall'alto: l'account, le sezioni che non stanno nella barra con una riga di
+ * pensata per il pollice e volutamente corta. Dall'alto: il campo «Cerca» (se c'è), l'account, le sezioni che non stanno nella barra con una riga di
  * spiegazione, l'assistenza (aiuto, impostazioni), l'unico interruttore veloce (nascondi importi), il riepilogo
  * finanziario (lo slot `extra` della sidebar) chiuso finché non lo si apre, e l'uscita. Il tema sta in Impostazioni.
  * Si chiude con il pulsante ×, con Esc o con il tasto indietro del telefono (la voce di cronologia aggiunta
@@ -55,6 +55,8 @@ export interface MobileMoreMenuProps {
   /** Pagina di aiuto e segnalazioni. */
   supportHref?: string;
   onAction?: (action: MoreMenuAction) => void;
+  /** App-wide search: a field at the top of the menu, for whoever does not pull the page down (or cannot). */
+  search?: { label: string; icon: React.ElementType; onOpen: (anchor: HTMLElement) => void };
 }
 
 const ROW_CLASS =
@@ -113,6 +115,7 @@ export function MobileMoreMenu({
   settingsHref = "/impostazioni",
   supportHref = "/aiuto",
   onAction,
+  search,
 }: MobileMoreMenuProps) {
   const { t: tr } = useLocalization();
   const router = useRouter();
@@ -171,6 +174,25 @@ export function MobileMoreMenu({
           </header>
 
           <div className="flex-1 overflow-y-auto overscroll-contain px-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+            {search ? (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  onClick={(event) => {
+                    const anchor = event.currentTarget;
+                    onClose();
+                    search.onOpen(anchor);
+                  }}
+                  className="flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-full bg-muted px-4 text-left text-[15px] text-text-2 transition-colors active:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <search.icon className="size-[18px] shrink-0" aria-hidden="true" />
+                  {tr(search.label)}
+                </button>
+                <p className="px-4 pt-1.5 text-xs text-text-3">{tr("Oppure tira giù qualsiasi pagina dall'alto.")}</p>
+              </div>
+            ) : null}
+
             {/* Account */}
             <Link href={settingsHref} replace onClick={() => go("impostazioni")} className={cn(ROW_CLASS, "mt-3 min-h-16 bg-muted/60")}>
               {user?.image ? (

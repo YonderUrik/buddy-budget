@@ -49,7 +49,7 @@ export function GoalsPanoramicaSection({ view, fmt, href = "/analitiche/obiettiv
   if (view.goals.length === 0) {
     if (dismissed || !showInvite) return null;
     return (
-      <section aria-labelledby="overview-goals" className={cn("flex flex-col gap-3", className)}>
+      <section aria-labelledby="overview-goals" data-page-block="" className={cn("flex flex-col gap-3", className)}>
         <div className="flex items-start justify-between gap-3">
           <GoalSectionHeading id="overview-goals" icon={TargetIcon} title={tr("Novità: obiettivi di risparmio")} color="var(--swatch-amber)" />
           <Button type="button" variant="ghost" size="icon" className="size-9 shrink-0" onClick={dismiss} aria-label={tr("Non ora")}>
@@ -65,7 +65,7 @@ export function GoalsPanoramicaSection({ view, fmt, href = "/analitiche/obiettiv
   }
   if (shown.length === 0) return null;
   return (
-    <section aria-labelledby="overview-goals" className={cn("flex flex-col gap-1", className)}>
+    <section aria-labelledby="overview-goals" data-page-block="" className={cn("flex flex-col gap-1", className)}>
       <GoalSectionHeading id="overview-goals" icon={TargetIcon} title={tr("I tuoi obiettivi")} color="var(--swatch-amber)" href={href} linkLabel={tr("Tutti")} onLinkClick={onLinkClick} />
       <ul>
         {shown.map((goal) => (

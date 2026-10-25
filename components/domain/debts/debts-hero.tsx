@@ -20,7 +20,7 @@ export function DebtsHero({ totalDebt, currency, openCount, freeDate }: DebtsHer
 
   const { t: tr } = useLocalization();
   return (
-    <section aria-label={tr("Debito totale")} className="flex flex-col gap-1">
+    <section aria-label={tr("Debito totale")} data-page-block="hero" className="flex flex-col gap-1">
       <p className="text-sm text-muted-foreground">{tr("Ancora da restituire")}</p>
       <MoneyHero value={totalDebt} currency={currency} className="text-5xl" />
       <p className="text-sm text-muted-foreground">

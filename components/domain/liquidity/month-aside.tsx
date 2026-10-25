@@ -39,7 +39,7 @@ export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currenc
   const groupMax = Math.max(...EXPENSE_GROUP_KEYS.map((key) => groups[key]), 1);
   return (
     <aside className={cn("flex flex-col gap-8", className)} aria-label={tr("Il mese")}>
-      <section>
+      <section data-page-block="">
         <SectionTitle icon={CalendarDaysIcon} title={tr("Il mese")} color="var(--swatch-teal)" href={analysisHref} linkLabel={tr("Analisi")} />
         <div className="flex flex-col gap-1.5">
           <SoftRow title={tr("Entrate")} end={<span className="font-heading font-semibold tabular-nums text-pos">{"+"}{money(income)}</span>} />
@@ -52,7 +52,7 @@ export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currenc
         </div>
       </section>
       {toFix > 0 && (
-        <section>
+        <section data-page-block="">
           <SectionTitle icon={AlertTriangleIcon} title={tr("Da decidere")} color="var(--neg)" />
           <SoftRow
             title={tr(toFix === 1 ? "{0} movimento" : "{0} movimenti", {0: toFix})}
@@ -61,7 +61,7 @@ export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currenc
           />
         </section>
       )}
-      <section>
+      <section data-page-block="">
         <SectionTitle icon={PieChartIcon} title={tr("Gruppi di spesa")} color="var(--group-saltuaria)" />
         <ul className="flex flex-col gap-3.5">
           {EXPENSE_GROUP_KEYS.map((key) => (

@@ -69,7 +69,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
   const pieSummary = tr("Composizione del patrimonio: {0}.", { 0: pieItems.map((item) => `${tr(item.label)} ${percent(item.share, formattingLocale)}`).join(", ") });
 
   return (
-    <Card className={className}>
+    <Card data-page-block="" className={className}>
       <CardHeader className="gap-1">
         <CardTitle className={SECTION_TITLE}>{tr(title)}</CardTitle>
         {investedShare !== null && !showPie ? <p className="text-sm text-foreground">{investedSentence(investedShare, formattingLocale, tr)}</p> : null}

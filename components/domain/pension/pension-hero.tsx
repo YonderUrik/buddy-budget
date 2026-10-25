@@ -48,7 +48,7 @@ export function PensionHero({ name, performance, snapshots, currency, className 
   const tone = up ? "text-pos" : "text-neg";
   const sign = up ? "+" : "−";
   return (
-    <section aria-label={name} className={className}>
+    <section aria-label={name} data-page-block="hero" className={className}>
       <p className="text-base text-text-2">
         {name}{" "}<span aria-hidden="true">{"·"}</span>{" "}{tr("aggiornato al")}{" "}{formatLongDateKey(lastDate)}
       </p>

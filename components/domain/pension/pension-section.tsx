@@ -24,7 +24,7 @@ export interface PensionSectionProps {
 export function PensionSection({ icon, title, color, description, hint, children, className }: PensionSectionProps) {
   const { t: tr } = useLocalization();
   return (
-    <section aria-label={tr(title)} className={cn("flex flex-col", className)}>
+    <section aria-label={tr(title)} data-page-block="" className={cn("flex flex-col", className)}>
       <SectionTitle icon={icon} title={tr(title)} color={color} />
       {description || hint ? (
         <p className="-mt-1 mb-4 text-sm text-text-2">

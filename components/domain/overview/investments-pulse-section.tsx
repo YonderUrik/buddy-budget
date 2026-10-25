@@ -36,7 +36,7 @@ export function InvestmentsPulseSection({ value, paid, marketGain, positions, cu
   // La barra mostra da cosa è fatto il valore: versato più (o meno) il mercato, mai oltre il 100%.
   const paidShare = value > 0 ? Math.min(1, Math.max(0, Math.min(paid, value) / value)) : 0;
   return (
-    <section aria-labelledby="overview-investments" className={cn("flex flex-col gap-3", className)}>
+    <section aria-labelledby="overview-investments" data-page-block="" className={cn("flex flex-col gap-3", className)}>
       <SectionHeading id="overview-investments" icon={Trend} title={tr("Investimenti")} color="var(--primary)" href={href} linkLabel={tr("Portafoglio")} onLinkClick={onLinkClick} />
       <p className={cn("flex items-baseline gap-2 font-heading text-3xl font-medium tabular-nums", isLoss ? "text-neg" : "text-pos")}>
         {sign}

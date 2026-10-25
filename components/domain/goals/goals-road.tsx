@@ -35,7 +35,7 @@ export function GoalsRoad({ view, fmt }: GoalsRoadProps) {
   if (stops.length < 2) return null;
   stops.sort((a, b) => a.sort.localeCompare(b.sort));
   return (
-    <section aria-labelledby="goals-road" className="flex flex-col gap-4">
+    <section aria-labelledby="goals-road" data-page-block="" className="flex flex-col gap-4">
       <GoalSectionHeading id="goals-road" icon={FlagIcon} title={tr("La strada")} color="var(--swatch-blue)" />
       <ol className="relative flex gap-4 overflow-x-auto pb-2">
         <span className="absolute top-4 right-0 left-0 h-px bg-border" aria-hidden="true" />

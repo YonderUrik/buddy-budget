@@ -7,8 +7,11 @@
  * - `PAGE_SPLIT` + `PAGE_SPLIT_MAIN` / `PAGE_SPLIT_SIDE`: the main 3/5 + 2/5 split under a page's opening. The split
  *   uses container queries on the scrolling `<main>` (`@container/main` in `AppShell`): two columns only when the
  *   content area is at least 56rem wide, whatever the sidebar takes.
- * - `PAGE_BLEED`: a hero chart (or a banded list) reaching the screen edges on the phone; from the sidebar breakpoint on it stays
- *   inside the page column (bleeding there would run it into the sidebar islands).
+ * - `PAGE_BLEED`: a hero chart (or a banded list) reaching the screen edges on the phone; from the sidebar breakpoint
+ *   on it stays inside the page column (bleeding there would run it into the sidebar islands).
+ * - Blocks: the root of every block under a page's opening carries `data-page-block` and becomes an island like the
+ *   sidebar's (card surface, border, rounded, padded; styles in `app/globals.css`); the opening itself carries
+ *   `data-page-block="hero"` and stays on the page. Stacked blocks are spaced by `--page-block-gap`.
  */
 export const PAGE_FRAME = "mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6";
 
@@ -16,13 +19,13 @@ export const PAGE_FRAME = "mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 sm:g
 export const PAGE_READABLE = "*:max-w-3xl";
 
 /** Two-column area under a page's opening: stacked until the content area is 56rem wide. */
-export const PAGE_SPLIT = "grid min-w-0 grid-cols-1 items-start gap-10 @4xl/main:grid-cols-5";
+export const PAGE_SPLIT = "grid min-w-0 grid-cols-1 items-start gap-(--page-block-gap) @4xl/main:grid-cols-5";
 
 /** Wide column of `PAGE_SPLIT` (three fifths). */
-export const PAGE_SPLIT_MAIN = "flex min-w-0 flex-col gap-10 @4xl/main:col-span-3";
+export const PAGE_SPLIT_MAIN = "flex min-w-0 flex-col gap-(--page-block-gap) @4xl/main:col-span-3";
 
 /** Narrow column of `PAGE_SPLIT` (two fifths). */
-export const PAGE_SPLIT_SIDE = "flex min-w-0 flex-col gap-10 @4xl/main:col-span-2";
+export const PAGE_SPLIT_SIDE = "flex min-w-0 flex-col gap-(--page-block-gap) @4xl/main:col-span-2";
 
 /** Hero charts and banded lists: edge to edge on the phone, inside the page column from the sidebar breakpoint on. */
 export const PAGE_BLEED = "-mx-4 sm:-mx-6 md:mx-0";

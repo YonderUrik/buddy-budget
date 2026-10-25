@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 function Section({ id, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
   const { t: tr } = useLocalization();
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-4">
+    <section aria-labelledby={id} data-page-block="" className="flex flex-col gap-4">
       <header className="flex flex-col gap-1">
         <h2 id={id} className={SECTION_TITLE}>{tr(title)}</h2>
         <p className="text-sm text-muted-foreground">{tr(description)}</p>

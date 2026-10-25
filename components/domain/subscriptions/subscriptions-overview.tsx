@@ -45,7 +45,7 @@ function Hero({ data }: { data: SubscriptionsResponse }) {
   const next = upcoming[0];
   const upcomingTotal = upcoming.reduce((sum, i) => sum + (i.amount ?? 0), 0);
   return (
-    <section aria-label={tr("Totale degli abbonamenti")}>
+    <section aria-label={tr("Totale degli abbonamenti")} data-page-block="hero">
       <p className="text-base text-text-2">{tr("Gli abbonamenti ti costano ogni mese")}</p>
       <MoneyHero value={totals.monthly} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
       <p className="mt-3 text-sm text-text-2">
@@ -143,7 +143,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
       ) : null}
 
       {toConfirm.length > 0 ? (
-        <section aria-label={tr("Da confermare")}>
+        <section aria-label={tr("Da confermare")} data-page-block="">
           <SectionTitle icon={SearchCheckIcon} title={tr("Trovati nei tuoi movimenti")} color="var(--swatch-teal)" />
           <p className="mb-3 text-sm text-text-2">{tr("Addebiti che tornano con regolarità. Conferma solo i veri abbonamenti: non tutto ciò che ricorre lo è.")}</p>
           <div className="flex flex-col gap-2">
@@ -166,7 +166,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
         </section>
       ) : null}
 
-      <section aria-label={tr("I tuoi abbonamenti")}>
+      <section aria-label={tr("I tuoi abbonamenti")} data-page-block="">
         <SectionTitle icon={RepeatIcon} title={tr("I tuoi abbonamenti")} color="var(--swatch-purple)" />
         {confirmed.length > 0 ? (
           <div className="flex flex-col gap-2">
@@ -182,7 +182,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
       </section>
 
       {stopped.length > 0 ? (
-        <section aria-label={tr("Non addebitati da un po'")}>
+        <section aria-label={tr("Non addebitati da un po'")} data-page-block="">
           <SectionTitle icon={MoonStarIcon} title={tr("Non addebitati da un po'")} color="var(--swatch-amber)" />
           <p className="mb-3 text-sm text-text-2">{tr("Dovevano tornare e non li vediamo più: sono terminati, o te ne sei dimenticato? Se non sono terminati, controlla che il conto sia sincronizzato.")}</p>
           <div className="flex flex-col gap-2">
@@ -201,7 +201,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
       ) : null}
 
       {rises.length > 0 ? (
-        <section aria-label={tr("Aumenti di prezzo")}>
+        <section aria-label={tr("Aumenti di prezzo")} data-page-block="">
           <SectionTitle icon={TrendingUpIcon} title={tr("Aumenti di prezzo")} color="var(--swatch-red)" />
           <div className="flex flex-col gap-2">
             {rises.map((item) => (

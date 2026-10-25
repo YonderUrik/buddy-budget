@@ -68,7 +68,7 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
         <p className="-mt-2 text-text-2">{statusSentence(goal, fmt, tr)}</p>
       </div>
 
-      <section aria-labelledby="goal-sources" className="flex flex-col gap-3">
+      <section aria-labelledby="goal-sources" data-page-block="" className="flex flex-col gap-3">
         <GoalSectionHeading id="goal-sources" icon={ArrowLeftRightIcon} title={tr("Da dove arrivano i soldi")} color="var(--swatch-blue)" />
         {goal.sources.length === 0 ? <p className="text-sm text-text-2">{tr("Nessun conto o titolo assegnato: l'obiettivo cresce solo con la quota del mese, quando aggiorni quanto hai messo da parte.")}</p> : null}
         {GROUPS.map((group) => {
@@ -102,7 +102,7 @@ export function GoalDetail({ goal, currency, fmt, fireYear, onAddMoney, onEdit, 
       </section>
 
       {goal.status !== "raggiunto" ? (
-        <section aria-labelledby="goal-after" className="flex flex-col gap-3">
+        <section aria-labelledby="goal-after" data-page-block="" className="flex flex-col gap-3">
           <GoalSectionHeading id="goal-after" icon={FlagIcon} title={tr("Cosa cambia quando lo raggiungi")} color="var(--swatch-amber)" />
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1 pt-3">

@@ -45,7 +45,7 @@ export function UpcomingDuesSection({ dues, currency, href = "/debiti", onLinkCl
   if (dues.length === 0) return null;
   const format = (value: number) => formatCurrency(value, currency, { maximumFractionDigits: 0 });
   return (
-    <section aria-labelledby="overview-dues" className={cn("flex flex-col gap-3", className)}>
+    <section aria-labelledby="overview-dues" data-page-block="" className={cn("flex flex-col gap-3", className)}>
       <SectionHeading id="overview-dues" icon={CalendarClockIcon} title={tr("Prossime rate")} color="var(--neg)" href={href} linkLabel={tr("Debiti")} onLinkClick={onLinkClick} />
       <ul>
         {dues.slice(0, UPCOMING_DUES_LIMIT).map((due) => {

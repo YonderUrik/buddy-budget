@@ -35,7 +35,7 @@ export function MonthPaceSection({ pace, monthLabel, currency, href = "/liquidit
   const overBudget = pace.budgetTotal !== null && pace.budgetSpent > pace.budgetTotal;
 
   return (
-    <section aria-labelledby="overview-month" className={cn("flex flex-col gap-4", className)}>
+    <section aria-labelledby="overview-month" data-page-block="" className={cn("flex flex-col gap-4", className)}>
       <SectionHeading id="overview-month" icon={WalletIcon} title={tr("Il mese di {0}", {0: monthLabel})} color="var(--swatch-teal)" href={href} linkLabel={tr("Movimenti")} onLinkClick={onLinkClick} />
       <MonthPaceChart pace={pace} currency={currency} />
       <dl className="grid grid-cols-2 gap-x-6 gap-y-3 pt-4 text-sm">

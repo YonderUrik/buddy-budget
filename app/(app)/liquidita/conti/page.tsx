@@ -112,7 +112,7 @@ export default function LiquiditaContiPage() {
         />
       ) : (
         groups.map((group) => (
-          <section key={group.key} aria-label={tr(group.label)}>
+          <section key={group.key} aria-label={tr(group.label)} data-page-block="">
             <div className="flex items-baseline justify-between gap-3">
               <SectionTitle icon={group.key === "manuali" ? BanknoteIcon : LandmarkIcon} title={tr(group.label)} color="var(--swatch-teal)" />
               <span className="font-heading font-semibold tabular-nums">{formatCurrency(sumBalances(group.accounts), currency)}</span>

@@ -117,7 +117,7 @@ export default function LiquiditaAnalisiPage() {
   return (
     <div className="flex flex-col gap-8" aria-busy={isLoading}>
       <PeriodStepper period={period} onPeriodChange={setPeriod} referenceDate={referenceDate} onReferenceDateChange={setReferenceDate} latest={today} />
-      <section aria-label={tr("Spese del periodo")}>
+      <section aria-label={tr("Spese del periodo")} data-page-block="hero">
         <p className="max-w-[62ch] text-lg leading-relaxed text-text-2 sm:text-xl">{sentence}</p>
         <p className="mt-6 text-base text-text-2">{tr("Spese del periodo")}</p>
         <MoneyHero value={spent} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
@@ -140,7 +140,7 @@ export default function LiquiditaAnalisiPage() {
         {typical && <p className="mt-2 text-sm text-text-2">{tr("La linea tratteggiata è la tua spesa media nello stesso tratto di mese.")}</p>}
       </section>
       <div className={PAGE_SPLIT}>
-        <section aria-label={tr("Dove vanno i soldi")} className={PAGE_SPLIT_MAIN}>
+        <section aria-label={tr("Dove vanno i soldi")} data-page-block="" className={PAGE_SPLIT_MAIN}>
           <SectionTitle
             icon={PieChartIcon}
             title={tr("Dove vanno i soldi")}
@@ -162,7 +162,7 @@ export default function LiquiditaAnalisiPage() {
           )}
         </section>
         <div className={PAGE_SPLIT_SIDE}>
-          <section aria-label={tr("Da dove arrivano")}>
+          <section aria-label={tr("Da dove arrivano")} data-page-block="">
             <SectionTitle icon={ArrowDownToLineIcon} title={tr("Da dove arrivano")} color="var(--pos)" />
             {sources.length === 0 ? (
               <p className="text-text-2">{tr("Nessuna entrata in questo periodo.")}</p>
@@ -179,7 +179,7 @@ export default function LiquiditaAnalisiPage() {
               </div>
             )}
           </section>
-          <section aria-label={tr("Risparmio accumulato")}>
+          <section aria-label={tr("Risparmio accumulato")} data-page-block="">
             <SectionTitle icon={PiggyBankIcon} title={tr("Risparmio accumulato")} color="var(--swatch-blue)" />
             <SoftRow
               title={saved >= 0 ? tr("Messo da parte") : tr("In meno")}

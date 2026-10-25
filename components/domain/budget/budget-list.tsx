@@ -28,7 +28,7 @@ export function BudgetList({ view, onOpen, onAdd }: BudgetListProps) {
   return (
     <div className="flex flex-col gap-8">
       {groups.length > 0 && (
-        <section aria-label={tr("Categorie con un budget")}>
+        <section aria-label={tr("Categorie con un budget")} data-page-block="">
           <h2 className={SECTION_TITLE}>{tr("Categorie")}</h2>
           {groups.map((group) => (
             <div key={group.key} className="mt-4">
@@ -45,7 +45,7 @@ export function BudgetList({ view, onOpen, onAdd }: BudgetListProps) {
         </section>
       )}
       {view.unbudgeted.length > 0 && (
-        <section aria-label={tr("Spese senza budget")}>
+        <section aria-label={tr("Spese senza budget")} data-page-block="">
           <h2 className={SECTION_TITLE}>{tr("Senza budget")}</h2>
           <p className="mt-1 px-2 text-sm text-text-3">{tr("Tocca una categoria per darle un budget.")}</p>
           <ul className="mt-2 flex flex-col">

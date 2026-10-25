@@ -52,7 +52,7 @@ export function GoalsOverview({ view, fmt, hrefFor, onReorder, reordering = fals
   return (
     <div className="flex flex-col gap-8">
       <GoalsCapacity view={view} fmt={fmt} />
-      <section aria-labelledby="goals-list" className="flex flex-col gap-1">
+      <section aria-labelledby="goals-list" data-page-block="" className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">
           <GoalSectionHeading id="goals-list" icon={ListOrderedIcon} title={tr("In ordine di priorità")} color="var(--swatch-amber)" />
           {open.length > 1 ? <span className="hidden text-xs text-text-3 sm:block">{tr("Usa le frecce per cambiare l'ordine")}</span> : null}
@@ -76,7 +76,7 @@ export function GoalsOverview({ view, fmt, hrefFor, onReorder, reordering = fals
       </section>
       <GoalsRoad view={view} fmt={fmt} />
       {done.length > 0 ? (
-        <section aria-labelledby="goals-done" className="flex flex-col gap-1">
+        <section aria-labelledby="goals-done" data-page-block="" className="flex flex-col gap-1">
           <GoalSectionHeading id="goals-done" icon={TrophyIcon} title={tr("Raggiunti")} color="var(--pos)" />
           <ul>
             {done.map((goal) => (

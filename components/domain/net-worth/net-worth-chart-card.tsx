@@ -141,7 +141,7 @@ export function NetWorthChartCard({
   const totalTooltipClasses = showDebts ? [...allClasses, LIABILITY_CLASS] : allClasses;
 
   return (
-    <section aria-labelledby="net-worth-title" className="flex flex-col gap-4">
+    <section aria-labelledby="net-worth-title" data-page-block="hero" className="flex flex-col gap-4">
       <div className="flex flex-row flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <h2 id="net-worth-title" className="text-base font-medium text-muted-foreground">{tr("Patrimonio netto")}</h2>

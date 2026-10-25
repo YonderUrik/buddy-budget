@@ -448,3 +448,35 @@
     backdrop-filter: none;
   }
 }
+
+/*
+ * Page blocks (see components/domain/shared/page-layout.ts): every block of a page under its opening is an island,
+ * like the sidebar's, so a screen reads as separate groups. Mark the block's root with `data-page-block`; the opening
+ * (big figure and hero chart) carries `data-page-block="hero"` and stays on the page. A block inside a block stays flat.
+ */
+:root {
+  --page-block-gap: 1.5rem;
+}
+main [data-page-block]:not([data-page-block="hero"]) {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-3xl);
+  /* Narrower sides on the phone, so long names in lists keep their room. */
+  padding: 1rem 0.75rem;
+  overflow: clip;
+}
+@media (min-width: 40rem) {
+  main [data-page-block]:not([data-page-block="hero"]) {
+    padding: 1.5rem;
+  }
+}
+main [data-page-block] [data-page-block]:not([data-page-block="hero"]) {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+/* The same space between blocks wherever they are stacked. */
+main :has(> [data-page-block]) {
+  gap: var(--page-block-gap);
+}

@@ -151,7 +151,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-6">
+    <form onSubmit={onSubmit} data-page-block="" className="flex flex-col gap-6">
       <StepProgress index={flow.index} count={flow.count} label={tr("Passi dell'importazione")} />
       <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-4">
         {flow.index === 0 ? (

@@ -110,61 +110,63 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
   return (
     <div className="flex flex-col gap-8">
       <ScenarioHeadline plan={scenarioPlan} baseline={plan} today={today} />
-      <DataPeriodPicker
-        period={assumptions.dataPeriod}
-        fromKey={base.cashflow.fromKey}
-        toKey={base.cashflow.toKey}
-        today={today}
-        updating={updatingPeriod}
-        saving={saving}
-        onChange={changePeriod}
-      />
-      <ScenarioControls
-        period={assumptions.dataPeriod}
-        periodPhrase={phrase}
-        dataFigures={cashflowFromData(base)}
-        coveredMonths={base.cashflow.coveredMonths}
-        periodMonths={base.cashflow.months.length}
-        onUseData={(field) => {
-          onSaveAssumptions({ [field]: null })
-            .then(() => track("analytics_figure_reset_to_data", { field }))
-            .catch(() => undefined);
-        }}
-        assumptions={assumptions}
-        plan={plan}
-        returnInfo={returnInfo}
-        currency={currency}
-        overrides={overrides}
-        onChange={changeField}
-        onCommit={(field) => track("analytics_scenario_changed", { field })}
-        onReset={() => {
-          setOverrides({});
-          track("analytics_scenario_reset");
-        }}
-        onSave={() => {
-          const fields = SCENARIO_FIELDS.filter((f) => overrides[f] !== undefined).length;
-          const toManual = overrides.expectedReturn !== undefined && returnInfo.source !== "manuale";
-          onSaveAssumptions(overrides as UpdateAssumptionsInput)
-            .then(() => {
-              track("analytics_scenario_saved", { fields });
-              if (toManual) track("analytics_return_source_changed", { source: "manuale" });
-            })
-            .catch(() => undefined);
-        }}
-        onOpenAllAssumptions={() => setDialogOpen(true)}
-        onUseHistoryReturn={() => {
-          onSaveAssumptions({ expectedReturnAuto: true })
-            .then(() => track("analytics_return_source_changed", { source: "storico" }))
-            .catch(() => undefined);
-        }}
-        saving={saving}
-      />
-      {saveError && !dialogOpen ? (
-        <p className="text-sm text-neg" role="alert">
-          {tr(saveError)}
-        </p>
-      ) : null}
-      <div className="flex flex-col gap-6">
+      <div data-page-block="" className="flex flex-col gap-6">
+        <DataPeriodPicker
+          period={assumptions.dataPeriod}
+          fromKey={base.cashflow.fromKey}
+          toKey={base.cashflow.toKey}
+          today={today}
+          updating={updatingPeriod}
+          saving={saving}
+          onChange={changePeriod}
+        />
+        <ScenarioControls
+          period={assumptions.dataPeriod}
+          periodPhrase={phrase}
+          dataFigures={cashflowFromData(base)}
+          coveredMonths={base.cashflow.coveredMonths}
+          periodMonths={base.cashflow.months.length}
+          onUseData={(field) => {
+            onSaveAssumptions({ [field]: null })
+              .then(() => track("analytics_figure_reset_to_data", { field }))
+              .catch(() => undefined);
+          }}
+          assumptions={assumptions}
+          plan={plan}
+          returnInfo={returnInfo}
+          currency={currency}
+          overrides={overrides}
+          onChange={changeField}
+          onCommit={(field) => track("analytics_scenario_changed", { field })}
+          onReset={() => {
+            setOverrides({});
+            track("analytics_scenario_reset");
+          }}
+          onSave={() => {
+            const fields = SCENARIO_FIELDS.filter((f) => overrides[f] !== undefined).length;
+            const toManual = overrides.expectedReturn !== undefined && returnInfo.source !== "manuale";
+            onSaveAssumptions(overrides as UpdateAssumptionsInput)
+              .then(() => {
+                track("analytics_scenario_saved", { fields });
+                if (toManual) track("analytics_return_source_changed", { source: "manuale" });
+              })
+              .catch(() => undefined);
+          }}
+          onOpenAllAssumptions={() => setDialogOpen(true)}
+          onUseHistoryReturn={() => {
+            onSaveAssumptions({ expectedReturnAuto: true })
+              .then(() => track("analytics_return_source_changed", { source: "storico" }))
+              .catch(() => undefined);
+          }}
+          saving={saving}
+        />
+        {saveError && !dialogOpen ? (
+          <p className="text-sm text-neg" role="alert">
+            {tr(saveError)}
+          </p>
+        ) : null}
+      </div>
+      <div data-page-block="" className="flex flex-col gap-6">
         <AnswerViews
           views={views}
           selected={selected}

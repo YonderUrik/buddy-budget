@@ -77,7 +77,7 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
       </nav>
 
       {/* Contenuto del gruppo */}
-      <div className={cn("min-w-0 flex-1", selected === null && "max-md:hidden")}>
+      <div data-page-block="" className={cn("min-w-0 flex-1", selected === null && "max-md:hidden")}>
         <h2 className={cn(SECTION_TITLE, "mb-1", currentGroup.danger && "text-neg")}>{tr(currentGroup.label)}</h2>
         <p className="mb-5 text-sm text-muted-foreground">{tr(currentGroup.summary)}</p>
         <div className="flex flex-col gap-8">{content[current]}</div>

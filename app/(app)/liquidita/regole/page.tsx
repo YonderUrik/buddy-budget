@@ -27,7 +27,7 @@ export default function LiquiditaRegolePage() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <ManagementSwitch options={OPTIONS} activeHref={pathname} />
-      <section>
+      <section data-page-block="">
         <SectionTitle icon={WandSparklesIcon} title={tr("Regole automatiche")} color="var(--swatch-purple)" />
         <p className="mb-4 text-sm text-text-2">{tr("Le regole assegnano da sole la categoria ai movimenti che riconoscono.")}</p>
         {isLoading ? (

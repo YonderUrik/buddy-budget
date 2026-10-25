@@ -82,7 +82,7 @@ export default function LiquiditaPage() {
       <LiquidityOverview />
       <Link href="/importazioni" className="text-sm font-medium text-primary hover:underline">{tr("Importa da CSV o Excel →")}</Link>
       <div className={PAGE_SPLIT}>
-        <div className={cn(PAGE_SPLIT_MAIN, "gap-2")}>
+        <div data-page-block="" className={cn(PAGE_SPLIT_MAIN, "gap-2")}>
           <MovementsToolbar
             searchText={searchText}
             onSearchTextChange={setSearchText}

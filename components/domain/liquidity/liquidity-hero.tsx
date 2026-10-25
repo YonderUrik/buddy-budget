@@ -56,7 +56,7 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
     ? tr("{0}: da {1} a {2} {3}.", { 0: label, 1: formatCurrency(first.value, currency, { maximumFractionDigits: 0 }), 2: formatCurrency(value, currency, { maximumFractionDigits: 0 }), 3: tr(PERIOD_PHRASES[period]) })
     : `${label}: ${formatCurrency(value, currency, { maximumFractionDigits: 0 })}.`;
   return (
-    <section aria-label={tr(label)} className={className}>
+    <section aria-label={tr(label)} data-page-block="hero" className={className}>
       <p className="text-base text-text-2">{tr(label)}</p>
       <MoneyHero value={value} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
       <div className="mt-3 min-h-5">

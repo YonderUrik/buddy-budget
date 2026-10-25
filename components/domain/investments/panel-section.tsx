@@ -30,7 +30,7 @@ export function PanelSection({ icon, title, color = PANEL_DEFAULT_COLOR, descrip
   const { t: tr } = useLocalization();
   const id = React.useId();
   return (
-    <section aria-labelledby={id} className={cn("flex min-w-0 flex-col gap-3", className)}>
+    <section aria-labelledby={id} data-page-block="" className={cn("flex min-w-0 flex-col gap-3", className)}>
       {action ? (
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <SectionHeading id={id} icon={icon} title={tr(title)} color={color} {...link} />

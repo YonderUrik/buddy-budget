@@ -16,6 +16,7 @@ import { openTradeRepublicReader } from "./socket";
 import { readTradeRepublicCash } from "./data";
 import { readTradeRepublicInvestments, type TradeRepublicInvestments } from "./investments";
 import { saveTradeRepublicInvestments } from "./investments-store";
+import { notifyTradeRepublicSupport } from "./support";
 import { describeError, tradeRepublicDebug, tradeRepublicDiagnostics, withTradeRepublicDiagnostics } from "./debug";
 
 /** Reserve the existing global sync job and account lock before scheduling background work. */
@@ -92,6 +93,8 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
     if (data.unrecognized || !data.reconciled) {
       recordTradeRepublicUnrecognized(data.unrecognized);
       logger.warn("trade_republic.sync.incomplete", { unrecognized: data.unrecognized, reconciled: data.reconciled, diagnostics: tradeRepublicDiagnostics() });
+      // Skipped event types need a parser update; a balance gap alone is only logged.
+      if (data.unrecognized) await notifyTradeRepublicSupport("unrecognized", "unknown-event-type", tradeRepublicDiagnostics(), userId);
     }
   } catch (error) {
     const expired = error instanceof TradeRepublicError && error.reason === "expired";
@@ -100,7 +103,9 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
     await update({ phase: expired ? "expired" : "error" });
     recordTradeRepublicRequest("sync", "error", performance.now() - started);
     // Provider bodies and cookies must never enter logs, including on network failures: the trail holds only shapes, enums and counts.
-    logger.warn("trade_republic.sync.failed", { reason: error instanceof TradeRepublicError ? error.reason : "internal", diagnostics: tradeRepublicDiagnostics() });
+    const reason = error instanceof TradeRepublicError ? error.reason : "internal";
+    logger.warn("trade_republic.sync.failed", { reason, diagnostics: tradeRepublicDiagnostics() });
+    await notifyTradeRepublicSupport("sync", reason, tradeRepublicDiagnostics(), userId);
   } finally { clearInterval(heartbeat); reader?.close(); await store.releaseAccountLock(accountId); }
 }
 
@@ -119,6 +124,8 @@ async function syncInvestments(userId: string, externalAccountHash: string, inve
   } catch (error) {
     tradeRepublicDebug("investments.error", error instanceof TradeRepublicError ? { reason: error.reason } : { reason: "internal", error: describeError(error) });
     recordTradeRepublicRequest("investments", "error", performance.now() - started);
-    logger.warn("trade_republic.investments.failed", { reason: error instanceof TradeRepublicError ? error.reason : "internal", diagnostics: tradeRepublicDiagnostics() });
+    const reason = error instanceof TradeRepublicError ? error.reason : "internal";
+    logger.warn("trade_republic.investments.failed", { reason, diagnostics: tradeRepublicDiagnostics() });
+    await notifyTradeRepublicSupport("investments", reason, tradeRepublicDiagnostics(), userId);
   }
 }

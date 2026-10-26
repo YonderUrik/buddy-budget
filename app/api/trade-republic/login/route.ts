@@ -7,7 +7,7 @@ import { getUserCurrency } from "@/lib/investments/operations";
 import { rejectIfDemoActive } from "@/lib/start/demo";
 import { resolveProfile } from "@/lib/localization/config";
 import { bindRequestUser, requestLogger, recordTradeRepublicRequest, withRoute } from "@/lib/observability";
-import { createTradeRepublicClient, TradeRepublicError, connectTradeRepublic, prepareTradeRepublicSync, runTradeRepublicSync, readPendingLogin, savePendingLogin, clearPendingLogin, allowTradeRepublicAttempt, withTradeRepublicLoginLock, tradeRepublicDebug, describeError, withTradeRepublicDiagnostics, tradeRepublicDiagnostics } from "@/lib/trade-republic";
+import { createTradeRepublicClient, TradeRepublicError, connectTradeRepublic, prepareTradeRepublicSync, runTradeRepublicSync, readPendingLogin, savePendingLogin, clearPendingLogin, allowTradeRepublicAttempt, withTradeRepublicLoginLock, tradeRepublicDebug, describeError, withTradeRepublicDiagnostics, tradeRepublicDiagnostics, notifyTradeRepublicSupport } from "@/lib/trade-republic";
 
 export const maxDuration = 300;
 const inputSchema = z.discriminatedUnion("action", [
@@ -73,6 +73,8 @@ async function handlePost(request: NextRequest) {
     const reason = error instanceof TradeRepublicError ? error.reason : "unavailable";
     tradeRepublicDebug("login.error", { action: input.action, ...(error instanceof TradeRepublicError ? { reason } : { reason: "internal", error: describeError(error) }) });
     requestLogger().warn("trade_republic.login.failed", { reason, diagnostics: tradeRepublicDiagnostics() });
+    // Only adapter problems reach support; a non-Trade Republic error here is internal, not the user's.
+    await notifyTradeRepublicSupport("login", error instanceof TradeRepublicError ? reason : "internal", tradeRepublicDiagnostics(), userId);
     recordTradeRepublicRequest("login", "error", performance.now() - started);
     const messages = {
       expired: "La sessione Trade Republic è scaduta o l'accesso è stato rifiutato. Accedi di nuovo.",

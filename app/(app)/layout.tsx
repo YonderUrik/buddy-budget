@@ -36,13 +36,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <>
               <DemoBannerContainer />
               <StartProgressWatcher />
-              <WelcomeToast />
             </>
           )}
           {children}
           {isPublicDemo ? <PublicDemoFooter /> : null}
         </PrivacyBoundary>
       </AttentionShell>
+      {/* Outside the shell: the section transition remounts the page at every section change, the toast must not. */}
+      {!isPublicDemo && <WelcomeToast />}
       </SearchProvider>
       </QuickAddProvider>
       <SyncProgressIndicator>

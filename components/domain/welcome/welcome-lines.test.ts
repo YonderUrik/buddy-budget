@@ -4,7 +4,6 @@ import { happenedLine, waitingLine, welcomeToastContent } from "./welcome-lines"
 
 const it_ = (source: string, values?: Record<string, string | number>) => translate("it", source, values);
 const en = (source: string, values?: Record<string, string | number>) => translate("en", source, values);
-const join = (items: string[]) => new Intl.ListFormat("it-IT", { type: "conjunction" }).format(items);
 
 describe("happenedLine", () => {
   it("names what happened with the right number", () => {
@@ -29,22 +28,25 @@ describe("welcomeToastContent", () => {
   const toDecide = waitingLine({ kind: "to_decide", count: 7 }, it_);
   const subscriptions = waitingLine({ kind: "subscriptions", count: 1 }, it_);
 
-  it("says what happened and what waits on two lines, with the action of the first thing that waits", () => {
-    expect(welcomeToastContent([movements, alerts], [toDecide, subscriptions], it_, join)).toEqual({
-      lines: [
-        "Mentre eri via: 12\u00a0movimenti nuovi e 1\u00a0avviso di prezzo scattato",
-        "Da sistemare: 7\u00a0movimenti senza categoria e 1\u00a0abbonamento da confermare",
-      ],
+  it("says what happened and everything that waits as one count, on one line, with the action of the first thing that waits", () => {
+    expect(welcomeToastContent([movements, alerts], [toDecide, subscriptions], it_)).toEqual({
+      line: "12\u00a0movimenti nuovi · 8\u00a0da sistemare",
       action: { label: "Decidi", href: "/categorizza", kind: "to_decide" },
     });
+    const english = welcomeToastContent([happenedLine({ kind: "movements", count: 12 }, en)], [waitingLine({ kind: "to_decide", count: 7 }, en)], en);
+    expect(english?.line).toBe("12\u00a0new movements · 7\u00a0to sort out");
   });
 
-  it("uses «Vedi» when nothing waits", () => {
-    expect(welcomeToastContent([movements], [], it_, join)).toEqual({
-      lines: ["Mentre eri via: 12\u00a0movimenti nuovi"],
+  it("names a second thing that happened and uses «Vedi» when nothing waits", () => {
+    expect(welcomeToastContent([movements, alerts], [], it_)).toEqual({
+      line: "12\u00a0movimenti nuovi · 1\u00a0avviso di prezzo scattato",
       action: { label: "Vedi", href: "/liquidita", kind: "movements" },
     });
-    expect(welcomeToastContent([], [toDecide], it_, join)?.lines).toEqual(["Da sistemare: 7\u00a0movimenti senza categoria"]);
-    expect(welcomeToastContent([], [], it_, join)).toBeNull();
+    expect(welcomeToastContent([movements], [], it_)?.line).toBe("12\u00a0movimenti nuovi");
+  });
+
+  it("says nothing when only the backlog waits: it is not news", () => {
+    expect(welcomeToastContent([], [toDecide], it_)).toBeNull();
+    expect(welcomeToastContent([], [], it_)).toBeNull();
   });
 });

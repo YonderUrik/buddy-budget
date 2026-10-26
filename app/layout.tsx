@@ -21,6 +21,8 @@ const UMAMI_WEBSITE_ID = "051f9e59-8ac4-4dc2-8d9e-825421b3af8c";
  * Il tracker invia gli eventi alla sua stessa cartella (/stats/api/send), instradata anch'essa a Umami.
  */
 const UMAMI_SCRIPT_SRC = "/stats/script.js";
+/** Toasts at the top of the screen sit below the notch or status bar (installed app, iPhone). */
+const TOASTER_TOP_OFFSET = "calc(env(safe-area-inset-top) + 12px)";
 
 const hankenGrotesk = Hanken_Grotesk({
   variable: "--font-hanken",
@@ -79,7 +81,8 @@ export default async function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MotionProvider>
               <LocalModeProvider enabled={isLocalMode()} emailAvailable={instance.auth.emailDelivery && (!isLocalMode() || Boolean(process.env.SELFHOST_OWNER_EMAIL))}>{children}</LocalModeProvider>
-              <Toaster />
+              {/* Top offsets clear the notch: the «Dall'ultima visita» toast comes from the top on the phone. */}
+              <Toaster offset={{ top: TOASTER_TOP_OFFSET }} mobileOffset={{ top: TOASTER_TOP_OFFSET }} />
             </MotionProvider>
           </ThemeProvider>
         </QueryProvider></LocalizationProvider></InstanceProvider>

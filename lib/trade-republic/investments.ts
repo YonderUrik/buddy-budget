@@ -94,6 +94,7 @@ export async function readTradeRepublicInvestments(reader: TradeRepublicReader, 
   if (events.length > MAX_DETAILS) { tradeRepublicDebug("rejected", { check: "too-many-investment-events", count: events.length }); throw new TradeRepublicError("invalid-response"); }
   const startedAt = Date.now();
   const trades: TradeRepublicTrade[] = [];
+  let rewardsWithoutShares = 0;
   const problems = new Map<string, { count: number; example: unknown }>();
   const note = (check: string, event: TradeRepublicInvestmentEvent, example: unknown) => {
     const key = `${check} ${event.eventType}`;
@@ -115,6 +116,9 @@ export async function readTradeRepublicInvestments(reader: TradeRepublicReader, 
     const fees = feeText === undefined ? 0 : Math.abs(parseShownNumber(feeText));
     const taxes = taxText === undefined ? 0 : Math.abs(parseShownNumber(taxText));
     const free = FREE_SHARE_TYPES.has(event.eventType);
+    // A reward whose detail names no instrument at all (only a header) granted no share: nothing to import. If it did
+    // grant one, the positions check below fails on that ISIN, so this can never hide a holding.
+    if (free && isins.size === 0 && rows.length === 0) { rewardsWithoutShares++; continue; }
     if (isins.size !== 1) { note(isins.size ? "several-isins" : "missing-isin", event, describeDetail(detail, rows)); continue; }
     if (!(quantity > 0) || !(price > 0) || !Number.isFinite(fees) || !Number.isFinite(taxes)) { note("missing-quantity-or-price", event, describeDetail(detail, rows)); continue; }
     const side = free || event.amount < 0 ? "acquisto" : "vendita";
@@ -124,7 +128,7 @@ export async function readTradeRepublicInvestments(reader: TradeRepublicReader, 
     }
     trades.push({ eventId: event.id, eventType: event.eventType, date: event.date, isin: [...isins][0], name: field(FIELDS.asset)?.trim() || null, side, quantity, price, fees: free ? 0 : fees, taxes });
   }
-  tradeRepublicDebug("investments.read", { events: events.length, trades: trades.length, problems: problems.size, types: Object.fromEntries([...new Set(events.map((e) => e.eventType))].map((type) => [type, events.filter((e) => e.eventType === type).length])) });
+  tradeRepublicDebug("investments.read", { events: events.length, trades: trades.length, rewardsWithoutShares, problems: problems.size, types: Object.fromEntries([...new Set(events.map((e) => e.eventType))].map((type) => [type, events.filter((e) => e.eventType === type).length])) });
   if (problems.size) {
     tradeRepublicDebug("investments.problems", { findings: [...problems.entries()].map(([key, found]) => ({ key, count: found.count, example: found.example })) });
     throw new TradeRepublicError("invalid-response");

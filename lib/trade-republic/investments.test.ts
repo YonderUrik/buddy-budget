@@ -35,6 +35,11 @@ describe("Trade Republic investment details", () => {
     const result = await readTradeRepublicInvestments(api, [{ id: "sell", eventType: "TRADING_TRADE_EXECUTED", date: "2026-05-01", amount: 106.5 }, { id: "gift", eventType: "SAVEBACK_PAYOUT", date: "2026-05-02", amount: 5 }]);
     expect(result.trades.map(({ side, fees, taxes }) => ({ side, fees, taxes }))).toEqual([{ side: "vendita", fees: 1, taxes: 2.5 }, { side: "acquisto", fees: 0, taxes: 0 }]);
   });
+  it("skips a reward whose detail names no instrument, leaving the positions check to catch a missing share", async () => {
+    const api = reader({ buy: detail([["Shares", "3"], ["Share price", "€64.00"], ["Fee", "€0.00"]]), reward: { id: "r", sections: [{ title: " ", type: "header", action: null, data: { icon: "logos/referral/v2", status: "executed" } }] } });
+    const result = await readTradeRepublicInvestments(api, [{ ...buy, amount: -192 }, { id: "reward", eventType: "REFERRAL_FIRST_TRADE_EXECUTED_INVITER", date: "2026-03-03", amount: 15 }]);
+    expect(result.trades.map((trade) => trade.eventId)).toEqual(["buy"]);
+  });
   it("fails after reading every event when a detail cannot be mapped, instead of importing a wrong trade", async () => {
     const api = reader({ buy: detail([["Shares", "5"], ["Share price", "€95.56"]]), other: { sections: [] } });
     await expect(readTradeRepublicInvestments(api, [buy, { ...buy, id: "other" }, { ...buy, id: "split", eventType: "SSP_CORPORATE_ACTION_SECURITIES" }])).rejects.toThrow("invalid-response");

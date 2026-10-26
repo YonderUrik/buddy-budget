@@ -5,7 +5,7 @@ import { PublicDemoBanner, PublicDemoFooter } from "@/components/domain/public-d
 import { BackHistoryRecorder } from "@/components/domain/shared";
 import { PersonalImportIsland } from "@/components/domain/personal-import";
 import { SyncProgressIndicator } from "@/components/domain/sync";
-import { WelcomeToast } from "@/components/domain/welcome";
+import { VisitHeartbeat } from "@/components/domain/welcome";
 import { QuickReportProvider } from "@/components/domain/support";
 import { QuickAddProvider } from "@/components/domain/quick-add";
 import { SearchProvider } from "@/components/domain/search";
@@ -16,7 +16,7 @@ import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { AttentionShell } from "./attention-shell";
 import { SidebarInsightsSlot } from "./sidebar-insights-slot";
 
-/** Layout of every signed-in app page: AppShell with the sidebar (and its financial summary), the global sync panel, the «Scrivici» sheet, the «‹» history, the "hide amounts" preference, the remembered account for «Rientra in BuddyBudget» and the «Dall'ultima visita» toast with its visit heartbeat. */
+/** Layout of every signed-in app page: AppShell with the sidebar (and its financial summary), the global sync panel, the «Scrivici» sheet, the «‹» history, the "hide amounts" preference, the remembered account for «Rientra in BuddyBudget» and the visit heartbeat behind «Dall'ultima visita». */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
   const isPublicDemo = isPublicDemoUserId(session?.user.id);
@@ -42,8 +42,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {isPublicDemo ? <PublicDemoFooter /> : null}
         </PrivacyBoundary>
       </AttentionShell>
-      {/* Outside the shell: the section transition remounts the page at every section change, the toast must not. */}
-      {!isPublicDemo && <WelcomeToast />}
+      {/* Outside the shell: the section transition remounts the page at every section change, the heartbeat must not. */}
+      {!isPublicDemo && <VisitHeartbeat />}
       </SearchProvider>
       </QuickAddProvider>
       <SyncProgressIndicator>

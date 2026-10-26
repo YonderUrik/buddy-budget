@@ -18,6 +18,7 @@ import { GoalsPanoramicaSection, useGoalFormatters } from "@/components/domain/g
 import { EmptyState, LoadError } from "@/components/domain/shared";
 import { StartChecklistSection } from "@/components/domain/start";
 import { WhatsNewSection } from "@/components/domain/whats-new";
+import { WelcomeChip } from "@/components/domain/welcome";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
@@ -168,7 +169,7 @@ export default function PanoramicaPage() {
         currency={currency}
         nextDue={dues[0] ? { name: dues[0].name, date: dues[0].date, amount: dues[0].amount } : null}
         today={today}
-        dateAside={<WhatsNewSection />}
+        dateAside={<><WelcomeChip /><WhatsNewSection /></>}
       />
 
       <RenewalBanner alerts={renewalAlerts} renewHref={`${RENEW_PATH}panoramica`} />

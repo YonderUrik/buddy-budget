@@ -66,32 +66,15 @@ export function waitingLine(item: WelcomeWaiting, tr: Translate): WelcomeLine {
   }
 }
 
-/** What the «Dall'ultima visita» toast says: one short line and the most useful action. */
-export interface WelcomeToastContent {
-  line: string;
-  action: { label: string; href: string; kind: WelcomeItemKind };
-}
-
 /**
- * Packs the summary into one line that fits a phone: the first thing that happened, then everything that waits as one
- * count («12 movimenti nuovi · 8 da sistemare»), or the second thing that happened when nothing waits. The action is
- * the first thing that waits (or «Vedi» on the first thing that happened). Nothing happened, nothing to say: what
- * waits alone is not news, Liquidità and Categorizza already show it.
+ * The «Dall'ultima visita» label beside the Panoramica date: the first thing that happened, followed by «e altro» when
+ * the opened summary has more lines («12 movimenti nuovi e altro»). Nothing happened, no label: what waits alone is
+ * not news, Liquidità and Categorizza already show it.
  */
-export function welcomeToastContent(
-  happened: readonly WelcomeLine[],
-  waiting: readonly WelcomeLine[],
-  tr: Translate,
-): WelcomeToastContent | null {
+export function welcomeLabel(happened: readonly WelcomeLine[], waiting: readonly WelcomeLine[], tr: Translate): string | null {
   const head = happened[0];
   if (!head) return null;
   // The count never ends a line apart from its words.
-  const label = (line: WelcomeLine) => `${line.figure}\u00a0${line.title}`;
-  const waitingCount = waiting.reduce((sum, line) => sum + line.figure, 0);
-  const second = waitingCount > 0 ? tr("{0} da sistemare", { 0: waitingCount }).replace(" ", "\u00a0") : happened[1] ? label(happened[1]) : null;
-  const first = waiting[0] ?? head;
-  return {
-    line: second ? `${label(head)} · ${second}` : label(head),
-    action: { label: first.action ?? tr("Vedi"), href: first.href, kind: first.kind },
-  };
+  const label = `${head.figure}\u00a0${head.title}`;
+  return happened.length + waiting.length > 1 ? `${label} ${tr("e altro")}` : label;
 }

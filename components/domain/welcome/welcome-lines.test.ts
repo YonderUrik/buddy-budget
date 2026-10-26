@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { translate } from "@/lib/localization/messages";
-import { happenedLine, waitingLine, welcomeToastContent } from "./welcome-lines";
+import { happenedLine, waitingLine, welcomeLabel } from "./welcome-lines";
 
 const it_ = (source: string, values?: Record<string, string | number>) => translate("it", source, values);
 const en = (source: string, values?: Record<string, string | number>) => translate("en", source, values);
@@ -22,31 +22,22 @@ describe("waitingLine", () => {
   });
 });
 
-describe("welcomeToastContent", () => {
+describe("welcomeLabel", () => {
   const movements = happenedLine({ kind: "movements", count: 12 }, it_);
   const alerts = happenedLine({ kind: "price_alerts", count: 1 }, it_);
   const toDecide = waitingLine({ kind: "to_decide", count: 7 }, it_);
-  const subscriptions = waitingLine({ kind: "subscriptions", count: 1 }, it_);
 
-  it("says what happened and everything that waits as one count, on one line, with the action of the first thing that waits", () => {
-    expect(welcomeToastContent([movements, alerts], [toDecide, subscriptions], it_)).toEqual({
-      line: "12\u00a0movimenti nuovi · 8\u00a0da sistemare",
-      action: { label: "Decidi", href: "/categorizza", kind: "to_decide" },
-    });
-    const english = welcomeToastContent([happenedLine({ kind: "movements", count: 12 }, en)], [waitingLine({ kind: "to_decide", count: 7 }, en)], en);
-    expect(english?.line).toBe("12\u00a0new movements · 7\u00a0to sort out");
-  });
-
-  it("names a second thing that happened and uses «Vedi» when nothing waits", () => {
-    expect(welcomeToastContent([movements, alerts], [], it_)).toEqual({
-      line: "12\u00a0movimenti nuovi · 1\u00a0avviso di prezzo scattato",
-      action: { label: "Vedi", href: "/liquidita", kind: "movements" },
-    });
-    expect(welcomeToastContent([movements], [], it_)?.line).toBe("12\u00a0movimenti nuovi");
+  it("names the first thing that happened and says when the summary has more", () => {
+    expect(welcomeLabel([movements, alerts], [toDecide], it_)).toBe("12\u00a0movimenti nuovi e altro");
+    expect(welcomeLabel([movements], [toDecide], it_)).toBe("12\u00a0movimenti nuovi e altro");
+    expect(welcomeLabel([movements], [], it_)).toBe("12\u00a0movimenti nuovi");
+    expect(welcomeLabel([happenedLine({ kind: "movements", count: 1 }, en)], [waitingLine({ kind: "to_decide", count: 7 }, en)], en)).toBe(
+      "1\u00a0new movement and more"
+    );
   });
 
   it("says nothing when only the backlog waits: it is not news", () => {
-    expect(welcomeToastContent([], [toDecide], it_)).toBeNull();
-    expect(welcomeToastContent([], [], it_)).toBeNull();
+    expect(welcomeLabel([], [toDecide], it_)).toBeNull();
+    expect(welcomeLabel([], [], it_)).toBeNull();
   });
 });

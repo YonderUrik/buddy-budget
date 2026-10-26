@@ -4,9 +4,10 @@ import { describeShape, tradeRepublicDebug } from "./debug";
 
 const SOCKET_TIMEOUT_MS = 15_000;
 const MAX_FRAME_BYTES = 5 * 1024 * 1024;
-export type TradeRepublicTopic = "cash" | "timelineTransactions";
+/** Read-only topics: cash balance, timeline pages, one event's detail, current positions. */
+export type TradeRepublicTopic = "cash" | "timelineTransactions" | "timelineDetailV2" | "compactPortfolio";
 export interface TradeRepublicReader {
-  read(topic: TradeRepublicTopic, after?: string): Promise<unknown>;
+  read(topic: TradeRepublicTopic, params?: Record<string, string>): Promise<unknown>;
   close(): void;
 }
 
@@ -52,13 +53,13 @@ export async function openTradeRepublicReader(session: TradeRepublicSession): Pr
   });
   await connected;
   return {
-    read(topic, after) {
+    read(topic, params = {}) {
       if (pending || socket.readyState !== WebSocket.OPEN) return Promise.reject(new TradeRepublicError("unavailable"));
       const id = String(++nextId);
       return new Promise((resolve, reject) => {
         pending = { id, topic, resolve, reject, timer: setTimeout(() => fail("unavailable", `read-timeout:${topic}`), SOCKET_TIMEOUT_MS) };
-        tradeRepublicDebug("socket.sub", { id, topic, paged: !!after }, { trail: false });
-        socket.send(`sub ${id} ${JSON.stringify({ type: topic, ...(after ? { after } : {}) })}`);
+        tradeRepublicDebug("socket.sub", { id, topic, params: Object.keys(params) }, { trail: false });
+        socket.send(`sub ${id} ${JSON.stringify({ type: topic, ...params })}`);
       });
     },
     close: () => socket.close(),

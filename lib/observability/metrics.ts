@@ -849,7 +849,7 @@ export function recordTradeRepublicUnrecognized(count: number): void {
   if (count > 0) metrics().tradeRepublicUnrecognized.inc(count);
 }
 
-export function recordTradeRepublicRequest(action: "login" | "sync", outcome: "success" | "error", durationMs: number): void {
+export function recordTradeRepublicRequest(action: "login" | "sync" | "investments", outcome: "success" | "error", durationMs: number): void {
   metrics().tradeRepublic.inc({ action, outcome });
   metrics().tradeRepublicDuration.observe({ action, outcome }, durationMs / 1000);
 }

@@ -5484,5 +5484,6 @@
   "Disponibile": "Available",
   "Vai ai conti": "Go to accounts",
   "{0} movimento non ancora riconosciuto: lo importeremo appena possibile.": "{0} transaction not recognised yet: we will import it as soon as possible.",
-  "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.": "{0} transactions not recognised yet: we will import them as soon as possible."
+  "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.": "{0} transactions not recognised yet: we will import them as soon as possible.",
+  "Trade Republic è già collegato direttamente: i movimenti e gli investimenti arrivano dalla sincronizzazione, senza file": "Trade Republic is already connected directly: transactions and investments come from the sync, no file needed"
 }

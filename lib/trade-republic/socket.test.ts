@@ -22,7 +22,7 @@ describe("direct Trade Republic WebSocket", () => {
     socket.emit('1 A [{"currencyId":"EUR","amount":12}]');
     expect(await cash).toEqual([{ currencyId: "EUR", amount: 12 }]);
     expect(socket.sent.at(-1)).toBe("unsub 1");
-    const page = reader.read("timelineTransactions", "cursor");
+    const page = reader.read("timelineTransactions", { after: "cursor" });
     expect(socket.sent.at(-1)).toBe('sub 2 {"type":"timelineTransactions","after":"cursor"}');
     socket.emit('2 A {"items":[]}');
     expect(await page).toEqual({ items: [] });

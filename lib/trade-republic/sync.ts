@@ -14,6 +14,8 @@ import { createTradeRepublicClient, TradeRepublicError } from "./client";
 import { openTradeRepublicSession, sealTradeRepublicSession } from "./session";
 import { openTradeRepublicReader } from "./socket";
 import { readTradeRepublicCash } from "./data";
+import { readTradeRepublicInvestments, type TradeRepublicInvestments } from "./investments";
+import { saveTradeRepublicInvestments } from "./investments-store";
 import { describeError, tradeRepublicDebug, tradeRepublicDiagnostics, withTradeRepublicDiagnostics } from "./debug";
 
 /** Reserve the existing global sync job and account lock before scheduling background work. */
@@ -57,6 +59,11 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
     reader = await openTradeRepublicReader(session);
     await update({ phase: "fetching" });
     const data = await readTradeRepublicCash(reader, new Date().toISOString().slice(0, 10), async processed => { await update({ processed }); });
+    // Securities details are read on the same connection; their failure never blocks the cash import.
+    let investments: TradeRepublicInvestments | null = null;
+    let investmentsError: unknown;
+    try { investments = await readTradeRepublicInvestments(reader, data.investments); }
+    catch (error) { investmentsError = error; }
     reader.close(); reader = undefined;
     tradeRepublicDebug("sync.fetched", { movements: data.movements.length, investmentEvents: data.investmentEvents, unrecognized: data.unrecognized, reconciled: data.reconciled });
     const categoryId = await getFallbackCategoryId(userId);
@@ -76,6 +83,7 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
       await tx.update(tradeRepublicConnections).set({ session: sealTradeRepublicSession(session), lastSyncedAt: new Date(), status: "linked" }).where(eq(tradeRepublicConnections.id, connection.id));
       return count;
     });
+    await syncInvestments(userId, connection.externalAccountHash, investments, investmentsError);
     await categorizeNewMovementsSafely(userId);
     await update({ phase: "done", inserted, processed: data.movements.length, unrecognized: data.unrecognized });
     recordTradeRepublicRequest("sync", "success", performance.now() - started);
@@ -94,4 +102,23 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
     // Provider bodies and cookies must never enter logs, including on network failures: the trail holds only shapes, enums and counts.
     logger.warn("trade_republic.sync.failed", { reason: error instanceof TradeRepublicError ? error.reason : "internal", diagnostics: tradeRepublicDiagnostics() });
   } finally { clearInterval(heartbeat); reader?.close(); await store.releaseAccountLock(accountId); }
+}
+
+/**
+ * Write the securities history read in this sync to Investimenti, or log why not. Failures are reported with the
+ * diagnostic trail so the parser can be extended; the cash import has already been committed either way.
+ */
+async function syncInvestments(userId: string, externalAccountHash: string, investments: TradeRepublicInvestments | null, readError: unknown): Promise<void> {
+  const started = performance.now();
+  try {
+    if (!investments) throw readError;
+    const saved = await saveTradeRepublicInvestments(userId, externalAccountHash, investments);
+    recordTradeRepublicRequest("investments", "success", performance.now() - started);
+    // `enabled`: whether the quantities could be checked against Trade Republic's own positions.
+    logger.info("trade_republic.investments.completed", { inserted: saved.operations, created: saved.instrumentsCreated, enabled: saved.positionsChecked });
+  } catch (error) {
+    tradeRepublicDebug("investments.error", error instanceof TradeRepublicError ? { reason: error.reason } : { reason: "internal", error: describeError(error) });
+    recordTradeRepublicRequest("investments", "error", performance.now() - started);
+    logger.warn("trade_republic.investments.failed", { reason: error instanceof TradeRepublicError ? error.reason : "internal", diagnostics: tradeRepublicDiagnostics() });
+  }
 }

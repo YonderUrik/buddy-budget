@@ -5484,5 +5484,6 @@
   "Disponibile": "Verfügbar",
   "Vai ai conti": "Zu den Konten",
   "{0} movimento non ancora riconosciuto: lo importeremo appena possibile.": "{0} Umsatz noch nicht erkannt: Wir importieren ihn so bald wie möglich.",
-  "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.": "{0} Umsätze noch nicht erkannt: Wir importieren sie so bald wie möglich."
+  "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.": "{0} Umsätze noch nicht erkannt: Wir importieren sie so bald wie möglich.",
+  "Trade Republic è già collegato direttamente: i movimenti e gli investimenti arrivano dalla sincronizzazione, senza file": "Trade Republic ist bereits direkt verbunden: Umsätze und Investments kommen aus der Synchronisierung, ohne Datei"
 }

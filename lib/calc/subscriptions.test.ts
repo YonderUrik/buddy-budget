@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addMonthsIso, detectSubscriptions, monthlyEquivalent, nextChargeDate, subscriptionKey, type SubscriptionTxInput } from "./subscriptions";
+import { addMonthsIso, detectSubscriptions, legacySubscriptionKey, monthlyEquivalent, nextChargeDate, subscriptionKey, type SubscriptionTxInput } from "./subscriptions";
 
 const TODAY = "2026-10-10";
 let seq = 0;
@@ -13,6 +13,32 @@ function monthly(description: string, amounts: number[], endMonth: string, day: 
 describe("subscriptionKey", () => {
   it("ignora codici, numeri e rumore bancario", () => {
     expect(subscriptionKey("PAGAMENTO POS NETFLIX.COM 4471AB")).toBe(subscriptionKey("Pagamento POS Netflix.com 9921CD"));
+  });
+
+  it("legge oltre codici PayPal, numeri di fattura, carta e data dell'operazione", () => {
+    expect(subscriptionKey("PAYPAL *NOW 1292C SPOR 4029357733 IT Carta N. ***** 249 Data operazione 01/02/26")).toBe("now");
+    expect(subscriptionKey("PAYPAL *NOW X5105 SPOR 4029357733 IT Carta N. ***** 249 Data operazione 01/09/26")).toBe("now");
+    expect(subscriptionKey("APPLE.COM/BILL 800915904 IE Carta N. ***** 249 Data operazione 08/08/26")).toBe(subscriptionKey("APPLE.COM/BILL 891594 IE Carta N. ***** 249 Data operazione 08/09/26"));
+    expect(subscriptionKey("FASTWEB SpA Addebito SDD fattura a Vs carico da IT830010000012878470157 Mand 3F3811A24026403 Per ADDEBITO FASTWEB 2026-M025082159 SDD 240264")).toBe("fastweb");
+  });
+
+  it("riconosce lo stesso esercente scritto in modi diversi", () => {
+    expect(subscriptionKey("CLAUDE.AI SUBSCRIPTION ANTHROPIC.COM CA Carta N. ***** 249 Data operazione 02/05/26")).toBe("claude");
+    expect(subscriptionKey("Anthropic Claude Sub Anthropic.com Ca Carta N. Data Operazione")).toBe("claude");
+  });
+
+  it("per un esercente sconosciuto usa il sito o le parole senza la coda della carta", () => {
+    expect(subscriptionKey("FOOSTREAM.COM 88213 LU")).toBe(subscriptionKey("Abbonamento foostream.com/billing"));
+    expect(subscriptionKey("PALESTRA ZEUS Carta N. ***** 249 Data operazione 01/02/26")).toBe(subscriptionKey("PALESTRA ZEUS Carta N. ***** 249 Data operazione 03/03/26"));
+    expect(subscriptionKey("PALESTRA ZEUS Carta N. ***** 249 Data operazione 01/02/26")).toBe("palestra zeus");
+  });
+
+  it("le voci generiche del dizionario non fanno da esercente", () => {
+    expect(subscriptionKey("IMPOSTA DI BOLLO CONTO CORRENTE")).not.toBe("imposta di bollo");
+  });
+
+  it("tiene la chiave di prima per ritrovare le scelte già salvate", () => {
+    expect(legacySubscriptionKey("PAGAMENTO POS NETFLIX.COM 4471AB")).toBe("netflix com");
   });
 });
 
@@ -99,6 +125,67 @@ describe("detectSubscriptions", () => {
     ];
     const found = detectSubscriptions(apple, TODAY).map((s) => s.amount).sort((a, b) => a - b);
     expect(found).toEqual([0.99, 2.99]);
+  });
+
+  it("unisce le descrizioni diverse dello stesso abbonamento", () => {
+    const claude = [
+      ...monthly("CLAUDE.AI SUBSCRIPTION ANTHROPIC.COM CA Carta N. ***** 249 Data operazione 02/05/26", Array(5).fill(21.96), "2026-05", 4),
+      ...monthly("Anthropic Claude Sub Anthropic.com Ca Carta N. Data Operazione", Array(5).fill(21.96), "2026-10", 4),
+    ];
+    const found = detectSubscriptions(claude, TODAY);
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ key: "claude", name: "Claude", state: "attivo", lastDate: "2026-10-04" });
+    expect(found[0].aliases).toContain("anthropic claude sub anthropic com ca n data");
+    expect(found[0].aliases).toContain("claude ai subscription anthropic com ca n data");
+  });
+
+  it("segue un abbonamento oltre un cambio di prezzo anche con addebiti sparsi dello stesso esercente", () => {
+    const now = (code: string) => `PAYPAL *NOW ${code} SPOR 4029357733 IT Carta N. ***** 249`;
+    const rows = [
+      ...monthly(now("1292C"), Array(6).fill(29.99), "2026-04", 3),
+      ...monthly(now("X5105"), Array(6).fill(19.99), "2026-10", 3),
+      tx("2026-03-20", 9.99, now("A1B2")),
+      tx("2026-07-14", 6.99, now("Q9")),
+    ];
+    const found = detectSubscriptions(rows, TODAY);
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ name: "NOW", state: "attivo", amount: 19.99, lastDate: "2026-10-03", continued: true, priceChange: { from: 29.99, to: 19.99 } });
+  });
+
+  it("un abbonamento ripreso dopo una pausa a un prezzo vicino sostituisce quello fermo", () => {
+    const rows = [
+      ...monthly("PAYPAL *NOW 1292C SPOR", Array(4).fill(29.99), "2026-02", 3),
+      ...monthly("PAYPAL *NOW X5105 SPOR", Array(4).fill(19.99), "2026-10", 3),
+      tx("2026-05-11", 4.5, "PAYPAL *NOW 77 SPOR"),
+    ];
+    const found = detectSubscriptions(rows, TODAY);
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ state: "attivo", amount: 19.99, key: "now#19.99" });
+    expect(found[0].aliases).toContain("now#29.99");
+  });
+
+  it("non confonde due abbonamenti paralleli dello stesso esercente quando uno termina", () => {
+    const rows = [
+      ...monthly("APPLE.COM/BILL 800915904 IE", Array(6).fill(9.99), "2026-06", 6),
+      ...monthly("APPLE.COM/BILL 891594 IE", Array(10).fill(12.99), "2026-10", 8),
+      tx("2026-09-01", 1.99, "APPLE.COM/BILL 12 IE"),
+    ];
+    const found = detectSubscriptions(rows, TODAY);
+    expect(found.map((s) => [s.amount, s.state]).sort()).toEqual([
+      [12.99, "attivo"],
+      [9.99, "fermo"],
+    ]);
+  });
+
+  it("una bolletta che cambia di poco resta attiva anche se l'importo di prima non torna più", () => {
+    const fastweb = "FASTWEB SpA Addebito SDD fattura a Vs carico da IT830010000012878470157 Mand 3F3811A24026403 Per ADDEBITO FASTWEB 2026-M0250821";
+    const rows = [
+      ...monthly(`${fastweb}59`, [30.98, 30.98, 30.98, 30.98, 30.98, 30.98, 34.12, 31.5], "2026-10", 25),
+      tx("2026-03-02", 69, `${fastweb}11 MODEM`),
+      tx("2026-06-10", 12.4, `${fastweb}12`),
+    ];
+    const [bill] = detectSubscriptions(rows, "2026-10-28");
+    expect(bill).toMatchObject({ name: "Fastweb", state: "attivo", amount: 31.5, lastDate: "2026-10-25" });
   });
 
   it("ordina per prossimo addebito", () => {

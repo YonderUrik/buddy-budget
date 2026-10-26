@@ -32,6 +32,9 @@ export const MERCHANT_ALIASES: readonly MerchantAlias[] = [
   a("\\bGOOGLE\\b", "Google"),
   a("\\bMICROSOFT\\b|\\bMSFT\\b", "Microsoft"),
   a("\\bOPENAI\\b|\\bCHATGPT\\b", "OpenAI"),
+  a("\\bANTHROPIC\\b|\\bCLAUDE\\.AI\\b", "Claude"),
+  // NOW (Sky streaming): billed through PayPal as `PAYPAL *NOW <code> SPOR...`; a bare NOW only counts at the start.
+  a("\\bNOW ?TV\\b|(?:^|PAYPAL ?\\* ?)NOW\\b", "NOW"),
   a("\\bADOBE\\b", "Adobe"),
   a("\\bDROPBOX\\b", "Dropbox"),
   a("\\bPLAYSTATION\\b|\\bSONY INTERACTIVE\\b", "PlayStation"),
@@ -128,3 +131,19 @@ export const MERCHANT_ALIASES: readonly MerchantAlias[] = [
   a("\\bBASIC ?FIT\\b", "Basic-Fit"),
   a("\\bTECHNOGYM\\b", "Technogym"),
 ];
+
+/**
+ * Dictionary entries that name a kind of bank entry, not a brand: two transactions with the same one may come from
+ * unrelated payees, so they never identify a merchant on their own (subscription detection, logos).
+ */
+export const GENERIC_ALIAS_NAMES: ReadonlySet<string> = new Set([
+  "Prelievo contanti",
+  "Versamento contanti",
+  "Imposta di bollo",
+  "Commissioni bancarie",
+  "Stipendio",
+  "Agenzia delle Entrate",
+  "INPS",
+  "Parcheggio",
+  "Farmacia",
+]);

@@ -50,8 +50,17 @@ describe("direct Trade Republic cash sync persistence", () => {
     expect(await prepareTradeRepublicSync("other-user", accountId)).toEqual({ status: "not-found" });
     expect(redisSyncJobStore.acquireAccountLock).not.toHaveBeenCalled();
   });
-  it("does not partially update cash or balance when a monetary event is unknown", async () => {
-    vi.mocked(openTradeRepublicReader).mockResolvedValueOnce({ read: vi.fn().mockResolvedValueOnce([{ currencyId: "EUR", amount: "123" }]).mockResolvedValueOnce({ items: [providerEvent("NEW_EVENT")] }), close: vi.fn() });
+  it("imports known movements and the balance, and reports an unknown event type instead of guessing it", async () => {
+    vi.mocked(openTradeRepublicReader).mockResolvedValueOnce({ read: vi.fn().mockResolvedValueOnce([{ currencyId: "EUR", amount: "123" }]).mockResolvedValueOnce({ items: [providerEvent(), { ...providerEvent("NEW_EVENT"), id: "synthetic-new" }] }), close: vi.fn() });
+    await runTradeRepublicSync(userId, accountId, "job-unknown");
+    const saved = await db.select().from(transactions).where(eq(transactions.accountId, accountId));
+    expect(saved.map(row => row.externalId)).toEqual(["trade-republic:synthetic-event"]);
+    const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId)); expect(account.balance).toBe("123.00");
+    expect(redisSyncJobStore.updateAccount).toHaveBeenCalledWith(userId, "job-unknown", accountId, expect.objectContaining({ phase: "done", inserted: 1, unrecognized: 1 }));
+  });
+  it("does not partially update cash or balance when an item is malformed", async () => {
+    const foreign = { ...providerEvent(), id: "synthetic-usd", amount: { value: -5, currency: "USD" } };
+    vi.mocked(openTradeRepublicReader).mockResolvedValueOnce({ read: vi.fn().mockResolvedValueOnce([{ currencyId: "EUR", amount: "123" }]).mockResolvedValueOnce({ items: [providerEvent(), foreign] }), close: vi.fn() });
     await runTradeRepublicSync(userId, accountId, "job-error");
     expect(await db.select().from(transactions).where(eq(transactions.accountId, accountId))).toHaveLength(0);
     const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId)); expect(account.balance).toBe("0.00");

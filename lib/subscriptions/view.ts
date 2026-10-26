@@ -2,6 +2,7 @@
 
 import {
   CADENCE_RULES,
+  legacySubscriptionKey,
   monthlyEquivalent,
   nextChargeDate,
   type DetectedSubscription,
@@ -83,11 +84,27 @@ function rollForward(date: string, cadence: SubscriptionCadence, today: string):
   return next;
 }
 
+/** Length a bank-text name was cut to when saved with a decision (`SUBSCRIPTION_NAME_MAX`). */
+const SUBSCRIPTION_SNAPSHOT_LENGTH = 79;
+
+/**
+ * True when the saved name is the bank text the user saw when deciding (detected names were raw bank descriptions,
+ * shortened to 80 characters), not a name they typed: then the name read from the latest charges is better.
+ */
+function isBankSnapshot(row: StoredSubscriptionRow): boolean {
+  if (row.origin !== "rilevato" || !row.name) return false;
+  const base = row.key.split("#")[0];
+  const nameKey = legacySubscriptionKey(row.name);
+  if (nameKey === base) return true;
+  const complete = nameKey.slice(0, nameKey.lastIndexOf(" "));
+  return row.name.length >= SUBSCRIPTION_SNAPSHOT_LENGTH && complete.length > 0 && base.startsWith(complete);
+}
+
 function fromDetected(detected: DetectedSubscription, row: StoredSubscriptionRow | undefined): SubscriptionItem {
   return {
     key: detected.key,
     id: row?.id ?? null,
-    name: row?.name ?? detected.name,
+    name: row?.name && !isBankSnapshot(row) ? row.name : detected.name,
     origin: row?.origin ?? "rilevato",
     decision: row?.status ?? "da-confermare",
     activity: detected.state,
@@ -130,12 +147,48 @@ function fromStoredOnly(row: StoredSubscriptionRow, today: string): Subscription
   };
 }
 
+/**
+ * Pairs each detected series with its saved choice: by key first, then by one of the series' older keys (an earlier
+ * bank spelling, price or detection version), latest first. A detected choice saved under an older key of a series that
+ * already has one is a duplicate of it and is not listed on its own; manual rows match only by key.
+ */
+export function matchStoredRows(detected: readonly DetectedSubscription[], rows: readonly StoredSubscriptionRow[]) {
+  const byKey = new Map(rows.map((row) => [row.key, row]));
+  const result = new Map<string, StoredSubscriptionRow>();
+  const used = new Set<string>();
+  let viaAlias = 0;
+  for (const d of detected) {
+    const row = byKey.get(d.key);
+    if (row && !used.has(row.id)) {
+      result.set(d.key, row);
+      used.add(row.id);
+    }
+  }
+  for (const d of detected) {
+    if (result.has(d.key)) continue;
+    const row = d.aliases.map((alias) => byKey.get(alias)).find((r) => r && r.origin === "rilevato" && !used.has(r.id));
+    if (!row) continue;
+    result.set(d.key, row);
+    used.add(row.id);
+    viaAlias += 1;
+  }
+  let duplicates = 0;
+  for (const d of detected) {
+    for (const alias of d.aliases) {
+      const row = byKey.get(alias);
+      if (!row || row.origin !== "rilevato" || used.has(row.id)) continue;
+      used.add(row.id);
+      duplicates += 1;
+    }
+  }
+  return { rows: result, used, viaAlias, duplicates };
+}
+
 /** Costruisce la vista: rilevati + scelte salvate (+ manuali), con i totali dei soli abbonamenti confermati e attivi. */
 export function buildSubscriptionsView(detected: readonly DetectedSubscription[], rows: readonly StoredSubscriptionRow[], today: string): SubscriptionsView {
-  const byKey = new Map(rows.map((row) => [row.key, row]));
-  const items: SubscriptionItem[] = detected.map((d) => fromDetected(d, byKey.get(d.key)));
-  const seen = new Set(detected.map((d) => d.key));
-  for (const row of rows) if (!seen.has(row.key)) items.push(fromStoredOnly(row, today));
+  const matched = matchStoredRows(detected, rows);
+  const items: SubscriptionItem[] = detected.map((d) => fromDetected(d, matched.rows.get(d.key)));
+  for (const row of rows) if (!matched.used.has(row.id)) items.push(fromStoredOnly(row, today));
 
   items.sort((a, b) => (a.nextDate ?? "9999") < (b.nextDate ?? "9999") ? -1 : 1);
   const confirmed = items.filter((i) => i.decision === "confermato" && i.activity === "attivo" && i.monthly !== null);

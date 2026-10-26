@@ -256,7 +256,7 @@ Example: Regali & Donazioni (Saltuarie), 50 € a month, rollover from July. Jul
 
 ### 4.13 Subscription detection
 
-`detectSubscriptions` ([`lib/calc/subscriptions.ts`](../../lib/calc/subscriptions.ts)) reads expenses of the last 26 months, excluding categories of type `futuro`, `entrata` and `trasferimento`. It groups them by `subscriptionKey` (the merchant key without tokens that contain digits) and tries each cadence from the most frequent:
+`detectSubscriptions` ([`lib/calc/subscriptions.ts`](../../lib/calc/subscriptions.ts)) reads expenses of the last 26 months, excluding categories of type `futuro`, `entrata` and `trasferimento`. It groups them by `subscriptionKey`, which gives every spelling of one merchant the same key, and tries each cadence from the most frequent:
 
 | Cadence | Gap (days) | Min charges | Max amount spread | Grace |
 |---|---|---|---|---|
@@ -266,7 +266,11 @@ Example: Regali & Donazioni (Saltuarie), 50 € a month, rollover from July. Jul
 | semestrale | 174-190 | 3 | 0.25 | 21 |
 | annuale | 355-376 | 2 | 0.25 | 30 |
 
-A series passes if every gap fits the window (one skipped charge at double distance is forgiven), the day of the month stays within 5 days of the median for monthly or longer cadences, and amounts are constant (`(max - min) / median` within the spread) or show one clean price change between 0.5x and 2x. If the whole series fails, charges are clustered by amount (1% tolerance, at least 3 charges) to separate several subscriptions billed by one merchant.
+`subscriptionKey` tries, in order: a non-generic brand of the merchant dictionary (`APPLE.COM/BILL 800915904 IE` and `Apple.com/bill` → `apple`; `CLAUDE.AI SUBSCRIPTION ANTHROPIC.COM` and `Anthropic Claude Sub` → `claude`; `PAYPAL *NOW 1292C SPOR` → `now`), then the last website in the text that is not a payment processor (`foostream.com` → `foostream`), then the words of the text without digit-bearing tokens, the card and booking-date tail («Carta N. ***** 249 Data operazione 01/02/26»), country codes and single letters. Generic dictionary entries (cash withdrawal, stamp duty, fees, salary…) never key a merchant. The detected name is the brand when the dictionary knows it, else the bank text of the last charge.
+
+A series passes if every gap fits the window (one skipped charge at double distance is forgiven), the day of the month stays within 5 days of the median for monthly or longer cadences, and amounts are constant (`(max - min) / median` within the spread) or move in at most 3 clean price changes (runs of one price, each but the last with at least 2 charges, each change between 0.5x and 2x; the latest change is reported). If the whole series fails, charges are clustered by amount (1% tolerance, at least 3 charges) to separate several subscriptions billed by one merchant, oldest cluster first. A cluster that comes out stopped is followed into the merchant's later charges: each next charge must fall in the cadence window (or one period later) and be within 0.5x-2x of the previous one, and charges of a cluster with 2 or more charges inside the stopped series' dates are a parallel subscription and are never taken. If the continued series passes, it replaces the stopped one (`continued`). A stopped series followed later by an active one of the same merchant at a price within 0.5x-2x (a plan changed after a pause) is not listed: the active one takes its keys.
+
+Example: `PAYPAL *NOW 1292C …` at 29.99 from November to February and `PAYPAL *NOW X5105 …` at 19.99 from March, with a 9.99 one-off in May, is one active «NOW» at 19.99 with a price change from 29.99; until October 2026 it was a stopped 29.99 plus an active 19.99.
 
 ```text
 confidence = min(1, 0.45 + 0.07 * min(charges, 6)
@@ -280,9 +284,11 @@ monthly equivalent = amount * perMonth   (weekly 52/12, quarterly 1/3, half-year
 
 Example: 9.99 charged on the 5th of three consecutive months: `0.45 + 0.21 + 0.15 + 0.10 = 0.91`, next charge on the 5th of the following month. A yearly 120.00 charge counts 10.00 per month.
 
-`buildSubscriptionsView` ([`lib/subscriptions/view.ts`](../../lib/subscriptions/view.ts)) merges detection with the stored decisions and manual rows. Totals count only `confermato` and active items; detected items without a decision appear as «da confermare» and are totalled separately. Upcoming charges cover 30 days; price rises are shown for 365 days. Nothing detected is stored.
+`buildSubscriptionsView` ([`lib/subscriptions/view.ts`](../../lib/subscriptions/view.ts)) merges detection with the stored decisions and manual rows. `matchStoredRows` pairs a series with its decision by key, then by one of its `aliases`: the keys the previous detection gave each bank spelling (`legacySubscriptionKey`, alone and per amount cluster), the per-amount keys of the merchant, and the keys of a stopped series it replaced. Decisions saved before the new keys therefore keep applying, and a second decision under another older key of the same series is a duplicate and is hidden instead of showing as «non addebitato da un po'». Manual rows match only by key. A saved name that is the untouched bank snapshot gives way to the detected name; a name the user typed is kept. Totals count only `confermato` and active items; detected items without a decision appear as «da confermare» and are totalled separately. Upcoming charges cover 30 days; price rises are shown for 365 days. Nothing detected is stored.
 
 A decision («È un abbonamento», «Non lo è», «È terminato») is an upsert on `(user, key)` with a snapshot of what the user saw. The detected name is the raw bank description of the last charge, often longer than the 80 characters allowed for a typed name, so for decisions it is shortened to 80 characters instead of being rejected; the key is matched as is (up to 1000 characters). A refused save is logged as `subscriptions.save.rejected` (`reason`, and `field` for invalid input) and the list shows the error as a toast.
+
+`subscriptions.detect.completed` logs, besides the counts per state, `continued` (series followed across a price or plan change), `matchedOlderKey` (decisions found under an older key) and `mergedDuplicates` (duplicate decisions hidden).
 
 ### 4.13 Transaction detail
 

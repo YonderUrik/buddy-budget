@@ -20,6 +20,8 @@ export const MERCHANT_LOGO_DOMAINS: Readonly<Record<string, string>> = {
   Google: "google.com",
   Microsoft: "microsoft.com",
   OpenAI: "openai.com",
+  Claude: "claude.ai",
+  NOW: "nowtv.it",
   Adobe: "adobe.com",
   Dropbox: "dropbox.com",
   PlayStation: "playstation.com",

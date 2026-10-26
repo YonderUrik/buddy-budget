@@ -80,6 +80,10 @@ export interface LogFields {
   corrected?: number;
   pending?: number;
   stopped?: number;
+  /** Subscription detection: series followed across a price or plan change, choices found under an older key, duplicate choices hidden. */
+  continued?: number;
+  matchedOlderKey?: number;
+  mergedDuplicates?: number;
   /** Origine di una categoria applicata da sola (enum chiuso `AUTOMATIC_CATEGORY_SOURCES`: regola, storico, assistente). */
   categorySource?: string;
   /** Come è stato ricavato il nome leggibile di una transazione (enum chiuso `MerchantNameSource`). */

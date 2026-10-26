@@ -21,8 +21,8 @@ describe("Trade Republic direct cash reader", () => {
   it("classifies the event types seen on a real account", async () => {
     const items = [event("atm", "CARD_ATM_WITHDRAWAL"), event("aft", "CARD_AFT"), event("topup", "PAYMENT_INBOUND_CREDIT_CARD", 50), event("bollo", "STAMP_DUTY_TAX_PAID", -2), event("gift", "GIFTER_TRANSACTION", -25), event("verify", "CARD_VERIFICATION", 0), event("order", "ORDER_EXECUTED", -100), event("referral", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER", 15)];
     const result = await readTradeRepublicCash(reader({ items }), "2026-10-25");
-    expect(result.movements.map(movement => movement.id)).toEqual(["atm", "aft", "topup", "bollo", "gift"]);
-    expect(result.investmentEvents).toBe(2);
+    expect(result.movements.map(movement => movement.id)).toEqual(["atm", "aft", "topup", "bollo", "gift", "referral"]);
+    expect(result.investmentEvents).toBe(1);
   });
   it("reads the whole timeline before failing, so one failure reports every malformed item", async () => {
     const pages = [{ items: [{ id: "broken" }, event("a")], cursors: { after: "next" } }, { items: [{ ...event("b"), amount: { value: -1, currency: "USD" } }] }];

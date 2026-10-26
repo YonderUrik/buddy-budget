@@ -43,7 +43,8 @@ const LEGACY_DUPLICATE_MS = 500;
 /** pytr `ConditionalEventType.TRADE_INVOICE`: buy or sell, by the sign of the booked amount. */
 const TRADE_TYPES = new Set(["BENEFITS_SPARE_CHANGE_EXECUTION", "IPO_TRADE_EXECUTED", "ORDER_EXECUTED", "SAVINGS_PLAN_EXECUTED", "SAVINGS_PLAN_INVOICE_CREATED", "SPARE_CHANGE_AGGREGATE", "TRADE_CORRECTED", "TRADE_INVOICE", "TRADING_SAVINGSPLAN_EXECUTED", "TRADING_TRADE_EXECUTED"]);
 /** Shares paid by Trade Republic (pytr `SAVEBACK`, plus referral and Saveback payouts): no money of the user. */
-const FREE_SHARE_TYPES = new Set(["ACQUISITION_TRADE_PERK", "BENEFITS_SAVEBACK_EXECUTION", "SAVEBACK_AGGREGATE", "SAVEBACK_PAYOUT", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER"]);
+// The referral bonus (`REFERRAL_FIRST_TRADE_EXECUTED_INVITER`, «Empfehlungsbonus erhalten») is cash: data.ts imports it.
+const FREE_SHARE_TYPES = new Set(["ACQUISITION_TRADE_PERK", "BENEFITS_SAVEBACK_EXECUTION", "SAVEBACK_AGGREGATE", "SAVEBACK_PAYOUT"]);
 const TRANSFER_IN_TYPES = new Set(["SSP_SECURITIES_TRANSFER_INCOMING"]);
 /** Securities events this importer does not map yet: they fail the import loudly instead of moving holdings silently. */
 const UNSUPPORTED_TYPES = new Set(["SSP_CORPORATE_ACTION_INVOICE_SHARES", "SSP_CORPORATE_ACTION_SECURITIES", "PRIVATE_MARKET_FUND_TRADE_EXECUTED", "PRIVATE_MARKETS_ORDER_CREATED", "PRIVATE_MARKETS_TRADE_EXECUTED"]);
@@ -57,6 +58,20 @@ const SHARE_ROWS = new Set(["Aktien", "Anteile", "Shares", "Aktien hinzugefügt"
 const FEE_ROWS = new Set(["Gebühr", "Fee"]);
 const TAX_ROWS = new Set(["Steuer", "Steuern"]);
 const ASSET_ROWS = new Set(["Vermögenswert", "Wertpapier", "Asset"]);
+const PRICE_ROWS = new Set(["Aktienkurs", "Kurs", "Ausführungskurs", "Share price", "Price"]);
+const ORDER_TYPE_ROWS = new Set(["Orderart", "Order type"]);
+/** `Transaktion = 0.123456 × 123,45 €`: shares and price in one row (stock perks, newer events). */
+const TRANSACTION_ROWS = new Set(["Transaktion", "Transaction"]);
+const TIMES_PATTERN = /^(.+?)\s*[×x]\s*(.+)$/;
+/** Buy or sell as the detail states it (order type row or subtitle): `Verkauf…` sells, `Kauf…`/`Sparplan…` buy. */
+function statedSide(...texts: (string | null | undefined)[]): "acquisto" | "vendita" | null {
+  for (const text of texts) {
+    if (!text) continue;
+    if (/verkauf|\bsell/i.test(text)) return "vendita";
+    if (/kauf|sparplan|\bbuy|savings plan|round up/i.test(text)) return "acquisto";
+  }
+  return null;
+}
 
 const itemSchema = z.object({
   id: z.string().min(1).max(200),
@@ -236,11 +251,15 @@ export async function readTradeRepublicInvestments(reader: TradeRepublicReader, 
     }
     const row = (names: Set<string>) => rows.find((candidate) => names.has(candidate.title))?.text;
     const isin = detailIsin(detail);
-    const quantity = parseShownNumber(row(SHARE_ROWS) ?? "");
+    const times = TIMES_PATTERN.exec(row(TRANSACTION_ROWS) ?? "");
+    const quantity = parseShownNumber(row(SHARE_ROWS) ?? times?.[1] ?? "");
+    const shownPrice = parseShownNumber(row(PRICE_ROWS) ?? times?.[2] ?? "");
     const feeText = row(FEE_ROWS);
     const taxText = row(TAX_ROWS);
     const fees = feeText === undefined ? 0 : Math.abs(parseShownNumber(feeText));
     const taxes = taxText === undefined ? 0 : Math.abs(parseShownNumber(taxText));
+    // A reward whose detail names no instrument and has no rows granted no share (the positions check would still catch one).
+    if (kind === "free" && !isin && rows.length === 0) { skip("reward-without-shares"); continue; }
     if (!isin) { note("missing-isin", item, describeDetail(detail, rows)); continue; }
     if (!(quantity > 0) || !Number.isFinite(fees) || !Number.isFinite(taxes)) { note("missing-shares", item, describeDetail(detail, rows)); continue; }
     const base = { eventId: item.id, eventType: item.eventType ?? "", date: item.timestamp.slice(0, 10), isin, name: row(ASSET_ROWS)?.trim() || item.title?.trim() || null, quantity, subtitle: item.subtitle ?? null };
@@ -250,10 +269,16 @@ export async function readTradeRepublicInvestments(reader: TradeRepublicReader, 
       continue;
     }
     const value = item.amount?.value;
-    if (value === undefined || value === 0) { note("missing-amount", item, describeDetail(detail, rows)); continue; }
-    const side = value < 0 ? "acquisto" : "vendita";
-    // Price from the booked total: a buy paid shares × price + costs, a sale received shares × price − costs.
-    const price = (side === "acquisto" ? Math.abs(value) - fees - taxes : value + fees + taxes) / quantity;
+    // The detail states the side (`Orderart`, subtitle); the sign of the booked amount (pytr's rule) is the fallback.
+    const stated = statedSide(row(ORDER_TYPE_ROWS), item.subtitle);
+    const signed = value === undefined || value === 0 ? null : value < 0 ? "acquisto" : "vendita";
+    const side = stated ?? signed;
+    if (!side) { note("missing-side", item, describeDetail(detail, rows)); continue; }
+    if (stated && signed && stated !== signed) skip("side-from-detail");
+    // The shown execution price; else from the booked total (a buy paid shares × price + costs, a sale received − costs).
+    const price = shownPrice > 0 ? shownPrice
+      : value === undefined ? Number.NaN
+      : (side === "acquisto" ? Math.abs(value) - fees - taxes : Math.abs(value) + fees + taxes) / quantity;
     if (!(price > 0)) { note("non-positive-price", item, describeDetail(detail, rows)); continue; }
     trades.push({ ...base, side, price, grossAmount: null, fees, taxes });
   }

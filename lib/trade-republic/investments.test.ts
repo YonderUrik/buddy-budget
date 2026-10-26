@@ -58,13 +58,27 @@ describe("Trade Republic investment history", () => {
     const api = reader({ transactions: [
       item("saveback", "BENEFITS_SAVEBACK_EXECUTION", -15),
       item("transfer", "SSP_SECURITIES_TRANSFER_INCOMING", null),
-      item("referral", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER", 15, { action: null }),
+      item("reward", "SAVEBACK_PAYOUT", 15, { action: null }),
     ] }, { saveback: detail([["Aktien", "0,15"]]), transfer: detail([["Aktien", "2"]]) });
     const result = await readTradeRepublicInvestments(api, options);
     expect(result.trades.map(({ eventId, side, quantity, grossAmount }) => ({ eventId, side, quantity, grossAmount }))).toEqual([
       { eventId: "saveback", side: "rettifica", quantity: 0.15, grossAmount: 15 },
       { eventId: "transfer", side: "rettifica", quantity: 2, grossAmount: 0 },
     ]);
+  });
+  it("takes a sale's side from Orderart and its price from Aktienkurs, as in a real small Verkaufsorder", async () => {
+    // Real layout (staging, values replaced): the booked amount alone gave a non-positive price for this sale.
+    const sale = detail([["Status", "Ausgeführt"], ["Orderart", "Verkauf"], ["Asset", "Aktie"], ["Rendite", "-12 %"], ["Verlust", "0,40 €"], ["Anteile", "0,012345"], ["Aktienkurs", "120,50 €"], ["Gebühr", "1,00 €"], ["Gesamt", "0,49 €"]]);
+    const api = reader({ transactions: [item("buy", "TRADE_INVOICE", -150), item("sale", "TRADE_INVOICE", -0.49, { subtitle: "Verkaufsorder" })] }, { buy: detail([["Anteile", "1"]]), sale });
+    const trades = (await readTradeRepublicInvestments(api, options)).trades;
+    expect(trades.find((trade) => trade.eventId === "sale")).toMatchObject({ side: "vendita", quantity: 0.012345, price: 120.5, fees: 1 });
+  });
+  it("reads a redeemed stock perk's shares and price from the `Transaktion = shares × price` row", async () => {
+    const perk = detail([["Kauf", "Aktien-Bonus"], ["Bonus", "15,00 €"], ["Transaktion", "0.123456 × 121,50 €"], ["Gebühr", "Kostenlos"], ["Gesamt", "15,00 €"]]);
+    const api = reader({ transactions: [item("perk", "ACQUISITION_TRADE_PERK", 15, { subtitle: "Eingelöst" })] }, { perk }, { categories: [{ positions: [{ isin: ISIN, netSize: "0.123456" }] }] });
+    const result = await readTradeRepublicInvestments(api, options);
+    expect(result.trades).toMatchObject([{ side: "rettifica", quantity: 0.123456, grossAmount: 15 }]);
+    expect(positionMismatches(result.trades, result.positions!)).toBe(0);
   });
   it("fails after the whole history when items cannot be mapped, instead of importing wrong holdings", async () => {
     const api = reader({ transactions: [item("ok", "TRADE_INVOICE", -10), item("nodetail", "TRADE_INVOICE", -10, { action: { type: "none" } }), item("split", "SSP_CORPORATE_ACTION_INVOICE_SHARES", null), item("noshares", "TRADE_INVOICE", -10)] },

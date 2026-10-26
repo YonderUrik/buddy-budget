@@ -44,20 +44,25 @@ const LEGACY_DUPLICATE_MS = 500;
 const TRADE_TYPES = new Set(["BENEFITS_SPARE_CHANGE_EXECUTION", "IPO_TRADE_EXECUTED", "ORDER_EXECUTED", "SAVINGS_PLAN_EXECUTED", "SAVINGS_PLAN_INVOICE_CREATED", "SPARE_CHANGE_AGGREGATE", "TRADE_CORRECTED", "TRADE_INVOICE", "TRADING_SAVINGSPLAN_EXECUTED", "TRADING_TRADE_EXECUTED"]);
 /** Shares paid by Trade Republic (pytr `SAVEBACK`, plus referral and Saveback payouts): no money of the user. */
 // The referral bonus (`REFERRAL_FIRST_TRADE_EXECUTED_INVITER`, «Empfehlungsbonus erhalten») is cash: data.ts imports it.
-const FREE_SHARE_TYPES = new Set(["ACQUISITION_TRADE_PERK", "BENEFITS_SAVEBACK_EXECUTION", "SAVEBACK_AGGREGATE", "SAVEBACK_PAYOUT"]);
+// Plus, seen on a real account: an accepted share gift and a redeemed free-crypto perk.
+const FREE_SHARE_TYPES = new Set(["ACQUISITION_TRADE_PERK", "BENEFITS_SAVEBACK_EXECUTION", "SAVEBACK_AGGREGATE", "SAVEBACK_PAYOUT", "GIFTING_RECIPIENT_ACTIVITY", "CRYPTO_PERK_REFUNDED"]);
 const TRANSFER_IN_TYPES = new Set(["SSP_SECURITIES_TRANSFER_INCOMING"]);
 /** Securities events this importer does not map yet: they fail the import loudly instead of moving holdings silently. */
 const UNSUPPORTED_TYPES = new Set(["SSP_CORPORATE_ACTION_INVOICE_SHARES", "SSP_CORPORATE_ACTION_SECURITIES", "PRIVATE_MARKET_FUND_TRADE_EXECUTED", "PRIVATE_MARKETS_ORDER_CREATED", "PRIVATE_MARKETS_TRADE_EXECUTED"]);
 const LEGACY_TYPE = "TIMELINE_LEGACY_MIGRATED_EVENTS";
 const LEGACY_TRADE_SUBTITLES = new Set(["Kauforder", "Limit-Buy-Order", "Limit-Sell-Order", "Limit Verkauf-Order neu abgerechnet", "Sparplan ausgeführt", "Stop-Sell-Order", "Verkaufsorder"]);
 /** pytr `events_known_ignored_subtitle`: cancelled, rejected, expired or merely created orders. */
-const IGNORED_SUBTITLES = new Set(["Kauf-Abrechnung storniert", "Kauforder abgelehnt", "Kauforder storniert", "Limit-Buy-Order abgelaufen", "Limit-Buy-Order erstellt", "Limit-Buy-Order storniert", "Limit Kauf-Abrechnung storniert", "Limit-Sell-Order abgelaufen", "Limit-Sell-Order abgelehnt", "Limit-Sell-Order erstellt", "Limit-Sell-Order storniert", "Limit Verkauf-Abrechnung storniert", "Sparplan fehlgeschlagen", "Stop-Market Verkauf-Abrechnung storniert", "Stop-Sell-Order storniert", "Verkaufsorder abgelehnt"]);
+const IGNORED_SUBTITLES = new Set(["Abgelehnt", "Kauf-Abrechnung storniert", "Kauforder abgelehnt", "Kauforder storniert", "Limit-Buy-Order abgelaufen", "Limit-Buy-Order erstellt", "Limit-Buy-Order storniert", "Limit Kauf-Abrechnung storniert", "Limit-Sell-Order abgelaufen", "Limit-Sell-Order abgelehnt", "Limit-Sell-Order erstellt", "Limit-Sell-Order storniert", "Limit Verkauf-Abrechnung storniert", "Sparplan fehlgeschlagen", "Stop-Market Verkauf-Abrechnung storniert", "Stop-Sell-Order storniert", "Verkaufsorder abgelehnt"]);
 const DUPLICATE_PRONE_SUBTITLES = new Set(["Limit-Sell-Order", "Limit-Buy-Order", "Sparplan ausgeführt"]);
 /** Detail row titles (German locale, English kept as fallback, as in pytr). */
 const SHARE_ROWS = new Set(["Aktien", "Anteile", "Shares", "Aktien hinzugefügt", "Aktien entfernt"]);
 const FEE_ROWS = new Set(["Gebühr", "Fee"]);
 const TAX_ROWS = new Set(["Steuer", "Steuern"]);
 const ASSET_ROWS = new Set(["Vermögenswert", "Wertpapier", "Asset"]);
+/** Free crypto states its quantity as `Betrag`; only read for received shares, where it cannot be a cash amount. */
+const RECEIVED_QUANTITY_ROWS = new Set(["Betrag"]);
+/** Value of received shares when the timeline item has no amount (gifts, perks). */
+const RECEIVED_VALUE_ROWS = new Set(["Summe", "Gesamt"]);
 const PRICE_ROWS = new Set(["Aktienkurs", "Kurs", "Ausführungskurs", "Share price", "Price"]);
 const ORDER_TYPE_ROWS = new Set(["Orderart", "Order type"]);
 /** `Transaktion = 0.123456 × 123,45 €`: shares and price in one row (stock perks, newer events). */
@@ -252,7 +257,8 @@ export async function readTradeRepublicInvestments(reader: TradeRepublicReader, 
     const row = (names: Set<string>) => rows.find((candidate) => names.has(candidate.title))?.text;
     const isin = detailIsin(detail);
     const times = TIMES_PATTERN.exec(row(TRANSACTION_ROWS) ?? "");
-    const quantity = parseShownNumber(row(SHARE_ROWS) ?? times?.[1] ?? "");
+    const received = kind === "free" || kind === "transfer-in";
+    const quantity = parseShownNumber(row(SHARE_ROWS) ?? times?.[1] ?? (received ? row(RECEIVED_QUANTITY_ROWS) : undefined) ?? "");
     const shownPrice = parseShownNumber(row(PRICE_ROWS) ?? times?.[2] ?? "");
     const feeText = row(FEE_ROWS);
     const taxText = row(TAX_ROWS);
@@ -265,7 +271,8 @@ export async function readTradeRepublicInvestments(reader: TradeRepublicReader, 
     const base = { eventId: item.id, eventType: item.eventType ?? "", date: item.timestamp.slice(0, 10), isin, name: row(ASSET_ROWS)?.trim() || item.title?.trim() || null, quantity, subtitle: item.subtitle ?? null };
     if (kind === "free" || kind === "transfer-in") {
       // Received shares: quantity and (for rewards) their value at booking, with no money of the user.
-      trades.push({ ...base, side: "rettifica", price: 0, grossAmount: kind === "free" && item.amount ? Math.abs(item.amount.value) : 0, fees: 0, taxes: 0 });
+      const value = item.amount ? Math.abs(item.amount.value) : Math.abs(parseShownNumber(row(RECEIVED_VALUE_ROWS) ?? ""));
+      trades.push({ ...base, side: "rettifica", price: 0, grossAmount: kind === "free" && Number.isFinite(value) ? value : 0, fees: 0, taxes: 0 });
       continue;
     }
     const value = item.amount?.value;

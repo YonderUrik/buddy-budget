@@ -80,6 +80,22 @@ describe("Trade Republic investment history", () => {
     expect(result.trades).toMatchObject([{ side: "rettifica", quantity: 0.123456, grossAmount: 15 }]);
     expect(positionMismatches(result.trades, result.positions!)).toBe(0);
   });
+  it("records an accepted share gift and redeemed free crypto as received shares, and ignores a declined gift", async () => {
+    // Real layouts (staging capture, values replaced): the quantity is `Aktien` for the gift and `Betrag` for the crypto.
+    const gift = detail([["Status", "Ausgeführt"], ["Orderart", "Kauf"], ["Aktien", "0.06597"], ["Aktienkurs", "454,05 €"], ["Aktien", "29,95 €"], ["Cash-Gutschrift", "0,05 €"], ["Summe", "30,00 €"]]);
+    const crypto = detail([["Status", "Ausgeführt"], ["Orderart", "Kauf"], ["Betrag", "0.0037"], ["Kurs", "2.801,90 €"], ["Gesamt", "10,37 €"]]);
+    const api = reader({ transactions: [], activity: [
+      item("gift", "GIFTING_RECIPIENT_ACTIVITY", null, { subtitle: "Angenommen", status: null }),
+      item("declined", "GIFTING_RECIPIENT_ACTIVITY", null, { subtitle: "Abgelehnt", status: null }),
+      item("eth", "CRYPTO_PERK_REFUNDED", null, { subtitle: "Eingelöst", status: null }),
+    ] }, { gift, crypto: undefined, eth: crypto }, { categories: [] });
+    const result = await readTradeRepublicInvestments(api, options);
+    expect(result.trades.map(({ eventId, side, quantity, grossAmount }) => ({ eventId, side, quantity, grossAmount }))).toEqual([
+      { eventId: "gift", side: "rettifica", quantity: 0.06597, grossAmount: 30 },
+      { eventId: "eth", side: "rettifica", quantity: 0.0037, grossAmount: 10.37 },
+    ]);
+    expect(api.read).not.toHaveBeenCalledWith("timelineDetailV2", { id: "declined" });
+  });
   it("fails after the whole history when items cannot be mapped, instead of importing wrong holdings", async () => {
     const api = reader({ transactions: [item("ok", "TRADE_INVOICE", -10), item("nodetail", "TRADE_INVOICE", -10, { action: { type: "none" } }), item("split", "SSP_CORPORATE_ACTION_INVOICE_SHARES", null), item("noshares", "TRADE_INVOICE", -10)] },
       { ok: detail([["Aktien", "1"]]), noshares: detail([]) });

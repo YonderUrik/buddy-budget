@@ -3,13 +3,13 @@
 /**
  * «Cerca» in the Spotlight style of macOS and iOS 26. On a computer: a glass capsule floating over the page (not
  * dimmed), four round glass buttons beside it to narrow the search before typing, and the results growing out of the
- * capsule as you type. On the phone: the page blurred behind, the results in glass cards and the field at the bottom
- * above the keyboard, where the thumb is. Arrow keys move, Enter opens, Esc closes.
+ * capsule as you type. On the phone: the page blurred behind, the field at the top (where iOS never has to move the
+ * page to show it above the keyboard) and the results in glass cards under it. Arrow keys move, Enter opens, Esc closes.
  */
 
 import * as React from "react";
 import Image from "next/image";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useIsPresent } from "motion/react";
 import { LoaderCircleIcon, PlusIcon, ReceiptTextIcon, SearchIcon, SettingsIcon, TrendingUpIcon, XIcon, type LucideIcon } from "lucide-react";
 import type { CommandDraft } from "@/lib/commands";
 import type { Instrument } from "@/lib/db/schema/investments";
@@ -43,16 +43,13 @@ function useIsPhone(): boolean {
   return phone;
 }
 
-/** Keyboard taller than this (px) counts as open: the field then drops the home-indicator space. */
-const KEYBOARD_MIN_HEIGHT = 120;
-
 /**
- * The part of the screen the user actually sees (above the on-screen keyboard), followed as the keyboard opens, closes
- * or iOS pans the page: the phone screen is drawn exactly there, so the field always sits on the keyboard and iOS has
- * no reason to move anything while the user types. Null until measured or without `visualViewport`.
+ * How much of `ref` (a full-screen panel) the on-screen keyboard covers, in px: the list under the field gets that much
+ * room at its bottom, so its last rows can be scrolled above the keyboard. Only a padding follows the keyboard, never
+ * the panel's place, so nothing moves while the user types. 0 without a keyboard or without `visualViewport`.
  */
-function useVisibleArea(): { top: number; height: number; keyboard: boolean } | null {
-  const [area, setArea] = React.useState<{ top: number; height: number; keyboard: boolean } | null>(null);
+function useKeyboardCover(ref: React.RefObject<HTMLDivElement | null>): number {
+  const [cover, setCover] = React.useState(0);
   React.useEffect(() => {
     const viewport = window.visualViewport;
     if (!viewport) return;
@@ -60,8 +57,10 @@ function useVisibleArea(): { top: number; height: number; keyboard: boolean } | 
     const update = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        const next = { top: Math.round(viewport.offsetTop), height: Math.round(viewport.height), keyboard: window.innerHeight - viewport.height > KEYBOARD_MIN_HEIGHT };
-        setArea((current) => (current && current.top === next.top && current.height === next.height ? current : next));
+        const panel = ref.current;
+        if (!panel) return;
+        const next = Math.max(0, Math.round(panel.getBoundingClientRect().bottom - (viewport.offsetTop + viewport.height)));
+        setCover((current) => (Math.abs(current - next) < 2 ? current : next));
       });
     };
     update();
@@ -72,23 +71,8 @@ function useVisibleArea(): { top: number; height: number; keyboard: boolean } | 
       viewport.removeEventListener("resize", update);
       viewport.removeEventListener("scroll", update);
     };
-  }, []);
-  return area;
-}
-
-/** Keeps the page behind from scrolling while `locked` (on iOS a scrollable page under the panel moves with the keyboard). */
-function usePageScrollLock(locked: boolean) {
-  React.useEffect(() => {
-    if (!locked) return;
-    const root = document.documentElement;
-    const previous = { overflow: root.style.overflow, overscroll: root.style.overscrollBehavior };
-    root.style.overflow = "hidden";
-    root.style.overscrollBehavior = "none";
-    return () => {
-      root.style.overflow = previous.overflow;
-      root.style.overscrollBehavior = previous.overscroll;
-    };
-  }, [locked]);
+  }, [ref]);
+  return cover;
 }
 
 /** Scrolls `container` just enough to show the row `id` (never the page: `scrollIntoView` would also move the window). */
@@ -130,8 +114,9 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const phone = useIsPhone();
-  const visible = useVisibleArea();
-  usePageScrollLock(phone);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const keyboardCover = useKeyboardCover(panelRef);
+  const present = useIsPresent();
   const [text, setText] = React.useState(initialText);
   const [filter, setFilter] = React.useState<SpotlightFilter | null>(null);
   const [active, setActive] = React.useState(0);
@@ -160,6 +145,10 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
     revealActive.current = false;
     revealRow(scrollRef.current, optionId(active));
   });
+  // Closing (a pick, the ✕, a tap outside) takes the keyboard away with the panel instead of after its exit.
+  React.useEffect(() => {
+    if (!present) inputRef.current?.blur();
+  }, [present]);
   React.useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -228,32 +217,14 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
 
   if (phone) {
     return (
-      <div
-        className="fixed inset-x-0 top-0 z-50 flex flex-col"
-        // Drawn over the visible part of the screen only: above the keyboard, where iOS has panned to.
-        style={visible ? { top: visible.top, height: visible.height } : { bottom: 0 }}
-        role="dialog"
-        aria-modal="true"
-        aria-label={tr("Cerca in BuddyBudget")}
-      >
-        <motion.div className={cn("fixed inset-0", SPOTLIGHT_COVER)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} onClick={onClose} />
+      <div ref={panelRef} className="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label={tr("Cerca in BuddyBudget")}>
+        {/* touch-none here and on the field: a drag outside the list never moves the page under the panel. */}
+        <motion.div className={cn("absolute inset-0 touch-none", SPOTLIGHT_COVER)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} onClick={onClose} />
         <motion.div
-          ref={scrollRef}
-          className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 12, transition: { duration: 0.15 } }}
-          transition={SPRING_SNAPPY}
-        >
-          {text === "" && !filter ? <SpotlightExamples phone onPick={tryExample} className="pt-2 pb-5" /> : null}
-          {empty ? <p className="px-3 pt-6 text-center text-sm text-text-2">{tr("Niente con «{0}».", { 0: text.trim() })}</p> : results}
-        </motion.div>
-        <motion.div
-          className="relative flex items-center gap-2 px-3 pt-2"
-          style={{ paddingBottom: visible?.keyboard ? "0.5rem" : "max(env(safe-area-inset-bottom), 0.75rem)" }}
-          initial={{ y: 90, opacity: 0 }}
+          className="relative flex touch-none items-center gap-2 px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-2"
+          initial={{ y: -24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 90, opacity: 0, transition: { duration: 0.18 } }}
+          exit={{ y: -24, opacity: 0, transition: { duration: 0.15 } }}
           transition={SPRING_BOUNCY}
         >
           <label className={cn("flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-full px-4", SPOTLIGHT_CARD)}>
@@ -264,6 +235,21 @@ export function Spotlight({ initialText, idle, onClose, onPickHit, onCommand, on
           <button type="button" onClick={onClose} aria-label={tr("Chiudi")} className={cn("flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full", SPOTLIGHT_CARD)}>
             <XIcon className="size-5" aria-hidden="true" />
           </button>
+        </motion.div>
+        <motion.div
+          ref={scrollRef}
+          className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-1"
+          style={{ paddingBottom: keyboardCover > 0 ? keyboardCover + 12 : "max(env(safe-area-inset-bottom), 0.75rem)" }}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, transition: { duration: 0.12 } }}
+          transition={SPRING_SNAPPY}
+        >
+          {/* One pixel taller than the list's box: a drag on a short list scrolls the list, never the page behind. */}
+          <div className="min-h-[calc(100%+1px)]">
+            {text === "" && !filter ? <SpotlightExamples phone onPick={tryExample} className="pt-2 pb-5" /> : null}
+            {empty ? <p className="px-3 pt-6 text-center text-sm text-text-2">{tr("Niente con «{0}».", { 0: text.trim() })}</p> : results}
+          </div>
         </motion.div>
       </div>
     );

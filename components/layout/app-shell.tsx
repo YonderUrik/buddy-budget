@@ -36,6 +36,7 @@ import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BOTTOM_NAV_HREFS_WITH_ACTION, 
 import type { ShellAction } from "@/components/layout/shell-action";
 import { useCompactOnScroll } from "@/components/layout/use-compact-on-scroll";
 import { usePullDown } from "@/components/layout/use-pull-down";
+import { useWindowAtTop } from "@/components/layout/use-window-at-top";
 import { PullDownHint } from "@/components/layout/pull-down-hint";
 import { useMediaQuery } from "@/lib/hooks/use-media-query";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
@@ -87,6 +88,8 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
   const scrolledDown = useCompactOnScroll(MAIN_CONTENT_ID);
   const phone = useMediaQuery("(max-width: 767px)");
   const pullTravel = usePullDown(MAIN_CONTENT_ID, phone && searchAction ? () => searchAction.onClick(document.body, "pull") : undefined);
+  // Only <main> scrolls: after the iPhone keyboard closes, the window goes back where it belongs.
+  useWindowAtTop();
   const openMore = useCallback(() => setMoreOpen(true), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);
 

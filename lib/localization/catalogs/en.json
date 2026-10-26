@@ -5485,5 +5485,10 @@
   "Vai ai conti": "Go to accounts",
   "{0} movimento non ancora riconosciuto: lo importeremo appena possibile.": "{0} transaction not recognised yet: we will import it as soon as possible.",
   "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.": "{0} transactions not recognised yet: we will import them as soon as possible.",
-  "Trade Republic è già collegato direttamente: i movimenti e gli investimenti arrivano dalla sincronizzazione, senza file": "Trade Republic is already connected directly: transactions and investments come from the sync, no file needed"
+  "Trade Republic è già collegato direttamente: i movimenti e gli investimenti arrivano dalla sincronizzazione, senza file": "Trade Republic is already connected directly: transactions and investments come from the sync, no file needed",
+  "Importo gli investimenti…": "Importing investments…",
+  "Categorizzo i nuovi movimenti…": "Categorising new transactions…",
+  "{0} operazione in Investimenti.": "{0} operation in Investments.",
+  "{0} operazioni in Investimenti.": "{0} operations in Investments.",
+  "Gli investimenti non sono stati importati: abbiamo avvisato il supporto, i movimenti sono a posto.": "Investments were not imported: we have notified support, your transactions are fine."
 }

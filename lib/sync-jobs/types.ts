@@ -8,6 +8,10 @@ export type SyncAccountPhase =
   | "balance"
   | "fetching"
   | "saving"
+  /** Provider securities history (Trade Republic) after the cash movements. */
+  | "investments"
+  /** AI and rules categorising the new movements: can take minutes after a first import. */
+  | "categorizing"
   | "done"
   | "limited"
   | "expired"
@@ -39,6 +43,10 @@ export interface SyncJobAccount {
   uncategorized: number;
   /** Provider events skipped because their type is not known yet (Trade Republic); imported by a later sync once supported. */
   unrecognized?: number;
+  /** Operations written to Investimenti by this sync (Trade Republic). */
+  investmentOperations?: number;
+  /** The securities history could not be imported: cash is done, support has the diagnostics. */
+  investmentsFailed?: boolean;
   /** Motivo di un `error` noto in anticipo (conto già in sync altrove). */
   errorReason?: "already-running";
 }

@@ -26,17 +26,16 @@ const NON_MOVEMENT_TYPES = new Set(["CARD_VERIFICATION"]);
 // Not booked (yet, or ever): skipped; a pending movement arrives on a later sync under the same id.
 const UNBOOKED_STATUSES = new Set(["PENDING", "CREATED", "CANCELED", "CANCELLED", "FAILED", "REJECTED", "DECLINED"]);
 const BOOKED_STATUSES = new Set(["COMPLETED", "EXECUTED", "SETTLED"]);
-const INVESTMENT_TYPES = new Set(["TRADING_SAVINGSPLAN_EXECUTED", "TRADING_TRADE_EXECUTED", "TRADE_INVOICE", "SAVINGS_PLAN_EXECUTED", "SAVEBACK_PAYOUT", "SSP_CORPORATE_ACTION_SECURITIES", "ORDER_EXECUTED", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER"]);
+// Securities events (pytr's trade, Saveback, transfer and corporate-action types): never spending, read by investments.ts.
+const INVESTMENT_TYPES = new Set(["TRADING_SAVINGSPLAN_EXECUTED", "TRADING_TRADE_EXECUTED", "TRADE_INVOICE", "SAVINGS_PLAN_EXECUTED", "SAVEBACK_PAYOUT", "SSP_CORPORATE_ACTION_SECURITIES", "ORDER_EXECUTED", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER",
+  "BENEFITS_SPARE_CHANGE_EXECUTION", "IPO_TRADE_EXECUTED", "SAVINGS_PLAN_INVOICE_CREATED", "SPARE_CHANGE_AGGREGATE", "TRADE_CORRECTED", "ACQUISITION_TRADE_PERK", "BENEFITS_SAVEBACK_EXECUTION", "SAVEBACK_AGGREGATE",
+  "SSP_SECURITIES_TRANSFER_INCOMING", "SSP_CORPORATE_ACTION_INVOICE_SHARES", "PRIVATE_MARKET_FUND_TRADE_EXECUTED", "PRIVATE_MARKETS_ORDER_CREATED", "PRIVATE_MARKETS_TRADE_EXECUTED"]);
 
 export interface TradeRepublicMovement { id: string; date: string; amount: string; description: string }
-/** A booked securities event, read in detail by `readTradeRepublicInvestments`. Amount sign: negative = money out. */
-export interface TradeRepublicInvestmentEvent { id: string; eventType: string; date: string; amount: number }
 export interface TradeRepublicCashData {
   balance: string;
   movements: TradeRepublicMovement[];
   investmentEvents: number;
-  /** The booked securities events themselves, for the investment import. */
-  investments: TradeRepublicInvestmentEvent[];
   /** Booked events skipped because their type or status is not known yet; imported by a later sync once added. */
   unrecognized: number;
   /** Whether every booked amount in the timeline adds up to the reported balance. */
@@ -64,7 +63,6 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
   const cursors = new Set<string>();
   let after: string | undefined;
   let investmentEvents = 0;
-  const investments: TradeRepublicInvestmentEvent[] = [];
   let unbooked = 0;
   let bookedCents = 0;
   const reject = (check: string, details: Record<string, unknown> = {}, reason: Reason = "invalid-response") => {
@@ -112,7 +110,7 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
       if (event.timestamp.slice(0, 10) > today) { note(problems, "future-date", { eventType: event.eventType, timestamp: maskPattern(event.timestamp) }, rawItem); continue; }
       bookedCents += Math.round(event.amount.value * 100);
       if (NON_MOVEMENT_TYPES.has(event.eventType)) { unbooked++; continue; }
-      if (INVESTMENT_TYPES.has(event.eventType)) { investmentEvents++; investments.push({ id: event.id, eventType: event.eventType, date: event.timestamp.slice(0, 10), amount: event.amount.value }); continue; }
+      if (INVESTMENT_TYPES.has(event.eventType)) { investmentEvents++; continue; }
       if (!CASH_TYPES.has(event.eventType)) { note(unrecognized, "unknown-event-type", { eventType: event.eventType, status: event.status ?? null }, rawItem, "unsupported-event"); continue; }
       movements.push({ id: event.id, date: event.timestamp.slice(0, 10), amount: event.amount.value.toFixed(2), description: event.title });
     }
@@ -127,7 +125,7 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
         tradeRepublicDebug("timeline.problems", { findings: [...problems.entries()].map(([key, finding]) => ({ key, count: finding.count, example: finding.example })) });
         throw new TradeRepublicError(problems.values().next().value!.reason);
       }
-      return { balance: cash.data[0].amount.toFixed(2), movements, investmentEvents, investments, unrecognized: skipped, reconciled };
+      return { balance: cash.data[0].amount.toFixed(2), movements, investmentEvents, unrecognized: skipped, reconciled };
     }
     if (cursors.has(cursor)) throw reject("repeated-cursor", { page });
     cursors.add(cursor); after = cursor;

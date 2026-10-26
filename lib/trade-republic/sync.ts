@@ -10,11 +10,11 @@ import { redisSyncJobStore as store } from "@/lib/sync-jobs/redis-store";
 import { getUserCurrency } from "@/lib/investments/operations";
 import { queuedAccount } from "@/lib/sync-jobs/types";
 import { logger, recordTradeRepublicRequest, recordTradeRepublicUnrecognized } from "@/lib/observability";
-import { createTradeRepublicClient, TradeRepublicError } from "./client";
+import { createTradeRepublicClient, TradeRepublicError, type TradeRepublicSession } from "./client";
 import { openTradeRepublicSession, sealTradeRepublicSession } from "./session";
 import { openTradeRepublicReader } from "./socket";
 import { readTradeRepublicCash } from "./data";
-import { readTradeRepublicInvestments, type TradeRepublicInvestments } from "./investments";
+import { readTradeRepublicInvestments } from "./investments";
 import { saveTradeRepublicInvestments } from "./investments-store";
 import { notifyTradeRepublicSupport } from "./support";
 import { describeError, tradeRepublicDebug, tradeRepublicDiagnostics, withTradeRepublicDiagnostics } from "./debug";
@@ -55,16 +55,13 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
     const session = openTradeRepublicSession(connection.session);
     tradeRepublicDebug("sync.session_opened", { cookieCount: Object.keys(session.cookies).length });
     await update({ phase: "balance" });
-    await createTradeRepublicClient(session).refresh();
+    const client = createTradeRepublicClient(session);
+    await client.refresh();
     tradeRepublicDebug("sync.refreshed", { cookieCount: Object.keys(session.cookies).length });
+    const securitiesAccountNumber = await securitiesAccountOf(client);
     reader = await openTradeRepublicReader(session);
     await update({ phase: "fetching" });
     const data = await readTradeRepublicCash(reader, new Date().toISOString().slice(0, 10), async processed => { await update({ processed }); });
-    // Securities details are read on the same connection; their failure never blocks the cash import.
-    let investments: TradeRepublicInvestments | null = null;
-    let investmentsError: unknown;
-    try { investments = await readTradeRepublicInvestments(reader, data.investments); }
-    catch (error) { investmentsError = error; }
     reader.close(); reader = undefined;
     tradeRepublicDebug("sync.fetched", { movements: data.movements.length, investmentEvents: data.investmentEvents, unrecognized: data.unrecognized, reconciled: data.reconciled });
     const categoryId = await getFallbackCategoryId(userId);
@@ -84,9 +81,12 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
       await tx.update(tradeRepublicConnections).set({ session: sealTradeRepublicSession(session), lastSyncedAt: new Date(), status: "linked" }).where(eq(tradeRepublicConnections.id, connection.id));
       return count;
     });
-    await syncInvestments(userId, connection.externalAccountHash, investments, investmentsError);
+    // Each later step is visible in the sync panel, so a long AI pass never looks like a finished import.
+    await update({ phase: "investments" });
+    const investmentOutcome = await syncInvestments(userId, session, connection.externalAccountHash, securitiesAccountNumber);
+    await update({ phase: "categorizing" });
     await categorizeNewMovementsSafely(userId);
-    await update({ phase: "done", inserted, processed: data.movements.length, unrecognized: data.unrecognized });
+    await update({ phase: "done", inserted, processed: data.movements.length, unrecognized: data.unrecognized, ...investmentOutcome });
     recordTradeRepublicRequest("sync", "success", performance.now() - started);
     logger.info("trade_republic.sync.completed", { inserted, skipped: data.investmentEvents, unrecognized: data.unrecognized, reconciled: data.reconciled });
     // Skipped types and an unbalanced timeline are parser gaps: log the evidence needed to add them.
@@ -109,23 +109,37 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
   } finally { clearInterval(heartbeat); reader?.close(); await store.releaseAccountLock(accountId); }
 }
 
-/**
- * Write the securities history read in this sync to Investimenti, or log why not. Failures are reported with the
- * diagnostic trail so the parser can be extended; the cash import has already been committed either way.
- */
-async function syncInvestments(userId: string, externalAccountHash: string, investments: TradeRepublicInvestments | null, readError: unknown): Promise<void> {
-  const started = performance.now();
+/** The securities account number pytr uses for positions (`/api/v2/auth/account`); null when TR does not send it. */
+async function securitiesAccountOf(client: ReturnType<typeof createTradeRepublicClient>): Promise<string | null> {
   try {
-    if (!investments) throw readError;
+    const account = await client.account();
+    const value = account && typeof account === "object" && "securitiesAccountNumber" in account ? account.securitiesAccountNumber : null;
+    return typeof value === "string" && value ? value : null;
+  } catch { return null; }
+}
+
+/**
+ * Read the securities history on its own German-locale connection and write it to Investimenti, or log why not.
+ * Failures carry the diagnostic trail and email support; the cash import has already been committed either way.
+ */
+async function syncInvestments(userId: string, session: TradeRepublicSession, externalAccountHash: string, securitiesAccountNumber: string | null): Promise<{ investmentOperations?: number; investmentsFailed?: boolean }> {
+  const started = performance.now();
+  let reader: Awaited<ReturnType<typeof openTradeRepublicReader>> | undefined;
+  try {
+    reader = await openTradeRepublicReader(session, "de");
+    const investments = await readTradeRepublicInvestments(reader, { securitiesAccountNumber });
+    reader.close(); reader = undefined;
     const saved = await saveTradeRepublicInvestments(userId, externalAccountHash, investments);
     recordTradeRepublicRequest("investments", "success", performance.now() - started);
     // `enabled`: whether the quantities could be checked against Trade Republic's own positions.
     logger.info("trade_republic.investments.completed", { inserted: saved.operations, created: saved.instrumentsCreated, enabled: saved.positionsChecked });
+    return { investmentOperations: saved.operations };
   } catch (error) {
     tradeRepublicDebug("investments.error", error instanceof TradeRepublicError ? { reason: error.reason } : { reason: "internal", error: describeError(error) });
     recordTradeRepublicRequest("investments", "error", performance.now() - started);
     const reason = error instanceof TradeRepublicError ? error.reason : "internal";
     logger.warn("trade_republic.investments.failed", { reason, diagnostics: tradeRepublicDiagnostics() });
     await notifyTradeRepublicSupport("investments", reason, tradeRepublicDiagnostics(), userId);
-  }
+    return { investmentsFailed: true };
+  } finally { reader?.close(); }
 }

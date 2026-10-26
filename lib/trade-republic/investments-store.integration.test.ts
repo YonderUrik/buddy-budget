@@ -14,16 +14,19 @@ vi.mock("@/lib/investments/history", () => ({ ensureHistorySafely: vi.fn().mockR
 vi.mock("@/lib/investments/link-quotation", () => ({ autoLinkQuotation: vi.fn().mockResolvedValue(null) }));
 import { saveTradeRepublicInvestments, tradeRepublicSourceKey, TRADE_REPUBLIC_API_PROVIDER } from "./investments-store";
 
-const ISIN = "IE00B4L5Y983";
-const trade = (eventId: string, side: "acquisto" | "vendita", quantity: number, date = "2026-03-02") => ({ eventId, eventType: "TRADING_TRADE_EXECUTED", date, isin: ISIN, name: "Core MSCI World", side, quantity, price: 95.5, fees: 1, taxes: 0 });
+// Not used by other integration tests: instruments with an ISIN are shared rows in the test database.
+const ISIN = "DE0005140008";
+const trade = (eventId: string, side: "acquisto" | "vendita", quantity: number, date = "2026-03-02") => ({ eventId, eventType: "TRADING_TRADE_EXECUTED", date, isin: ISIN, name: "Core MSCI World", side, quantity, price: 95.5, grossAmount: null, fees: 1, taxes: 0, subtitle: null });
 let userId: string;
 beforeEach(async () => {
   userId = `test-tr-inv-${crypto.randomUUID()}`;
   await db.insert(authUser).values({ id: userId, name: "Synthetic TR investor", email: `${userId}@example.com`, currency: "EUR" });
 });
 afterEach(async () => {
-  await db.delete(authUser).where(eq(authUser.id, userId));
+  // Operations and private instruments first: deleting the user would detach the instruments and leave them shared.
+  await db.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
   await db.delete(instruments).where(eq(instruments.createdByUserId, userId));
+  await db.delete(authUser).where(eq(authUser.id, userId));
 });
 afterAll(async () => { await client.end(); });
 

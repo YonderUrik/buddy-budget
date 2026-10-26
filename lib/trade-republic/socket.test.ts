@@ -35,4 +35,16 @@ describe("direct Trade Republic WebSocket", () => {
     await expect(promise).rejects.toThrow("unavailable");
     expect(sockets.at(-1)!.closed).toBe(true);
   });
+  it("fails only the refused subscription on an error frame, and keeps the connection for the next read", async () => {
+    const reader = await openTradeRepublicReader({ cookies: {}, deviceId: "device" }, "de");
+    const socket = sockets.at(-1)!;
+    expect(socket.sent[0]).toContain('"locale":"de"');
+    const refused = reader.read("compactPortfolioByType", { secAccNo: "1" });
+    socket.emit('1 E {"errors":[{"errorCode":"BAD_SUBSCRIPTION_TYPE","errorMessage":"x"}]}');
+    await expect(refused).rejects.toMatchObject({ codes: ["BAD_SUBSCRIPTION_TYPE"] });
+    expect(socket.closed).toBe(false);
+    const cash = reader.read("cash");
+    socket.emit('2 A [{"currencyId":"EUR","amount":1}]');
+    expect(await cash).toEqual([{ currencyId: "EUR", amount: 1 }]);
+  });
 });

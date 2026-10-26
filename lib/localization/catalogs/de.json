@@ -5485,5 +5485,10 @@
   "Vai ai conti": "Zu den Konten",
   "{0} movimento non ancora riconosciuto: lo importeremo appena possibile.": "{0} Umsatz noch nicht erkannt: Wir importieren ihn so bald wie möglich.",
   "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.": "{0} Umsätze noch nicht erkannt: Wir importieren sie so bald wie möglich.",
-  "Trade Republic è già collegato direttamente: i movimenti e gli investimenti arrivano dalla sincronizzazione, senza file": "Trade Republic ist bereits direkt verbunden: Umsätze und Investments kommen aus der Synchronisierung, ohne Datei"
+  "Trade Republic è già collegato direttamente: i movimenti e gli investimenti arrivano dalla sincronizzazione, senza file": "Trade Republic ist bereits direkt verbunden: Umsätze und Investments kommen aus der Synchronisierung, ohne Datei",
+  "Importo gli investimenti…": "Investments werden importiert…",
+  "Categorizzo i nuovi movimenti…": "Neue Umsätze werden kategorisiert…",
+  "{0} operazione in Investimenti.": "{0} Vorgang in Investments.",
+  "{0} operazioni in Investimenti.": "{0} Vorgänge in Investments.",
+  "Gli investimenti non sono stati importati: abbiamo avvisato il supporto, i movimenti sono a posto.": "Die Investments wurden nicht importiert: Wir haben den Support informiert, deine Umsätze sind in Ordnung."
 }

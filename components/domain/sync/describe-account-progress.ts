@@ -14,6 +14,11 @@ const QUEUED_TEXT = "In attesa";
 const BALANCE_TEXT = "Aggiorno il saldo…";
 const FETCHING_TEXT = "Scarico i movimenti dalla banca…";
 const ERROR_TEXT = "Sincronizzazione non riuscita. Riprova più tardi.";
+const INVESTMENTS_TEXT = "Importo gli investimenti…";
+const CATEGORIZING_TEXT = "Categorizzo i nuovi movimenti…";
+const INVESTMENTS_ONE_TEXT = "{0} operazione in Investimenti.";
+const INVESTMENTS_MANY_TEXT = "{0} operazioni in Investimenti.";
+const INVESTMENTS_FAILED_TEXT = "Gli investimenti non sono stati importati: abbiamo avvisato il supporto, i movimenti sono a posto.";
 const UNRECOGNIZED_ONE_TEXT = "{0} movimento non ancora riconosciuto: lo importeremo appena possibile.";
 const UNRECOGNIZED_MANY_TEXT = "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.";
 const INTERRUPTED_TEXT = "Sincronizzazione interrotta. I movimenti già salvati restano, il prossimo sync riprende da lì.";
@@ -39,6 +44,10 @@ export function describeAccountProgress(account: SyncJobAccount, interrupted: bo
         tone: "default",
       };
     }
+    case "investments":
+      return { text: t(INVESTMENTS_TEXT), bar: { kind: "indeterminate" }, tone: "default" };
+    case "categorizing":
+      return { text: t(CATEGORIZING_TEXT), bar: { kind: "indeterminate" }, tone: "default" };
     case "done": {
       const unrecognized = account.unrecognized ?? 0;
       const summary = buildSyncSummaryMessage({
@@ -48,8 +57,12 @@ export function describeAccountProgress(account: SyncJobAccount, interrupted: bo
         uncategorizedCount: account.uncategorized,
         balanceUpdated: true,
       }, locale);
-      const note = unrecognized > 0 ? ` ${t(unrecognized === 1 ? UNRECOGNIZED_ONE_TEXT : UNRECOGNIZED_MANY_TEXT, { 0: unrecognized })}` : "";
-      return { text: summary + note, bar: FULL_BAR, tone: "success" };
+      const notes = [
+        unrecognized > 0 ? t(unrecognized === 1 ? UNRECOGNIZED_ONE_TEXT : UNRECOGNIZED_MANY_TEXT, { 0: unrecognized }) : null,
+        account.investmentOperations ? t(account.investmentOperations === 1 ? INVESTMENTS_ONE_TEXT : INVESTMENTS_MANY_TEXT, { 0: account.investmentOperations }) : null,
+        account.investmentsFailed ? t(INVESTMENTS_FAILED_TEXT) : null,
+      ].filter(Boolean);
+      return { text: [summary, ...notes].join(" "), bar: FULL_BAR, tone: account.investmentsFailed ? "error" : "success" };
     }
     case "limited":
       return { text: buildSyncErrorMessage({ status: "gocardless-limited" }, locale), bar: NO_BAR, tone: "error" };

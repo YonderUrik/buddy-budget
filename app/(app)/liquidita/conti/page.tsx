@@ -32,7 +32,7 @@ import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
-import { isAccountSyncing } from "@/lib/sync-jobs/view";
+import { isAccountSyncing, latestAccountJob } from "@/lib/sync-jobs/view";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 
 /** Giorni di storia nella miniatura di ogni conto. */
@@ -162,6 +162,7 @@ export default function LiquiditaContiPage() {
         needsReconnect={open ? reconnectIds.has(open.id) : false}
         syncInfo={open ? syncInfoById.get(open.id) : undefined}
         syncing={open ? isAccountSyncing(syncJobs, open.id) : false}
+        syncResult={open ? latestAccountJob(syncJobs, open.id) : null}
         movementsHref={open ? `${LIQUIDITY_HREF}?${LIQUIDITY_ACCOUNT_PARAM}=${open.id}` : undefined}
         onClose={() => setOpenId(null)}
         onReconnect={() => renew("row")}

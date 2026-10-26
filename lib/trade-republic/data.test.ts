@@ -7,7 +7,7 @@ describe("Trade Republic direct cash reader", () => {
     const api = reader({ items: [event("one"), event("trade", "TRADING_TRADE_EXECUTED", -200)], cursors: { after: "next" } }, { items: [event("one"), event("two", "CARD_REFUND", 4.56)] });
     const progress = vi.fn();
     const result = await readTradeRepublicCash(api, "2026-10-25", progress);
-    expect(result).toEqual({ balance: "123.45", investmentEvents: 1, investments: [{ id: "trade", eventType: "TRADING_TRADE_EXECUTED", date: "2026-10-01", amount: -200 }], unrecognized: 0, reconciled: false, movements: [{ id: "one", date: "2026-10-01", amount: "-12.34", description: "Synthetic merchant" }, { id: "two", date: "2026-10-01", amount: "4.56", description: "Synthetic merchant" }] });
+    expect(result).toEqual({ balance: "123.45", investmentEvents: 1, unrecognized: 0, reconciled: false, movements: [{ id: "one", date: "2026-10-01", amount: "-12.34", description: "Synthetic merchant" }, { id: "two", date: "2026-10-01", amount: "4.56", description: "Synthetic merchant" }] });
     expect(api.read.mock.calls).toEqual([["cash"], ["timelineTransactions", undefined], ["timelineTransactions", { after: "next" }]]);
     expect(progress).toHaveBeenLastCalledWith(3);
   });

@@ -41,6 +41,8 @@ import { AccountAvatar } from "./account-avatar";
 import { AccountIconColorPicker } from "./account-icon-color-picker";
 import { CurrencyInput } from "./currency-input";
 import { localizedAccountStatus, type AccountSyncInfo } from "./account-status";
+import { describeAccountProgress } from "@/components/domain/sync";
+import type { SyncJobAccount } from "@/lib/sync-jobs/types";
 
 const CUSTOM_TYPE_VALUE = "__custom__";
 const FIELD_LABEL = "text-sm font-medium text-foreground";
@@ -54,6 +56,8 @@ export interface AccountDetailsDialogProps {
   needsReconnect?: boolean;
   syncInfo?: AccountSyncInfo;
   syncing?: boolean;
+  /** Latest sync of this account (progress or result), so the window itself says when and how a sync ended. */
+  syncResult?: { account: SyncJobAccount; interrupted: boolean } | null;
   movementsHref?: string;
   /** Chiamato alla chiusura (anche dopo la rimozione del conto). */
   onClose: () => void;
@@ -68,6 +72,7 @@ function AccountDetailsBody({
   needsReconnect,
   syncInfo,
   syncing = false,
+  syncResult = null,
   movementsHref,
   onClose,
   onReconnect,
@@ -221,9 +226,14 @@ function AccountDetailsBody({
 
         {isAuto && (
           <div className="flex flex-col gap-2 rounded-lg bg-muted/50 p-3">
-            <p className="text-sm text-text-2" aria-live="polite">
-              {describeSyncAvailability({ needsReconnect, syncing, syncInfo })}
-            </p>
+            {syncResult ? (
+              <SyncResultLine result={syncResult} locale={formattingLocale} />
+            ) : null}
+            {syncing ? null : (
+              <p className="text-sm text-text-2" aria-live="polite">
+                {describeSyncAvailability({ needsReconnect, syncing, syncInfo })}
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -283,5 +293,15 @@ export function AccountDetailsDialog({ account, onClose, ...rest }: AccountDetai
         {account && <AccountDetailsBody key={account.id} account={account} onClose={onClose} {...rest} />}
       </FormDialogContent>
     </Dialog>
+  );
+}
+
+/** Progress while a sync runs, then its outcome, in the account window (the global panel may sit behind it). */
+function SyncResultLine({ result, locale }: { result: { account: SyncJobAccount; interrupted: boolean }; locale: string }) {
+  const { text, tone } = describeAccountProgress(result.account, result.interrupted, locale);
+  return (
+    <p className={cn("text-sm font-medium", tone === "error" ? "text-neg" : tone === "success" ? "text-pos" : "text-text-2")} role="status" aria-live="polite">
+      {text}
+    </p>
   );
 }

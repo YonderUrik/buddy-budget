@@ -13,7 +13,7 @@ import { toRowValues } from "@/lib/investments/operations";
 import { listingsOnOpenFigi, quoteMetaOnProviders, searchByIsinOnProviders, searchCryptoOnProviders, searchInstrumentsOnProviders } from "@/lib/market-data/runtime";
 import { TradeRepublicError } from "./client";
 import { tradeRepublicDebug } from "./debug";
-import { positionMismatches, type TradeRepublicInvestments, type TradeRepublicTrade } from "./investments";
+import { positionMismatches, tradeSequence, type TradeRepublicInvestments, type TradeRepublicTrade } from "./investments";
 
 /** Source of the direct connection's operations; the file import keeps provider `trade-republic`, so both never mix. */
 export const TRADE_REPUBLIC_API_PROVIDER = "trade-republic-api";
@@ -56,10 +56,14 @@ export async function saveTradeRepublicInvestments(userId: string, externalAccou
   }
   const operations = data.trades.map((trade) => ({
     instrumentId: byIsin.get(trade.isin)!.id,
-    ...toRowValues({ type: trade.side, date: trade.date, quantity: trade.quantity, price: trade.price, grossAmount: null, fees: trade.fees, taxes: trade.taxes, note: null }, 1),
+    ...toRowValues({ type: trade.side, date: trade.date, quantity: trade.quantity, price: trade.price, grossAmount: trade.grossAmount, fees: trade.fees, taxes: trade.taxes, note: null }, 1),
   }));
   const oversold = findOversoldTransaction(operations.map((operation, index) => ({ ...operation, id: data.trades[index].eventId })));
-  if (oversold) { tradeRepublicDebug("rejected", { check: "oversold", date: oversold.date }); throw new TradeRepublicError("invalid-response"); }
+  if (oversold) {
+    const isin = data.trades.find((trade) => trade.eventId === oversold.id)!.isin;
+    tradeRepublicDebug("rejected", { check: "oversold", date: oversold.date, sequence: tradeSequence(data.trades, isin) });
+    throw new TradeRepublicError("invalid-response");
+  }
 
   await db.transaction(async (tx) => {
     // Same lock as broker statements: a file import and a sync cannot interleave for one user.

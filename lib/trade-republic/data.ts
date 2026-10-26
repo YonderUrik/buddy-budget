@@ -18,11 +18,15 @@ const pageSchema = z.object({ items: z.array(z.unknown()), cursors: z.object({ a
 const MAX_PAGES = 200;
 const MAX_FETCH_MS = 240_000;
 const MAX_MOVEMENTS = 20_000;
-const CASH_TYPES = new Set(["CARD_TRANSACTION", "CARD_REFUND", "CARD_PAYMENT", "CARD_PAYMENT_REFUND", "INTEREST_PAYOUT", "BANK_TRANSACTION_INCOMING", "BANK_TRANSACTION_OUTGOING", "BANK_TRANSACTION_OUTGOING_SEPA", "PAYMENT_INBOUND", "PAYMENT_OUTBOUND", "PAYMENT_INBOUND_GOOGLE_PAY", "INCOMING_TRANSFER", "OUTGOING_TRANSFER", "SSP_TAX_CORRECTION", "TAX_REFUND", "CASH_PAYOUT", "CASH_DEPOSIT", "SSP_CORPORATE_ACTION_CASH", "DIVIDEND", "DIVIDEND_PAYOUT"]);
+const CASH_TYPES = new Set(["CARD_TRANSACTION", "CARD_REFUND", "CARD_PAYMENT", "CARD_PAYMENT_REFUND", "INTEREST_PAYOUT", "BANK_TRANSACTION_INCOMING", "BANK_TRANSACTION_OUTGOING", "BANK_TRANSACTION_OUTGOING_SEPA", "PAYMENT_INBOUND", "PAYMENT_OUTBOUND", "PAYMENT_INBOUND_GOOGLE_PAY", "INCOMING_TRANSFER", "OUTGOING_TRANSFER", "SSP_TAX_CORRECTION", "TAX_REFUND", "CASH_PAYOUT", "CASH_DEPOSIT", "SSP_CORPORATE_ACTION_CASH", "DIVIDEND", "DIVIDEND_PAYOUT",
+  // Seen on a real account (staging, 2026-10-26): ATM, card funding pushes, card top-ups, stamp duty, paid stock gifts.
+  "CARD_ATM_WITHDRAWAL", "CARD_AFT", "PAYMENT_INBOUND_CREDIT_CARD", "STAMP_DUTY_TAX_PAID", "GIFTER_TRANSACTION"]);
+// Card checks when a card is linked to a merchant: not a booked charge.
+const NON_MOVEMENT_TYPES = new Set(["CARD_VERIFICATION"]);
 // Not booked (yet, or ever): skipped; a pending movement arrives on a later sync under the same id.
 const UNBOOKED_STATUSES = new Set(["PENDING", "CREATED", "CANCELED", "CANCELLED", "FAILED", "REJECTED", "DECLINED"]);
 const BOOKED_STATUSES = new Set(["COMPLETED", "EXECUTED", "SETTLED"]);
-const INVESTMENT_TYPES = new Set(["TRADING_SAVINGSPLAN_EXECUTED", "TRADING_TRADE_EXECUTED", "TRADE_INVOICE", "SAVINGS_PLAN_EXECUTED", "SAVEBACK_PAYOUT", "SSP_CORPORATE_ACTION_SECURITIES"]);
+const INVESTMENT_TYPES = new Set(["TRADING_SAVINGSPLAN_EXECUTED", "TRADING_TRADE_EXECUTED", "TRADE_INVOICE", "SAVINGS_PLAN_EXECUTED", "SAVEBACK_PAYOUT", "SSP_CORPORATE_ACTION_SECURITIES", "ORDER_EXECUTED", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER"]);
 
 export interface TradeRepublicMovement { id: string; date: string; amount: string; description: string }
 export interface TradeRepublicCashData { balance: string; movements: TradeRepublicMovement[]; investmentEvents: number }
@@ -85,6 +89,7 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
         if (UNBOOKED_STATUSES.has(event.status)) { unbooked++; continue; }
         itemProblem("unknown-status", { page, status: event.status, eventType: event.eventType }); continue;
       }
+      if (NON_MOVEMENT_TYPES.has(event.eventType)) { unbooked++; continue; }
       if (INVESTMENT_TYPES.has(event.eventType)) { investmentEvents++; continue; }
       if (!CASH_TYPES.has(event.eventType)) { itemProblem("unsupported-event-type", { page, eventType: event.eventType, status: event.status ?? null }, "unsupported-event"); continue; }
       if (event.amount.currency !== "EUR") { itemProblem("foreign-currency", { page, eventType: event.eventType, currency: event.amount.currency }); continue; }

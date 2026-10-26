@@ -19,6 +19,12 @@ describe("Trade Republic direct cash reader", () => {
     expect(result.movements).toEqual([{ id: "booked", date: "2026-10-01", amount: "-12.34", description: "Synthetic merchant" }]);
     await expect(readTradeRepublicCash(reader({ items: [{ ...event("odd"), status: "SOMETHING_NEW" }] }), "2026-10-25")).rejects.toThrow("invalid-response");
   });
+  it("classifies the event types seen on a real account", async () => {
+    const items = [event("atm", "CARD_ATM_WITHDRAWAL"), event("aft", "CARD_AFT"), event("topup", "PAYMENT_INBOUND_CREDIT_CARD", 50), event("bollo", "STAMP_DUTY_TAX_PAID", -2), event("gift", "GIFTER_TRANSACTION", -25), event("verify", "CARD_VERIFICATION", 0), event("order", "ORDER_EXECUTED", -100), event("referral", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER", 15)];
+    const result = await readTradeRepublicCash(reader({ items }), "2026-10-25");
+    expect(result.movements.map(movement => movement.id)).toEqual(["atm", "aft", "topup", "bollo", "gift"]);
+    expect(result.investmentEvents).toBe(2);
+  });
   it("imports dividend cash without treating securities purchases as expenses", async () => {
     const result = await readTradeRepublicCash(reader({ items: [event("dividend", "SSP_CORPORATE_ACTION_CASH", 2)] }), "2026-10-25");
     expect(result.movements[0].amount).toBe("2.00");

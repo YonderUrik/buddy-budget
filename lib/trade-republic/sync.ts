@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { and, eq, like, notInArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { transactions } from "@/lib/db/schema/transactions";
@@ -73,12 +73,27 @@ async function syncWithDiagnostics(userId: string, accountId: string, jobId: str
       let count = 0;
       for (let start = 0; start < data.movements.length; start += 50) {
         const chunk = data.movements.slice(start, start + 50);
-        const created = await tx.insert(transactions).values(chunk.map(movement => ({ userId, accountId, categoryId, description: movement.description, rawDescription: movement.description, date: movement.date, amount: movement.amount, source: "auto" as const, externalId: `trade-republic:${movement.id}` }))).onConflictDoNothing({ target: [transactions.accountId, transactions.externalId] }).returning({ id: transactions.id });
-        count += created.length;
+        // A movement Trade Republic changed (date, amount, bank text) is updated in place. Category, note, split share
+        // and the cleaned-up name stay the user's; a split share is capped at the new amount, as in statement imports.
+        const saved = await tx.insert(transactions).values(chunk.map(movement => ({ userId, accountId, categoryId, description: movement.description, rawDescription: movement.description, date: movement.date, amount: movement.amount, source: "auto" as const, externalId: `trade-republic:${movement.id}` })))
+          .onConflictDoUpdate({ target: [transactions.accountId, transactions.externalId], set: {
+            date: sql`excluded.date`, amount: sql`excluded.amount`, rawDescription: sql`excluded.raw_description`,
+            excludedAmount: sql`case when sign(${transactions.excludedAmount}) = sign(excluded.amount) then sign(excluded.amount) * least(abs(${transactions.excludedAmount}), abs(excluded.amount)) else 0 end`,
+            updatedAt: new Date(),
+          } })
+          .returning({ inserted: sql<boolean>`(xmax = 0)` });
+        count += saved.filter(row => row.inserted).length;
         await update({ processed: Math.min(start + 50, data.movements.length) });
       }
       await tx.update(accounts).set({ balance: data.balance, updatedAt: new Date() }).where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)));
       await tx.update(tradeRepublicConnections).set({ session: sealTradeRepublicSession(session), lastSyncedAt: new Date(), status: "linked" }).where(eq(tradeRepublicConnections.id, connection.id));
+      // A movement Trade Republic cancelled or removed since the last sync is no longer in the full history: delete it.
+      // The history read is complete or the sync has already failed, so an empty list never wipes the account.
+      if (data.movements.length > 0) {
+        const removed = await tx.delete(transactions).where(and(eq(transactions.userId, userId), eq(transactions.accountId, accountId), like(transactions.externalId, "trade-republic:%"),
+          notInArray(transactions.externalId, data.movements.map(movement => `trade-republic:${movement.id}`)))).returning({ id: transactions.id });
+        if (removed.length) logger.info("trade_republic.sync.movements_removed", { deleted: removed.length });
+      }
       return count;
     });
     // Each later step is visible in the sync panel, so a long AI pass never looks like a finished import.

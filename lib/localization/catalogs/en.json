@@ -5490,5 +5490,6 @@
   "Categorizzo i nuovi movimenti…": "Categorising new transactions…",
   "{0} operazione in Investimenti.": "{0} operation in Investments.",
   "{0} operazioni in Investimenti.": "{0} operations in Investments.",
-  "Gli investimenti non sono stati importati: abbiamo avvisato il supporto, i movimenti sono a posto.": "Investments were not imported: we have notified support, your transactions are fine."
+  "Gli investimenti non sono stati importati: abbiamo avvisato il supporto, i movimenti sono a posto.": "Investments were not imported: we have notified support, your transactions are fine.",
+  "Mostra i movimenti del {0}": "Show transactions from {0}"
 }

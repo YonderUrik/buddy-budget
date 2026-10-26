@@ -45,6 +45,19 @@ describe("direct Trade Republic cash sync persistence", () => {
     expect(saved).toHaveLength(1); expect(saved[0].note).toBe("Keep this note"); expect(saved[0].categorySource).toBe("utente");
     const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId)); expect(account.balance).toBe("100.00");
   });
+  it("updates a movement Trade Republic changed and deletes one it cancelled, keeping the user's note", async () => {
+    const second = { ...providerEvent(), id: "synthetic-second", title: "Second shop" };
+    vi.mocked(openTradeRepublicReader).mockResolvedValueOnce({ read: vi.fn().mockResolvedValueOnce([{ currencyId: "EUR", amount: "100" }]).mockResolvedValueOnce({ items: [providerEvent(), second] }), close: vi.fn() });
+    await runTradeRepublicSync(userId, accountId, "job-1");
+    await db.update(transactions).set({ note: "Keep this note" }).where(eq(transactions.externalId, "trade-republic:synthetic-event"));
+    // Next sync: the first movement was rebooked at another amount, the second was cancelled (no longer listed).
+    vi.mocked(openTradeRepublicReader).mockResolvedValueOnce({ read: vi.fn().mockResolvedValueOnce([{ currencyId: "EUR", amount: "100" }]).mockResolvedValueOnce({ items: [{ ...providerEvent(), amount: { value: -15, currency: "EUR" } }] }), close: vi.fn() });
+    await runTradeRepublicSync(userId, accountId, "job-2");
+    const saved = await db.select().from(transactions).where(eq(transactions.accountId, accountId));
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({ externalId: "trade-republic:synthetic-event", amount: "-15.00", note: "Keep this note" });
+    expect(redisSyncJobStore.updateAccount).toHaveBeenCalledWith(userId, "job-2", accountId, expect.objectContaining({ phase: "done", inserted: 0 }));
+  });
   it("rejects a different user's account before acquiring a sync lock", async () => {
     vi.mocked(redisSyncJobStore.acquireAccountLock).mockClear();
     expect(await prepareTradeRepublicSync("other-user", accountId)).toEqual({ status: "not-found" });

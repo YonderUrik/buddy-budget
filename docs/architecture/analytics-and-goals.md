@@ -340,6 +340,8 @@ Two engines outside Analitiche share the monthly series:
 
 Example: on 15 March, spent 900 so far; the first 15 days of December, January and February cost 1,000, 800 and 900: `typicalSoFar = 900`, on pace.
 
+The Liquidità tabs load one window of movements ([`lib/liquidity/fetch-window.ts`](../../lib/liquidity/fetch-window.ts): 1 January of the previous year to 31 December), so changing period never refetches. Older history is loaded on demand in Movimenti: `GET /api/transactions/years` lists the years with movements, and «Mostra i movimenti del {anno}» extends the window to the newest older year that has any (`previousYearWithMovements`, empty years skipped), one click per year, until the whole history is shown (Umami `transactions_older_loaded`). Search and filters apply to what is loaded.
+
 ### 4.17 Server digest cache
 
 The server snapshot reads every account, transaction, investment operation, price, pension fund and debt of the user and runs the whole plan: about one second for a user with investments, and it blocks the pod while it runs. Panoramica asks for it twice at once (`/api/sidebar/fire` and `/api/goals`). [`lib/analitiche/digest.ts`](../../lib/analitiche/digest.ts) keeps on Redis only what those two need (`AnalyticsDigest`: accounts, positions with tax rate, monthly capacity, FIRE input, essential spending, debts, sidebar figures), under `analytics:digest:<userId>` with a 30-minute TTL.

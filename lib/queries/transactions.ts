@@ -41,6 +41,22 @@ export function useTransactionsQuery(from: string, to: string, type: Transaction
   });
 }
 
+/** Years with movements are stable between imports; every transaction mutation still refreshes them (`["transactions"]` key). */
+const TRANSACTION_YEARS_STALE_MS = 5 * 60_000;
+
+/** Years that hold movements, newest first, for loading older history on demand. */
+export function useTransactionYearsQuery() {
+  return useQuery({
+    queryKey: ["transactions", "years"] as const,
+    staleTime: TRANSACTION_YEARS_STALE_MS,
+    queryFn: async (): Promise<number[]> => {
+      const response = await fetch("/api/transactions/years");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare le transazioni"));
+      return ((await response.json()) as { years: number[] }).years;
+    },
+  });
+}
+
 /** Detail of one transaction as `GET /api/transactions/[id]` returns it. */
 export type TransactionDetail = TransactionDetailData<ListedTransaction>;
 

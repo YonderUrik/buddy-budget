@@ -3,7 +3,7 @@ import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions, type AutomaticCategorySource } from "@/lib/db/schema/transactions";
 import { logger, recordCategorizationAutoApplied, type Logger } from "@/lib/observability";
-import { suggestCategoriesSafely } from "./ai/suggest-for-user";
+import { MANUAL_RUN_BUDGET_MS, MAX_GROUPS_MANUAL_RUN, suggestCategoriesSafely } from "./ai/suggest-for-user";
 import { autoApplicableGroups, loadCategorizationState } from "./load-groups";
 import { buildRuleResolver, flushRuleHits } from "./resolve";
 
@@ -192,13 +192,19 @@ export async function autoApplyCategoriesSafely(userId: string, log: Logger = lo
 }
 
 /**
- * Dopo una sync, un import o una richiesta manuale: l'assistente propone (se c'è il consenso), poi le regole e le
- * proposte sicure si applicano da sole. Non lancia mai.
+ * After an import every new merchant goes to the assistant, within the manual run's limits (cost and time guard):
+ * what is left over waits for the next import or «Categorizza con l'AI».
+ */
+const AFTER_IMPORT_SUGGEST_OPTIONS = { maxGroups: MAX_GROUPS_MANUAL_RUN, budgetMs: MANUAL_RUN_BUDGET_MS };
+
+/**
+ * After any sync or import (bank, file, broker statement, Trade Republic): the assistant proposes for every new
+ * merchant (with consent), then rules and confident proposals (from 70%) apply by themselves. Never throws.
  */
 export async function categorizeNewMovementsSafely(
   userId: string,
   log: Logger = logger,
-  suggestOptions: { maxGroups?: number; budgetMs?: number } = {}
+  suggestOptions: { maxGroups?: number; budgetMs?: number } = AFTER_IMPORT_SUGGEST_OPTIONS
 ): Promise<AutoApplyResult> {
   await suggestCategoriesSafely(userId, log, suggestOptions);
   return autoApplyCategoriesSafely(userId, log);

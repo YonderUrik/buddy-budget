@@ -5,7 +5,7 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("@/lib/crypto/field-encryption", () => ({ dataEncryptionKey: () => Buffer.alloc(32) }));
 vi.mock("@/lib/investments/operations", () => ({ getUserCurrency: async () => "EUR" }));
 vi.mock("@/lib/start/demo", () => ({ rejectIfDemoActive: async () => null }));
-vi.mock("@/lib/trade-republic", async () => ({ TradeRepublicError: (await import("@/lib/trade-republic/client")).TradeRepublicError, createTradeRepublicClient: vi.fn(), connectTradeRepublic: vi.fn(), prepareTradeRepublicSync: vi.fn(), runTradeRepublicSync: vi.fn(), readPendingLogin: vi.fn(), savePendingLogin: vi.fn(), clearPendingLogin: vi.fn(), allowTradeRepublicAttempt: vi.fn(), withTradeRepublicLoginLock: vi.fn(), tradeRepublicDebug: vi.fn(), describeError: vi.fn() }));
+vi.mock("@/lib/trade-republic", async () => ({ TradeRepublicError: (await import("@/lib/trade-republic/client")).TradeRepublicError, createTradeRepublicClient: vi.fn(), connectTradeRepublic: vi.fn(), prepareTradeRepublicSync: vi.fn(), runTradeRepublicSync: vi.fn(), readPendingLogin: vi.fn(), savePendingLogin: vi.fn(), clearPendingLogin: vi.fn(), allowTradeRepublicAttempt: vi.fn(), withTradeRepublicLoginLock: vi.fn(), tradeRepublicDebug: vi.fn(), describeError: vi.fn(), withTradeRepublicDiagnostics: (action: () => Promise<unknown>) => action(), tradeRepublicDiagnostics: () => "[]" }));
 import { auth } from "@/lib/auth";
 import * as tr from "@/lib/trade-republic";
 import { POST, GET, DELETE } from "./route";

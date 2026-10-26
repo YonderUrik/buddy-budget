@@ -5482,5 +5482,7 @@
   "Hai già importato Trade Republic da un file. Per evitare doppioni, il collegamento diretto richiede prima la rimozione di quell'importazione.": "You have already imported Trade Republic from a file. To prevent duplicates, remove that import before using the direct connection.",
   "Trade Republic non è disponibile o ha cambiato il collegamento. Riprova più tardi.": "Trade Republic is unavailable or its interface has changed. Try again later.",
   "Disponibile": "Available",
-  "Vai ai conti": "Go to accounts"
+  "Vai ai conti": "Go to accounts",
+  "{0} movimento non ancora riconosciuto: lo importeremo appena possibile.": "{0} transaction not recognised yet: we will import it as soon as possible.",
+  "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.": "{0} transactions not recognised yet: we will import them as soon as possible."
 }

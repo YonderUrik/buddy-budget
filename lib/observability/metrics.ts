@@ -168,6 +168,7 @@ export interface AsyncGaugeDeps {
 interface MetricsState {
   tradeRepublic: Counter<"action" | "outcome">;
   tradeRepublicDuration: Histogram<"action" | "outcome">;
+  tradeRepublicUnrecognized: Counter<string>;
   registry: Registry;
   deps: AsyncGaugeDeps;
   httpRequests: Counter<"route" | "method" | "status_class">;
@@ -395,6 +396,7 @@ function createState(): MetricsState {
     registers: r,
   });
   state.tradeRepublicDuration = new Histogram({ name: `${METRIC_PREFIX}trade_republic_request_seconds`, help: "Direct TR login and sync duration.", labelNames: ["action", "outcome"], buckets: DURATION_BUCKETS_SECONDS, registers: r });
+  state.tradeRepublicUnrecognized = new Counter({ name: `${METRIC_PREFIX}trade_republic_unrecognized_events_total`, help: "Trade Republic events skipped because their type or status is not known yet.", registers: r });
   state.tradeRepublic = new Counter({ name: `${METRIC_PREFIX}trade_republic_requests_total`, help: "Direct Trade Republic login and sync outcomes.", labelNames: ["action", "outcome"], registers: r });
   state.gcConnect = new Counter({
     name: `${METRIC_PREFIX}gocardless_connect_attempts_total`,
@@ -842,6 +844,11 @@ export function recordCommandAiRequest(outcome: CommandAiOutcome, durationMs?: n
 }
 
 /** Count direct TR outcomes without account identifiers or authentication material. */
+/** Trade Republic events a sync skipped as unknown (no type label: the set is open-ended, the types are in the logs). */
+export function recordTradeRepublicUnrecognized(count: number): void {
+  if (count > 0) metrics().tradeRepublicUnrecognized.inc(count);
+}
+
 export function recordTradeRepublicRequest(action: "login" | "sync", outcome: "success" | "error", durationMs: number): void {
   metrics().tradeRepublic.inc({ action, outcome });
   metrics().tradeRepublicDuration.observe({ action, outcome }, durationMs / 1000);

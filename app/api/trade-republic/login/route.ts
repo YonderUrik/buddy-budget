@@ -7,7 +7,7 @@ import { getUserCurrency } from "@/lib/investments/operations";
 import { rejectIfDemoActive } from "@/lib/start/demo";
 import { resolveProfile } from "@/lib/localization/config";
 import { bindRequestUser, requestLogger, recordTradeRepublicRequest, withRoute } from "@/lib/observability";
-import { createTradeRepublicClient, TradeRepublicError, connectTradeRepublic, prepareTradeRepublicSync, runTradeRepublicSync, readPendingLogin, savePendingLogin, clearPendingLogin, allowTradeRepublicAttempt, withTradeRepublicLoginLock, tradeRepublicDebug, describeError } from "@/lib/trade-republic";
+import { createTradeRepublicClient, TradeRepublicError, connectTradeRepublic, prepareTradeRepublicSync, runTradeRepublicSync, readPendingLogin, savePendingLogin, clearPendingLogin, allowTradeRepublicAttempt, withTradeRepublicLoginLock, tradeRepublicDebug, describeError, withTradeRepublicDiagnostics, tradeRepublicDiagnostics } from "@/lib/trade-republic";
 
 export const maxDuration = 300;
 const inputSchema = z.discriminatedUnion("action", [
@@ -40,7 +40,8 @@ async function handlePost(request: NextRequest) {
   const userId = session.user.id;
   if (!await allowTradeRepublicAttempt(userId, input.action === "login" ? "login" : "poll", input.action === "login" ? 5 : 40, input.action === "login" ? 900 : 60)) return Response.json({ error: "Troppi tentativi. Attendi prima di riprovare." }, { status: 429 });
   const started = performance.now();
-  try {
+  // A failed sign-in logs its diagnostic trail (HTTP statuses, payload shapes): enough to fix the adapter.
+  return withTradeRepublicDiagnostics(async () => { try {
     const response = await withTradeRepublicLoginLock(userId, async () => {
       if (input.action === "login") {
         const pending = { cookies: {}, deviceId: randomUUID() };
@@ -71,7 +72,7 @@ async function handlePost(request: NextRequest) {
   } catch (error) {
     const reason = error instanceof TradeRepublicError ? error.reason : "unavailable";
     tradeRepublicDebug("login.error", { action: input.action, ...(error instanceof TradeRepublicError ? { reason } : { reason: "internal", error: describeError(error) }) });
-    requestLogger().warn("trade_republic.login.failed", { reason });
+    requestLogger().warn("trade_republic.login.failed", { reason, diagnostics: tradeRepublicDiagnostics() });
     recordTradeRepublicRequest("login", "error", performance.now() - started);
     const messages = {
       expired: "La sessione Trade Republic è scaduta o l'accesso è stato rifiutato. Accedi di nuovo.",
@@ -79,7 +80,7 @@ async function handlePost(request: NextRequest) {
       "existing-import": "Hai già importato Trade Republic da un file. Per evitare doppioni, il collegamento diretto richiede prima la rimozione di quell'importazione.",
     };
     return Response.json({ error: messages[reason as keyof typeof messages] ?? "Trade Republic non è disponibile o ha cambiato il collegamento. Riprova più tardi." }, { status: reason === "expired" ? 410 : reason === "rate-limited" ? 429 : 502, headers: privateHeaders });
-  }
+  } });
 }
 async function handleDelete(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });

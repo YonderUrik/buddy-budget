@@ -9,12 +9,12 @@ import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
 import { redisSyncJobStore as store } from "@/lib/sync-jobs/redis-store";
 import { getUserCurrency } from "@/lib/investments/operations";
 import { queuedAccount } from "@/lib/sync-jobs/types";
-import { logger, recordTradeRepublicRequest } from "@/lib/observability";
+import { logger, recordTradeRepublicRequest, recordTradeRepublicUnrecognized } from "@/lib/observability";
 import { createTradeRepublicClient, TradeRepublicError } from "./client";
 import { openTradeRepublicSession, sealTradeRepublicSession } from "./session";
 import { openTradeRepublicReader } from "./socket";
 import { readTradeRepublicCash } from "./data";
-import { describeError, tradeRepublicDebug } from "./debug";
+import { describeError, tradeRepublicDebug, tradeRepublicDiagnostics, withTradeRepublicDiagnostics } from "./debug";
 
 /** Reserve the existing global sync job and account lock before scheduling background work. */
 export async function prepareTradeRepublicSync(userId: string, accountId: string, initial = false) {
@@ -28,8 +28,15 @@ export async function prepareTradeRepublicSync(userId: string, accountId: string
   } catch (error) { await store.releaseAccountLock(accountId); throw error; }
 }
 
-/** Import direct API cash data atomically. Existing categorizations and notes survive repeated syncs. */
-export async function runTradeRepublicSync(userId: string, accountId: string, jobId: string): Promise<void> {
+/**
+ * Import direct API cash data atomically. Existing categorizations and notes survive repeated syncs.
+ * A failure logs the whole diagnostic trail, so the parser can be fixed from one production log line.
+ */
+export function runTradeRepublicSync(userId: string, accountId: string, jobId: string): Promise<void> {
+  return withTradeRepublicDiagnostics(() => syncWithDiagnostics(userId, accountId, jobId));
+}
+
+async function syncWithDiagnostics(userId: string, accountId: string, jobId: string): Promise<void> {
   const started = performance.now();
   const update = (patch: Parameters<typeof store.updateAccount>[3]) => store.updateAccount(userId, jobId, accountId, patch);
   const heartbeat = setInterval(() => { void update({}).catch(() => {}); }, 15_000);
@@ -51,7 +58,7 @@ export async function runTradeRepublicSync(userId: string, accountId: string, jo
     await update({ phase: "fetching" });
     const data = await readTradeRepublicCash(reader, new Date().toISOString().slice(0, 10), async processed => { await update({ processed }); });
     reader.close(); reader = undefined;
-    tradeRepublicDebug("sync.fetched", { movements: data.movements.length, investmentEvents: data.investmentEvents });
+    tradeRepublicDebug("sync.fetched", { movements: data.movements.length, investmentEvents: data.investmentEvents, unrecognized: data.unrecognized, reconciled: data.reconciled });
     const categoryId = await getFallbackCategoryId(userId);
     await update({ phase: "saving", total: data.movements.length, processed: 0 });
     const inserted = await db.transaction(async tx => {
@@ -70,16 +77,21 @@ export async function runTradeRepublicSync(userId: string, accountId: string, jo
       return count;
     });
     await categorizeNewMovementsSafely(userId);
-    await update({ phase: "done", inserted, processed: data.movements.length });
+    await update({ phase: "done", inserted, processed: data.movements.length, unrecognized: data.unrecognized });
     recordTradeRepublicRequest("sync", "success", performance.now() - started);
-    logger.info("trade_republic.sync.completed", { inserted, skipped: data.investmentEvents });
+    logger.info("trade_republic.sync.completed", { inserted, skipped: data.investmentEvents, unrecognized: data.unrecognized, reconciled: data.reconciled });
+    // Skipped types and an unbalanced timeline are parser gaps: log the evidence needed to add them.
+    if (data.unrecognized || !data.reconciled) {
+      recordTradeRepublicUnrecognized(data.unrecognized);
+      logger.warn("trade_republic.sync.incomplete", { unrecognized: data.unrecognized, reconciled: data.reconciled, diagnostics: tradeRepublicDiagnostics() });
+    }
   } catch (error) {
     const expired = error instanceof TradeRepublicError && error.reason === "expired";
     tradeRepublicDebug("sync.error", error instanceof TradeRepublicError ? { reason: error.reason } : { reason: "internal", error: describeError(error) });
     if (expired && activeSession) await db.update(tradeRepublicConnections).set({ status: "expired", session: "" }).where(and(eq(tradeRepublicConnections.userId, userId), eq(tradeRepublicConnections.accountId, accountId), eq(tradeRepublicConnections.session, activeSession)));
     await update({ phase: expired ? "expired" : "error" });
     recordTradeRepublicRequest("sync", "error", performance.now() - started);
-    // Provider bodies and cookies must never enter logs, including on network failures.
-    logger.warn("trade_republic.sync.failed", { reason: error instanceof TradeRepublicError ? error.reason : "internal" });
+    // Provider bodies and cookies must never enter logs, including on network failures: the trail holds only shapes, enums and counts.
+    logger.warn("trade_republic.sync.failed", { reason: error instanceof TradeRepublicError ? error.reason : "internal", diagnostics: tradeRepublicDiagnostics() });
   } finally { clearInterval(heartbeat); reader?.close(); await store.releaseAccountLock(accountId); }
 }

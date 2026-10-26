@@ -7,6 +7,12 @@ function account(overrides: Partial<SyncJobAccount>): SyncJobAccount {
 }
 
 describe("describeAccountProgress", () => {
+  it("adds a note for provider events not recognised yet", () => {
+    const text = describeAccountProgress(account({ phase: "done", inserted: 3, unrecognized: 2 }), false).text;
+    expect(text).toContain("2 movimenti non ancora riconosciuti: li importeremo appena possibile.");
+    expect(describeAccountProgress(account({ phase: "done", inserted: 3 }), false).text).not.toContain("riconosciut");
+  });
+
   it("descrive le fasi in corso con la barra giusta", () => {
     expect(describeAccountProgress(account({ phase: "queued" }), false)).toEqual({
       text: "In attesa",

@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { describeShape, maskPattern, tradeRepublicDebugEnabled } from "./debug";
-import { readTradeRepublicCash } from "./data";
+import { describeShape, maskPattern, tradeRepublicDebug, tradeRepublicDebugEnabled, tradeRepublicDiagnostics, withTradeRepublicDiagnostics } from "./debug";
 
 describe("Trade Republic staging diagnostics", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -16,12 +15,18 @@ describe("Trade Republic staging diagnostics", () => {
     expect(maskPattern("2024-05-22T14:19:42.016+0000")).toBe("9999-99-99T99:99:99.999+9999");
     expect(describeShape({ title: "Merchant", amount: { value: -12.5 }, items: [{ id: "x" }] })).toEqual({ title: "string(8)", amount: { value: "number" }, items: ["array(1)", { id: "string(1)" }] });
   });
-  it("on staging, reads the whole timeline before failing on the first problem", async () => {
-    vi.stubEnv("APP_URL", "https://staging.buddybudget.io");
-    const item = (id: string, eventType: string) => ({ id, timestamp: "2026-10-01T10:00:00.000+0000", title: "Synthetic", eventType, status: "EXECUTED", amount: { value: -1, currency: "EUR" } });
-    const pages = [{ items: [item("a", "NEW_TYPE"), { id: "b" }], cursors: { after: "next" } }, { items: [item("c", "CARD_TRANSACTION")] }];
-    const read = vi.fn().mockResolvedValueOnce([{ currencyId: "EUR", amount: 1 }]).mockImplementation(async () => pages.shift());
-    await expect(readTradeRepublicCash({ read, close: vi.fn() }, "2026-10-25")).rejects.toThrow("unsupported-event");
-    expect(read).toHaveBeenCalledTimes(3);
+  it("collects a bounded trail inside a diagnostics scope, also off staging", async () => {
+    vi.stubEnv("APP_URL", "https://app.buddybudget.io");
+    const trail = await withTradeRepublicDiagnostics(async () => {
+      tradeRepublicDebug("first", { a: 1 });
+      tradeRepublicDebug("frame", {}, { trail: false });
+      for (let index = 0; index < 100; index++) tradeRepublicDebug("step", { index });
+      return JSON.parse(tradeRepublicDiagnostics()) as string[];
+    });
+    expect(trail[0]).toBe('first {"a":1}');
+    expect(trail).toHaveLength(80);
+    expect(trail.at(-1)).toBe('step {"index":99}');
+    expect(trail.some(entry => entry.startsWith("frame"))).toBe(false);
+    expect(tradeRepublicDiagnostics()).toBe("[]");
   });
 });

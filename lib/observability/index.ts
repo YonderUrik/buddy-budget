@@ -10,6 +10,7 @@ export {
   assertStaticRouteName,
   recordHttpRequest,
   recordTradeRepublicRequest,
+  recordTradeRepublicUnrecognized,
   recordGoCardlessSync,
   recordGoCardlessApiRequest,
   recordTransactionsImported,

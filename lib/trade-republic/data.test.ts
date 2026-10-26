@@ -7,7 +7,7 @@ describe("Trade Republic direct cash reader", () => {
     const api = reader({ items: [event("one"), event("trade", "TRADING_TRADE_EXECUTED", -200)], cursors: { after: "next" } }, { items: [event("one"), event("two", "CARD_REFUND", 4.56)] });
     const progress = vi.fn();
     const result = await readTradeRepublicCash(api, "2026-10-25", progress);
-    expect(result).toEqual({ balance: "123.45", investmentEvents: 1, movements: [{ id: "one", date: "2026-10-01", amount: "-12.34", description: "Synthetic merchant" }, { id: "two", date: "2026-10-01", amount: "4.56", description: "Synthetic merchant" }] });
+    expect(result).toEqual({ balance: "123.45", investmentEvents: 1, unrecognized: 0, reconciled: false, movements: [{ id: "one", date: "2026-10-01", amount: "-12.34", description: "Synthetic merchant" }, { id: "two", date: "2026-10-01", amount: "4.56", description: "Synthetic merchant" }] });
     expect(api.read.mock.calls).toEqual([["cash"], ["timelineTransactions", undefined], ["timelineTransactions", "next"]]);
     expect(progress).toHaveBeenLastCalledWith(3);
   });
@@ -17,7 +17,6 @@ describe("Trade Republic direct cash reader", () => {
     const live = { ...booked, cashAccountNumber: null, status: "EXECUTED", deleted: false };
     const result = await readTradeRepublicCash(reader({ items: [live, cancelled, { ...event("pending"), status: "PENDING" }, { ...event("gone"), deleted: true }] }), "2026-10-25");
     expect(result.movements).toEqual([{ id: "booked", date: "2026-10-01", amount: "-12.34", description: "Synthetic merchant" }]);
-    await expect(readTradeRepublicCash(reader({ items: [{ ...event("odd"), status: "SOMETHING_NEW" }] }), "2026-10-25")).rejects.toThrow("invalid-response");
   });
   it("classifies the event types seen on a real account", async () => {
     const items = [event("atm", "CARD_ATM_WITHDRAWAL"), event("aft", "CARD_AFT"), event("topup", "PAYMENT_INBOUND_CREDIT_CARD", 50), event("bollo", "STAMP_DUTY_TAX_PAID", -2), event("gift", "GIFTER_TRANSACTION", -25), event("verify", "CARD_VERIFICATION", 0), event("order", "ORDER_EXECUTED", -100), event("referral", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER", 15)];
@@ -25,12 +24,24 @@ describe("Trade Republic direct cash reader", () => {
     expect(result.movements.map(movement => movement.id)).toEqual(["atm", "aft", "topup", "bollo", "gift"]);
     expect(result.investmentEvents).toBe(2);
   });
+  it("reads the whole timeline before failing, so one failure reports every malformed item", async () => {
+    const pages = [{ items: [{ id: "broken" }, event("a")], cursors: { after: "next" } }, { items: [{ ...event("b"), amount: { value: -1, currency: "USD" } }] }];
+    const api = reader(...pages);
+    await expect(readTradeRepublicCash(api, "2026-10-25")).rejects.toThrow("invalid-response");
+    expect(api.read).toHaveBeenCalledTimes(3);
+  });
+  it("reports whether the timeline adds up to the balance", async () => {
+    expect((await readTradeRepublicCash(reader({ items: [event("one", "CARD_REFUND", 123.45)] }), "2026-10-25")).reconciled).toBe(true);
+    expect((await readTradeRepublicCash(reader({ items: [event("one")] }), "2026-10-25")).reconciled).toBe(false);
+  });
   it("imports dividend cash without treating securities purchases as expenses", async () => {
     const result = await readTradeRepublicCash(reader({ items: [event("dividend", "SSP_CORPORATE_ACTION_CASH", 2)] }), "2026-10-25");
     expect(result.movements[0].amount).toBe("2.00");
   });
-  it("refuses unknown monetary events and repeated cursors", async () => {
-    await expect(readTradeRepublicCash(reader({ items: [event("unknown", "NEW_MONETARY_EVENT")] }), "2026-10-25")).rejects.toThrow("unsupported-event");
+  it("skips and counts unknown event types and statuses instead of guessing, and refuses repeated cursors", async () => {
+    const result = await readTradeRepublicCash(reader({ items: [event("known"), event("unknown", "NEW_MONETARY_EVENT"), { ...event("odd"), status: "SOMETHING_NEW" }] }), "2026-10-25");
+    expect(result.movements.map(movement => movement.id)).toEqual(["known"]);
+    expect(result.unrecognized).toBe(2);
     await expect(readTradeRepublicCash(reader({ items: [], cursors: { after: "same" } }, { items: [], cursors: { after: "same" } }), "2026-10-25")).rejects.toThrow("invalid-response");
   });
   it("refuses inconsistent duplicate IDs, foreign currency, and future booking dates", async () => {

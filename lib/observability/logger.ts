@@ -104,6 +104,12 @@ export interface LogFields {
   devCode?: string;
   /** Staging-only Trade Republic diagnostics (`lib/trade-republic/debug.ts`): JSON of shapes, enums, counts and masked patterns, never values. */
   debug?: string;
+  /** Trade Republic diagnostic trail on a failed login/sync or unrecognised events: same content rules as `debug`. */
+  diagnostics?: string;
+  /** Trade Republic events skipped because their type or status is not known yet (count). */
+  unrecognized?: number;
+  /** Whether the Trade Republic timeline adds up to the reported balance (never the amounts themselves). */
+  reconciled?: boolean;
   error?: unknown;
 }
 

@@ -14,6 +14,8 @@ const QUEUED_TEXT = "In attesa";
 const BALANCE_TEXT = "Aggiorno il saldo…";
 const FETCHING_TEXT = "Scarico i movimenti dalla banca…";
 const ERROR_TEXT = "Sincronizzazione non riuscita. Riprova più tardi.";
+const UNRECOGNIZED_ONE_TEXT = "{0} movimento non ancora riconosciuto: lo importeremo appena possibile.";
+const UNRECOGNIZED_MANY_TEXT = "{0} movimenti non ancora riconosciuti: li importeremo appena possibile.";
 const INTERRUPTED_TEXT = "Sincronizzazione interrotta. I movimenti già salvati restano, il prossimo sync riprende da lì.";
 
 const NO_BAR: ProgressBarState = { kind: "none" };
@@ -37,18 +39,18 @@ export function describeAccountProgress(account: SyncJobAccount, interrupted: bo
         tone: "default",
       };
     }
-    case "done":
-      return {
-        text: buildSyncSummaryMessage({
-          status: "synced",
-          newTransactionsCount: account.inserted,
-          categorizedCount: account.categorized,
-          uncategorizedCount: account.uncategorized,
-          balanceUpdated: true,
-        }, locale),
-        bar: FULL_BAR,
-        tone: "success",
-      };
+    case "done": {
+      const unrecognized = account.unrecognized ?? 0;
+      const summary = buildSyncSummaryMessage({
+        status: "synced",
+        newTransactionsCount: account.inserted,
+        categorizedCount: account.categorized,
+        uncategorizedCount: account.uncategorized,
+        balanceUpdated: true,
+      }, locale);
+      const note = unrecognized > 0 ? ` ${t(unrecognized === 1 ? UNRECOGNIZED_ONE_TEXT : UNRECOGNIZED_MANY_TEXT, { 0: unrecognized })}` : "";
+      return { text: summary + note, bar: FULL_BAR, tone: "success" };
+    }
     case "limited":
       return { text: buildSyncErrorMessage({ status: "gocardless-limited" }, locale), bar: NO_BAR, tone: "error" };
     case "expired":

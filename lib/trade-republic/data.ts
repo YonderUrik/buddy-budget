@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TradeRepublicError } from "./client";
 import type { TradeRepublicReader } from "./socket";
-import { countBy, describeIssues, describeShape, maskPattern, tradeRepublicDebug, tradeRepublicDebugEnabled } from "./debug";
+import { countBy, describeIssues, describeShape, maskPattern, tradeRepublicDebug } from "./debug";
 
 // TR sends Java-style offsets without a colon (`+0000`), which zod 4's `datetime({ offset: true })` rejects.
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/;
@@ -13,7 +13,7 @@ const eventSchema = z.object({
   // TR sends absent optional fields as explicit nulls (e.g. `cashAccountNumber: null`).
   status: z.string().nullish(), cashAccountNumber: z.string().nullish(), deleted: z.boolean().nullish(),
 });
-// Items are validated one by one, so staging diagnostics can report every malformed item in one pass.
+// Items are validated one by one, so one failed import reports every malformed item at once.
 const pageSchema = z.object({ items: z.array(z.unknown()), cursors: z.object({ after: z.string().nullable().optional() }).optional() });
 const MAX_PAGES = 200;
 const MAX_FETCH_MS = 240_000;
@@ -29,9 +29,23 @@ const BOOKED_STATUSES = new Set(["COMPLETED", "EXECUTED", "SETTLED"]);
 const INVESTMENT_TYPES = new Set(["TRADING_SAVINGSPLAN_EXECUTED", "TRADING_TRADE_EXECUTED", "TRADE_INVOICE", "SAVINGS_PLAN_EXECUTED", "SAVEBACK_PAYOUT", "SSP_CORPORATE_ACTION_SECURITIES", "ORDER_EXECUTED", "REFERRAL_FIRST_TRADE_EXECUTED_INVITER"]);
 
 export interface TradeRepublicMovement { id: string; date: string; amount: string; description: string }
-export interface TradeRepublicCashData { balance: string; movements: TradeRepublicMovement[]; investmentEvents: number }
+export interface TradeRepublicCashData {
+  balance: string;
+  movements: TradeRepublicMovement[];
+  investmentEvents: number;
+  /** Booked events skipped because their type or status is not known yet; imported by a later sync once added. */
+  unrecognized: number;
+  /** Whether every booked amount in the timeline adds up to the reported balance. */
+  reconciled: boolean;
+}
+type Reason = "invalid-response" | "unsupported-event" | "unavailable";
+interface Finding { check: string; reason: Reason; count: number; example: unknown }
 
-/** Fetch complete booked cash history. Unknown monetary events block the import instead of disappearing. */
+/**
+ * Fetch complete booked cash history. Structural problems (page shape, cursors, balance) stop at once; malformed
+ * items are collected over the whole timeline and then fail the import together, so one failure reports all of
+ * them. Unknown event types and statuses are skipped and reported, never guessed.
+ */
 export async function readTradeRepublicCash(reader: TradeRepublicReader, today: string, onProgress?: (count: number) => Promise<void>): Promise<TradeRepublicCashData> {
   const startedAt = Date.now();
   const rawCash = await reader.read("cash");
@@ -47,20 +61,19 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
   let after: string | undefined;
   let investmentEvents = 0;
   let unbooked = 0;
-  type Reason = "invalid-response" | "unsupported-event" | "unavailable";
+  let bookedCents = 0;
   const reject = (check: string, details: Record<string, unknown> = {}, reason: Reason = "invalid-response") => {
     tradeRepublicDebug("rejected", { check, ...details });
     return new TradeRepublicError(reason);
   };
-  // Staging only: item-level problems are collected across the whole timeline and reported together,
-  // then the import still fails. Production stops at the first problem.
-  const collect = tradeRepublicDebugEnabled();
-  const problems: { check: string; reason: Reason; key: string }[] = [];
-  const itemProblem = (check: string, details: Record<string, unknown>, reason: Reason = "invalid-response") => {
-    if (!collect) throw reject(check, details, reason);
-    // Grouped across pages: the page number would split identical problems into separate rows.
-    const grouped = { ...details }; delete grouped.page;
-    problems.push({ check, reason, key: `${check} ${JSON.stringify(grouped)}` });
+  // Grouped by kind across pages, with the structure (never the values) of the first item of each kind.
+  const problems = new Map<string, Finding>();
+  const unrecognized = new Map<string, Finding>();
+  const note = (into: Map<string, Finding>, check: string, details: Record<string, unknown>, rawItem: unknown, reason: Reason = "invalid-response") => {
+    const key = `${check} ${JSON.stringify(details)}`;
+    const found = into.get(key);
+    if (found) found.count++;
+    else into.set(key, { check, reason, count: 1, example: describeShape(rawItem) });
   };
   const allTypes: string[] = [];
   for (let page = 0; page < MAX_PAGES; page++) {
@@ -68,17 +81,17 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
     const rawPage = await reader.read("timelineTransactions", after);
     debugPage(page, rawPage);
     const parsed = pageSchema.safeParse(rawPage);
-    if (!parsed.success) throw reject("page-schema", { page, issues: describeIssues(parsed.error.issues) });
+    if (!parsed.success) throw reject("page-schema", { page, issues: describeIssues(parsed.error.issues), shape: describeShape(rawPage) });
     for (const rawItem of parsed.data.items) {
       const rawType = rawItem && typeof rawItem === "object" && "eventType" in rawItem ? String(rawItem.eventType) : "missing";
       const rawStatus = rawItem && typeof rawItem === "object" && "status" in rawItem ? String(rawItem.status) : "missing";
       allTypes.push(`${rawType}/${rawStatus}`);
       const item = eventSchema.safeParse(rawItem);
-      if (!item.success) { itemProblem("item-schema", { page, eventType: rawType, issues: describeIssues(item.error.issues) }); continue; }
+      if (!item.success) { note(problems, "item-schema", { eventType: rawType, issues: describeIssues(item.error.issues) }, rawItem); continue; }
       const event = item.data;
       const fingerprint = JSON.stringify(event);
       if (seen.has(event.id)) {
-        if (seen.get(event.id) !== fingerprint) itemProblem("duplicate-id-changed", { page, eventType: event.eventType });
+        if (seen.get(event.id) !== fingerprint) note(problems, "duplicate-id-changed", { eventType: event.eventType }, rawItem);
         continue;
       }
       seen.set(event.id, fingerprint);
@@ -87,25 +100,29 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
       if (event.deleted) { unbooked++; continue; }
       if (event.status && !BOOKED_STATUSES.has(event.status)) {
         if (UNBOOKED_STATUSES.has(event.status)) { unbooked++; continue; }
-        itemProblem("unknown-status", { page, status: event.status, eventType: event.eventType }); continue;
+        note(unrecognized, "unknown-status", { eventType: event.eventType, status: event.status }, rawItem); continue;
       }
+      if (event.amount.currency !== "EUR") { note(problems, "foreign-currency", { eventType: event.eventType, currency: event.amount.currency }, rawItem); continue; }
+      if (Math.abs(event.amount.value) >= 1e10) { note(problems, "amount-out-of-range", { eventType: event.eventType }, rawItem); continue; }
+      if (event.timestamp.slice(0, 10) > today) { note(problems, "future-date", { eventType: event.eventType, timestamp: maskPattern(event.timestamp) }, rawItem); continue; }
+      bookedCents += Math.round(event.amount.value * 100);
       if (NON_MOVEMENT_TYPES.has(event.eventType)) { unbooked++; continue; }
       if (INVESTMENT_TYPES.has(event.eventType)) { investmentEvents++; continue; }
-      if (!CASH_TYPES.has(event.eventType)) { itemProblem("unsupported-event-type", { page, eventType: event.eventType, status: event.status ?? null }, "unsupported-event"); continue; }
-      if (event.amount.currency !== "EUR") { itemProblem("foreign-currency", { page, eventType: event.eventType, currency: event.amount.currency }); continue; }
-      if (Math.abs(event.amount.value) >= 1e10) { itemProblem("amount-out-of-range", { page, eventType: event.eventType }); continue; }
-      if (event.timestamp.slice(0, 10) > today) { itemProblem("future-date", { page, eventType: event.eventType, timestamp: maskPattern(event.timestamp) }); continue; }
+      if (!CASH_TYPES.has(event.eventType)) { note(unrecognized, "unknown-event-type", { eventType: event.eventType, status: event.status ?? null }, rawItem, "unsupported-event"); continue; }
       movements.push({ id: event.id, date: event.timestamp.slice(0, 10), amount: event.amount.value.toFixed(2), description: event.title });
     }
     await onProgress?.(seen.size);
     const cursor = parsed.data.cursors?.after;
     if (!cursor) {
-      tradeRepublicDebug("timeline.done", { pages: page + 1, events: seen.size, movements: movements.length, investmentEvents, unbooked, problems: problems.length, typesAndStatuses: countBy(allTypes, value => value) });
-      if (problems.length) {
-        tradeRepublicDebug("timeline.problems", { total: problems.length, byKind: countBy(problems, problem => problem.key) });
-        throw new TradeRepublicError(problems[0].reason);
+      const skipped = [...unrecognized.values()].reduce((sum, finding) => sum + finding.count, 0);
+      const reconciled = bookedCents === Math.round(cash.data[0].amount * 100);
+      tradeRepublicDebug("timeline.done", { pages: page + 1, events: seen.size, movements: movements.length, investmentEvents, unbooked, unrecognized: skipped, problems: problems.size, reconciled, typesAndStatuses: countBy(allTypes, value => value) });
+      if (unrecognized.size) tradeRepublicDebug("timeline.unrecognized", { findings: [...unrecognized.entries()].map(([key, finding]) => ({ key, count: finding.count, example: finding.example })) });
+      if (problems.size) {
+        tradeRepublicDebug("timeline.problems", { findings: [...problems.entries()].map(([key, finding]) => ({ key, count: finding.count, example: finding.example })) });
+        throw new TradeRepublicError(problems.values().next().value!.reason);
       }
-      return { balance: cash.data[0].amount.toFixed(2), movements, investmentEvents };
+      return { balance: cash.data[0].amount.toFixed(2), movements, investmentEvents, unrecognized: skipped, reconciled };
     }
     if (cursors.has(cursor)) throw reject("repeated-cursor", { page });
     cursors.add(cursor); after = cursor;
@@ -113,7 +130,7 @@ export async function readTradeRepublicCash(reader: TradeRepublicReader, today: 
   throw reject("too-many-pages", { pages: MAX_PAGES });
 }
 
-/** Staging-only summary of one raw timeline page: categorical fields and formats, never titles, amounts or ids. */
+/** Staging-only live summary of one raw timeline page (the totals go in the trail): categorical fields and formats, never titles, amounts or ids. */
 function debugPage(page: number, raw: unknown): void {
   const items = raw && typeof raw === "object" && "items" in raw && Array.isArray(raw.items) ? raw.items as Record<string, unknown>[] : [];
   const field = (item: Record<string, unknown>, key: string) => typeof item?.[key] === "string" ? item[key] as string : String(item?.[key] ?? "missing");
@@ -126,5 +143,5 @@ function debugPage(page: number, raw: unknown): void {
     timestampFormats: countBy(items, item => maskPattern(item?.timestamp)),
     amountCurrencies: countBy(items, item => { const amount = item?.amount as { currency?: unknown } | null | undefined; return amount ? String(amount.currency ?? "missing") : "none"; }),
     itemKeys: countBy(items, item => Object.keys(item ?? {}).sort().join(",")),
-  });
+  }, { trail: false });
 }

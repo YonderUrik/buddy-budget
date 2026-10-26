@@ -38,7 +38,7 @@ export async function openTradeRepublicReader(session: TradeRepublicSession): Pr
     if (data === "connected") { tradeRepublicDebug("socket.connected"); clearTimeout(connectTimer); authenticated = true; connectResolve(); return; }
     if (!authenticated) { fail("expired", `pre-auth-frame:${data.length}`); return; }
     const match = /^(\d+) ([A-Z])(?: ([\s\S]*))?$/.exec(data);
-    tradeRepublicDebug("socket.frame", { matched: !!match, id: match?.[1] ?? null, kind: match?.[2] ?? null, bytes: Buffer.byteLength(data), pendingId: pending?.id ?? null, pendingTopic: pending?.topic ?? null });
+    tradeRepublicDebug("socket.frame", { matched: !!match, id: match?.[1] ?? null, kind: match?.[2] ?? null, bytes: Buffer.byteLength(data), pendingId: pending?.id ?? null, pendingTopic: pending?.topic ?? null }, { trail: false });
     if (!match || !pending || match[1] !== pending.id) return;
     // Each new subscription must begin with a complete A frame. Deltas cannot be mistaken for snapshots.
     if (match[2] === "D") { fail("unavailable", "delta-before-snapshot"); return; }
@@ -57,7 +57,7 @@ export async function openTradeRepublicReader(session: TradeRepublicSession): Pr
       const id = String(++nextId);
       return new Promise((resolve, reject) => {
         pending = { id, topic, resolve, reject, timer: setTimeout(() => fail("unavailable", `read-timeout:${topic}`), SOCKET_TIMEOUT_MS) };
-        tradeRepublicDebug("socket.sub", { id, topic, paged: !!after });
+        tradeRepublicDebug("socket.sub", { id, topic, paged: !!after }, { trail: false });
         socket.send(`sub ${id} ${JSON.stringify({ type: topic, ...(after ? { after } : {}) })}`);
       });
     },

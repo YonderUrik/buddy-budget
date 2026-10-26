@@ -37,6 +37,8 @@ export interface SyncJobAccount {
   inserted: number;
   categorized: number;
   uncategorized: number;
+  /** Provider events skipped because their type is not known yet (Trade Republic); imported by a later sync once supported. */
+  unrecognized?: number;
   /** Motivo di un `error` noto in anticipo (conto già in sync altrove). */
   errorReason?: "already-running";
 }

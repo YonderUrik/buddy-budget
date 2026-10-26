@@ -78,9 +78,11 @@ export interface ProductEvents {
   start_checklist_reopened: undefined;
   /** Tutti i passi fatti, registrato una sola volta per utente. */
   start_checklist_completed: undefined;
-  /** «Dall'ultima visita» toast shown on opening the app; counts of what happened and of what waits for the user. */
+  /** «Dall'ultima visita» label shown beside the Panoramica date; counts of what happened and of what waits for the user. */
   welcome_summary_shown: { happened: number; waiting: number };
-  /** The toast's action pressed (`item`: the line it leads to). */
+  /** The label tapped: the summary opened (same counts). */
+  welcome_summary_opened: { happened: number; waiting: number };
+  /** A line's button pressed in the opened summary (`item`: the line it leads to). */
   welcome_summary_item_clicked: { item: WelcomeItemKind };
   /** «Esplora con dati d'esempio» avviato. */
   demo_started: undefined;

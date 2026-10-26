@@ -3,8 +3,6 @@
 import type { WelcomeHappened, WelcomeItemKind, WelcomeWaiting } from "@/lib/welcome";
 
 type Translate = (source: string, values?: Record<string, string | number>) => string;
-/** Joins labels the way the language does («a, b e c»): `Intl.ListFormat` in the user's locale. */
-type JoinList = (items: string[]) => string;
 
 export interface WelcomeLine {
   kind: WelcomeItemKind;
@@ -68,30 +66,15 @@ export function waitingLine(item: WelcomeWaiting, tr: Translate): WelcomeLine {
   }
 }
 
-/** What the «Dall'ultima visita» toast says: up to two lines (what happened, what waits) and the most useful action. */
-export interface WelcomeToastContent {
-  lines: string[];
-  action: { label: string; href: string; kind: WelcomeItemKind };
-}
-
 /**
- * Packs the summary into the toast title, one line per group («Mentre eri via: 12 movimenti nuovi e 1 avviso di prezzo
- * scattato», «Da sistemare: 7 movimenti senza categoria»), with the action of the first thing that waits (or «Vedi» on
- * the first thing that happened). No description: the title says it all.
+ * The «Dall'ultima visita» label beside the Panoramica date: the first thing that happened, followed by «e altro» when
+ * the opened summary has more lines («12 movimenti nuovi e altro»). Nothing happened, no label: what waits alone is
+ * not news, Liquidità and Categorizza already show it.
  */
-export function welcomeToastContent(
-  happened: readonly WelcomeLine[],
-  waiting: readonly WelcomeLine[],
-  tr: Translate,
-  join: JoinList,
-): WelcomeToastContent | null {
+export function welcomeLabel(happened: readonly WelcomeLine[], waiting: readonly WelcomeLine[], tr: Translate): string | null {
+  const head = happened[0];
+  if (!head) return null;
   // The count never ends a line apart from its words.
-  const label = (lines: readonly WelcomeLine[]) => join(lines.map((line) => `${line.figure}\u00a0${line.title}`));
-  const first = waiting[0] ?? happened[0];
-  if (!first) return null;
-  const lines = [
-    happened.length > 0 ? tr("Mentre eri via: {0}", { 0: label(happened) }) : null,
-    waiting.length > 0 ? tr("Da sistemare: {0}", { 0: label(waiting) }) : null,
-  ].filter((part): part is string => part !== null);
-  return { lines, action: { label: first.action ?? tr("Vedi"), href: first.href, kind: first.kind } };
+  const label = `${head.figure}\u00a0${head.title}`;
+  return happened.length + waiting.length > 1 ? `${label} ${tr("e altro")}` : label;
 }

@@ -79,7 +79,8 @@ async function loadTradeRepublicStatuses(userId: string): Promise<BankConnection
   }));
 }
 
-async function loadGoCardlessStatuses(userId: string, now: Date): Promise<BankConnectionStatus[]> {
+/** GoCardless links only (`GET /api/gocardless/connections`: web reads Trade Republic from its own route). */
+export async function loadGoCardlessStatuses(userId: string, now: Date): Promise<BankConnectionStatus[]> {
   const rows = await db
     .select({
       accountId: bankAccountLinks.accountId,

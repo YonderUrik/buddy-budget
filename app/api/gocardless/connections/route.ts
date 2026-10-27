@@ -11,7 +11,7 @@ import { consentExpiryFrom } from "@/lib/gocardless/connection-health";
 import { gocardlessRedirectUrl } from "@/lib/gocardless/redirect";
 import { createConnectionSchema } from "@/lib/validation/gocardless";
 import { apiError, validationError } from "@/lib/http";
-import { loadBankConnectionStatuses } from "@/lib/views/server";
+import { loadGoCardlessStatuses } from "@/lib/views/server";
 import { rejectIfDemoActive } from "@/lib/start/demo";
 import { bindRequestUser, recordGoCardlessConnect, requestLogger, withRoute } from "@/lib/observability";
 
@@ -20,7 +20,7 @@ async function handleGet(request: NextRequest) {
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
 
-  return Response.json(await loadBankConnectionStatuses(session.user.id, new Date()));
+  return Response.json(await loadGoCardlessStatuses(session.user.id, new Date()));
 }
 
 async function handlePost(request: NextRequest) {

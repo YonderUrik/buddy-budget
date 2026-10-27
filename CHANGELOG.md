@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.90.2](https://github.com/YonderUrik/buddy-budget/compare/v0.90.1...v0.90.2) (2026-10-27)
+
+
+### Correzioni
+
+* move a manual account's balance with the transactions typed by hand ([#528](https://github.com/YonderUrik/buddy-budget/issues/528)) ([3eb7d45](https://github.com/YonderUrik/buddy-budget/commit/3eb7d455c677a5e0aefd55aef1e450f08cf35771))
+* recognise subscriptions whose bank description changes between charges ([#525](https://github.com/YonderUrik/buddy-budget/issues/525)) ([19c00e7](https://github.com/YonderUrik/buddy-budget/commit/19c00e730fd90b6e8b4eb30806aa0098abdeed9e))
+
 ## [0.90.1](https://github.com/YonderUrik/buddy-budget/compare/v0.90.0...v0.90.1) (2026-10-26)
 
 

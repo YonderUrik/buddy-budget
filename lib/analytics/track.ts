@@ -133,6 +133,7 @@ export interface ProductEvents {
   account_details_opened: { kind: "manuale" | "collegato" };
   /** Scelta nel dialog «Nuovo conto»: quale strada prende l'utente. */
   account_add_path_chosen: { path: "banca" | "manuale" | "importa" };
+  bank_provider_chosen: { provider: "trade-republic" };
   /** Un passo di un form a passi è stato completato (`step` parte da 1): serve a vedere dove ci si ferma. */
   form_step_completed: { flow: FormFlow; step: number };
   /** «Indietro» in un form a passi, dal passo `step` (parte da 1). */

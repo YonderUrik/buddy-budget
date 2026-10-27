@@ -10,6 +10,7 @@ import { countAutoCorrections } from "@/lib/categorization/auto-corrections";
 import { isAutomaticCategorySource } from "@/lib/categorization/category-source";
 import { bindRequestUser, recordCategorizationAutoCorrected, requestLogger, withRoute } from "@/lib/observability";
 import { loadTransactionDetail } from "@/lib/transactions/load-detail";
+import { moveAccountBalance } from "@/lib/transactions/account-balance";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -49,7 +50,7 @@ const MANUAL_ONLY_FIELDS = ["description", "amount", "date"] as const;
 /**
  * Aggiorna una transazione del proprio utente; 404 se non propria. Per una transazione "auto" sono
  * modificabili solo categoria ed excludedAmount ("Dividi"): un tentativo di cambiare descrizione,
- * importo o data risponde 403.
+ * importo o data risponde 403. A changed amount moves the account's balance by the difference.
  */
 async function handlePatch(
   request: NextRequest,
@@ -159,17 +160,22 @@ async function handlePatch(
       : {};
 
   const { amount, excludedAmount, ...rest } = parsed.data;
-  const [updated] = await db
-    .update(transactions)
-    .set({
-      ...rest,
-      ...origin,
-      ...(amount !== undefined ? { amount: newAmount.toFixed(2) } : {}),
-      ...(newExcludedAmount !== undefined ? { excludedAmount: newExcludedAmount.toFixed(2) } : {}),
-      updatedAt: now,
-    })
-    .where(eq(transactions.id, id))
-    .returning();
+  // A new amount moves the account's balance by the difference (only manual transactions can change their amount).
+  const [updated] = await db.transaction(async (tx) => {
+    const rows = await tx
+      .update(transactions)
+      .set({
+        ...rest,
+        ...origin,
+        ...(amount !== undefined ? { amount: newAmount.toFixed(2) } : {}),
+        ...(newExcludedAmount !== undefined ? { excludedAmount: newExcludedAmount.toFixed(2) } : {}),
+        updatedAt: now,
+      })
+      .where(eq(transactions.id, id))
+      .returning();
+    if (amount !== undefined) await moveAccountBalance(tx, session.user.id, transaction.accountId, newAmount - Number(transaction.amount));
+    return rows;
+  });
 
   if (categoryChanged) {
     for (const [source, count] of countAutoCorrections([{ before: transaction, categoryId: resolvedCategory!.id }])) {
@@ -181,7 +187,7 @@ async function handlePatch(
   return Response.json(updated);
 }
 
-/** Elimina una transazione manuale del proprio utente; 404 se non propria, 400 se auto. */
+/** Deletes one of the user's manual transactions and takes its amount back out of the account's balance; 404 if not theirs, 400 if from a bank. */
 async function handleDelete(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -202,7 +208,10 @@ async function handleDelete(
     return apiError(400, "linked_transaction_not_deletable", "Una transazione automatica non può essere eliminata");
   }
 
-  await db.delete(transactions).where(eq(transactions.id, id));
+  await db.transaction(async (tx) => {
+    await tx.delete(transactions).where(eq(transactions.id, id));
+    await moveAccountBalance(tx, session.user.id, transaction.accountId, -Number(transaction.amount));
+  });
   return new Response(null, { status: 204 });
 }
 

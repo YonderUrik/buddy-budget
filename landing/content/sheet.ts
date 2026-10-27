@@ -80,7 +80,7 @@ export const TOUR = {
       after: { lead: "I movimenti arrivano dal file della banca.", strong: "Hai speso 21.088 € quest'anno,", tail: "e vedi subito la voce che pesa di più." },
       specs: [
         ["Banche", "Carichi il CSV o l'Excel dell'estratto conto di qualsiasi banca: lo leggiamo anche se il formato è nuovo, e i movimenti già presenti non si duplicano. Il collegamento Open Banking in sola lettura arriva presto."],
-        ["Conti a mano", "Per contanti, carte prepagate o qualsiasi banca: il saldo lo aggiorni tu."],
+        ["Conti a mano", "Per contanti, carte prepagate o qualsiasi banca: il saldo segue i movimenti che aggiungi."],
         ["Categorie", "Confermi un negozio e scegli se ricordarlo. Le regole si leggono, si modificano e si cancellano."],
         ["Nomi leggibili", "Da «POS 1234 ESSELUNGA SPA MI» ricava «Esselunga», anche con codici o filiali diversi."],
         ["Assistente AI", "Spento finché non lo attivi. Propone una categoria per i negozi nuovi e riceve solo il nome pulito del negozio."],

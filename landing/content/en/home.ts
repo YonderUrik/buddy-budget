@@ -20,14 +20,13 @@ export const OG_ALT_EN = "BuddyBudget: all your money, in one number";
 /** Countries whose banks can be linked, with English names (same codes as `SUPPORTED.countries`). */
 const BANK_NAMES_EN: Record<BankCountry["code"], string> = { it: "Italy", de: "Germany", fr: "France", es: "Spain", gb: "the UK" };
 const BANKS_EN: readonly BankCountry[] = SUPPORTED.countries.map((c) => ({ code: c.code, name: BANK_NAMES_EN[c.code] }));
-const BANK_LIST_EN = `${BANKS_EN.slice(0, -1).map((c) => c.name).join(", ")} and ${BANKS_EN.at(-1)?.name}`;
 
 /** Frequently asked questions of the English home, also the FAQPage structured data of `/en`. */
 export const FAQ_EN: readonly FaqItem[] = [
   { question: "Is it free?", answer: "Yes, during the beta. If that changes we'll say so first, and you can take everything with you in a ZIP file." },
   {
     question: "Which countries and languages?",
-    answer: `Italy in Italian and English, Germany in German and English, every other country in any of the three. You pick the currency. Italy has every feature. Germany has partial 2026 tax estimates, with the limits written out; the pension comes after a review. Other countries get everything except pension and taxes. Banks can be connected in ${BANK_LIST_EN}.`,
+    answer: "Italy in Italian and English, Germany in German and English, every other country in any of the three. You pick the currency. Italy has every feature. Germany has partial 2026 tax estimates, with the limits written out; the pension comes after a review. Other countries get everything except pension and taxes. This site describes the product for Italy.",
   },
   { question: "Does it connect to my bank?", answer: "Not yet: a read-only Open Banking connection is coming soon. Until then you upload your bank statement as CSV or Excel, or add accounts by hand." },
   {

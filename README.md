@@ -11,7 +11,7 @@
 [![Latest release](https://img.shields.io/github/v/release/YonderUrik/buddy-budget?label=release)](https://github.com/YonderUrik/buddy-budget/releases/latest)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
-[Live demo, no sign-up](https://app.buddybudget.io/demo?lang=en) · [Website](https://buddybudget.io/en) · [Self-hosting](docs/self-hosting.md) · [Documentation](docs/README.md) · [Roadmap](ROADMAP.md)
+[Live demo, no sign-up](https://app.buddybudget.io/demo?country=IT&lang=en) · [Website](https://buddybudget.io/en) · [Self-hosting](docs/self-hosting.md) · [Documentation](docs/README.md) · [Roadmap](ROADMAP.md)
 
 </div>
 
@@ -83,7 +83,7 @@ docs/         architecture, guides and the decisions behind them
 
 ## Status
 
-Beta, built mostly by one developer with an AI coding assistant. On the hosted version new bank connections are paused (existing ones keep working): import a CSV instead. Next steps are in the [roadmap](ROADMAP.md).
+Beta, built by two developers with an AI coding assistant (Claude Code): we design and review, it writes most of the code. Calculations are pure functions with tests in [`lib/calc/`](lib/calc/). On the hosted version new bank connections are paused (existing ones keep working): import a CSV instead. Next steps are in the [roadmap](ROADMAP.md).
 
 ## Contributing and contacts
 

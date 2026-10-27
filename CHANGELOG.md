@@ -2,6 +2,19 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.91.0](https://github.com/YonderUrik/buddy-budget/compare/v0.90.2...v0.91.0) (2026-10-27)
+
+
+### Features
+
+* connect Trade Republic directly for cash, investments and AI categories ([#526](https://github.com/YonderUrik/buddy-budget/issues/526)) ([9024cb5](https://github.com/YonderUrik/buddy-budget/commit/9024cb5d60c271be5ff5e1da53755db4b47b157f))
+
+
+### Bug fixes
+
+* accurate landing and repository before the Show HN ([#532](https://github.com/YonderUrik/buddy-budget/issues/532)) ([c95e7e9](https://github.com/YonderUrik/buddy-budget/commit/c95e7e993999befade19004b9dcff71a8788bfcb))
+* **deps:** bump zod from 4.6.6 to 4.6.7 ([#531](https://github.com/YonderUrik/buddy-budget/issues/531)) ([e1a30cf](https://github.com/YonderUrik/buddy-budget/commit/e1a30cfc3488de26b2d99e538f33a1daddf1b818))
+
 ## [0.90.2](https://github.com/YonderUrik/buddy-budget/compare/v0.90.1...v0.90.2) (2026-10-27)
 
 

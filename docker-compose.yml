@@ -3,7 +3,7 @@
 # Then open APP_URL and create the first account (email and password, no email server needed).
 #
 # Images come from ghcr.io (BUDDYBUDGET_VERSION, default latest). To build them from source:
-#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+#   docker compose -f docker-compose.yml -f deploy/selfhost/compose.build.yml up -d --build
 
 name: buddybudget
 
@@ -25,7 +25,7 @@ x-app-env: &app-env
   SELF_HOSTED: "true"
   AUTH_PASSWORD: ${AUTH_PASSWORD:-}
   ALLOW_SIGNUPS: ${ALLOW_SIGNUPS:-}
-  # Optional integrations: empty = off (see .env.selfhost.example).
+  # Optional integrations: empty = off (see deploy/selfhost/env.example).
   SMTP_URL: ${SMTP_URL:-}
   EMAIL_FROM: ${EMAIL_FROM:-}
   RESEND_API_KEY: ${RESEND_API_KEY:-}

@@ -1,0 +1,13 @@
+# Overrides the images with a local build from source (slower, useful to try changes or on arm64 without published images):
+#   docker compose -f docker-compose.yml -f deploy/selfhost/compose.build.yml up -d --build
+# Paths are resolved from the first file (the repository root), so `context: .` is the root.
+services:
+  migrate:
+    build: { context: ., target: migrator }
+    image: buddy-budget-migrate:local
+  app:
+    build: { context: ., target: runner }
+    image: buddy-budget:local
+  csv-worker:
+    build: { context: ., target: csv-worker }
+    image: buddy-budget-csv-worker:local

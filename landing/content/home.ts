@@ -370,7 +370,7 @@ export const UNDER_HOOD = {
     ...(FIELD_ENCRYPTION_LIVE ? [{ label: "Nel database", value: "Descrizioni e note cifrate (AES-256)" }] : []),
     { label: "I tuoi dati", value: "Export ZIP in JSON e CSV, cancellazione dall'app" },
     { label: "Accesso", value: "Link via email o Google, nessuna password" },
-    { label: "Sicurezza", value: "SECURITY.md", path: "/blob/main/SECURITY.md" },
+    { label: "Sicurezza", value: "SECURITY.md", path: "/blob/main/.github/SECURITY.md" },
   ] satisfies readonly HoodFact[],
 } as const satisfies HoodText;
 

@@ -26,7 +26,7 @@ if [ "$setup_mode" = defaults ]; then
     -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$postgres_password|" \
     -e "s|^BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=$auth_secret|" \
     -e "s|^CRON_SECRET=.*|CRON_SECRET=$cron_secret|" \
-    .env.selfhost.example > .env
+    deploy/selfhost/env.example > .env
   chmod 600 .env
   echo "Configuration saved to .env. BuddyBudget has not been started."
   echo "Next: check APP_URL in .env, then run ./scripts/selfhost-start.sh"

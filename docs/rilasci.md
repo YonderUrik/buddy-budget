@@ -17,7 +17,7 @@ Dependabot already uses `chore(deps)`: it does not trigger a release.
 
 ## How the version changes
 
-1. On every merge to `main`, the `release` job of `.github/workflows/ci.yml` runs release-please, which reads the commits since the last tag and keeps open a `chore(main): release X.Y.Z` PR with the version in `package.json` and `landing/package.json`, `.release-please-manifest.json` and the `CHANGELOG.md`. If there are no `feat`/`fix` since the last tag, there is no PR.
+1. On every merge to `main`, the `release` job of `.github/workflows/ci.yml` runs release-please, which reads the commits since the last tag and keeps open a `chore(main): release X.Y.Z` PR with the version in `package.json` and `landing/package.json`, `.github/release-please-manifest.json` and the `CHANGELOG.md`. If there are no `feat`/`fix` since the last tag, there is no PR.
 2. When you want to ship to production, review and **merge the release PR**. It is the only manual step.
 3. On merge, release-please creates the `vX.Y.Z` tag and the GitHub Release with the notes; in the same run the CI builds the images with the tags `X.Y.Z`, `sha-xxxxxxx` and `main` and updates the tag in the infra repo (app, migrate, landing), from which ArgoCD does the rollout. Deploys appear in the *Deployments* tab (environments `production` and `landing`).
 
@@ -39,7 +39,7 @@ candidates; **production deployment happens only on releases**. See [staging](st
 
 ## Notes
 
-- Initial version `0.2.0` (2026-10-03), without retroactive history: `bootstrap-sha` in `release-please-config.json` starts counting commits from the merge that introduced it.
+- Initial version `0.2.0` (2026-10-03), without retroactive history: `bootstrap-sha` in `.github/release-please-config.json` starts counting commits from the merge that introduced it.
 - If the release merge run fails halfway (images or infra), the Release already exists and a rerun does not redo the deploy: rerun the deploy job manually or update the `newTag` in infra.
 - To force a version: a commit with `Release-As: X.Y.Z` in the body.
 

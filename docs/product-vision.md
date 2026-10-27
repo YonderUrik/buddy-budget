@@ -4,11 +4,11 @@
 
 BuddyBudget is a personal finance app that puts all of a person's money in one place and turns it into one number they can trust: net worth. Bank accounts, investments, the pension fund and loans each have their own screen, and all of them feed the same net worth, day by day.
 
-It reads data and never moves money. Bank data arrives read-only through Open Banking; everything else can be imported from a file or entered by hand.
+It reads data and never moves money. Bank data arrives read-only through Open Banking (new connections are paused on the hosted version) or from the bank's own CSV or Excel export; everything else can be imported from a file or entered by hand.
 
 ## Who it is for
 
-People in Italy (and, partially, Germany) who already keep track of their money, usually with an expenses app, a spreadsheet for investments and another one for the mortgage, and want a single picture without becoming accountants.
+People in Italy (and, partially, Germany; elsewhere without the local tax and pension rules) who already keep track of their money, usually with an expenses app, a spreadsheet for investments and another one for the mortgage, and want a single picture without becoming accountants.
 
 Two kinds of reader use the same screens:
 
@@ -20,7 +20,7 @@ Two kinds of reader use the same screens:
 - **Local rules where they change the result.** Italian taxation of investments (including the zainetto fiscale, the tax-loss carryforward), the pension fund and TFR (Italian severance pay), and APR (TAEG) on loans. A rule the app cannot apply correctly is shown as a limit, never guessed.
 - **Everything in one net worth.** Cash, investments, pension and debts are not separate apps glued together: they share one history.
 - **Calculations you can check.** Every figure comes from a pure, tested function in [`lib/calc/`](../lib/calc/).
-- **The user decides.** Categories are applied automatically only by the user's rules or by suggestions the app is at least 90% sure of, and the user can always see where each one came from and undo it.
+- **The user decides.** Categories are applied automatically only by the user's rules or by suggestions the app is at least 70% sure of (or the bank's own category from an imported file), and the user can always see where each one came from and undo it.
 - **Your data stays yours.** Full export and deletion, sensitive fields encrypted at rest, open source code (AGPL-3.0) and a Docker Compose setup to host it yourself.
 
 ## Areas

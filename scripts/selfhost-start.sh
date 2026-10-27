@@ -21,7 +21,7 @@ fi
 
 set -- -f docker-compose.yml
 if [ "$build_from_source" = true ]; then
-  set -- "$@" -f docker-compose.build.yml
+  set -- "$@" -f deploy/selfhost/compose.build.yml
   echo "Building BuddyBudget from this checkout. The first build may take several minutes."
   if ! docker compose "$@" build; then
     echo "Build failed. BuddyBudget was not started. Review the error above and retry." >&2

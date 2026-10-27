@@ -93,7 +93,8 @@ const iso = (value: Date | string | null | undefined) => (value ? new Date(value
 
 /**
  * Launch state of the signed-in user: profile, the account gate the proxy would apply (`gate`, null when the app is
- * usable) and the country capability map. `legal.needsAcceptance` compares versions only; during onboarding the
+ * usable) and the country capability map. `legal.needsAcceptance` compares versions only (never for the public demo
+ * accounts, which have no legal gate); during onboarding the
  * acceptance happens in onboarding itself, so `gate` is the field that says which screen to show.
  */
 export function buildMeBootstrap({ user, session }: BootstrapSession): MeBootstrap {
@@ -113,7 +114,7 @@ export function buildMeBootstrap({ user, session }: BootstrapSession): MeBootstr
       currentVersion: LEGAL_VERSION,
       acceptedVersion: user.legalAcceptedVersion ?? null,
       acceptedAt: iso(user.legalAcceptedAt),
-      needsAcceptance: needsLegalAcceptance(user.legalAcceptedVersion),
+      needsAcceptance: !isPublicDemoUserId(user.id) && needsLegalAcceptance(user.legalAcceptedVersion),
     },
     account: { deactivated: Boolean(user.deletionScheduledAt), deletionScheduledAt: iso(user.deletionScheduledAt), readOnlyDemo: isPublicDemoUserId(user.id) },
     gate: accountGate(user),

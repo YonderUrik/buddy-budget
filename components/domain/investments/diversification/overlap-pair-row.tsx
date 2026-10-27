@@ -37,7 +37,7 @@ export function OverlapPairRow({ overlap, instrumentOf }: OverlapPairRowProps) {
           <PairName instrument={instrumentOf(overlap.aId)} />{" "}<span aria-hidden="true">{"+"}</span>
           <span className="sr-only">{tr("e")}</span>{" "}<PairName instrument={instrumentOf(overlap.bId)} />
         </p>
-        <p className="text-xs text-muted-foreground">{METHOD_NOTE[overlap.method]}</p>
+        <p className="text-xs text-muted-foreground">{tr(METHOD_NOTE[overlap.method])}</p>
       </div>
     </li>
   );

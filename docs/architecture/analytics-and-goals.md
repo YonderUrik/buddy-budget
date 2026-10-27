@@ -359,7 +359,7 @@ Example: Panoramica opens, both requests arrive together; the first computes (mi
 - The FIRE number has one spending figure; spending in retirement is not split from today's spending, and a single data period drives spending, savings and return.
 - Goals: arrival dates are linear (no growth of the money set aside); pension funds and debts cannot be goal sources or goals; there is no automatic history of a goal's progress and no chart of the path (deferred, see `docs/decisioni/2026-10-15-obiettivi-di-risparmio.md`).
 - Goals use monthly compounding with a 50-year horizon (`GOAL_HORIZON_MONTHS` 600), while the Analitiche headline uses the annual closed form with an 80-year limit. The goals' `baseYear` can therefore differ slightly from the Analitiche year, and is `null` when FIRE is between 50 and 80 years away.
-- Germany: all Analitiche and goals routes and APIs are hidden (`retirement` is `false` in [`lib/localization/planning-availability.ts`](../../lib/localization/planning-availability.ts)); goal emails are skipped for users whose country cannot see `/analitiche/obiettivi`.
+- Germany and `OTHER` see Analitiche and goals without capital gains tax and stamp duty (`features.retirement` is `true` in [`lib/localization/financial-country.ts`](../../lib/localization/financial-country.ts); the dedicated German retirement screens stay hidden by `PLANNING_AVAILABILITY`). Goal emails are skipped for users whose country cannot see `/analitiche/obiettivi`.
 
 ## 6. Tests
 

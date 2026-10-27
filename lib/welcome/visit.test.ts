@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VISIT_GAP_MS, isWelcomeShown, nextVisitState, type VisitState } from "./visit";
+import { VISIT_GAP_MS, hasWelcomeContent, isWelcomeShown, nextVisitState, type VisitState } from "./visit";
 
 const empty: VisitState = { appSeenAt: null, visitStartedAt: null, visitSinceAt: null, welcomeShownAt: null };
 const at = (iso: string) => new Date(iso);
@@ -41,5 +41,12 @@ describe("isWelcomeShown", () => {
     expect(isWelcomeShown({ visitStartedAt, welcomeShownAt: at("2026-10-19T08:05:00Z") })).toBe(true);
     expect(isWelcomeShown({ visitStartedAt, welcomeShownAt: at("2026-10-18T20:00:00Z") })).toBe(false);
     expect(isWelcomeShown({ visitStartedAt, welcomeShownAt: null })).toBe(false);
+  });
+});
+
+describe("hasWelcomeContent", () => {
+  it("speaks only when something happened while away, not for the backlog alone", () => {
+    expect(hasWelcomeContent({ happened: [{ kind: "movements", count: 3 }] })).toBe(true);
+    expect(hasWelcomeContent({ happened: [] })).toBe(false);
   });
 });

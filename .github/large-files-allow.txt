@@ -1,0 +1,1 @@
+# Paths exempt from the Repo weight check (scripts/check-file-sizes.mjs), one glob per line, each with a reason.

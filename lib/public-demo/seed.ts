@@ -135,7 +135,8 @@ export async function seedDemoAccount({ userId, email, language, productCountry,
     productCountry: PROFILE.productCountry,
     language: PROFILE.language,
     onboardingCompleted: true,
-    // Terms already accepted, in the version in force when seeding: the gate in proxy.ts does not send to /accetta-termini.
+    // Terms recorded as accepted at seeding time. The legal gate skips demo accounts anyway (lib/account/gates.ts),
+    // so a new LEGAL_VERSION released during the day does not send visitors to /accetta-termini.
     legalAcceptedAt: new Date(),
     legalAcceptedVersion: LEGAL_VERSION,
     // Categorizza: assistant on, safe categories applied on their own and recent «Messe dall'app» to review.

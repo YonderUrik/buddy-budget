@@ -235,7 +235,7 @@ test('Resend distingue dominio verificato, chiave limitata e credenziali rifiuta
 });
 
 test('esempio env compatibile con i valori serializzati dal wizard', async () => {
-  const example = parseEnv(await readFile(new URL('../../.env.selfhost.example', import.meta.url), 'utf8'));
+  const example = parseEnv(await readFile(new URL('../../deploy/selfhost/env.example', import.meta.url), 'utf8'));
   assert.equal(example.NOTIFICATIONS_MODE, 'off');
   assert.equal(example.COMPOSE_PROFILES, '');
 });

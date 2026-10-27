@@ -9,7 +9,7 @@ import { SUBSCRIPTION_LOOKBACK_MONTHS, addMonthsIso, detectSubscriptions } from 
 import { recordSubscriptionsDetect, requestLogger } from "@/lib/observability";
 import type { CategoryType } from "@/lib/categories/groups";
 import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
-import { buildSubscriptionsView, type StoredSubscriptionRow, type SubscriptionsView } from "./view";
+import { buildSubscriptionsView, matchStoredRows, type StoredSubscriptionRow, type SubscriptionsView } from "./view";
 
 /** Gruppi di categorie le cui uscite non entrano mai nel rilevamento. */
 const EXCLUDED_CATEGORY_TYPES: CategoryType[] = ["futuro", "entrata", "trasferimento"];
@@ -58,6 +58,7 @@ export async function loadSubscriptionsView(
     today
   );
   const view = buildSubscriptionsView(detected, stored, today);
+  const matched = matchStoredRows(detected, stored);
   const durationMs = performance.now() - started;
   recordSubscriptionsDetect(durationMs);
   requestLogger().info("subscriptions.detect.completed", {
@@ -66,6 +67,9 @@ export async function loadSubscriptionsView(
     confirmed: view.totals.count,
     pending: view.totals.pendingCount,
     stopped: view.items.filter((i) => i.activity === "fermo").length,
+    continued: detected.filter((d) => d.continued).length,
+    matchedOlderKey: matched.viaAlias,
+    mergedDuplicates: matched.duplicates,
   });
   return { view, currency: user?.currency ?? "EUR", today, descriptions: new Map(spending.map((tx) => [tx.id, tx.description])) };
 }

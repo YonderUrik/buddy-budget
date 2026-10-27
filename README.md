@@ -5,79 +5,55 @@
   <img src="public/brand/logo-full-navy.svg" alt="BuddyBudget" width="320">
 </picture>
 
-<p>Personal finance in one place: accounts and transactions, investments with Italian taxation, debts, pension and net worth over time.</p>
+<p>Open source personal finance: bank accounts, investments, debts and pension in one net worth, with Italian tax rules applied where they change the result.</p>
 
 [![CI](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/YonderUrik/buddy-budget?label=release)](https://github.com/YonderUrik/buddy-budget/releases/latest)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
-[![Node.js 24](https://img.shields.io/badge/node-24-339933?logo=nodedotjs&logoColor=white)](.github/workflows/ci.yml)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/yonder)
 
-[Website](https://buddybudget.io) · [Live demo, no sign-up](https://app.buddybudget.io/demo?lang=en) · [Documentation](docs/README.md) · [Self-hosting](docs/self-hosting.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
+[Live demo, no sign-up](https://app.buddybudget.io/demo?lang=en) · [Website](https://buddybudget.io/en) · [Self-hosting](docs/self-hosting.md) · [Documentation](docs/README.md) · [Roadmap](ROADMAP.md)
 
 </div>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/dark/panoramica-top.webp">
-  <img src="https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/light/panoramica-top.webp" alt="Panoramica (Overview): net worth over time, split into cash, investments, pension and debts">
+  <img src="https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/light/panoramica-top.webp" alt="Overview: net worth over time, split into cash, investments, pension and debts">
 </picture>
 
-## Why it exists
+## Why
 
-Most people who track their money use three tools: an app for expenses, a spreadsheet for investments, another one for the mortgage. BuddyBudget puts them in one app and one net worth, and applies the Italian rules where they change the result: capital gains and losses, the zainetto fiscale (tax-loss carryforward), the lower rate on government bonds, bollo (stamp duty), pension fund taxation.
+Most people who track their money use three tools: an app for expenses, a spreadsheet for investments, another one for the mortgage. BuddyBudget puts them in one app and one net worth.
 
-- It only reads your data. It never moves money.
-- Every number comes from a tested function in [`lib/calc/`](lib/calc/), and [`docs/architecture/`](docs/architecture/overview.md) explains how it is calculated.
-- You can export or delete everything, or host it yourself with `docker compose`.
+- It only reads your data and never moves money.
+- Every number comes from a tested function in [`lib/calc/`](lib/calc/), and [`docs/architecture/`](docs/architecture/overview.md) shows how each one is calculated, with a worked example.
+- You can export or delete everything, or host it yourself with Docker.
 
-## Features
+## What it does
 
-| Area | What you get |
-| --- | --- |
-| **Panoramica** (Overview) | Net worth over time by asset class, reconstructed history, guided first steps and resettable sample data. |
-| **Liquidità** (Cash) | Manual accounts and accounts linked to the bank via Open Banking ([GoCardless](https://gocardless.com/bank-account-data/), read-only); transactions with search, filters, «Dividi» ("Split") and exclusions; categories in four spending groups (Dovute, Volute, Te futuro, Saltuarie — "Needs", "Wants", "Future you", "Occasional") with budgets; rule-based categorisation; month-by-month analysis; subscriptions detected from transactions, with price increases. |
-| **Investimenti** (Investments) | ETFs, stocks, BTPs (Italian government bonds), funds and crypto with end-of-day prices from free sources; import from Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance or generic CSV; returns (TWR and XIRR) against an index and net of inflation; risk and look-through diversification inside ETFs; dividends; Italian tax estimate; security page with fundamental indicators, watchlist and price alerts. |
-| **Debiti** (Debts) | Loans from origination or from today's situation, amortisation schedule, APR (TAEG), early repayments and simulations (higher instalment, refinancing via surroga, avalanche and snowball). |
-| **Pensione** (Pension) | Pension fund and TFR (Italian severance pay): real return, how much you would withdraw today net of taxes, comparison with keeping the TFR at the employer, projection. |
-| **Analitiche** (Analytics) | The year you could stop working, with «e se…» ("what if…") sliders on savings, spending, return and withdrawal; for those who want more, FIRE number net of taxes, Monte Carlo and withdrawal rules. |
-| **Account** | Sign-in with an email link or Google, summary and alert emails (all optional), installable PWA, light and dark theme, data export and deletion. |
+- **Overview**: net worth over time across cash, investments, pension and debts.
+- **Cash**: accounts, transactions imported from any bank's CSV or Excel file, categories with rules and optional AI suggestions, a monthly budget that says what you can still spend, subscriptions detected from transactions.
+- **Investments**: ETFs, stocks, bonds, funds and crypto with free end-of-day prices; imports from Interactive Brokers, DEGIRO, Trade Republic and Fineco; returns (TWR and XIRR) against a benchmark; risk, diversification inside ETFs, dividends and an Italian tax estimate before you sell.
+- **Debts**: amortisation, APR, early repayment and payoff simulations.
+- **Pension**: Italian pension fund and TFR (severance pay): real return and what you would get today, net of tax.
+- **Analytics**: the year you could stop working, with sliders to try other savings, spending and returns; savings goals.
+- **Search**: one search for the whole app that also answers questions («how much did I spend on Netflix in 2026») and turns a typed sentence («spent €12 on coffee») into a filled-in form.
 
-The full list, including what is coming, is in [`lib/features/catalog.ts`](lib/features/catalog.ts): it is the same source from which the website's [Funzioni](https://buddybudget.io/funzioni) (Features) page is generated.
+The interface is in English, Italian and German. Tax and pension rules are Italian; Germany has a partial 2026 tax estimate, and other countries get everything except the pension and the tax screens. The full feature list is in [`lib/features/catalog.ts`](lib/features/catalog.ts), the same file the website reads.
 
 > [!NOTE]
-> Tax estimates, projections and simulations are for information only and are not financial or tax advice. The pension rules are assumptions not yet validated by a professional.
+> Estimates and simulations are for information only, not financial or tax advice. The tax and pension rules have not yet been reviewed by a professional.
 
-<details>
-<summary><strong>More screens</strong></summary>
-<br>
+## Run it
 
-| Movimenti | Investimenti |
-| --- | --- |
-| ![Movimenti (Transactions): list of transactions with categories and amounts](https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/light/movimenti.webp) | ![Investimenti (Investments): portfolio value, contributed vs market, and positions](https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/light/investimenti.webp) |
-| **Tasse** | **Debiti** |
-| ![Tasse (Taxes): estimate of Italian taxation on the portfolio](https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/light/tasse.webp) | ![Debiti (Debts): upcoming instalments, interest per debt and path to paying them off sooner](https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/light/debiti.webp) |
-| **Analitiche** | **Abbonamenti** |
-| ![Analitiche (Analytics): the target year and sliders to try assumptions](https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/light/analitiche.webp) | ![Abbonamenti (Subscriptions): monthly and yearly cost and next charge](https://raw.githubusercontent.com/YonderUrik/buddy-budget/screenshots/light/abbonamenti.webp) |
-
-These are screenshots of the real app with sample data from a fictitious user, regenerated by a script ([`docs/landing-screens.md`](docs/landing-screens.md)). All screens, including dark theme, are on the [`screenshots`](https://github.com/YonderUrik/buddy-budget/tree/screenshots) branch.
-
-</details>
-
-## Try it
-
-### With Docker
-
-App, Postgres, Redis and the scheduled jobs start with a single command:
+### Self-hosted, with Docker
 
 ```bash
 git clone https://github.com/YonderUrik/buddy-budget.git
 cd buddy-budget
-./scripts/selfhost-init.sh --start   # guided setup, then start and wait until ready
+./scripts/selfhost-init.sh --start   # guided setup, then starts and waits until ready
 ```
 
-The images are public on ghcr.io (`ghcr.io/yonderurik/buddy-budget`, `latest` follows the latest release; set `BUDDYBUDGET_VERSION` in `.env` to pin one). On an arm64 machine, or to run your own changes, build them from source: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
-
-The wizard offers personal mode (automatic access restricted to this computer) or server mode (email and password, no mail server needed). In server mode, the first account is yours and signups stay closed unless you open them. To test unreleased changes, use `./scripts/selfhost-init.sh --build`; to restart a saved configuration, use `./scripts/selfhost-start.sh --build`. Remove containers with `./scripts/selfhost-uninstall.sh` (keeps data), or add `--purge` to erase the database and `.env` after confirmation. Email (any SMTP server, or Resend), Google sign-in, AI (OpenRouter) and bank connection (GoCardless) are optional. GoCardless no longer accepts new sign-ups, so on a new install you import bank CSVs instead. The guide [`docs/self-hosting.md`](docs/self-hosting.md) explains what works without external services, how to put the app behind HTTPS, how to update it and how to make backups.
+It starts the app, Postgres, Redis and the scheduled jobs from the public images on ghcr.io. Email, Google sign-in, AI and bank connection are optional. [`docs/self-hosting.md`](docs/self-hosting.md) covers HTTPS, updates, backups and arm64.
 
 ### Local development
 
@@ -85,61 +61,37 @@ You need Node 24, [pnpm](https://pnpm.io), Postgres and Redis.
 
 ```bash
 pnpm install
-cp .env.local.example .env.local   # database, Redis, auth and cron secrets
-pnpm db:migrate                    # applies the migrations
-pnpm demo:seed                     # optional: fictitious user with sample data
+cp .env.local.example .env.local   # every variable is explained there
+pnpm db:migrate
+pnpm demo:seed                     # optional: a fictitious user with sample data
 pnpm dev                           # http://localhost:3000
 ```
 
-Variables are validated at startup by [`lib/env.ts`](lib/env.ts) and commented one by one in [`.env.local.example`](.env.local.example). Google, Resend, GoCardless, price source keys and observability are optional.
-
-| Command | What it does |
-| --- | --- |
-| `pnpm lint` | ESLint |
-| `pnpm exec tsc --noEmit` | type check |
-| `pnpm test` | Vitest, on an empty, migrated database (`DATABASE_URL`) |
-| `pnpm build` | production build |
-| `pnpm db:generate` | new migration after a change to `lib/db/schema/` |
-
-The database schema changes only through versioned, committed migrations, never by hand.
+Before a pull request: `pnpm lint`, `pnpm exec tsc --noEmit` and `pnpm test` (on an empty, migrated database).
 
 ## How it is built
 
-| Layer | Technologies |
-| --- | --- |
-| **Frontend** | Next.js (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui on `@base-ui/react`, Recharts |
-| **Data** | Postgres with Drizzle ORM; Route Handlers as the API, consumed with TanStack Query |
-| **Sign-in** | better-auth (magic link and Google OAuth), email with Resend |
-| **Long-running work** | background jobs with progress on Redis; cron as `/api/cron/*` endpoints protected by `CRON_SECRET` |
-| **Observability** | JSON logs without personal data, Prometheus metrics on `/api/metrics`, product events with Umami |
-| **Quality** | Vitest, ESLint, GitHub Actions; versions and CHANGELOG with release-please from PR titles |
+Next.js (App Router) and TypeScript, Postgres with Drizzle, better-auth, TanStack Query, Tailwind CSS with shadcn/ui, Recharts, Redis for background jobs, Vitest. The architecture rules every contributor follows are in [`CLAUDE.md`](CLAUDE.md) (it is also the guide for the AI coding assistant used in development).
 
 ```
-app/          (auth) sign-in and onboarding · (app) screens · api/ routes and cron
-components/   ui/ primitives · layout/ structure · domain/ components per area
-lib/          domain per area · calc/ pure, tested calculations · db/ schema and migrations
-landing/      static marketing site, a separate Next.js project
-scripts/      sample data, screenshots, self-hosting setup
-docs/         decisions, specs and plans for each feature, guides
+app/          routes: sign-in, app screens, API and cron
+components/   ui/ primitives · layout/ page structure · domain/ components per area
+lib/          domain logic per area · calc/ pure, tested calculations · db/ schema and migrations
+landing/      the website, a separate Next.js project
+docs/         architecture, guides and the decisions behind them
 ```
 
-Components sit on three layers with dependencies pointing only downwards (`ui` ← `layout`/`domain` ← `app`). Architecture rules, observability and design tokens are in [`CLAUDE.md`](CLAUDE.md): it is also the guide for the AI assistant used in development, but it applies to anyone who contributes.
+## Status
 
-## Documentation
+Beta, built mostly by one developer with an AI coding assistant. On the hosted version new bank connections are paused (existing ones keep working): import a CSV instead. Next steps are in the [roadmap](ROADMAP.md).
 
-Start from the [documentation index](docs/README.md). How each number is calculated is in [`docs/architecture/`](docs/architecture/overview.md), why each choice was made is in [`docs/decisioni/`](docs/decisioni/).
+## Contributing and contacts
 
-## Project status
-
-BuddyBudget is in beta. It is built mostly by one developer with an AI coding assistant. It is made for Italy; Germany is partly supported (partial 2026 German tax estimates; pension, TFR and Analitiche are off). The interface is in Italian, English and German. Bank connections are limited during the beta. What comes next is in the [roadmap](ROADMAP.md).
-
-## Contributing, security and contacts
-
-- **Contributing**: read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md); for a large change, open an issue first. Accessibility status is in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
-- **Vulnerabilities**: do not open a public issue, follow [`SECURITY.md`](SECURITY.md).
-- **Support the project**: BuddyBudget is free and built in spare time. If it helps you, you can [buy me a coffee](https://buymeacoffee.com/yonder).
-- **Help and reports** about the hosted service: support@buddybudget.io. **Privacy**: privacy@buddybudget.io.
+- Read [`CONTRIBUTING.md`](.github/CONTRIBUTING.md) and the [Code of Conduct](.github/CODE_OF_CONDUCT.md); for a large change, open an issue first.
+- Vulnerabilities: follow [`SECURITY.md`](.github/SECURITY.md), not a public issue.
+- Hosted service: support@buddybudget.io, privacy@buddybudget.io.
+- If it helps you, you can [buy me a coffee](https://buymeacoffee.com/yonder).
 
 ## License
 
-[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only). You may use, study, modify and redistribute the code; if you offer a modified version as a network service, you must make the source available to its users under the same license. The copyright notices and attribution given in [`NOTICE`](NOTICE) must be preserved.
+[AGPL-3.0-only](LICENSE). If you offer a modified version as a network service, you must make its source available to its users under the same license. Keep the notices in [`NOTICE`](NOTICE).

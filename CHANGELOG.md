@@ -2,6 +2,34 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.90.2](https://github.com/YonderUrik/buddy-budget/compare/v0.90.1...v0.90.2) (2026-10-27)
+
+
+### Correzioni
+
+* move a manual account's balance with the transactions typed by hand ([#528](https://github.com/YonderUrik/buddy-budget/issues/528)) ([3eb7d45](https://github.com/YonderUrik/buddy-budget/commit/3eb7d455c677a5e0aefd55aef1e450f08cf35771))
+* recognise subscriptions whose bank description changes between charges ([#525](https://github.com/YonderUrik/buddy-budget/issues/525)) ([19c00e7](https://github.com/YonderUrik/buddy-budget/commit/19c00e730fd90b6e8b4eb30806aa0098abdeed9e))
+
+## [0.90.1](https://github.com/YonderUrik/buddy-budget/compare/v0.90.0...v0.90.1) (2026-10-26)
+
+
+### Correzioni
+
+* «Cerca» on the phone no longer jumps or leaves the page stuck ([#524](https://github.com/YonderUrik/buddy-budget/issues/524)) ([ee56cfa](https://github.com/YonderUrik/buddy-budget/commit/ee56cfa24c0bdb5d34396bacba0e62fcd803fe45))
+* «Dall'ultima visita» as a quiet label in Panoramica instead of a toast ([#523](https://github.com/YonderUrik/buddy-budget/issues/523)) ([ec1b423](https://github.com/YonderUrik/buddy-budget/commit/ec1b4239a52bbd90a5b9afd16bbc33bcfb02f97d))
+* **deps:** bump zod from 4.4.3 to 4.6.6 ([#511](https://github.com/YonderUrik/buddy-budget/issues/511)) ([922fc36](https://github.com/YonderUrik/buddy-budget/commit/922fc36830ee65cbf02674054e458ee89317a6a2))
+* English strings, a lighter repository and accurate docs before the launch ([#522](https://github.com/YonderUrik/buddy-budget/issues/522)) ([cb5db8d](https://github.com/YonderUrik/buddy-budget/commit/cb5db8dbb619bed25298a9efb26013907b401909))
+* open the public demo without asking to accept new legal versions ([#520](https://github.com/YonderUrik/buddy-budget/issues/520)) ([3c9ecef](https://github.com/YonderUrik/buddy-budget/commit/3c9ecefa2d258bb67438718764c970b7f60d2d23))
+
+## [0.90.0](https://github.com/YonderUrik/buddy-budget/compare/v0.89.0...v0.90.0) (2026-10-25)
+
+
+### Novità
+
+* add guided self-hosting setup and personal local access ([#458](https://github.com/YonderUrik/buddy-budget/issues/458)) ([84d1735](https://github.com/YonderUrik/buddy-budget/commit/84d1735eae5351f08a938b9f0ab125b7462a457e))
+* **search:** answers, logos and AI questions in «Cerca» ([#517](https://github.com/YonderUrik/buddy-budget/issues/517)) ([9eda056](https://github.com/YonderUrik/buddy-budget/commit/9eda0566c04094ecce9306994f85056113995ebb))
+* **selfhost:** log personal-mode access and tidy PR docs ([#519](https://github.com/YonderUrik/buddy-budget/issues/519)) ([549768b](https://github.com/YonderUrik/buddy-budget/commit/549768b129ba0fbadb4a05d42005e72f9661cab5))
+
 ## [0.89.0](https://github.com/YonderUrik/buddy-budget/compare/v0.88.1...v0.89.0) (2026-10-25)
 
 

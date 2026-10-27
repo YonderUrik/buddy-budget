@@ -7,6 +7,7 @@ import { track } from "@/lib/analytics";
 import { pageText } from "@/lib/localization/page-text";
 import type { TransactionDetailData } from "@/lib/transactions/detail";
 import type { SingleSuggestion } from "@/lib/categorization/ai/single-suggestion";
+import { QUERY_KEYS_CHANGED_BY_BALANCE } from "./accounts";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
@@ -94,6 +95,16 @@ export function useAiSuggestionMutation() {
   });
 }
 
+/**
+ * Everything a transaction typed by hand changes: the lists, the attention counts, the month's budget and, since it
+ * moves its account's balance, every place a balance is shown.
+ */
+const QUERY_KEYS_CHANGED_BY_TRANSACTION = [["transactions"], ["attention"], ["budget-month"], ...QUERY_KEYS_CHANGED_BY_BALANCE] as const;
+
+function invalidateTransactionViews(queryClient: ReturnType<typeof useQueryClient>) {
+  for (const queryKey of QUERY_KEYS_CHANGED_BY_TRANSACTION) queryClient.invalidateQueries({ queryKey: [...queryKey] });
+}
+
 /** Crea una spesa manuale e invalida tutte le liste di transazioni in cache. */
 export function useCreateTransactionMutation() {
   const queryClient = useQueryClient();
@@ -112,8 +123,7 @@ export function useCreateTransactionMutation() {
     },
     onSuccess: (transaction) => {
       track("transaction_added", { direction: Number(transaction.amount) >= 0 ? "entrata" : "uscita" });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["attention"] });
+      invalidateTransactionViews(queryClient);
     },
   });
 }
@@ -138,8 +148,7 @@ export function useUpdateTransactionMutation() {
       if (input.categoryId !== undefined) track("transaction_category_changed", { source: "row" });
       if (input.excludedAmount !== undefined) track("transaction_split");
       if (input.note !== undefined) track("transaction_note_saved", { cleared: !input.note?.trim() });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["attention"] });
+      invalidateTransactionViews(queryClient);
     },
   });
 }
@@ -159,8 +168,7 @@ export function useDeleteTransactionMutation() {
       track("transaction_deleted");
       // The deleted row's detail would only answer 404: drop it instead of refetching.
       queryClient.removeQueries({ queryKey: ["transactions", "detail", id] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["attention"] });
+      invalidateTransactionViews(queryClient);
     },
   });
 }

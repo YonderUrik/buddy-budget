@@ -40,7 +40,10 @@ export function isWelcomeShown(state: Pick<VisitState, "visitStartedAt" | "welco
   return Boolean(state.welcomeShownAt && state.visitStartedAt && state.welcomeShownAt >= state.visitStartedAt);
 }
 
-/** True when the toast has something to say. */
-export function hasWelcomeContent(summary: { happened: readonly unknown[]; waiting: readonly unknown[] }): boolean {
-  return summary.happened.length > 0 || summary.waiting.length > 0;
+/**
+ * True when the toast has something to say: something happened while the user was away. What waits only rides along,
+ * so the same backlog (seven movements without a category) is not repeated at every visit.
+ */
+export function hasWelcomeContent(summary: { happened: readonly unknown[] }): boolean {
+  return summary.happened.length > 0;
 }

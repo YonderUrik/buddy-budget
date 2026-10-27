@@ -119,7 +119,7 @@ Remove the `postgres` service and its `depends_on`, and put your database URL in
 ## Building from source
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+docker compose -f docker-compose.yml -f deploy/selfhost/compose.build.yml up -d --build
 ```
 
 The build downloads the fonts from Google, so it needs internet access.

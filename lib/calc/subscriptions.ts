@@ -1,14 +1,17 @@
 /**
- * Rilevamento degli abbonamenti dalle transazioni: motore puro, deterministico e spiegabile (nessuna AI).
+ * Subscription detection from transactions: a pure, deterministic and explainable engine (no AI).
  *
- * Una serie di addebiti diventa un candidato abbonamento se: stesso esercente (`subscriptionKey`), distanza tra
- * un addebito e il successivo compatibile con una cadenza (settimanale … annuale, con tolleranza per weekend e
- * ritardi della banca), giorno del mese stabile, importo costante (o con un solo cambio di prezzo netto).
- * Una spesa che torna spesso ma varia ogni volta (supermercato, bolletta a consumo) NON passa.
- * Quando un esercente fattura più abbonamenti (Apple, Google, Amazon) la serie si separa per importo.
+ * A series of charges becomes a subscription candidate when it has the same merchant (`subscriptionKey`, which reads
+ * through the codes, card numbers and dates banks append and recognises known brands however they are spelled), gaps
+ * that fit one cadence (weekly … yearly, with slack for weekends and bank delays), a stable day of the month, and a
+ * constant amount (or a few clean price changes). Spending that recurs but changes every time (groceries, metered
+ * bills) does NOT pass. When one merchant bills several subscriptions (Apple, Google, Amazon) the series is split by
+ * amount, and a split series that stopped is followed into the merchant's later charges before calling it stopped.
  */
 
 import { merchantKey } from "@/lib/categorization/merchant-key";
+import { extractMerchantName } from "@/lib/categorization/merchant-name/extract";
+import { GENERIC_ALIAS_NAMES } from "@/lib/categorization/merchant-name/aliases";
 
 export const SUBSCRIPTION_CADENCES = ["settimanale", "mensile", "trimestrale", "semestrale", "annuale"] as const;
 export type SubscriptionCadence = (typeof SUBSCRIPTION_CADENCES)[number];
@@ -53,15 +56,19 @@ const MAX_SILENT_DAYS = 400;
 const DAY_OF_MONTH_TOLERANCE = 5;
 /** Sotto questa affidabilità un candidato non viene proposto. */
 export const MIN_CONFIDENCE = 0.6;
-/** Differenza massima di importo tra due addebiti dello stesso esercente per metterli nello stesso abbonamento (strettissima: un abbonamento si addebita al centesimo, un cestino della spesa no). */
 /** Addebiti minimi di un gruppo di importo uguale, quando l'esercente ne ha anche altri diversi. */
 const MIN_CLUSTER_SIZE = 3;
 /** Altri addebiti ammessi (diversi dal gruppo) per ogni addebito del gruppo, più un margine fisso. */
 const OTHER_CHARGES_PER_CLUSTERED_CHARGE = 5;
 const OTHER_CHARGES_SLACK = 2;
+/** Largest amount difference between two charges of one merchant to put them in the same amount cluster (very tight: a subscription is charged to the cent, a shopping basket is not). */
 const CLUSTER_TOLERANCE = 0.01;
-/** Un aumento oltre questo rapporto non è un cambio di prezzo ma un'altra spesa. */
+/** A change beyond this ratio is not a price change but another expense. */
 const PRICE_STEP_RANGE = [0.5, 2] as const;
+/** Price changes accepted in one series (a promo, its end, a yearly rise); every price but the last needs two charges. */
+const MAX_PRICE_STEPS = 3;
+/** Charges of another amount cluster inside a series' dates that make it a parallel subscription, not its continuation. */
+const PARALLEL_CHARGES = 2;
 const DAY_MS = 86_400_000;
 
 export interface SubscriptionTxInput {
@@ -91,6 +98,13 @@ export type SubscriptionReason =
 export interface DetectedSubscription {
   /** Chiave stabile (esercente, più l'importo se l'esercente ne fattura più d'uno): ci si appoggiano le scelte dell'utente. */
   key: string;
+  /**
+   * Other keys the same series was saved under: keys of earlier versions of the detection (one per bank spelling) and
+   * of an earlier price or a stopped series this one replaced. A saved choice under one of them still applies.
+   */
+  aliases: string[];
+  /** Series continued across charges of another amount (price change, plan change) or replacing a stopped one. */
+  continued: boolean;
   name: string;
   cadence: SubscriptionCadence;
   /** Importo dell'ultimo addebito (prezzo attuale). */
@@ -110,14 +124,56 @@ export interface DetectedSubscription {
   reasons: SubscriptionReason[];
 }
 
-/** Chiave dell'esercente: come `merchantKey`, ma senza i token con cifre (codici, riferimenti, date) che cambiano a ogni addebito. */
-export function subscriptionKey(description: string): string {
+/**
+ * Key of the previous detection (before 2026-10-26): `merchantKey` without the tokens that contain digits. Choices saved
+ * then are stored under it, so detection still lists it among a series' `aliases`.
+ */
+export function legacySubscriptionKey(description: string): string {
   const base = merchantKey(description);
   const stable = base
     .split(" ")
     .filter((token) => token.length > 0 && !/\d/.test(token))
     .join(" ");
   return stable.length > 0 ? stable : base;
+}
+
+/** Card and booking-date tail banks append to card payments («Carta N. ***** 249 Data operazione 01/02/26»). */
+const CARD_TAIL = /\b(?:carta|card)\s+n(?:r|um)?\b.*$|\bdata\s+(?:operazione|op|valuta)\b.*$/i;
+/** A web domain in the description (`anthropic.com`, `apple.com/bill`): the label before the extension names the merchant. */
+const DOMAIN = /\b([a-z0-9][a-z0-9-]*[a-z][a-z0-9-]*)\.(?:com|net|org|io|ai|app|tv|co|eu|it|de|fr|es|ie|uk|nl|ch|at|be)\b/g;
+/** Domains of payment processors and generic hosts: they say who collected the money, not who sold the service. */
+const PROCESSOR_DOMAINS: ReadonlySet<string> = new Set(["www", "paypal", "pp", "stripe", "paddle", "sumup", "satispay"]);
+/** Two-letter country codes and single letters left at the end of a bank text after the codes are gone. */
+const SHORT_TOKEN = /^[a-z]{1,2}$/;
+
+/** Last merchant domain label in the description, or null. */
+function domainLabel(description: string): string | null {
+  const text = description.toLowerCase();
+  let label: string | null = null;
+  for (const match of text.matchAll(DOMAIN)) if (!PROCESSOR_DOMAINS.has(match[1])) label = match[1];
+  return label;
+}
+
+/**
+ * Merchant key of a charge, the same for every spelling of one merchant: a known brand of the merchant dictionary
+ * (`APPLE.COM/BILL 800915904 IE` and `Apple.com/bill` → `apple`, `CLAUDE.AI SUBSCRIPTION` and `Anthropic Claude Sub` →
+ * `claude`), otherwise the website in the text (`foo.com`), otherwise the words of the text without codes, card number,
+ * booking date, country code and single letters. Generic dictionary entries (cash withdrawal, stamp duty…) never key.
+ */
+export function subscriptionKey(description: string): string {
+  const { name, source } = extractMerchantName({ rawText: description });
+  if (source === "alias" && !GENERIC_ALIAS_NAMES.has(name)) return merchantKey(name);
+  const domain = domainLabel(description);
+  if (domain) return domain;
+  const words = legacySubscriptionKey(description.replace(CARD_TAIL, " ")).split(" ");
+  const meaningful = words.filter((word) => !SHORT_TOKEN.test(word));
+  return meaningful.length > 0 ? meaningful.join(" ") : legacySubscriptionKey(description);
+}
+
+/** Name shown for a series: the brand when the dictionary knows it, else the bank text of the last charge. */
+function displayName(description: string): string {
+  const { name, source } = extractMerchantName({ rawText: description });
+  return source === "alias" && !GENERIC_ALIAS_NAMES.has(name) ? name : description;
 }
 
 const toDay = (iso: string) => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / DAY_MS;
@@ -152,19 +208,25 @@ export function monthlyEquivalent(amount: number, cadence: SubscriptionCadence):
   return round2(amount * CADENCE_RULES[cadence].perMonth);
 }
 
-/** Importo stabile? Sì se costante, o se c'è un solo cambio di prezzo netto; altrimenti `null`. */
+/**
+ * Stable amount? Yes if constant, or if it moves in a few clean price changes (runs of a constant price, each but the
+ * last with at least two charges, each change between 0.5x and 2x); otherwise `null`. `step` is the latest change.
+ */
 function analyseAmounts(amounts: readonly number[], tolerance: number) {
   if (spread(amounts) <= tolerance) return { mode: "costante" as const, step: null };
-  // Un solo gradino: cerco l'ultimo punto di taglio con due tratti costanti, il primo di almeno 2 addebiti.
-  for (let cut = amounts.length - 1; cut >= 2; cut--) {
-    const before = amounts.slice(0, cut);
-    const after = amounts.slice(cut);
-    if (spread(before) > tolerance || spread(after) > tolerance) continue;
-    const ratio = median(after) / median(before);
-    if (ratio < PRICE_STEP_RANGE[0] || ratio > PRICE_STEP_RANGE[1]) continue;
-    return { mode: "costante" as const, step: { cut, from: median(before), to: median(after) } };
+  const runs: number[][] = [];
+  for (const amount of amounts) {
+    const current = runs[runs.length - 1];
+    if (current && spread([...current, amount]) <= tolerance) current.push(amount);
+    else runs.push([amount]);
   }
-  return null;
+  if (runs.length - 1 > MAX_PRICE_STEPS || runs.slice(0, -1).some((run) => run.length < 2)) return null;
+  for (let i = 1; i < runs.length; i++) {
+    const ratio = median(runs[i]) / median(runs[i - 1]);
+    if (ratio < PRICE_STEP_RANGE[0] || ratio > PRICE_STEP_RANGE[1]) return null;
+  }
+  const last = runs[runs.length - 1];
+  return { mode: "costante" as const, step: { cut: amounts.length - last.length, from: median(runs[runs.length - 2]), to: median(last) } };
 }
 
 /** Valuta se una serie (ordinata per data) è un abbonamento con la cadenza data; `null` se no. */
@@ -217,7 +279,9 @@ function buildCandidate(key: string, series: readonly SubscriptionTxInput[], cad
   const confidence = Math.min(1, 0.45 + 0.07 * Math.min(series.length, 6) + (exact ? 0.15 : 0.05) + (evaluation.skipped === 0 ? 0.1 : 0) - (priceChange ? 0.05 : 0));
   return {
     key,
-    name: last.description,
+    aliases: [],
+    continued: false,
+    name: displayName(last.description),
     cadence,
     amount: round2(last.amount),
     charges: series.map((tx) => ({ id: tx.id, date: tx.date, amount: round2(tx.amount) })),
@@ -253,6 +317,123 @@ function clusterByAmount(series: readonly SubscriptionTxInput[]): SubscriptionTx
   return clusters.map((cluster) => cluster.sort((a, b) => (a.date < b.date ? -1 : 1)));
 }
 
+const byDate = (a: SubscriptionTxInput, b: SubscriptionTxInput) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+const clusterKeyOf = (key: string, cluster: readonly SubscriptionTxInput[]) => `${key}#${median(cluster.map((tx) => tx.amount)).toFixed(2)}`;
+
+/**
+ * Keys a choice on this series may have been saved under: the previous detection's key of each bank spelling (alone,
+ * and per amount cluster as it split a merchant), and the per-amount keys of this merchant. Latest spelling first.
+ */
+function aliasesOf(key: string, merchantKeyOf: string, series: readonly SubscriptionTxInput[]): string[] {
+  const keys: string[] = [];
+  const bySpelling = new Map<string, SubscriptionTxInput[]>();
+  for (const tx of [...series].reverse()) {
+    const legacy = legacySubscriptionKey(tx.description);
+    const list = bySpelling.get(legacy);
+    if (list) list.push(tx);
+    else bySpelling.set(legacy, [tx]);
+  }
+  for (const [legacy, charges] of bySpelling) {
+    keys.push(legacy);
+    for (const cluster of clusterByAmount(charges)) keys.push(clusterKeyOf(legacy, cluster));
+  }
+  keys.push(merchantKeyOf);
+  for (const cluster of clusterByAmount(series)) keys.push(clusterKeyOf(merchantKeyOf, cluster));
+  return [...new Set(keys)].filter((alias) => alias !== key);
+}
+
+/**
+ * Follows a stopped series into the merchant's later charges: each next charge must fall in the cadence window (or one
+ * period later) and be within a price change of the previous one; charges of a cluster that ran alongside the series
+ * are another subscription and are never taken. Returns the continued candidate, or null when nothing fits.
+ */
+function continueSeries(
+  candidate: DetectedSubscription,
+  series: readonly SubscriptionTxInput[],
+  pool: readonly SubscriptionTxInput[],
+  parallel: ReadonlySet<string>,
+  today: string
+): DetectedSubscription | null {
+  const rule = CADENCE_RULES[candidate.cadence];
+  const chain = [...series];
+  const taken = new Set(chain.map((tx) => tx.id));
+  for (;;) {
+    const last = chain[chain.length - 1];
+    const fits = (tx: SubscriptionTxInput, factor: number) => {
+      const gap = toDay(tx.date) - toDay(last.date);
+      const ratio = tx.amount / last.amount;
+      return gap >= rule.window[0] * factor - (factor - 1) * 2 && gap <= rule.window[1] * factor + (factor - 1) * 2 && ratio >= PRICE_STEP_RANGE[0] && ratio <= PRICE_STEP_RANGE[1];
+    };
+    const options = pool.filter((tx) => !taken.has(tx.id) && !parallel.has(tx.id) && tx.date > last.date);
+    const direct = options.filter((tx) => fits(tx, 1));
+    const next = (direct.length > 0 ? direct : options.filter((tx) => fits(tx, 2))).sort(
+      (a, b) => Math.abs(Math.log(a.amount / last.amount)) - Math.abs(Math.log(b.amount / last.amount)) || byDate(a, b)
+    )[0];
+    if (!next) break;
+    chain.push(next);
+    taken.add(next.id);
+  }
+  if (chain.length === series.length) return null;
+  const continued = buildCandidate(candidate.key, chain, candidate.cadence, today);
+  return continued ? { ...continued, continued: true } : null;
+}
+
+/**
+ * Finds the subscriptions within one merchant's charges (`key`, sorted by date): the whole series if it holds,
+ * otherwise one per amount cluster, oldest first, each followed across price changes when it looks stopped.
+ */
+function detectForMerchant(key: string, series: readonly SubscriptionTxInput[], today: string): DetectedSubscription[] {
+  const whole = bestCandidate(key, series, today);
+  if (whole) return [{ ...whole, aliases: aliasesOf(key, key, series) }];
+
+  const clusters = clusterByAmount(series).sort((a, b) => byDate(a[0], b[0]));
+  const candidates: DetectedSubscription[] = [];
+  const used = new Set<string>();
+  for (const cluster of clusters) {
+    const free = cluster.filter((tx) => !used.has(tx.id));
+    // Un esercente frequentato di continuo (supermercato) può avere per caso tre scontrini uguali: non basta.
+    if (free.length < MIN_CLUSTER_SIZE || series.length - free.length > OTHER_CHARGES_PER_CLUSTERED_CHARGE * free.length + OTHER_CHARGES_SLACK) continue;
+    let candidate = bestCandidate(clusterKeyOf(key, free), free, today);
+    if (!candidate) continue;
+    let charges = free;
+    if (candidate.state === "fermo") {
+      const first = free[0].date;
+      const last = free[free.length - 1].date;
+      const parallel = new Set<string>();
+      for (const other of clusters) {
+        if (other === cluster) continue;
+        if (other.filter((tx) => tx.date >= first && tx.date <= last).length >= PARALLEL_CHARGES) for (const tx of other) parallel.add(tx.id);
+      }
+      const pool = series.filter((tx) => !used.has(tx.id));
+      const continued = continueSeries(candidate, free, pool, parallel, today);
+      if (continued) {
+        candidate = continued;
+        const ids = new Set(continued.charges.map((charge) => charge.id));
+        charges = series.filter((tx) => ids.has(tx.id));
+      }
+    }
+    for (const tx of charges) used.add(tx.id);
+    candidates.push({ ...candidate, aliases: aliasesOf(candidate.key, key, charges) });
+  }
+
+  // A stopped series followed later by an active one of the same merchant at a nearby price (a plan changed after a
+  // pause) is the same subscription: the stopped one is not listed, and its keys move to the one that replaced it.
+  const replaced = new Set<DetectedSubscription>();
+  for (const stopped of candidates) {
+    if (stopped.state !== "fermo") continue;
+    const successor = candidates.find((other) => {
+      if (other.state !== "attivo" || other.charges[0].date <= stopped.lastDate) return false;
+      const ratio = other.charges[0].amount / stopped.amount;
+      return ratio >= PRICE_STEP_RANGE[0] && ratio <= PRICE_STEP_RANGE[1];
+    });
+    if (!successor) continue;
+    successor.aliases = [...new Set([...successor.aliases, stopped.key, ...stopped.aliases])].filter((alias) => alias !== successor.key);
+    successor.continued = true;
+    replaced.add(stopped);
+  }
+  return candidates.filter((candidate) => !replaced.has(candidate));
+}
+
 /**
  * Trova gli abbonamenti nelle spese. `transactions` sono le uscite (importi positivi) degli ultimi
  * `SUBSCRIPTION_LOOKBACK_MONTHS` mesi; `today` è la data ISO di oggi. Ordine: prossimo addebito più vicino per primo.
@@ -271,19 +452,7 @@ export function detectSubscriptions(transactions: readonly SubscriptionTxInput[]
   const found: DetectedSubscription[] = [];
   for (const [key, group] of groups) {
     if (group.length < 2) continue;
-    const series = [...group].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-    const whole = bestCandidate(key, series, today);
-    if (whole) {
-      found.push(whole);
-      continue;
-    }
-    for (const cluster of clusterByAmount(series)) {
-      // Un esercente frequentato di continuo (supermercato) può avere per caso tre scontrini uguali: non basta.
-      if (cluster.length < MIN_CLUSTER_SIZE || series.length - cluster.length > OTHER_CHARGES_PER_CLUSTERED_CHARGE * cluster.length + OTHER_CHARGES_SLACK) continue;
-      const clusterKey = `${key}#${median(cluster.map((tx) => tx.amount)).toFixed(2)}`;
-      const candidate = bestCandidate(clusterKey, cluster, today);
-      if (candidate) found.push(candidate);
-    }
+    found.push(...detectForMerchant(key, [...group].sort(byDate), today));
   }
   return found.filter((c) => c.confidence >= MIN_CONFIDENCE).sort((a, b) => (a.nextDate < b.nextDate ? -1 : 1));
 }

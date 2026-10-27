@@ -30,6 +30,8 @@ import type { DataQuestion } from "@/lib/commands/question";
 type DataQuestionKind = DataQuestion["kind"];
 
 export interface ProductEvents {
+  trade_republic_login_started: undefined;
+  trade_republic_connected: undefined;
   financial_sale_simulated: { country: "DE" };
   financial_plan_saved: { country: "DE"; section: "tax" | "income" | "pension" | "retirement" };
   /** Segnalazione inviata da «Aiuto e segnalazioni»; `withContext`: l'utente ha lasciato il contesto tecnico allegato. */
@@ -133,6 +135,7 @@ export interface ProductEvents {
   account_details_opened: { kind: "manuale" | "collegato" };
   /** Scelta nel dialog «Nuovo conto»: quale strada prende l'utente. */
   account_add_path_chosen: { path: "banca" | "manuale" | "importa" };
+  bank_provider_chosen: { provider: "trade-republic" };
   /** Un passo di un form a passi è stato completato (`step` parte da 1): serve a vedere dove ci si ferma. */
   form_step_completed: { flow: FormFlow; step: number };
   /** «Indietro» in un form a passi, dal passo `step` (parte da 1). */
@@ -160,6 +163,8 @@ export interface ProductEvents {
   section_view_chosen: { section: SectionViewsKey };
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
   liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "budget" | "conti" | "abbonamenti" | "categorie" | "regole" };
+  /** Movimenti loaded an older year on demand; `yearsBack` counts years before the default window. */
+  transactions_older_loaded: { yearsBack: number };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
   liquidity_account_filtered: { scope: "conto" | "tutti" };
   /** Categoria cambiata dall'icona del movimento; `remembered`: l'utente ha chiesto di ricordarla con una regola. */

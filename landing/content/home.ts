@@ -289,7 +289,7 @@ export const TRUST = {
   facts: [
     {
       title: "La password della banca resta alla banca.",
-      text: "Non te la chiediamo mai. Il collegamento alla banca, in arrivo, potrà solo leggere: la password la scriverai solo sul suo sito e lo toglierai quando vuoi.",
+      text: "Con Open Banking la scrivi solo sul sito della banca. Per il collegamento diretto Trade Republic usi numero e PIN nel modulo BuddyBudget, confermi nell’app e conserviamo solo la sessione cifrata.",
       terms: ["Sola lettura", "Revocabile"],
       source: { label: "PSD2, art. 67", href: SECURITY_SOURCES.psd2.href },
     },

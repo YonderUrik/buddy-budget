@@ -48,7 +48,7 @@ export const SECURITY_EN: SecurityContent = {
   },
   flow: {
     title: "The path, for people with a bank connected.",
-    lede: "The bank connection isn't taking new accounts for now and is coming back soon; people who already have it keep it. This is how it works: your login details stay with your bank, and only balances and transactions reach BuddyBudget, read-only.",
+    lede: "Trade Republic has a direct form in BuddyBudget: phone and PIN are used only for sign-in, and the session is stored encrypted. It is not read-only PSD2 consent. The path below describes Open Banking, which isn't taking new accounts for now and is coming back soon; people who already have it keep it. This is how it works: your login details stay with your bank, and only balances and transactions reach BuddyBudget, read-only.",
     links: ["Login and confirmation", "Read-only consent", "Balances and transactions"],
     neverTitle: "Never.",
     diagram: "Diagram of the data path: you give your login and confirmation only to your bank; the bank gives GoCardless a read-only consent; GoCardless passes only balances and transactions to BuddyBudget, on servers in Germany.",

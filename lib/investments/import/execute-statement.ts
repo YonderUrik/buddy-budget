@@ -9,6 +9,7 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { statementSourceScope } from "./source-scope";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
+import { tradeRepublicConnections } from "@/lib/db/schema/trade-republic";
 import { instruments, investmentPortfolios, investmentTransactions, userInstrumentPrices, type Instrument } from "@/lib/db/schema/investments";
 import type { RunImportInput } from "@/lib/validation/investments-import";
 import { findVisibleInstrument } from "../instruments";
@@ -34,6 +35,11 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
   if (errors.length) return failed(errors.join("; "));
   const provider = parsed.preset;
   const brokerName = provider === "trade-republic" ? "Trade Republic" : provider === "degiro" ? "DEGIRO" : "Interactive Brokers";
+  // The direct connection already imports this account: a file on top would duplicate trades and cash.
+  if (provider === "trade-republic") {
+    const [direct] = await db.select({ id: tradeRepublicConnections.id }).from(tradeRepublicConnections).where(eq(tradeRepublicConnections.userId, userId)).limit(1);
+    if (direct) return failed("Trade Republic è già collegato direttamente: i movimenti e gli investimenti arrivano dalla sincronizzazione, senza file");
+  }
   const cashMovements = parsed.cashMovements ?? [];
   const accountKey = hash(provider !== "interactive-brokers" ? `${provider}:${statement.account}` : statement.account);
   const fingerprint = hash(JSON.stringify(parsed.records.map(({ section, kind, values }) => [section, kind, values])));

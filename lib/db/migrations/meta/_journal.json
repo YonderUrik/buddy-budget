@@ -344,6 +344,13 @@
       "when": 1793086534132,
       "tag": "0051_manual_balance_backfill",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1793124932024,
+      "tag": "0052_trade_republic_connections",
+      "breakpoints": true
     }
   ]
 }

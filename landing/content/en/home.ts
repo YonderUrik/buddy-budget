@@ -28,7 +28,7 @@ export const FAQ_EN: readonly FaqItem[] = [
     question: "Which countries and languages?",
     answer: "Italy in Italian and English, Germany in German and English, every other country in any of the three. You pick the currency. Italy has every feature. Germany has partial 2026 tax estimates, with the limits written out; the pension comes after a review. Other countries get everything except pension and taxes. This site describes the product for Italy.",
   },
-  { question: "Does it connect to my bank?", answer: "Not yet: a read-only Open Banking connection is coming soon. Until then you upload your bank statement as CSV or Excel, or add accounts by hand." },
+  { question: "Does it connect to my bank?", answer: "Trade Republic supports a direct connection for EUR cash balances and transactions, with phone/PIN sign-in and app approval. Open Banking for other banks is coming soon. You can also upload CSV or Excel statements, or add accounts by hand." },
   {
     question: "Are the taxes real?",
     needs: "taxes",
@@ -172,7 +172,7 @@ export const HOME_EN: HomeContent = {
     facts: [
       {
         title: "Your bank password stays with your bank.",
-        text: "We never ask for it. The bank connection, coming soon, will only read: you'll type your password on your bank's site alone and remove the connection whenever you like.",
+        text: "With Open Banking you type it only on your bank's site. For the direct Trade Republic connection, enter phone and PIN in BuddyBudget and approve in the app; we retain only the encrypted session.",
         terms: ["Read-only", "Revocable"],
         source: { label: "PSD2, art. 67", href: SECURITY_SOURCES_EN.psd2.href },
       },

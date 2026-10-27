@@ -2,30 +2,35 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * Dialog «Nuovo conto»: parte da una scelta (collega la banca, conto manuale, importa un file) e porta al passo giusto,
- * con «Indietro» sempre disponibile. A tutto schermo sul telefono. `renew` apre direttamente il collegamento della banca.
+ * «Nuovo conto» dialog: starts from a choice (connect the bank, manual account, import a file) and leads to the right
+ * step, with a way back on each one; Trade Republic signs in inside the dialog. Full screen on the phone. `renew` opens
+ * the bank connection directly.
  */
 
 import { FormDialogContent } from "@/components/domain/shared";
 import Link from "next/link";
 import * as React from "react";
 import { ArrowLeftIcon, ChevronRightIcon, FileSpreadsheetIcon, LandmarkIcon, PencilLineIcon, ZapIcon } from "lucide-react";
-import { AddAccountForm, ConnectBankFlow } from "@/components/domain/accounts";
+import { AddAccountForm } from "@/components/domain/accounts";
+import { ConnectTradeRepublic } from "@/components/domain/trade-republic";
 import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
 import { useBankCapacityQuery } from "@/lib/queries/gocardless";
 import { useInstance } from "@/lib/instance/provider";
-import { BANK_UNAVAILABLE_COPY } from "./bank-capacity.data";
-import { BankComingSoon } from "./bank-coming-soon";
+import { BankPicker } from "./bank-picker";
 
-export type AddAccountView = "scelta" | "banca" | "manuale";
+export type AddAccountView = "scelta" | "banca" | "trade-republic" | "manuale";
 
 const VIEW_COPY: Record<AddAccountView, { title: string; description: string }> = {
   scelta: { title: "Nuovo conto", description: "Come vuoi tenere aggiornato questo conto?" },
   banca: { title: "Collega la tua banca", description: "Scegli la banca: saldi e movimenti arrivano da soli." },
+  "trade-republic": { title: "Trade Republic", description: "Saldo, movimenti e investimenti, aggiornati a ogni sincronizzazione." },
   manuale: { title: "Conto manuale", description: "Aggiungi tu i movimenti: il saldo li segue." },
 };
+
+/** Header of the bank step while only Trade Republic connects. */
+const BANK_BLOCKED_COPY = { title: "Collega la tua banca", description: "Per ora si collega Trade Republic: le altre banche sono in arrivo." };
 
 interface ChoiceProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -80,13 +85,9 @@ export function AddAccountDialog({ open, onOpenChange, currency, renew = false }
 function AddAccountSession({ currency, renew, onClose }: { currency: string; renew: boolean; onClose: () => void }) {
   const { t: tr } = useLocalization();
   const [view, setView] = React.useState<AddAccountView>(renew ? "banca" : "scelta");
-  const copy = VIEW_COPY[view];
   // Il rinnovo non passa da qui: per la banca già collegata resta possibile anche a posti finiti (lo decide il server).
   const { data: capacity } = useBankCapacityQuery(!renew);
   const blockedReason = !renew && capacity && !capacity.canConnectNew ? capacity.reason : null;
-  const unavailable = blockedReason ? BANK_UNAVAILABLE_COPY[blockedReason] : null;
-  // Closed for now: the bank choice moves below the two that work today and asks whether to keep the person posted.
-  const paused = blockedReason === "paused";
   const { selfHosted } = useInstance();
   const seenReason = React.useRef<string | null>(null);
   React.useEffect(() => {
@@ -98,33 +99,45 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
     track("account_add_path_chosen", { path: next });
     setView(next);
   };
+  const chooseTradeRepublic = () => {
+    track("bank_provider_chosen", { provider: "trade-republic" });
+    setView("trade-republic");
+  };
+  const copy = view === "banca" && blockedReason ? BANK_BLOCKED_COPY : VIEW_COPY[view];
+  const back = view === "banca" && !renew ? { label: "Cambia modo", to: "scelta" as const } : view === "trade-republic" ? { label: "Tutte le banche", to: "banca" as const } : null;
   return (
     <>
-            <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? tr("Rinnova il collegamento") : copy.title} description={renew && view === "banca" ? tr("Scegli di nuovo la tua banca per rinnovare il consenso.") : copy.description} />
+      <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? tr("Rinnova il collegamento") : copy.title} description={renew && view === "banca" ? tr("Scegli di nuovo la tua banca per rinnovare il consenso.") : copy.description} />
+      {back ? (
+        <button type="button" onClick={() => setView(back.to)} className="-mt-2 inline-flex min-h-11 w-fit cursor-pointer items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground sm:min-h-9">
+          <ArrowLeftIcon className="size-4" aria-hidden="true" />{" "}{tr(back.label)}
+        </button>
+      ) : null}
       {view === "scelta" ? (
         <div className="flex flex-col gap-3">
-          {paused ? null : (
-            <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")} disabled={unavailable !== null}>
-              {unavailable ? (
-                <ChoiceBody icon={ZapIcon} color="var(--text-3)" title={tr("Collega la tua banca")} badge={unavailable.badge} description={tr(unavailable.description)} unavailable />
-              ) : (
-                <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} badge={tr("Automatico")} description={tr("Saldi e movimenti si aggiornano da soli, in sola lettura.")} />
-              )}
-            </button>
-          )}
+          <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")}>
+            <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} description={blockedReason ? tr("Trade Republic, con le altre banche in arrivo.") : tr("Saldi e movimenti arrivano da soli dalla banca.")} />
+          </button>
           <button type="button" className={CHOICE_CLASS} onClick={() => go("manuale")}>
             <ChoiceBody icon={PencilLineIcon} color="var(--swatch-indigo)" title={tr("Conto manuale")} description={tr("Per contanti, carte prepagate o qualsiasi banca: il saldo segue i movimenti che aggiungi.")} />
           </button>
           <Link href="/importazioni" className={CHOICE_CLASS} onClick={() => { track("account_add_path_chosen", { path: "importa" }); onClose(); }}>
             <ChoiceBody icon={FileSpreadsheetIcon} color="var(--swatch-amber)" title={tr("Importa un file CSV o Excel")} description={tr("Carica l'estratto conto: lo leggiamo e crei il conto con i suoi movimenti.")} />
           </Link>
-          {paused ? <BankComingSoon interested={capacity?.interested ?? false} canRequest={!selfHosted} /> : null}
         </div>
-      ) : view === "banca" ? (
-        <button type="button" onClick={() => setView("scelta")} className="-mt-2 inline-flex min-h-11 w-fit cursor-pointer items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground sm:min-h-9">
-          <ArrowLeftIcon className="size-4" aria-hidden="true" />{" "}{tr("Cambia modo")}</button>
       ) : null}
-      {view === "banca" ? <ConnectBankFlow onChooseManual={() => setView("manuale")} /> : null}
+      {view === "banca" ? (
+        <BankPicker
+          blockedReason={blockedReason}
+          interested={capacity?.interested ?? false}
+          canRequest={!selfHosted}
+          renew={renew}
+          onChooseTradeRepublic={chooseTradeRepublic}
+          onChooseManual={() => setView("manuale")}
+          onImport={() => { track("account_add_path_chosen", { path: "importa" }); onClose(); }}
+        />
+      ) : null}
+      {view === "trade-republic" ? <ConnectTradeRepublic onDone={onClose} /> : null}
       {view === "manuale" ? <AddAccountForm currency={currency} onSuccess={onClose} onExit={() => setView("scelta")} /> : null}
     </>
   );

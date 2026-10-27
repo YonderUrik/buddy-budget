@@ -35,7 +35,9 @@ import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useAttentionQuery } from "@/lib/queries/attention";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
-import { useTransactionsQuery } from "@/lib/queries/transactions";
+import { useTransactionsQuery, useTransactionYearsQuery } from "@/lib/queries/transactions";
+import { previousYearWithMovements } from "@/lib/liquidity/fetch-window";
+import { Button } from "@/components/ui/button";
 
 export default function LiquiditaPage() {
   const { t: tr } = useLocalization();
@@ -49,8 +51,18 @@ export default function LiquiditaPage() {
 
   React.useEffect(() => track("liquidity_tab_viewed", { tab: "movimenti" }), []);
 
-  const { from, to } = liquidityFetchWindow(today);
-  const { data: transactions, isLoading, isError, refetch } = useTransactionsQuery(from, to, "tutte");
+  const defaultWindow = liquidityFetchWindow(today);
+  // Older history loads on demand, one year with movements at a time (empty years are skipped).
+  const [olderFrom, setOlderFrom] = React.useState<string | null>(null);
+  const from = olderFrom ?? defaultWindow.from;
+  const to = defaultWindow.to;
+  const { data: transactions, isLoading, isError, isFetching, refetch } = useTransactionsQuery(from, to, "tutte", { keepPrevious: true });
+  const years = useTransactionYearsQuery().data ?? [];
+  const olderYear = previousYearWithMovements(years, from);
+  const loadOlder = (year: number) => {
+    setOlderFrom(`${year}-01-01`);
+    track("transactions_older_loaded", { yearsBack: Number(defaultWindow.from.slice(0, 4)) - year });
+  };
   const categoriesQuery = useCategoriesQuery();
   const categories = React.useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
   const usage = useCategoryUsageQuery().data;
@@ -121,6 +133,11 @@ export default function LiquiditaPage() {
               emptyMessage={searchText || categoryId || toFixOnly ? tr("Nessun movimento corrisponde ai filtri.") : tr("Nessun movimento ancora: collega una banca o aggiungine uno a mano.")}
             />
           )}
+          {!isLoading && !isError && olderYear !== null ? (
+            <Button variant="outline" className="h-11 self-center" disabled={isFetching} onClick={() => loadOlder(olderYear)}>
+              {isFetching ? tr("Caricamento…") : tr("Mostra i movimenti del {0}", { 0: String(olderYear) })}
+            </Button>
+          ) : null}
         </div>
         <MonthAside
           income={income}

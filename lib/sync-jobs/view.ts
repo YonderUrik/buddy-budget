@@ -3,8 +3,19 @@ import {
   SYNC_JOB_STALE_MS,
   deriveJobStatus,
   type SyncJob,
+  type SyncJobAccount,
   type SyncJobView,
 } from "./types";
+
+/** The latest sync of one account (running or finished, until its summary is dismissed), for that account's window. */
+export function latestAccountJob(jobs: SyncJobView[], accountId: string): { account: SyncJobAccount; interrupted: boolean } | null {
+  let latest: { account: SyncJobAccount; interrupted: boolean; updatedAt: string } | null = null;
+  for (const job of jobs) {
+    const account = job.accounts.find((entry) => entry.accountId === accountId);
+    if (account && (!latest || job.updatedAt > latest.updatedAt)) latest = { account, interrupted: job.interrupted, updatedAt: job.updatedAt };
+  }
+  return latest && { account: latest.account, interrupted: latest.interrupted };
+}
 
 export type OverallProgress =
   | { kind: "complete" }

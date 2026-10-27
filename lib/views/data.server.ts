@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { accounts, type Account } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
+import { tradeRepublicConnections } from "@/lib/db/schema/trade-republic";
 import { budgets, type Budget } from "@/lib/db/schema/budgets";
 import { categories, type Category } from "@/lib/db/schema/categories";
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
@@ -42,6 +43,8 @@ export interface BankConnectionStatus {
   accountId: string;
   connectionId: string;
   institutionName: string;
+  /** Which sync route the account uses: `/api/{provider}/accounts/{id}/sync`. */
+  provider: "gocardless" | "trade-republic";
   status: "pending" | "linked" | "expired" | "error";
   consentExpiresAt: string | null;
   lastSyncedAt: string | null;
@@ -50,8 +53,34 @@ export interface BankConnectionStatus {
   syncsRemainingToday: number;
 }
 
-/** One row per linked account: its connection, consent expiry, last sync and whether a manual sync is allowed now. */
+/**
+ * One row per linked account: its connection, consent expiry, last sync and whether a manual sync is allowed now.
+ * Trade Republic accounts are included with `provider: "trade-republic"` (no consent expiry, no daily sync budget).
+ */
 export async function loadBankConnectionStatuses(userId: string, now: Date): Promise<BankConnectionStatus[]> {
+  const [gocardless, tradeRepublic] = await Promise.all([loadGoCardlessStatuses(userId, now), loadTradeRepublicStatuses(userId)]);
+  return [...gocardless, ...tradeRepublic];
+}
+
+async function loadTradeRepublicStatuses(userId: string): Promise<BankConnectionStatus[]> {
+  const rows = await db
+    .select({ accountId: tradeRepublicConnections.accountId, connectionId: tradeRepublicConnections.id, status: tradeRepublicConnections.status, lastSyncedAt: tradeRepublicConnections.lastSyncedAt })
+    .from(tradeRepublicConnections)
+    .where(eq(tradeRepublicConnections.userId, userId));
+  return rows.map((row) => ({
+    ...row,
+    institutionName: "Trade Republic",
+    provider: "trade-republic" as const,
+    consentExpiresAt: null,
+    lastSyncedAt: row.lastSyncedAt?.toISOString() ?? null,
+    eligible: row.status === "linked",
+    nextEligibleAt: null,
+    syncsRemainingToday: row.status === "linked" ? 1 : 0,
+  }));
+}
+
+/** GoCardless links only (`GET /api/gocardless/connections`: web reads Trade Republic from its own route). */
+export async function loadGoCardlessStatuses(userId: string, now: Date): Promise<BankConnectionStatus[]> {
   const rows = await db
     .select({
       accountId: bankAccountLinks.accountId,
@@ -69,6 +98,7 @@ export async function loadBankConnectionStatuses(userId: string, now: Date): Pro
     const eligibility = computeSyncEligibility(syncTimestamps.map((t) => new Date(t)), now);
     return {
       ...row,
+      provider: "gocardless" as const,
       consentExpiresAt: consentExpiresAt?.toISOString() ?? null,
       lastSyncedAt: lastSyncedAt?.toISOString() ?? null,
       eligible: eligibility.eligible,

@@ -9,6 +9,7 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { createTransactionSchema } from "@/lib/validation/transactions";
 import { rejectIfDemoActive } from "@/lib/start/demo";
 import { applyRulesToUncategorized } from "@/lib/categorization/auto-apply";
+import { moveAccountBalance } from "@/lib/transactions/account-balance";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { apiError, validationError } from "@/lib/http";
 import { decodeTransactionCursor, TRANSACTION_PAGE_DEFAULT, TRANSACTION_PAGE_MAX } from "@/lib/liquidity/transactions-list";
@@ -85,6 +86,7 @@ async function handleGet(request: NextRequest) {
  * POST /api/transactions — crea una transazione manuale; il segno salvato è derivato dal type della categoria scelta
  * (entrata → positivo, gruppi di spesa → negato). Una categoria scelta è una scelta dell'utente; se resta «Da
  * categorizzare», le regole si applicano subito come per i movimenti della banca.
+ * The account's balance moves by the transaction's amount in the same database transaction.
  */
 async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -122,20 +124,24 @@ async function handlePost(request: NextRequest) {
 
   const signedAmount = (category.type === "entrata" || (category.type === "trasferimento" && parsed.data.direction === "entrata")) ? parsed.data.amount : -parsed.data.amount;
 
-  const [transaction] = await db
-    .insert(transactions)
-    .values({
-      userId: session.user.id,
-      accountId: parsed.data.accountId,
-      categoryId: parsed.data.categoryId,
-      description: parsed.data.description,
-      amount: signedAmount.toFixed(2),
-      excludedAmount: category.type === "trasferimento" ? signedAmount.toFixed(2) : "0",
-      date: parsed.data.date,
-      source: "manuale",
-      ...(category.isFallback ? {} : { categorySource: "utente" as const, categorizedAt: new Date() }),
-    })
-    .returning();
+  const [transaction] = await db.transaction(async (tx) => {
+    const inserted = await tx
+      .insert(transactions)
+      .values({
+        userId: session.user.id,
+        accountId: parsed.data.accountId,
+        categoryId: parsed.data.categoryId,
+        description: parsed.data.description,
+        amount: signedAmount.toFixed(2),
+        excludedAmount: category.type === "trasferimento" ? signedAmount.toFixed(2) : "0",
+        date: parsed.data.date,
+        source: "manuale",
+        ...(category.isFallback ? {} : { categorySource: "utente" as const, categorizedAt: new Date() }),
+      })
+      .returning();
+    await moveAccountBalance(tx, session.user.id, account.id, signedAmount);
+    return inserted;
+  });
 
   if (!category.isFallback) return Response.json(transaction, { status: 201 });
   const applied = await applyRulesToUncategorized(session.user.id, { log: requestLogger() });

@@ -8,6 +8,12 @@ import { pageText } from "@/lib/localization/page-text";
 
 const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
 
+/**
+ * Queries that show account balances: the accounts, the cash history, the sidebar total and the goals funded by
+ * accounts. Invalidated when a balance changes, by hand or because a transaction typed by hand moved it.
+ */
+export const QUERY_KEYS_CHANGED_BY_BALANCE = [ACCOUNTS_QUERY_KEY, ["net-worth-snapshots"], ["investments", "sidebar-summary"], ["goals"]] as const;
+
 /** An account as `GET /api/accounts` returns it: `followsTransactions` is true for linked banks and file imports. */
 export type AccountListItem = Account & { followsTransactions: boolean };
 
@@ -64,7 +70,7 @@ export function useUpdateAccountMutation() {
       return response.json() as Promise<Account>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+      for (const queryKey of QUERY_KEYS_CHANGED_BY_BALANCE) queryClient.invalidateQueries({ queryKey: [...queryKey] });
     },
   });
 }

@@ -24,7 +24,7 @@ export type AddAccountView = "scelta" | "banca" | "manuale";
 const VIEW_COPY: Record<AddAccountView, { title: string; description: string }> = {
   scelta: { title: "Nuovo conto", description: "Come vuoi tenere aggiornato questo conto?" },
   banca: { title: "Collega la tua banca", description: "Scegli la banca: saldi e movimenti arrivano da soli." },
-  manuale: { title: "Conto manuale", description: "Aggiorni tu saldo e movimenti, quando vuoi." },
+  manuale: { title: "Conto manuale", description: "Aggiungi tu i movimenti: il saldo li segue." },
 };
 
 interface ChoiceProps {
@@ -113,7 +113,7 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
             </button>
           )}
           <button type="button" className={CHOICE_CLASS} onClick={() => go("manuale")}>
-            <ChoiceBody icon={PencilLineIcon} color="var(--swatch-indigo)" title={tr("Conto manuale")} description={tr("Per contanti, carte prepagate o qualsiasi banca: il saldo lo aggiorni tu.")} />
+            <ChoiceBody icon={PencilLineIcon} color="var(--swatch-indigo)" title={tr("Conto manuale")} description={tr("Per contanti, carte prepagate o qualsiasi banca: il saldo segue i movimenti che aggiungi.")} />
           </button>
           <Link href="/importazioni" className={CHOICE_CLASS} onClick={() => { track("account_add_path_chosen", { path: "importa" }); onClose(); }}>
             <ChoiceBody icon={FileSpreadsheetIcon} color="var(--swatch-amber)" title={tr("Importa un file CSV o Excel")} description={tr("Carica l'estratto conto: lo leggiamo e crei il conto con i suoi movimenti.")} />

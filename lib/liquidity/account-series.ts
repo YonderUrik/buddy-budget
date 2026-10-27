@@ -25,7 +25,8 @@ export function accountFollowsTransactions(account: BalanceSeriesAccount): boole
 /**
  * End-of-day balance from `from` to today. For an account whose balance follows its transactions (linked bank, file
  * import) it is the current balance minus later transactions (full amount: a «Dividi» share does not change the
- * money on the account). A manual account does not record transactions in its balance: a flat line at today's balance.
+ * money on the account). A manual account's transactions move its balance only since 2026-10-27, so the balance minus
+ * later transactions is not its past: a flat line at today's balance.
  */
 export function buildAccountBalanceSeries(account: BalanceSeriesAccount, transactions: Transaction[], from: Date, today: Date): BalancePoint[] {
   const todayStart = startOfDay(today);

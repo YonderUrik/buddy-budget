@@ -526,6 +526,35 @@ describe("GET/PATCH/DELETE /api/transactions/[id]", () => {
     expect(response.status).toBe(204);
   });
 
+  it("moves the account's balance by the difference when the amount changes, and back when the transaction is deleted", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({ userId, accountId, categoryId, description: "Spesa", amount: "-50.00", date: "2026-02-10", source: "manuale" })
+      .returning();
+    await db.update(accounts).set({ balance: "450.00" }).where(eq(accounts.id, accountId));
+    const balance = async () => (await db.select().from(accounts).where(eq(accounts.id, accountId)))[0].balance;
+
+    const noteOnly = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, { method: "PATCH", body: JSON.stringify({ note: "Solo una nota" }) }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+    expect(noteOnly.status).toBe(200);
+    expect(await balance()).toBe("450.00");
+
+    const patched = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, { method: "PATCH", body: JSON.stringify({ amount: 80 }) }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+    expect(patched.status).toBe(200);
+    expect(await balance()).toBe("420.00");
+
+    const deleted = await DELETE(new NextRequest(`http://localhost/api/transactions/${transaction.id}`, { method: "DELETE" }), {
+      params: Promise.resolve({ id: transaction.id }),
+    });
+    expect(deleted.status).toBe(204);
+    expect(await balance()).toBe("500.00");
+  });
+
   it("risponde 400 se si tenta di eliminare una transazione auto", async () => {
     const [transaction] = await db
       .insert(transactions)

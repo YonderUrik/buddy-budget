@@ -105,6 +105,21 @@ describe("GET/POST /api/transactions", () => {
     expect(response.status).toBe(400);
   });
 
+  it("moves the manual account's balance by each transaction typed by hand (expense down, income up)", async () => {
+    await db.update(accounts).set({ balance: "100.00" }).where(eq(accounts.id, manualAccountId));
+    const [income] = await db.insert(categories).values({ userId, name: "Stipendio", type: "entrata" }).returning();
+    const post = (body: object) =>
+      POST(new NextRequest("http://localhost/api/transactions", { method: "POST", body: JSON.stringify({ accountId: manualAccountId, date: "2026-02-10", ...body }) }));
+
+    expect((await post({ description: "Spesa", categoryId, amount: 42.5 })).status).toBe(201);
+    const [afterExpense] = await db.select().from(accounts).where(eq(accounts.id, manualAccountId));
+    expect(afterExpense.balance).toBe("57.50");
+
+    expect((await post({ description: "Stipendio", categoryId: income.id, amount: 1000 })).status).toBe(201);
+    const [afterIncome] = await db.select().from(accounts).where(eq(accounts.id, manualAccountId));
+    expect(afterIncome.balance).toBe("1057.50");
+  });
+
   it("crea una spesa manuale con importo negato e la ritorna nella lista, escludendo le entrate", async () => {
     await db.insert(transactions).values({
       userId,

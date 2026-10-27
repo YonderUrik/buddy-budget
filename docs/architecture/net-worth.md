@@ -92,7 +92,7 @@ A **ledger account** is one whose balance follows its transactions: a bank-synce
 ledger(day) = sum over ledger accounts of (balance - sum of its transactions dated after day)
 ```
 
-Before an account's first transaction this is its opening balance (zero for an import account). Every other account is **manual**: its transactions do not move its balance, so only the daily snapshots know what it was.
+Before an account's first transaction this is its opening balance (zero for an import account). Every other account is **manual**: since 2026-10-27 a transaction typed by hand moves its balance (`moveAccountBalance` in [`account-balance.ts`](../../lib/transactions/account-balance.ts), called by `POST /api/transactions` and by `PATCH`/`DELETE /api/transactions/[id]` in the same database transaction; the same call keeps import accounts right when one of their rows is edited or deleted by hand), but its transactions from before that date never did, so the balance minus later transactions is not its past and only the daily snapshots know what it was. A back-dated transaction on a manual account shows in the history on the day it is added, not on its date.
 
 Each `liquidita` row stores `ledger_amount`, the ledger part of its `amount` when written. `refreshDerivedCashHistory(userId, today, state)` ([`snapshots.ts`](../../lib/net-worth/snapshots.ts), pure plan in [`cash-history.ts`](../../lib/calc/cash-history.ts) `planCashHistory`):
 
@@ -257,7 +257,7 @@ A file import runs on the CSV worker and a bank sync in `after()` (see [backgrou
 
 ## 5. Limits and out of scope
 
-- **Manual accounts have no past.** A manual account added later appears as a jump on the day it is first snapshotted; on days with no row, manual accounts are assumed to hold the balance of the nearest row (or today's balance).
+- **Manual accounts have no past.** A manual account added later appears as a jump on the day it is first snapshotted; on days with no row, manual accounts are assumed to hold the balance of the nearest row (or today's balance). Their single-account chart in Liquidità is a flat line at today's balance, and a back-dated transaction moves the balance from the day it is added.
 - Broker cash accounts created by broker statement imports (IBKR, DEGIRO, Trade Republic) count as manual: their balance comes from the statement, not from their transactions.
 - Deleting a ledger account takes it out of the whole history, like deleting its transactions. Days that were added for a deleted import stay, with only their manual part.
 - The ledger part of rows written before migration 0043 is an estimate (see 4.1); a transaction deleted before that migration ran is not subtracted from rows that counted it.

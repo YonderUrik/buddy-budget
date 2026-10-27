@@ -226,7 +226,7 @@ export const HOME_EN: HomeContent = {
       ...(FIELD_ENCRYPTION_LIVE ? [{ label: "In the database", value: "Descriptions and notes encrypted (AES-256)" }] : []),
       { label: "Your data", value: "ZIP export in JSON and CSV, deletion from the app" },
       { label: "Sign-in", value: "Email link or Google, no password" },
-      { label: "Security", value: "SECURITY.md", path: "/blob/main/SECURITY.md" },
+      { label: "Security", value: "SECURITY.md", path: "/blob/main/.github/SECURITY.md" },
     ],
   },
   faq: { title: "Before you sign up.", items: FAQ_EN },

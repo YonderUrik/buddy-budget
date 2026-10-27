@@ -168,7 +168,12 @@ docs/
   decisioni/                 one decision per file (since 2026-10-04); decision-log.md is the earlier archive
   design-reference/          original mockup
   superpowers/specs|plans/   specs and plans for each feature
+  accessibility.md           accessibility status and checklist
+deploy/selfhost/             env template and build-from-source compose override for self-hosting
+.github/                     CI, templates, CONTRIBUTING/SECURITY/CODE_OF_CONDUCT, release-please config and manifest
 ```
+
+**Root stays minimal** (decision `docs/decisioni/2026-10-27-ripulire-la-root.md`): only files a tool requires at the root (Next.js, TypeScript, ESLint, PostCSS, shadcn, pnpm, Vitest, Docker, Claude Code) plus README, LICENSE, NOTICE, CHANGELOG, ROADMAP, CLAUDE.md and `.env.local.example`. A new config goes in a folder whenever its tool accepts a path (`lib/db/drizzle.config.ts`, `lib/testing/vitest.setup.ts`, `.github/release-please-*.json`).
 
 ## Design tokens
 
@@ -209,6 +214,7 @@ A new screen or feature is not "complete" until the catalog is updated, together
 
 ## Project status
 
+**Cleaner repository root (2026-10-27)**: community files moved to `.github/`, `ACCESSIBILITY.md` to `docs/accessibility.md`, release-please config and manifest to `.github/`, `drizzle.config.ts` to `lib/db/` (`db:generate` passes `--config`), `vitest.setup.ts` to `lib/testing/`, the self-hosting env template and build override to `deploy/selfhost/`, the marketing context to `.claude/product-marketing.md`; removed the unused `bun.lock`, `vercel.json`, no-op `.pnpmfile.cjs` and `.npmrc`. No behaviour change. Entry in `docs/decisioni/2026-10-27-ripulire-la-root.md`. Branch `claude/project-thread-lfku9e`.
 **Manual account balances (2026-10-27)**: adding, editing or deleting a transaction typed by hand now moves its account's balance in the same database transaction (`moveAccountBalance`, never on bank-linked accounts); before, a manual account's balance never moved. Existing balances corrected once by migration 0051 (hand-typed transactions created after the account's last edit; number to recheck at merge: Stripe #466 uses 0050); manual accounts still have no reconstructed past. Entry in `docs/decisioni/2026-10-27-saldo-dei-conti-manuali.md`, living doc §4.1 of `docs/architecture/net-worth.md`. Branch `claude/project-thread-u73qir`.
 **Subscriptions with changing descriptions (2026-10-26)**: subscription detection groups charges by merchant (dictionary brand, website, or words without PayPal/invoice codes, card and booking-date tail), follows a stopped series across price changes and pauses, shows brand names («NOW», «Claude»), and keeps choices saved under the old keys (`aliases`, duplicates hidden). Logs `continued`, `matchedOlderKey`, `mergedDuplicates` on `subscriptions.detect.completed`. No migration. Entry in `docs/decisioni/2026-10-26-abbonamenti-con-descrizioni-variabili.md`, living doc §4.13 of `docs/architecture/categorisation.md`. Branch `claude/project-thread-umaqhf`.
 **«Dall'ultima visita» as a label (2026-10-26)**: the welcome toast is replaced by a label beside the Panoramica date («● 12 movimenti nuovi e altro») that opens the summary with one button per line (option B chosen by Daniele); only when something happened while away, once per visit; the toast also came back at every section change (remounted by the section transition). Umami `welcome_summary_opened`. No migration. Entry in `docs/decisioni/2026-10-26-dall-ultima-visita-etichetta.md`, living doc §4.17 of `docs/architecture/overview.md`. PR #523.

@@ -1,5 +1,6 @@
 # Overrides the images with a local build from source (slower, useful to try changes or on arm64 without published images):
-#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+#   docker compose -f docker-compose.yml -f deploy/selfhost/compose.build.yml up -d --build
+# Paths are resolved from the first file (the repository root), so `context: .` is the root.
 services:
   migrate:
     build: { context: ., target: migrator }

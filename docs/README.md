@@ -36,12 +36,12 @@ Rules every contributor follows (component layers, observability, background job
 
 | Document | What it covers |
 | --- | --- |
-| [Contributing](../CONTRIBUTING.md) | Workflow, checks to run, conventions |
+| [Contributing](../.github/CONTRIBUTING.md) | Workflow, checks to run, conventions |
 | [Releases](rilasci.md) | Conventional Commits PR titles, release-please, deploy |
 | [Landing screenshots](landing-screens.md) | How the screenshots on the website are generated from the real app |
 | [Staging](staging.md) | The maintainers' staging server: deployment, email, AI and recovery |
-| [Accessibility](../ACCESSIBILITY.md) | Accessibility status and checklist |
-| [Security policy](../SECURITY.md) | How to report a vulnerability |
+| [Accessibility](accessibility.md) | Accessibility status and checklist |
+| [Security policy](../.github/SECURITY.md) | How to report a vulnerability |
 
 ## Product and history
 

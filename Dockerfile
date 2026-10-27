@@ -9,7 +9,7 @@ WORKDIR /app
 
 # ---- deps: full dependencies (needed by build and migrator) ----
 FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc .pnpmfile.cjs ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # ---- builder: next build ----
@@ -32,7 +32,7 @@ RUN pnpm build
 
 # ---- migrator: runs the Drizzle migrations (PreSync Job in k8s) ----
 FROM deps AS migrator
-COPY tsconfig.json drizzle.config.ts ./
+COPY tsconfig.json ./
 COPY lib ./lib
 COPY scripts ./scripts
 USER node

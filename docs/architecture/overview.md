@@ -135,7 +135,7 @@ Migration flow:
 
 | Step | Command or component | Detail |
 |---|---|---|
-| Generate | `pnpm db:generate` | `drizzle-kit generate` from `lib/db/schema/index.ts` into `lib/db/migrations/` ([`drizzle.config.ts`](../../drizzle.config.ts)) |
+| Generate | `pnpm db:generate` | `drizzle-kit generate` from `lib/db/schema/index.ts` into `lib/db/migrations/` ([`lib/db/drizzle.config.ts`](../../lib/db/drizzle.config.ts)) |
 | Apply locally and in CI | `pnpm db:migrate` | [`lib/db/migrate.ts`](../../lib/db/migrate.ts) runs Drizzle's `migrate`; CI runs it before the test shards |
 | Apply in production | `migrator` Docker target | Image `buddy-budget-migrate`, run by the ArgoCD `PreSync` hook Job `buddy-budget-migrate` (infra `argocd/manifests/app/migration-job.yaml`, `backoffLimit: 2`). The rollout waits for it |
 | Apply in self-hosting | `migrate` service in [`docker-compose.yml`](../../docker-compose.yml) | Same image; the app depends on it |

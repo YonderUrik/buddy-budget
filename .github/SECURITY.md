@@ -8,4 +8,4 @@ The project is maintained by a single person: a response may take a few days. Th
 
 ## What must never go in the repository
 
-Keys, tokens, credentials, real banking or personal data. If you find any by mistake in a file or in the history, report it the same way. Environment variables go in `.env.local` (ignored by git); [`.env.local.example`](.env.local.example) contains only placeholders.
+Keys, tokens, credentials, real banking or personal data. If you find any by mistake in a file or in the history, report it the same way. Environment variables go in `.env.local` (ignored by git); [`.env.local.example`](../.env.local.example) contains only placeholders.

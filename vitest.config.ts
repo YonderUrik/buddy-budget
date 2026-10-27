@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    setupFiles: ["./vitest.setup.ts"],
+    setupFiles: ["./lib/testing/vitest.setup.ts"],
     exclude: [
       "**/node_modules/**",
       "**/.claude/worktrees/**",

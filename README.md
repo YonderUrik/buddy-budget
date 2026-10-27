@@ -87,8 +87,8 @@ Beta, built mostly by one developer with an AI coding assistant. On the hosted v
 
 ## Contributing and contacts
 
-- Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md); for a large change, open an issue first.
-- Vulnerabilities: follow [`SECURITY.md`](SECURITY.md), not a public issue.
+- Read [`CONTRIBUTING.md`](.github/CONTRIBUTING.md) and the [Code of Conduct](.github/CODE_OF_CONDUCT.md); for a large change, open an issue first.
+- Vulnerabilities: follow [`SECURITY.md`](.github/SECURITY.md), not a public issue.
 - Hosted service: support@buddybudget.io, privacy@buddybudget.io.
 - If it helps you, you can [buy me a coffee](https://buymeacoffee.com/yonder).
 

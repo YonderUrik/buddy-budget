@@ -56,6 +56,7 @@ export function buildAccountExtras(input: AccountExtrasInput): (Account & Accoun
           ? {
               connectionId: connection.connectionId,
               institutionName: connection.institutionName,
+              provider: connection.provider,
               state: health.state,
               needsRenewal: reconnect,
               daysLeft: health.daysLeft,

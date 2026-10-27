@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { after, type NextRequest } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { isTrustedWriteOrigin } from "@/lib/http/same-origin";
 import { dataEncryptionKey } from "@/lib/crypto/field-encryption";
 import { getUserCurrency } from "@/lib/investments/operations";
 import { rejectIfDemoActive } from "@/lib/start/demo";
@@ -28,7 +29,7 @@ async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
-  if (request.headers.get("origin") !== new URL(process.env.APP_URL || request.url).origin) return new Response(null, { status: 403 });
+  if (!isTrustedWriteOrigin(request)) return new Response(null, { status: 403 });
   const demoBlock = await rejectIfDemoActive(session.user.id, resolveProfile(session.user).language);
   if (demoBlock) return demoBlock;
   if (!dataEncryptionKey()) return Response.json({ error: "Il collegamento Trade Republic non è configurato su questa installazione." }, { status: 503 });
@@ -88,7 +89,7 @@ async function handleDelete(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
-  if (request.headers.get("origin") !== new URL(process.env.APP_URL || request.url).origin) return new Response(null, { status: 403 });
+  if (!isTrustedWriteOrigin(request)) return new Response(null, { status: 403 });
   const response = await withTradeRepublicLoginLock(session.user.id, async () => { await clearPendingLogin(session.user.id); return new Response(null, { status: 204 }); });
   return response ?? new Response(null, { status: 409 });
 }

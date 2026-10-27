@@ -1,5 +1,6 @@
 import { after, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import { isTrustedWriteOrigin } from "@/lib/http/same-origin";
 import { prepareTradeRepublicSync, runTradeRepublicSync } from "@/lib/trade-republic";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
@@ -9,7 +10,7 @@ export const POST = withRoute("trade_republic.accounts.sync", async (request: Ne
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
-  if (request.headers.get("origin") !== new URL(process.env.APP_URL || request.url).origin) return new Response(null, { status: 403 });
+  if (!isTrustedWriteOrigin(request)) return new Response(null, { status: 403 });
   const { accountId } = await params;
   const result = await prepareTradeRepublicSync(session.user.id, accountId);
   if (result.status !== "started") return Response.json({ status: result.status }, { status: result.status === "not-found" ? 404 : result.status === "expired" ? 410 : 409 });

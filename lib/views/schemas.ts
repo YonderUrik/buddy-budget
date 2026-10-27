@@ -159,6 +159,8 @@ export const liquidityAnalysisSchema = z.object({
 export const accountHealthSchema = z.object({
   connectionId: z.string(),
   institutionName: z.string(),
+  /** Sync route of the account: `POST /api/{provider}/accounts/{accountId}/sync`. */
+  provider: z.enum(["gocardless", "trade-republic"]),
   state: z.enum(["ok", "expiring", "expired", "error", "pending"]),
   needsRenewal: z.boolean(),
   daysLeft: z.number().int().nullable(),

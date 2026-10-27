@@ -25,6 +25,13 @@ describe("Trade Republic sign-in boundary", () => {
     expect((await POST(request({ action: "poll" }, "https://untrusted.example"))).status).toBe(403);
     expect(tr.createTradeRepublicClient).not.toHaveBeenCalled();
   });
+  it("lets the native apps in with a bearer token and no Origin, but not a cookie request without it", async () => {
+    vi.mocked(tr.readPendingLogin).mockResolvedValue(null);
+    const native = new NextRequest("http://localhost/api/trade-republic/login", { method: "POST", headers: { authorization: "Bearer token", "Content-Type": "application/json" }, body: JSON.stringify({ action: "poll" }) });
+    expect((await POST(native)).status).not.toBe(403);
+    const cookie = new NextRequest("http://localhost/api/trade-republic/login", { method: "POST", headers: { authorization: "Bearer token", cookie: "session=1", "Content-Type": "application/json" }, body: JSON.stringify({ action: "poll" }) });
+    expect((await POST(cookie)).status).toBe(403);
+  });
   it("validates phone/PIN and rate-limits before contacting TR", async () => {
     expect((await POST(request({ action: "login", phoneNumber: "123", pin: "12" }))).status).toBe(400);
     vi.mocked(tr.allowTradeRepublicAttempt).mockResolvedValueOnce(false);

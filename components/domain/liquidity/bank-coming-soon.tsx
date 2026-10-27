@@ -1,13 +1,12 @@
 "use client";
 
 /**
- * «Altre banche · In arrivo»: the last row of the bank list while new GoCardless connections are closed (or out of
- * slots), in the same style as the banks that work today. «Avvisami» records the request (and can be withdrawn), so
- * we know how many people want it.
+ * «Altre banche · In arrivo»: the last entry of the bank list while new GoCardless connections are closed (or out of
+ * slots), as a dashed card under the banks that work today. «Tienimi aggiornato» records the request (and can be
+ * withdrawn), so we know how many people want it.
  */
 
-import { CheckIcon, Loader2Icon } from "lucide-react";
-import { BankRow, GenericBankLogo } from "@/components/domain/accounts";
+import { BellIcon, CheckIcon, Loader2Icon, ZapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocalization } from "@/lib/localization/provider";
 import { useBankInterestMutation } from "@/lib/queries/gocardless";
@@ -22,28 +21,42 @@ export interface BankComingSoonProps {
   detail?: string;
 }
 
-export function BankComingSoon({ interested, canRequest = true, badge = "In arrivo", detail = "Intesa, UniCredit, Fineco, N26 e le altre banche europee." }: BankComingSoonProps) {
+export function BankComingSoon({ interested, canRequest = true, badge = "In arrivo", detail = "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli." }: BankComingSoonProps) {
   const { t: tr } = useLocalization();
   const interest = useBankInterestMutation();
   const save = (value: boolean) => interest.mutate(value, { onError: (error) => errorToast(error.message) });
   return (
-    <BankRow logo={<GenericBankLogo muted />} name={tr("Altre banche")} badge={tr(badge)} detail={tr(detail)} muted trailing={null}>
+    <div className="flex w-full flex-col gap-3 rounded-xl border border-dashed p-3.5">
+      <div className="flex items-center gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-text-3 opacity-70" aria-hidden="true">
+          <ZapIcon className="size-5" />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="flex flex-wrap items-center gap-2 text-sm font-semibold text-text-3">
+            {tr("Altre banche")}
+            <span className="rounded-full border border-dashed px-2 py-0.5 text-xs font-medium text-muted-foreground">{tr(badge)}</span>
+          </span>
+          <span className="text-sm text-text-3">{tr(detail)}</span>
+        </span>
+      </div>
       {!canRequest ? null : interested ? (
-        <span className="mt-1 flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <CheckIcon className="size-3.5 text-pos" aria-hidden="true" />
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-[3.25rem] text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <CheckIcon className="size-4 text-pos" aria-hidden="true" />
             {tr("Ti scriviamo quando è pronto.")}
           </span>
-          <button type="button" className="min-h-11 cursor-pointer underline underline-offset-2 hover:text-foreground disabled:opacity-50 sm:min-h-0" onClick={() => save(false)} disabled={interest.isPending}>
+          <button type="button" className="min-h-11 cursor-pointer text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground disabled:opacity-50 sm:min-h-0" onClick={() => save(false)} disabled={interest.isPending}>
             {tr("Non avvisarmi più")}
           </button>
-        </span>
+        </p>
       ) : (
-        <Button type="button" variant="outline" size="sm" className="mt-1.5 h-11 w-fit gap-1.5 bg-background px-3.5 sm:h-8" onClick={() => save(true)} disabled={interest.isPending}>
-          {interest.isPending ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : null}
-          {tr("Avvisami quando arrivano")}
-        </Button>
+        <div className="pl-[3.25rem]">
+          <Button type="button" variant="outline" size="sm" className="h-11 gap-1.5 px-3.5 sm:h-8" onClick={() => save(true)} disabled={interest.isPending}>
+            {interest.isPending ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : <BellIcon aria-hidden="true" />}
+            {tr("Tienimi aggiornato")}
+          </Button>
+        </div>
       )}
-    </BankRow>
+    </div>
   );
 }

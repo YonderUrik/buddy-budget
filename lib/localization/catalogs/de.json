@@ -5508,8 +5508,6 @@
   "PIN": "PIN",
   "Accedi a Trade Republic": "Bei Trade Republic anmelden",
   "Altre banche": "Andere Banken",
-  "Intesa, UniCredit, Fineco, N26 e le altre banche europee.": "Sparkasse, ING, DKB, N26 und die anderen europäischen Banken.",
-  "Avvisami quando arrivano": "Benachrichtige mich",
   "Conto e investimenti · approvi nell'app": "Konto und Investments · Bestätigung in der App",
   "La tua banca non c'è ancora?": "Deine Bank ist noch nicht dabei?",
   "Tieni il conto a mano": "Führe das Konto von Hand",
@@ -5518,5 +5516,6 @@
   "Per ora si collega Trade Republic: le altre banche sono in arrivo.": "Derzeit lässt sich Trade Republic verbinden: Die anderen Banken folgen bald.",
   "Tutte le banche": "Alle Banken",
   "Trade Republic, con le altre banche in arrivo.": "Trade Republic, die anderen Banken folgen bald.",
-  "Saldi e movimenti arrivano da soli dalla banca.": "Salden und Umsätze kommen automatisch von deiner Bank."
+  "Saldi e movimenti arrivano da soli dalla banca.": "Salden und Umsätze kommen automatisch von deiner Bank.",
+  "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli.": "Sparkasse, ING, DKB, N26 und die anderen europäischen Banken, mit Salden und Umsätzen, die automatisch kommen."
 }

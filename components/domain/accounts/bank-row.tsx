@@ -56,11 +56,10 @@ export function GenericBankLogo({ muted = false }: { muted?: boolean }) {
   );
 }
 
-/** Trade Republic's mark as a monogram (no external asset): dark round tile with «TR». */
+/** Trade Republic's mark (cropped from the licensed wordmark, see `public/import-providers/ATTRIBUTION.md`) on a white disc. */
 export function TradeRepublicLogo() {
   return (
-    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground text-[0.7rem] font-bold tracking-tight text-background" aria-hidden="true">
-      TR
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element -- small static logo, no need for the optimizer
+    <img src="/import-providers/trade-republic-mark.svg" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-full bg-white object-contain p-2 ring-1 ring-border" />
   );
 }

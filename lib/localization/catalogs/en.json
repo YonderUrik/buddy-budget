@@ -5508,8 +5508,6 @@
   "PIN": "PIN",
   "Accedi a Trade Republic": "Sign in to Trade Republic",
   "Altre banche": "Other banks",
-  "Intesa, UniCredit, Fineco, N26 e le altre banche europee.": "Intesa, UniCredit, Fineco, N26 and the other European banks.",
-  "Avvisami quando arrivano": "Let me know when they arrive",
   "Conto e investimenti · approvi nell'app": "Cash and investments · approve in the app",
   "La tua banca non c'è ancora?": "Your bank isn't here yet?",
   "Tieni il conto a mano": "Keep the account by hand",
@@ -5518,5 +5516,6 @@
   "Per ora si collega Trade Republic: le altre banche sono in arrivo.": "Trade Republic connects today: the other banks are coming soon.",
   "Tutte le banche": "All banks",
   "Trade Republic, con le altre banche in arrivo.": "Trade Republic, with the other banks coming soon.",
-  "Saldi e movimenti arrivano da soli dalla banca.": "Balances and transactions arrive from your bank on their own."
+  "Saldi e movimenti arrivano da soli dalla banca.": "Balances and transactions arrive from your bank on their own.",
+  "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli.": "Intesa, UniCredit, Fineco, N26 and the other European banks, with balances and transactions arriving on their own."
 }

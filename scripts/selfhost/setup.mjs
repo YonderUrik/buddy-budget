@@ -239,7 +239,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
     const prompts = terminalPrompts();
     try {
-      const template = await readFile(resolve(root, '.env.selfhost.example'), 'utf8');
+      const template = await readFile(resolve(root, 'deploy/selfhost/env.example'), 'utf8');
       if (!await runSetup({ path: resolve(root, '.env'), template, prompts, launch })) process.exitCode = 1;
     } catch { prompts.write('\nSetup interrupted or not saved. Check the .env file permissions and try again.'); process.exitCode = 1; }
     finally { prompts.close(); }

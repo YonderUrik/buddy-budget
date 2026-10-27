@@ -7,6 +7,6 @@ describe("versioni del repo", () => {
   it("app, landing e manifest di release-please sono allineati", () => {
     const version = read("package.json").version;
     expect(read("landing/package.json").version).toBe(version);
-    expect(read(".release-please-manifest.json")["."]).toBe(version);
+    expect(read(".github/release-please-manifest.json")["."]).toBe(version);
   });
 });

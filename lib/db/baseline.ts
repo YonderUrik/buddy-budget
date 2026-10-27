@@ -1,4 +1,4 @@
-/** Cartella delle migration Drizzle (stesso valore di `out` in drizzle.config.ts). */
+/** Drizzle migrations folder (same value as `out` in lib/db/drizzle.config.ts). */
 export const MIGRATIONS_FOLDER = "./lib/db/migrations";
 
 /**

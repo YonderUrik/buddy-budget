@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Thanks for the report. **Do not paste real personal or financial data** (IBANs, amounts, names, emails, tokens): if you need examples, make them up.
-        For a vulnerability do not use this form, see [SECURITY.md](https://github.com/YonderUrik/buddy-budget/blob/main/SECURITY.md).
+        For a vulnerability do not use this form, see [SECURITY.md](https://github.com/YonderUrik/buddy-budget/blob/main/.github/SECURITY.md).
   - type: textarea
     id: cosa
     attributes:

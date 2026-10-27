@@ -7,8 +7,6 @@ settings:
 overrides:
   proxy-addr@<2.0.8: '>=2.0.8'
 
-pnpmfileChecksum: sha256-WU0A6YRrvdBMrvzlteLdb/EneHLITppjtuEskd9rqgg=
-
 importers:
 
   .:

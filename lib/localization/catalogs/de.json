@@ -5558,5 +5558,7 @@
   "L'indice di confronto nello stesso periodo. È la seconda linea del grafico.": "Der Vergleichsindex im selben Zeitraum. Er ist die zweite Linie im Diagramm.",
   "Mesi e anni ai bordi possono essere parziali. ": "Monate und Jahre an den Rändern können unvollständig sein. ",
   "Passa su una data per aggiornare i numeri qui sotto, su un numero per capire cosa misura. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.": "Fahre über ein Datum, um die Zahlen unten zu aktualisieren, über eine Zahl, um zu sehen, was sie misst. Klicke und ziehe, um einen Zeitraum auszuwählen, oder wähle die Daten im Kalender neben den Zeiträumen.",
-  "Scegli un indice con «Scegli un confronto», sopra il grafico, per vedere quanto lo segui.": "Wähle mit „Vergleich wählen“ über dem Diagramm einen Index, um zu sehen, wie eng du ihm folgst."
+  "Scegli un indice con «Scegli un confronto», sopra il grafico, per vedere quanto lo segui.": "Wähle mit „Vergleich wählen“ über dem Diagramm einen Index, um zu sehen, wie eng du ihm folgst.",
+  "Non trovo i cambi storici di una valuta del file: nessun movimento è stato salvato. Riprova più tardi.": "Für eine Währung der Datei finde ich keine historischen Wechselkurse: Es wurden keine Bewegungen gespeichert. Versuche es später erneut.",
+  "Lo stesso titolo è un'obbligazione in un file e un'azione in un altro: controlla lo storico": "Dasselbe Wertpapier ist in einer Datei eine Anleihe und in einer anderen eine Aktie: Prüfe den Verlauf"
 }

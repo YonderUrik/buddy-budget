@@ -1,6 +1,6 @@
 import { inflationAreaForCountry } from "@/lib/localization/financial-country";
 import { resolveProfile, type ProductCountry } from "@/lib/localization/config";
-import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { personalFormats } from "@/lib/db/schema/personal-imports";
@@ -50,6 +50,23 @@ export async function getOrCreateDefaultPortfolio(userId: string): Promise<Inves
     .select()
     .from(investmentPortfolios)
     .where(eq(investmentPortfolios.userId, userId))
+    .orderBy(asc(investmentPortfolios.createdAt))
+    .limit(1);
+  if (existing) return existing;
+  const [created] = await db.insert(investmentPortfolios).values({ userId, name: DEFAULT_PORTFOLIO_NAME }).returning();
+  return created;
+}
+
+/**
+ * The portfolio for operations no broker statement owns (typed by hand, Fineco and Yahoo files, AI imports): the
+ * oldest one without a broker, created when missing. Never a broker's portfolio, whose operations a later statement
+ * of that broker replaces: an operation put there would be deleted by the next import.
+ */
+export async function getOrCreateManualPortfolio(userId: string): Promise<InvestmentPortfolio> {
+  const [existing] = await db
+    .select()
+    .from(investmentPortfolios)
+    .where(and(eq(investmentPortfolios.userId, userId), isNull(investmentPortfolios.broker)))
     .orderBy(asc(investmentPortfolios.createdAt))
     .limit(1);
   if (existing) return existing;

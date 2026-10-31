@@ -1,0 +1,1 @@
+ALTER TABLE "instruments" ADD COLUMN "keep_broker_prices" boolean DEFAULT false NOT NULL;

@@ -5558,5 +5558,7 @@
   "L'indice di confronto nello stesso periodo. È la seconda linea del grafico.": "The comparison index over the same period. It's the second line on the chart.",
   "Mesi e anni ai bordi possono essere parziali. ": "Months and years at the edges may be partial. ",
   "Passa su una data per aggiornare i numeri qui sotto, su un numero per capire cosa misura. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.": "Hover over a date to update the figures below, over a figure to see what it measures. Click and drag to select a range, or pick the dates from the calendar next to the periods.",
-  "Scegli un indice con «Scegli un confronto», sopra il grafico, per vedere quanto lo segui.": "Choose an index with “Choose benchmark”, above the chart, to see how closely you follow it."
+  "Scegli un indice con «Scegli un confronto», sopra il grafico, per vedere quanto lo segui.": "Choose an index with “Choose benchmark”, above the chart, to see how closely you follow it.",
+  "Non trovo i cambi storici di una valuta del file: nessun movimento è stato salvato. Riprova più tardi.": "I can't find historical exchange rates for a currency in the file: no movements were saved. Try again later.",
+  "Lo stesso titolo è un'obbligazione in un file e un'azione in un altro: controlla lo storico": "The same security is a bond in one file and a share in another: check the history"
 }

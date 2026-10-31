@@ -45,6 +45,11 @@ export const instruments = pgTable(
     /** Ultimo scaricamento dello storico dei dividendi per quota (null = mai). */
     dividendsFetchedAt: timestamp("dividends_fetched_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").references(() => authUser.id, { onDelete: "set null" }),
+    /**
+     * The user's copy made for a corporate action (ISIN change, spinoff): market histories are adjusted for it, so it
+     * keeps the broker's prices and is never linked to a quotation automatically (the user can still do it by hand).
+     */
+    keepBrokerPrices: boolean("keep_broker_prices").notNull().default(false),
     ...timestamps,
   },
   (table) => [

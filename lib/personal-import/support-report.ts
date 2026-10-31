@@ -15,6 +15,7 @@ const REASONS: Record<string, string> = {
   exchange_rate_unavailable: "Non è stato possibile ottenere tutti i cambi storici necessari.",
   analysis_failed: "Generazione AI o esecuzione del parser non riuscita dopo i tentativi previsti.",
   financial_validation_failed: "I dati non superano i controlli finanziari: storico, duplicati, quantità o valuta del profilo.",
+  save_failed: "Il salvataggio dell'anteprima pronta non è riuscito dopo i tentativi previsti (errore del database o del server, vedi i log `personal_import.save_failed`).",
   broker_parse_failed: "Il lettore del broker non riesce a interpretare la struttura del documento.",
   broker_validation_failed: "Il lettore del broker ha rilevato un errore che richiede riconciliazione. L'analisi AI non autorizza a ignorare questo controllo.",
   native_refused: "Il lettore del broker ha letto il file ma l'ha rifiutato; il file è passato all'AI con il motivo.",

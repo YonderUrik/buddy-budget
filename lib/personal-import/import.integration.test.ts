@@ -377,6 +377,14 @@ describe("personal CSV durable flow", () => {
       const replay = await prepare(csvAgain, (await readJob(next)).formatId);
       expect(await confirmImport(userId, replay)).toMatchObject({ inserted: 3, rows: 3, alreadyPresent: 0 });
     });
+    it("a new bank whose file shares only the header with another bank's file gets its own account", async () => {
+      const first = await prepare(); await confirmImport(userId, first);
+      const other = 'Date,Type,Value,Description\n2024-02-01,CASH,50,Salary\n2024-02-02,NOTE,0,Metadata';
+      const next = await prepare(other);
+      expect(await confirmImport(userId, next)).toMatchObject({ inserted: 1, alreadyPresent: 0 });
+      const rows = await cash();
+      expect(new Set(rows.map(r => r.accountId)).size).toBe(2);
+    });
   });
   it("deleting a duplicate-only upload leaves the original movements and receipts intact", async () => {
     const first = await prepare(); await confirmImport(userId, first); const formatId = (await readJob(first)).formatId;

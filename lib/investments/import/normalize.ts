@@ -47,15 +47,36 @@ export type ImportRow =
 
 const POSITION_TYPES: ReadonlySet<InvestmentTransactionType> = new Set(["acquisto", "vendita", "rimborso"]);
 
+/** A currency cell in pence sterling: «GBp» or «GBX» (not «GBP», the pound). */
+export function isPence(value: string): boolean {
+  return value === "GBp" || value.toUpperCase() === "GBX";
+}
+
 /** Chiave dello strumento: ISIN valido, poi simbolo, poi nome. */
 function identityOf(cell: (f: ImportField) => string, symbolIsYahoo: boolean): ImportIdentity | null {
   const rawIsin = cell("isin").toUpperCase();
   const isin = isValidIsin(rawIsin) ? rawIsin : null;
   const symbol = cell("symbol").toUpperCase() || null;
   const name = cell("name") || null;
-  const currency = /^[A-Za-z]{3}$/.test(cell("currency")) ? cell("currency").toUpperCase() : null;
+  const raw = cell("currency");
+  // Pence (Yahoo writes «GBp», some brokers «GBX») is read as pounds, with the amounts divided by 100 in `normalizeRows`.
+  const currency = isPence(raw) ? "GBP" : /^[A-Za-z]{3}$/.test(raw) ? raw.toUpperCase() : null;
   const key = isin ? `isin:${isin}` : symbol ? `symbol:${symbol}` : name ? `name:${name.toLowerCase()}` : null;
   return key ? { key, symbol, isin, name, currency, symbolIsYahoo } : null;
+}
+
+/** How far a bond's total may sit from nominal × price / 100: accrued interest and costs move it a little. */
+const BOND_TOTAL_TOLERANCE = 0.05;
+
+/**
+ * A row priced per hundred of nominal: the total is quantity × price / 100, not quantity × price (a BTP bought at
+ * 98.5 for 10,000 nominal costs about 9,850). Read from the numbers, so no file needs to say «obbligazione»: without
+ * it a bond became a share worth a hundred times its value.
+ */
+export function quotedPerHundred(quantity: number, price: number, total: number | null): boolean {
+  if (total === null || !(quantity > 0) || !(price > 0) || !(total > 0)) return false;
+  const perHundred = (quantity * price) / 100;
+  return Math.abs(total - perHundred) <= perHundred * BOND_TOTAL_TOLERANCE && Math.abs(total - quantity * price) > quantity * price * BOND_TOTAL_TOLERANCE;
 }
 
 /**
@@ -70,7 +91,13 @@ export function normalizeRows(table: CsvTable, mapping: ImportMapping, todayKey:
       const column = mapping.columns[field];
       return column === undefined ? "" : (cells[column] ?? "").trim();
     };
-    const number = (field: ImportField) => (cell(field) === "" ? null : parseNumber(cell(field), mapping.decimal));
+    // Prices and totals quoted in pence become pounds (fees are in the user's currency and stay as they are).
+    const scale = isPence(cell("currency")) ? 0.01 : 1;
+    const number = (field: ImportField) => {
+      if (cell(field) === "") return null;
+      const value = parseNumber(cell(field), mapping.decimal);
+      return value !== null && (field === "price" || field === "total") ? value * scale : value;
+    };
 
     const rawType = cell("type");
     const target = rawType === "" ? mapping.defaultType : (mapping.typeValues[rawType.toLowerCase()] ?? "ignora");
@@ -109,7 +136,8 @@ export function normalizeRows(table: CsvTable, mapping: ImportMapping, todayKey:
       if (price === null) return { line, status: "error", message: "Prezzo mancante" };
       if (price === 0 && type !== "acquisto") return { line, status: "error", message: "Prezzo zero su una vendita" };
       if (price === 0) warnings.push("Prezzo zero: quote ricevute gratis (es. staking)");
-      return { line, status: "ok", identity, operation: { type, date, quantity, price, grossAmount: null, fees, taxes, note }, warnings };
+      const bond = quotedPerHundred(quantity, price, total);
+      return { line, status: "ok", identity: bond ? { ...identity, type: "obbligazione" } : identity, operation: { type, date, quantity, price, grossAmount: null, fees, taxes, note }, warnings };
     }
 
     const price = Math.abs(number("price") ?? 0);
@@ -130,6 +158,7 @@ export function collectIdentities(rows: ImportRow[]): (ImportIdentity & { count:
       current.name ??= row.identity.name;
       current.symbol ??= row.identity.symbol;
       current.currency ??= row.identity.currency;
+      current.type ??= row.identity.type;
     } else byKey.set(row.identity.key, { ...row.identity, count: 1 });
   }
   return [...byKey.values()];

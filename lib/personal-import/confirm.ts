@@ -13,7 +13,7 @@ import { findOversoldTransaction } from "@/lib/calc/investments";
 import { extractMerchantName } from "@/lib/categorization/merchant-name";
 import { digest, unseal } from "./crypto";
 import { existingCashKey, existingTradeKey, presentByContent } from "./content-match";
-import { ImportError, readRawFile, validateOutcomes, type Outcome } from "./contract";
+import { ImportError, outcomePriceMultiplier, readRawFile, validateOutcomes, type Outcome } from "./contract";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { buildRuleResolver } from "@/lib/categorization/resolve";
 import { loadBankCategoryMapper } from "@/lib/categorization/load-bank-category-mapper";
@@ -97,7 +97,9 @@ export async function confirmImport(userId: string, id: string) {
     // user's sources (the same bank chosen again as a new one) is a duplicate too. It leaves no receipt here, so
     // deleting the original import makes it new again. A line already imported stays present even when a newer
     // parser reads it differently: the stored movement wins, nothing is blocked.
-    const elsewhere = await importedElsewhere(tx, userId, format.id, preview.records.filter(r => !prior.has(r.key)).map(r => r.key));
+    // Only rows that carry money count: a blank line or a repeated header has the same key in any bank's file, and
+    // would make a new source adopt another bank's account below.
+    const elsewhere = await importedElsewhere(tx, userId, format.id, preview.records.filter(r => !prior.has(r.key) && r.outcome.kind !== "ignore").map(r => r.key));
     const newLines = preview.records.filter(r => !prior.has(r.key) && !elsewhere.has(r.key));
     let portfolioId = format.portfolioId, accountId = format.accountId;
     // A new source whose file overlaps one already imported adds its new rows to that source's account and portfolio,
@@ -137,9 +139,11 @@ export async function confirmImport(userId: string, id: string) {
       const cached = instrumentCache.get(identityKey);
       const [existing] = cached ? [cached] : await tx.select().from(instruments).where(and(eq(instruments.createdByUserId, userId), eq(instruments.currency, o.currency), o.isin ? eq(instruments.isin, o.isin) : and(sql`${instruments.isin} is null`, eq(instruments.name, o.name))));
       let instrument = existing;
-      if (!instrument) [instrument] = await tx.insert(instruments).values({ createdByUserId: userId, name: o.name, isin: o.isin, type: o.instrumentType, currency: o.currency, priceMode: "manuale" }).returning();
+      if (!instrument) [instrument] = await tx.insert(instruments).values({ createdByUserId: userId, name: o.name, isin: o.isin, type: o.instrumentType, currency: o.currency, priceMode: "manuale", priceUnit: o.instrumentType === "obbligazione" ? "percentuale_nominale" : "unita" }).returning();
       instrumentCache.set(identityKey, instrument);
-      if (instrument.type !== o.instrumentType) throw new ImportError("Il tipo di uno strumento non coincide con lo storico");
+      // An ETF read as «etc» or «fondo» in another file is the same security: the stored type wins. Only the price unit
+      // must agree, since a bond's prices are per hundred of nominal.
+      if ((instrument.priceUnit === "percentuale_nominale") !== (o.instrumentType === "obbligazione")) throw new ImportError("Lo stesso titolo è un'obbligazione in un file e un'azione in un altro: controlla lo storico");
       tradeValues.push({ id: randomUUID(), userId, portfolioId: portfolioId!, instrumentId: instrument.id, ...toRowValues({ ...o, fees: o.fees * r.rate!, taxes: o.taxes * r.rate!, note: o.description }, r.rate!) });
     }
     if (portfolioId && tradeValues.length) {
@@ -165,7 +169,8 @@ export async function confirmImport(userId: string, id: string) {
     for (const r of financial) {
       const o = r.outcome;
       if (o.kind !== "cash" && o.kind !== "investment") continue;
-      const amount = o.kind === "cash" ? o.amount : (o.type === "acquisto" ? -o.quantity * o.price : o.type === "vendita" ? o.quantity * o.price : o.grossAmount!) - o.fees - o.taxes;
+      const value = o.kind === "investment" ? o.quantity * o.price * outcomePriceMultiplier(o) : 0;
+      const amount = o.kind === "cash" ? o.amount : (o.type === "acquisto" ? -value : o.type === "vendita" ? value : o.grossAmount!) - o.fees - o.taxes;
       const cents = Math.round(amount * r.rate! * 100);
       if (!Number.isSafeInteger(cents) || Math.abs(cents) >= 1e12) throw new ImportError("Importo fuori limite");
       deltaCents += cents;

@@ -117,6 +117,8 @@ value(date) = quantity * close * m  converted instrument currency -> user curren
 
 [`fxRateBetween`](../../lib/calc/fx.ts) goes through EUR: `rate(from→to) = perEur(to) / perEur(from)`, with the last rate on or before the date. EUR is always 1. Example: 10 shares at 210 USD, `perEur(USD) = 1.10`, user currency EUR: `10 × 210 / 1.10 = 1,909.09 EUR`.
 
+The daily FX update (`findNeededCurrencies`) covers the currencies of auto instruments, of every instrument with operations (manual ones too) and of investing users; sub-units (`GBX`, `ZAC`, `ILA`) are fetched as their main currency and divided (`fxSourceCurrency`).
+
 [`computePortfolioSummary`](../../lib/calc/investments.ts) returns:
 
 ```text

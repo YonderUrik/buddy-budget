@@ -3,6 +3,7 @@ import { detectImportProvider, getImportProvider, type ImportProviderId } from "
 import { finecoMapping, parseFinecoTable } from "@/lib/investments/import/fineco";
 import { normalizeRows } from "@/lib/investments/import/normalize";
 import { parseCsv } from "@/lib/investments/import/csv";
+import { latestTodayKey } from "@/lib/investments/import/values";
 import { ImportError } from "./contract";
 
 /** Verify the reading failure on the server; reconciliation errors must never become an AI bypass. */
@@ -13,10 +14,10 @@ export function brokerFallbackSource(csv: string): { provider: ImportProviderId;
   try {
     if (["interactive-brokers", "degiro", "trade-republic"].includes(provider)) {
       // A successfully parsed statement, even with financial issues, stays in the reconciled import flow.
-      parseBrokerStatement(csv, new Date().toISOString().slice(0, 10));
+      parseBrokerStatement(csv, latestTodayKey());
     } else if (provider === "fineco") {
       const table = parseFinecoTable(csv);
-      failed = normalizeRows(table, finecoMapping(table), new Date().toISOString().slice(0, 10)).some(row => row.status === "error");
+      failed = normalizeRows(table, finecoMapping(table), latestTodayKey()).some(row => row.status === "error");
     } else {
       const table = parseCsv(csv);
       failed = table.headers.length < 2 || !table.rows.length || provider === "generic";

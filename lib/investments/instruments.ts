@@ -224,6 +224,11 @@ async function findOrCreateInstrument(
       if (input.isin) {
         // `ownCopy`: only the user's private instrument counts, so a shared one with an adjusted history is skipped.
         const existing = input.ownCopy ? await findOwnByIsin(input.isin, userId, input.currency) : await findByIsin(input.isin, userId, input.currency);
+        if (existing && input.ownCopy && (existing.priceMode !== "manuale" || !existing.keepBrokerPrices)) {
+          // The user's own copy had market prices (linked earlier): from the corporate action on it keeps the broker's.
+          const [kept] = await db.update(instruments).set({ priceMode: "manuale", keepBrokerPrices: true, updatedAt: new Date() }).where(eq(instruments.id, existing.id)).returning();
+          return { ok: true, instrument: kept ?? existing, created: false };
+        }
         if (existing) return { ok: true, instrument: existing, created: false };
       }
       const created = await insertInstrument(
@@ -233,6 +238,7 @@ async function findOrCreateInstrument(
           type: input.type,
           currency: input.currency,
           priceMode: "manuale",
+          keepBrokerPrices: input.ownCopy === true,
           priceUnit: input.priceUnit ?? (input.type === "obbligazione" ? "percentuale_nominale" : "unita"),
           ...(taxRate ? { taxRate } : {}),
           taxHarmonized: taxHarmonized ?? null,

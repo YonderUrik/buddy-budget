@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { formatMetadataSchema } from "@/lib/imports";
-import { parseDate } from "@/lib/investments/import/values";
+import { latestTodayKey, parseDate } from "@/lib/investments/import/values";
 import { isValidIsin } from "@/lib/validation/investments";
 import { cleanBankCategory } from "@/lib/categorization/bank-category";
 
@@ -12,7 +12,7 @@ export const MAX_BYTES = 25 * 1024 * 1024;
 export const MAX_ROWS = 50000;
 const money = z.number().finite().min(-999999999).max(999999999);
 const positive = z.number().finite().min(0).max(999999999);
-const base = { row: z.number().int().min(0), date: z.string().refine(v => parseDate(v, "ymd") === v && v <= new Date().toISOString().slice(0, 10), "Data non valida"), currency: z.string().regex(/^[A-Z]{3}$/), description: z.string().min(1).max(500) };
+const base = { row: z.number().int().min(0), date: z.string().refine(v => parseDate(v, "ymd") === v && v <= latestTodayKey(), "Data non valida"), currency: z.string().regex(/^[A-Z]{3}$/), description: z.string().min(1).max(500) };
 export const outcomeSchema = z.discriminatedUnion("kind", [
   // `bankCategory`: the category the bank itself wrote on the row, verbatim (optional; mapped to the user's
   // categories on import). A malformed one is dropped, never a reason to reject the row.
@@ -36,14 +36,18 @@ export function readRawFile(csv: string): PersonalTable {
   if (lines.length > MAX_ROWS) throw new ImportError("Il file supera 50000 righe");
   return { delimiter: "", layout: "document", headers: ["Riga originale"], rows: lines.map(line => [line]), sourceLines: lines.map((_, i) => i + 1), rawCsv: csv };
 }
+/** Bonds are quoted per hundred of nominal: quantity is the nominal, price a percentage (98.5), cash quantity × price / 100. */
+export function outcomePriceMultiplier(o: { instrumentType: string }): number {
+  return o.instrumentType === "obbligazione" ? 0.01 : 1;
+}
 export function validateOutcomes(raw: unknown, table: PersonalTable): Outcome[] {
   const outcomes = z.array(outcomeSchema).max(MAX_ROWS).parse(raw);
   if (outcomes.length !== table.rows.length || new Set(outcomes.map(o => o.row)).size !== table.rows.length || outcomes.some(o => o.row >= table.rows.length)) throw new ImportError("Il parser non rende conto di tutte le righe");
   for (const o of outcomes) {
     if (o.kind === "investment") {
-      if ((o.type === "acquisto" || o.type === "vendita") ? o.quantity <= 0 || o.price <= 0 : !o.grossAmount || o.quantity !== 0 || o.price !== 0) throw new ImportError("Quantità, prezzo o provento non validi");
-      if (o.quantity * o.price > 999999999) throw new ImportError("Valore investimento fuori limite");
-      if (o.instrumentType === "obbligazione") throw new ImportError("Le obbligazioni richiedono la verifica di nominale e rateo: usa l'importazione manuale");
+      // A buy at zero price is shares received for free (spinoff, bonus, staking reward), as the built-in readers accept.
+      if (o.type === "acquisto" ? o.quantity <= 0 || o.price < 0 : o.type === "vendita" ? o.quantity <= 0 || o.price <= 0 : !o.grossAmount || o.quantity !== 0 || o.price !== 0) throw new ImportError("Quantità, prezzo o provento non validi");
+      if (o.quantity * o.price * outcomePriceMultiplier(o) > 999999999) throw new ImportError("Valore investimento fuori limite");
     }
   }
   return outcomes.sort((a, b) => a.row - b.row);

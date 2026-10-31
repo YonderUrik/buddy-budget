@@ -18,6 +18,7 @@ function data(): InvestmentData {
     taxHarmonized: true,
     createdByUserId: null,
     dividendsFetchedAt: null,
+    keepBrokerPrices: false,
     createdAt: NOW,
     updatedAt: NOW,
   };

@@ -140,6 +140,13 @@ export async function resolveIdentity(userId: string, identity: Identity, deps: 
     const type = identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione");
     return { kind: "proposal", input: { source: "manuale", isin: identity.isin, name: identity.name, currency: identity.currency, type, ownCopy: true }, label: identity.name, detail: `${identity.isin} · ${identity.currency} · prezzi dal rendiconto (operazione societaria)`, type, confidence: "exact" };
   }
+  // A bond read from the file's numbers (total = nominal × price / 100) becomes the user's own bond with the file's
+  // prices: a shared listing takes its type from the market source, which may call it a share and drop the per-hundred unit.
+  if (identity.type === "obbligazione" && !identity.symbolIsYahoo && identity.currency && identity.name) {
+    const [own] = identity.isin ? await db.select().from(instruments).where(and(eq(instruments.isin, identity.isin), eq(instruments.createdByUserId, userId), eq(instruments.currency, identity.currency))).limit(1) : [];
+    if (own) return { kind: "known", instrument: own };
+    return { kind: "proposal", input: { source: "manuale", isin: identity.isin ?? undefined, name: identity.name, currency: identity.currency, type: "obbligazione", ownCopy: true }, label: identity.name, detail: `${identity.isin ?? identity.name} · ${identity.currency} · obbligazione, prezzi dal file`, type: "obbligazione", confidence: "exact" };
+  }
   if (identity.isin && identity.currency) {
     // The user's own copy of this ISIN (made for a corporate action in an earlier statement) wins over the shared one,
     // so later statements keep adding to the same position.

@@ -24,8 +24,10 @@ describe("verifyIsinListings", () => {
   it("tries the exchange the broker reports first", async () => {
     const listings = [{ yahooSymbol: "0R24.L", exchCode: "LN", name: "INTEL", securityType: "Common Stock" }, { yahooSymbol: "INTC", exchCode: "US", name: "INTEL", securityType: "Common Stock" }];
     const d: IsinListingsDeps = { listings: async () => listings, quoteMeta: async () => ({ currency: "USD", exchange: null }) };
-    const plain = await verifyIsinListings("US4581401001", "USD", d);
-    expect(plain.status === "ok" && plain.listings[0].listing.yahooSymbol).toBe("0R24.L");
+    const anyCurrency = await verifyIsinListings("US4581401001", null, d);
+    expect(anyCurrency.status === "ok" && anyCurrency.listings[0].listing.yahooSymbol).toBe("0R24.L");
+    const home = await verifyIsinListings("US4581401001", "USD", d);
+    expect(home.status === "ok" && home.listings[0].listing.yahooSymbol).toBe("INTC");
     const preferred = await verifyIsinListings("US4581401001", "USD", d, "US");
     expect(preferred.status === "ok" && preferred.listings[0].listing.yahooSymbol).toBe("INTC");
   });

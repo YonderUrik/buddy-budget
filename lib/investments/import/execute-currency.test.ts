@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({ values: vi.fn(), transaction: vi.fn(), instrum
 vi.mock("@/lib/db/client", () => ({ db: { transaction: mocks.transaction } }));
 vi.mock("../instruments", () => ({ findVisibleInstrument: mocks.instrument }));
 vi.mock("../data", () => ({
-  getOrCreateDefaultPortfolio: vi.fn(async () => ({ id: "portfolio" })),
+  getOrCreateManualPortfolio: vi.fn(async () => ({ id: "portfolio" })),
   loadRatesBetween: mocks.rates,
   loadUserTransactions: vi.fn(async () => []),
 }));

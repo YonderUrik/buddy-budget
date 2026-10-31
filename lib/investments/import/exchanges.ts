@@ -11,6 +11,8 @@ const IB_TO_OPENFIGI: Readonly<Record<string, string>> = {
   LSE: "LN", LSEETF: "LN", LSEIOB1: "LN",
   EBS: "SW", SWX: "SW",
   SBF: "FP",
+  SEHK: "HK", WSE: "PW", BM: "SM", "ENEXT.BE": "BB", BVL: "PL", ISED: "ID", VSE: "AV",
+  HEX: "FH", CPH: "DC", SFB: "SS", OSE: "NO", TSE: "CT", ASX: "AU", TSEJ: "JT",
 };
 
 /** OpenFIGI exchange code of an IB listing exchange, or null when the app does not link that exchange. */

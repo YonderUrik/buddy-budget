@@ -5,7 +5,7 @@ import { buildFxTable, fxRateBetween } from "@/lib/calc/fx";
 import type { RunImportInput } from "@/lib/validation/investments-import";
 import type { CreateInstrumentOutcome } from "../instruments";
 import { findVisibleInstrument } from "../instruments";
-import { getOrCreateDefaultPortfolio, loadRatesBetween, loadUserTransactions } from "../data";
+import { getOrCreateManualPortfolio, loadRatesBetween, loadUserTransactions } from "../data";
 import { shiftDateKey, toRowValues } from "../operations";
 import { planImport, type PlannedRow } from "./plan";
 import type { ImportResult } from "./types";
@@ -116,7 +116,7 @@ export async function runImport(userId: string, input: RunImportInput, deps: Imp
   const counts = countRows(rows);
   if (input.dryRun || counts.error > 0) return { rows, counts, inserted: 0, instrumentsCreated };
 
-  const portfolio = await getOrCreateDefaultPortfolio(userId);
+  const portfolio = await getOrCreateManualPortfolio(userId);
   const values = fresh.map((op) => ({
     userId,
     portfolioId: portfolio.id,

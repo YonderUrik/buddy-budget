@@ -5539,5 +5539,12 @@
   "Leggo il file con il formato già salvato": "Reading the file with the saved format",
   "Analizzo il formato con l'AI (tentativo 1 di 3)": "Analysing the format with AI (attempt 1 of 3)",
   "Riprovo con più contesto (tentativo 2 di 3)": "Trying again with more context (attempt 2 of 3)",
-  "Ultimo tentativo, il più approfondito (3 di 3): può richiedere qualche minuto": "Last and most thorough attempt (3 of 3): it can take a few minutes"
+  "Ultimo tentativo, il più approfondito (3 di 3): può richiedere qualche minuto": "Last and most thorough attempt (3 of 3): it can take a few minutes",
+  "L'estratto conto della banca o il rendiconto del broker": "Your bank statement or broker report",
+  "Estratti conto della banca e rendiconti del broker, in CSV o Excel. Interactive Brokers, DEGIRO, Trade Republic, Fineco e Yahoo li leggiamo con i nostri lettori, senza AI; per gli altri formati l'AI riconosce le colonne una volta e il formato resta tuo per i file successivi.": "Bank statements and broker reports, as CSV or Excel. Interactive Brokers, DEGIRO, Trade Republic, Fineco and Yahoo are read by our own readers, without AI; for other formats the AI recognises the columns once and the format stays yours for later files.",
+  "{0} righe importate con il lettore {1}": "{0} rows imported with the {1} reader",
+  "{0} righe importate con il lettore {1}, senza AI: le trovi in Investimenti e, per la liquidità del broker, in Liquidità.": "{0} rows imported with the {1} reader, without AI: you'll find them in Investments and, for the broker's cash, in Cash.",
+  "Il rendiconto {0} non si riconcilia: controlla che sia completo e non modificato.": "The {0} statement doesn't reconcile: check that it's complete and unchanged.",
+  "Non riesco a riconoscere lo strumento {0}": "I can't recognise the instrument {0}",
+  "{0} righe del file {1} non si possono importare: nessuna operazione salvata.": "{0} rows of the {1} file can't be imported: no operation was saved."
 }

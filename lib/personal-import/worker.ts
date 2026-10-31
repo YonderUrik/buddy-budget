@@ -1,6 +1,10 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, lte, inArray, sql } from "drizzle-orm";
+import { and, eq, lte, inArray, sql, type SQL } from "drizzle-orm";
+import { importNatively, type NativeOutcome } from "./native";
+import { investmentImportDeps } from "@/lib/investments/import/deps";
+import { resolveIdentity } from "@/lib/investments/import/resolve";
+import { searchByIsinOnProviders, searchCryptoOnProviders, searchInstrumentsOnProviders } from "@/lib/market-data/runtime";
 import { isEmailConfigured, sendEmail } from "@/lib/email/send";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
@@ -55,7 +59,23 @@ export async function processOne() {
   let report: AnalysisFailure | null = job.failureReport ?? null;
   try {
     if (job.attempts > MAX_TRANSIENT_ATTEMPTS || !job.encryptedCsv) throw new Error("Tentativi esauriti");
-    const table = readRawFile(unseal(job.encryptedCsv, job.userId));
+    const raw = unseal(job.encryptedCsv, job.userId);
+    const table = readRawFile(raw);
+    // A known broker export goes to its built-in reader first: no AI, reconciled. Jobs the old broker wizard sent
+    // here (`brokerProvider` already set) failed that reader already.
+    if (!job.brokerProvider) {
+      phase = "native";
+      const native = await importNatively(job.userId, raw, {
+        importDeps: await investmentImportDeps(job.userId, task => { void task().catch(() => {}); }),
+        resolve: identity => resolveIdentity(job.userId, identity, { searchMarket: searchInstrumentsOnProviders, searchCrypto: searchCryptoOnProviders, searchByIsin: searchByIsinOnProviders }),
+      });
+      if (native.kind === "imported" || native.kind === "failed") { await finishNative(job.id, owned, native); return true; }
+      if (native.kind === "fallback") {
+        await db.update(jobs).set({ brokerProvider: native.provider }).where(owned);
+        job.brokerProvider = native.provider;
+        logger.info("personal_import.native.fallback", { jobId: job.id, provider: native.provider });
+      }
+    }
     const [saved] = job.parserId ? await db.select().from(parsers).where(and(eq(parsers.id, job.parserId), eq(parsers.formatId, job.formatId))) : [];
     phase = "generate";
     const [source] = await db.select({ name: formats.name }).from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, job.userId)));
@@ -123,6 +143,20 @@ export async function processOne() {
     clearInterval(keepalive);
   }
   return true;
+}
+
+/** Ends a job a built-in reader handled: imported straight away (nothing to confirm), or failed with its message. */
+async function finishNative(jobId: string, owned: SQL | undefined, native: Extract<NativeOutcome, { kind: "imported" | "failed" }>) {
+  if (native.kind === "failed") {
+    await db.update(jobs).set({ status: "failed", error: native.message, encryptedCsv: null, lease: null, leaseUntil: null, failureReport: { phase: "save", reason: "broker_validation_failed", detail: native.name, fallback: false } }).where(owned);
+    logger.warn("personal_import.native.failed", { jobId, provider: native.provider });
+    return;
+  }
+  const { result, provider, name } = native;
+  const [job] = await db.update(jobs).set({ status: "imported", error: null, encryptedCsv: null, lease: null, leaseUntil: null, brokerProvider: provider, notifiedAt: null, notifyAfter: new Date(), importLedger: { cashIds: [], tradeIds: [], receiptKeys: [], rows: result.counts.new + result.counts.duplicate, alreadyPresent: result.counts.duplicate, native: { provider, name, inserted: result.inserted } } }).where(owned).returning({ userId: jobs.userId });
+  logger.info("personal_import.native.imported", { jobId, provider, count: result.inserted });
+  recordPersonalImportAttempt(0, "native");
+  if (job && result.inserted > 0) await categorizeNewMovementsSafely(job.userId);
 }
 
 export async function maintainJobs() {

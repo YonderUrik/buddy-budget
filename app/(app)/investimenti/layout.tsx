@@ -4,7 +4,8 @@ import { isCountryPathAvailable } from "@/lib/localization/config";
 
 /**
  * Investimenti layout: title, «Importazioni fatte», tabs (Portafoglio, Proventi, Tasse) and the shared dialogs (the empty
- * state and the tabs open them; a new operation or broker statement otherwise comes from the app-wide «Aggiungi»). It
+ * state and the tabs open them; a new operation otherwise comes from the app-wide «Aggiungi»). Broker files go to the
+ * one import page, `/importazioni`, like bank files. It
  * reads the same query as the Portafoglio tab at the default period: no extra request.
  * A single security's page stands on its own: no heading or tabs, only the shared dialogs.
  */
@@ -12,11 +13,10 @@ import { isCountryPathAvailable } from "@/lib/localization/config";
 import { SectionHeading } from "@/components/domain/shared";
 import * as React from "react";
 import { BrokerSelectionProvider } from "@/lib/investments/broker-selection";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { DatabaseIcon } from "lucide-react";
 import {
   ImportManagementDialog,
-  InvestmentImportDialog,
   BrokerSelector,
   InvestmentsActionsProvider,
   InvestmentsTabs,
@@ -39,12 +39,11 @@ export default function InvestimentiLayout({ children }: { children: React.React
   const isTitlePage = pathname.startsWith(TITLE_PAGES_BASE);
   const overview = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
   const [registerInitial, setRegisterInitial] = React.useState<RegisterOperationInitial | null>(null);
-  const [importOpen, setImportOpen] = React.useState(false);
   const [managementOpen, setManagementOpen] = React.useState(false);
-  const actions = React.useMemo(() => ({ openRegister: setRegisterInitial, openImport: () => setImportOpen(true) }), []);
+  const router = useRouter();
+  const actions = React.useMemo(() => ({ openRegister: setRegisterInitial, openImport: () => router.push("/importazioni") }), [router]);
 
   const data = overview.data;
-  const currency = data?.currency ?? "EUR";
 
   return (
     <BrokerSelectionProvider><InvestmentsActionsProvider value={actions}>
@@ -66,7 +65,6 @@ export default function InvestimentiLayout({ children }: { children: React.React
 
       <RegisterOperationDialog initial={registerInitial} onClose={() => setRegisterInitial(null)} />
       <ImportManagementDialog open={managementOpen} onOpenChange={setManagementOpen} />
-      <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} onManageImports={() => setManagementOpen(true)} />
     </InvestmentsActionsProvider></BrokerSelectionProvider>
   );
 }

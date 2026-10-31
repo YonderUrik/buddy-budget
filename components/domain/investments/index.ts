@@ -44,8 +44,6 @@ export type { RegisterOperationDialogProps } from "./register-operation-dialog";
 export { ManualPriceDialog } from "./manual-price-dialog";
 export type { ManualPriceDialogProps } from "./manual-price-dialog";
 export { prefillPurchase } from "./register-operation-form.state";
-export { InvestmentImportDialog } from "./import/investment-import-dialog";
-export type { InvestmentImportDialogProps } from "./import/investment-import-dialog";
 export { ReturnsCard } from "./returns-card";
 export type { ReturnsCardProps } from "./returns-card";
 export { ReturnsChart } from "./returns-chart";

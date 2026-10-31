@@ -847,8 +847,8 @@ export function recordCommandAiRequest(outcome: CommandAiOutcome, durationMs?: n
 
 /** Count direct TR outcomes without account identifiers or authentication material. */
 /** Trade Republic events a sync skipped as unknown (no type label: the set is open-ended, the types are in the logs). */
-/** Outcome of one personal CSV parser attempt: `step` 0 is the saved parser, 1–3 the ladder (closed set). */
-export type PersonalImportAttemptOutcome = "reused" | "accepted" | "rejected";
+/** Outcome of one personal CSV parser attempt: `step` 0 is the saved parser or a built-in broker reader (`native`), 1–3 the ladder. */
+export type PersonalImportAttemptOutcome = "reused" | "accepted" | "rejected" | "native";
 export function recordPersonalImportAttempt(step: number, outcome: PersonalImportAttemptOutcome): void {
   metrics().personalImportAttempts.inc({ step: String(Math.min(Math.max(Math.trunc(step), 0), 3)), outcome });
 }

@@ -17,6 +17,7 @@ import { deletePersonalImport, previewPersonalImportDeletion } from "./delete";
 import { confirmImport } from "./confirm";
 import { processOne, maintainJobs } from "./worker";
 import { generateParser } from "./generate";
+import { importNatively } from "./native";
 import { seal, unseal } from "./crypto";
 import { importFormatProfiles } from "@/lib/db/schema/import-format-profiles";
 import { saveFormatMetadata } from "@/lib/imports/store";
@@ -26,6 +27,8 @@ import { exportPersonalImports } from "./export";
 const send = vi.hoisted(() => vi.fn().mockResolvedValue({ data: { id: "synthetic" }, error: null }));
 vi.mock("resend", () => ({ Resend: class { emails = { send }; } }));
 vi.mock("./generate", async importOriginal => ({ ...await importOriginal<typeof import("./generate")>(), generateParser: vi.fn() }));
+// The built-in readers have their own test (native.integration.test.ts); here only what the worker does with them.
+vi.mock("./native", async importOriginal => { const original = await importOriginal<typeof import("./native")>(); return { ...original, importNatively: vi.fn(original.importNatively) }; });
 const code = `function(t){return t.rows.map((line,row)=>{const r=line[0].split(',');return r[0]==='Date'?{row,kind:'ignore',reason:'Header'}:r[1]==='ERROR'?{row,kind:'error',reason:'Unknown operation'}:r[1]==='NOTE'?{row,kind:'ignore',reason:'Metadata'}:r[1]==='CASH'?{row,kind:'cash',date:r[0],amount:Number(r[2]),description:r[3],currency:'EUR',transfer:false}:{row,kind:'investment',date:r[0],currency:'EUR',description:r[3],type:r[1]==='BUY'?'acquisto':'vendita',name:r[3],isin:null,instrumentType:'azione',quantity:Number(r[2]),price:100,grossAmount:null,fees:0,taxes:0}})}`;
 const csv = 'Date,Type,Value,Description\n2024-01-01,CASH,1000,Deposit\n2024-01-02,BUY,1,Example shares\n2024-01-03,CASH,-5,Shop';
 // The same movements in a different file (an extra note line): the exact same file is refused before any analysis.
@@ -264,6 +267,26 @@ describe("personal CSV durable flow", () => {
     for (let i = 0; i < 10; i++) await enqueue(userId, { csv: `${csv}\n2024-02-0${i % 9 + 1},CASH,-${i + 1},File ${i}`, name: "Ten" });
     await expect(enqueue(userId, { csv: `${csv}\n2024-03-01,CASH,-99,Eleventh`, name: "Ten" })).rejects.toThrow("massimo 10 file");
     await db.update(jobs).set({ status: "expired", encryptedCsv: null }).where(eq(jobs.userId, userId));
+  });
+  it("a known broker export is imported by its built-in reader, with no AI and nothing to confirm", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "imported", provider: "interactive-brokers", name: "Interactive Brokers", result: { rows: [], counts: { new: 7, duplicate: 2, error: 0 }, inserted: 7, instrumentsCreated: 1 } });
+    const id = await prepare();
+    const job = await readJob(id);
+    expect(generateParser).not.toHaveBeenCalled();
+    expect(job).toMatchObject({ status: "imported", brokerProvider: "interactive-brokers", encryptedCsv: null, importLedger: { rows: 9, alreadyPresent: 2, native: { provider: "interactive-brokers", inserted: 7 } } });
+    expect((await listImports(userId)).jobs.find(j => j.id === id)?.results).toMatchObject({ native: { name: "Interactive Brokers", inserted: 7 }, rows: 9, alreadyPresent: 2 });
+  });
+  it("a broker export its reader refuses fails with the reader's message and never reaches the AI", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "degiro", name: "DEGIRO", message: "Sovrapposizione parziale" });
+    const id = await prepare();
+    expect(await readJob(id)).toMatchObject({ status: "failed", error: "Sovrapposizione parziale", failureReport: { reason: "broker_validation_failed" } });
+    expect(generateParser).not.toHaveBeenCalled();
+  });
+  it("a broker export its reader cannot read goes to the AI, guarded like the old wizard fallback", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "fallback", provider: "fineco" });
+    const id = await prepare();
+    expect(await readJob(id)).toMatchObject({ status: "ready", brokerProvider: "fineco" });
+    expect(generateParser).toHaveBeenCalledTimes(1);
   });
   it("claims jobs once concurrently and recovers an expired lease", async () => {
     const { id } = await enqueue(userId, { csv, name: 'Lease bank' });

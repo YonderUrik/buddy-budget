@@ -19,9 +19,9 @@ import { PAGE_TITLE as PAGE_TITLE_CLASS } from "@/components/domain/shared";
 import { cn } from "@/lib/utils";
 
 const LIST_ID = "le-tue-importazioni";
-const PAGE_TITLE = "Importa da CSV o Excel";
+const PAGE_TITLE = "Importa un file";
 
-/** Import di un estratto conto o di un rendiconto non ancora supportato: l'AI ricava il formato, che resta dell'utente. */
+/** The one import of the app: bank statements and broker reports, read by a built-in reader or by the AI. */
 function PersonalImports() {
   const { locale: formattingLocale } = useLocalization();
 
@@ -46,7 +46,7 @@ function PersonalImports() {
           <FileSpreadsheet className="size-7 text-muted-foreground" aria-hidden="true" />
           {tr(PAGE_TITLE)}
         </h1>
-        <p className="text-text-2">{tr("Per le banche e i broker che BuddyBudget non supporta ancora. L'AI riconosce le colonne e il formato resta tuo: lo riusi ai file successivi senza altre analisi.")}</p>
+        <p className="text-text-2">{tr("Estratti conto della banca e rendiconti del broker, in CSV o Excel. Interactive Brokers, DEGIRO, Trade Republic, Fineco e Yahoo li leggiamo con i nostri lettori, senza AI; per gli altri formati l'AI riconosce le colonne una volta e il formato resta tuo per i file successivi.")}</p>
       </header>
 
       {reportJob ? (

@@ -11,7 +11,7 @@ import * as React from "react";
 import { AddAccountDialog } from "@/components/domain/liquidity/add-account-dialog";
 import { AddDebtDialog } from "@/components/domain/debts";
 import { AddTransactionDialog } from "@/components/domain/expenses";
-import { ImportManagementDialog, InvestmentImportDialog, RegisterOperationDialog } from "@/components/domain/investments";
+import { RegisterOperationDialog } from "@/components/domain/investments";
 import { AddSubscriptionDialog } from "@/components/domain/subscriptions";
 import { authClient } from "@/lib/auth/client";
 import { startOfDay } from "@/lib/calc/expenses";
@@ -43,8 +43,6 @@ export function QuickAddForms({ form, onClose, onSwitch, prefill }: QuickAddForm
   // The portfolio query starts with the first operation form and then stays, so the form can animate out.
   const [operationUsed, setOperationUsed] = React.useState(form === "operazione");
   if (form === "operazione" && !operationUsed) setOperationUsed(true);
-  // «Gestisci importazioni» at the end of a broker statement: the list opens here too, not only inside Investimenti.
-  const [importsOpen, setImportsOpen] = React.useState(false);
 
   return (
     <>
@@ -52,8 +50,6 @@ export function QuickAddForms({ form, onClose, onSwitch, prefill }: QuickAddForm
       <AddAccountDialog open={form === "conto"} onOpenChange={change} currency={currency} />
       <AddSubscriptionDialog open={form === "abbonamento"} onOpenChange={change} categories={categories ?? []} today={today} />
       {operationUsed ? <RegisterOperationDialog key={prefill?.operazione ? JSON.stringify({ ...prefill.operazione, instrument: prefill.operazione.instrument?.id ?? null }) : "nuova"} initial={form === "operazione" ? (prefill?.operazione ?? NEW_OPERATION) : null} onClose={onClose} /> : null}
-      <InvestmentImportDialog open={form === "rendiconto"} onOpenChange={change} currency={currency} onManageImports={() => setImportsOpen(true)} />
-      <ImportManagementDialog open={importsOpen} onOpenChange={setImportsOpen} />
       <AddDebtDialog open={form === "debito"} onOpenChange={change} currency={currency} />
     </>
   );

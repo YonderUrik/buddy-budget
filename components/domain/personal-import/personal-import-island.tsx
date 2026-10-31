@@ -71,7 +71,7 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
       : results && overlap === "partial"
         ? tr("{0} su {1} movimenti importati", { 0: results.rows! - results.alreadyPresent!, 1: results.rows! })
       : results
-        ? tr("{0} movimenti · {1} operazioni", { 0: results.cash, 1: results.investments })
+        ? results.native ? tr("{0} righe importate con il lettore {1}", { 0: results.native.inserted, 1: results.native.name }) : tr("{0} movimenti · {1} operazioni", { 0: results.cash, 1: results.investments })
         : tr("Dati aggiunti.");
   return (
     <motion.div

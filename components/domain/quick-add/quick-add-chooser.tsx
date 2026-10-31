@@ -16,7 +16,6 @@ import {
   TargetIcon,
   TrendingUpIcon,
   UmbrellaIcon,
-  UploadIcon,
   type LucideIcon,
 } from "lucide-react";
 import { useLocalization } from "@/lib/localization/provider";
@@ -28,7 +27,6 @@ export const QUICK_ADD_ICONS: Record<QuickAddActionId, LucideIcon> = {
   movimento: ReceiptTextIcon,
   operazione: TrendingUpIcon,
   file: FileSpreadsheetIcon,
-  rendiconto: UploadIcon,
   conto: LandmarkIcon,
   abbonamento: RepeatIcon,
   debito: CreditCardIcon,

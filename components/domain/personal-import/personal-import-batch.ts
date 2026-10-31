@@ -66,7 +66,7 @@ export interface BatchJob {
   createdAt: string;
   error: string | null;
   notifiedAt: string | null;
-  results: { cash: number; investments: number; skipped: number; bankCategorized: number; rows?: number; alreadyPresent?: number } | null;
+  results: { cash: number; investments: number; skipped: number; bankCategorized: number; rows?: number; alreadyPresent?: number; native?: { name: string; inserted: number } } | null;
 }
 const RUNNING_ORDER = ["queued", "processing", "ready"];
 
@@ -85,6 +85,8 @@ export function combineJobs<J extends BatchJob>(jobs: (J | undefined)[]): { job:
   if (!imported.length) return { job: known[0], failedFiles: 0 };
   const counted = imported.every(j => j.results?.rows !== undefined && j.results?.alreadyPresent !== undefined);
   const sum = (key: "cash" | "investments" | "skipped" | "bankCategorized" | "rows" | "alreadyPresent") => imported.reduce((n, j) => n + (j.results?.[key] ?? 0), 0);
-  const results = { cash: sum("cash"), investments: sum("investments"), skipped: sum("skipped"), bankCategorized: sum("bankCategorized"), ...(counted ? { rows: sum("rows"), alreadyPresent: sum("alreadyPresent") } : {}) };
+  const natives = imported.flatMap(j => j.results?.native ? [j.results.native] : []);
+  const native = natives.length ? { name: natives[0].name, inserted: natives.reduce((n, x) => n + x.inserted, 0) } : undefined;
+  const results = { cash: sum("cash"), investments: sum("investments"), skipped: sum("skipped"), bankCategorized: sum("bankCategorized"), ...(counted ? { rows: sum("rows"), alreadyPresent: sum("alreadyPresent") } : {}), ...(native ? { native } : {}) };
   return { job: { ...imported[0], results }, failedFiles: known.length - imported.length };
 }

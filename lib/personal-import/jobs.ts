@@ -70,7 +70,7 @@ export async function listImports(userId: string) {
   ]);
   // Del registro dell'importazione esce solo il conteggio (movimenti e operazioni creati), mai gli id.
   // Of the failure report only the attempt in progress leaves the server, never reasons or rows.
-  return { formats: sources, jobs: requests.map(({ ledger, parserId, failureReport, ...job }) => ({ ...job, progress: analysisProgress({ status: job.status, parserId, failureReport }), results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0, ...importCounts(ledger) } : null })) };
+  return { formats: sources, jobs: requests.map(({ ledger, parserId, failureReport, ...job }) => ({ ...job, progress: analysisProgress({ status: job.status, parserId, failureReport }), results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0, ...importCounts(ledger), ...(ledger.native ? { native: { name: ledger.native.name, inserted: ledger.native.inserted } } : {}) } : null })) };
 }
 /** Anteprima per il client: il parser generato (se presente) resta sul server. */
 export async function getPreview(userId: string, id: string): Promise<Preview | null> {

@@ -164,8 +164,8 @@ export function PersonalImportReceipt({ file, job, listId, onAnother, failedFile
 
       {imported && results && !nothingNew ? (
         <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-          <li>{plural(results.cash, tr("movimento aggiunto"), tr("movimenti aggiunti"))}{" "}{tr("a Liquidità.")}</li>
-          <li>{plural(results.investments, tr("operazione aggiunta"), tr("operazioni aggiunte"))}{" "}{tr("a Investimenti.")}</li>
+          {results.native ? <li>{tr("{0} righe importate con il lettore {1}, senza AI: le trovi in Investimenti e, per la liquidità del broker, in Liquidità.", { 0: results.native.inserted, 1: results.native.name })}</li> : <li>{plural(results.cash, tr("movimento aggiunto"), tr("movimenti aggiunti"))}{" "}{tr("a Liquidità.")}</li>}
+          {results.native ? null : <li>{plural(results.investments, tr("operazione aggiunta"), tr("operazioni aggiunte"))}{" "}{tr("a Investimenti.")}</li>}
           {results.skipped > 0 ? <li>{results.skipped === 1 ? tr("1 riga non riconosciuta è stata saltata, come hai scelto: non entra nei conti.") : tr("{0} righe non riconosciute sono state saltate, come hai scelto: non entrano nei conti.", { 0: results.skipped })}</li> : null}
           {results.bankCategorized > 0 ? <li>{results.bankCategorized === 1 ? tr("1 movimento ha già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.") : tr("{0} movimenti hanno già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.", { 0: results.bankCategorized })}</li> : null}
           {overlap === "unknown" ? <li>{tr("Le righe già presenti sono state saltate, senza doppioni.")}</li> : null}
@@ -183,7 +183,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother, failedFile
         {imported ? (
           <>
             {results && results.cash > 0 ? <Link href="/liquidita" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ className: LINK_CLASS })}>{tr("Vai a Liquidità")}</Link> : null}
-            {results && results.investments > 0 ? <Link href="/investimenti/operazioni" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ variant: results.cash > 0 ? "outline" : "default", className: LINK_CLASS })}>{tr("Vai alle operazioni")}</Link> : null}
+            {results && (results.investments > 0 || results.native) ? <Link href="/investimenti/operazioni" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ variant: results.cash > 0 ? "outline" : "default", className: LINK_CLASS })}>{tr("Vai alle operazioni")}</Link> : null}
           </>
         ) : null}
         <a href={`#${listId}`} onClick={() => track("personal_csv_receipt_action", { action: "lista" })} className={buttonVariants({ variant: "outline", className: LINK_CLASS })}>{tr("Vedi le tue importazioni")}</a>

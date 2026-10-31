@@ -5517,5 +5517,7 @@
   "Tutte le banche": "Alle Banken",
   "Trade Republic, con le altre banche in arrivo.": "Trade Republic, die anderen Banken folgen bald.",
   "Saldi e movimenti arrivano da soli dalla banca.": "Salden und Umsätze kommen automatisch von deiner Bank.",
-  "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli.": "Sparkasse, ING, DKB, N26 und die anderen europäischen Banken, mit Salden und Umsätzen, die automatisch kommen."
+  "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli.": "Sparkasse, ING, DKB, N26 und die anderen europäischen Banken, mit Salden und Umsätzen, die automatisch kommen.",
+  "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il team è già stato avvisato: se vuoi una mano, scrivi al supporto.": "Wir konnten diese Datei nicht lesen: Es wurden keine Umsätze gespeichert. Das Team wurde bereits benachrichtigt: Wenn du Hilfe möchtest, schreib dem Support.",
+  "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il dettaglio è nel log del worker CSV.": "Wir konnten diese Datei nicht lesen: Es wurden keine Umsätze gespeichert. Die Details stehen im Log des CSV-Workers."
 }

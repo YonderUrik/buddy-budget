@@ -5517,5 +5517,7 @@
   "Tutte le banche": "All banks",
   "Trade Republic, con le altre banche in arrivo.": "Trade Republic, with the other banks coming soon.",
   "Saldi e movimenti arrivano da soli dalla banca.": "Balances and transactions arrive from your bank on their own.",
-  "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli.": "Intesa, UniCredit, Fineco, N26 and the other European banks, with balances and transactions arriving on their own."
+  "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli.": "Intesa, UniCredit, Fineco, N26 and the other European banks, with balances and transactions arriving on their own.",
+  "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il team è già stato avvisato: se vuoi una mano, scrivi al supporto.": "We couldn't read this file: no transactions were saved. The team has already been notified: if you'd like help, write to support.",
+  "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il dettaglio è nel log del worker CSV.": "We couldn't read this file: no transactions were saved. The details are in the CSV worker log."
 }

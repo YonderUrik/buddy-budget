@@ -80,7 +80,6 @@ export function describeImportJob(job: Job): { message: string; values?: Record<
           ? { message: "{0} su {1} movimenti importati", values: { 0: job.results.rows! - job.results.alreadyPresent!, 1: job.results.rows! }, action: "Dettaglio" }
           : { message: "{0} movimenti · {1} operazioni", values: { 0: job.results.cash, 1: job.results.investments }, action: "Dettaglio" }
       : { message: "Importato", action: "Dettaglio" };
-    case "review_failed": return { message: job.error ?? "Qualche riga da correggere", action: "Controlla" };
     case "failed": return { message: job.error ?? "Formato non riconosciuto", action: "Riprova" };
     case "expired": return { message: "File scaduto: caricalo di nuovo", action: "Riprova" };
     default: return { message: job.status, action: null };

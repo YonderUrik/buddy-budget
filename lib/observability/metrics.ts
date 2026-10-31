@@ -169,6 +169,7 @@ interface MetricsState {
   tradeRepublic: Counter<"action" | "outcome">;
   tradeRepublicDuration: Histogram<"action" | "outcome">;
   tradeRepublicUnrecognized: Counter<string>;
+  personalImportAttempts: Counter<"step" | "outcome">;
   registry: Registry;
   deps: AsyncGaugeDeps;
   httpRequests: Counter<"route" | "method" | "status_class">;
@@ -397,6 +398,7 @@ function createState(): MetricsState {
   });
   state.tradeRepublicDuration = new Histogram({ name: `${METRIC_PREFIX}trade_republic_request_seconds`, help: "Direct TR login and sync duration.", labelNames: ["action", "outcome"], buckets: DURATION_BUCKETS_SECONDS, registers: r });
   state.tradeRepublicUnrecognized = new Counter({ name: `${METRIC_PREFIX}trade_republic_unrecognized_events_total`, help: "Trade Republic events skipped because their type or status is not known yet.", registers: r });
+  state.personalImportAttempts = new Counter({ name: `${METRIC_PREFIX}personal_import_attempts_total`, help: "Personal CSV parser attempts by ladder step (0 = saved parser) and outcome.", labelNames: ["step", "outcome"], registers: r });
   state.tradeRepublic = new Counter({ name: `${METRIC_PREFIX}trade_republic_requests_total`, help: "Direct Trade Republic login and sync outcomes.", labelNames: ["action", "outcome"], registers: r });
   state.gcConnect = new Counter({
     name: `${METRIC_PREFIX}gocardless_connect_attempts_total`,
@@ -845,6 +847,12 @@ export function recordCommandAiRequest(outcome: CommandAiOutcome, durationMs?: n
 
 /** Count direct TR outcomes without account identifiers or authentication material. */
 /** Trade Republic events a sync skipped as unknown (no type label: the set is open-ended, the types are in the logs). */
+/** Outcome of one personal CSV parser attempt: `step` 0 is the saved parser, 1–3 the ladder (closed set). */
+export type PersonalImportAttemptOutcome = "reused" | "accepted" | "rejected";
+export function recordPersonalImportAttempt(step: number, outcome: PersonalImportAttemptOutcome): void {
+  metrics().personalImportAttempts.inc({ step: String(Math.min(Math.max(Math.trunc(step), 0), 3)), outcome });
+}
+
 export function recordTradeRepublicUnrecognized(count: number): void {
   if (count > 0) metrics().tradeRepublicUnrecognized.inc(count);
 }

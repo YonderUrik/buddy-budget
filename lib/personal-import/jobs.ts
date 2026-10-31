@@ -7,11 +7,21 @@ import { brokerFallbackSource } from "./broker-fallback";
 import { ImportError, readRawFile } from "./contract";
 import type { Preview } from "./confirm";
 import { instanceCapabilities } from "@/lib/selfhost";
+import { isSelfHosted } from "@/lib/instance/config";
 import { importCounts } from "./counts";
 // Raw-file parsers are selected only within the source explicitly chosen by this user.
 export const RAW_PARSER_VERSION = "raw-csv-v1";
 /** Shown when the exact same file was already imported: nothing is analysed or saved again. */
 export const ALREADY_IMPORTED_MESSAGE = "Questo file è già stato importato: i suoi movimenti ci sono già tutti.";
+/**
+ * The only error a user sees after every automatic attempt failed. The hosted service sends support a report on its
+ * own; a self-hosted install has no project support, so it points to the worker log instead.
+ */
+export function importFailedMessage() {
+  return isSelfHosted()
+    ? "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il dettaglio è nel log del worker CSV."
+    : "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il team è già stato avvisato: se vuoi una mano, scrivi al supporto.";
+}
 /** Identity of an uploaded file, the same whatever the line endings, BOM or trailing blank lines. */
 export function fileFingerprint(csv: string) {
   return digest(csv.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").replace(/\s+$/, ""));
@@ -53,26 +63,11 @@ export async function listImports(userId: string) {
   return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0, ...importCounts(ledger) } : null })) };
 }
 /** Anteprima per il client: il parser generato (se presente) resta sul server. */
-export async function getPreview(userId: string, id: string): Promise<Omit<Preview, "parser"> | null> {
+export async function getPreview(userId: string, id: string): Promise<Preview | null> {
   const [job] = await db.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId)));
   if (!job || !job.encryptedPreview || job.expiresAt < new Date()) return null;
-  const { parser: _parser, ...preview }: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
+  // Previews written before 2026-10-31 may still carry a parser: it never leaves the server.
+  const { parser: _parser, ...preview }: Preview & { parser?: unknown } = JSON.parse(unseal(job.encryptedPreview, userId));
   void _parser;
   return preview;
-}
-/**
- * Rianalizza con l'AI un file con righe da controllare, senza ricaricarlo: il testo si ricostruisce dalle righe
- * dell'anteprima (una per riga fisica), il lavoro vecchio viene tolto dalla lista e ne parte uno nuovo con
- * «rileggi il formato». Stesso consenso del primo caricamento, richiesto di nuovo dalla route.
- */
-export async function reanalyze(userId: string, id: string) {
-  const [job] = await db.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId)));
-  if (!job || job.status !== "review_failed" || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
-  const preview: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
-  if (preview.records.some(r => r.source.length !== 1)) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
-  const [format] = await db.select({ name: formats.name }).from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, userId)));
-  if (!format) throw new ImportError("Formato non disponibile");
-  const next = await enqueue(userId, { csv: preview.records.map(r => r.source[0]).join("\n"), name: format.name, formatId: job.formatId, regenerate: true, brokerFallback: !!job.brokerProvider });
-  await db.delete(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId), eq(jobs.status, "review_failed")));
-  return next;
 }

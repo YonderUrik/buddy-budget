@@ -46,7 +46,7 @@ export interface PersonalImportReceiptProps {
 const STAGES = ["File ricevuto", "Analisi del formato", "Controlli e salvataggio", "Importato"] as const;
 /** I link-pulsante hanno l'altezza da dito su mobile come gli altri controlli del modulo. */
 const LINK_CLASS = "h-11 sm:h-8";
-const FAILED = ["failed", "review_failed", "expired"];
+const FAILED = ["failed", "expired"];
 
 /** Fase attuale (indice in STAGES) dallo stato del lavoro; `queued` e `processing` sono entrambe «analisi». */
 export function receiptStage(status: string | undefined): number {
@@ -114,6 +114,16 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
   React.useEffect(() => {
     if (nothingNew) track("personal_csv_already_imported", { stage: "analisi" });
   }, [nothingNew]);
+  // Outcome events only for a job seen finishing here, not for an old one reopened from the list.
+  const seenRunning = React.useRef(false);
+  React.useEffect(() => {
+    if (!job) return;
+    if (!imported && !failed) { seenRunning.current = true; return; }
+    if (!seenRunning.current) return;
+    seenRunning.current = false;
+    if (failed) track("personal_csv_failed", {});
+    else if (!nothingNew) track("personal_csv_imported", { rows: (results?.cash ?? 0) + (results?.investments ?? 0), bankCategorized: results?.bankCategorized ?? 0 });
+  }, [job, imported, failed, nothingNew, results]);
   const title = nothingNew ? tr("Niente di nuovo da importare") : imported ? tr("Importazione completata") : failed ? tr("Non siamo riusciti a importare il file") : tr("File ricevuto");
   const Icon = failed ? AlertCircleIcon : nothingNew ? InfoIcon : CheckCircle2Icon;
 

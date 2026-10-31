@@ -63,6 +63,8 @@ export interface LogFields {
   rejected?: number;
   /** Bank categories in an imported file: rows that carried one, and how they mapped (counts only, never the labels). */
   bankCategories?: number;
+  /** Personal CSV recovery ladder step: 0 saved parser, 1–3 model attempts. */
+  step?: number;
   bankLearned?: number;
   bankByName?: number;
   bankByDictionary?: number;

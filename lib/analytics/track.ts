@@ -47,10 +47,10 @@ export interface ProductEvents {
   personal_csv_already_imported: { stage: "caricamento" | "analisi" };
   investments_import_ai_fallback: Record<string, never>;
   personal_csv_deleted: { cash: number; investments: number };
-  /** Import confermato; `skipped`: righe non riconosciute saltate per scelta dell'utente. */
+  /** Import finished while the receipt was open; `rows`: movements and operations added. */
   personal_csv_imported: { rows: number; skipped?: number; bankCategorized?: number };
-  /** Scelta nella schermata «Righe da controllare» dell'import personale. */
-  personal_csv_review_action: { action: "importa_saltando" | "rianalizza" | "file_corretto" };
+  /** Import failed after every automatic attempt, seen while the receipt was open. */
+  personal_csv_failed: Record<string, never>;
   /** Azione scelta nella schermata «File ricevuto» dell'import personale. */
   personal_csv_receipt_action: { action: "lista" | "altro_file" | "vai_ai_dati" };
   investment_dividends_details_opened: { source: "portfolio" | "year" | "instrument" };

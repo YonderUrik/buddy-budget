@@ -12,7 +12,7 @@ export type PersonalImportListing = {
 
 export const personalImportLabels: Record<string, string> = {
   queued: "In attesa di analisi", processing: "Stiamo analizzando il CSV",
-  ready: "Salvataggio in corso", review_failed: "Righe da controllare",
+  ready: "Salvataggio in corso",
   failed: "Analisi non riuscita", imported: "Importato", expired: "File scaduto",
 };
 

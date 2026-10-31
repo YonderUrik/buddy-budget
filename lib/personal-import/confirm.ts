@@ -3,7 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { personalFormats as formats, personalImportJobs as jobs, personalImportReceipts as receipts, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
+import { personalFormats as formats, personalImportJobs as jobs, personalImportReceipts as receipts } from "@/lib/db/schema/personal-imports";
 import { accounts } from "@/lib/db/schema/accounts";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
@@ -11,30 +11,15 @@ import { instruments, investmentPortfolios, investmentTransactions } from "@/lib
 import { getUserCurrency, toRowValues } from "@/lib/investments/operations";
 import { findOversoldTransaction } from "@/lib/calc/investments";
 import { extractMerchantName } from "@/lib/categorization/merchant-name";
-import { digest, seal, unseal } from "./crypto";
-import { ImportError, readRawFile, validateOutcomes, type Outcome, type PersonalParser } from "./contract";
-import { RAW_PARSER_VERSION } from "./jobs";
+import { digest, unseal } from "./crypto";
+import { existingCashKey, existingTradeKey, presentByContent } from "./content-match";
+import { ImportError, readRawFile, validateOutcomes, type Outcome } from "./contract";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { buildRuleResolver } from "@/lib/categorization/resolve";
 import { loadBankCategoryMapper } from "@/lib/categorization/load-bank-category-mapper";
 import { logger, recordCategorizationAutoApplied } from "@/lib/observability";
 export type PreviewRecord = { key: string; source: string[]; line?: number; outcome: Outcome; rate: number | null };
-/** `parser`: solo lato server, per le analisi con righe da controllare il cui parser non è ancora salvato (vedi `confirmImport`). */
-export type Preview = { headers: string[]; currency: string; records: PreviewRecord[]; parser?: PersonalParser };
-export interface ConfirmOptions {
-  /** Importa saltando le righe non riconosciute (scelta esplicita dell'utente su un lavoro in `review_failed`). */
-  skipErrors?: boolean;
-}
-/** Le righe non riconosciute diventano escluse; il motivo resta leggibile. Pura, per poterla testare. */
-export function skipErrorRecords(records: PreviewRecord[]): { records: PreviewRecord[]; skippedKeys: Set<string> } {
-  const skippedKeys = new Set<string>();
-  const next = records.map(r => {
-    if (r.outcome.kind !== "error") return r;
-    skippedKeys.add(r.key);
-    return { ...r, outcome: { row: r.outcome.row, kind: "ignore" as const, reason: `Saltata: ${r.outcome.reason}`.slice(0, 300) } };
-  });
-  return { records: next, skippedKeys };
-}
+export type Preview = { headers: string[]; currency: string; records: PreviewRecord[] };
 /**
  * Identity of a row's interpretation, to tell an already imported row from a reinterpreted one. The bank category is
  * left out: a format that starts reading it must not make every row imported before look reinterpreted.
@@ -56,7 +41,21 @@ async function importedElsewhere(tx: Tx, userId: string, formatId: string, keys:
   }
   return found;
 }
-export async function confirmImport(userId: string, id: string, options: ConfirmOptions = {}) {
+/** Line keys of `candidates` whose exact content is already stored in the source's account or portfolio. */
+async function storedByContent(tx: Tx, userId: string, accountId: string | null, portfolioId: string | null, file: PreviewRecord[], candidates: PreviewRecord[]) {
+  const dates = candidates.flatMap(r => r.outcome.kind === "cash" || r.outcome.kind === "investment" ? [r.outcome.date] : []).sort();
+  if (!dates.length || (!accountId && !portfolioId)) return new Set<string>();
+  const [from, to] = [dates[0], dates.at(-1)!];
+  const cash = accountId ? await tx.select({ date: transactions.date, amount: transactions.amount, raw: transactions.rawDescription, description: transactions.description }).from(transactions)
+    .where(and(eq(transactions.userId, userId), eq(transactions.accountId, accountId), sql`${transactions.date} between ${from} and ${to}`)) : [];
+  const trades = portfolioId ? await tx.select({ date: investmentTransactions.date, type: investmentTransactions.type, quantity: investmentTransactions.quantity, price: investmentTransactions.price, grossAmount: investmentTransactions.grossAmount, isin: instruments.isin, name: instruments.name })
+    .from(investmentTransactions).innerJoin(instruments, eq(instruments.id, investmentTransactions.instrumentId))
+    .where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolioId), sql`${investmentTransactions.date} between ${from} and ${to}`)) : [];
+  // The cash leg of an imported trade is stored too, fully excluded: it is matched through the trade, not on its own.
+  const stored = [...cash.map(r => existingCashKey({ date: r.date, amount: r.amount, description: r.raw ?? r.description })), ...trades.map(existingTradeKey)];
+  return presentByContent(file, candidates, stored);
+}
+export async function confirmImport(userId: string, id: string) {
   const currency = await getUserCurrency(userId);
   // User rules win over the bank's category: a row a rule takes stays on the fallback and the rule categorises it
   // right after the import (`categorizeNewMovementsSafely`), with its own origin and hit count.
@@ -68,38 +67,23 @@ export async function confirmImport(userId: string, id: string, options: Confirm
     if (!job) throw new ImportError("Importazione non disponibile");
     if (job.status === "imported") return { inserted: 0, alreadyImported: true };
     if (job.brokerProvider && job.failureReport?.reason === "broker_validation_failed") throw new ImportError("L'AI ha analizzato il file, ma il controllo originale del broker richiede una riconciliazione. Il supporto riceverà il report; nessun movimento è stato aggiunto.");
-    const allowed = options.skipErrors ? ["ready", "review_failed"] : ["ready"];
-    if (!allowed.includes(job.status) || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Anteprima non disponibile o scaduta");
-    const stored: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
-    if (stored.records.every(r => r.source.length === 1)) {
-      validateBitpandaSettlements(readRawFile(stored.records.map(r => r.source[0]).join("\n")), stored.records.map(r => r.outcome));
+    if (job.status !== "ready" || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Anteprima non disponibile o scaduta");
+    const preview: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
+    if (preview.records.every(r => r.source.length === 1)) {
+      validateBitpandaSettlements(readRawFile(preview.records.map(r => r.source[0]).join("\n")), preview.records.map(r => r.outcome));
     }
-    if (stored.currency !== currency) throw new ImportError("La valuta del profilo è cambiata: carica nuovamente il CSV");
-    const { records, skippedKeys } = options.skipErrors ? skipErrorRecords(stored.records) : { records: stored.records, skippedKeys: new Set<string>() };
-    const preview: Preview = { ...stored, records };
+    if (preview.currency !== currency) throw new ImportError("La valuta del profilo è cambiata: carica nuovamente il CSV");
     validateOutcomes(preview.records.map(r => r.outcome), { headers: preview.headers, delimiter: ",", rows: preview.records.map(r => r.source) });
     if (preview.records.some(r => r.outcome.kind === "error")) throw new ImportError("Ci sono righe non riconosciute");
-    if (options.skipErrors && !preview.records.some(r => r.outcome.kind === "cash" || r.outcome.kind === "investment")) throw new ImportError("Nessuna riga riconosciuta da importare: rianalizza il file o caricane uno corretto");
     const [format] = await tx.select().from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, userId))).for("update");
     if (!format) throw new ImportError("Formato non disponibile");
-    const prior = new Map((await tx.select().from(receipts).where(eq(receipts.formatId, format.id))).map(r => [r.recordKey, r.outcomeHash]));
-    for (const r of preview.records) if (prior.has(r.key) && prior.get(r.key) !== outcomeHash(r.outcome)) throw new ImportError("Una riga già importata ha una nuova interpretazione: verifica lo storico prima di proseguire");
+    const prior = new Set((await tx.select({ key: receipts.recordKey }).from(receipts).where(eq(receipts.formatId, format.id))).map(r => r.key));
     // A row's key is its raw content, the same whatever format read it: a row already imported under another of the
     // user's sources (the same bank chosen again as a new one) is a duplicate too. It leaves no receipt here, so
-    // deleting the original import makes it new again.
+    // deleting the original import makes it new again. A line already imported stays present even when a newer
+    // parser reads it differently: the stored movement wins, nothing is blocked.
     const elsewhere = await importedElsewhere(tx, userId, format.id, preview.records.filter(r => !prior.has(r.key)).map(r => r.key));
-    // Le righe saltate non lasciano ricevuta: corrette e ricaricate, o lette da un formato rianalizzato, tornano nuove.
-    const fresh = preview.records.filter(r => !prior.has(r.key) && !elsewhere.has(r.key) && !skippedKeys.has(r.key));
-    const financial = fresh.filter(r => r.outcome.kind === "cash" || r.outcome.kind === "investment");
-    const fileRows = preview.records.filter(r => (r.outcome.kind === "cash" || r.outcome.kind === "investment") && !skippedKeys.has(r.key)).length;
-    const alreadyPresent = fileRows - financial.length;
-    if (job.brokerProvider && financial.length) {
-      const [native] = await tx.select({ id: brokerStatements.id }).from(brokerStatements).where(and(eq(brokerStatements.userId, userId), job.brokerProvider === "generic" ? undefined : sql`coalesce(${brokerStatements.statement}->>'provider', 'interactive-brokers') = ${job.brokerProvider}`)).limit(1);
-      const dates = financial.flatMap(r => r.outcome.kind === "cash" || r.outcome.kind === "investment" ? [r.outcome.date] : []).sort();
-      const [untracked] = await tx.select({ id: investmentTransactions.id }).from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), sql`${investmentTransactions.date} between ${dates[0]} and ${dates.at(-1)}`, sql`${investmentTransactions.portfolioId} not in (select portfolio_id from personal_formats where user_id = ${userId} and portfolio_id is not null)`)).limit(1);
-      if (native || untracked) throw new ImportError("Analisi AI completata. Lo storico contiene importazioni precedenti da riconciliare: il supporto riceverà il report. Nessun movimento è stato aggiunto.");
-    }
-    if (financial.some(r => !r.rate || !Number.isFinite(r.rate) || r.rate <= 0)) throw new ImportError("Cambio storico non disponibile: ricarica il CSV più tardi");
+    const newLines = preview.records.filter(r => !prior.has(r.key) && !elsewhere.has(r.key));
     let portfolioId = format.portfolioId, accountId = format.accountId;
     // A new source whose file overlaps one already imported adds its new rows to that source's account and portfolio,
     // not to a second copy of the same account.
@@ -108,6 +92,19 @@ export async function confirmImport(userId: string, id: string, options: Confirm
       const [origin] = await tx.select({ accountId: formats.accountId, portfolioId: formats.portfolioId }).from(formats).where(and(eq(formats.id, [...origins][0]), eq(formats.userId, userId)));
       accountId = origin?.accountId ?? null; portfolioId = origin?.portfolioId ?? null;
     }
+    // New lines whose exact content is already in this source's account or portfolio: the bank changed its layout.
+    const sameContent = await storedByContent(tx, userId, accountId, portfolioId, preview.records, newLines);
+    const fresh = newLines.filter(r => !sameContent.has(r.key));
+    const financial = fresh.filter(r => r.outcome.kind === "cash" || r.outcome.kind === "investment");
+    const fileRows = preview.records.filter(r => r.outcome.kind === "cash" || r.outcome.kind === "investment").length;
+    const alreadyPresent = fileRows - financial.length;
+    if (job.brokerProvider && financial.length) {
+      const [native] = await tx.select({ id: brokerStatements.id }).from(brokerStatements).where(and(eq(brokerStatements.userId, userId), job.brokerProvider === "generic" ? undefined : sql`coalesce(${brokerStatements.statement}->>'provider', 'interactive-brokers') = ${job.brokerProvider}`)).limit(1);
+      const dates = financial.flatMap(r => r.outcome.kind === "cash" || r.outcome.kind === "investment" ? [r.outcome.date] : []).sort();
+      const [untracked] = await tx.select({ id: investmentTransactions.id }).from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), sql`${investmentTransactions.date} between ${dates[0]} and ${dates.at(-1)}`, sql`${investmentTransactions.portfolioId} not in (select portfolio_id from personal_formats where user_id = ${userId} and portfolio_id is not null)`)).limit(1);
+      if (native || untracked) throw new ImportError("Analisi AI completata. Lo storico contiene importazioni precedenti da riconciliare: il supporto riceverà il report. Nessun movimento è stato aggiunto.");
+    }
+    if (financial.some(r => !r.rate || !Number.isFinite(r.rate) || r.rate <= 0)) throw new ImportError("Cambio storico non disponibile: ricarica il CSV più tardi");
     if (financial.length && !accountId) {
       const [account] = await tx.insert(accounts).values({ userId, name: `${format.name} · CSV`, type: "conto", source: "manuale", balance: "0" }).returning(); accountId = account.id;
     }
@@ -173,14 +170,8 @@ export async function confirmImport(userId: string, id: string, options: Confirm
     if (accountId && financial.length) await tx.update(accounts).set({ balance: sql`${accounts.balance} + ${(deltaCents / 100).toFixed(2)}`, updatedAt: new Date() }).where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)));
     for (let i = 0; i < fresh.length; i += 500) await tx.insert(receipts).values(fresh.slice(i, i + 500).map(r => ({ formatId: format.id, recordKey: r.key, outcomeHash: outcomeHash(r.outcome) })));
     await tx.update(formats).set({ accountId, portfolioId }).where(eq(formats.id, format.id));
-    // Importare saltando le righe vuol dire accettare il formato: il parser diventa quello del formato per i file successivi.
-    let parserId = job.parserId;
-    if (!parserId && stored.parser) {
-      const [version] = await tx.insert(parsers).values({ formatId: format.id, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(stored.parser), userId), model: "accepted-with-skips" }).returning();
-      parserId = version.id;
-    }
-    await tx.update(jobs).set({ status: "imported", error: null, parserId, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), skipped: skippedKeys.size, bankCategorized: bank.learned + bank.name + bank.dictionary, rows: fileRows, alreadyPresent } }).where(eq(jobs.id, id));
-    return { inserted: financial.length, duplicates: preview.records.length - fresh.length - skippedKeys.size, rows: fileRows, alreadyPresent, skipped: skippedKeys.size, bankCategorized: bank.learned + bank.name + bank.dictionary, bank };
+    await tx.update(jobs).set({ status: "imported", error: null, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), bankCategorized: bank.learned + bank.name + bank.dictionary, rows: fileRows, alreadyPresent } }).where(eq(jobs.id, id));
+    return { inserted: financial.length, duplicates: preview.records.length - fresh.length, rows: fileRows, alreadyPresent, bankCategorized: bank.learned + bank.name + bank.dictionary, bank };
   });
   if ("bank" in result && result.bank && result.bank.carried > 0) {
     const { carried, learned, name, dictionary } = result.bank;

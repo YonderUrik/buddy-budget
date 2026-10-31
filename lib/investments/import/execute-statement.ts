@@ -56,8 +56,11 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     let instrument: Instrument | null;
     if ("instrumentId" in entry) instrument = await findVisibleInstrument(userId, entry.instrumentId);
     else if (input.dryRun) {
-      // Reuse existing catalogue identity in previews too, otherwise a later statement falsely oversells.
-      const matches = identity.isin ? await db.select().from(instruments).where(and(eq(instruments.isin, identity.isin), eq(instruments.currency, identity.currency!), sql`(${instruments.createdByUserId} is null or ${instruments.createdByUserId} = ${userId})`)) : [];
+      // Reuse existing catalogue identity in previews too, otherwise a later statement falsely oversells. The choice is
+      // the one the real import makes: the user's own copy first (and only it for `ownCopy`, a corporate action), so a
+      // dry run never counts a position on the shared instrument while the history sits on the own copy.
+      const ownOnly = entry.create.source === "manuale" && entry.create.ownCopy === true;
+      const matches = identity.isin ? await db.select().from(instruments).where(and(eq(instruments.isin, identity.isin), eq(instruments.currency, identity.currency!), ownOnly ? eq(instruments.createdByUserId, userId) : sql`(${instruments.createdByUserId} is null or ${instruments.createdByUserId} = ${userId})`)).orderBy(sql`${instruments.createdByUserId} is null`, instruments.createdAt) : [];
       instrument = matches[0] ?? null;
       if (!instrument && "currency" in entry.create && entry.create.currency !== identity.currency) return failed("La valuta proposta non coincide con il rendiconto");
     } else {

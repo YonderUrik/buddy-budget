@@ -1,4 +1,4 @@
-import { and, eq, exists, ilike, isNull, or, type SQL } from "drizzle-orm";
+import { and, eq, exists, ilike, isNull, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import {
   instrumentSymbols,
@@ -64,10 +64,11 @@ async function findBySymbol(provider: ProviderId, symbol: string): Promise<Instr
   return row?.instrument ?? null;
 }
 
+/** An instrument with this ISIN the user can see: their own copy first, then the shared one (never an arbitrary pick). */
 async function findByIsin(isin: string, userId?: string | null, currency?: string): Promise<Instrument | null> {
   const [row] = await db.select().from(instruments).where(and(eq(instruments.isin, isin),
     userId ? visibleTo(userId) : isNull(instruments.createdByUserId),
-    currency ? eq(instruments.currency, currency) : undefined));
+    currency ? eq(instruments.currency, currency) : undefined)).orderBy(sql`${instruments.createdByUserId} is null`, instruments.createdAt);
   return row ?? null;
 }
 

@@ -2,12 +2,17 @@ import { z } from "zod";
 
 export const PARSED_FIELDS = ["date", "currency", "description", "amount", "transfer", "type", "name", "isin", "symbol", "instrumentType", "quantity", "price", "grossAmount", "fees", "taxes", "note", "sourceCurrency", "costCurrency", "brokerFxToEur", "bankCategory"] as const;
 const label = z.string().trim().min(1).max(200);
+/**
+ * A section or column name, or null when the file has none. A blank name ("") counts as none: a model naming the
+ * unnamed columns of an IBKR statement "" had its whole answer thrown away (`columns.193.name: too_small`).
+ */
+const optionalLabel = z.preprocess((value) => (typeof value === "string" && value.trim() === "" ? null : value), label.nullable());
 /** Describes a file layout, never example values, account identifiers or transaction contents. */
 export const formatMetadataSchema = z.object({
   version: z.literal(1),
   institution: z.object({ name: label.nullable(), evidence: z.enum(["document", "user", "recognized_format", "unknown"]) }),
   delimiter: z.enum([",", ";", "\t", "|", "unknown"]),
-  columns: z.array(z.object({ section: label.nullable(), index: z.number().int().min(0).max(1000), name: label.nullable(), mapsTo: z.array(z.enum(PARSED_FIELDS)).max(PARSED_FIELDS.length) })).max(1000),
+  columns: z.array(z.object({ section: optionalLabel, index: z.number().int().min(0).max(1000), name: optionalLabel, mapsTo: z.array(z.enum(PARSED_FIELDS)).max(PARSED_FIELDS.length) })).max(1000),
 }).superRefine((metadata, ctx) => {
   if ((metadata.institution.name === null) !== (metadata.institution.evidence === "unknown")) ctx.addIssue({ code: "custom", message: "Institution and evidence must agree" });
 });

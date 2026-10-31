@@ -13,7 +13,7 @@ The wizard recognizes the Italian **Account.csv** export (Estratto conto, accoun
 
 ## Shared portfolio and import management
 
-Every transaction keeps its origin, and each source has a persistent link to its portfolio and cash account. IBKR and DEGIRO share the portfolio while keeping separate cash accounts and imports. Overlap replacement and deletion of dependencies operate only on the same source. An identical file is idempotent. Partially overlapping periods require an export that fully covers the imports involved, as for IBKR.
+Every transaction keeps its origin, and each source has a persistent link to its portfolio and cash account. A new DEGIRO account gets its own portfolio, like every broker (since 2026-10-31; accounts imported before keep the portfolio they are linked to), with its own cash account and imports. Overlap replacement and deletion of dependencies operate only on the same source. An identical file is idempotent. Partially overlapping periods require an export that fully covers the imports involved, as for IBKR.
 
 ## Explicit limits
 

@@ -46,7 +46,7 @@ describe("complete statement import", () => {
     expect(Number((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance)).toBe(817);
     expect(dependencies.fetchFx).not.toHaveBeenCalled();
   });
-  it("DEGIRO with several portfolios needs no question: its own portfolio, or the one of hand-entered operations", async () => {
+  it("DEGIRO needs no portfolio question: a new account gets its own portfolio, like every broker", async () => {
     const csv = readFileSync(new URL("./__fixtures__/degiro-fx.csv", import.meta.url), "utf8");
     await db.insert(investmentPortfolios).values([{ userId, name: "Trade Republic", broker: "trade-republic-api:x" }, { userId, name: "Interactive Brokers · 0001", broker: "ibkr:y" }]);
     expect((await runStatementImport(userId, request(csv), deps())).inserted).toBe(1);
@@ -58,7 +58,8 @@ describe("complete statement import", () => {
     const [manual] = await db.insert(investmentPortfolios).values([{ userId, name: "Portafoglio" }, { userId, name: "Trade Republic", broker: "trade-republic-api:z" }]).returning();
     expect((await runStatementImport(userId, request(csv), deps())).inserted).toBe(1);
     const [second] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
-    expect(second.portfolioId).toBe(manual.id);
+    expect(second.portfolioId).not.toBe(manual.id);
+    expect((await db.select().from(investmentPortfolios).where(eq(investmentPortfolios.id, second.portfolioId)))[0]).toMatchObject({ name: "DEGIRO" });
   });
   it("previews without writes, imports consecutive periods and preserves broker balances and all closing prices", async () => {
     const first = request(brokerSeries(2023));

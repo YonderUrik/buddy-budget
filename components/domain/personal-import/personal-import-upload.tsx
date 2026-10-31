@@ -5,8 +5,9 @@ import { useLocalization } from "@/lib/localization/provider";
 import { translateServerMessage } from "@/lib/localization/messages";
 
 /**
- * Modulo di caricamento di un CSV o Excel personale, in tre passi: da dove arriva, il file, il consenso all'analisi AI.
- * Un file Excel diventa testo CSV nel browser (stesso lettore di Pensione e Investimenti); il server riceve sempre CSV.
+ * Upload form for personal CSV or Excel files, in three steps: where they come from, the files, consent to the AI
+ * analysis. Several exports of the same bank go in one upload (`personal-import-batch.ts`). An Excel file becomes CSV
+ * text in the browser (same reader as Pensione and Investimenti); the server always receives CSV.
  */
 
 import * as React from "react";
@@ -20,12 +21,15 @@ import { gridToCsv } from "@/lib/investments/import/fineco";
 import { readXlsx, XLSX_MAX_FILE_BYTES } from "@/lib/pension/import/xlsx";
 import { cn } from "@/lib/utils";
 import { PersonalImportApiError, personalImportApi } from "./personal-import-api";
+import { addFiles, PERSONAL_IMPORT_MAX_FILES, sendBatch, type BatchResult } from "./personal-import-batch";
 import type { PersonalImportReceiptFile } from "./personal-import-receipt";
 import { ErrorWithReport } from "@/components/domain/support";
 
 export const PERSONAL_IMPORT_MAX_BYTES = 25 * 1024 * 1024;
 export const PERSONAL_IMPORT_MAX_ROWS = 50_000;
 const CONSENT_VERSION = "openrouter-raw-zdr-v3";
+/** The server's text for a file already imported (`ALREADY_IMPORTED_MESSAGE`), shown when it is the only file sent. */
+const ALREADY_IMPORTED_TEXT = "Questo file è già stato importato: i suoi movimenti ci sono già tutti.";
 const NEW_FORMAT = "__new__";
 const FIELD_CLASS = "h-11 sm:h-9";
 const PERSONAL_IMPORT_STEPS = 3;
@@ -61,8 +65,8 @@ export function countCsvRows(csv: string): number {
 export interface PersonalImportUploadProps {
   /** Formati già creati dall'utente, riusabili senza altra analisi. */
   formats: { id: string; name: string }[];
-  /** Chiamato con l'id del lavoro creato e i dati del file inviato. */
-  onQueued: (jobId: string, file: PersonalImportReceiptFile) => void;
+  /** Called with the jobs created, in upload order, and a summary of the files sent. */
+  onQueued: (jobIds: string[], file: PersonalImportReceiptFile) => void;
 }
 
 export function PersonalImportUpload({ formats, onQueued }: PersonalImportUploadProps) {
@@ -87,7 +91,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
   const client = useQueryClient();
   const [formatId, setFormatId] = React.useState(NEW_FORMAT);
   const [name, setName] = React.useState("");
-  const [file, setFile] = React.useState<LoadedFile | null>(null);
+  const [files, setFiles] = React.useState<LoadedFile[]>([]);
   const [fileError, setFileError] = React.useState<string | null>(null);
   const [reading, setReading] = React.useState(false);
   const [dragging, setDragging] = React.useState(false);
@@ -95,44 +99,55 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
   const [regenerate, setRegenerate] = React.useState(false);
   const isNew = formatId === NEW_FORMAT;
 
+  const [outcome, setOutcome] = React.useState<BatchResult<LoadedFile> | null>(null);
+  const isAlreadyImported = (error: unknown) => error instanceof PersonalImportApiError && error.code === "already_imported";
   const upload = useMutation({
     mutationFn: async () => {
-      if (!file) throw new Error(tr("Scegli un file da importare."));
+      if (!files.length) throw new Error(tr("Scegli un file da importare."));
       const source = formats.find((f) => f.id === formatId)?.name ?? name.trim();
-      return personalImportApi<{ id: string }>("", { name: source, csv: file.csv, formatId: isNew ? undefined : formatId, regenerate, consent, consentVersion: CONSENT_VERSION });
-    },
-    onError: (error) => {
-      if (error instanceof PersonalImportApiError && error.code === "already_imported") track("personal_csv_already_imported", { stage: "caricamento" });
+      return sendBatch(files, isNew ? undefined : formatId, (file, target) => personalImportApi<{ id: string; formatId?: string }>("", { name: source, csv: file.csv, formatId: target, regenerate, consent, consentVersion: CONSENT_VERSION }), isAlreadyImported);
     },
     onSuccess: (result) => {
-      track("personal_csv_requested", { reuse: !isNew });
-      const sent = file && { name: file.name, size: file.size, rows: countCsvRows(file.csv), source: formats.find((f) => f.id === formatId)?.name ?? name.trim() };
-      setFile(null);
+      setOutcome(result);
+      for (let i = 0; i < result.alreadyImported.length; i++) track("personal_csv_already_imported", { stage: "caricamento" });
+      if (!result.queued.length) return;
+      track("personal_csv_requested", { reuse: !isNew, files: result.queued.length });
+      const sent = result.queued.map((q) => q.file);
+      const source = formats.find((f) => f.id === formatId)?.name ?? name.trim();
+      const summary: PersonalImportReceiptFile = sent.length === 1
+        ? { name: sent[0].name, size: sent[0].size, rows: countCsvRows(sent[0].csv), source }
+        : { name: tr("{0} file", { 0: sent.length }), size: sent.reduce((n, f) => n + f.size, 0), rows: sent.reduce((n, f) => n + countCsvRows(f.csv), 0), source };
+      setFiles([]);
       setConsent(false);
       setRegenerate(false);
       void client.invalidateQueries({ queryKey: ["personal-imports"] });
-      if (sent) onQueued(result.id, sent);
+      const skipped = [...result.alreadyImported.map((f) => f.name), ...result.failed.map((f) => f.file.name)];
+      onQueued(result.queued.map((q) => q.id), skipped.length ? { ...summary, notice: tr("Non inviati: {0}. Gli altri sono in arrivo.", { 0: skipped.join(", ") }) } : summary);
     },
   });
 
   async function pick(list: FileList | null) {
-    const chosen = list?.[0];
-    if (!chosen || reading) return;
+    const chosen = [...(list ?? [])];
+    if (!chosen.length || reading) return;
     setFileError(null);
+    setOutcome(null);
     setReading(true);
-    try {
-      setFile(await readPersonalImportFile(chosen));
-    } catch (e) {
-      setFile(null);
-      setFileError(e instanceof Error ? e.message : tr("Non riesco a leggere questo file."));
-    } finally {
-      setReading(false);
+    const loaded: LoadedFile[] = [];
+    const unreadable: string[] = [];
+    for (const file of chosen) {
+      try { loaded.push(await readPersonalImportFile(file)); }
+      catch (e) { unreadable.push(`${file.name}: ${e instanceof Error ? e.message : tr("Non riesco a leggere questo file.")}`); }
     }
+    const { files: next, dropped } = addFiles(files, loaded);
+    setFiles(next);
+    if (dropped) unreadable.push(tr("Puoi caricare al massimo {0} file alla volta: {1} non aggiunti.", { 0: PERSONAL_IMPORT_MAX_FILES, 1: dropped }));
+    if (unreadable.length) setFileError(unreadable.join(" "));
+    setReading(false);
   }
 
   const missing: string[] = [];
   if (isNew && !name.trim()) missing.push("scrivi da dove arriva il file");
-  if (!file) missing.push("scegli il file");
+  if (!files.length) missing.push("scegli il file");
   if (!consent) missing.push("dai il consenso all'analisi");
   const ready = missing.length === 0;
   // Cosa manca nel passo corrente (il consenso è l'ultimo): il pulsante si accende passo per passo.
@@ -187,32 +202,37 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
 
         {flow.index === 1 ? (
         <>
-          <StepHeading title={tr("Carica il file")} description={tr("CSV o Excel (.xlsx), fino a {0} e {1} righe.", {0: formatFileSize(PERSONAL_IMPORT_MAX_BYTES), 1: new Intl.NumberFormat(formattingLocale).format(PERSONAL_IMPORT_MAX_ROWS)})} />
-          {file ? (
-            <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-medium text-foreground">{file.name}</span>
-                <span className="text-xs text-muted-foreground">{formatFileSize(file.size)}{" "}{tr("· pronto")}</span>
-              </span>
-              <button type="button" onClick={() => { setFile(null); setFileError(null); }} aria-label={tr("Rimuovi {0}", {0: file.name})} className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground sm:size-9">
-                <XIcon className="size-4" aria-hidden="true" />
-              </button>
-            </div>
-          ) : (
+          <StepHeading title={tr("Carica i file")} description={tr("CSV o Excel (.xlsx), fino a {0} e {1} righe ciascuno. Puoi sceglierne fino a {2} della stessa banca.", {0: formatFileSize(PERSONAL_IMPORT_MAX_BYTES), 1: new Intl.NumberFormat(formattingLocale).format(PERSONAL_IMPORT_MAX_ROWS), 2: PERSONAL_IMPORT_MAX_FILES})} />
+          {files.length ? (
+            <ul className="flex flex-col gap-2" aria-label={tr("File scelti")}>
+              {files.map((file) => (
+                <li key={`${file.name}-${file.size}`} className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-sm font-medium text-foreground">{file.name}</span>
+                    <span className="text-xs text-muted-foreground">{formatFileSize(file.size)}{" "}{tr("· pronto")}</span>
+                  </span>
+                  <button type="button" onClick={() => { setFiles((current) => current.filter((f) => f !== file)); setFileError(null); }} aria-label={tr("Rimuovi {0}", {0: file.name})} className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground sm:size-9">
+                    <XIcon className="size-4" aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {files.length < PERSONAL_IMPORT_MAX_FILES ? (
             <label
               htmlFor={`${id}-file`}
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onDrop={(e) => { e.preventDefault(); setDragging(false); void pick(e.dataTransfer.files); }}
-              className={cn("flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50 has-focus-visible:ring-3 has-focus-visible:ring-ring/50", dragging && "border-primary bg-primary/5")}
+              className={cn("flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50 has-focus-visible:ring-3 has-focus-visible:ring-ring/50", files.length ? "min-h-24" : "min-h-36", dragging && "border-primary bg-primary/5")}
             >
               <UploadIcon className="size-6 text-muted-foreground" aria-hidden="true" />
-              <span className="text-sm font-medium text-foreground">{reading ? tr("Leggo il file…") : tr("Scegli un file")}</span>
-              <span className="text-xs text-muted-foreground">{reading ? tr("Un attimo") : tr("oppure trascinalo qui")}</span>
-              <input id={`${id}-file`} type="file" disabled={reading} accept=".csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="sr-only" aria-describedby={fileError ? `${id}-file-error` : undefined} onChange={(e) => { void pick(e.target.files); e.target.value = ""; }} />
+              <span className="text-sm font-medium text-foreground">{reading ? tr("Leggo i file…") : files.length ? tr("Aggiungi altri file") : tr("Scegli uno o più file")}</span>
+              <span className="text-xs text-muted-foreground">{reading ? tr("Un attimo") : tr("oppure trascinali qui")}</span>
+              <input id={`${id}-file`} type="file" multiple disabled={reading} accept=".csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="sr-only" aria-describedby={fileError ? `${id}-file-error` : undefined} onChange={(e) => { void pick(e.target.files); e.target.value = ""; }} />
             </label>
-          )}
+          ) : null}
           {fileError ? (
             <div id={`${id}-file-error`}>
               <ErrorWithReport area="import_movimenti" error={fileError} />
@@ -246,17 +266,21 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
             track("form_step_back", { flow: "personal_import", step: flow.index + 1 });
             flow.back();
           }}
-          primaryLabel={flow.isLast ? (upload.isPending ? "Carico il file…" : "Importa il file") : tr("Continua")}
+          primaryLabel={flow.isLast ? (upload.isPending ? (files.length > 1 ? tr("Carico i file…") : tr("Carico il file…")) : files.length > 1 ? tr("Importa {0} file", { 0: files.length }) : tr("Importa il file")) : tr("Continua")}
           pending={upload.isPending}
           disabled={!stepReady}
         />
         {!stepReady ? <p id={`${id}-missing`} className="text-sm text-muted-foreground">{tr("Per continuare:")}{" "}{stepMissing.map((message) => tr(message)).join(", ")}{"."}</p> : null}
-        {upload.error instanceof PersonalImportApiError && upload.error.code === "already_imported" ? (
+        {outcome?.alreadyImported.length ? (
           <p role="status" className="flex items-start gap-2 rounded-xl bg-muted/50 p-3 text-sm text-foreground">
             <InfoIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            {translateServerMessage(language, upload.error.message)}
+            {outcome.alreadyImported.length === 1 && outcome.queued.length === 0 && outcome.failed.length === 0
+              ? translateServerMessage(language, ALREADY_IMPORTED_TEXT)
+              : tr("Già importati, li ho saltati: {0}.", { 0: outcome.alreadyImported.map((f) => f.name).join(", ") })}
           </p>
-        ) : upload.error ? <ErrorWithReport area="import_movimenti" error={upload.error.message} /> : null}
+        ) : null}
+        {outcome?.failed.length ? <ErrorWithReport area="import_movimenti" error={outcome.failed.map((f) => `${f.file.name}: ${translateServerMessage(language, f.message)}`).join(" ")} /> : null}
+        {upload.error ? <ErrorWithReport area="import_movimenti" error={upload.error.message} /> : null}
       </div>
     </form>
   );

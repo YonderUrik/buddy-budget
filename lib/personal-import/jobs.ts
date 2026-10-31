@@ -23,6 +23,12 @@ export function importFailedMessage() {
     : "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il team è già stato avvisato: se vuoi una mano, scrivi al supporto.";
 }
 /** Identity of an uploaded file, the same whatever the line endings, BOM or trailing blank lines. */
+/** Files one user may have waiting or in analysis at once: a batch of exports of the same bank. */
+export const MAX_ACTIVE_JOBS = 10;
+/** Uploads per user in 24 hours. */
+export const MAX_DAILY_UPLOADS = 30;
+const ACTIVE_STATUSES = ["queued", "processing", "ready"];
+const LIMIT_MESSAGE = "Limite raggiunto: massimo 10 file in analisi e 30 caricamenti al giorno";
 export function fileFingerprint(csv: string) {
   return digest(csv.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").replace(/\s+$/, ""));
 }
@@ -38,19 +44,21 @@ export async function enqueue(userId: string, input: { csv: string; name: string
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 81234)`);
     if (!input.regenerate) {
       // A file already imported is refused before any analysis; a broker file still on its way returns its own job.
-      const same = await tx.select({ id: jobs.id, status: jobs.status }).from(jobs).where(and(eq(jobs.userId, userId), sql`${jobs.sourceFingerprint} in (${sourceFingerprint}, ${digest(input.csv)})`, sql`${jobs.status} not in ('failed', 'expired')`));
+      const same = await tx.select({ id: jobs.id, status: jobs.status, formatId: jobs.formatId }).from(jobs).where(and(eq(jobs.userId, userId), sql`${jobs.sourceFingerprint} in (${sourceFingerprint}, ${digest(input.csv)})`, sql`${jobs.status} not in ('failed', 'expired')`));
       if (same.some(j => j.status === "imported")) throw new ImportError(ALREADY_IMPORTED_MESSAGE, "already_imported");
-      if (broker && same[0]) return same[0];
+      // The same file sent again while it is still on its way (a double drop, a retried batch) is that job.
+      const pending = same.find(j => ACTIVE_STATUSES.includes(j.status));
+      if (pending) return pending;
     }
     const recent = await tx.select({ status: jobs.status }).from(jobs).where(and(eq(jobs.userId, userId), gte(jobs.createdAt, new Date(Date.now() - 86400000))));
-    if (recent.length >= 10 || recent.filter(j => ["queued", "processing"].includes(j.status)).length >= 2) throw new ImportError("Limite raggiunto: massimo 2 analisi in corso e 10 caricamenti al giorno");
+    if (recent.length >= MAX_DAILY_UPLOADS || recent.filter(j => ["queued", "processing"].includes(j.status)).length >= MAX_ACTIVE_JOBS) throw new ImportError(LIMIT_MESSAGE);
     const [priorBroker] = broker && broker.provider !== "generic" ? await tx.select({ formatId: jobs.formatId }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.brokerProvider, broker.provider))).orderBy(desc(jobs.createdAt)).limit(1) : [];
     const formatId = broker ? priorBroker?.formatId : input.formatId;
     let format = formatId ? (await tx.select().from(formats).where(and(eq(formats.id, formatId), eq(formats.userId, userId))))[0] : undefined;
     if (input.formatId && !format) throw new ImportError("Formato non disponibile");
     if (!format) [format] = await tx.insert(formats).values({ userId, name: broker && broker.provider !== "generic" ? broker.name : input.name }).returning();
     const [parser] = input.regenerate ? [] : await tx.select().from(parsers).where(and(eq(parsers.formatId, format.id), eq(parsers.signature, signature))).orderBy(desc(parsers.createdAt)).limit(1);
-    const [job] = await tx.insert(jobs).values({ userId, consentVersion: "openrouter-raw-zdr-v3", formatId: format.id, parserId: parser?.id, brokerProvider: broker?.provider, sourceFingerprint, failureReport: broker ? { phase: "parse", reason: broker.requiresReconciliation ? "broker_validation_failed" : "broker_parse_failed", fallback: true } : null, encryptedCsv: seal(input.csv, userId), estimatedAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 7 * 86400000) }).returning({ id: jobs.id });
+    const [job] = await tx.insert(jobs).values({ userId, consentVersion: "openrouter-raw-zdr-v3", formatId: format.id, parserId: parser?.id, brokerProvider: broker?.provider, sourceFingerprint, failureReport: broker ? { phase: "parse", reason: broker.requiresReconciliation ? "broker_validation_failed" : "broker_parse_failed", fallback: true } : null, encryptedCsv: seal(input.csv, userId), estimatedAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 7 * 86400000) }).returning({ id: jobs.id, status: jobs.status, formatId: jobs.formatId });
     return job;
   });
 }

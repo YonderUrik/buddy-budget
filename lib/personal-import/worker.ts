@@ -34,7 +34,10 @@ const MAX_TRANSIENT_ATTEMPTS = 3;
 export async function processOne() {
   const lease = randomUUID();
   const job = await db.transaction(async tx => {
-    const [candidate] = await tx.select().from(jobs).where(sql`(${jobs.status} = 'queued' AND ${jobs.availableAt} <= now() OR ${jobs.status} = 'processing' AND ${jobs.leaseUntil} < now()) AND ${jobs.expiresAt} > now()`).orderBy(jobs.createdAt).limit(1).for("update", { skipLocked: true });
+    // One job per source at a time, oldest first: the files of a batch run in upload order and each can reuse the
+    // parser the previous one saved, instead of all asking the AI at once.
+    const [candidate] = await tx.select().from(jobs).where(sql`(${jobs.status} = 'queued' AND ${jobs.availableAt} <= now() OR ${jobs.status} = 'processing' AND ${jobs.leaseUntil} < now()) AND ${jobs.expiresAt} > now()
+      AND NOT EXISTS (SELECT 1 FROM personal_import_jobs busy WHERE busy.format_id = ${jobs.formatId} AND busy.id <> ${jobs.id} AND busy.status = 'processing' AND busy.lease_until >= now())`).orderBy(jobs.createdAt).limit(1).for("update", { skipLocked: true });
     if (!candidate) return null;
     const [claimed] = await tx.update(jobs).set({ status: "processing", error: null, lease, leaseUntil: new Date(Date.now() + LEASE_MS), attempts: candidate.attempts + 1 }).where(eq(jobs.id, candidate.id)).returning();
     return claimed;
@@ -100,6 +103,9 @@ export async function processOne() {
       let parserId = generated.reused ? saved?.id : undefined;
       if (!parserId) {
         const [version] = await tx.insert(parsers).values({ formatId: job.formatId, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(generated.parser), job.userId), model: generated.model }).returning(); parserId = version.id;
+        // Files of the same source still waiting start from the parser that just worked, not from the one they
+        // were uploaded with (none, for a new source; the broken one, after a layout change).
+        await tx.update(jobs).set({ parserId }).where(and(eq(jobs.formatId, job.formatId), eq(jobs.status, "queued"), sql`${jobs.id} <> ${job.id}`));
       }
       const preview: Preview = { headers: table.headers, currency, records };
       await tx.update(jobs).set({ status: "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: null, failureReport: report, lease: null, leaseUntil: null }).where(owned);

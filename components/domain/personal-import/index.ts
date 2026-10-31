@@ -9,6 +9,8 @@ export type { PersonalImportUploadProps } from "./personal-import-upload";
 export { PersonalImportProgress, PersonalImportList, isActiveJob, PERSONAL_IMPORT_ACTIVE } from "./personal-import-status";
 export type { PersonalImportProgressProps, PersonalImportListProps } from "./personal-import-status";
 export { PersonalImportReceipt, receiptStage } from "./personal-import-receipt";
+export { combineJobs, PERSONAL_IMPORT_MAX_FILES } from "./personal-import-batch";
+export type { BatchJob, BatchResult } from "./personal-import-batch";
 export type { PersonalImportReceiptFile, PersonalImportReceiptProps } from "./personal-import-receipt";
 export { PersonalImportIsland, PersonalImportIslandCard } from "./personal-import-island";
 export type { PersonalImportIslandCardProps } from "./personal-import-island";

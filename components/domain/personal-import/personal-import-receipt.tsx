@@ -32,6 +32,8 @@ export interface PersonalImportReceiptFile {
   rows?: number;
   /** Nome della banca o del broker scelto. */
   source: string;
+  /** Files of the batch that were not sent (already imported, refused), in one sentence. */
+  notice?: string;
 }
 
 export interface PersonalImportReceiptProps {
@@ -41,6 +43,8 @@ export interface PersonalImportReceiptProps {
   /** Id della sezione «Le tue importazioni», raggiunta dal pulsante. */
   listId: string;
   onAnother: () => void;
+  /** Files of an imported batch that could not be read: they stay in the list with their message. */
+  failedFiles?: number;
 }
 
 const STAGES = ["File ricevuto", "Analisi del formato", "Controlli e salvataggio", "Importato"] as const;
@@ -97,7 +101,7 @@ function Stages({ stage, failed }: { stage: number; failed: boolean }) {
 }
 
 /** «File ricevuto»: nome, righe e fase; a fine lavoro il riepilogo e i link ai dati. */
-export function PersonalImportReceipt({ file, job, listId, onAnother }: PersonalImportReceiptProps) {
+export function PersonalImportReceipt({ file, job, listId, onAnother, failedFiles = 0 }: PersonalImportReceiptProps) {
   const { locale: formattingLocale } = useLocalization();
 
   const { t: tr, language } = useLocalization();
@@ -151,6 +155,8 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
           <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size, formattingLocale) : null, file.rows !== undefined ? plural(file.rows, "riga", tr("righe")) : null].filter(Boolean).join(" · ")}</span>
         </span>
       </div>
+      {file.notice ? <p className="text-sm text-muted-foreground">{file.notice}</p> : null}
+      {imported && failedFiles > 0 ? <p className="text-sm text-muted-foreground">{failedFiles === 1 ? tr("1 file non è stato importato: trovi il motivo nella lista.") : tr("{0} file non sono stati importati: trovi il motivo nella lista.", { 0: failedFiles })}</p> : null}
 
       <Stages stage={stage} failed={failed} />
       {!imported && !failed ? <ProgressBar state={{ kind: "indeterminate" }} label={tr("Importazione in corso")} /> : null}

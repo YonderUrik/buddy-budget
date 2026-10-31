@@ -42,7 +42,8 @@ export interface ProductEvents {
   support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" | "stato" };
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
   support_faq_opened: { id: string };
-  personal_csv_requested: { reuse: boolean };
+  /** Upload sent; `files`: how many files of the same bank went together. */
+  personal_csv_requested: { reuse: boolean; files?: number };
   /** File già importato: rifiutato al caricamento (stesso file) o, dopo l'analisi, senza nessun movimento nuovo. */
   personal_csv_already_imported: { stage: "caricamento" | "analisi" };
   investments_import_ai_fallback: Record<string, never>;

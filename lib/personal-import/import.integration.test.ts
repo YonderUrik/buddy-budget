@@ -121,7 +121,7 @@ describe("personal CSV durable flow", () => {
   it("does not send a reused file to AI under the previous consent wording", async () => {
     const first = await prepare(); const original = await readJob(first);
     await db.update(parsers).set({encryptedParser:seal(JSON.stringify({kind:"javascript",code:"function(){throw Error('broken')}"}),userId)}).where(eq(parsers.id,original.parserId!));
-    const next = await enqueue(userId,{csv,name:"Legacy",formatId:original.formatId});
+    const next = await enqueue(userId,{csv:csvAgain,name:"Legacy",formatId:original.formatId});
     await db.update(jobs).set({consentVersion:"openrouter-raw-zdr-v2"}).where(eq(jobs.id,next.id));
     await processOne();
     expect(generateParser).toHaveBeenCalledTimes(1);
@@ -242,11 +242,34 @@ describe("personal CSV durable flow", () => {
     expect(await confirmImport(userId, next)).toMatchObject({ inserted: 0, alreadyPresent: 3 });
     expect(await cash()).toHaveLength(3);
   });
+  it("a batch of a new bank asks the AI once: the next files reuse the parser and land in the same source", async () => {
+    const first = await enqueue(userId, { csv, name: "Batch bank" });
+    expect(first.formatId).toBeTruthy();
+    const second = await enqueue(userId, { csv: csv + "\n2024-01-04,CASH,-2,Later", name: "Batch bank", formatId: first.formatId });
+    const third = await enqueue(userId, { csv: csv + "\n2024-01-05,CASH,-3,Even later", name: "Batch bank", formatId: first.formatId });
+    // The same file dropped again while it is on its way is that job, not a new one.
+    expect((await enqueue(userId, { csv, name: "Batch bank", formatId: first.formatId })).id).toBe(first.id);
+    // A second worker cannot take a file of a bank whose first file is being analysed.
+    await db.update(jobs).set({ status: "processing", lease: randomUUID(), leaseUntil: new Date(Date.now() + 60000) }).where(eq(jobs.id, first.id));
+    expect(await processOne()).toBe(false);
+    await db.update(jobs).set({ status: "queued", lease: null, leaseUntil: null }).where(eq(jobs.id, first.id));
+    for (let i = 0; i < 3; i++) await processOne();
+    expect(generateParser).toHaveBeenCalledTimes(1);
+    for (const id of [first.id, second.id, third.id]) expect((await readJob(id)).status).toBe("ready");
+    for (let i = 0; i < 3; i++) await maintainJobs();
+    expect(await cash()).toHaveLength(5);
+    expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toHaveLength(1);
+  });
+  it("allows ten files in analysis at once", async () => {
+    for (let i = 0; i < 10; i++) await enqueue(userId, { csv: `${csv}\n2024-02-0${i % 9 + 1},CASH,-${i + 1},File ${i}`, name: "Ten" });
+    await expect(enqueue(userId, { csv: `${csv}\n2024-03-01,CASH,-99,Eleventh`, name: "Ten" })).rejects.toThrow("massimo 10 file");
+    await db.update(jobs).set({ status: "expired", encryptedCsv: null }).where(eq(jobs.userId, userId));
+  });
   it("claims jobs once concurrently and recovers an expired lease", async () => {
     const { id } = await enqueue(userId, { csv, name: 'Lease bank' });
     const claims = await Promise.all([processOne(), processOne()]); expect(claims.filter(Boolean)).toHaveLength(1);
     expect((await readJob(id)).status).toBe("ready");
-    const second = await enqueue(userId, { csv, name: 'Recovered bank' });
+    const second = await enqueue(userId, { csv: csvAgain, name: 'Recovered bank' });
     await db.update(jobs).set({ status: "processing", lease: randomUUID(), leaseUntil: new Date(0) }).where(eq(jobs.id, second.id));
     await processOne(); expect((await readJob(second.id)).status).toBe("ready");
   });
@@ -341,8 +364,8 @@ describe("personal CSV durable flow", () => {
     const id = await prepare(); expect((await exportPersonalImports(userId)).parsers).toHaveLength(1);
     await db.update(jobs).set({ expiresAt: new Date(0) }).where(eq(jobs.id, id));
     await maintainJobs(); expect((await readJob(id)).status).toBe("expired"); expect(await getPreview(userId, id)).toBeNull();
-    await enqueue(userId, { csv, name: 'One' }); await enqueue(userId, { csv, name: 'Two' });
-    await expect(enqueue(userId, { csv, name: 'Three' })).rejects.toThrow("Limite");
+    // The same file again while it is still queued is that job, whatever name is typed.
+    const one = await enqueue(userId, { csv, name: 'One' }); expect((await enqueue(userId, { csv, name: 'Two' })).id).toBe(one.id);
     await db.update(jobs).set({ status: "expired", encryptedCsv: null }).where(eq(jobs.userId, userId));
   });
   describe("bank categories", () => {

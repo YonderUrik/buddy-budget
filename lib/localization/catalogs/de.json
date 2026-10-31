@@ -5519,5 +5519,21 @@
   "Saldi e movimenti arrivano da soli dalla banca.": "Salden und Umsätze kommen automatisch von deiner Bank.",
   "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli.": "Sparkasse, ING, DKB, N26 und die anderen europäischen Banken, mit Salden und Umsätzen, die automatisch kommen.",
   "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il team è già stato avvisato: se vuoi una mano, scrivi al supporto.": "Wir konnten diese Datei nicht lesen: Es wurden keine Umsätze gespeichert. Das Team wurde bereits benachrichtigt: Wenn du Hilfe möchtest, schreib dem Support.",
-  "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il dettaglio è nel log del worker CSV.": "Wir konnten diese Datei nicht lesen: Es wurden keine Umsätze gespeichert. Die Details stehen im Log des CSV-Workers."
+  "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il dettaglio è nel log del worker CSV.": "Wir konnten diese Datei nicht lesen: Es wurden keine Umsätze gespeichert. Die Details stehen im Log des CSV-Workers.",
+  "Limite raggiunto: massimo 10 file in analisi e 30 caricamenti al giorno": "Limit erreicht: höchstens 10 Dateien in Analyse und 30 Uploads pro Tag",
+  "1 file non è stato importato: trovi il motivo nella lista.": "1 Datei wurde nicht importiert: Den Grund findest du in der Liste.",
+  "{0} file non sono stati importati: trovi il motivo nella lista.": "{0} Dateien wurden nicht importiert: Den Grund findest du in der Liste.",
+  "{0} file": "{0} Dateien",
+  "Non inviati: {0}. Gli altri sono in arrivo.": "Nicht gesendet: {0}. Die anderen sind unterwegs.",
+  "Puoi caricare al massimo {0} file alla volta: {1} non aggiunti.": "Du kannst höchstens {0} Dateien auf einmal hochladen: {1} nicht hinzugefügt.",
+  "Carica i file": "Dateien hochladen",
+  "CSV o Excel (.xlsx), fino a {0} e {1} righe ciascuno. Puoi sceglierne fino a {2} della stessa banca.": "CSV oder Excel (.xlsx), bis zu {0} und {1} Zeilen pro Datei. Du kannst bis zu {2} von derselben Bank auswählen.",
+  "File scelti": "Ausgewählte Dateien",
+  "Leggo i file…": "Dateien werden gelesen…",
+  "Aggiungi altri file": "Weitere Dateien hinzufügen",
+  "Scegli uno o più file": "Eine oder mehrere Dateien auswählen",
+  "oppure trascinali qui": "oder hierher ziehen",
+  "Carico i file…": "Dateien werden hochgeladen…",
+  "Importa {0} file": "{0} Dateien importieren",
+  "Già importati, li ho saltati: {0}.": "Bereits importiert, übersprungen: {0}."
 }

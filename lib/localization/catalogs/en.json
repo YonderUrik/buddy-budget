@@ -5519,5 +5519,21 @@
   "Saldi e movimenti arrivano da soli dalla banca.": "Balances and transactions arrive from your bank on their own.",
   "Intesa, UniCredit, Fineco, N26 e le altre banche europee, con saldi e movimenti che arrivano da soli.": "Intesa, UniCredit, Fineco, N26 and the other European banks, with balances and transactions arriving on their own.",
   "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il team è già stato avvisato: se vuoi una mano, scrivi al supporto.": "We couldn't read this file: no transactions were saved. The team has already been notified: if you'd like help, write to support.",
-  "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il dettaglio è nel log del worker CSV.": "We couldn't read this file: no transactions were saved. The details are in the CSV worker log."
+  "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il dettaglio è nel log del worker CSV.": "We couldn't read this file: no transactions were saved. The details are in the CSV worker log.",
+  "Limite raggiunto: massimo 10 file in analisi e 30 caricamenti al giorno": "Limit reached: at most 10 files in analysis and 30 uploads a day",
+  "1 file non è stato importato: trovi il motivo nella lista.": "1 file was not imported: you'll find the reason in the list.",
+  "{0} file non sono stati importati: trovi il motivo nella lista.": "{0} files were not imported: you'll find the reason in the list.",
+  "{0} file": "{0} files",
+  "Non inviati: {0}. Gli altri sono in arrivo.": "Not sent: {0}. The others are on their way.",
+  "Puoi caricare al massimo {0} file alla volta: {1} non aggiunti.": "You can upload at most {0} files at a time: {1} not added.",
+  "Carica i file": "Upload the files",
+  "CSV o Excel (.xlsx), fino a {0} e {1} righe ciascuno. Puoi sceglierne fino a {2} della stessa banca.": "CSV or Excel (.xlsx), up to {0} and {1} rows each. You can choose up to {2} from the same bank.",
+  "File scelti": "Chosen files",
+  "Leggo i file…": "Reading the files…",
+  "Aggiungi altri file": "Add more files",
+  "Scegli uno o più file": "Choose one or more files",
+  "oppure trascinali qui": "or drag them here",
+  "Carico i file…": "Uploading the files…",
+  "Importa {0} file": "Import {0} files",
+  "Già importati, li ho saltati: {0}.": "Already imported, I skipped them: {0}."
 }

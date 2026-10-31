@@ -15,7 +15,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileSpreadsheetIcon, InfoIcon, UploadIcon, XIcon } from "lucide-react";
 import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { IMPORT_PROVIDERS } from "@/lib/investments/import/providers";
 import { track } from "@/lib/analytics";
 import { gridToCsv } from "@/lib/investments/import/fineco";
 import { readXlsx, XLSX_MAX_FILE_BYTES } from "@/lib/pension/import/xlsx";
@@ -31,6 +32,9 @@ const CONSENT_VERSION = "openrouter-raw-zdr-v3";
 /** The server's text for a file already imported (`ALREADY_IMPORTED_MESSAGE`), shown when it is the only file sent. */
 const ALREADY_IMPORTED_TEXT = "Questo file è già stato importato: i suoi movimenti ci sono già tutti.";
 const NEW_FORMAT = "__new__";
+/** Select value of a broker with a built-in reader the user has not imported from yet. */
+const BROKER_PREFIX = "broker:";
+const BROKERS = IMPORT_PROVIDERS.filter((p) => p.id !== "generic");
 const FIELD_CLASS = "h-11 sm:h-9";
 const PERSONAL_IMPORT_STEPS = 3;
 
@@ -97,22 +101,28 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
   const [dragging, setDragging] = React.useState(false);
   const [consent, setConsent] = React.useState(false);
   const isNew = formatId === NEW_FORMAT;
+  // A broker already used is among the user's sources: it is offered once, there.
+  const known = new Set(formats.map((f) => f.name.trim().toLowerCase()));
+  const brokers = BROKERS.filter((b) => !known.has(b.name.toLowerCase()));
+  const broker = formatId.startsWith(BROKER_PREFIX) ? BROKERS.find((b) => `${BROKER_PREFIX}${b.id}` === formatId) : undefined;
+  const sourceName = broker?.name ?? formats.find((f) => f.id === formatId)?.name ?? name.trim();
+  const existingFormat = isNew || broker ? undefined : formatId;
 
   const [outcome, setOutcome] = React.useState<BatchResult<LoadedFile> | null>(null);
   const isAlreadyImported = (error: unknown) => error instanceof PersonalImportApiError && error.code === "already_imported";
   const upload = useMutation({
     mutationFn: async () => {
       if (!files.length) throw new Error(tr("Scegli un file da importare."));
-      const source = formats.find((f) => f.id === formatId)?.name ?? name.trim();
-      return sendBatch(files, isNew ? undefined : formatId, (file, target) => personalImportApi<{ id: string; formatId?: string }>("", { name: source, csv: file.csv, formatId: target, consent, consentVersion: CONSENT_VERSION }), isAlreadyImported);
+      const source = sourceName;
+      return sendBatch(files, existingFormat, (file, target) => personalImportApi<{ id: string; formatId?: string }>("", { name: source, csv: file.csv, formatId: target, consent, consentVersion: CONSENT_VERSION }), isAlreadyImported);
     },
     onSuccess: (result) => {
       setOutcome(result);
       for (let i = 0; i < result.alreadyImported.length; i++) track("personal_csv_already_imported", { stage: "caricamento" });
       if (!result.queued.length) return;
-      track("personal_csv_requested", { reuse: !isNew, files: result.queued.length });
+      track("personal_csv_requested", { reuse: !!existingFormat, files: result.queued.length });
       const sent = result.queued.map((q) => q.file);
-      const source = formats.find((f) => f.id === formatId)?.name ?? name.trim();
+      const source = sourceName;
       const summary: PersonalImportReceiptFile = sent.length === 1
         ? { name: sent[0].name, size: sent[0].size, rows: countCsvRows(sent[0].csv), source }
         : { name: tr("{0} file", { 0: sent.length }), size: sent.reduce((n, f) => n + f.size, 0), rows: sent.reduce((n, f) => n + countCsvRows(f.csv), 0), source };
@@ -169,20 +179,42 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
       <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-4">
         {flow.index === 0 ? (
         <>
-          <StepHeading title={tr("Da dove arriva il file?")} description={formats.length > 0 ? tr("Scegli un formato che hai già creato, oppure descrivine uno nuovo.") : tr("Il nome della tua banca o del tuo broker: serve a riconoscere il formato la prossima volta.")} />
-          {formats.length > 0 ? (
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={`${id}-format`} className="text-sm font-medium text-foreground">{tr("Formato")}</label>
-              <Select value={formatId} onValueChange={(value) => setFormatId(value as string)}>
-                <SelectTrigger id={`${id}-format`} className={cn("w-full", FIELD_CLASS)}>
-                  <SelectValue>{(value: string | null) => (value === NEW_FORMAT || !value ? tr("Nuova banca o broker") : formats.find((f) => f.id === value)?.name ?? "")}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NEW_FORMAT}>{tr("Nuova banca o broker")}</SelectItem>
-                  {formats.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+          <StepHeading title={tr("Da dove arriva il file?")} description={tr("Scegli la banca o il broker. I broker con lettore integrato si importano senza AI; per gli altri l'AI riconosce il formato la prima volta e lo riusa.")} />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor={`${id}-format`} className="text-sm font-medium text-foreground">{tr("Banca o broker")}</label>
+            <Select value={formatId} onValueChange={(value) => setFormatId(value as string)}>
+              <SelectTrigger id={`${id}-format`} className={cn("w-full", FIELD_CLASS)}>
+                <SelectValue>{(value: string | null) => (value === NEW_FORMAT || !value ? tr("Nuova banca o broker") : value.startsWith(BROKER_PREFIX) ? BROKERS.find((b) => `${BROKER_PREFIX}${b.id}` === value)?.name ?? "" : formats.find((f) => f.id === value)?.name ?? "")}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {formats.length > 0 ? (
+                  <SelectGroup>
+                    <SelectLabel>{tr("Già usati")}</SelectLabel>
+                    {formats.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                  </SelectGroup>
+                ) : null}
+                {brokers.length > 0 ? (
+                  <>
+                    {formats.length > 0 ? <SelectSeparator /> : null}
+                    <SelectGroup>
+                      <SelectLabel>{tr("Broker con lettore integrato")}</SelectLabel>
+                      {brokers.map((b) => <SelectItem key={b.id} value={`${BROKER_PREFIX}${b.id}`}>{b.name}</SelectItem>)}
+                    </SelectGroup>
+                  </>
+                ) : null}
+                <SelectSeparator />
+                <SelectItem value={NEW_FORMAT}>{tr("Nuova banca o broker")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {broker ? (
+            <details className="rounded-xl bg-muted/50 p-3 text-sm text-muted-foreground">
+              <summary className="min-h-9 cursor-pointer font-medium text-foreground">{tr("Come scaricare il file da {0}", { 0: broker.name })}</summary>
+              <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5">
+                {broker.exportSteps.map((step) => <li key={step}>{tr(step)}</li>)}
+              </ol>
+              <p className="mt-2">{tr(broker.note)}</p>
+            </details>
           ) : null}
           {/* No «read the format again» option: when the saved parser no longer reads a file, the worker retries by itself. */}
           {isNew ? (

@@ -5546,5 +5546,10 @@
   "{0} righe importate con il lettore {1}, senza AI: le trovi in Investimenti e, per la liquidità del broker, in Liquidità.": "{0} rows imported with the {1} reader, without AI: you'll find them in Investments and, for the broker's cash, in Cash.",
   "Il rendiconto {0} non si riconcilia: controlla che sia completo e non modificato.": "The {0} statement doesn't reconcile: check that it's complete and unchanged.",
   "Non riesco a riconoscere lo strumento {0}": "I can't recognise the instrument {0}",
-  "{0} righe del file {1} non si possono importare: nessuna operazione salvata.": "{0} rows of the {1} file can't be imported: no operation was saved."
+  "{0} righe del file {1} non si possono importare: nessuna operazione salvata.": "{0} rows of the {1} file can't be imported: no operation was saved.",
+  "Banca o broker": "Bank or broker",
+  "Già usati": "Already used",
+  "Broker con lettore integrato": "Brokers with a built-in reader",
+  "Come scaricare il file da {0}": "How to download the file from {0}",
+  "Scegli la banca o il broker. I broker con lettore integrato si importano senza AI; per gli altri l'AI riconosce il formato la prima volta e lo riusa.": "Choose the bank or broker. Brokers with a built-in reader are imported without AI; for the others the AI recognises the format the first time and reuses it."
 }

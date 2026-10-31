@@ -5546,5 +5546,10 @@
   "{0} righe importate con il lettore {1}, senza AI: le trovi in Investimenti e, per la liquidità del broker, in Liquidità.": "{0} Zeilen mit dem {1}-Leser importiert, ohne KI: Du findest sie unter Investitionen und, für das Guthaben beim Broker, unter Liquidität.",
   "Il rendiconto {0} non si riconcilia: controlla che sia completo e non modificato.": "Die {0}-Abrechnung lässt sich nicht abstimmen: Prüfe, ob sie vollständig und unverändert ist.",
   "Non riesco a riconoscere lo strumento {0}": "Ich kann das Wertpapier {0} nicht erkennen",
-  "{0} righe del file {1} non si possono importare: nessuna operazione salvata.": "{0} Zeilen der {1}-Datei können nicht importiert werden: Es wurde kein Vorgang gespeichert."
+  "{0} righe del file {1} non si possono importare: nessuna operazione salvata.": "{0} Zeilen der {1}-Datei können nicht importiert werden: Es wurde kein Vorgang gespeichert.",
+  "Banca o broker": "Bank oder Broker",
+  "Già usati": "Bereits verwendet",
+  "Broker con lettore integrato": "Broker mit integriertem Leser",
+  "Come scaricare il file da {0}": "So lädst du die Datei bei {0} herunter",
+  "Scegli la banca o il broker. I broker con lettore integrato si importano senza AI; per gli altri l'AI riconosce il formato la prima volta e lo riusa.": "Wähle die Bank oder den Broker. Broker mit integriertem Leser werden ohne KI importiert; bei den anderen erkennt die KI das Format beim ersten Mal und verwendet es wieder."
 }

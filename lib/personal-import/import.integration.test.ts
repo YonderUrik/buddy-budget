@@ -276,6 +276,13 @@ describe("personal CSV durable flow", () => {
     expect(job).toMatchObject({ status: "imported", brokerProvider: "interactive-brokers", encryptedCsv: null, importLedger: { rows: 9, alreadyPresent: 2, native: { provider: "interactive-brokers", inserted: 7 } } });
     expect((await listImports(userId)).jobs.find(j => j.id === id)?.results).toMatchObject({ native: { name: "Interactive Brokers", inserted: 7 }, rows: 9, alreadyPresent: 2 });
   });
+  it("a file a built-in reader imported can be uploaded again (its data may have been deleted): the reader decides", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "imported", provider: "interactive-brokers", name: "Interactive Brokers", result: { rows: [], counts: { new: 7, duplicate: 0, error: 0 }, inserted: 7, instrumentsCreated: 1 } });
+    const first = await prepare();
+    expect((await readJob(first)).status).toBe("imported");
+    const again = await enqueue(userId, { csv, name: "Synthetic Bank" });
+    expect(again.id).not.toBe(first);
+  });
   it("a broker export its reader refuses goes to the AI with the reader's reason, and support gets that reason", async () => {
     vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "degiro", name: "DEGIRO", message: "Cassa EUR non riconciliata" });
     const id = await prepare();

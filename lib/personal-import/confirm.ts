@@ -41,6 +41,21 @@ async function importedElsewhere(tx: Tx, userId: string, formatId: string, keys:
   }
   return found;
 }
+/**
+ * Portfolios that can hold the native history of `provider`: the statement readers' own (`ibkr:`, `degiro:`,
+ * `trade-republic:` and the direct Trade Republic connection), the default portfolio for the mapped exports (Fineco,
+ * Yahoo). An unknown broker keeps the broad check: any portfolio not from a personal import.
+ */
+function sameBrokerPortfolios(provider: string) {
+  const broker = investmentPortfolios.broker;
+  switch (provider) {
+    case "interactive-brokers": return sql`${broker} like 'ibkr:%'`;
+    case "degiro": return sql`${broker} like 'degiro:%'`;
+    case "trade-republic": return sql`(${broker} like 'trade-republic:%' or ${broker} like 'trade-republic-api:%')`;
+    case "fineco": case "yahoo-portfolio": return sql`${broker} is null`;
+    default: return undefined;
+  }
+}
 /** Line keys of `candidates` whose exact content is already stored in the source's account or portfolio. */
 async function storedByContent(tx: Tx, userId: string, accountId: string | null, portfolioId: string | null, file: PreviewRecord[], candidates: PreviewRecord[]) {
   const dates = candidates.flatMap(r => r.outcome.kind === "cash" || r.outcome.kind === "investment" ? [r.outcome.date] : []).sort();
@@ -101,7 +116,9 @@ export async function confirmImport(userId: string, id: string) {
     if (job.brokerProvider && financial.length) {
       const [native] = await tx.select({ id: brokerStatements.id }).from(brokerStatements).where(and(eq(brokerStatements.userId, userId), job.brokerProvider === "generic" ? undefined : sql`coalesce(${brokerStatements.statement}->>'provider', 'interactive-brokers') = ${job.brokerProvider}`)).limit(1);
       const dates = financial.flatMap(r => r.outcome.kind === "cash" || r.outcome.kind === "investment" ? [r.outcome.date] : []).sort();
-      const [untracked] = await tx.select({ id: investmentTransactions.id }).from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), sql`${investmentTransactions.date} between ${dates[0]} and ${dates.at(-1)}`, sql`${investmentTransactions.portfolioId} not in (select portfolio_id from personal_formats where user_id = ${userId} and portfolio_id is not null)`)).limit(1);
+      // Only that broker's own history can hold the same trades: another broker's portfolio (a Trade Republic
+      // connection next to an IBKR file) is not an overlap.
+      const [untracked] = await tx.select({ id: investmentTransactions.id }).from(investmentTransactions).innerJoin(investmentPortfolios, eq(investmentPortfolios.id, investmentTransactions.portfolioId)).where(and(eq(investmentTransactions.userId, userId), sql`${investmentTransactions.date} between ${dates[0]} and ${dates.at(-1)}`, sql`${investmentTransactions.portfolioId} not in (select portfolio_id from personal_formats where user_id = ${userId} and portfolio_id is not null)`, sameBrokerPortfolios(job.brokerProvider))).limit(1);
       if (native || untracked) throw new ImportError("Analisi AI completata. Lo storico contiene importazioni precedenti da riconciliare: il supporto riceverà il report. Nessun movimento è stato aggiunto.");
     }
     if (financial.some(r => !r.rate || !Number.isFinite(r.rate) || r.rate <= 0)) throw new ImportError("Cambio storico non disponibile: ricarica il CSV più tardi");

@@ -292,6 +292,21 @@ describe("personal CSV durable flow", () => {
     expect(await readJob(id)).toMatchObject({ status: "ready", brokerProvider: "fineco" });
     expect(generateParser).toHaveBeenCalledTimes(1);
   });
+  it("an AI-read broker file is refused only by that broker's own history, not by another broker's portfolio", async () => {
+    const [instrument] = await db.insert(instruments).values({ createdByUserId: userId, name: "Other broker share", type: "azione", currency: "EUR", priceMode: "manuale" }).returning();
+    const trade = (portfolioId: string) => ({ userId, portfolioId, instrumentId: instrument.id, type: "acquisto" as const, date: "2024-01-02", quantity: "1", price: "10", fxRate: "1", fees: "0", taxes: "0" });
+    const [tr] = await db.insert(investmentPortfolios).values({ userId, name: "Trade Republic", broker: "trade-republic-api:synthetic" }).returning();
+    await db.insert(investmentTransactions).values(trade(tr.id));
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "interactive-brokers", name: "Interactive Brokers", message: "Saldo iniziale CHF diverso dalla chiusura precedente: importa prima lo storico mancante" });
+    const allowed = await prepare();
+    expect(await confirmImport(userId, allowed)).toMatchObject({ inserted: 3 });
+    const [ib] = await db.insert(investmentPortfolios).values({ userId, name: "Interactive Brokers · 0001", broker: "ibkr:synthetic" }).returning();
+    await db.insert(investmentTransactions).values({ ...trade(ib.id), date: "2024-01-04" });
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "interactive-brokers", name: "Interactive Brokers", message: "x" });
+    const refused = await prepare(csv + "\n2024-01-04,CASH,-2,Later");
+    await expect(confirmImport(userId, refused)).rejects.toThrow("importazioni precedenti da riconciliare");
+    await db.delete(investmentTransactions).where(inArray(investmentTransactions.portfolioId, [tr.id, ib.id]));
+  });
   it("claims jobs once concurrently and recovers an expired lease", async () => {
     const { id } = await enqueue(userId, { csv, name: 'Lease bank' });
     const claims = await Promise.all([processOne(), processOne()]); expect(claims.filter(Boolean)).toHaveLength(1);

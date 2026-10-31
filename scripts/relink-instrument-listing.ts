@@ -1,5 +1,5 @@
 /**
- * Moves a shared instrument to another Yahoo listing of the same security and downloads its history again. For an
+ * Moves an instrument with automatic prices (shared, or a user's private copy) to another Yahoo listing of the same security and downloads its history again. For an
  * instrument an import linked to a secondary listing with a short history (Intel on `0R24.L` instead of `INTC`),
  * which makes every past valuation of it empty. A dry run by default:
  *
@@ -26,7 +26,8 @@ async function main() {
   if (!instrumentId || !yahooSymbol) throw new Error("Uso: pnpm db:relink-instrument <instrumentId> <yahooSymbol> [--execute]");
   const [instrument] = await db.select().from(instruments).where(eq(instruments.id, instrumentId));
   if (!instrument) throw new Error("Strumento non trovato");
-  if (instrument.createdByUserId !== null || instrument.priceMode !== "auto") throw new Error("Solo strumenti comuni con prezzi automatici");
+  // Shared or private (a user's own copy an import linked to the wrong listing), as long as prices are automatic.
+  if (instrument.priceMode !== "auto") throw new Error("Solo strumenti con prezzi automatici");
   const meta = await quoteMetaOnProviders(yahooSymbol);
   if (!meta?.currency) throw new Error(`${yahooSymbol} non esiste su Yahoo`);
   if (meta.currency !== instrument.currency) throw new Error(`${yahooSymbol} è quotato in ${meta.currency}, lo strumento in ${instrument.currency}`);

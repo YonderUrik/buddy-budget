@@ -71,6 +71,12 @@ async function findByIsin(isin: string, userId?: string | null, currency?: strin
   return row ?? null;
 }
 
+/** The user's private instrument with this ISIN and currency, if any. */
+async function findOwnByIsin(isin: string, userId: string, currency: string): Promise<Instrument | null> {
+  const [row] = await db.select().from(instruments).where(and(eq(instruments.isin, isin), eq(instruments.createdByUserId, userId), eq(instruments.currency, currency)));
+  return row ?? null;
+}
+
 /** Inserisce lo strumento; se nel frattempo un'altra richiesta ha creato lo stesso ISIN, restituisce quello. */
 async function insertInstrument(values: NewInstrument, symbols: Partial<Record<ProviderId, string>>): Promise<Instrument> {
   try {
@@ -216,7 +222,8 @@ async function findOrCreateInstrument(
     }
     case "manuale": {
       if (input.isin) {
-        const existing = await findByIsin(input.isin, userId, input.currency);
+        // `ownCopy`: only the user's private instrument counts, so a shared one with an adjusted history is skipped.
+        const existing = input.ownCopy ? await findOwnByIsin(input.isin, userId, input.currency) : await findByIsin(input.isin, userId, input.currency);
         if (existing) return { ok: true, instrument: existing, created: false };
       }
       const created = await insertInstrument(

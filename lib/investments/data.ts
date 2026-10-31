@@ -34,6 +34,7 @@ import { loadDividends, type DividendRow } from "@/lib/market-data/dividends";
 import { loadRiskFreeRates } from "@/lib/market-data/rates";
 import type { ExposureProfile, ManualBreakdown } from "./exposure";
 import type { InstrumentSettingInput } from "./tax-settings";
+import { fxSourceCurrencies } from "@/lib/calc/fx";
 
 /** Valuta del tasso privo di rischio €STR: per le altre lo Sharpe usa zero. */
 export const RISK_FREE_CURRENCY = "EUR";
@@ -230,7 +231,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
       : db
           .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })
           .from(fxRates)
-          .where(and(inArray(fxRates.currency, currencies), gte(fxRates.date, from)))
+          .where(and(inArray(fxRates.currency, fxSourceCurrencies(currencies)), gte(fxRates.date, from)))
           .orderBy(asc(fxRates.date)),
     inflationArea ? loadInflationIndex(inflationArea) : Promise.resolve([]),
     loadProfiles(ownedIds),
@@ -266,7 +267,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
 
 /** Cambi salvati tra due date (con margine prima di `fromKey` per weekend e festivi). */
 export async function loadRatesBetween(currencies: string[], fromKey: string, toKey: string): Promise<FxRateInput[]> {
-  const wanted = currencies.filter((c) => c !== "EUR");
+  const wanted = fxSourceCurrencies(currencies).filter((c) => c !== "EUR");
   if (wanted.length === 0) return [];
   return db
     .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })
@@ -276,7 +277,7 @@ export async function loadRatesBetween(currencies: string[], fromKey: string, to
 
 /** Cambi delle valute richieste fino alla data (per precompilare il cambio di un'operazione). */
 export async function loadRatesUpTo(currencies: string[], dateKey: string): Promise<FxRateInput[]> {
-  const wanted = currencies.filter((c) => c !== "EUR");
+  const wanted = fxSourceCurrencies(currencies).filter((c) => c !== "EUR");
   if (wanted.length === 0) return [];
   return db
     .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })

@@ -111,10 +111,9 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     const candidates = await tx.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
     let portfolio = targetId ? candidates.find((p) => p.id === targetId) : candidates.find((p) => p.broker === broker);
     if (targetId && !portfolio) return failed("Portafoglio non accessibile");
-    if (!portfolio && provider === "degiro") {
-      if (candidates.length > 1) return failed("Scegli il portafoglio in cui importare DEGIRO");
-      portfolio = candidates[0];
-    }
+    // DEGIRO joins the portfolio of hand-entered operations (no broker) when there is one; otherwise it gets its own,
+    // like the other brokers. Nobody is asked: the one import has no portfolio question (2026-10-31).
+    if (!portfolio && provider === "degiro") portfolio = candidates.find((p) => p.broker === null);
     const sourceFilter = statementSourceScope(accountKey, portfolio?.broker ?? null);
     const allExisting = portfolio ? await tx.select().from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), sourceFilter)) : [];
     const existing = allExisting.filter((o) => o.date < statement.from);

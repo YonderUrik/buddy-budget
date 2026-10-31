@@ -13,6 +13,13 @@ export interface ImportIdentity {
   currency: string | null;
   symbolIsYahoo: boolean;
   type?: import("@/lib/db/schema/investments").InstrumentType;
+  /** OpenFIGI exchange code of the listing the broker reports (IBKR «Listing Exch»): matching tries it first. */
+  exchange?: string | null;
+  /**
+   * The broker reports a corporate action on it (ISIN change, spinoff): market histories are adjusted for it and do
+   * not match the trade prices, so the security keeps the broker's prices instead of a linked quotation.
+   */
+  corporateAction?: boolean;
 }
 
 /** Operazione letta da una riga, nella forma dell'API (importi nella valuta dello strumento, costi in quella utente). */

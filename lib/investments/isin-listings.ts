@@ -32,13 +32,15 @@ export type VerifiedListingsResult =
  * valuta indicata (quella del rendiconto o del file). Il simbolo di OpenFIGI è una stima: senza la conferma di Yahoo
  * non si propone, perché un simbolo plausibile ma diverso darebbe prezzi sbagliati.
  */
-export async function verifyIsinListings(isin: string, currency: string | null, deps: IsinListingsDeps): Promise<VerifiedListingsResult> {
+export async function verifyIsinListings(isin: string, currency: string | null, deps: IsinListingsDeps, preferredExchange: string | null = null): Promise<VerifiedListingsResult> {
   let listings: OpenFigiListing[];
   try {
     listings = await deps.listings(isin);
   } catch {
     return { status: "unavailable" };
   }
+  // The exchange the broker reports comes first: it is the listing the user trades, with the longest history.
+  if (preferredExchange) listings = [...listings.filter((l) => l.exchCode === preferredExchange), ...listings.filter((l) => l.exchCode !== preferredExchange)];
   const verified: VerifiedListing[] = [];
   let failures = 0;
   const toCheck = listings.slice(0, MAX_QUOTATION_CHECKS);
@@ -73,8 +75,8 @@ export function instrumentTypeFromFigi(listing: Pick<OpenFigiListing, "name" | "
  * Risultati nello stile della ricerca Yahoo per un ISIN che Yahoo non trova da solo: servono all'import e alla
  * ricerca strumenti. Il nome è quello di OpenFIGI, o l'ISIN se manca.
  */
-export async function searchByIsinOnOpenFigi(isin: string, currency: string | null, deps: IsinListingsDeps): Promise<VerifiedListingsResult & { hits: YahooSearchHit[] }> {
-  const result = await verifyIsinListings(isin, currency, deps);
+export async function searchByIsinOnOpenFigi(isin: string, currency: string | null, deps: IsinListingsDeps, preferredExchange: string | null = null): Promise<VerifiedListingsResult & { hits: YahooSearchHit[] }> {
+  const result = await verifyIsinListings(isin, currency, deps, preferredExchange);
   const hits =
     result.status === "ok"
       ? result.listings.map(({ listing, exchange }) => ({

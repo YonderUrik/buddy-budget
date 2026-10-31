@@ -15,7 +15,7 @@ export interface ResolveDeps {
   searchMarket(query: string): Promise<YahooSearchHit[]>;
   searchCrypto(query: string): Promise<{ id: string; name: string; symbol: string }[]>;
   /** Ripiego per un ISIN che Yahoo non trova: OpenFIGI propone le quotazioni, Yahoo le conferma (opzionale). */
-  searchByIsin?(isin: string, currency: string | null): Promise<{ status: "ok" | "empty" | "unavailable"; hits: YahooSearchHit[] }>;
+  searchByIsin?(isin: string, currency: string | null, preferredExchange?: string | null): Promise<{ status: "ok" | "empty" | "unavailable"; hits: YahooSearchHit[] }>;
 }
 
 /** Simbolo crypto nello stile Yahoo: `BTC-EUR` → base `BTC`, valuta `EUR`. */
@@ -111,7 +111,7 @@ async function linkedQuotation(userId: string, identity: Identity, deps: Resolve
     // quotazione non si può collegare senza cambiare i prezzi, e lo strumento resta manuale nella valuta del file.
     const sameIsin = await knownBy(userId, "isin", identity.isin);
     if (sameIsin && sameIsin.currency !== identity.currency) return null;
-    const found = await deps.searchByIsin(identity.isin, identity.currency);
+    const found = await deps.searchByIsin(identity.isin, identity.currency, identity.exchange ?? null);
     const hit = found.hits[0];
     if (found.status !== "ok" || !hit) return null;
     const known = await knownBySymbol(userId, "yahoo", hit.symbol);
@@ -134,6 +134,18 @@ async function linkedQuotation(userId: string, identity: Identity, deps: Resolve
  * crypto di Yahoo (`ETH-EUR`) vanno su CoinGecko, che è la fonte delle crypto nell'app.
  */
 export async function resolveIdentity(userId: string, identity: Identity, deps: ResolveDeps): Promise<ImportMatch> {
+  // A corporate action (ISIN change, spinoff) makes market histories disagree with the trade prices (adjusted for it):
+  // the security gets the user's own copy with the broker's prices, never the shared instrument with that history.
+  if (identity.corporateAction && !identity.symbolIsYahoo && identity.isin && identity.currency && identity.name) {
+    const type = identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione");
+    return { kind: "proposal", input: { source: "manuale", isin: identity.isin, name: identity.name, currency: identity.currency, type, ownCopy: true }, label: identity.name, detail: `${identity.isin} · ${identity.currency} · prezzi dal rendiconto (operazione societaria)`, type, confidence: "exact" };
+  }
+  if (identity.isin && identity.currency) {
+    // The user's own copy of this ISIN (made for a corporate action in an earlier statement) wins over the shared one,
+    // so later statements keep adding to the same position.
+    const [own] = await db.select().from(instruments).where(and(eq(instruments.isin, identity.isin), eq(instruments.createdByUserId, userId), eq(instruments.currency, identity.currency))).limit(1);
+    if (own) return { kind: "known", instrument: own };
+  }
   if (identity.isin) {
     const known = await knownBy(userId, "isin", identity.isin, identity.currency);
     if (known && (!identity.currency || known.currency === identity.currency)) return { kind: "known", instrument: known };

@@ -6,7 +6,7 @@ import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
-import { instruments, investmentTransactions, userInstrumentPrices } from "@/lib/db/schema/investments";
+import { instruments, investmentPortfolios, investmentTransactions, userInstrumentPrices } from "@/lib/db/schema/investments";
 import { createOrReuseInstrument } from "../instruments";
 import { brokerSeries } from "./__fixtures__/broker-series";
 import { parseBrokerStatement } from "./parse-statement";
@@ -45,6 +45,20 @@ describe("complete statement import", () => {
     expect(Number(trade.price)).toBe(100);
     expect(Number((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance)).toBe(817);
     expect(dependencies.fetchFx).not.toHaveBeenCalled();
+  });
+  it("DEGIRO with several portfolios needs no question: its own portfolio, or the one of hand-entered operations", async () => {
+    const csv = readFileSync(new URL("./__fixtures__/degiro-fx.csv", import.meta.url), "utf8");
+    await db.insert(investmentPortfolios).values([{ userId, name: "Trade Republic", broker: "trade-republic-api:x" }, { userId, name: "Interactive Brokers · 0001", broker: "ibkr:y" }]);
+    expect((await runStatementImport(userId, request(csv), deps())).inserted).toBe(1);
+    const portfolios = await db.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
+    const [trade] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    expect(portfolios.find((p) => p.id === trade.portfolioId)).toMatchObject({ name: "DEGIRO" });
+    userId = randomUUID(); users.push(userId);
+    await db.insert(authUser).values({ id: userId, name: "Synthetic import", email: `${userId}@example.test` });
+    const [manual] = await db.insert(investmentPortfolios).values([{ userId, name: "Portafoglio" }, { userId, name: "Trade Republic", broker: "trade-republic-api:z" }]).returning();
+    expect((await runStatementImport(userId, request(csv), deps())).inserted).toBe(1);
+    const [second] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    expect(second.portfolioId).toBe(manual.id);
   });
   it("previews without writes, imports consecutive periods and preserves broker balances and all closing prices", async () => {
     const first = request(brokerSeries(2023));

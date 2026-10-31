@@ -19,6 +19,7 @@ import {
 } from "./store";
 import { deriveSymbols } from "./symbols";
 import type { FxProvider, PriceProvider, ProviderContext, ProviderId } from "./types";
+import { fxSourceCurrencies } from "@/lib/calc/fx";
 
 /** Giorni riletti a ogni aggiornamento: coprono weekend, festivi e un giro saltato del cron. */
 export const DAILY_LOOKBACK_DAYS = 7;
@@ -100,7 +101,9 @@ export async function completeSymbols(
  * Aggiorna i cambi del periodo dalla prima fonte che risponde; restituisce quanti cambi ha salvato.
  * Se nessuna fonte dà cambi registra `market.fx.all_failed` (errore se almeno una ha fallito, avviso se erano tutte vuote).
  */
-export async function updateFxRates(currencies: string[], from: string, to: string, deps: MarketDataDeps): Promise<number> {
+export async function updateFxRates(requested: string[], from: string, to: string, deps: MarketDataDeps): Promise<number> {
+  // Pence and other sub-units take the main currency's rates (GBX → GBP): sources publish only those.
+  const currencies = fxSourceCurrencies(requested).filter((c) => c !== "EUR");
   if (currencies.length === 0) return 0;
   const log = deps.log ?? logger;
   const outcomes: string[] = [];

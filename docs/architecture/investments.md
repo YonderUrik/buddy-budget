@@ -141,6 +141,8 @@ income_t  = income_t - income_{t-1}
 
 The period window comes from [`resolvePerformanceRange`](../../lib/calc/performance-range.ts): it never starts before the first transaction, never ends after today, and adds a base day (the day before the first day) whose closing value is the starting capital.
 
+Exchange rates of sub-unit currencies come from the main currency (`fxSourceCurrency` in [`lib/calc/fx.ts`](../../lib/calc/fx.ts)): GBX = GBP × 100 units per euro, likewise ZAC/ZAR and ILA/ILS; loaders and `updateFxRates` ask for the main currency.
+
 The Performance page opens on the whole history (`max`, since 2026-10-31; `usePerformanceView` in [`lib/queries/performance.ts`](../../lib/queries/performance.ts)) and states the period once at the top. Its returns card holds the controls (comparison index, broker filter, period), the chart, then TWR, MWR, real return and the index's TWR in one row, the timing sentence and the comparison box; risk and the TWR heatmap follow in their own cards, on the same range.
 
 ### 4.5 Time-weighted return (TWR)

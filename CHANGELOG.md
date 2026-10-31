@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.92.0](https://github.com/YonderUrik/buddy-budget/compare/v0.91.0...v0.92.0) (2026-10-31)
+
+
+### Features
+
+* one import for every file, retrying by itself ([#541](https://github.com/YonderUrik/buddy-budget/issues/541)) ([666424f](https://github.com/YonderUrik/buddy-budget/commit/666424fed782eac34884be8d534cd43ff62f07ea))
+
+
+### Bug fixes
+
+* **deps:** bump next in /landing in the patch group ([#539](https://github.com/YonderUrik/buddy-budget/issues/539)) ([b58911b](https://github.com/YonderUrik/buddy-budget/commit/b58911b765efbbfcefc83444cb435ffd2d162cde))
+
 ## [0.91.0](https://github.com/YonderUrik/buddy-budget/compare/v0.90.2...v0.91.0) (2026-10-27)
 
 

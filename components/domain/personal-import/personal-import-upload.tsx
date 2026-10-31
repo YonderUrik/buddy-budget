@@ -96,7 +96,6 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
   const [reading, setReading] = React.useState(false);
   const [dragging, setDragging] = React.useState(false);
   const [consent, setConsent] = React.useState(false);
-  const [regenerate, setRegenerate] = React.useState(false);
   const isNew = formatId === NEW_FORMAT;
 
   const [outcome, setOutcome] = React.useState<BatchResult<LoadedFile> | null>(null);
@@ -105,7 +104,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
     mutationFn: async () => {
       if (!files.length) throw new Error(tr("Scegli un file da importare."));
       const source = formats.find((f) => f.id === formatId)?.name ?? name.trim();
-      return sendBatch(files, isNew ? undefined : formatId, (file, target) => personalImportApi<{ id: string; formatId?: string }>("", { name: source, csv: file.csv, formatId: target, regenerate, consent, consentVersion: CONSENT_VERSION }), isAlreadyImported);
+      return sendBatch(files, isNew ? undefined : formatId, (file, target) => personalImportApi<{ id: string; formatId?: string }>("", { name: source, csv: file.csv, formatId: target, consent, consentVersion: CONSENT_VERSION }), isAlreadyImported);
     },
     onSuccess: (result) => {
       setOutcome(result);
@@ -119,7 +118,6 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
         : { name: tr("{0} file", { 0: sent.length }), size: sent.reduce((n, f) => n + f.size, 0), rows: sent.reduce((n, f) => n + countCsvRows(f.csv), 0), source };
       setFiles([]);
       setConsent(false);
-      setRegenerate(false);
       void client.invalidateQueries({ queryKey: ["personal-imports"] });
       const skipped = [...result.alreadyImported.map((f) => f.name), ...result.failed.map((f) => f.file.name)];
       onQueued(result.queued.map((q) => q.id), skipped.length ? { ...summary, notice: tr("Non inviati: {0}. Gli altri sono in arrivo.", { 0: skipped.join(", ") }) } : summary);
@@ -175,7 +173,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
           {formats.length > 0 ? (
             <div className="flex flex-col gap-1.5">
               <label htmlFor={`${id}-format`} className="text-sm font-medium text-foreground">{tr("Formato")}</label>
-              <Select value={formatId} onValueChange={(value) => { setFormatId(value as string); setRegenerate(false); }}>
+              <Select value={formatId} onValueChange={(value) => setFormatId(value as string)}>
                 <SelectTrigger id={`${id}-format`} className={cn("w-full", FIELD_CLASS)}>
                   <SelectValue>{(value: string | null) => (value === NEW_FORMAT || !value ? tr("Nuova banca o broker") : formats.find((f) => f.id === value)?.name ?? "")}</SelectValue>
                 </SelectTrigger>
@@ -186,17 +184,13 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
               </Select>
             </div>
           ) : null}
+          {/* No «read the format again» option: when the saved parser no longer reads a file, the worker retries by itself. */}
           {isNew ? (
             <div className="flex flex-col gap-1.5">
               <label htmlFor={`${id}-name`} className="text-sm font-medium text-foreground">{tr("Nome della banca o del broker")}</label>
               <Input id={`${id}-name`} value={name} onChange={(e) => setName(e.target.value)} placeholder={tr("Es. Banca Sella")} maxLength={80} autoComplete="off" className={FIELD_CLASS} />
             </div>
-          ) : (
-            <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
-              <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-primary" checked={regenerate} onChange={(e) => setRegenerate(e.target.checked)} />
-              <span>{tr("Rileggi il formato con l'AI")}{" "}<span className="text-muted-foreground">{tr("(se il file è cambiato o il risultato precedente non era giusto)")}</span></span>
-            </label>
-          )}
+          ) : null}
         </>
       ) : null}
 

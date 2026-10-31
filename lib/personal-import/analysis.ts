@@ -26,6 +26,8 @@ export interface ParserFeedback {
 export interface GenerationRequest {
   step: number;
   reasoning: boolean;
+  /** Part of `maxTokens` the model may spend thinking, so the answer always has room. */
+  reasoningTokens: number;
   maxTokens: number;
   timeoutMs: number;
   /** The source's saved parser, when it no longer reads this file: a layout change is usually a small edit. */
@@ -38,9 +40,10 @@ export interface GenerationRequest {
  * rejection, more failing lines, reasoning on and a 128k output budget. Decided on 2026-10-31.
  */
 export const LADDER_STEPS = [
-  { step: 1, feedback: "none", lines: 0, reasoning: false, maxTokens: 32768, timeoutMs: 240_000 },
-  { step: 2, feedback: "last", lines: 50, reasoning: false, maxTokens: 32768, timeoutMs: 240_000 },
-  { step: 3, feedback: "all", lines: 200, reasoning: true, maxTokens: 131072, timeoutMs: 900_000 },
+  { step: 1, feedback: "none", lines: 0, reasoning: false, reasoningTokens: 0, maxTokens: 32768, timeoutMs: 240_000 },
+  { step: 2, feedback: "last", lines: 50, reasoning: false, reasoningTokens: 0, maxTokens: 32768, timeoutMs: 240_000 },
+  // Uncapped («effort: high») reasoning spent the whole 128k on a real IBKR statement (2026-10-31): a quarter thinks.
+  { step: 3, feedback: "all", lines: 200, reasoning: true, reasoningTokens: 32768, maxTokens: 131072, timeoutMs: 900_000 },
 ] as const;
 const SAVED_STEP = 0;
 const LINE_TEXT_MAX = 500;
@@ -120,7 +123,7 @@ export async function runLadder(params: {
   for (const step of LADDER_STEPS) {
     if (attempts.some(a => a.step === step.step) || (needsBudget && step.maxTokens <= LADDER_STEPS[0].maxTokens)) continue;
     const context = step.feedback === "none" ? [] : step.feedback === "last" ? feedback.slice(-1) : feedback;
-    const request: GenerationRequest = { step: step.step, reasoning: step.reasoning, maxTokens: step.maxTokens, timeoutMs: step.timeoutMs, reference, feedback: context.map(f => withLines(f, params.table, step.lines)) };
+    const request: GenerationRequest = { step: step.step, reasoning: step.reasoning, reasoningTokens: step.reasoningTokens, maxTokens: step.maxTokens, timeoutMs: step.timeoutMs, reference, feedback: context.map(f => withLines(f, params.table, step.lines)) };
     let generated: GeneratedParser;
     try { generated = await params.generate(request); }
     catch (error) {

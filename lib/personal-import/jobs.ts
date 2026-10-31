@@ -9,6 +9,7 @@ import type { Preview } from "./confirm";
 import { instanceCapabilities } from "@/lib/selfhost";
 import { isSelfHosted } from "@/lib/instance/config";
 import { importCounts } from "./counts";
+import { analysisProgress } from "./progress";
 // Raw-file parsers are selected only within the source explicitly chosen by this user.
 export const RAW_PARSER_VERSION = "raw-csv-v1";
 /** Shown when the exact same file was already imported: nothing is analysed or saved again. */
@@ -65,10 +66,11 @@ export async function enqueue(userId: string, input: { csv: string; name: string
 export async function listImports(userId: string) {
   const [sources, requests] = await Promise.all([
     db.select({ id: formats.id, name: formats.name }).from(formats).where(eq(formats.userId, userId)).orderBy(desc(formats.createdAt)),
-    db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
+    db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger, parserId: jobs.parserId, failureReport: jobs.failureReport }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
   ]);
   // Del registro dell'importazione esce solo il conteggio (movimenti e operazioni creati), mai gli id.
-  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0, ...importCounts(ledger) } : null })) };
+  // Of the failure report only the attempt in progress leaves the server, never reasons or rows.
+  return { formats: sources, jobs: requests.map(({ ledger, parserId, failureReport, ...job }) => ({ ...job, progress: analysisProgress({ status: job.status, parserId, failureReport }), results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0, ...importCounts(ledger) } : null })) };
 }
 /** Anteprima per il client: il parser generato (se presente) resta sul server. */
 export async function getPreview(userId: string, id: string): Promise<Preview | null> {

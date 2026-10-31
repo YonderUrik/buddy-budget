@@ -5535,5 +5535,9 @@
   "oppure trascinali qui": "oder hierher ziehen",
   "Carico i file…": "Dateien werden hochgeladen…",
   "Importa {0} file": "{0} Dateien importieren",
-  "Già importati, li ho saltati: {0}.": "Bereits importiert, übersprungen: {0}."
+  "Già importati, li ho saltati: {0}.": "Bereits importiert, übersprungen: {0}.",
+  "Leggo il file con il formato già salvato": "Datei wird mit dem gespeicherten Format gelesen",
+  "Analizzo il formato con l'AI (tentativo 1 di 3)": "Format wird mit KI analysiert (Versuch 1 von 3)",
+  "Riprovo con più contesto (tentativo 2 di 3)": "Neuer Versuch mit mehr Kontext (Versuch 2 von 3)",
+  "Ultimo tentativo, il più approfondito (3 di 3): può richiedere qualche minuto": "Letzter, gründlichster Versuch (3 von 3): Das kann ein paar Minuten dauern"
 }

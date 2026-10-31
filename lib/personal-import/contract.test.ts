@@ -9,7 +9,7 @@ const csv = 'Date;Amount;Description\n2024-01-01;-12,50;Shop';
 const table = { rawCsv: csv, delimiter: ";", headers: ["Date", "Amount", "Description"], rows: [["2024-01-01", "-12,50", "Shop"]] };
 const cash = { row: 0, kind: "cash", date: "2024-01-01", amount: -12.5, currency: "EUR", description: "Shop", transfer: false };
 const hints: ModelHints = { defaultCurrency: "EUR", today: "2026-10-31", dateOrderHint: "dmy", fileKind: "bank" };
-const stepRequest = (i: 0 | 1 | 2, extra: Partial<GenerationRequest> = {}): GenerationRequest => ({ step: LADDER_STEPS[i].step, reasoning: LADDER_STEPS[i].reasoning, maxTokens: LADDER_STEPS[i].maxTokens, timeoutMs: LADDER_STEPS[i].timeoutMs, feedback: [], ...extra });
+const stepRequest = (i: 0 | 1 | 2, extra: Partial<GenerationRequest> = {}): GenerationRequest => ({ step: LADDER_STEPS[i].step, reasoning: LADDER_STEPS[i].reasoning, reasoningTokens: LADDER_STEPS[i].reasoningTokens, maxTokens: LADDER_STEPS[i].maxTokens, timeoutMs: LADDER_STEPS[i].timeoutMs, feedback: [], ...extra });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 describe("personal CSV validation and sandbox", () => {
   it("preserves quoted text and refuses only empty or over-limit files", () => {
@@ -82,13 +82,22 @@ describe("personal CSV validation and sandbox", () => {
     expect(body.provider.zdr).toBe(true);
     expect(body.max_tokens).toBe(32768);
   });
-  it("turns reasoning on with a 128k budget only on the last step", async () => {
+  it("turns capped reasoning on with a 128k budget only on the last step", async () => {
     vi.stubEnv("OPENROUTER_API_KEY", "synthetic-key"); vi.stubEnv("OPENROUTER_MODEL", "deepseek/deepseek-v4.1-flash");
     const fetcher = vi.fn().mockResolvedValue(Response.json({ choices: [{ message: { content: "not json" } }] })); vi.stubGlobal("fetch", fetcher);
-    await expect(generateParser(table, { hints, request: stepRequest(2) })).rejects.toThrow("formato richiesto");
+    await expect(generateParser(table, { hints, request: stepRequest(2) })).rejects.toThrow("non è un JSON valido");
     const body = JSON.parse(fetcher.mock.calls[0][1].body);
-    expect(body.reasoning).toEqual({ enabled: true, effort: "high", exclude: true });
+    expect(body.reasoning).toEqual({ max_tokens: 32768, exclude: true });
     expect(body.max_tokens).toBe(131072);
+    expect(body.messages[0].content).toContain("at most 32000 characters");
+  });
+  it("says exactly what is wrong with an unusable answer, without values", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "synthetic-key"); vi.stubEnv("OPENROUTER_MODEL", "deepseek/deepseek-v4.1-flash");
+    const answer = (content: unknown) => vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ choices: [{ message: { content: JSON.stringify(content) } }] })));
+    answer({ kind: "javascript", code: "x".repeat(32001), metadata: {} });
+    await expect(generateParser(table, { hints, request: stepRequest(0) })).rejects.toThrow("supera 32000 caratteri (32001)");
+    answer({ kind: "javascript", code: "function(){}", metadata: { version: 1 } });
+    await expect(generateParser(table, { hints, request: stepRequest(0) })).rejects.toThrow(/formato richiesto: .*institution/);
   });
   it("puts the source's old parser and each rejection after the file, with the failing lines", () => {
     const parser = { kind: "javascript" as const, code: "function(){return []}" };

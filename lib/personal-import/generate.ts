@@ -2,7 +2,8 @@ import "server-only";
 import { formatMetadataSchema } from "@/lib/imports";
 import { OPENROUTER_PRIVACY } from "@/lib/llm/openrouter";
 import { parserSchema, type PersonalParser, type PersonalTable } from "./contract";
-import type { GenerationRequest, ParserFeedback } from "./analysis";
+import { parserFailureDetail, type GenerationRequest, type ParserFeedback } from "./analysis";
+import { ZodError } from "zod";
 import { ModelInputError, ModelOutputError, TransientError } from "./errors";
 import type { ModelHints } from "./hints";
 export { ModelInputError } from "./errors";
@@ -17,13 +18,16 @@ JavaScript runs in QuickJS without host APIs, network, filesystem, modules. The 
 {row,kind:'investment',date,currency,description,type:'acquisto'|'vendita'|'dividendo'|'cedola',name,isin:validISIN|null,instrumentType:'azione'|'etf'|'fondo'|'crypto'|'etc'|'obbligazione',quantity,price,grossAmount:null|number,fees:0,taxes:0}. Buys/sells positive quantity and unit price, grossAmount null; dividends/coupons quantity=price=0 and positive grossAmount. Fees/taxes positive in row currency. The host computes buy cash as -(quantity*price + fees + taxes) and sell cash as quantity*price - fees - taxes. When the document supplies a net cash debit/credit inclusive of costs, derive the pre-fee execution price from that settlement instead of adding fees to an already-inclusive price. Specifically, Bitpanda cryptocurrency trade exports (Venue: Bitpanda, Amount Fiat, Amount Asset, Fee) report inclusive fiat settlements: buy price=(Amount Fiat-Fee)/Amount Asset; sell price=(Amount Fiat+Fee)/Amount Asset when Tax Fiat=0 and fees are in Fiat. Preserve Fee separately. Asset market price must not cause fees to be counted again. Nonzero tax, other fee currencies or unsupported asset classes require an error outcome unless independently reconciled. Never silently ignore unsupported trades. Fiat deposits/withdrawals are transfers. Investment cash effects are accounted by importer, DO NOT add duplicate cash rows; if separate cash ledger duplicates trade settlement, explicitly ignore with reason. Determine instrument type from asset class together with instrument name and identifier: broad FUND categories include ETFs and must not be mapped unconditionally to fondo. Use etf for identifiable exchange-traded index funds. Never guess instrument type or amounts; ambiguous rows return error. For the currency follow the hints rule below.
 {row,kind:'ignore',reason:'Italian reason'} ONLY for nontransaction preambles, account metadata, disclaimers, headers, blank section separators, totals or proven redundant settlement; reconcile totals/balances if supplied and return error on inconsistency.
 {row,kind:'error',reason:'Italian reason'} for unknown/unsupported/incomplete rows. All descriptions and reasons max300 characters. Do not implement a current-date cutoff or hardcode any date from this file: the host validates future dates on each execution. Pass through ISIN-shaped identifiers (two letters, nine alphanumeric characters, one digit); the host validates their checksum, so do not invent a checksum algorithm. Correct decimal and thousands separators. Infer numeric notation from the actual cells, never from language or institution country: 1000.00 is 1000 and -12.50 is -12.5; 1000,00 is 1000 and -12,50 is -12.5. Never strip a decimal dot. A standalone Institution: preamble explicitly identifies the generating institution and must be reflected in metadata. No Date.now, randomness, code evaluation or async. Unsupported corporate actions, bonds requiring nominal/rateo, incomplete histories must be errors. Never convert currencies yourself. Dates and financial values must come from input, not assumptions.`;
+/** Same limit as `parserSchema.code`: stated in the prompt, so a long parser is shortened rather than rejected. */
+const MAX_CODE_CHARS = 32000;
 const HINTS = `The user message also carries hints computed by the host, none taken from the file: defaultCurrency is the currency of the user's accounts; use it for rows when the file states no currency anywhere (a currency written in the file, per row or in a preamble, always wins). today is the current date (YYYY-MM-DD): a parsed date after it means the day/month order was misread. dateOrderHint is the usual date order in the user's country (dmy or mdy, or null); use it ONLY to break a tie when every date in the file fits both orders. fileKind (bank, broker or unknown) comes from a keyword heuristic; the file content always wins.`;
 const ACCEPTANCE = `Your parser is accepted automatically, with no human review, only if ALL of these hold; otherwise it is rejected and you are asked again with the reason:
 1. Exactly one outcome per physical line, and two runs return identical output.
 2. ZERO error outcomes: a single error rejects the whole file, so understand the layout instead of giving up on rows; keep error for rows that truly cannot be read.
 3. Every column of every header line is listed in metadata.columns with its zero-based index: mapped through mapsTo, or mapsTo=[] when deliberately ignored. A header column missing from metadata rejects the parser.
 4. When a single column named Amount/Importo maps to amount, every cash amount equals that cell.
-5. Dates are real and not after today; amounts, quantities, prices, fees and taxes respect the outcome rules above.`;
+5. Dates are real and not after today; amounts, quantities, prices, fees and taxes respect the outcome rules above.
+6. code is at most ${MAX_CODE_CHARS} characters: reuse helper functions and loops instead of repeating logic per section.`;
 /** Static prompt first, so the provider can cache the prefix across files. */
 export const SYSTEM_PROMPT = SYSTEM + "\n" + SETTLEMENT_RULES + "\n" + METADATA + "\n" + HINTS + "\n" + ACCEPTANCE;
 const REASONS: Record<ParserFeedback["reason"], string> = {
@@ -68,7 +72,7 @@ export async function generateParser(table: PersonalTable, input: { sourceName?:
   if (!model || !key) throw new ModelInputError("OpenRouter non configurato");
   const { request } = input;
   // DeepSeek's optional reasoning can use the whole budget on a long file: off, except on the last step with 128k.
-  const reasoning = model.startsWith("deepseek/") ? { reasoning: request.reasoning ? { enabled: true, effort: "high", exclude: true } : { enabled: false, exclude: true } } : {};
+  const reasoning = model.startsWith("deepseek/") ? { reasoning: request.reasoning ? { max_tokens: request.reasoningTokens, exclude: true } : { enabled: false, exclude: true } } : {};
   let response: Response;
   try {
     response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -92,13 +96,15 @@ export async function generateParser(table: PersonalTable, input: { sourceName?:
   if (data.choices?.[0]?.finish_reason === "length") throw new ModelOutputError("Il modello ha esaurito il budget di generazione senza completare il parser", true);
   const content = data.choices?.[0]?.message?.content;
   if (typeof content !== "string") throw new ModelOutputError("Risposta del modello non valida");
+  // What exactly is wrong goes back to the model on the next step and to support: field paths and checks, never values.
+  let parsed: { kind?: unknown; code?: unknown; metadata?: unknown };
+  try { parsed = JSON.parse(content); } catch { throw new ModelOutputError("La risposta non è un JSON valido"); }
+  if (parsed.kind !== "javascript") throw new ModelOutputError("Il modello non ha restituito un parser raw (kind deve essere javascript)");
+  if (typeof parsed.code === "string" && parsed.code.length > MAX_CODE_CHARS) throw new ModelOutputError(`Il codice supera ${MAX_CODE_CHARS} caratteri (${parsed.code.length}): accorcialo`);
   try {
-    const parsed = JSON.parse(content);
-    if (parsed.kind !== "javascript") throw new ModelOutputError("Il modello non ha restituito un parser raw");
     const metadata = formatMetadataSchema.parse(parsed.metadata);
     return { parser: parserSchema.parse({ ...parsed, metadata }), model };
   } catch (error) {
-    if (error instanceof ModelOutputError) throw error;
-    throw new ModelOutputError("Il parser restituito non rispetta il formato richiesto");
+    throw new ModelOutputError(`Il parser restituito non rispetta il formato richiesto: ${error instanceof ZodError ? parserFailureDetail(error) : "struttura non valida"}`);
   }
 }

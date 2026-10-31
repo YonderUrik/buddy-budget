@@ -4,10 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { hasRunningImport } from "@/lib/personal-import/island";
 import { pageText } from "@/lib/localization/page-text";
 import type { ImportCounts } from "@/lib/personal-import/counts";
+import type { AnalysisProgress } from "@/lib/personal-import/progress";
 
 export type PersonalImportListing = {
   formats: { id: string; name: string }[];
-  jobs: { id: string; formatId: string; status: string; estimatedAt: string; expiresAt: string; createdAt: string; error: string | null; notifiedAt: string | null; results: ({ cash: number; investments: number; skipped: number; bankCategorized: number } & Partial<ImportCounts>) | null }[];
+  jobs: { id: string; formatId: string; status: string; estimatedAt: string; expiresAt: string; createdAt: string; error: string | null; notifiedAt: string | null; progress?: AnalysisProgress | null; results: ({ cash: number; investments: number; skipped: number; bankCategorized: number } & Partial<ImportCounts>) | null }[];
 };
 
 export const personalImportLabels: Record<string, string> = {

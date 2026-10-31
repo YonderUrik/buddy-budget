@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { importOverlap } from "@/lib/personal-import/counts";
 import { formatFileSize } from "./personal-import-upload";
 import { ReportErrorLink } from "@/components/domain/support";
+import { describeProgress } from "./personal-import-status";
 
 type Job = PersonalImportListing["jobs"][number];
 
@@ -142,7 +143,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother, failedFile
               ? importSummary(tr, results)
               : failed
                 ? (job?.error ? translateServerMessage(language, job.error) : null) ?? tr("Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista.")
-                : tr("L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando.")}
+                : job?.progress ? `${tr(describeProgress(job.progress)!)}…` : tr("L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando.")}
           </p>
           {failed ? <ReportErrorLink area="import_movimenti" error={job?.error ?? title} /> : null}
         </div>

@@ -74,7 +74,7 @@ export function ReturnHeatmapCard({ daily, currency, today, periodLabel }: Retur
       icon={CalendarRangeIcon}
       title={tr("Rendimento TWR nel tempo")}
       color="var(--swatch-teal)"
-      description={<>{periodLabel ? tr("{0}. Mesi e anni ai bordi possono essere parziali. ", {0: periodLabel}) : ""}{summary}</>}
+      description={<>{periodLabel ? tr("{0}. Mesi e anni ai bordi possono essere parziali. ", {0: periodLabel}) : tr("Mesi e anni ai bordi possono essere parziali. ")}{summary}</>}
       action={<SegmentedControl options={GROUPING_OPTIONS} value={grouping} onChange={changeGrouping} ariaLabel={tr("Raggruppa i rendimenti per")} />}
     >
       <div className="flex flex-col gap-3">

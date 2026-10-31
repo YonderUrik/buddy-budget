@@ -36,7 +36,8 @@ const SHARPE_WORDS: Record<SharpeLevel, string> = { negativo: "No", basso: "Poco
 export interface RiskCardProps {
   risk: PortfolioRisk;
   period: NetWorthPeriod;
-  periodLabel?: string;
+  /** Under the title; `null` shows none (the page already states the period once). */
+  periodLabel?: string | null;
   /** Nome dell'indice di confronto scelto nella card dei rendimenti, o null. */
   benchmarkName: string | null;
   currency: string;
@@ -60,7 +61,7 @@ export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }:
   const { t: tr } = useLocalization();
   if (risk.volatility === null) {
     return (
-      <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={periodLabel ?? tr(PERIOD_LABELS[period])}>
+      <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={periodLabel === null ? undefined : periodLabel ?? tr(PERIOD_LABELS[period])}>
         <p className="text-sm text-muted-foreground">{tr("Servono almeno 20 giorni di borsa nel periodo per misurare il rischio. Prova un periodo più lungo o torna tra qualche giorno.")}</p>
       </PanelSection>
     );
@@ -69,12 +70,12 @@ export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }:
   const bench = risk.benchmark;
   const footnote = [
     risk.fewData ? tr("Meno di un anno di dati: numeri indicativi.") : null,
-    benchmarkName ? null : tr("Scegli un indice in «Rendimenti del periodo» per vedere quanto lo segui."),
+    benchmarkName ? null : tr("Scegli un indice con «Scegli un confronto», sopra il grafico, per vedere quanto lo segui."),
   ]
     .filter(Boolean)
     .join(" ");
     return (
-    <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={periodLabel ?? tr(PERIOD_LABELS[period])}>
+    <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={periodLabel === null ? undefined : periodLabel ?? tr(PERIOD_LABELS[period])}>
       <div className="flex flex-col gap-5">
         <RiskLevelMeter
           level={riskLevel(risk.volatility)}
@@ -84,7 +85,7 @@ export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }:
           volatilityHint="Nome tecnico: volatilità. Di quanto si muove di solito il valore in un anno, in più o in meno. Più è alta, più il percorso è accidentato."
         />
 
-        <div className="grid grid-cols-1 gap-x-8 gap-y-5 pt-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-5 pt-5 sm:grid-cols-2 lg:grid-cols-3">
           <RiskMetric
             label={tr("Perdita peggiore")}
             value={risk.drawdown && risk.drawdown.depth < 0 ? formatSignedPct(risk.drawdown.depth) : "0%"}

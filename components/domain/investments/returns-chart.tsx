@@ -46,7 +46,7 @@ export interface ReturnsChartProps {
   onSelectRange: (range: PortfolioChartRange) => void;
 }
 
-/** Il grafico resta stabile durante l’anteprima; cambia finestra soltanto al termine del trascinamento. */
+/** The chart stays still during the preview and changes window only when a drag ends. Lines, legend and axes only. */
 export function ReturnsChart({ series, benchmarkName, onInspect, onSelectRange }: ReturnsChartProps) {
   const { locale: formattingLocale } = useLocalization();
   const AXIS_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "short", year: "2-digit" });
@@ -62,13 +62,9 @@ export function ReturnsChart({ series, benchmarkName, onInspect, onSelectRange }
     setDrag(null);
     onInspect(null);
   }
+  // Title, «Base 0%» and the instructions live in the card around the chart (ReturnsCard).
   return <div className="flex flex-col gap-2" data-testid="performance-chart">
-    <div>
-      <h3 className="text-sm font-medium">{tr("Rendimento del portafoglio · TWR cumulato")}</h3>
-      <p className="text-xs text-muted-foreground">{tr("Base 0% a inizio periodo. Il grafico mostra il rendimento degli investimenti, indipendente dai versamenti.")}</p>
-      <p className="text-xs text-muted-foreground">{tr("Passa su una data per aggiornare i numeri sopra. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.")}</p>
-    </div>
-    <ChartContainer config={CHART_CONFIG} className="h-64 w-full select-none">
+    <ChartContainer config={CHART_CONFIG} className="h-72 w-full select-none sm:h-80">
       <LineChart data={series} margin={{ left: 4, right: 8 }}
         onMouseMove={(state) => {
           const date = dateAt(state.activeLabel);

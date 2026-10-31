@@ -5551,5 +5551,12 @@
   "Già usati": "Already used",
   "Broker con lettore integrato": "Brokers with a built-in reader",
   "Come scaricare il file da {0}": "How to download the file from {0}",
-  "Scegli la banca o il broker. I broker con lettore integrato si importano senza AI; per gli altri l'AI riconosce il formato la prima volta e lo riusa.": "Choose the bank or broker. Brokers with a built-in reader are imported without AI; for the others the AI recognises the format the first time and reuses it."
+  "Scegli la banca o il broker. I broker con lettore integrato si importano senza AI; per gli altri l'AI riconosce il formato la prima volta e lo riusa.": "Choose the bank or broker. Brokers with a built-in reader are imported without AI; for the others the AI recognises the format the first time and reuses it.",
+  "Confronta con: {0}": "Compare with: {0}",
+  "Il rendimento ponderato per il tempo (TWR) dell'ETF di confronto nello stesso periodo: si confronta con il TWR del portafoglio.": "The time-weighted return (TWR) of the comparison ETF over the same period: compare it with the portfolio's TWR.",
+  "importi in {0}": "amounts in {0}",
+  "L'indice di confronto nello stesso periodo. È la seconda linea del grafico.": "The comparison index over the same period. It's the second line on the chart.",
+  "Mesi e anni ai bordi possono essere parziali. ": "Months and years at the edges may be partial. ",
+  "Passa su una data per aggiornare i numeri qui sotto, su un numero per capire cosa misura. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.": "Hover over a date to update the figures below, over a figure to see what it measures. Click and drag to select a range, or pick the dates from the calendar next to the periods.",
+  "Scegli un indice con «Scegli un confronto», sopra il grafico, per vedere quanto lo segui.": "Choose an index with “Choose benchmark”, above the chart, to see how closely you follow it."
 }

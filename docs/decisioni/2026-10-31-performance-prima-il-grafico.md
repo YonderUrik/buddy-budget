@@ -1,0 +1,5 @@
+# Investimenti › Performance: the chart first, on the whole history (2026-10-31)
+
+Daniele found the Performance page messy and asked for the charts to start on «Max» instead of three months. Of five mockups (canvas «Performance: 5 proposte», with an inventory of the 32 pieces of information the page shows), he chose option 2, «Prima il grafico», with one rule: no information lost, only a better layout.
+The period is stated once at the top with the currency; the returns card holds every control (comparison index, broker filter moved here from the section header, period), a taller chart, one line of instructions, the four figures (TWR, MWR, real, the index's TWR, which is new as a figure but was already in the comparison sentence) and, side by side, the timing sentence and the comparison box. Risk shows its three measures in one row; the heatmap always says that edge months can be partial. Each block is a filled card. No data or calculation changes.
+Deferred: the series switch of the mockup («Valore in €», «Cadute dal massimo» on the main chart), not in the page before.

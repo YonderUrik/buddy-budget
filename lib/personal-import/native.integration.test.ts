@@ -4,7 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
-import { instruments, investmentTransactions } from "@/lib/db/schema/investments";
+import { instruments, investmentPortfolios, investmentTransactions } from "@/lib/db/schema/investments";
 import { createOrReuseInstrument } from "@/lib/investments/instruments";
 import { brokerSeries } from "@/lib/investments/import/__fixtures__/broker-series";
 import type { ImportDeps } from "@/lib/investments/import/execute";
@@ -69,6 +69,17 @@ describe("built-in readers in the one import", () => {
     expect(await importNatively(otherUser, broken, { importDeps: importDeps(), resolve })).toMatchObject({ kind: "failed" });
     expect(await db.select().from(instruments).where(eq(instruments.createdByUserId, otherUser))).toHaveLength(0);
     expect(before).toBeGreaterThan(0);
+  });
+
+  it("a Fineco export goes to Fineco's own portfolio, not to the one of hand-entered operations", async () => {
+    const header = ["Operazione", "Data valuta", "Descrizione", "Titolo", "Isin", "Segno", "Quantita", "Divisa", "Prezzo", "Cambio", "Controvalore", "Commissioni amministrato"];
+    const fineco = gridToCsv([header, ["02/12/2024", "04/12/2024", "Compravendita titoli", "ETF WORLD", "IE00B4L5Y983", "A", "3,00", "EUR", "105,17900", "1,00000", "315,54", "0,00"]]);
+    const [manual] = await db.insert(investmentPortfolios).values({ userId, name: "Portafoglio" }).returning();
+    expect(await importNatively(userId, fineco, { importDeps: importDeps(), resolve })).toMatchObject({ kind: "imported", provider: "fineco" });
+    const [trade] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    const [portfolio] = await db.select().from(investmentPortfolios).where(eq(investmentPortfolios.id, trade.portfolioId));
+    expect(portfolio).toMatchObject({ name: "Fineco", broker: "fineco" });
+    expect(portfolio.id).not.toBe(manual.id);
   });
 
   it("leaves files of no known broker to the AI", async () => {

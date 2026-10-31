@@ -74,6 +74,20 @@ export async function getOrCreateManualPortfolio(userId: string): Promise<Invest
   return created;
 }
 
+/** Brokers read by the column-mapping readers: each gets its own portfolio, like the statement brokers. */
+export const MAPPED_BROKER_PORTFOLIOS: Readonly<Record<string, string>> = { fineco: "Fineco", "yahoo-portfolio": "Yahoo Finance" };
+
+/**
+ * The portfolio of a broker whose exports carry no account number (Fineco, Yahoo Finance): one per broker and user,
+ * `broker` = the provider id, created on the first import. Every broker gets its own portfolio (2026-10-31).
+ */
+export async function getOrCreateBrokerPortfolio(userId: string, provider: string): Promise<InvestmentPortfolio> {
+  const [existing] = await db.select().from(investmentPortfolios).where(and(eq(investmentPortfolios.userId, userId), eq(investmentPortfolios.broker, provider))).orderBy(asc(investmentPortfolios.createdAt)).limit(1);
+  if (existing) return existing;
+  const [created] = await db.insert(investmentPortfolios).values({ userId, name: MAPPED_BROKER_PORTFOLIOS[provider] ?? provider, broker: provider }).returning();
+  return created;
+}
+
 /** Portafoglio dell'utente per id (null se non suo). */
 export async function findOwnPortfolio(userId: string, portfolioId: string): Promise<InvestmentPortfolio | null> {
   const [row] = await db

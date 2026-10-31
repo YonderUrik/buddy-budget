@@ -43,8 +43,8 @@ async function importedElsewhere(tx: Tx, userId: string, formatId: string, keys:
 }
 /**
  * Portfolios that can hold the native history of `provider`: the statement readers' own (`ibkr:`, `degiro:`,
- * `trade-republic:` and the direct Trade Republic connection), the default portfolio for the mapped exports (Fineco,
- * Yahoo). An unknown broker keeps the broad check: any portfolio not from a personal import.
+ * `trade-republic:` and the direct Trade Republic connection), each mapped export's own portfolio (Fineco,
+ * Yahoo) and, for imports made before, the one without a broker. An unknown broker keeps the broad check: any portfolio not from a personal import.
  */
 function sameBrokerPortfolios(provider: string) {
   const broker = investmentPortfolios.broker;
@@ -52,7 +52,8 @@ function sameBrokerPortfolios(provider: string) {
     case "interactive-brokers": return sql`${broker} like 'ibkr:%'`;
     case "degiro": return sql`${broker} like 'degiro:%'`;
     case "trade-republic": return sql`(${broker} like 'trade-republic:%' or ${broker} like 'trade-republic-api:%')`;
-    case "fineco": case "yahoo-portfolio": return sql`${broker} is null`;
+    // Their own portfolio since 2026-10-31; imports made before went to the one without a broker.
+    case "fineco": case "yahoo-portfolio": return sql`(${broker} = ${provider} or ${broker} is null)`;
     default: return undefined;
   }
 }

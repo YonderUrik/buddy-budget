@@ -2,7 +2,7 @@ import type { InvestmentData } from "./data";
 import type { InvestmentTransaction } from "@/lib/db/schema/investments";
 
 export interface BrokerGroup { id: string; label: string; operations: number }
-const LABELS: Record<string, string> = { "interactive-brokers": "Interactive Brokers", degiro: "DEGIRO", "trade-republic": "Trade Republic", "trade-republic-api": "Trade Republic", manual: "Manuali e import precedenti" };
+const LABELS: Record<string, string> = { "interactive-brokers": "Interactive Brokers", degiro: "DEGIRO", "trade-republic": "Trade Republic", "trade-republic-api": "Trade Republic", fineco: "Fineco", "yahoo-portfolio": "Yahoo Finance", manual: "Manuali e import precedenti" };
 
 /** Identify provenance even when two brokers share a portfolio, with explicit fallback for legacy rows. */
 export function transactionBroker(data: InvestmentData, operation: InvestmentTransaction): string {
@@ -11,6 +11,7 @@ export function transactionBroker(data: InvestmentData, operation: InvestmentTra
   if (portfolio?.broker?.startsWith("ibkr:")) return "interactive-brokers";
   if (portfolio?.broker?.startsWith("degiro:")) return "degiro";
   if (portfolio?.broker?.startsWith("personal:")) return portfolio.broker;
+  if (portfolio?.broker === "fineco" || portfolio?.broker === "yahoo-portfolio") return portfolio.broker;
   return "manual";
 }
 

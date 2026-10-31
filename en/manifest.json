@@ -1,0 +1,305 @@
+{
+  "capturedAt": "2026-10-31T11:09:34.112Z",
+  "app": "http://localhost:3300",
+  "language": "en",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "scale": 1.5,
+  "phone": {
+    "width": 390,
+    "height": 751
+  },
+  "phoneScale": 2,
+  "screens": [
+    {
+      "id": "panoramica",
+      "theme": "light",
+      "route": "/panoramica",
+      "width": 1920,
+      "height": 2250,
+      "phone": true
+    },
+    {
+      "id": "conti",
+      "theme": "light",
+      "route": "/liquidita/conti",
+      "width": 1920,
+      "height": 1323,
+      "phone": true
+    },
+    {
+      "id": "movimenti",
+      "theme": "light",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800,
+      "phone": true
+    },
+    {
+      "id": "analisi",
+      "theme": "light",
+      "route": "/liquidita/analisi",
+      "width": 1920,
+      "height": 1946,
+      "phone": true
+    },
+    {
+      "id": "budget",
+      "theme": "light",
+      "route": "/liquidita/budget",
+      "width": 1920,
+      "height": 2100,
+      "phone": true
+    },
+    {
+      "id": "abbonamenti",
+      "theme": "light",
+      "route": "/liquidita/abbonamenti",
+      "width": 1920,
+      "height": 2250,
+      "phone": true
+    },
+    {
+      "id": "categorie",
+      "theme": "light",
+      "route": "/liquidita/categorie",
+      "width": 1920,
+      "height": 1947,
+      "phone": true
+    },
+    {
+      "id": "categorizza",
+      "theme": "light",
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1353,
+      "phone": true
+    },
+    {
+      "id": "investimenti",
+      "theme": "light",
+      "route": "/investimenti",
+      "width": 1920,
+      "height": 2250,
+      "phone": true
+    },
+    {
+      "id": "performance",
+      "theme": "light",
+      "route": "/investimenti/performance",
+      "width": 1920,
+      "height": 2054,
+      "phone": true
+    },
+    {
+      "id": "diversificazione",
+      "theme": "light",
+      "route": "/investimenti/diversificazione",
+      "width": 1920,
+      "height": 2112,
+      "phone": true
+    },
+    {
+      "id": "titolo",
+      "theme": "light",
+      "route": "/investimenti/titoli/[id]",
+      "width": 1920,
+      "height": 1800,
+      "phone": true
+    },
+    {
+      "id": "tasse",
+      "theme": "light",
+      "route": "/investimenti/tasse",
+      "width": 1920,
+      "height": 2250,
+      "phone": true
+    },
+    {
+      "id": "pensione",
+      "theme": "light",
+      "route": "/pensione",
+      "width": 1920,
+      "height": 1581,
+      "phone": true
+    },
+    {
+      "id": "pensione-scenari",
+      "theme": "light",
+      "route": "/pensione/scenari",
+      "width": 1920,
+      "height": 1979,
+      "phone": true
+    },
+    {
+      "id": "debiti",
+      "theme": "light",
+      "route": "/debiti",
+      "width": 1920,
+      "height": 1740,
+      "phone": true
+    },
+    {
+      "id": "simulatore",
+      "theme": "light",
+      "route": "/debiti/finanziamenti",
+      "width": 1920,
+      "height": 1500,
+      "phone": true
+    },
+    {
+      "id": "analitiche",
+      "theme": "light",
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1760,
+      "phone": true
+    },
+    {
+      "id": "panoramica",
+      "theme": "dark",
+      "route": "/panoramica",
+      "width": 1920,
+      "height": 2250,
+      "phone": true
+    },
+    {
+      "id": "conti",
+      "theme": "dark",
+      "route": "/liquidita/conti",
+      "width": 1920,
+      "height": 1323,
+      "phone": true
+    },
+    {
+      "id": "movimenti",
+      "theme": "dark",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800,
+      "phone": true
+    },
+    {
+      "id": "analisi",
+      "theme": "dark",
+      "route": "/liquidita/analisi",
+      "width": 1920,
+      "height": 2051,
+      "phone": true
+    },
+    {
+      "id": "budget",
+      "theme": "dark",
+      "route": "/liquidita/budget",
+      "width": 1920,
+      "height": 2100,
+      "phone": true
+    },
+    {
+      "id": "abbonamenti",
+      "theme": "dark",
+      "route": "/liquidita/abbonamenti",
+      "width": 1920,
+      "height": 2250,
+      "phone": true
+    },
+    {
+      "id": "categorie",
+      "theme": "dark",
+      "route": "/liquidita/categorie",
+      "width": 1920,
+      "height": 1947,
+      "phone": true
+    },
+    {
+      "id": "categorizza",
+      "theme": "dark",
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1353,
+      "phone": true
+    },
+    {
+      "id": "investimenti",
+      "theme": "dark",
+      "route": "/investimenti",
+      "width": 1920,
+      "height": 2250,
+      "phone": true
+    },
+    {
+      "id": "performance",
+      "theme": "dark",
+      "route": "/investimenti/performance",
+      "width": 1920,
+      "height": 2054,
+      "phone": true
+    },
+    {
+      "id": "diversificazione",
+      "theme": "dark",
+      "route": "/investimenti/diversificazione",
+      "width": 1920,
+      "height": 2112,
+      "phone": true
+    },
+    {
+      "id": "titolo",
+      "theme": "dark",
+      "route": "/investimenti/titoli/[id]",
+      "width": 1920,
+      "height": 1800,
+      "phone": true
+    },
+    {
+      "id": "tasse",
+      "theme": "dark",
+      "route": "/investimenti/tasse",
+      "width": 1920,
+      "height": 2250,
+      "phone": true
+    },
+    {
+      "id": "pensione",
+      "theme": "dark",
+      "route": "/pensione",
+      "width": 1920,
+      "height": 1581,
+      "phone": true
+    },
+    {
+      "id": "pensione-scenari",
+      "theme": "dark",
+      "route": "/pensione/scenari",
+      "width": 1920,
+      "height": 1979,
+      "phone": true
+    },
+    {
+      "id": "debiti",
+      "theme": "dark",
+      "route": "/debiti",
+      "width": 1920,
+      "height": 1740,
+      "phone": true
+    },
+    {
+      "id": "simulatore",
+      "theme": "dark",
+      "route": "/debiti/finanziamenti",
+      "width": 1920,
+      "height": 1500,
+      "phone": true
+    },
+    {
+      "id": "analitiche",
+      "theme": "dark",
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1760,
+      "phone": true
+    }
+  ]
+}

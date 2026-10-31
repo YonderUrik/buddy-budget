@@ -11,12 +11,13 @@ import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { instruments, investmentTransactions, investmentPortfolios } from "@/lib/db/schema/investments";
 import { personalFormats as formats, personalImportJobs as jobs, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
-import { ALREADY_IMPORTED_MESSAGE, enqueue, getPreview, listImports, reanalyze } from "./jobs";
+import { ALREADY_IMPORTED_MESSAGE, enqueue, getPreview, listImports } from "./jobs";
 import { ImportError } from "./contract";
 import { deletePersonalImport, previewPersonalImportDeletion } from "./delete";
 import { confirmImport } from "./confirm";
 import { processOne, maintainJobs } from "./worker";
 import { generateParser } from "./generate";
+import { importNatively } from "./native";
 import { seal, unseal } from "./crypto";
 import { importFormatProfiles } from "@/lib/db/schema/import-format-profiles";
 import { saveFormatMetadata } from "@/lib/imports/store";
@@ -26,11 +27,13 @@ import { exportPersonalImports } from "./export";
 const send = vi.hoisted(() => vi.fn().mockResolvedValue({ data: { id: "synthetic" }, error: null }));
 vi.mock("resend", () => ({ Resend: class { emails = { send }; } }));
 vi.mock("./generate", async importOriginal => ({ ...await importOriginal<typeof import("./generate")>(), generateParser: vi.fn() }));
+// The built-in readers have their own test (native.integration.test.ts); here only what the worker does with them.
+vi.mock("./native", async importOriginal => { const original = await importOriginal<typeof import("./native")>(); return { ...original, importNatively: vi.fn(original.importNatively) }; });
 const code = `function(t){return t.rows.map((line,row)=>{const r=line[0].split(',');return r[0]==='Date'?{row,kind:'ignore',reason:'Header'}:r[1]==='ERROR'?{row,kind:'error',reason:'Unknown operation'}:r[1]==='NOTE'?{row,kind:'ignore',reason:'Metadata'}:r[1]==='CASH'?{row,kind:'cash',date:r[0],amount:Number(r[2]),description:r[3],currency:'EUR',transfer:false}:{row,kind:'investment',date:r[0],currency:'EUR',description:r[3],type:r[1]==='BUY'?'acquisto':'vendita',name:r[3],isin:null,instrumentType:'azione',quantity:Number(r[2]),price:100,grossAmount:null,fees:0,taxes:0}})}`;
 const csv = 'Date,Type,Value,Description\n2024-01-01,CASH,1000,Deposit\n2024-01-02,BUY,1,Example shares\n2024-01-03,CASH,-5,Shop';
 // The same movements in a different file (an extra note line): the exact same file is refused before any analysis.
 const csvAgain = `${csv}\n2024-01-05,NOTE,0,Metadata`;
-const metadata: FormatMetadata = { version: 1, institution: { name: "Synthetic Bank", evidence: "document" }, delimiter: ",", columns: [{ section: null, index: 0, name: "Date", mapsTo: ["date"] }, { section: null, index: 2, name: "Value", mapsTo: ["amount", "quantity"] }] };
+const metadata: FormatMetadata = { version: 1, institution: { name: "Synthetic Bank", evidence: "document" }, delimiter: ",", columns: [{ section: null, index: 0, name: "Date", mapsTo: ["date"] }, { section: null, index: 1, name: "Type", mapsTo: ["type"] }, { section: null, index: 2, name: "Value", mapsTo: ["amount", "quantity"] }, { section: null, index: 3, name: "Description", mapsTo: ["description", "name"] }] };
 let userId: string; const users: string[] = [];
 beforeEach(async () => {
   vi.stubEnv("PERSONAL_CSV_ENCRYPTION_KEY", Buffer.alloc(32, 7).toString("base64"));
@@ -57,9 +60,9 @@ describe("personal CSV durable flow", () => {
     const bitpandaCode = `function(t){return t.rows.map((r,row)=>{if(row<2)return {row,kind:'ignore',reason:'Header'};const c=r[0].split(',');const amount=Number(c[4]);if(c[2]==='deposit')return {row,kind:'cash',date:c[1].slice(0,10),currency:c[5],description:'Deposit',amount,transfer:true};const quantity=Number(c[6]),fees=Number(c[12]);return {row,kind:'investment',date:c[1].slice(0,10),currency:c[5],description:'Buy',type:'acquisto',name:'BTC',isin:null,instrumentType:'crypto',quantity,price:(amount-fees)/quantity,grossAmount:null,fees,taxes:0}})}`;
     vi.mocked(generateParser).mockResolvedValue({parser:{kind:"javascript",code:bitpandaCode.replace("(amount-fees)/quantity", "amount/quantity")},model:"synthetic/wrong-inclusive-fees"});
     const rejected = await prepare(csv);
-    expect((await readJob(rejected)).status).toBe("queued");
+    expect((await readJob(rejected)).status).toBe("failed");
+    expect(generateParser).toHaveBeenCalledTimes(3);
     expect(await cash()).toHaveLength(0);
-    await db.update(jobs).set({status:"expired"}).where(eq(jobs.id,rejected));
     vi.mocked(generateParser).mockResolvedValue({parser:{kind:"javascript",code:bitpandaCode},model:"synthetic/correct-inclusive-fees"});
     const id = await prepare(csv);
     const validPreview = (await readJob(id)).encryptedPreview!;
@@ -81,7 +84,7 @@ describe("personal CSV durable flow", () => {
     const directMetadata: FormatMetadata = { ...metadata, columns: [{ section: null, index: 2, name: "Amount", mapsTo: ["amount"] }] };
     vi.mocked(generateParser).mockResolvedValue({ parser: { kind: "javascript", code: code.replace("amount:Number(r[2])", "amount:Number(r[2])*100"), metadata: directMetadata }, model: "synthetic/scaling-error" });
     const id = await prepare(csv.replace("Date,Type,Value,Description", "Date,Type,Amount,Description"));
-    expect((await readJob(id)).status).toBe("queued");
+    expect((await readJob(id)).status).toBe("failed");
     expect(await cash()).toHaveLength(0);
     expect(await db.select().from(parsers).where(eq(parsers.formatId, (await readJob(id)).formatId))).toHaveLength(0);
   });
@@ -109,7 +112,7 @@ describe("personal CSV durable flow", () => {
     const second = await prepare(csvAgain, old.formatId);
     const job = await readJob(second);
     expect(job.status).toBe("ready"); expect(job.parserId).not.toBe(old.parserId);
-    expect(job.failureReport).toMatchObject({ fallback:true, reason:"invalid_saved_parser" });
+    expect(job.failureReport).toMatchObject({ fallback:true, reason:"invalid_parser", attempts: [{ step: 0, reason: "invalid_parser" }] });
     await maintainJobs(); await maintainJobs();
     expect((await readJob(second)).status).toBe("imported"); expect(await cash()).toHaveLength(3);
     expect(generateParser).toHaveBeenCalledTimes(2);
@@ -121,7 +124,7 @@ describe("personal CSV durable flow", () => {
   it("does not send a reused file to AI under the previous consent wording", async () => {
     const first = await prepare(); const original = await readJob(first);
     await db.update(parsers).set({encryptedParser:seal(JSON.stringify({kind:"javascript",code:"function(){throw Error('broken')}"}),userId)}).where(eq(parsers.id,original.parserId!));
-    const next = await enqueue(userId,{csv,name:"Legacy",formatId:original.formatId});
+    const next = await enqueue(userId,{csv:csvAgain,name:"Legacy",formatId:original.formatId});
     await db.update(jobs).set({consentVersion:"openrouter-raw-zdr-v2"}).where(eq(jobs.id,next.id));
     await processOne();
     expect(generateParser).toHaveBeenCalledTimes(1);
@@ -134,7 +137,7 @@ describe("personal CSV durable flow", () => {
     await notifyImportSupport(); expect((await readJob(id)).supportNotifiedAt).toBeNull();
     await db.update(jobs).set({supportNotifyAfter:new Date(0)}).where(eq(jobs.id,id));
     await notifyImportSupport(); expect((await readJob(id)).supportNotifiedAt).not.toBeNull();
-    expect(generateParser).toHaveBeenCalledTimes(1);
+    expect(generateParser).toHaveBeenCalledTimes(3);
   });
   it("deduplicates broker fallback requests and preserves the original failure report", async () => {
     const one = await enqueue(userId, {csv, name:"ignored", brokerFallback:true});
@@ -172,7 +175,7 @@ describe("personal CSV durable flow", () => {
   it("automatically rejects invalid history without partial financial writes", async () => {
     const id = await prepare(csv.replace(',BUY,', ',SELL,'));
     await maintainJobs();
-    expect(await readJob(id)).toMatchObject({ status: "review_failed", error: expect.stringContaining("più quote") });
+    expect(await readJob(id)).toMatchObject({ status: "failed", error: expect.stringContaining("più quote"), failureReport: expect.objectContaining({ reason: "financial_validation_failed" }) });
     expect(await cash()).toHaveLength(0);
     expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toHaveLength(0);
   });
@@ -198,54 +201,117 @@ describe("personal CSV durable flow", () => {
     expect(await db.select().from(instruments).where(eq(instruments.createdByUserId, userId))).toHaveLength(0);
     expect(await db.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId))).toHaveLength(0);
   });
-  it("keeps unknown rows visible and blocks partial imports", async () => {
+  it("never imports part of a file: unknown rows after every step fail the job with one message", async () => {
     const id = await prepare(csv + '\n2024-01-04,ERROR,1,Unknown');
-    expect((await readJob(id)).status).toBe("review_failed");
-    expect((await getPreview(userId, id))!.records.at(-1)!.outcome.kind).toBe("error");
-    await expect(confirmImport(userId, id)).rejects.toThrow(); expect(await cash()).toHaveLength(0);
-    expect(await db.select().from(parsers).where(eq(parsers.formatId, (await readJob(id)).formatId))).toHaveLength(0);
-  });
-  it("imports the recognised rows on request, skipping the others without receipts, and keeps the parser", async () => {
-    const id = await prepare(csv + '\n2024-01-04,ERROR,1,Unknown');
-    expect((await readJob(id)).error).toContain("1 riga su 5");
-    expect((await getPreview(userId, id))).not.toHaveProperty("parser");
-    const result = await confirmImport(userId, id, { skipErrors: true });
-    expect(result).toMatchObject({ inserted: 3, skipped: 1, duplicates: 0 });
-    expect(await cash()).toHaveLength(3);
     const job = await readJob(id);
-    expect(job.status).toBe("imported"); expect(job.importLedger?.skipped).toBe(1); expect(job.importLedger?.receiptKeys).toHaveLength(4);
-    expect((await listImports(userId)).jobs.find(j => j.id === id)?.results).toMatchObject({ cash: 3, investments: 1, skipped: 1 });
-    expect(await db.select().from(parsers).where(eq(parsers.formatId, job.formatId))).toHaveLength(1);
-    // Il file corretto riusa il formato senza AI e la riga saltata, ora corretta, è nuova.
-    const next = await prepare(csv + '\n2024-01-04,CASH,1,Known', job.formatId);
-    expect(generateParser).toHaveBeenCalledTimes(1);
-    expect(await confirmImport(userId, next)).toMatchObject({ inserted: 1, duplicates: 4 });
+    expect(job).toMatchObject({ status: "failed", encryptedCsv: null, encryptedPreview: null });
+    expect(job.error).toContain("Non siamo riusciti a leggere questo file");
+    expect(job.failureReport).toMatchObject({ reason: "ladder_exhausted" });
+    expect(job.failureReport!.attempts!.map(a => [a.step, a.reason])).toEqual([[1, "unrecognized_rows"], [2, "unrecognized_rows"], [3, "unrecognized_rows"]]);
+    expect(generateParser).toHaveBeenCalledTimes(3);
+    expect(await cash()).toHaveLength(0);
+    expect(await db.select().from(parsers).where(eq(parsers.formatId, job.formatId))).toHaveLength(0);
   });
-  it("refuses to skip when nothing is recognised and when the job is not under review", async () => {
-    const empty = await prepare('Date,Type,Value,Description\n2024-01-04,ERROR,1,Unknown');
-    await expect(confirmImport(userId, empty, { skipErrors: true })).rejects.toThrow("Nessuna riga riconosciuta");
-    expect((await readJob(empty)).status).toBe("review_failed");
-    const ready = await prepare();
-    expect(await confirmImport(userId, ready, { skipErrors: true })).toMatchObject({ inserted: 3, skipped: 0 });
-  });
-  it("reanalyses a reviewed file from its preview, replacing the old job", async () => {
+  it("climbs the ladder with the failing lines and saves the parser of the step that reads every row", async () => {
+    vi.mocked(generateParser).mockResolvedValueOnce({ parser: { kind: "javascript", code, metadata }, model: "synthetic/model" })
+      .mockResolvedValueOnce({ parser: { kind: "javascript", code: code.replace("'ERROR'", "'NEVER'").replace("r[1]==='CASH'", "r[1]==='CASH'||r[1]==='ERROR'"), metadata }, model: "synthetic/model" });
     const id = await prepare(csv + '\n2024-01-04,ERROR,1,Unknown');
-    await expect(reanalyze(randomUUID(), id)).rejects.toThrow("non disponibile");
-    const next = await reanalyze(userId, id);
-    expect(await readJob(id)).toBeUndefined();
-    expect((await readJob(next.id)).status).toBe("queued");
-    vi.mocked(generateParser).mockResolvedValueOnce({ parser: { kind: "javascript", code: code.replace("'ERROR'", "'NEVER'") }, model: "synthetic/model" });
-    await processOne();
-    expect(generateParser).toHaveBeenCalledTimes(2);
-    expect((await readJob(next.id)).status).toBe("ready");
-    expect((await getPreview(userId, next.id))!.records).toHaveLength(5);
-    await expect(reanalyze(userId, (await prepare()))).rejects.toThrow("non disponibile");
+    expect((await readJob(id)).status).toBe("ready");
+    const second = vi.mocked(generateParser).mock.calls[1][1].request;
+    expect(second).toMatchObject({ step: 2, reasoning: false, maxTokens: 32768 });
+    expect(second.feedback[0].lines).toEqual([{ row: 4, text: "2024-01-04,ERROR,1,Unknown" }]);
+    expect(await db.select().from(parsers).where(eq(parsers.formatId, (await readJob(id)).formatId))).toHaveLength(1);
+    await maintainJobs();
+    expect(await cash()).toHaveLength(4);
+  });
+  it("after a layout change, skips the movements already imported by their exact content", async () => {
+    const first = await prepare(); await confirmImport(userId, first);
+    const formatId = (await readJob(first)).formatId;
+    // The bank adds a Balance column: every raw line changes and the saved parser leaves it undeclared.
+    const widened = csv.split("\n").map((line, i) => `${line},${i === 0 ? "Balance" : "0"}`).join("\n") + "\n2024-01-04,CASH,-2,New shop,0";
+    vi.mocked(generateParser).mockResolvedValue({ parser: { kind: "javascript", code, metadata: { ...metadata, columns: [...metadata.columns, { section: null, index: 4, name: "Balance", mapsTo: [] }] } }, model: "synthetic/model-v2" });
+    const next = await prepare(widened, formatId);
+    expect((await readJob(next)).failureReport!.attempts).toEqual([expect.objectContaining({ step: 0, reason: "undeclared_columns" })]);
+    expect(vi.mocked(generateParser).mock.calls.at(-1)![1].request.reference?.parser).toMatchObject({ kind: "javascript" });
+    expect(await confirmImport(userId, next)).toMatchObject({ inserted: 1, rows: 4, alreadyPresent: 3 });
+    expect(await cash()).toHaveLength(4);
+    expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).toHaveLength(1);
+  });
+  it("a line already imported but read differently by a new parser counts as present, not as a block", async () => {
+    const first = await prepare(); await confirmImport(userId, first);
+    const formatId = (await readJob(first)).formatId;
+    vi.mocked(generateParser).mockResolvedValue({ parser: { kind: "javascript", code: code.replace("description:r[3]", "description:r[3]+' (v2)'"), metadata }, model: "synthetic/model-v2" });
+    const next = (await enqueue(userId, { csv: csvAgain, name: "Synthetic Bank", formatId, regenerate: true })).id; await processOne();
+    expect(await confirmImport(userId, next)).toMatchObject({ inserted: 0, alreadyPresent: 3 });
+    expect(await cash()).toHaveLength(3);
+  });
+  it("a batch of a new bank asks the AI once: the next files reuse the parser and land in the same source", async () => {
+    const first = await enqueue(userId, { csv, name: "Batch bank" });
+    expect(first.formatId).toBeTruthy();
+    const second = await enqueue(userId, { csv: csv + "\n2024-01-04,CASH,-2,Later", name: "Batch bank", formatId: first.formatId });
+    const third = await enqueue(userId, { csv: csv + "\n2024-01-05,CASH,-3,Even later", name: "Batch bank", formatId: first.formatId });
+    // The same file dropped again while it is on its way is that job, not a new one.
+    expect((await enqueue(userId, { csv, name: "Batch bank", formatId: first.formatId })).id).toBe(first.id);
+    // A second worker cannot take a file of a bank whose first file is being analysed.
+    await db.update(jobs).set({ status: "processing", lease: randomUUID(), leaseUntil: new Date(Date.now() + 60000) }).where(eq(jobs.id, first.id));
+    expect(await processOne()).toBe(false);
+    await db.update(jobs).set({ status: "queued", lease: null, leaseUntil: null }).where(eq(jobs.id, first.id));
+    for (let i = 0; i < 3; i++) await processOne();
+    expect(generateParser).toHaveBeenCalledTimes(1);
+    for (const id of [first.id, second.id, third.id]) expect((await readJob(id)).status).toBe("ready");
+    for (let i = 0; i < 3; i++) await maintainJobs();
+    expect(await cash()).toHaveLength(5);
+    expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toHaveLength(1);
+  });
+  it("allows ten files in analysis at once", async () => {
+    for (let i = 0; i < 10; i++) await enqueue(userId, { csv: `${csv}\n2024-02-0${i % 9 + 1},CASH,-${i + 1},File ${i}`, name: "Ten" });
+    await expect(enqueue(userId, { csv: `${csv}\n2024-03-01,CASH,-99,Eleventh`, name: "Ten" })).rejects.toThrow("massimo 10 file");
+    await db.update(jobs).set({ status: "expired", encryptedCsv: null }).where(eq(jobs.userId, userId));
+  });
+  it("a known broker export is imported by its built-in reader, with no AI and nothing to confirm", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "imported", provider: "interactive-brokers", name: "Interactive Brokers", result: { rows: [], counts: { new: 7, duplicate: 2, error: 0 }, inserted: 7, instrumentsCreated: 1 } });
+    const id = await prepare();
+    const job = await readJob(id);
+    expect(generateParser).not.toHaveBeenCalled();
+    expect(job).toMatchObject({ status: "imported", brokerProvider: "interactive-brokers", encryptedCsv: null, importLedger: { rows: 9, alreadyPresent: 2, native: { provider: "interactive-brokers", inserted: 7 } } });
+    expect((await listImports(userId)).jobs.find(j => j.id === id)?.results).toMatchObject({ native: { name: "Interactive Brokers", inserted: 7 }, rows: 9, alreadyPresent: 2 });
+  });
+  it("a broker export its reader refuses goes to the AI with the reader's reason, and support gets that reason", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "degiro", name: "DEGIRO", message: "Cassa EUR non riconciliata" });
+    const id = await prepare();
+    expect(await readJob(id)).toMatchObject({ status: "ready", brokerProvider: "degiro", failureReport: { reason: "native_refused", native: { name: "DEGIRO", message: "Cassa EUR non riconciliata" } } });
+    expect(vi.mocked(generateParser).mock.calls[0][1].request.native).toMatchObject({ name: "DEGIRO", message: "Cassa EUR non riconciliata" });
+    await maintainJobs(); await maintainJobs();
+    expect((await readJob(id)).status).toBe("imported");
+    const report = send.mock.calls.find(call => call[0].subject === `Importazione: report ${id}`);
+    expect(report?.[0].text).toContain("«Cassa EUR non riconciliata»");
+  });
+  it("a broker export its reader cannot read goes to the AI, guarded like the old wizard fallback", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "fallback", provider: "fineco" });
+    const id = await prepare();
+    expect(await readJob(id)).toMatchObject({ status: "ready", brokerProvider: "fineco" });
+    expect(generateParser).toHaveBeenCalledTimes(1);
+  });
+  it("an AI-read broker file is refused only by that broker's own history, not by another broker's portfolio", async () => {
+    const [instrument] = await db.insert(instruments).values({ createdByUserId: userId, name: "Other broker share", type: "azione", currency: "EUR", priceMode: "manuale" }).returning();
+    const trade = (portfolioId: string) => ({ userId, portfolioId, instrumentId: instrument.id, type: "acquisto" as const, date: "2024-01-02", quantity: "1", price: "10", fxRate: "1", fees: "0", taxes: "0" });
+    const [tr] = await db.insert(investmentPortfolios).values({ userId, name: "Trade Republic", broker: "trade-republic-api:synthetic" }).returning();
+    await db.insert(investmentTransactions).values(trade(tr.id));
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "interactive-brokers", name: "Interactive Brokers", message: "Saldo iniziale CHF diverso dalla chiusura precedente: importa prima lo storico mancante" });
+    const allowed = await prepare();
+    expect(await confirmImport(userId, allowed)).toMatchObject({ inserted: 3 });
+    const [ib] = await db.insert(investmentPortfolios).values({ userId, name: "Interactive Brokers · 0001", broker: "ibkr:synthetic" }).returning();
+    await db.insert(investmentTransactions).values({ ...trade(ib.id), date: "2024-01-04" });
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "interactive-brokers", name: "Interactive Brokers", message: "x" });
+    const refused = await prepare(csv + "\n2024-01-04,CASH,-2,Later");
+    await expect(confirmImport(userId, refused)).rejects.toThrow("importazioni precedenti da riconciliare");
+    await db.delete(investmentTransactions).where(inArray(investmentTransactions.portfolioId, [tr.id, ib.id]));
   });
   it("claims jobs once concurrently and recovers an expired lease", async () => {
     const { id } = await enqueue(userId, { csv, name: 'Lease bank' });
     const claims = await Promise.all([processOne(), processOne()]); expect(claims.filter(Boolean)).toHaveLength(1);
     expect((await readJob(id)).status).toBe("ready");
-    const second = await enqueue(userId, { csv, name: 'Recovered bank' });
+    const second = await enqueue(userId, { csv: csvAgain, name: 'Recovered bank' });
     await db.update(jobs).set({ status: "processing", lease: randomUUID(), leaseUntil: new Date(0) }).where(eq(jobs.id, second.id));
     await processOne(); expect((await readJob(second.id)).status).toBe("ready");
   });
@@ -340,8 +406,8 @@ describe("personal CSV durable flow", () => {
     const id = await prepare(); expect((await exportPersonalImports(userId)).parsers).toHaveLength(1);
     await db.update(jobs).set({ expiresAt: new Date(0) }).where(eq(jobs.id, id));
     await maintainJobs(); expect((await readJob(id)).status).toBe("expired"); expect(await getPreview(userId, id)).toBeNull();
-    await enqueue(userId, { csv, name: 'One' }); await enqueue(userId, { csv, name: 'Two' });
-    await expect(enqueue(userId, { csv, name: 'Three' })).rejects.toThrow("Limite");
+    // The same file again while it is still queued is that job, whatever name is typed.
+    const one = await enqueue(userId, { csv, name: 'One' }); expect((await enqueue(userId, { csv, name: 'Two' })).id).toBe(one.id);
     await db.update(jobs).set({ status: "expired", encryptedCsv: null }).where(eq(jobs.userId, userId));
   });
   describe("bank categories", () => {

@@ -9,14 +9,14 @@ import { isCountryPathAvailable } from "@/lib/localization/config";
 export const QUICK_ADD_SECTION_IDS = ["liquidita", "investimenti", "debiti", "pensione", "analitiche"] as const;
 export type QuickAddSectionId = (typeof QUICK_ADD_SECTION_IDS)[number];
 
-export const QUICK_ADD_ACTION_IDS = ["movimento", "operazione", "file", "rendiconto", "conto", "abbonamento", "debito", "pensione", "obiettivo"] as const;
+export const QUICK_ADD_ACTION_IDS = ["movimento", "operazione", "file", "conto", "abbonamento", "debito", "pensione", "obiettivo"] as const;
 export type QuickAddActionId = (typeof QUICK_ADD_ACTION_IDS)[number];
 
 /** Actions that open a form over the current page; the others go to the page where the thing is added. */
-export const QUICK_ADD_FORM_IDS = ["movimento", "conto", "abbonamento", "operazione", "rendiconto", "debito"] as const satisfies readonly QuickAddActionId[];
+export const QUICK_ADD_FORM_IDS = ["movimento", "conto", "abbonamento", "operazione", "debito"] as const satisfies readonly QuickAddActionId[];
 export type QuickAddFormId = (typeof QUICK_ADD_FORM_IDS)[number];
 
-/** Pages that do the adding themselves: the import page, the pension data tab (a new fund or today's values) and the goal form. */
+/** Pages that do the adding themselves: the one import page (bank and broker files alike), the pension data tab (a new fund or today's values) and the goal form. */
 export const QUICK_ADD_PAGE_HREFS: Record<Exclude<QuickAddActionId, QuickAddFormId>, string> = {
   file: "/importazioni",
   pensione: "/pensione/dati",
@@ -72,12 +72,11 @@ export const QUICK_ADD_SECTIONS: readonly QuickAddSection[] = [
   { id: "analitiche", title: "Obiettivi", path: "/analitiche" },
 ];
 
-/** In the order they are shown: the frequent ones as two pairs (typed by hand, then from a file), then the others. */
+/** In the order they are shown: the frequent ones (typed by hand, then any file), then the others. */
 export const QUICK_ADD_ACTIONS: readonly QuickAddAction[] = [
   { id: "movimento", section: "liquidita", tier: "frequent", title: "Un movimento", description: "Una spesa o un'entrata su un conto manuale", path: "/liquidita" },
   { id: "operazione", section: "investimenti", tier: "frequent", title: "Un'operazione", description: "Un acquisto, una vendita o un dividendo", path: "/investimenti" },
-  { id: "file", section: "liquidita", tier: "frequent", title: "Movimenti da un file", description: "Il CSV o l'Excel della tua banca", path: "/importazioni" },
-  { id: "rendiconto", section: "investimenti", tier: "frequent", title: "Il rendiconto del broker", description: "Tutte le operazioni da un file", path: "/investimenti" },
+  { id: "file", section: "liquidita", tier: "frequent", title: "Importa un file", description: "L'estratto conto della banca o il rendiconto del broker", path: "/importazioni" },
   { id: "conto", section: "liquidita", tier: "occasional", title: "Un conto", short: "Conto", description: "A mano, con il nome e il saldo di oggi", path: "/liquidita/conti" },
   { id: "abbonamento", section: "liquidita", tier: "occasional", title: "Un abbonamento", short: "Abbonamento", description: "Ne seguiamo gli addebiti tra i movimenti", path: "/liquidita/abbonamenti" },
   { id: "debito", section: "debiti", tier: "occasional", title: "Un mutuo o un prestito", short: "Mutuo o prestito", description: "Calcoliamo il piano rate e gli interessi", path: "/debiti" },

@@ -7,12 +7,29 @@ import { brokerFallbackSource } from "./broker-fallback";
 import { ImportError, readRawFile } from "./contract";
 import type { Preview } from "./confirm";
 import { instanceCapabilities } from "@/lib/selfhost";
+import { isSelfHosted } from "@/lib/instance/config";
 import { importCounts } from "./counts";
+import { analysisProgress } from "./progress";
 // Raw-file parsers are selected only within the source explicitly chosen by this user.
 export const RAW_PARSER_VERSION = "raw-csv-v1";
 /** Shown when the exact same file was already imported: nothing is analysed or saved again. */
 export const ALREADY_IMPORTED_MESSAGE = "Questo file è già stato importato: i suoi movimenti ci sono già tutti.";
+/**
+ * The only error a user sees after every automatic attempt failed. The hosted service sends support a report on its
+ * own; a self-hosted install has no project support, so it points to the worker log instead.
+ */
+export function importFailedMessage() {
+  return isSelfHosted()
+    ? "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il dettaglio è nel log del worker CSV."
+    : "Non siamo riusciti a leggere questo file: nessun movimento è stato salvato. Il team è già stato avvisato: se vuoi una mano, scrivi al supporto.";
+}
 /** Identity of an uploaded file, the same whatever the line endings, BOM or trailing blank lines. */
+/** Files one user may have waiting or in analysis at once: a batch of exports of the same bank. */
+export const MAX_ACTIVE_JOBS = 10;
+/** Uploads per user in 24 hours. */
+export const MAX_DAILY_UPLOADS = 30;
+const ACTIVE_STATUSES = ["queued", "processing", "ready"];
+const LIMIT_MESSAGE = "Limite raggiunto: massimo 10 file in analisi e 30 caricamenti al giorno";
 export function fileFingerprint(csv: string) {
   return digest(csv.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").replace(/\s+$/, ""));
 }
@@ -28,51 +45,39 @@ export async function enqueue(userId: string, input: { csv: string; name: string
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 81234)`);
     if (!input.regenerate) {
       // A file already imported is refused before any analysis; a broker file still on its way returns its own job.
-      const same = await tx.select({ id: jobs.id, status: jobs.status }).from(jobs).where(and(eq(jobs.userId, userId), sql`${jobs.sourceFingerprint} in (${sourceFingerprint}, ${digest(input.csv)})`, sql`${jobs.status} not in ('failed', 'expired')`));
+      const same = await tx.select({ id: jobs.id, status: jobs.status, formatId: jobs.formatId }).from(jobs).where(and(eq(jobs.userId, userId), sql`${jobs.sourceFingerprint} in (${sourceFingerprint}, ${digest(input.csv)})`, sql`${jobs.status} not in ('failed', 'expired')`));
       if (same.some(j => j.status === "imported")) throw new ImportError(ALREADY_IMPORTED_MESSAGE, "already_imported");
-      if (broker && same[0]) return same[0];
+      // The same file sent again while it is still on its way (a double drop, a retried batch) is that job.
+      const pending = same.find(j => ACTIVE_STATUSES.includes(j.status));
+      if (pending) return pending;
     }
     const recent = await tx.select({ status: jobs.status }).from(jobs).where(and(eq(jobs.userId, userId), gte(jobs.createdAt, new Date(Date.now() - 86400000))));
-    if (recent.length >= 10 || recent.filter(j => ["queued", "processing"].includes(j.status)).length >= 2) throw new ImportError("Limite raggiunto: massimo 2 analisi in corso e 10 caricamenti al giorno");
+    if (recent.length >= MAX_DAILY_UPLOADS || recent.filter(j => ["queued", "processing"].includes(j.status)).length >= MAX_ACTIVE_JOBS) throw new ImportError(LIMIT_MESSAGE);
     const [priorBroker] = broker && broker.provider !== "generic" ? await tx.select({ formatId: jobs.formatId }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.brokerProvider, broker.provider))).orderBy(desc(jobs.createdAt)).limit(1) : [];
     const formatId = broker ? priorBroker?.formatId : input.formatId;
     let format = formatId ? (await tx.select().from(formats).where(and(eq(formats.id, formatId), eq(formats.userId, userId))))[0] : undefined;
     if (input.formatId && !format) throw new ImportError("Formato non disponibile");
     if (!format) [format] = await tx.insert(formats).values({ userId, name: broker && broker.provider !== "generic" ? broker.name : input.name }).returning();
     const [parser] = input.regenerate ? [] : await tx.select().from(parsers).where(and(eq(parsers.formatId, format.id), eq(parsers.signature, signature))).orderBy(desc(parsers.createdAt)).limit(1);
-    const [job] = await tx.insert(jobs).values({ userId, consentVersion: "openrouter-raw-zdr-v3", formatId: format.id, parserId: parser?.id, brokerProvider: broker?.provider, sourceFingerprint, failureReport: broker ? { phase: "parse", reason: broker.requiresReconciliation ? "broker_validation_failed" : "broker_parse_failed", fallback: true } : null, encryptedCsv: seal(input.csv, userId), estimatedAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 7 * 86400000) }).returning({ id: jobs.id });
+    const [job] = await tx.insert(jobs).values({ userId, consentVersion: "openrouter-raw-zdr-v3", formatId: format.id, parserId: parser?.id, brokerProvider: broker?.provider, sourceFingerprint, failureReport: broker ? { phase: "parse", reason: broker.requiresReconciliation ? "broker_validation_failed" : "broker_parse_failed", fallback: true } : null, encryptedCsv: seal(input.csv, userId), estimatedAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 7 * 86400000) }).returning({ id: jobs.id, status: jobs.status, formatId: jobs.formatId });
     return job;
   });
 }
 export async function listImports(userId: string) {
   const [sources, requests] = await Promise.all([
     db.select({ id: formats.id, name: formats.name }).from(formats).where(eq(formats.userId, userId)).orderBy(desc(formats.createdAt)),
-    db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
+    db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger, parserId: jobs.parserId, failureReport: jobs.failureReport }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
   ]);
   // Del registro dell'importazione esce solo il conteggio (movimenti e operazioni creati), mai gli id.
-  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0, ...importCounts(ledger) } : null })) };
+  // Of the failure report only the attempt in progress leaves the server, never reasons or rows.
+  return { formats: sources, jobs: requests.map(({ ledger, parserId, failureReport, ...job }) => ({ ...job, progress: analysisProgress({ status: job.status, parserId, failureReport }), results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0, bankCategorized: ledger.bankCategorized ?? 0, ...importCounts(ledger), ...(ledger.native ? { native: { name: ledger.native.name, inserted: ledger.native.inserted } } : {}) } : null })) };
 }
 /** Anteprima per il client: il parser generato (se presente) resta sul server. */
-export async function getPreview(userId: string, id: string): Promise<Omit<Preview, "parser"> | null> {
+export async function getPreview(userId: string, id: string): Promise<Preview | null> {
   const [job] = await db.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId)));
   if (!job || !job.encryptedPreview || job.expiresAt < new Date()) return null;
-  const { parser: _parser, ...preview }: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
+  // Previews written before 2026-10-31 may still carry a parser: it never leaves the server.
+  const { parser: _parser, ...preview }: Preview & { parser?: unknown } = JSON.parse(unseal(job.encryptedPreview, userId));
   void _parser;
   return preview;
-}
-/**
- * Rianalizza con l'AI un file con righe da controllare, senza ricaricarlo: il testo si ricostruisce dalle righe
- * dell'anteprima (una per riga fisica), il lavoro vecchio viene tolto dalla lista e ne parte uno nuovo con
- * «rileggi il formato». Stesso consenso del primo caricamento, richiesto di nuovo dalla route.
- */
-export async function reanalyze(userId: string, id: string) {
-  const [job] = await db.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId)));
-  if (!job || job.status !== "review_failed" || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
-  const preview: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
-  if (preview.records.some(r => r.source.length !== 1)) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
-  const [format] = await db.select({ name: formats.name }).from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, userId)));
-  if (!format) throw new ImportError("Formato non disponibile");
-  const next = await enqueue(userId, { csv: preview.records.map(r => r.source[0]).join("\n"), name: format.name, formatId: job.formatId, regenerate: true, brokerFallback: !!job.brokerProvider });
-  await db.delete(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId), eq(jobs.status, "review_failed")));
-  return next;
 }

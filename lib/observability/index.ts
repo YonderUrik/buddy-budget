@@ -11,6 +11,7 @@ export {
   recordHttpRequest,
   recordTradeRepublicRequest,
   recordTradeRepublicUnrecognized,
+  recordPersonalImportAttempt,
   recordGoCardlessSync,
   recordGoCardlessApiRequest,
   recordTransactionsImported,

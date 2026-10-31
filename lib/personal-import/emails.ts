@@ -2,7 +2,7 @@ import { emailLocale, renderEmail } from "@/lib/email";
 import type { Language } from "@/lib/localization/config";
 import { importOverlap, type ImportCounts } from "./counts";
 
-export type PersonalImportEmailOutcome = "imported" | "review" | "failed";
+export type PersonalImportEmailOutcome = "imported" | "failed";
 /** Subject, text and HTML of the email on the outcome of the personal CSV import, in `params.language` (Italian by default). Pure, so it can be tested. */
 export function personalImportEmailContent(
   outcome: PersonalImportEmailOutcome,
@@ -46,19 +46,6 @@ export function personalImportEmailContent(
           title: t("Importazione completata"),
           lead: t("Il tuo CSV è stato importato. Trovi i dati in **Liquidità** e **Investimenti**."),
           cta: { label: t("Apri BuddyBudget"), url: params.jobUrl },
-        },
-        options,
-      ),
-    };
-  }
-  if (outcome === "review") {
-    return {
-      subject: t("Il tuo CSV ha righe da controllare"),
-      ...renderEmail(
-        {
-          title: t("Alcune righe da controllare"),
-          lead: t("Alcune righe del tuo CSV non sono state riconosciute e nessun movimento è stato salvato. In BuddyBudget vedi quali righe e perché, e scegli se importare le altre, rianalizzare il file o caricarne uno corretto."),
-          cta: { label: t("Vedi le righe"), url: params.jobUrl },
         },
         options,
       ),

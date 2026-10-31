@@ -48,9 +48,3 @@ export function validateOutcomes(raw: unknown, table: PersonalTable): Outcome[] 
   }
   return outcomes.sort((a, b) => a.row - b.row);
 }
-/** Messaggio in chiaro di un'analisi con righe non riconosciute: quante su quante, e che le altre si possono importare. */
-export function describeRowErrors(errors: number, total: number): string {
-  const rest = total - errors;
-  const head = errors === 1 ? `1 riga su ${total} non è stata riconosciuta.` : `${errors} righe su ${total} non sono state riconosciute.`;
-  return rest > 0 ? `${head} Puoi importare le altre ${rest}, rianalizzare il file o caricarne uno corretto.` : `${head} Rianalizza il file o caricane uno corretto.`;
-}

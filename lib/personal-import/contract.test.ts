@@ -103,6 +103,9 @@ describe("personal CSV validation and sandbox", () => {
     const parser = { kind: "javascript" as const, code: "function(){return []}" };
     const messages = messagesFor(table, "Banca", hints, stepRequest(1, { reference: { parser, failure: "Parser non deterministico" }, feedback: [{ parser, reason: "unrecognized_rows", lines: [{ row: 3, text: "2024;?;x" }], moreLines: 7, columns: [{ index: 4, name: "Saldo" }] }] }));
     expect(messages.map(m => m.role)).toEqual(["system", "user", "user", "assistant", "user"]);
+    const refused = messagesFor(table, "IB", hints, stepRequest(0, { native: { provider: "interactive-brokers", name: "Interactive Brokers", message: "Cassa non riconciliata" } }));
+    expect(refused.at(-1)!.content).toContain("reader read it but refused to import it: \"Cassa non riconciliata\"");
+    expect(refused.at(-1)!.content).toContain("do not add balancing entries");
     expect(messages[0].content).toContain("ZERO error outcomes");
     expect(messages[2].content).toContain("changed its layout");
     expect(messages[3].content).toBe(JSON.stringify(parser));

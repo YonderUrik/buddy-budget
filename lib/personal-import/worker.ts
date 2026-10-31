@@ -69,11 +69,15 @@ export async function processOne() {
         importDeps: await investmentImportDeps(job.userId, task => { void task().catch(() => {}); }),
         resolve: identity => resolveIdentity(job.userId, identity, { searchMarket: searchInstrumentsOnProviders, searchCrypto: searchCryptoOnProviders, searchByIsin: searchByIsinOnProviders }),
       });
-      if (native.kind === "imported" || native.kind === "failed") { await finishNative(job.id, owned, native); return true; }
-      if (native.kind === "fallback") {
-        await db.update(jobs).set({ brokerProvider: native.provider }).where(owned);
+      if (native.kind === "imported") { await finishNative(job.id, owned, native); return true; }
+      // Unreadable structure, or read but refused (cash that does not reconcile, a partial overlap, an unknown
+      // security): the AI reads the file, told why the reader refused it (decision 2026-10-31). With the broker set,
+      // confirm still refuses rows that overlap that broker's native history; support gets the reader's reason.
+      if (native.kind === "fallback" || native.kind === "failed") {
+        if (native.kind === "failed") report = { ...(report ?? { phase: "parse", reason: "native_refused", detail: native.name }), fallback: true, native: { provider: native.provider, name: native.name, message: native.message } };
+        await db.update(jobs).set({ brokerProvider: native.provider, failureReport: report }).where(owned);
         job.brokerProvider = native.provider;
-        logger.info("personal_import.native.fallback", { jobId: job.id, provider: native.provider });
+        logger.info(native.kind === "failed" ? "personal_import.native.refused" : "personal_import.native.fallback", { jobId: job.id, provider: native.provider });
       }
     }
     const [saved] = job.parserId ? await db.select().from(parsers).where(and(eq(parsers.id, job.parserId), eq(parsers.formatId, job.formatId))) : [];
@@ -82,7 +86,7 @@ export async function processOne() {
     const [owner] = await db.select({ currency: authUser.currency, productCountry: authUser.productCountry }).from(authUser).where(eq(authUser.id, job.userId));
     const hints: ModelHints = { defaultCurrency: owner?.currency ?? "EUR", today: todayKey(), dateOrderHint: dateOrderHint(owner?.productCountry), fileKind: classifyFile(table.rawCsv ?? "") };
     const generated = await runLadder({
-      table, execute: executeParser, model: process.env.OPENROUTER_MODEL ?? "unknown", done: report?.attempts ?? [],
+      table, execute: executeParser, model: process.env.OPENROUTER_MODEL ?? "unknown", done: report?.attempts ?? [], native: report?.native,
       saved: saved ? () => ({ parser: parserSchema.parse(JSON.parse(unseal(saved.encryptedParser, job.userId))), model: saved.model }) : undefined,
       generate: request => {
         if (job.consentVersion !== "openrouter-raw-zdr-v3") throw new ModelInputError("Il formato salvato non legge questo file. Avvia una nuova analisi per autorizzare il tentativo automatico con l'AI.");
@@ -145,13 +149,8 @@ export async function processOne() {
   return true;
 }
 
-/** Ends a job a built-in reader handled: imported straight away (nothing to confirm), or failed with its message. */
-async function finishNative(jobId: string, owned: SQL | undefined, native: Extract<NativeOutcome, { kind: "imported" | "failed" }>) {
-  if (native.kind === "failed") {
-    await db.update(jobs).set({ status: "failed", error: native.message, encryptedCsv: null, lease: null, leaseUntil: null, failureReport: { phase: "save", reason: "broker_validation_failed", detail: native.name, fallback: false } }).where(owned);
-    logger.warn("personal_import.native.failed", { jobId, provider: native.provider });
-    return;
-  }
+/** Ends a job a built-in reader imported: nothing to confirm. */
+async function finishNative(jobId: string, owned: SQL | undefined, native: Extract<NativeOutcome, { kind: "imported" }>) {
   const { result, provider, name } = native;
   const [job] = await db.update(jobs).set({ status: "imported", error: null, encryptedCsv: null, lease: null, leaseUntil: null, brokerProvider: provider, notifiedAt: null, notifyAfter: new Date(), importLedger: { cashIds: [], tradeIds: [], receiptKeys: [], rows: result.counts.new + result.counts.duplicate, alreadyPresent: result.counts.duplicate, native: { provider, name, inserted: result.inserted } } }).where(owned).returning({ userId: jobs.userId });
   logger.info("personal_import.native.imported", { jobId, provider, count: result.inserted });

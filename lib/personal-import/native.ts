@@ -21,7 +21,8 @@ const STATEMENTS: NativeProvider[] = ["interactive-brokers", "degiro", "trade-re
  * - `none`: not a known broker export, the AI reads it;
  * - `fallback`: a known broker, but its reader cannot read this file's structure, so the AI may;
  * - `imported`: saved by the reader (`result` as the broker import returns it);
- * - `failed`: readable but refused (reconciliation, overlap, instruments): never handed to the AI.
+ * - `failed`: readable but refused (reconciliation, overlap, instruments): the worker hands it to the AI with the
+ *   reader's message, and support gets that message.
  */
 export type NativeOutcome =
   | { kind: "none" }

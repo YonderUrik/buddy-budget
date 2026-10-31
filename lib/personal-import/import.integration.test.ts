@@ -276,11 +276,15 @@ describe("personal CSV durable flow", () => {
     expect(job).toMatchObject({ status: "imported", brokerProvider: "interactive-brokers", encryptedCsv: null, importLedger: { rows: 9, alreadyPresent: 2, native: { provider: "interactive-brokers", inserted: 7 } } });
     expect((await listImports(userId)).jobs.find(j => j.id === id)?.results).toMatchObject({ native: { name: "Interactive Brokers", inserted: 7 }, rows: 9, alreadyPresent: 2 });
   });
-  it("a broker export its reader refuses fails with the reader's message and never reaches the AI", async () => {
-    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "degiro", name: "DEGIRO", message: "Sovrapposizione parziale" });
+  it("a broker export its reader refuses goes to the AI with the reader's reason, and support gets that reason", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "degiro", name: "DEGIRO", message: "Cassa EUR non riconciliata" });
     const id = await prepare();
-    expect(await readJob(id)).toMatchObject({ status: "failed", error: "Sovrapposizione parziale", failureReport: { reason: "broker_validation_failed" } });
-    expect(generateParser).not.toHaveBeenCalled();
+    expect(await readJob(id)).toMatchObject({ status: "ready", brokerProvider: "degiro", failureReport: { reason: "native_refused", native: { name: "DEGIRO", message: "Cassa EUR non riconciliata" } } });
+    expect(vi.mocked(generateParser).mock.calls[0][1].request.native).toMatchObject({ name: "DEGIRO", message: "Cassa EUR non riconciliata" });
+    await maintainJobs(); await maintainJobs();
+    expect((await readJob(id)).status).toBe("imported");
+    const report = send.mock.calls.find(call => call[0].subject === `Importazione: report ${id}`);
+    expect(report?.[0].text).toContain("«Cassa EUR non riconciliata»");
   });
   it("a broker export its reader cannot read goes to the AI, guarded like the old wizard fallback", async () => {
     vi.mocked(importNatively).mockResolvedValueOnce({ kind: "fallback", provider: "fineco" });

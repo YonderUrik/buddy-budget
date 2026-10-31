@@ -17,8 +17,18 @@ const REASONS: Record<string, string> = {
   financial_validation_failed: "I dati non superano i controlli finanziari: storico, duplicati, quantità o valuta del profilo.",
   broker_parse_failed: "Il lettore del broker non riesce a interpretare la struttura del documento.",
   broker_validation_failed: "Il lettore del broker ha rilevato un errore che richiede riconciliazione. L'analisi AI non autorizza a ignorare questo controllo.",
+  native_refused: "Il lettore del broker ha letto il file ma l'ha rifiutato; il file è passato all'AI con il motivo.",
+  ladder_exhausted: "Nessuno dei tentativi automatici ha letto il file.",
+  invalid_parser: "Il parser non supera i controlli di esecuzione, struttura, copertura delle righe o determinismo.",
+  undeclared_columns: "Il parser lascia colonne dell'intestazione non dichiarate nei metadati.",
+  model_output_invalid: "La risposta del modello non è un parser utilizzabile.",
+  model_output_truncated: "La risposta del modello è stata tagliata al limite di token.",
 };
-/** Support receives bounded diagnostics and row numbers; never the CSV, financial values or generated code. */
+const STEPS = ["formato salvato", "tentativo 1 (Flash)", "tentativo 2 (Flash con il rifiuto precedente)", "tentativo 3 (Flash con tutti i rifiuti e ragionamento)"];
+/**
+ * Support receives bounded diagnostics and row numbers, one line per attempt, and the broker reader's own refusal
+ * message (what the user would have seen, which can name an account total). Never the CSV or generated code.
+ */
 export function importSupportReport(id: string, status: string, attempts: number, failure: AnalysisFailure) {
   return { subject: `Importazione: report ${id}`, text: [
     `Importazione: ${id}`, `Esito attuale: ${status}`, `Tentativi: ${attempts}`, `Fase del primo errore: ${failure.phase}`,
@@ -27,6 +37,8 @@ export function importSupportReport(id: string, status: string, attempts: number
     `Fallback AI: ${failure.fallback ? "avviato automaticamente" : "non applicabile a questa fase"}`,
     ...(failure.count === undefined ? [] : [`Righe non riconosciute: ${failure.count}`]),
     ...(failure.rows?.length ? [`Prime righe interessate: ${failure.rows.join(", ")}`] : []),
+    ...(failure.native ? [`Lettore ${failure.native.name}: ha letto il file e l'ha rifiutato con «${failure.native.message}»`] : []),
+    ...(failure.attempts?.length ? ["", "Tentativi:", ...failure.attempts.map(a => `- ${STEPS[a.step] ?? `passo ${a.step}`}, ${a.model}: ${REASONS[a.reason] ?? a.reason}${a.detail ? ` (${a.detail})` : ""}${a.rows?.length ? `; righe ${a.rows.slice(0, 20).join(", ")}${a.count && a.count > 20 ? ` e altre ${a.count - 20}` : ""}` : ""}`)] : []),
   ].join("\n") };
 }
 

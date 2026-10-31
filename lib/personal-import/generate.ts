@@ -63,6 +63,7 @@ export function messagesFor(table: PersonalTable, sourceName: string | undefined
     { role: "system", content: SYSTEM_PROMPT },
     { role: "user", content: JSON.stringify(inputForModel(table, sourceName, hints)) },
     ...(request.reference ? [{ role: "user" as const, content: `An earlier export from this same source was read by the parser below, which no longer passes on this file (${request.reference.failure}). The source may have changed its layout: adapt this parser rather than starting over.\n${parserJson(request.reference.parser)}` }] : []),
+    ...(request.native ? [{ role: "user" as const, content: `This file is a ${request.native.name} export. Our built-in ${request.native.name} reader read it but refused to import it: "${request.native.message}". Read the file yourself, keeping every check above: do not add balancing entries or change amounts to make totals match; a row you cannot read correctly is an error outcome.` }] : []),
     ...request.feedback.flatMap(feedbackMessages),
   ];
 }

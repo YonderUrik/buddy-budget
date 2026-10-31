@@ -9,7 +9,9 @@ import { ZodError } from "zod";
 export type AttemptReason = "unrecognized_rows" | "undeclared_columns" | "invalid_parser" | "model_output_invalid" | "model_output_truncated";
 /** One rejected attempt, as stored on the job and sent to support: no file text, values or code. */
 export type AttemptRecord = { step: number; model: string; reason: AttemptReason; detail?: string; count?: number; rows?: number[] };
-export type AnalysisFailure = { phase: "parse" | "generate" | "fx" | "save"; reason: string; detail?: string; rows?: number[]; count?: number; fallback: boolean; attempts?: AttemptRecord[] };
+/** A built-in broker reader that read the file but refused it: its message goes to the model and to support. */
+export type NativeRefusal = { provider: string; name: string; message: string };
+export type AnalysisFailure = { phase: "parse" | "generate" | "fx" | "save"; reason: string; detail?: string; rows?: number[]; count?: number; fallback: boolean; attempts?: AttemptRecord[]; native?: NativeRefusal };
 export type GeneratedParser = { parser: PersonalParser; model: string };
 
 /** What the model is told about a rejected attempt: its parser (when there was one), why, and the lines it got wrong. */
@@ -32,6 +34,8 @@ export interface GenerationRequest {
   timeoutMs: number;
   /** The source's saved parser, when it no longer reads this file: a layout change is usually a small edit. */
   reference?: { parser: PersonalParser; failure: string };
+  /** The broker's built-in reader read this file but refused it, and why. */
+  native?: NativeRefusal;
   feedback: ParserFeedback[];
 }
 
@@ -103,6 +107,8 @@ export async function runLadder(params: {
   model: string;
   execute: Execute;
   done?: AttemptRecord[];
+  /** Passed on to every model call (see `GenerationRequest.native`). */
+  native?: NativeRefusal;
   onAttempt: (record: AttemptRecord) => Promise<void>;
 }): Promise<GeneratedParser & { outcomes: Outcome[]; reused: boolean; step: number }> {
   const attempts = [...(params.done ?? [])];
@@ -123,7 +129,7 @@ export async function runLadder(params: {
   for (const step of LADDER_STEPS) {
     if (attempts.some(a => a.step === step.step) || (needsBudget && step.maxTokens <= LADDER_STEPS[0].maxTokens)) continue;
     const context = step.feedback === "none" ? [] : step.feedback === "last" ? feedback.slice(-1) : feedback;
-    const request: GenerationRequest = { step: step.step, reasoning: step.reasoning, reasoningTokens: step.reasoningTokens, maxTokens: step.maxTokens, timeoutMs: step.timeoutMs, reference, feedback: context.map(f => withLines(f, params.table, step.lines)) };
+    const request: GenerationRequest = { step: step.step, reasoning: step.reasoning, reasoningTokens: step.reasoningTokens, maxTokens: step.maxTokens, timeoutMs: step.timeoutMs, reference, native: params.native, feedback: context.map(f => withLines(f, params.table, step.lines)) };
     let generated: GeneratedParser;
     try { generated = await params.generate(request); }
     catch (error) {

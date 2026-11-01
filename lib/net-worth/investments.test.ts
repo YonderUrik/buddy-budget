@@ -10,6 +10,7 @@ import {
   userInstrumentPrices,
 } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
+import { saveFxRates, savePrices } from "@/lib/market-data/store";
 import { createMemoryHistoryStateStore, type InvestmentHistoryStateStore } from "./history-state";
 import { refreshDerivedInvestmentHistory, writeInvestmentSnapshot } from "./investments";
 import { findUsersWithAccounts } from "./scheduler";
@@ -69,10 +70,6 @@ describe("patrimonio netto: investimenti", () => {
   afterEach(async () => {
     await db.delete(authUser).where(eq(authUser.id, userId));
     await db.delete(instruments).where(eq(instruments.id, instrumentId));
-  });
-
-  afterAll(async () => {
-    await client.end();
   });
 
   it("ricostruisce lo storico dalla prima operazione a ieri e scrive lo snapshot di oggi", async () => {
@@ -200,4 +197,110 @@ describe("patrimonio netto: investimenti", () => {
     expect(await refresh()).toBe(0);
     expect(await rows()).toEqual([]);
   });
+});
+
+/**
+ * Retroactive correction of already-stored market data (decision 2026-11-01): the fingerprint used count(*)+max(created_at)
+ * for instrument_prices and fx_rates, but an upsert that corrects an existing row never touched created_at, so the derived
+ * history stayed at the old value. These tests go through the real store (savePrices/saveFxRates), not a raw update.
+ */
+describe("patrimonio netto: correzione retroattiva di prezzi e cambi", () => {
+  let userId: string;
+  let instrumentId: string;
+  let portfolioId: string;
+  let state: InvestmentHistoryStateStore;
+
+  async function buy(date: string, quantity: string, price: string, fxRate = "1") {
+    await db
+      .insert(investmentTransactions)
+      .values({ userId, portfolioId, instrumentId, type: "acquisto", date, quantity, price, fxRate });
+  }
+
+  const refresh = () => refreshDerivedInvestmentHistory(userId, TODAY, state);
+
+  async function amountOn(date: string) {
+    const [row] = await db
+      .select({ amount: netWorthSnapshots.amount })
+      .from(netWorthSnapshots)
+      .where(
+        and(
+          eq(netWorthSnapshots.userId, userId),
+          eq(netWorthSnapshots.date, date),
+          eq(netWorthSnapshots.assetClass, "investimenti")
+        )
+      );
+    return row?.amount;
+  }
+
+  beforeEach(async () => {
+    state = createMemoryHistoryStateStore();
+    const [user] = await db
+      .insert(authUser)
+      .values({
+        id: `test-nw-revision-${crypto.randomUUID()}`,
+        name: "Test",
+        email: `test-nw-revision-${crypto.randomUUID()}@example.com`,
+        emailVerified: false,
+      })
+      .returning();
+    userId = user.id;
+    const [instrument] = await db
+      .insert(instruments)
+      .values({ name: "ETF revisione", type: "etf", currency: "EUR", createdByUserId: userId })
+      .returning();
+    instrumentId = instrument.id;
+    const [portfolio] = await db.insert(investmentPortfolios).values({ userId, name: "Portafoglio" }).returning();
+    portfolioId = portfolio.id;
+  });
+
+  afterEach(async () => {
+    await db.delete(authUser).where(eq(authUser.id, userId));
+    await db.delete(instruments).where(eq(instruments.id, instrumentId));
+  });
+
+  it("correggere la chiusura di un giorno già salvato ricalcola lo storico", async () => {
+    await buy("2026-09-15", "10", "100");
+    // Giorno salvato dall'aggiornamento serale (overwrite): 110.
+    await savePrices(instrumentId, [{ date: "2026-09-17", close: 110, currency: null }], "yahoo", { overwrite: true });
+    await refresh();
+    expect(await amountOn("2026-09-17")).toBe("1100.00");
+
+    // Correzione retroattiva dello stesso giorno: la riga viene riscritta con lo stesso created_at.
+    await savePrices(instrumentId, [{ date: "2026-09-17", close: 95, currency: null }], "yahoo", { overwrite: true });
+    expect(await refresh()).toBeGreaterThan(0);
+    expect(await amountOn("2026-09-17")).toBe("950.00");
+    expect(await amountOn("2026-09-19")).toBe("950.00");
+  });
+
+  it("un upsert con lo stesso valore non ricalcola", async () => {
+    await buy("2026-09-15", "10", "100");
+    await savePrices(instrumentId, [{ date: "2026-09-17", close: 110, currency: null }], "yahoo", { overwrite: true });
+    await refresh();
+    // Stesso valore: la riga è toccata, ma il contenuto non cambia.
+    await savePrices(instrumentId, [{ date: "2026-09-17", close: 110, currency: null }], "yahoo", { overwrite: true });
+    expect(await refresh()).toBe(0);
+  });
+
+  it("correggere un cambio storico ricalcola la valutazione nella valuta dell'utente", async () => {
+    await db
+      .update(instruments)
+      .set({ currency: "USD" })
+      .where(eq(instruments.id, instrumentId));
+    await db.update(authUser).set({ currency: "EUR" }).where(eq(authUser.id, userId));
+    await buy("2026-09-15", "10", "100", "1");
+    await saveFxRates([{ date: "2026-09-17", currency: "USD", perEur: 1.1 }], "ecb");
+    await refresh();
+    // 10 × 100 USD = 1000 USD; con 1 EUR = 1.1 USD → 909.09 EUR.
+    expect(await amountOn("2026-09-17")).toBe("909.09");
+
+    // Correzione retroattiva del cambio dello stesso giorno.
+    await saveFxRates([{ date: "2026-09-17", currency: "USD", perEur: 1.25 }], "ecb");
+    expect(await refresh()).toBeGreaterThan(0);
+    // 1000 / 1.25 = 800.00 EUR.
+    expect(await amountOn("2026-09-17")).toBe("800.00");
+  });
+});
+
+afterAll(async () => {
+  await client.end();
 });

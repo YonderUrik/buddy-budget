@@ -126,7 +126,7 @@ Without the correction the chart stayed flat at 500 and jumped to 1,300 on the l
 
 `refreshDerivedInvestmentHistory(userId, today, state)`:
 
-1. Builds a fingerprint from count and latest change of the user's investment transactions, manual prices, prices of held instruments, FX rates of the held currencies and the user's currency, and the user's currency itself, plus yesterday's date (so every new day extends the history once).
+1. Builds a fingerprint from count and latest `updated_at` of the user's investment transactions, manual prices, prices of held instruments and FX rates of the held currencies, plus the user's currency, plus yesterday's date (so every new day extends the history once). The market tables keep `updated_at` current on every upsert, so correcting an already-stored close or rate moves the fingerprint too.
 2. If it equals the stored fingerprint, returns 0. If Redis is unreachable it logs `net_worth.history_state.unavailable` and recomputes.
 3. Range: from the first investment transaction (at most `MAX_INVESTMENT_HISTORY_YEARS = 20` years back, matching the price backfill) to yesterday. With no past transaction it deletes all past `investimenti` rows.
 4. Computes `computeDailyPortfolioValues` for the range, compares each day with the stored amount and upserts only the changed days in batches of 500.

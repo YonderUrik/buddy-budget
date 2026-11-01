@@ -1,0 +1,11 @@
+# better-auth 1.7 and the dependency audit of 1 November
+
+Date: 2026-11-01
+
+`pnpm audit` reported 24 advisories in the app (1 critical) and 8 in the landing. The critical one, GHSA-965c-763c-88jm, applied to production: with magic link, Google sign-in and the OAuth state in the database (better-auth's default), the `state` of a Google sign-in started with a victim's email in `additionalData` was accepted by `/magic-link/verify`, so anyone who knew an email could sign in as that user or create a verified account for an unknown address. Reproduced on `main` with the new `lib/auth/oauth-state-magic-link.integration.test.ts`, which now passes.
+
+- **better-auth 1.6.33 → 1.7.14** (Dependabot #530 proposed 1.7.7; 1.7.8–1.7.14 add cookie, password-reset and magic-link fixes; 1.7.15 was under pnpm's 24 h minimum age). Read against the 1.7 upgrade guide: the `account.issuer` column of 1.7.0–1.7.2 was dropped again in 1.7.3, so **no migration**; none of the breaking areas (OAuth provider, MCP, SSO, SCIM, two-factor, device authorization, OAuth Proxy, custom storage, `allowedHosts`) is used. The only code change is `internalAdapter.createUser`, which takes a provisioning source (one test). Magic links and Google sign-ins in flight at deploy time must be restarted. Also closes GHSA-r4xp-prcw-77qf (OAuth Proxy, not used), GHSA-q84f-53jg-9ppm (device authorization, not used) and GHSA-44jh-23m7-hpcf (database rate limit, ours is in memory).
+- **shadcn** moved to `devDependencies` (only its `tailwind.css` is imported, at build time) and to 4.23, which drops the MCP SDK v1 tree (express, body-parser, hono, zod 3, fast-uri, systeminformation). The `proxy-addr` override of 2026-10-10 is removed: nothing depends on it any more. The new `tailwind.css` only adds a `prefers-reduced-motion` rule to `shimmer`.
+- **vite** pinned as a dev dependency at `^8.3.5` in app and landing, because vitest resolves it as a peer and pnpm overrides do not reach auto-installed peers. **zod** in the landing (ESLint plugin) to 4.6.7.
+
+Left open on purpose: `esbuild` 0.18 inside drizzle-kit (dev server advisory, drizzle-kit never serves; unchanged since 2026-10-18), `minimatch` < 11 inside ESLint (dev only, the fix is a major ESLint does not accept yet), `deepmerge` 4.3.1 inside the shadcn CLI (the patched 4.3.2 is not published). `braces` no longer appears.

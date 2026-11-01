@@ -36,6 +36,7 @@
     "eslint-config-next": "16.3.8",
     "turndown": "^7.2.4",
     "typescript": "^5",
+    "vite": "^8.3.5",
     "vitest": "^4.1.12"
   }
 }

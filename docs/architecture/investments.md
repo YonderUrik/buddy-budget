@@ -253,7 +253,7 @@ Sharpe = (mean(r) - rf / perYear) / stdev(r) * sqrt(perYear)
 
 [`refreshDerivedInvestmentHistory`](../../lib/net-worth/investments.ts) rebuilds the past daily `investimenti` rows of `net_worth_snapshots`, from the first transaction (at most 20 years back) to yesterday:
 
-1. Build a fingerprint from row count and latest `updatedAt`/`createdAt` of the user's transactions, manual prices, closes of held instruments, relevant FX rates, the user's currency and yesterday's date.
+1. Build a fingerprint from row count and latest change of the user's transactions (`updated_at`), manual prices (`updated_at`), closes of held instruments and relevant FX rates (`updated_at`, maintained on upsert so a restored close is caught), the user's currency and yesterday's date.
 2. If it equals the fingerprint stored in Redis, stop.
 3. Otherwise compute the daily series, delete rows before the first transaction and upsert only days whose rounded value changed, in batches of 500, as `source = "derivato"`. Existing `snapshot` rows keep their source but get the recomputed value.
 4. Save the fingerprint. A Redis failure only causes an extra recomputation.

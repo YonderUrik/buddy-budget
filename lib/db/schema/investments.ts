@@ -85,6 +85,8 @@ export const instrumentPrices = pgTable(
     close: numeric("close", { precision: 20, scale: 8 }).notNull(),
     source: text("source").$type<ProviderId>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Last content change: `created_at` alone never moves on an upsert, so a corrected close would not show up in the derivation fingerprint. */
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique("instrument_prices_instrument_date_unique").on(table.instrumentId, table.date),
@@ -120,6 +122,8 @@ export const fxRates = pgTable(
     perEur: numeric("per_eur", { precision: 20, scale: 8 }).notNull(),
     source: text("source").$type<FxProviderId>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Last content change: `created_at` alone never moves on an upsert, so a corrected rate would not show up in the derivation fingerprint. */
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [unique("fx_rates_date_currency_unique").on(table.date, table.currency)]
 );

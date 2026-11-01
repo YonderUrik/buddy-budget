@@ -144,7 +144,7 @@ export async function savePrices(
     await (options.overwrite
       ? insert.onConflictDoUpdate({
           target: [instrumentPrices.instrumentId, instrumentPrices.date],
-          set: { close: sql`excluded.close`, source: sql`excluded.source` },
+          set: { close: sql`excluded.close`, source: sql`excluded.source`, updatedAt: new Date() },
         })
       : insert.onConflictDoNothing());
     saved += batch.length;
@@ -167,7 +167,7 @@ export async function saveFxRates(rates: FxDailyRate[], source: FxProviderId): P
       .values(batch)
       .onConflictDoUpdate({
         target: [fxRates.date, fxRates.currency],
-        set: { perEur: sql`excluded.per_eur`, source: sql`excluded.source` },
+        set: { perEur: sql`excluded.per_eur`, source: sql`excluded.source`, updatedAt: new Date() },
       });
   }
   return rates.length;

@@ -41,7 +41,7 @@ net-worth-snapshot cron (20 minutes later) reads the new closes
 
 **P3 — Secondary data never fails the cron.** Inflation, €STR, crypto catalog, profiles, dividends and alerts catch their own errors and log them. Only an unexpected error in the price update marks the cron run as failed.
 
-**P4 — Writes are idempotent.** Daily closes and FX are upserts. Backfill inserts only missing days (`onConflictDoNothing`), so an interrupted backfill can be run again.
+**P4 — Writes are idempotent.** Daily closes and FX are upserts, and each update also refreshes `updated_at` so downstream fingerprints see a corrected value. Backfill inserts only missing days (`onConflictDoNothing`), so an interrupted backfill can be run again.
 
 **P5 — Shared state lives in Redis.** Quota budgets, the Yahoo session and cooldown, backfill progress and caches are in Redis, so they hold across pods and restarts. In-memory stores exist only for tests and scripts.
 
@@ -56,9 +56,9 @@ All tables are in [`lib/db/schema/investments.ts`](../../lib/db/schema/investmen
 | Table | Key | Stores |
 |---|---|---|
 | `instrument_symbols` | instrument + provider | the symbol each source uses (inserted once, never overwritten) |
-| `instrument_prices` | instrument + date | daily `close` in the instrument currency and the `source` that gave it |
+| `instrument_prices` | instrument + date | daily `close` in the instrument currency and the `source` that gave it; `updated_at` moves on every upsert (used by the net worth history fingerprint) |
 | `user_instrument_prices` | user + instrument + date | manual closes (per user; see [investments.md](investments.md)) |
-| `fx_rates` | date + currency | `perEur`: units of the currency per 1 EUR, and `source` (`ecb` or `frankfurter`) |
+| `fx_rates` | date + currency | `perEur`: units of the currency per 1 EUR, and `source` (`ecb` or `frankfurter`); `updated_at` moves on every upsert |
 | `inflation_index` | area + month | HICP index value and `source` (the series key) |
 | `interest_rates` | series + date | daily rate as an annual fraction (series `estr` only) |
 | `instrument_profiles` | instrument | fund sectors, asset mix, top holdings; stock sector and country; `fetchedAt` |

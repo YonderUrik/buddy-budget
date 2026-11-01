@@ -1,5 +1,5 @@
 {
-  "id": "af4570f7-5e94-4f51-b733-04f02b5a7675",
+  "id": "2bb1aa5c-dd65-4f76-a023-0a53b857ad8d",
   "prevId": "b45d17db-24c7-450b-9499-a320c3e18b83",
   "version": "7",
   "dialect": "postgresql",
@@ -1727,6 +1727,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -1917,6 +1924,13 @@
         },
         "created_at": {
           "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -2205,13 +2219,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "keep_broker_prices": {
-          "name": "keep_broker_prices",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         },
         "created_at": {
           "name": "created_at",

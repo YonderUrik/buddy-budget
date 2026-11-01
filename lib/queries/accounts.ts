@@ -5,14 +5,14 @@ import { track } from "@/lib/analytics";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { CreateAccountInput, UpdateAccountInput } from "@/lib/validation/accounts";
 import { pageText } from "@/lib/localization/page-text";
+import {
+  ACCOUNT_DELETED_QUERY_KEYS,
+  BALANCE_CHANGED_QUERY_KEYS,
+  invalidateKeys,
+  queryKeys,
+} from "./invalidation";
 
-const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
-
-/**
- * Queries that show account balances: the accounts, the cash history, the sidebar total and the goals funded by
- * accounts. Invalidated when a balance changes, by hand or because a transaction typed by hand moved it.
- */
-export const QUERY_KEYS_CHANGED_BY_BALANCE = [ACCOUNTS_QUERY_KEY, ["net-worth-snapshots"], ["investments", "sidebar-summary"], ["goals"]] as const;
+const ACCOUNTS_QUERY_KEY = queryKeys.accounts;
 
 /** An account as `GET /api/accounts` returns it: `followsTransactions` is true for linked banks and file imports. */
 export type AccountListItem = Account & { followsTransactions: boolean };
@@ -25,12 +25,12 @@ async function fetchAccounts(): Promise<AccountListItem[]> {
   return response.json();
 }
 
-/** Recupera la lista dei conti dell'utente autenticato. */
+/** Fetches the logged-in user's accounts. */
 export function useAccountsQuery() {
   return useQuery({ queryKey: ACCOUNTS_QUERY_KEY, queryFn: fetchAccounts });
 }
 
-/** Crea un nuovo conto manuale e invalida la lista al successo. */
+/** Creates a new manual account and, on success, marks every balance-dependent view stale. */
 export function useCreateAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -46,14 +46,15 @@ export function useCreateAccountMutation() {
       }
       return response.json() as Promise<Account>;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       track("account_created");
-      queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+      // A new account moves the total on the overview, so every balance-dependent view goes stale with it.
+      await invalidateKeys(queryClient, BALANCE_CHANGED_QUERY_KEYS);
     },
   });
 }
 
-/** Aggiorna un conto manuale esistente e invalida la lista al successo. */
+/** Updates an existing manual account and, on success, marks every balance-dependent view stale. */
 export function useUpdateAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -69,13 +70,13 @@ export function useUpdateAccountMutation() {
       }
       return response.json() as Promise<Account>;
     },
-    onSuccess: () => {
-      for (const queryKey of QUERY_KEYS_CHANGED_BY_BALANCE) queryClient.invalidateQueries({ queryKey: [...queryKey] });
+    onSuccess: async () => {
+      await invalidateKeys(queryClient, BALANCE_CHANGED_QUERY_KEYS);
     },
   });
 }
 
-/** Elimina (o scollega, per i conti auto) un conto e invalida la lista al successo. */
+/** Deletes (or unlinks, for automatic accounts) an account and, on success, marks the ledger views stale too. */
 export function useDeleteAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -85,10 +86,9 @@ export function useDeleteAccountMutation() {
         throw new Error(pageText("Impossibile eliminare il conto"));
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
-      // Scollegare l'ultimo conto di una banca libera il posto: il pulsante «Collega» va ricontrollato.
-      queryClient.invalidateQueries({ queryKey: ["gocardless", "capacity"] });
+    onSuccess: async () => {
+      // The server deletes the account's transactions too: invalidate the ledger views, not just the accounts.
+      await invalidateKeys(queryClient, ACCOUNT_DELETED_QUERY_KEYS);
     },
   });
 }

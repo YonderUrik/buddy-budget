@@ -7,7 +7,7 @@ import { track } from "@/lib/analytics";
 import { pageText } from "@/lib/localization/page-text";
 import type { TransactionDetailData } from "@/lib/transactions/detail";
 import type { SingleSuggestion } from "@/lib/categorization/ai/single-suggestion";
-import { QUERY_KEYS_CHANGED_BY_BALANCE } from "./accounts";
+import { BALANCE_CHANGED_QUERY_KEYS, queryKeys } from "./invalidation";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
@@ -99,7 +99,7 @@ export function useAiSuggestionMutation() {
  * Everything a transaction typed by hand changes: the lists, the attention counts, the month's budget and, since it
  * moves its account's balance, every place a balance is shown.
  */
-const QUERY_KEYS_CHANGED_BY_TRANSACTION = [["transactions"], ["attention"], ["budget-month"], ...QUERY_KEYS_CHANGED_BY_BALANCE] as const;
+const QUERY_KEYS_CHANGED_BY_TRANSACTION = [queryKeys.transactions, queryKeys.attention, queryKeys.budget, ...BALANCE_CHANGED_QUERY_KEYS] as const;
 
 function invalidateTransactionViews(queryClient: ReturnType<typeof useQueryClient>) {
   for (const queryKey of QUERY_KEYS_CHANGED_BY_TRANSACTION) queryClient.invalidateQueries({ queryKey: [...queryKey] });

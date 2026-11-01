@@ -355,8 +355,15 @@
     {
       "idx": 52,
       "version": "7",
-      "when": 1793481152135,
-      "tag": "0053_instrument_keep_broker_prices",
+      "when": 1793542025482,
+      "tag": "0053_market_data_updated_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1793550990307,
+      "tag": "0054_instrument_keep_broker_prices",
       "breakpoints": true
     }
   ]

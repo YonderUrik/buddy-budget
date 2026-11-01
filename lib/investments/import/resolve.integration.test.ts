@@ -2,6 +2,8 @@ import { afterAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { client, db } from "@/lib/db/client";
 import { instruments } from "@/lib/db/schema/investments";
+import { authUser } from "@/lib/db/schema/auth";
+import { randomUUID } from "node:crypto";
 import { resolveIdentity, type ResolveDeps } from "./resolve";
 
 const identity = { key: "k1", symbol: null, isin: "IE00B4L5Y983", name: null, currency: "EUR", symbolIsYahoo: false } as const;
@@ -65,6 +67,32 @@ describe("resolveIdentity: ripiego OpenFIGI per gli ISIN", () => {
       expect(match).toMatchObject({ kind: "proposal", input: { source: "manuale", currency: "EUR" } });
     } finally {
       await db.delete(instruments).where(eq(instruments.id, usd.id));
+    }
+  });
+
+  it("passes the exchange the broker reports to the ISIN search", async () => {
+    let asked: string | null | undefined;
+    const intel = { ...identity, isin: "US4581401001", name: "INTEL CORP", currency: "USD", exchange: "US" };
+    const match = await resolveIdentity("test-user", intel, deps({ searchByIsin: async (_isin, _currency, exchange) => { asked = exchange; return { status: "ok", hits: [{ ...HIT, symbol: "INTC" }] }; } }));
+    expect(asked).toBe("US");
+    expect(match).toMatchObject({ kind: "proposal", input: { source: "yahoo", yahooSymbol: "INTC" } });
+  });
+
+  it("a corporate action keeps the broker's prices on the user's own copy, which later statements reuse", async () => {
+    const userId = randomUUID();
+    await db.insert(authUser).values({ id: userId, name: "Corporate action", email: `${userId}@example.test` });
+    const liberty = { ...identity, isin: "BMG611881019", name: "LIBERTY GLOBAL LTD-A", currency: "USD" };
+    try {
+      const searched: string[] = [];
+      const first = await resolveIdentity(userId, { ...liberty, corporateAction: true }, deps({ searchByIsin: async (isin) => { searched.push(isin); return { status: "ok", hits: [{ ...HIT, symbol: "LBTYA" }] }; } }));
+      expect(first).toMatchObject({ kind: "proposal", input: { source: "manuale", ownCopy: true, isin: liberty.isin, currency: "USD" } });
+      expect(searched).toEqual([]);
+      const [own] = await db.insert(instruments).values({ isin: liberty.isin, name: liberty.name, type: "azione", currency: "USD", priceMode: "manuale", createdByUserId: userId }).returning();
+      const later = await resolveIdentity(userId, liberty, deps({ searchByIsin: async () => ({ status: "ok", hits: [{ ...HIT, symbol: "LBTYA" }] }) }));
+      expect(later).toMatchObject({ kind: "known", instrument: { id: own.id } });
+    } finally {
+      await db.delete(instruments).where(eq(instruments.createdByUserId, userId));
+      await db.delete(authUser).where(eq(authUser.id, userId));
     }
   });
 });

@@ -22,6 +22,8 @@ export const resolveImportSchema = z.object({
         currency: z.string().regex(/^[A-Z]{3}$/).nullable(),
         symbolIsYahoo: z.boolean(),
         type: z.enum(INSTRUMENT_TYPES).optional(),
+        exchange: z.string().trim().max(8).nullable().optional(),
+        corporateAction: z.boolean().optional(),
       })
     )
     .min(1)

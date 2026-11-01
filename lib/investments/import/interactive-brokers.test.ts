@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { parseCsvRecords } from "./csv";
 import { IBKR_MAX_FILE_BYTES, parseInteractiveBrokersActivity } from "./interactive-brokers";
 import { runImportSchema } from "@/lib/validation/investments-import";
+import { brokerSeries } from "./__fixtures__/broker-series";
 
 const fixture = readFileSync(new URL("./__fixtures__/interactive-brokers.csv", import.meta.url), "utf8");
 const parse = (text = fixture) => parseInteractiveBrokersActivity(text, "2026-10-03");
@@ -14,7 +15,8 @@ describe("Interactive Brokers Activity Statement", () => {
     expect(result.operations[0]).toMatchObject({ type: "acquisto", quantity: 1000, price: 12.5, fees: 2.5, sourceCurrency: "USD", date: "2025-01-10", line: 9 });
     expect(result.operations[1]).toMatchObject({ type: "vendita", quantity: 2, price: 15, fees: 1 });
     expect(result.operations[2]).toMatchObject({ type: "dividendo", grossAmount: 100, taxes: 10 });
-    expect(result.identities).toEqual([{ key: "isin:US0378331005:USD", symbol: "TEST", isin: "US0378331005", name: 'Synthetic "Test", Inc.', currency: "USD", symbolIsYahoo: false }]);
+    // «Listing Exch» NASDAQ: matching tries the US listing first.
+    expect(result.identities).toEqual([{ key: "isin:US0378331005:USD", symbol: "TEST", isin: "US0378331005", name: 'Synthetic "Test", Inc.', currency: "USD", symbolIsYahoo: false, exchange: "US" }]);
     expect(result.issues.filter((i) => i.severity === "error")).toEqual([expect.objectContaining({ section: "Corporate Actions", line: 26 })]);
     expect(runImportSchema.safeParse({ dryRun: true, instruments: [{ key: result.identities[0].key, create: { source: "manuale", name: "Test", type: "azione", currency: "USD" } }], operations: result.operations }).success).toBe(true);
   });
@@ -102,6 +104,12 @@ describe("Interactive Brokers Activity Statement", () => {
     expect(new Set(result.records.map((r) => r.section))).toEqual(new Set(source.map((r) => r.cells[0])));
     expect(result.records.some((r) => r.section === "Stock Yield Enhancement Program Securities Lent Interest Details")).toBe(true);
     expect(result.records.some((r) => r.section === "Notes/Legal Notes")).toBe(true);
+  });
+
+  it("flags both sides of a spinoff as a corporate action, so they keep the broker's prices", () => {
+    const result = parseInteractiveBrokersActivity(brokerSeries(2024), "2026-10-03");
+    const flagged = Object.fromEntries(result.identities.map((i) => [i.symbol, i.corporateAction ?? false]));
+    expect(flagged).toMatchObject({ PARENT: true, CHILD: true });
   });
 
 });

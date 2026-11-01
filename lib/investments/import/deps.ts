@@ -6,7 +6,7 @@ import { ensureHistorySafely } from "@/lib/investments/history";
 import { createOrReuseInstrument } from "@/lib/investments/instruments";
 import type { IsinListingsDeps } from "@/lib/investments/isin-listings";
 import { autoLinkQuotation } from "@/lib/investments/link-quotation";
-import { getUserCurrency, todayKey } from "@/lib/investments/operations";
+import { getUserCurrency, latestTodayKey } from "@/lib/investments/operations";
 import { listingsOnOpenFigi, marketDataDeps, quoteMetaOnProviders } from "@/lib/market-data/runtime";
 import { updateFxRates } from "@/lib/market-data/update";
 import { logger } from "@/lib/observability";
@@ -21,7 +21,7 @@ const quotationDeps: IsinListingsDeps = { listings: listingsOnOpenFigi, quoteMet
 export async function investmentImportDeps(userId: string, schedule: (task: () => Promise<void>) => void): Promise<ImportDeps> {
   return {
     userCurrency: await getUserCurrency(userId),
-    todayKey: todayKey(),
+    todayKey: latestTodayKey(),
     createInstrument: (input) => createOrReuseInstrument(userId, input, { quoteMeta: quoteMetaOnProviders, listings: listingsOnOpenFigi }),
     fetchFx: async (currencies, from, to) => {
       try {

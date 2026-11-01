@@ -53,9 +53,34 @@ export function findLastOnOrBefore<T extends { date: string }>(sorted: T[], date
   return found;
 }
 
+/**
+ * Currencies quoted in a fraction of another one: London prices in pence (GBX, as DEGIRO and Yahoo write them),
+ * Johannesburg in cents (ZAC), Tel Aviv in agorot (ILA). Their rates are the main currency's, times `per`.
+ */
+const SUBUNITS: Readonly<Record<string, { base: string; per: number }>> = {
+  GBX: { base: "GBP", per: 100 },
+  ZAC: { base: "ZAR", per: 100 },
+  ILA: { base: "ILS", per: 100 },
+};
+
+/** The currency whose rates are stored for `currency` (GBP for GBX); the currency itself otherwise. */
+export function fxSourceCurrency(currency: string): string {
+  return SUBUNITS[currency]?.base ?? currency;
+}
+
+/** `currencies` mapped to the ones to load or download, without repeats. */
+export function fxSourceCurrencies(currencies: readonly string[]): string[] {
+  return [...new Set(currencies.map(fxSourceCurrency))];
+}
+
 /** Quante unità di `currency` vale 1 EUR alla data (ultimo cambio disponibile), o null se non ce n'è nessuno. */
 export function getPerEur(table: FxTable, currency: string, dateKey: string): number | null {
   if (currency === FX_BASE_CURRENCY) return 1;
+  const subunit = SUBUNITS[currency];
+  if (subunit) {
+    const base = getPerEur(table, subunit.base, dateKey);
+    return base === null ? null : base * subunit.per;
+  }
   const rates = table.get(currency);
   if (!rates) return null;
   return findLastOnOrBefore(rates, dateKey)?.perEur ?? null;

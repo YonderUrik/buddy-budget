@@ -5,7 +5,7 @@ import { db } from "@/lib/db/client";
 import { instruments, investmentTransactions } from "@/lib/db/schema/investments";
 import { findOwnPortfolio, loadUserTransactions } from "@/lib/investments/data";
 import { ensureHistorySafely } from "@/lib/investments/history";
-import { oversoldMessage, toCalcInput, todayKey, toRowValues } from "@/lib/investments/operations";
+import { latestTodayKey, oversoldMessage, toCalcInput, toRowValues } from "@/lib/investments/operations";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { updateInvestmentTransactionSchema } from "@/lib/validation/investments";
 
@@ -36,7 +36,7 @@ async function handlePatch(request: NextRequest, { params }: Params) {
 
   const parsed = updateInvestmentTransactionSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
-  if (parsed.data.date > todayKey()) return Response.json({ error: "La data non può essere nel futuro" }, { status: 400 });
+  if (parsed.data.date > latestTodayKey()) return Response.json({ error: "La data non può essere nel futuro" }, { status: 400 });
 
   const values = toRowValues(parsed.data, parsed.data.fxRate ?? Number(current.fxRate));
   const others = (await loadUserTransactions(userId, current.instrumentId)).filter((t) => t.id !== id).map(toCalcInput);

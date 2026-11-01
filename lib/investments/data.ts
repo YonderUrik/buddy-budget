@@ -1,6 +1,6 @@
 import { inflationAreaForCountry } from "@/lib/localization/financial-country";
 import { resolveProfile, type ProductCountry } from "@/lib/localization/config";
-import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { personalFormats } from "@/lib/db/schema/personal-imports";
@@ -34,6 +34,7 @@ import { loadDividends, type DividendRow } from "@/lib/market-data/dividends";
 import { loadRiskFreeRates } from "@/lib/market-data/rates";
 import type { ExposureProfile, ManualBreakdown } from "./exposure";
 import type { InstrumentSettingInput } from "./tax-settings";
+import { fxSourceCurrencies } from "@/lib/calc/fx";
 
 /** Valuta del tasso privo di rischio €STR: per le altre lo Sharpe usa zero. */
 export const RISK_FREE_CURRENCY = "EUR";
@@ -53,6 +54,37 @@ export async function getOrCreateDefaultPortfolio(userId: string): Promise<Inves
     .limit(1);
   if (existing) return existing;
   const [created] = await db.insert(investmentPortfolios).values({ userId, name: DEFAULT_PORTFOLIO_NAME }).returning();
+  return created;
+}
+
+/**
+ * The portfolio for operations no broker statement owns (typed by hand, Fineco and Yahoo files, AI imports): the
+ * oldest one without a broker, created when missing. Never a broker's portfolio, whose operations a later statement
+ * of that broker replaces: an operation put there would be deleted by the next import.
+ */
+export async function getOrCreateManualPortfolio(userId: string): Promise<InvestmentPortfolio> {
+  const [existing] = await db
+    .select()
+    .from(investmentPortfolios)
+    .where(and(eq(investmentPortfolios.userId, userId), isNull(investmentPortfolios.broker)))
+    .orderBy(asc(investmentPortfolios.createdAt))
+    .limit(1);
+  if (existing) return existing;
+  const [created] = await db.insert(investmentPortfolios).values({ userId, name: DEFAULT_PORTFOLIO_NAME }).returning();
+  return created;
+}
+
+/** Brokers read by the column-mapping readers: each gets its own portfolio, like the statement brokers. */
+export const MAPPED_BROKER_PORTFOLIOS: Readonly<Record<string, string>> = { fineco: "Fineco", "yahoo-portfolio": "Yahoo Finance" };
+
+/**
+ * The portfolio of a broker whose exports carry no account number (Fineco, Yahoo Finance): one per broker and user,
+ * `broker` = the provider id, created on the first import. Every broker gets its own portfolio (2026-10-31).
+ */
+export async function getOrCreateBrokerPortfolio(userId: string, provider: string): Promise<InvestmentPortfolio> {
+  const [existing] = await db.select().from(investmentPortfolios).where(and(eq(investmentPortfolios.userId, userId), eq(investmentPortfolios.broker, provider))).orderBy(asc(investmentPortfolios.createdAt)).limit(1);
+  if (existing) return existing;
+  const [created] = await db.insert(investmentPortfolios).values({ userId, name: MAPPED_BROKER_PORTFOLIOS[provider] ?? provider, broker: provider }).returning();
   return created;
 }
 
@@ -230,7 +262,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
       : db
           .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })
           .from(fxRates)
-          .where(and(inArray(fxRates.currency, currencies), gte(fxRates.date, from)))
+          .where(and(inArray(fxRates.currency, fxSourceCurrencies(currencies)), gte(fxRates.date, from)))
           .orderBy(asc(fxRates.date)),
     inflationArea ? loadInflationIndex(inflationArea) : Promise.resolve([]),
     loadProfiles(ownedIds),
@@ -266,7 +298,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
 
 /** Cambi salvati tra due date (con margine prima di `fromKey` per weekend e festivi). */
 export async function loadRatesBetween(currencies: string[], fromKey: string, toKey: string): Promise<FxRateInput[]> {
-  const wanted = currencies.filter((c) => c !== "EUR");
+  const wanted = fxSourceCurrencies(currencies).filter((c) => c !== "EUR");
   if (wanted.length === 0) return [];
   return db
     .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })
@@ -276,7 +308,7 @@ export async function loadRatesBetween(currencies: string[], fromKey: string, to
 
 /** Cambi delle valute richieste fino alla data (per precompilare il cambio di un'operazione). */
 export async function loadRatesUpTo(currencies: string[], dateKey: string): Promise<FxRateInput[]> {
-  const wanted = currencies.filter((c) => c !== "EUR");
+  const wanted = fxSourceCurrencies(currencies).filter((c) => c !== "EUR");
   if (wanted.length === 0) return [];
   return db
     .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })

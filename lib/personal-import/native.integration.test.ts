@@ -4,11 +4,13 @@ import { eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
-import { instruments, investmentTransactions } from "@/lib/db/schema/investments";
+import { instruments, investmentPortfolios, investmentTransactions } from "@/lib/db/schema/investments";
 import { createOrReuseInstrument } from "@/lib/investments/instruments";
 import { brokerSeries } from "@/lib/investments/import/__fixtures__/broker-series";
 import type { ImportDeps } from "@/lib/investments/import/execute";
+import { gridToCsv } from "@/lib/investments/import/fineco";
 import { entryFor, importNatively } from "./native";
+import { TransientError } from "./errors";
 
 const users: string[] = [];
 let userId: string;
@@ -40,6 +42,44 @@ describe("built-in readers in the one import", () => {
     await importNatively(userId, brokerSeries(2023), { importDeps: importDeps(), resolve });
     const broken = brokerSeries(2024).replace("Ending Cash,EUR,1108", "Ending Cash,EUR,1109");
     expect(await importNatively(userId, broken, { importDeps: importDeps(), resolve })).toMatchObject({ kind: "failed", provider: "interactive-brokers", message: expect.stringContaining("Cassa") });
+  });
+
+  it("never drops a row it cannot read: the file goes to the AI and nothing is saved", async () => {
+    const header = ["Operazione", "Data valuta", "Descrizione", "Titolo", "Isin", "Segno", "Quantita", "Divisa", "Prezzo", "Cambio", "Controvalore", "Commissioni amministrato"];
+    const fineco = gridToCsv([header, ["02/12/2024", "04/12/2024", "Compravendita titoli", "ETF WORLD", "IE00B4L5Y983", "A", "3,00", "EUR", "105,17900", "1,00000", "315,54", "0,00"], ["31/02/2025", "", "Compravendita titoli", "ETF WORLD", "IE00B4L5Y983", "A", "1,00", "EUR", "10,00", "1,00000", "10,00", "0,00"]]);
+    const outcome = await importNatively(userId, fineco, { importDeps: importDeps(), resolve });
+    expect(["fallback", "failed"]).toContain(outcome.kind);
+    expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).toHaveLength(0);
+    expect(await db.select().from(instruments).where(eq(instruments.createdByUserId, userId))).toHaveLength(0);
+  });
+
+  it("retries later when the market sources are down, instead of saving securities without prices", async () => {
+    const down = vi.fn(async () => ({ kind: "none" as const, reason: "unavailable" as const }));
+    await expect(importNatively(userId, brokerSeries(2023), { importDeps: importDeps(), resolve: down })).rejects.toBeInstanceOf(TransientError);
+    expect(await db.select().from(instruments).where(eq(instruments.createdByUserId, userId))).toHaveLength(0);
+  });
+
+  it("a refused statement leaves no securities behind", async () => {
+    await importNatively(userId, brokerSeries(2023), { importDeps: importDeps(), resolve });
+    const before = (await db.select().from(instruments).where(eq(instruments.createdByUserId, userId))).length;
+    const otherUser = randomUUID(); users.push(otherUser);
+    await db.insert(authUser).values({ id: otherUser, name: "Synthetic native import", email: `${otherUser}@example.test` });
+    const broken = brokerSeries(2024).replace("Ending Cash,EUR,1108", "Ending Cash,EUR,1109");
+    userId = otherUser;
+    expect(await importNatively(otherUser, broken, { importDeps: importDeps(), resolve })).toMatchObject({ kind: "failed" });
+    expect(await db.select().from(instruments).where(eq(instruments.createdByUserId, otherUser))).toHaveLength(0);
+    expect(before).toBeGreaterThan(0);
+  });
+
+  it("a Fineco export goes to Fineco's own portfolio, not to the one of hand-entered operations", async () => {
+    const header = ["Operazione", "Data valuta", "Descrizione", "Titolo", "Isin", "Segno", "Quantita", "Divisa", "Prezzo", "Cambio", "Controvalore", "Commissioni amministrato"];
+    const fineco = gridToCsv([header, ["02/12/2024", "04/12/2024", "Compravendita titoli", "ETF WORLD", "IE00B4L5Y983", "A", "3,00", "EUR", "105,17900", "1,00000", "315,54", "0,00"]]);
+    const [manual] = await db.insert(investmentPortfolios).values({ userId, name: "Portafoglio" }).returning();
+    expect(await importNatively(userId, fineco, { importDeps: importDeps(), resolve })).toMatchObject({ kind: "imported", provider: "fineco" });
+    const [trade] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    const [portfolio] = await db.select().from(investmentPortfolios).where(eq(investmentPortfolios.id, trade.portfolioId));
+    expect(portfolio).toMatchObject({ name: "Fineco", broker: "fineco" });
+    expect(portfolio.id).not.toBe(manual.id);
   });
 
   it("leaves files of no known broker to the AI", async () => {

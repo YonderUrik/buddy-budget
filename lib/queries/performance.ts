@@ -16,7 +16,8 @@ export function usePerformanceView() {
   const { locale, t } = useLocalization();
   const { formatDateWithYear } = localizedFormats(locale);
   const todayKey = React.useMemo(() => toDateKey(new Date()), []);
-  const [period, setPeriod] = React.useState<PortfolioChartPeriod>("3mesi");
+  // The whole history first (owner, 2026-10-31): a shorter window is a choice, not the starting point.
+  const [period, setPeriod] = React.useState<PortfolioChartPeriod>("max");
   const [customRange, setCustomRange] = React.useState<PortfolioChartRange>({ from: `${todayKey.slice(0, 4)}-01-01`, to: todayKey });
   const [selection, setSelection] = React.useState<PortfolioChartRange | null>(null);
   const [inspectedDate, setInspectedDate] = React.useState<string | null>(null);

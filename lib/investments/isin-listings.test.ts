@@ -21,6 +21,17 @@ describe("verifyIsinListings", () => {
     expect(result.status === "ok" && result.listings.map((l) => l.listing.yahooSymbol)).toEqual(["SWDA.MI"]);
   });
 
+  it("tries the exchange the broker reports first", async () => {
+    const listings = [{ yahooSymbol: "0R24.L", exchCode: "LN", name: "INTEL", securityType: "Common Stock" }, { yahooSymbol: "INTC", exchCode: "US", name: "INTEL", securityType: "Common Stock" }];
+    const d: IsinListingsDeps = { listings: async () => listings, quoteMeta: async () => ({ currency: "USD", exchange: null }) };
+    const anyCurrency = await verifyIsinListings("US4581401001", null, d);
+    expect(anyCurrency.status === "ok" && anyCurrency.listings[0].listing.yahooSymbol).toBe("0R24.L");
+    const home = await verifyIsinListings("US4581401001", "USD", d);
+    expect(home.status === "ok" && home.listings[0].listing.yahooSymbol).toBe("INTC");
+    const preferred = await verifyIsinListings("US4581401001", "USD", d, "US");
+    expect(preferred.status === "ok" && preferred.listings[0].listing.yahooSymbol).toBe("INTC");
+  });
+
   it("distingue il nulla trovato dalla fonte che non risponde", async () => {
     expect(await verifyIsinListings("IE00B4L5Y983", "USD", deps({ "SWDA.MI": "EUR" }))).toEqual({ status: "empty" });
     const down: IsinListingsDeps = { listings: async () => { throw new Error("x"); }, quoteMeta: async () => null };

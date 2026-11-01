@@ -117,6 +117,8 @@ value(date) = quantity * close * m  converted instrument currency -> user curren
 
 [`fxRateBetween`](../../lib/calc/fx.ts) goes through EUR: `rate(from→to) = perEur(to) / perEur(from)`, with the last rate on or before the date. EUR is always 1. Example: 10 shares at 210 USD, `perEur(USD) = 1.10`, user currency EUR: `10 × 210 / 1.10 = 1,909.09 EUR`.
 
+The daily FX update (`findNeededCurrencies`) covers the currencies of auto instruments, of every instrument with operations (manual ones too) and of investing users; sub-units (`GBX`, `ZAC`, `ILA`) are fetched as their main currency and divided (`fxSourceCurrency`).
+
 [`computePortfolioSummary`](../../lib/calc/investments.ts) returns:
 
 ```text
@@ -140,6 +142,10 @@ income_t  = income_t - income_{t-1}
 ```
 
 The period window comes from [`resolvePerformanceRange`](../../lib/calc/performance-range.ts): it never starts before the first transaction, never ends after today, and adds a base day (the day before the first day) whose closing value is the starting capital.
+
+Exchange rates of sub-unit currencies come from the main currency (`fxSourceCurrency` in [`lib/calc/fx.ts`](../../lib/calc/fx.ts)): GBX = GBP × 100 units per euro, likewise ZAC/ZAR and ILA/ILS; loaders and `updateFxRates` ask for the main currency.
+
+The Performance page opens on the whole history (`max`, since 2026-10-31; `usePerformanceView` in [`lib/queries/performance.ts`](../../lib/queries/performance.ts)) and states the period once at the top. Its returns card holds the controls (comparison index, broker filter, period), the chart, then TWR, MWR, real return and the index's TWR in one row, the timing sentence and the comparison box; risk and the TWR heatmap follow in their own cards, on the same range.
 
 ### 4.5 Time-weighted return (TWR)
 

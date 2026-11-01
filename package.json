@@ -20,6 +20,7 @@
     "db:reset-categories": "tsx --env-file=.env.local lib/db/reset-categories.ts",
     "db:mark-baseline": "tsx --env-file-if-exists=.env.local lib/db/mark-baseline.ts",
     "db:encrypt-fields": "tsx --env-file-if-exists=.env.local lib/db/encrypt-fields.ts",
+    "db:relink-instrument": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/relink-instrument-listing.ts",
     "auth:reset-password": "tsx --env-file-if-exists=.env.local lib/db/user-admin.ts reset-password",
     "auth:create-user": "tsx --env-file-if-exists=.env.local lib/db/user-admin.ts create-user",
     "eval:categorization": "tsx --env-file-if-exists=.env.local scripts/eval-categorization.ts",

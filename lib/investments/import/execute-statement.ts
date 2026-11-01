@@ -56,8 +56,11 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     let instrument: Instrument | null;
     if ("instrumentId" in entry) instrument = await findVisibleInstrument(userId, entry.instrumentId);
     else if (input.dryRun) {
-      // Reuse existing catalogue identity in previews too, otherwise a later statement falsely oversells.
-      const matches = identity.isin ? await db.select().from(instruments).where(and(eq(instruments.isin, identity.isin), eq(instruments.currency, identity.currency!), sql`(${instruments.createdByUserId} is null or ${instruments.createdByUserId} = ${userId})`)) : [];
+      // Reuse existing catalogue identity in previews too, otherwise a later statement falsely oversells. The choice is
+      // the one the real import makes: the user's own copy first (and only it for `ownCopy`, a corporate action), so a
+      // dry run never counts a position on the shared instrument while the history sits on the own copy.
+      const ownOnly = entry.create.source === "manuale" && entry.create.ownCopy === true;
+      const matches = identity.isin ? await db.select().from(instruments).where(and(eq(instruments.isin, identity.isin), eq(instruments.currency, identity.currency!), ownOnly ? eq(instruments.createdByUserId, userId) : sql`(${instruments.createdByUserId} is null or ${instruments.createdByUserId} = ${userId})`)).orderBy(sql`${instruments.createdByUserId} is null`, instruments.createdAt) : [];
       instrument = matches[0] ?? null;
       if (!instrument && "currency" in entry.create && entry.create.currency !== identity.currency) return failed("La valuta proposta non coincide con il rendiconto");
     } else {
@@ -111,10 +114,8 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     const candidates = await tx.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
     let portfolio = targetId ? candidates.find((p) => p.id === targetId) : candidates.find((p) => p.broker === broker);
     if (targetId && !portfolio) return failed("Portafoglio non accessibile");
-    if (!portfolio && provider === "degiro") {
-      if (candidates.length > 1) return failed("Scegli il portafoglio in cui importare DEGIRO");
-      portfolio = candidates[0];
-    }
+    // A broker account seen for the first time gets its own portfolio, DEGIRO like the others: nobody is asked (the one
+    // import has no portfolio question) and hand-entered operations never mix with a statement that replaces its period.
     const sourceFilter = statementSourceScope(accountKey, portfolio?.broker ?? null);
     const allExisting = portfolio ? await tx.select().from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), sourceFilter)) : [];
     const existing = allExisting.filter((o) => o.date < statement.from);

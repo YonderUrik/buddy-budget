@@ -12,6 +12,9 @@ describe("import format metadata", () => {
     expect(() => formatMetadataSchema.parse({ ...metadata, institution: { name: null, evidence: "document" } })).toThrow();
     expect(() => formatMetadataSchema.parse({ ...metadata, columns: [{ ...metadata.columns[0], mapsTo: ["123.45"] }] })).toThrow();
   });
+  it("reads a blank column or section name as no name instead of refusing the whole layout", () => {
+    expect(formatMetadataSchema.parse({ ...metadata, columns: [{ ...metadata.columns[0], name: "  ", section: "" }] }).columns[0]).toMatchObject({ name: null, section: null });
+  });
   it("recognizes the same layout while preserving changed mappings", () => {
     expect(metadataIdentity(metadata, ["date", "amount"])).toBe(metadataIdentity({ ...metadata, institution: { ...metadata.institution, name: "EXAMPLE BANK" } }, ["amount", "date"]));
     expect(metadataIdentity(metadata, ["amount"])).not.toBe(metadataIdentity({ ...metadata, columns: [{ ...metadata.columns[0], index: 1 }] }, ["amount"]));

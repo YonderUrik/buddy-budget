@@ -276,6 +276,13 @@ describe("personal CSV durable flow", () => {
     expect(job).toMatchObject({ status: "imported", brokerProvider: "interactive-brokers", encryptedCsv: null, importLedger: { rows: 9, alreadyPresent: 2, native: { provider: "interactive-brokers", inserted: 7 } } });
     expect((await listImports(userId)).jobs.find(j => j.id === id)?.results).toMatchObject({ native: { name: "Interactive Brokers", inserted: 7 }, rows: 9, alreadyPresent: 2 });
   });
+  it("a file a built-in reader imported can be uploaded again (its data may have been deleted): the reader decides", async () => {
+    vi.mocked(importNatively).mockResolvedValueOnce({ kind: "imported", provider: "interactive-brokers", name: "Interactive Brokers", result: { rows: [], counts: { new: 7, duplicate: 0, error: 0 }, inserted: 7, instrumentsCreated: 1 } });
+    const first = await prepare();
+    expect((await readJob(first)).status).toBe("imported");
+    const again = await enqueue(userId, { csv, name: "Synthetic Bank" });
+    expect(again.id).not.toBe(first);
+  });
   it("a broker export its reader refuses goes to the AI with the reader's reason, and support gets that reason", async () => {
     vi.mocked(importNatively).mockResolvedValueOnce({ kind: "failed", provider: "degiro", name: "DEGIRO", message: "Cassa EUR non riconciliata" });
     const id = await prepare();
@@ -376,6 +383,14 @@ describe("personal CSV durable flow", () => {
       await deletePersonalImport(userId, first, (await previewPersonalImportDeletion(userId, first)).token);
       const replay = await prepare(csvAgain, (await readJob(next)).formatId);
       expect(await confirmImport(userId, replay)).toMatchObject({ inserted: 3, rows: 3, alreadyPresent: 0 });
+    });
+    it("a new bank whose file shares only the header with another bank's file gets its own account", async () => {
+      const first = await prepare(); await confirmImport(userId, first);
+      const other = 'Date,Type,Value,Description\n2024-02-01,CASH,50,Salary\n2024-02-02,NOTE,0,Metadata';
+      const next = await prepare(other);
+      expect(await confirmImport(userId, next)).toMatchObject({ inserted: 1, alreadyPresent: 0 });
+      const rows = await cash();
+      expect(new Set(rows.map(r => r.accountId)).size).toBe(2);
     });
   });
   it("deleting a duplicate-only upload leaves the original movements and receipts intact", async () => {

@@ -103,6 +103,8 @@ export function toCalcInput(row: InvestmentTransaction): InvestmentTransactionIn
   };
 }
 
+export { latestTodayKey } from "./import/values";
+
 /** Data odierna YYYY-MM-DD (UTC, come le chiavi delle altre date del modulo). */
 export function todayKey(): string {
   return new Date().toISOString().slice(0, 10);

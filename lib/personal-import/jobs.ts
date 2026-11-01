@@ -45,8 +45,12 @@ export async function enqueue(userId: string, input: { csv: string; name: string
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 81234)`);
     if (!input.regenerate) {
       // A file already imported is refused before any analysis; a broker file still on its way returns its own job.
-      const same = await tx.select({ id: jobs.id, status: jobs.status, formatId: jobs.formatId }).from(jobs).where(and(eq(jobs.userId, userId), sql`${jobs.sourceFingerprint} in (${sourceFingerprint}, ${digest(input.csv)})`, sql`${jobs.status} not in ('failed', 'expired')`));
-      if (same.some(j => j.status === "imported")) throw new ImportError(ALREADY_IMPORTED_MESSAGE, "already_imported");
+      const same = await tx.select({ id: jobs.id, status: jobs.status, formatId: jobs.formatId, ledger: jobs.importLedger }).from(jobs).where(and(eq(jobs.userId, userId), sql`${jobs.sourceFingerprint} in (${sourceFingerprint}, ${digest(input.csv)})`, sql`${jobs.status} not in ('failed', 'expired')`));
+      // Only a file the AI path imported is refused here: deleting it removes its job. A file a built-in reader
+      // imported is let through, since its data can be deleted from «Gestisci importazioni» or by a reset while the
+      // job stays: the reader finds by itself a statement it already has («niente di nuovo», no AI) and imports again
+      // one that was deleted (before, a deleted IBKR statement could never be uploaded again).
+      if (same.some(j => j.status === "imported" && !j.ledger?.native)) throw new ImportError(ALREADY_IMPORTED_MESSAGE, "already_imported");
       // The same file sent again while it is still on its way (a double drop, a retried batch) is that job.
       const pending = same.find(j => ACTIVE_STATUSES.includes(j.status));
       if (pending) return pending;

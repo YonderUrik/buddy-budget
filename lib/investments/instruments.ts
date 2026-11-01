@@ -1,4 +1,4 @@
-import { and, eq, exists, ilike, isNull, or, type SQL } from "drizzle-orm";
+import { and, eq, exists, ilike, isNull, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import {
   instrumentSymbols,
@@ -64,10 +64,17 @@ async function findBySymbol(provider: ProviderId, symbol: string): Promise<Instr
   return row?.instrument ?? null;
 }
 
+/** An instrument with this ISIN the user can see: their own copy first, then the shared one (never an arbitrary pick). */
 async function findByIsin(isin: string, userId?: string | null, currency?: string): Promise<Instrument | null> {
   const [row] = await db.select().from(instruments).where(and(eq(instruments.isin, isin),
     userId ? visibleTo(userId) : isNull(instruments.createdByUserId),
-    currency ? eq(instruments.currency, currency) : undefined));
+    currency ? eq(instruments.currency, currency) : undefined)).orderBy(sql`${instruments.createdByUserId} is null`, instruments.createdAt);
+  return row ?? null;
+}
+
+/** The user's private instrument with this ISIN and currency, if any. */
+async function findOwnByIsin(isin: string, userId: string, currency: string): Promise<Instrument | null> {
+  const [row] = await db.select().from(instruments).where(and(eq(instruments.isin, isin), eq(instruments.createdByUserId, userId), eq(instruments.currency, currency)));
   return row ?? null;
 }
 
@@ -216,7 +223,13 @@ async function findOrCreateInstrument(
     }
     case "manuale": {
       if (input.isin) {
-        const existing = await findByIsin(input.isin, userId, input.currency);
+        // `ownCopy`: only the user's private instrument counts, so a shared one with an adjusted history is skipped.
+        const existing = input.ownCopy ? await findOwnByIsin(input.isin, userId, input.currency) : await findByIsin(input.isin, userId, input.currency);
+        if (existing && input.ownCopy && (existing.priceMode !== "manuale" || !existing.keepBrokerPrices)) {
+          // The user's own copy had market prices (linked earlier): from the corporate action on it keeps the broker's.
+          const [kept] = await db.update(instruments).set({ priceMode: "manuale", keepBrokerPrices: true, updatedAt: new Date() }).where(eq(instruments.id, existing.id)).returning();
+          return { ok: true, instrument: kept ?? existing, created: false };
+        }
         if (existing) return { ok: true, instrument: existing, created: false };
       }
       const created = await insertInstrument(
@@ -226,6 +239,7 @@ async function findOrCreateInstrument(
           type: input.type,
           currency: input.currency,
           priceMode: "manuale",
+          keepBrokerPrices: input.ownCopy === true,
           priceUnit: input.priceUnit ?? (input.type === "obbligazione" ? "percentuale_nominale" : "unita"),
           ...(taxRate ? { taxRate } : {}),
           taxHarmonized: taxHarmonized ?? null,

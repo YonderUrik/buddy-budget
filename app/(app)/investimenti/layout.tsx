@@ -59,7 +59,8 @@ export default function InvestimentiLayout({ children }: { children: React.React
             <InvestmentsTabs activeHref={pathname} />
           </div>
         )}
-        {data && !pathname.includes("/rendiconti") && !pathname.includes("/titoli") ? <BrokerSelector data={data} /> : null}
+        {/* Performance shows the broker filter in its chart header, next to the period. */}
+        {data && !pathname.includes("/rendiconti") && !pathname.includes("/titoli") && !pathname.includes("/performance") ? <BrokerSelector data={data} /> : null}
         {children}
       </div>
 

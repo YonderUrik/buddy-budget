@@ -87,3 +87,14 @@ export function detectDateOrder(values: string[]): DateOrder {
   }
   return best.order;
 }
+
+/** Hours the furthest-ahead time zone (UTC+14) is past UTC. */
+const LATEST_ZONE_OFFSET_MS = 14 * 60 * 60 * 1000;
+
+/**
+ * The latest date that is "today" somewhere: the bound for refusing a date in the future. `todayKey()` is UTC, so an
+ * Italian user typing or importing today's movements between midnight and 2 a.m. got «date in the future».
+ */
+export function latestTodayKey(now: Date = new Date()): string {
+  return new Date(now.getTime() + LATEST_ZONE_OFFSET_MS).toISOString().slice(0, 10);
+}

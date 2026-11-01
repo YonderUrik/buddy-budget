@@ -2,6 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq, lte, inArray, sql, type SQL } from "drizzle-orm";
 import { importNatively, type NativeOutcome } from "./native";
+import { patientSearches } from "./patient-search";
 import { investmentImportDeps } from "@/lib/investments/import/deps";
 import { resolveIdentity } from "@/lib/investments/import/resolve";
 import { searchByIsinOnProviders, searchCryptoOnProviders, searchInstrumentsOnProviders } from "@/lib/market-data/runtime";
@@ -16,7 +17,7 @@ import { ImportError, readRawFile, parserSchema } from "./contract";
 import { seal, unseal, digest } from "./crypto";
 import { RAW_PARSER_VERSION, importFailedMessage } from "./jobs";
 import { executeParser } from "./sandbox";
-import { getUserCurrency, todayKey } from "@/lib/investments/operations";
+import { getUserCurrency, latestTodayKey } from "@/lib/investments/operations";
 import { resolveFxRates } from "@/lib/investments/import/execute";
 import { updateFxRates } from "@/lib/market-data/update";
 import { marketDataDeps } from "@/lib/market-data/runtime";
@@ -34,6 +35,8 @@ import { fillBankCategories } from "./bank-category-column";
 const LEASE_KEEPALIVE_MS = 60_000;
 const LEASE_MS = 5 * 60_000;
 const MAX_TRANSIENT_ATTEMPTS = 3;
+/** Saves of a ready job retried after an unexpected error before the job fails (and the user and support hear of it). */
+const MAX_SAVE_RETRIES = 5;
 
 export async function processOne() {
   const lease = randomUUID();
@@ -67,7 +70,7 @@ export async function processOne() {
       phase = "native";
       const native = await importNatively(job.userId, raw, {
         importDeps: await investmentImportDeps(job.userId, task => { void task().catch(() => {}); }),
-        resolve: identity => resolveIdentity(job.userId, identity, { searchMarket: searchInstrumentsOnProviders, searchCrypto: searchCryptoOnProviders, searchByIsin: searchByIsinOnProviders }),
+        resolve: identity => resolveIdentity(job.userId, identity, patientSearches({ searchMarket: searchInstrumentsOnProviders, searchCrypto: searchCryptoOnProviders, searchByIsin: searchByIsinOnProviders })),
       });
       if (native.kind === "imported") { await finishNative(job.id, owned, native); return true; }
       // Unreadable structure, or read but refused (cash that does not reconcile, a partial overlap, an unknown
@@ -84,7 +87,7 @@ export async function processOne() {
     phase = "generate";
     const [source] = await db.select({ name: formats.name }).from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, job.userId)));
     const [owner] = await db.select({ currency: authUser.currency, productCountry: authUser.productCountry }).from(authUser).where(eq(authUser.id, job.userId));
-    const hints: ModelHints = { defaultCurrency: owner?.currency ?? "EUR", today: todayKey(), dateOrderHint: dateOrderHint(owner?.productCountry), fileKind: classifyFile(table.rawCsv ?? "") };
+    const hints: ModelHints = { defaultCurrency: owner?.currency ?? "EUR", today: latestTodayKey(), dateOrderHint: dateOrderHint(owner?.productCountry), fileKind: classifyFile(table.rawCsv ?? "") };
     const generated = await runLadder({
       table, execute: executeParser, model: process.env.OPENROUTER_MODEL ?? "unknown", done: report?.attempts ?? [], native: report?.native,
       saved: saved ? () => ({ parser: parserSchema.parse(JSON.parse(unseal(saved.encryptedParser, job.userId))), model: saved.model }) : undefined,
@@ -111,10 +114,21 @@ export async function processOne() {
       try { await saveFormatMetadata(job.userId, "ai", generated.parser.metadata, outcomes.filter(o => o.kind === "cash" || o.kind === "investment")); }
       catch { logger.warn("import.metadata.failed", { jobId: job.id, reason: "persistence_failed" }); }
     }
+    // The parser that read every row is saved before the exchange rates: a retry after a rate outage reuses it,
+    // with no new model call (before, every retry asked the model again for the step that had already worked).
+    let parserId = generated.reused ? saved?.id : undefined;
+    if (!parserId) {
+      const [version] = await db.insert(parsers).values({ formatId: job.formatId, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(generated.parser), job.userId), model: generated.model }).returning();
+      parserId = version.id;
+      await db.update(jobs).set({ parserId }).where(owned);
+      // Files of the same source still waiting start from the parser that just worked, not from the one they
+      // were uploaded with (none, for a new source; the broken one, after a layout change).
+      await db.update(jobs).set({ parserId }).where(and(eq(jobs.formatId, job.formatId), eq(jobs.status, "queued"), sql`${jobs.id} <> ${job.id}`));
+    }
     phase = "fx";
     const currency = await getUserCurrency(job.userId);
     const fx = await resolveFxRates(outcomes.flatMap(o => o.kind === "cash" || o.kind === "investment" ? [{ line: o.row, date: o.date, currency: o.currency }] : []), {
-      userCurrency: currency, todayKey: todayKey(), createInstrument: async () => { throw new Error("unused"); }, ensureHistory: async () => {},
+      userCurrency: currency, todayKey: latestTodayKey(), createInstrument: async () => { throw new Error("unused"); }, ensureHistory: async () => {},
       fetchFx: async (currencies, from, to) => { await updateFxRates(currencies.filter(c => c !== "EUR"), from, to, marketDataDeps()); },
     });
     if ([...fx.values()].some(rate => rate === null || !Number.isFinite(rate) || rate <= 0)) throw new Error("Cambio storico non disponibile");
@@ -124,13 +138,6 @@ export async function processOne() {
     await db.transaction(async tx => {
       const [current] = await tx.select().from(jobs).where(owned).for("update");
       if (!current) return;
-      let parserId = generated.reused ? saved?.id : undefined;
-      if (!parserId) {
-        const [version] = await tx.insert(parsers).values({ formatId: job.formatId, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(generated.parser), job.userId), model: generated.model }).returning(); parserId = version.id;
-        // Files of the same source still waiting start from the parser that just worked, not from the one they
-        // were uploaded with (none, for a new source; the broken one, after a layout change).
-        await tx.update(jobs).set({ parserId }).where(and(eq(jobs.formatId, job.formatId), eq(jobs.status, "queued"), sql`${jobs.id} <> ${job.id}`));
-      }
       const preview: Preview = { headers: table.headers, currency, records };
       await tx.update(jobs).set({ status: "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: null, failureReport: report, lease: null, leaseUntil: null }).where(owned);
     });
@@ -141,7 +148,7 @@ export async function processOne() {
     const terminal = exhausted || error instanceof ModelInputError || job.attempts >= MAX_TRANSIENT_ATTEMPTS;
     const reason = exhausted ? "ladder_exhausted" : error instanceof ModelInputError ? "model_input_rejected" : phase === "fx" ? "exchange_rate_unavailable" : "analysis_failed";
     const failureReport: AnalysisFailure | null = terminal ? { ...(report ?? {}), phase: phase === "fx" ? "fx" : report?.phase ?? "generate", reason, fallback: !!report?.attempts?.length, ...(exhausted ? { attempts: error.attempts } : {}) } : report;
-    await db.update(jobs).set({ status: terminal ? "failed" : "queued", error: terminal ? (error instanceof ModelInputError ? error.message : importFailedMessage()) : null, availableAt: new Date(Date.now() + job.attempts * 60000), encryptedCsv: terminal ? null : job.encryptedCsv, failureReport, lease: null, leaseUntil: null }).where(owned);
+    await db.update(jobs).set({ status: terminal ? "failed" : "queued", error: terminal ? (error instanceof ModelInputError ? error.message : phase === "fx" ? FX_UNAVAILABLE_MESSAGE : importFailedMessage()) : null, availableAt: new Date(Date.now() + job.attempts * 60000), encryptedCsv: terminal ? null : job.encryptedCsv, failureReport, lease: null, leaseUntil: null }).where(owned);
     logger.warn("personal_import.failed", { jobId: job.id, reason: terminal ? reason : "retry_pending", phase });
   } finally {
     clearInterval(keepalive);
@@ -158,6 +165,9 @@ async function finishNative(jobId: string, owned: SQL | undefined, native: Extra
   if (job && result.inserted > 0) await categorizeNewMovementsSafely(job.userId);
 }
 
+/** A currency of the file without historical rates (none published, or the sources down for every retry). */
+export const FX_UNAVAILABLE_MESSAGE = "Non trovo i cambi storici di una valuta del file: nessun movimento è stato salvato. Riprova più tardi.";
+
 export async function maintainJobs() {
   await notifyImportSupport();
   // `review_failed` is no longer reached (2026-10-31: no rows to fix by hand); jobs left in it expire now.
@@ -170,11 +180,17 @@ export async function maintainJobs() {
       logger.info("personal_import.saved", { jobId: ready.id, count: result.inserted, ...("rows" in result ? { total: result.rows, skipped: result.alreadyPresent } : {}) });
       await categorizeNewMovementsSafely(ready.userId);
     } catch (error) {
+      // Any other error is retried a few times, then ends the job: a deterministic database error used to keep it
+      // «saving» for seven days and then expire it without telling anyone (`attempts` keeps counting after analysis).
+      const exhausted = !(error instanceof ImportError) && ready.attempts >= MAX_TRANSIENT_ATTEMPTS + MAX_SAVE_RETRIES;
+      const save = { ...(ready.failureReport ?? { fallback: false }), phase: "save" as const };
       await db.update(jobs).set(error instanceof ImportError
-        ? { status: "failed", error: error.message, encryptedPreview: null, notifiedAt: null, failureReport: { ...(ready.failureReport ?? { fallback: false }), phase: "save" as const, reason: "financial_validation_failed" } }
-        : { availableAt: new Date(Date.now() + 60000) }
+        ? { status: "failed", error: error.message, encryptedPreview: null, notifiedAt: null, failureReport: { ...save, reason: "financial_validation_failed" } }
+        : exhausted
+          ? { status: "failed", error: importFailedMessage(), encryptedPreview: null, notifiedAt: null, failureReport: { ...save, reason: "save_failed" } }
+          : { attempts: ready.attempts + 1, availableAt: new Date(Date.now() + 60000 * (ready.attempts + 1)) }
       ).where(and(eq(jobs.id, ready.id), eq(jobs.status, "ready")));
-      logger.warn("personal_import.save_failed", { jobId: ready.id, reason: error instanceof ImportError ? "validation_failed" : "retry_pending" });
+      logger.warn("personal_import.save_failed", { jobId: ready.id, reason: error instanceof ImportError ? "validation_failed" : exhausted ? "retries_exhausted" : "retry_pending", error });
     }
   }
   // Atomic notification claim; independent retries never rerun the parser or import financial data.

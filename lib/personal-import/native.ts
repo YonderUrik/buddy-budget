@@ -11,6 +11,7 @@ import type { ImportMatch, ImportResult } from "@/lib/investments/import/types";
 import type { RunImportInput } from "@/lib/validation/investments-import";
 import { brokerFallbackSource } from "./broker-fallback";
 import { ImportError } from "./contract";
+import { TransientError } from "./errors";
 
 /** Brokers whose own export a built-in reader imports, without AI and (for statements) with cash reconciliation. */
 export type NativeProvider = Exclude<ImportProviderId, "generic">;
@@ -45,10 +46,23 @@ export function entryFor(identity: ImportIdentity, match: ImportMatch): Entry | 
   return { key: identity.key, create: { source: "manuale", name: name.slice(0, 200), type: identity.type ?? "azione", currency: identity.currency, ...(identity.isin ? { isin: identity.isin } : {}) } };
 }
 
+/**
+ * Refusals that come from a source being down, not from the file: the job is retried later instead of handing the
+ * file to the AI or, worse, saving a security without prices for good.
+ */
+const OUTAGE_MESSAGES = [/Fonte prezzi non raggiungibile/, /^Cambio storico non disponibile/, /^Cambio non disponibile/];
+
+function throwIfOutage(message: string | undefined): void {
+  if (message && OUTAGE_MESSAGES.some((pattern) => pattern.test(message))) throw new TransientError(message);
+}
+
 async function resolveAll(identities: ImportIdentity[], resolve: (identity: ImportIdentity) => Promise<ImportMatch>): Promise<Instruments | string> {
   const entries: Instruments = [];
   for (const identity of identities) {
-    const entry = entryFor(identity, await resolve(identity));
+    const match = await resolve(identity);
+    // The market sources did not answer (after the patient retries): a manual instrument now would stay without prices.
+    if (match.kind === "none" && match.reason === "unavailable") throw new TransientError("Fonte prezzi non raggiungibile");
+    const entry = entryFor(identity, match);
     if (!entry) return `Non riesco a riconoscere lo strumento ${identity.symbol ?? identity.isin ?? identity.key}`;
     entries.push(entry);
   }
@@ -72,24 +86,39 @@ export async function importNatively(userId: string, csv: string, deps: { import
     if (!(error instanceof ImportError)) throw error;
   }
   const today = deps.importDeps.todayKey;
-  let result: ImportResult;
+  // A dry run first: a file the reader refuses (overlap, reconciliation, a row it cannot import) leaves nothing behind,
+  // not even the securities it would have created.
+  let run: (dryRun: boolean) => Promise<ImportResult>;
   if (STATEMENTS.includes(provider)) {
     const parsed = parseBrokerStatement(csv, today);
     const instruments = await resolveAll(parsed.identities, deps.resolve);
     if (typeof instruments === "string") return { kind: "failed", provider, name, message: instruments };
-    result = await runStatementImport(userId, { dryRun: false, statementCsv: csv, preset: provider, instruments, operations: [] }, deps.importDeps);
+    run = dryRun => runStatementImport(userId, { dryRun, statementCsv: csv, preset: provider, instruments, operations: [] }, deps.importDeps);
   } else {
     const table = provider === "fineco" ? parseFinecoTable(csv) : parseCsv(csv);
     const mapping = provider === "fineco" ? finecoMapping(table) : initialMapping(table).mapping;
     const rows = normalizeRows(table, mapping, today);
     const ok = rows.flatMap(row => row.status === "ok" ? [row] : []);
     if (!ok.length) return { kind: "fallback", provider };
+    // A row the reader cannot read (a date, a number, a missing price) is never dropped: the AI reads the whole file.
+    // Rows it skips on purpose (stamp duty, operations that are not trades) stay skipped.
+    const unreadable = rows.filter(row => row.status === "error");
+    if (unreadable.length) return { kind: "failed", provider, name, message: `${unreadable.length} righe del file ${name} non si leggono (prima: riga ${unreadable[0].line}, ${unreadable[0].status === "error" ? unreadable[0].message : ""})` };
     const identities = [...new Map(ok.map(row => [row.identity.key, row.identity])).values()];
     const instruments = await resolveAll(identities, deps.resolve);
     if (typeof instruments === "string") return { kind: "failed", provider, name, message: instruments };
-    result = await runImport(userId, { dryRun: false, preset: provider, instruments, operations: ok.map(row => ({ key: row.identity.key, line: row.line, ...row.operation })) }, deps.importDeps);
+    run = dryRun => runImport(userId, { dryRun, preset: provider, instruments, operations: ok.map(row => ({ key: row.identity.key, line: row.line, ...row.operation })) }, deps.importDeps);
   }
-  if (result.error) return { kind: "failed", provider, name, message: result.error };
-  if (result.counts.error > 0) return { kind: "failed", provider, name, message: `${result.counts.error} righe del file ${name} non si possono importare: nessuna operazione salvata.` };
-  return { kind: "imported", provider, name, result };
+  for (const dryRun of [true, false]) {
+    const result = await run(dryRun);
+    throwIfOutage(result.error);
+    if (result.error) return { kind: "failed", provider, name, message: result.error };
+    if (result.counts.error > 0) {
+      const first = result.rows.find(row => row.status === "error");
+      throwIfOutage(first && "message" in first ? first.message : undefined);
+      return { kind: "failed", provider, name, message: `${result.counts.error} righe del file ${name} non si possono importare: nessuna operazione salvata.` };
+    }
+    if (!dryRun) return { kind: "imported", provider, name, result };
+  }
+  throw new Error("unreachable");
 }

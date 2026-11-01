@@ -63,13 +63,17 @@ export async function findHeldAutoInstruments(): Promise<Instrument[]> {
     );
 }
 
-/** Valute per cui servono i cambi: quelle degli strumenti posseduti e quelle degli utenti che investono. */
+/**
+ * Currencies that need exchange rates: those of the instruments with automatic prices, those of every instrument
+ * someone has operations on (manual ones too: a manual-only currency got no new rates and its positions were valued
+ * on an old rate, or at zero once the window moved past it) and those of the users who invest.
+ */
 export async function findNeededCurrencies(heldInstruments: Instrument[]): Promise<string[]> {
-  const userCurrencies = await db
-    .selectDistinct({ currency: authUser.currency })
-    .from(authUser)
-    .innerJoin(investmentTransactions, eq(investmentTransactions.userId, authUser.id));
-  const all = new Set<string>([...heldInstruments.map((i) => i.currency), ...userCurrencies.map((u) => u.currency)]);
+  const [userCurrencies, operated] = await Promise.all([
+    db.selectDistinct({ currency: authUser.currency }).from(authUser).innerJoin(investmentTransactions, eq(investmentTransactions.userId, authUser.id)),
+    db.selectDistinct({ currency: instruments.currency }).from(instruments).innerJoin(investmentTransactions, eq(investmentTransactions.instrumentId, instruments.id)),
+  ]);
+  const all = new Set<string>([...heldInstruments.map((i) => i.currency), ...userCurrencies.map((u) => u.currency), ...operated.map((o) => o.currency)]);
   all.delete("EUR");
   return [...all].sort();
 }

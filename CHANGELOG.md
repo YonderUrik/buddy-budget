@@ -2,6 +2,21 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.93.0](https://github.com/YonderUrik/buddy-budget/compare/v0.92.0...v0.93.0) (2026-11-01)
+
+
+### Features
+
+* GET /api/widgets/spending for the native spending widgets ([#548](https://github.com/YonderUrik/buddy-budget/issues/548)) ([2fa4d12](https://github.com/YonderUrik/buddy-budget/commit/2fa4d12d7ea0c60a612bbc0248061f994da41c8f))
+* Performance shows the chart first, on the whole history ([#543](https://github.com/YonderUrik/buddy-budget/issues/543)) ([aff3a1a](https://github.com/YonderUrik/buddy-budget/commit/aff3a1ae23337c3d61c7606167865c2ebae41a1a))
+
+
+### Bug fixes
+
+* **deps:** bump next ([#540](https://github.com/YonderUrik/buddy-budget/issues/540)) ([f1f85e1](https://github.com/YonderUrik/buddy-budget/commit/f1f85e13a561a36fa4e301fb0b90d03991276504))
+* invalidate every view account mutations change ([#545](https://github.com/YonderUrik/buddy-budget/issues/545)) ([de4bb4c](https://github.com/YonderUrik/buddy-budget/commit/de4bb4c502541ad147bf5b4efad202750048815b))
+* see corrected closes and FX rates in the net worth history ([#544](https://github.com/YonderUrik/buddy-budget/issues/544)) ([a588376](https://github.com/YonderUrik/buddy-budget/commit/a588376693bf9470c7b2f09bf93ce64262575a63))
+
 ## [0.92.0](https://github.com/YonderUrik/buddy-budget/compare/v0.91.0...v0.92.0) (2026-10-31)
 
 

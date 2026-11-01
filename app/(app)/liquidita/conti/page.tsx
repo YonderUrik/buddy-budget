@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { BanknoteIcon, LandmarkIcon, PlusIcon } from "lucide-react";
 import {
+  AccountDeleteConfirm,
   AccountDetailsDialog,
   localizedAccountStatus,
   RenewalBanner,
@@ -51,6 +52,7 @@ export default function LiquiditaContiPage() {
   const { addAccount, renew } = useLiquidityActions();
   const today = React.useMemo(() => startOfDay(now), [now]);
   const [openId, setOpenId] = React.useState<string | null>(null);
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
 
   React.useEffect(() => track("liquidity_tab_viewed", { tab: "conti" }), []);
 
@@ -92,6 +94,7 @@ export default function LiquiditaContiPage() {
   const groups = groupAccounts(list, bankByAccountId);
   const alerts = buildRenewalAlerts(connections, today);
   const open = list.find((a) => a.id === openId) ?? null;
+  const toDelete = list.find((a) => a.id === deleteId) ?? null;
 
   function showMovements(accountId: string) {
     setAccountId(accountId);
@@ -143,6 +146,7 @@ export default function LiquiditaContiPage() {
                       setOpenId(account.id);
                     }}
                     onShowMovements={() => showMovements(account.id)}
+                    onDelete={() => setDeleteId(account.id)}
                   />
                 );
               })}
@@ -167,6 +171,16 @@ export default function LiquiditaContiPage() {
         onClose={() => setOpenId(null)}
         onReconnect={() => renew("row")}
       />
+      {toDelete && (
+        <AccountDeleteConfirm
+          accountId={toDelete.id}
+          accountName={toDelete.name}
+          isAuto={toDelete.source === "auto"}
+          open
+          onOpenChange={(next) => { if (!next) setDeleteId(null); }}
+          onDeleted={() => setDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

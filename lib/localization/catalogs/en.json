@@ -5569,5 +5569,6 @@
   "Elimino…": "Deleting…",
   "Elimina tutto": "Delete everything",
   "I dati del conto sono cambiati: riapri la conferma e controlla di nuovo cosa viene eliminato.": "The account's data changed: open the confirmation again and check what will be deleted.",
-  "Altre operazioni vendono quote comprate con questo conto: elimina prima quelle vendite.": "Other operations sell shares bought with this account: delete those sales first."
+  "Altre operazioni vendono quote comprate con questo conto: elimina prima quelle vendite.": "Other operations sell shares bought with this account: delete those sales first.",
+  "Elimina {0}": "Delete {0}"
 }

@@ -71,15 +71,19 @@ export async function writeInvestmentSnapshot(userId: string, today: Date = new 
  */
 export const MAX_INVESTMENT_HISTORY_YEARS = 20;
 
-/** Aggregato "quante righe · ultima modifica" di una tabella: cambia a ogni insert, update o delete. */
+/**
+ * Aggregate "how many rows · last change" of a table: it moves on every insert, update or delete. The timestamp
+ * column passed in must be maintained on update (never `created_at` alone on an upserted table).
+ */
 function changeMarker(column: SQL | AnyColumn) {
   return sql<string>`count(*)::text || ':' || coalesce(max(${column})::text, '')`;
 }
 
 /**
- * Impronta dei dati da cui dipende lo storico investimenti dell'utente: operazioni, prezzi manuali, chiusure e
- * cambi degli strumenti posseduti, valuta dell'utente. Cambia quando si registra, modifica o elimina un'operazione
- * (anche datata anni fa), quando si inserisce un prezzo manuale e quando arriva lo storico prezzi in background.
+ * Fingerprint of the inputs the user's investment history depends on: operations, manual prices, closes and FX of
+ * the instruments held, user currency. It changes when an operation is recorded, edited or deleted (even dated years
+ * ago), when a manual price is entered, and when the background price history arrives or a stored close/FX is
+ * corrected (the two upserted tables carry `updated_at` for this).
  */
 export async function investmentInputsFingerprint(userId: string): Promise<string> {
   const heldInstruments = db
@@ -89,7 +93,7 @@ export async function investmentInputsFingerprint(userId: string): Promise<strin
   const [[ops], [manual], [prices], [user]] = await Promise.all([
     db.select({ marker: changeMarker(investmentTransactions.updatedAt) }).from(investmentTransactions).where(eq(investmentTransactions.userId, userId)),
     db.select({ marker: changeMarker(userInstrumentPrices.updatedAt) }).from(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId)),
-    db.select({ marker: changeMarker(instrumentPrices.createdAt) }).from(instrumentPrices).where(inArray(instrumentPrices.instrumentId, heldInstruments)),
+    db.select({ marker: changeMarker(instrumentPrices.updatedAt) }).from(instrumentPrices).where(inArray(instrumentPrices.instrumentId, heldInstruments)),
     db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId)),
   ]);
   const currencies = db
@@ -97,7 +101,7 @@ export async function investmentInputsFingerprint(userId: string): Promise<strin
     .from(instruments)
     .where(inArray(instruments.id, heldInstruments));
   const [fx] = await db
-    .select({ marker: changeMarker(fxRates.createdAt) })
+    .select({ marker: changeMarker(fxRates.updatedAt) })
     .from(fxRates)
     .where(or(inArray(fxRates.currency, currencies), eq(fxRates.currency, user?.currency ?? "EUR")));
   return [ops?.marker, manual?.marker, prices?.marker, fx?.marker, user?.currency].join("|");

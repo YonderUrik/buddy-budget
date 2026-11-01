@@ -53,7 +53,7 @@ export function AccountDeleteConfirm({ accountId, accountName, isAuto, open, onO
   }
 
   const removes = data ? [
-    tr("{0} movimenti del conto", { 0: data.cashCount }),
+    ...(data.cashCount > 0 ? [tr("{0} movimenti del conto", { 0: data.cashCount })] : []),
     ...(full ? [tr("{0} operazioni di investimento", { 0: data.investmentCount })] : []),
     ...data.portfolios.map((name) => tr("Il portafoglio «{0}»", { 0: name })),
     ...(data.imports > 0 ? [tr("{0} importazioni (rendiconti e file caricati)", { 0: data.imports })] : []),

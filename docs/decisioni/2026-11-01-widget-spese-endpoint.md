@@ -1,0 +1,7 @@
+# 2026-11-01 — One endpoint for the native spending widgets
+
+The native apps' home and lock screen widgets (mobile spec `features/20-widgets.md`, owner decision 2026-11-01) render only `GET /api/widgets/spending?today=YYYY-MM-DD`: today, this week (from Monday) and this month spent, the gap from the usual month, what is left of the month's budget and the last movement. A widget refreshes every 30 minutes and after every change, so it gets one light call instead of `GET /api/overview` (net worth, investments engine, debts) plus `GET /api/budgets/month`.
+
+The figures are the web's own: `computeMonthPace` and the Panoramica tolerance (extracted as `paceGap` in `lib/overview/voice.ts`, so the voice line and the widget agree on «come al solito»), `buildBudgetMonth` for the budget, `computeSummary` for today and the week, Movimenti's cleaned name and merchant logo for the last movement. One transaction read covers both windows (3 months of month pace, 24 months of carried leftover only when the user has budgets); the last movement is one `LIMIT 1` query outside transfer categories, capped at today so a future-dated row is never «the last movement».
+
+No Umami event (opening a widget is not an action in the app), no metric; log `widgets.spending.served` with the new closed `budget: boolean` field. No migration, no landing change (widgets are native only and not in the feature catalog yet).

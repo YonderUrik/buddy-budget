@@ -116,6 +116,8 @@ export interface LogFields {
   unrecognized?: number;
   /** Whether the Trade Republic timeline adds up to the reported balance (never the amounts themselves). */
   reconciled?: boolean;
+  /** Whether a served view had a budget to show (`widgets.spending.served`): a flag, never the amounts. */
+  budget?: boolean;
   error?: unknown;
 }
 

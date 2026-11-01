@@ -33,6 +33,18 @@ export const VOICE_DUE_HORIZON_DAYS = 14;
 const MS_PER_DAY = 86_400_000;
 
 
+/**
+ * Gap of the month's spending from the usual at the same day (`spent − typical`, null without history) and its tone:
+ * null within the tolerance (±5% of the usual, at least 1 unit), `neg` above the usual, `pos` below. Shared by the
+ * Panoramica line and the native widgets so «come al solito» means the same everywhere.
+ */
+export function paceGap(spentSoFar: number, typicalSoFar: number | null): { gap: number | null; tone: "pos" | "neg" | null } {
+  if (typicalSoFar === null) return { gap: null, tone: null };
+  const gap = spentSoFar - typicalSoFar;
+  const tolerance = Math.max(typicalSoFar * VOICE_PACE_TOLERANCE, 1);
+  return { gap, tone: Math.abs(gap) <= tolerance ? null : gap > 0 ? "neg" : "pos" };
+}
+
 /** Saluto in base all'ora locale. */
 export function greetingFor(hour: number): string {
   if (hour < 12) return "Buongiorno";
@@ -55,8 +67,7 @@ export function buildVoiceLines(input: VoiceInput): VoiceLine[] {
   const money = (n: number) => formatCurrency(n, currency, { locale, maximumFractionDigits: 0 });
   const lines: VoiceLine[] = [];
 
-  const diff = pace.typicalSoFar === null ? null : pace.spentSoFar - pace.typicalSoFar;
-  const tolerance = pace.typicalSoFar === null ? 0 : Math.max(pace.typicalSoFar * VOICE_PACE_TOLERANCE, 1);
+  const { gap: diff, tone } = paceGap(pace.spentSoFar, pace.typicalSoFar);
   // Nothing spent and no history (a new user, or no transactions yet): «0 € spesi» would say nothing.
   if (pace.typicalSoFar !== null || pace.spentSoFar !== 0) {
     const spent: VoiceSegment[] = [
@@ -66,10 +77,10 @@ export function buildVoiceLines(input: VoiceInput): VoiceLine[] {
     ];
     if (diff === null) {
       lines.push({ key: "pace", segments: spent });
-    } else if (Math.abs(diff) <= tolerance) {
+    } else if (tone === null) {
       lines.push({ key: "pace", segments: [...spent, { text: tr(", come al solito") }] });
     } else {
-      const above = diff > 0;
+      const above = tone === "neg";
       lines.push({
         key: "pace",
         segments: [

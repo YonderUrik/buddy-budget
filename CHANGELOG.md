@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.94.0](https://github.com/YonderUrik/buddy-budget/compare/v0.93.0...v0.94.0) (2026-11-01)
+
+
+### Features
+
+* delete an account with its portfolio, operations and imports ([#550](https://github.com/YonderUrik/buddy-budget/issues/550)) ([23fcca4](https://github.com/YonderUrik/buddy-budget/commit/23fcca4a9a792525330b2016518743f7f68a96fc))
+
+
+### Bug fixes
+
+* **deps:** close the magic link takeover with better-auth 1.7.14 ([#547](https://github.com/YonderUrik/buddy-budget/issues/547)) ([b13f6b9](https://github.com/YonderUrik/buddy-budget/commit/b13f6b95a21de31946f1e75008979cd0d7bf581c))
+
 ## [0.93.0](https://github.com/YonderUrik/buddy-budget/compare/v0.92.0...v0.93.0) (2026-11-01)
 
 

@@ -19,25 +19,16 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon, UpdateAccountInput } from "@/lib/validation/accounts";
-import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
+import { useUpdateAccountMutation } from "@/lib/queries/accounts";
 import { useSyncAccountMutation } from "@/lib/queries/gocardless";
 import type { Account } from "@/lib/db/schema/accounts";
 import { AccountAvatar } from "./account-avatar";
+import { AccountDeleteConfirm } from "./account-delete-confirm";
 import { AccountIconColorPicker } from "./account-icon-color-picker";
 import { CurrencyInput } from "./currency-input";
 import { localizedAccountStatus, type AccountSyncInfo } from "./account-status";
@@ -85,7 +76,6 @@ function AccountDetailsBody({
   const { t: tr } = useLocalization();
   const isAuto = account.source === "auto";
   const updateMutation = useUpdateAccountMutation();
-  const deleteMutation = useDeleteAccountMutation();
   const syncMutation = useSyncAccountMutation(syncInfo?.provider);
 
   const [name, setName] = React.useState(account.name);
@@ -127,12 +117,6 @@ function AccountDetailsBody({
     setColor(next.color);
     setIcon(next.icon);
     save("appearance", { color: next.color, icon: next.icon });
-  }
-
-  function handleRemove() {
-    deleteMutation.mutate(account.id, { onSuccess: () => track("account_removed", { kind }) });
-    setConfirmOpen(false);
-    onClose();
   }
 
   return (
@@ -266,22 +250,7 @@ function AccountDetailsBody({
         </Button>
       </div>
 
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{isAuto ? tr("Scollegare questo conto?") : tr("Eliminare questo conto?")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {isAuto
-                ? tr("\"{0}\" verrà scollegato. L'azione non è reversibile.", {0: account.name})
-                : tr("\"{0}\" verrà eliminato definitivamente, insieme al suo saldo registrato.", {0: account.name})}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemove}>{isAuto ? tr("Scollega") : tr("Elimina")}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AccountDeleteConfirm accountId={account.id} accountName={account.name} isAuto={isAuto} open={confirmOpen} onOpenChange={setConfirmOpen} onDeleted={onClose} />
     </>
   );
 }

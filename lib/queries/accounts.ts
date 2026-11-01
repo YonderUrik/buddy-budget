@@ -5,6 +5,7 @@ import { track } from "@/lib/analytics";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { CreateAccountInput, UpdateAccountInput } from "@/lib/validation/accounts";
 import { pageText } from "@/lib/localization/page-text";
+import { markHistoryRefreshPending } from "./history-refresh-signal";
 import {
   ACCOUNT_DELETED_QUERY_KEYS,
   BALANCE_CHANGED_QUERY_KEYS,
@@ -77,18 +78,54 @@ export function useUpdateAccountMutation() {
 }
 
 /** Deletes (or unlinks, for automatic accounts) an account and, on success, marks the ledger views stale too. */
+/** What deleting an account removes, as `GET /api/accounts/[id]/deletion` returns it. */
+export interface AccountDeletionPreview {
+  token: string;
+  name: string;
+  cashCount: number;
+  investmentCount: number;
+  portfolios: string[];
+  imports: number;
+}
+
+/** Reads what deleting the account would remove; only while the confirmation is open (`enabled`), never cached. */
+export function useAccountDeletionPreviewQuery(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["account-deletion", id],
+    enabled,
+    staleTime: 0,
+    gcTime: 0,
+    queryFn: async (): Promise<AccountDeletionPreview> => {
+      const response = await fetch(`/api/accounts/${id}/deletion`, { cache: "no-store" });
+      const body = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(body?.error ?? pageText("Impossibile eliminare il conto"));
+      return body;
+    },
+  });
+}
+
+/**
+ * Deletes an account with what it brought in. `token` comes from the preview and is required when the account carries
+ * investments or imports; then every view is refreshed (portfolio, imports, history), not only the ledger.
+ */
 export function useDeleteAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/accounts/${id}`, { method: "DELETE" });
+    mutationFn: async ({ id, token }: { id: string; token?: string }) => {
+      const response = await fetch(`/api/accounts/${id}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify(token ? { token } : {}) });
       if (!response.ok) {
-        throw new Error(pageText("Impossibile eliminare il conto"));
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error ?? pageText("Impossibile eliminare il conto"));
       }
     },
-    onSuccess: async () => {
+    onSuccess: async (_result, { token }) => {
       // The server deletes the account's transactions too: invalidate the ledger views, not just the accounts.
       await invalidateKeys(queryClient, ACCOUNT_DELETED_QUERY_KEYS);
+      // With a token, operations, portfolios and imports went too.
+      if (token) {
+        markHistoryRefreshPending();
+        await queryClient.invalidateQueries();
+      }
     },
   });
 }

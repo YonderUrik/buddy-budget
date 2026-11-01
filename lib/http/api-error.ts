@@ -38,6 +38,7 @@ export const API_ERROR_CODES = [
   "past_month",
   "subscription_exists",
   "account_not_found",
+  "account_deletion_changed",
   "transaction_not_found",
   "category_not_found",
   "position_not_sellable",

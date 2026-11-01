@@ -5560,5 +5560,14 @@
   "Passa su una data per aggiornare i numeri qui sotto, su un numero per capire cosa misura. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.": "Fahre über ein Datum, um die Zahlen unten zu aktualisieren, über eine Zahl, um zu sehen, was sie misst. Klicke und ziehe, um einen Zeitraum auszuwählen, oder wähle die Daten im Kalender neben den Zeiträumen.",
   "Scegli un indice con «Scegli un confronto», sopra il grafico, per vedere quanto lo segui.": "Wähle mit „Vergleich wählen“ über dem Diagramm einen Index, um zu sehen, wie eng du ihm folgst.",
   "Non trovo i cambi storici di una valuta del file: nessun movimento è stato salvato. Riprova più tardi.": "Für eine Währung der Datei finde ich keine historischen Wechselkurse: Es wurden keine Bewegungen gespeichert. Versuche es später erneut.",
-  "Lo stesso titolo è un'obbligazione in un file e un'azione in un altro: controlla lo storico": "Dasselbe Wertpapier ist in einer Datei eine Anleihe und in einer anderen eine Aktie: Prüfe den Verlauf"
+  "Lo stesso titolo è un'obbligazione in un file e un'azione in un altro: controlla lo storico": "Dasselbe Wertpapier ist in einer Datei eine Anleihe und in einer anderen eine Aktie: Prüfe den Verlauf",
+  "{0} movimenti del conto": "{0} Umsätze des Kontos",
+  "Il portafoglio «{0}»": "Das Depot «{0}»",
+  "{0} importazioni (rendiconti e file caricati)": "{0} Importe (Abrechnungen und hochgeladene Dateien)",
+  "«{0}» viene eliminato definitivamente insieme a tutto quello che ha portato:": "«{0}» wird endgültig gelöscht, zusammen mit allem, was damit hinzugekommen ist:",
+  "Puoi riportare tutto importando di nuovo i file originali.": "Du kannst alles zurückholen, indem du die Originaldateien erneut importierst.",
+  "Elimino…": "Wird gelöscht…",
+  "Elimina tutto": "Alles löschen",
+  "I dati del conto sono cambiati: riapri la conferma e controlla di nuovo cosa viene eliminato.": "Die Daten des Kontos haben sich geändert: Öffne die Bestätigung erneut und prüfe, was gelöscht wird.",
+  "Altre operazioni vendono quote comprate con questo conto: elimina prima quelle vendite.": "Andere Transaktionen verkaufen Anteile, die mit diesem Konto gekauft wurden: Lösche zuerst diese Verkäufe."
 }

@@ -31,9 +31,27 @@ import { redis } from "@/lib/redis/client";
 import { searchByIsinOnOpenFigi } from "@/lib/investments/isin-listings";
 import { DIVIDENDS_ON_DEMAND_LIMIT, findInstrumentsWithoutDividends, refreshInstrumentDividends } from "./dividends";
 import { loadFundamentals, loadStatements } from "./fundamentals";
-import { findFirstPriceDate, loadSymbols } from "./store";
+import { loadSymbols } from "./store";
 import type { ProviderContext } from "./types";
 import { backfillInstrument, type MarketDataDeps } from "./update";
+import type { BackfillStore } from "./backfill-state";
+
+/**
+ * Archivio dello stato dei recuperi. In produzione è quello su Redis; i test possono sostituirlo per verificare
+ * l'avvio e la fine del recupero senza toccare Redis.
+ */
+let backfillStore: BackfillStore | null = null;
+
+/** Archivio dello stato dei recuperi in uso (Redis, se non è stato sostituito). */
+export function getBackfillStore(): BackfillStore {
+  if (!backfillStore) backfillStore = redisBackfillStore;
+  return backfillStore;
+}
+
+/** Sostituisce l'archivio dello stato dei recuperi; `null` ripristina quello su Redis. */
+export function setBackfillStore(store: BackfillStore | null): void {
+  backfillStore = store;
+}
 
 // Sessione Yahoo condivisa su Redis tra i pod, invece che in memoria per processo (vedi yahoo.ts).
 setYahooSessionStore(redisYahooSessionStore);
@@ -90,8 +108,13 @@ export async function quoteMetaOnProviders(symbol: string): Promise<YahooQuoteMe
 export const INITIAL_HISTORY_DAYS = 30;
 
 /**
- * Avvia in background il recupero dello storico se mancano prezzi da `fromKey` in poi (strumenti `auto`).
+ * Avvia in background il recupero dello storico da `fromKey` a oggi (strumenti `auto`).
  * `schedule` è `after()` di Next.js nelle route. Restituisce true se un recupero è partito ora.
+ *
+ * Qui non si guarda cosa c'è già in banca dati: il recupero parte quando l'intervallo è già stato chiesto di
+ * recente, non quando lo storico sembra completo. Chi chiama sa quale intervallo gli serve (un'operazione, il
+ * periodo di un grafico) e usa `historyCovers()` di `@/lib/investments/history` per non chiederlo inutilmente.
+ * Le chiusure già salvate non si toccano (vedi `backfillInstrument`), quindi rilanciare è sicuro.
  */
 export async function ensureHistory(
   instrument: Instrument,
@@ -99,21 +122,20 @@ export async function ensureHistory(
   schedule: (task: () => Promise<void>) => void
 ): Promise<boolean> {
   if (instrument.priceMode !== "auto") return false;
-  const firstPrice = await findFirstPriceDate(instrument.id);
-  if (firstPrice !== null && firstPrice <= fromKey) return false;
-  if (!(await redisBackfillStore.tryStart(instrument.id))) return false;
+  const store = getBackfillStore();
+  if (!(await store.tryStart(instrument.id, fromKey))) return false;
 
   schedule(async () => {
     let saved = 0;
     try {
       const result = await backfillInstrument(instrument, fromKey, new Date(), marketDataDeps(), (done, total) => {
         saved = done;
-        void redisBackfillStore.progress(instrument.id, done, total);
+        void store.progress(instrument.id, done, total);
       });
-      await redisBackfillStore.finish(instrument.id, result.source ? "done" : "failed", result.saved);
+      await store.finish(instrument.id, result.source ? "done" : "failed", result.saved);
     } catch (error) {
       logger.error("market.backfill.failed", { error });
-      await redisBackfillStore.finish(instrument.id, "failed", saved);
+      await store.finish(instrument.id, "failed", saved);
     }
   });
   return true;

@@ -160,10 +160,12 @@ Finally it updates FX for the currencies of these instruments and of every user 
 
 ### 4.8 Backfill
 
-[`ensureHistory`](../../lib/market-data/runtime.ts) starts a background backfill for an `auto` instrument when its first stored close is later than the date needed. It is called on instrument creation (30 days, `INITIAL_HISTORY_DAYS`), on a new transaction (7 days before its date, `HISTORY_MARGIN_DAYS` in [`lib/investments/history.ts`](../../lib/investments/history.ts)), on watch, on the security page, and after imports.
+[`ensureHistory`](../../lib/market-data/runtime.ts) starts a background backfill for an `auto` instrument over the interval it is given. It is called on instrument creation (30 days, `INITIAL_HISTORY_DAYS`), on a new transaction (7 days before its date, `HISTORY_MARGIN_DAYS` in [`lib/investments/history.ts`](../../lib/investments/history.ts)), on watch, on the security page, and after imports.
+
+`ensureHistory` does not look at what is already stored: it pursues the requested interval. Deciding whether a request is worth making belongs to the caller, which knows the interval it needs, and is done with `historyCovers()` in [`lib/investments/history.ts`](../../lib/investments/history.ts) — that is where the coverage rule lives (section 5). Backfills are idempotent (missing days only), so re-running one is safe.
 
 - The work runs in `after()`; the route answers at once.
-- The Redis backfill store refuses a second start while a run is alive. A `running` state whose heartbeat is older than 60 s is treated as interrupted and can be restarted. Progress (`saved` of `total`) is updated per batch of 500 and read by `GET /api/instruments/backfill`.
+- The Redis backfill store refuses a second start while a run is alive, and claims the start with `SET NX` so two simultaneous requests across pods cannot both start. A `running` state whose heartbeat is older than 60 s is treated as interrupted and can be restarted; a `done` state holds a 6 h cooldown so a source that does not know an interval is not asked again in a loop. Progress (`saved` of `total`) is updated per batch of 500 and read by `GET /api/instruments/backfill`.
 - [`backfillInstrument`](../../lib/market-data/update.ts) uses only `unlimited` sources, starts at most 20 years back (`MAX_BACKFILL_YEARS`), inserts only missing days, and then fetches FX for the instrument's currency over the same range.
 
 [`ensureFxHistorySafely`](../../lib/investments/history.ts) fetches FX history for a benchmark whose prices already existed.
@@ -241,7 +243,7 @@ Metrics ([`lib/observability/metrics.ts`](../../lib/observability/metrics.ts)): 
 - **Free sources only.** Yahoo and Borsa Italiana are unofficial endpoints that can change or block without notice. Paid sources and SEC filings are out of scope.
 - **End-of-day only.** Three runs a day read daily closes; there are no intraday quotes.
 - **Held set ignores splits.** `findHeldAutoInstruments` sums quantities without applying split ratios, so any instrument with a split is always treated as held.
-- **Backfill checks only the first date.** `ensureHistory` starts a backfill only when the first stored close is later than needed; gaps inside the stored range are filled only by the 7-day daily window.
+- **Coverage is inferred, not recorded.** Whether an interval is already covered comes from the stored close dates and a tolerance (`DAILY_LOOKBACK_DAYS`), not from a record of which intervals were requested and answered. A period the provider genuinely has no data for is indistinguishable from a period never asked for, which is what the post-backfill cooldown compensates for. A coverage metadata table would make the two distinguishable (deferred).
 - **A suspect close is saved.** The plausibility check only logs.
 - **Inflation areas** are those of the supported product countries (`IT`, `DE`). **Risk-free rate** is €STR only.
 - **Overlap data** uses Yahoo's top 10 holdings; ETF regions from issuers' files are deferred.
@@ -252,8 +254,9 @@ Metrics ([`lib/observability/metrics.ts`](../../lib/observability/metrics.ts)): 
 
 - [`chain.test.ts`](../../lib/market-data/chain.test.ts): first valid source wins; fallback on error, empty or wrong currency; closes without currency; silent skips; breaker after 3 errors and immediately on a block; empty resets failures; daily budget; backfill skips limited sources.
 - [`update.test.ts`](../../lib/market-data/update.test.ts) (database): fallback with the source saved, daily overwrite, sold-out instruments ignored, FX with fallback, ISIN retry not saved as a symbol, `market.fx.all_failed`, backfill leaves stored days untouched.
+- [`history-ensure.integration.test.ts`](../../lib/investments/history-ensure.integration.test.ts) (database): a backfill starts even with a much older price stored; `findCoveredFrom` recognises an inner gap, is not fooled by a lone old price, does not read a weekend as a gap, ignores closes after the requested date, and returns null on an empty history; simultaneous `ensureHistory` calls start one run; a stale run resumes; a manual instrument is never backfilled.
 - [`symbols.test.ts`](../../lib/market-data/symbols.test.ts): derivation for Xetra ETFs, Milan ETFs, US and Italian stocks, bonds, funds and crypto.
-- [`backfill-state.test.ts`](../../lib/market-data/backfill-state.test.ts): no double start, restart after interruption, progress and finish.
+- [`backfill-state.test.ts`](../../lib/market-data/backfill-state.test.ts): no double start, restart after interruption, a cooldown after a completed run but not after a failure, one winner among simultaneous starts; progress and finish.
 - [`inflation.test.ts`](../../lib/market-data/inflation.test.ts), [`providers/eurostat.test.ts`](../../lib/market-data/providers/eurostat.test.ts): JSON-stat parsing, first download from 2000 then 36 months, full replacement on a base change with rollback on failure, country isolation, request shape and rejection of wrong series.
 - [`profiles-rates.integration.test.ts`](../../lib/market-data/profiles-rates.integration.test.ts): only missing or stale profiles, empty answers saved, €STR from 2019 then 30 days.
 - [`providers/main-providers.test.ts`](../../lib/market-data/providers/main-providers.test.ts), [`fallback-providers.test.ts`](../../lib/market-data/providers/fallback-providers.test.ts), [`profile-rate-providers.test.ts`](../../lib/market-data/providers/profile-rate-providers.test.ts), [`openfigi.test.ts`](../../lib/market-data/providers/openfigi.test.ts): parsing from fixtures, pence conversion, typed 429/403, HTML instead of JSON, Yahoo session reuse and single retry, quota messages with status 200.

@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, isNull, notLike, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, lte, notLike, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { PUBLIC_DEMO_USER_PREFIX } from "@/lib/public-demo/config";
@@ -113,13 +113,39 @@ export async function findLastClose(instrumentId: string): Promise<{ date: strin
   return row ? { date: row.date, close: Number(row.close), source: row.source } : null;
 }
 
-/** Data della prima chiusura salvata, o null se lo storico è vuoto. */
-export async function findFirstPriceDate(instrumentId: string): Promise<string | null> {
-  const [row] = await db
-    .select({ date: sql<string>`min(${instrumentPrices.date})` })
+/**
+ * Inizio della copertura di chiusure che arriva fino a `toKey`, o null se i dati non coprono il periodo richiesto.
+ *
+ * Due cose contano, non solo l'esistenza di un prezzo vecchio.
+ *
+ * 1. La chiusura più recente entro `toKey` deve stare dentro `maxGapDays` da `toKey`: se i dati finiscono molto
+ *    prima, l'intervallo richiesto non è coperto (è il caso di un prezzo isolato e poi il vuoto).
+ * 2. Da lì si scende finché non si incontra un buco più largo di `maxGapDays` tra due chiusure consecutive — la
+ *    tolleranza con cui l'aggiornamento giornaliero rilegge a ogni giro (`DAILY_LOOKBACK_DAYS`), che assorbe
+ *    weekend, festivi e un giro saltato del cron. Un buco in mezzo (import parziale, fonte che risponde a metà)
+ *    non deve far credere che il periodo sia coperto.
+ */
+export async function findCoveredFrom(instrumentId: string, toKey: string, maxGapDays: number): Promise<string | null> {
+  const rows = await db
+    .select({ date: instrumentPrices.date })
     .from(instrumentPrices)
-    .where(eq(instrumentPrices.instrumentId, instrumentId));
-  return row?.date ?? null;
+    .where(and(eq(instrumentPrices.instrumentId, instrumentId), lte(instrumentPrices.date, toKey)))
+    .orderBy(desc(instrumentPrices.date));
+  if (rows.length === 0) return null;
+  if (calendarDaysBetween(rows[0].date, toKey) > maxGapDays) return null;
+
+  let from = rows[0].date;
+  for (let i = 1; i < rows.length; i += 1) {
+    // `rows[i]` è più vecchia: se dista dalla precedente più della tolleranza, la copertura si ferma qui.
+    if (calendarDaysBetween(rows[i].date, rows[i - 1].date) > maxGapDays) return from;
+    from = rows[i].date;
+  }
+  return from;
+}
+
+/** Giorni di calendario da `from` a `to`, entrambe chiavi `YYYY-MM-DD`; negativo se `to` precede `from`. */
+function calendarDaysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 }
 
 /**

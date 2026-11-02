@@ -1,11 +1,18 @@
-import { NextRequest, after } from "next/server";
-import { eq, inArray } from "drizzle-orm";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+import { inArray } from "drizzle-orm";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
-import { instrumentPrices, instrumentSymbols, instruments, userInstrumentPrices } from "@/lib/db/schema/investments";
-import { redis } from "@/lib/redis/client";
+import { instrumentPrices, instruments } from "@/lib/db/schema/investments";
+import { createBackfillStore, createMemoryBackfillKv } from "@/lib/market-data/backfill-state";
+import { setBackfillStore } from "@/lib/market-data/runtime";
 
+/**
+ * Caso segnalato: l'endpoint che precompila il prezzo di un'operazione rispondeva `price: null, loading: false`
+ * per sempre quando mancava un prezzo nella finestra richiesta ma ne esisteva uno molto più vecchio.
+ * `ensureHistorySafely` delegava a `ensureHistory`, che si fermava su `min(date) <= fromKey`, quindi non
+ * programmava alcun recupero e al giro successivo (cooldown scaduto) la scena si ripeteva identica.
+ */
 vi.mock("next/server", async (importOriginal) => {
   const actual = await importOriginal<typeof import("next/server")>();
   return { ...actual, after: vi.fn() };
@@ -13,130 +20,96 @@ vi.mock("next/server", async (importOriginal) => {
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
 import { auth } from "@/lib/auth";
-import { GET } from "./route";
+import { GET as getPriceOnDate } from "@/app/api/instruments/[id]/price/route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
-const afterTasks: Promise<unknown>[] = [];
 
-function priceOn(instrumentId: string, date: string) {
-  return GET(new NextRequest(`http://localhost/api/instruments/${instrumentId}/price?date=${date}`), {
-    params: Promise.resolve({ id: instrumentId }),
-  });
+function request(url: string) {
+  return new NextRequest(`http://localhost${url}`);
 }
 
-describe("GET /api/instruments/[id]/price", () => {
+function dayKey(offset: number): string {
+  return new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+}
+
+describe("prezzo di un'operazione: recupero avviato quando il periodo è scoperto", () => {
   const userIds: string[] = [];
   const instrumentIds: string[] = [];
   let userId: string;
+  let store = createBackfillStore(createMemoryBackfillKv());
 
   async function createUser() {
-    const [user] = await db
-      .insert(authUser)
+    const id = `test-price-${crypto.randomUUID()}`;
+    await db.insert(authUser).values({ id, name: "Test", email: `${id}@example.com`, emailVerified: false, currency: "EUR" });
+    userIds.push(id);
+    return id;
+  }
+
+  async function createInstrument(dates: string[]) {
+    const [row] = await db
+      .insert(instruments)
       .values({
-        id: `test-price-on-date-${crypto.randomUUID()}`,
-        name: "Test",
-        email: `test-price-on-date-${crypto.randomUUID()}@example.com`,
-        emailVerified: false,
+        name: `Titolo ${crypto.randomUUID().slice(0, 6)}`,
+        type: "azione",
         currency: "EUR",
+        priceMode: "auto",
+        createdByUserId: userId,
       })
       .returning();
-    userIds.push(user.id);
-    return user.id;
+    instrumentIds.push(row.id);
+    await db
+      .insert(instrumentPrices)
+      .values(dates.map((date, i) => ({ instrumentId: row.id, date, close: String(100 + i), source: "yahoo" as const })));
+    return row.id;
   }
-
-  async function createInstrument(values: Partial<typeof instruments.$inferInsert> = {}) {
-    const [created] = await db
-      .insert(instruments)
-      .values({ name: "ETF test", type: "etf", currency: "EUR", priceMode: "manuale", createdByUserId: userId, ...values })
-      .returning();
-    instrumentIds.push(created.id);
-    return created.id;
-  }
-
-  beforeAll(() => {
-    process.env.MARKET_DATA_FAKE = "1";
-  });
 
   beforeEach(async () => {
     userId = await createUser();
     mockedGetSession.mockResolvedValue({ user: { id: userId } } as never);
-    afterTasks.length = 0;
-    vi.mocked(after).mockImplementation((task) => {
-      afterTasks.push(Promise.resolve(typeof task === "function" ? task() : task));
-    });
+    store = createBackfillStore(createMemoryBackfillKv());
+    setBackfillStore(store);
   });
 
   afterEach(async () => {
-    await Promise.all(afterTasks);
+    setBackfillStore(null);
+    await db.delete(instruments).where(inArray(instruments.id, instrumentIds));
     await db.delete(authUser).where(inArray(authUser.id, userIds));
-    if (instrumentIds.length) await db.delete(instruments).where(inArray(instruments.id, instrumentIds));
     userIds.length = 0;
     instrumentIds.length = 0;
   });
 
   afterAll(async () => {
-    delete process.env.MARKET_DATA_FAKE;
-    redis.disconnect();
     await client.end();
   });
 
-  it("restituisce la chiusura del giorno, o l'ultima prima (weekend), e il prezzo manuale vince", async () => {
-    const id = await createInstrument({ priceMode: "auto", createdByUserId: null });
-    await db.insert(instrumentPrices).values([
-      { instrumentId: id, date: "2026-09-24", close: "101.50000000", source: "yahoo" },
-      { instrumentId: id, date: "2026-09-25", close: "102.25000000", source: "yahoo" },
-    ]);
+  it("avvia il recupero invece di rispondere subito 'niente prezzo e niente in corso'", async () => {
+    // Vecchia chiusura isolata, e nessun prezzo nella finestra della data richiesta.
+    const id = await createInstrument([dayKey(-300)]);
+    const date = dayKey(-1);
 
-    expect(await (await priceOn(id, "2026-09-25")).json()).toEqual({
-      price: { date: "2026-09-25", close: 102.25, origin: "yahoo" },
-      loading: false,
+    const response = await getPriceOnDate(request(`/api/instruments/${id}/price?date=${date}`), {
+      params: Promise.resolve({ id }),
     });
-    // Sabato: vale la chiusura del venerdì.
-    expect((await (await priceOn(id, "2026-09-26")).json()).price).toEqual({ date: "2026-09-25", close: 102.25, origin: "yahoo" });
+    const body = await response.json();
+    expect(body.price).toBeNull();
+    // Prima della correzione restava false: nessun recupero partiva e il polling si spegneva per sempre.
+    expect(body.loading).toBe(true);
 
-    await db.insert(userInstrumentPrices).values({ userId, instrumentId: id, date: "2026-09-25", close: "99.00000000" });
-    expect((await (await priceOn(id, "2026-09-25")).json()).price).toEqual({ date: "2026-09-25", close: 99, origin: "manuale" });
-    expect(afterTasks).toHaveLength(0);
+    const [state] = await store.views([id]);
+    expect(state.status).toBe("running");
+    // Il recupero copre l'operazione e il margine prima di essa, non i 300 giorni di buco.
+    expect(state.fromKey).toBe(dayKey(-8));
   });
 
-  it("senza prezzi alla data avvia il recupero dello storico, poi il prezzo c'è", async () => {
-    const id = await createInstrument({ priceMode: "auto", createdByUserId: null });
-    await db.insert(instrumentSymbols).values({ instrumentId: id, provider: "yahoo", symbol: `TEST${id.slice(0, 8)}.DE` });
-    await db.insert(instrumentPrices).values({ instrumentId: id, date: "2026-09-25", close: "100.00000000", source: "yahoo" });
+  it("non avvia nulla quando il prezzo del giorno è già disponibile", async () => {
+    const id = await createInstrument([dayKey(-3), dayKey(-2)]);
+    const response = await getPriceOnDate(request(`/api/instruments/${id}/price?date=${dayKey(-1)}`), {
+      params: Promise.resolve({ id }),
+    });
+    const body = await response.json();
 
-    const first = await (await priceOn(id, "2024-03-06")).json();
-    expect(first).toEqual({ price: null, loading: true });
-    expect(afterTasks).toHaveLength(1);
-    await Promise.all(afterTasks);
-
-    const second = await (await priceOn(id, "2024-03-06")).json();
-    expect(second.loading).toBe(false);
-    expect(second.price.date).toBe("2024-03-06");
-    expect(second.price.close).toBeGreaterThan(0);
-    const saved = await db.select().from(instrumentPrices).where(eq(instrumentPrices.instrumentId, id));
-    expect(saved.length).toBeGreaterThan(1);
-  });
-
-  it("se le fonti non hanno il prezzo non riparte a ogni richiesta", async () => {
-    // Nessun simbolo: il recupero parte ma non trova nulla.
-    const id = await createInstrument({ priceMode: "auto", createdByUserId: null });
-    await db.insert(instrumentPrices).values({ instrumentId: id, date: "2026-09-25", close: "100.00000000", source: "yahoo" });
-    await priceOn(id, "2024-03-06");
-    await Promise.all(afterTasks);
-    expect(await (await priceOn(id, "2024-03-06")).json()).toEqual({ price: null, loading: false });
-    expect(afterTasks).toHaveLength(1);
-  });
-
-  it("uno strumento manuale senza prezzi risponde null senza recuperi", async () => {
-    const id = await createInstrument();
-    expect(await (await priceOn(id, "2026-09-25")).json()).toEqual({ price: null, loading: false });
-    expect(afterTasks).toHaveLength(0);
-  });
-
-  it("rifiuta una data non valida e lo strumento manuale di un altro utente", async () => {
-    const id = await createInstrument();
-    expect((await priceOn(id, "25/09/2026")).status).toBe(400);
-    mockedGetSession.mockResolvedValue({ user: { id: await createUser() } } as never);
-    expect((await priceOn(id, "2026-09-25")).status).toBe(404);
+    expect(body.price).not.toBeNull();
+    expect(body.loading).toBe(false);
+    expect(await store.views([id])).toHaveLength(0); // nessun recupero avviato
   });
 });

@@ -1,12 +1,26 @@
 import "server-only";
 import type { Instrument } from "@/lib/db/schema/investments";
+import { findCoveredFrom } from "@/lib/market-data/store";
 import { ensureHistory, marketDataDeps } from "@/lib/market-data/runtime";
-import { updateFxRates } from "@/lib/market-data/update";
+import { DAILY_LOOKBACK_DAYS, updateFxRates } from "@/lib/market-data/update";
 import { logger, requestLogger } from "@/lib/observability";
-import { shiftDateKey } from "./operations";
+import { shiftDateKey, todayKey } from "./operations";
 
 /** Giorni di prezzi chiesti prima di un'operazione, così il prezzo del giorno esiste anche dopo un weekend. */
 export const HISTORY_MARGIN_DAYS = 7;
+
+/**
+ * True se le chiusure salvate coprono già `fromKey` in modo continuo fino a `toKey`: in quel caso non serve
+ * chiedere il recupero.
+ *
+ * Guardare la sola data più vecchia non basta, in due modi. Primo: un buco in mezzo (import parziale, fonte che
+ * risponde a metà) lascerebbe il periodo richiesto vuoto. Secondo: un prezzo isolato vecchio non dice nulla sul
+ * periodo richiesto quando i dati recenti cominciano dopo `fromKey`.
+ */
+export async function historyCovers(instrumentId: string, fromKey: string, toKey: string): Promise<boolean> {
+  const coveredFrom = await findCoveredFrom(instrumentId, toKey, DAILY_LOOKBACK_DAYS);
+  return coveredFrom !== null && coveredFrom <= fromKey;
+}
 
 /** Avvia il recupero dei prezzi dall'operazione in poi, senza mai far fallire la richiesta che lo chiede. */
 export async function ensureHistorySafely(
@@ -15,7 +29,9 @@ export async function ensureHistorySafely(
   schedule: (task: () => Promise<void>) => void
 ): Promise<void> {
   try {
-    await ensureHistory(instrument, shiftDateKey(operationDate, -HISTORY_MARGIN_DAYS), schedule);
+    const fromKey = shiftDateKey(operationDate, -HISTORY_MARGIN_DAYS);
+    if (await historyCovers(instrument.id, fromKey, todayKey())) return;
+    await ensureHistory(instrument, fromKey, schedule);
   } catch (error) {
     requestLogger().warn("market.backfill.not_started", { error });
   }

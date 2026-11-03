@@ -11,13 +11,9 @@ import type { BenchmarkComparison, BenchmarkStatus } from "@/lib/calc/returns";
 
 import { localizedReturnInsights, type BenchmarkWait } from "@/lib/investments/returns-insights";
 import { cn } from "@/lib/utils";
+import { useDesignProposal } from "@/lib/investments/design-proposal";
 
 
-const VERDICT_TEXT = {
-  better: "Il tuo portafoglio ha fatto meglio",
-  worse: "L'indice avrebbe fatto meglio",
-  even: "Praticamente pari",
-} as const;
 
 export interface BenchmarkSummaryProps {
   status: BenchmarkStatus;
@@ -33,6 +29,10 @@ export interface BenchmarkSummaryProps {
   /** Rilancia il recupero dei prezzi del benchmark. */
   onRetry: () => void;
   retrying: boolean;
+  /** Short name of the index (e.g. «MSCI World») when the benchmark is a common one; otherwise the ETF name is used. */
+  benchmarkLabel?: string | null;
+  /** Money-weighted return of the portfolio over the same period, shown beside its value. */
+  portfolioMoneyWeighted?: number | null;
 }
 
 /** Testo dell'attesa del confronto: cosa sta succedendo e, se serve, cosa può fare l'utente. */
@@ -44,11 +44,12 @@ function waitProgress(wait: BenchmarkWait): ProgressBarState {
   return wait.total ? { kind: "determinate", value: wait.saved, max: wait.total } : { kind: "indeterminate" };
 }
 
-export function BenchmarkSummary({ status, comparison, benchmarkName, currency, wait, onChoose, onRetry, retrying, asOf }: BenchmarkSummaryProps) {
+export function BenchmarkSummary({ status, comparison, benchmarkName, currency, wait, onChoose, onRetry, retrying, asOf, benchmarkLabel = null, portfolioMoneyWeighted = null }: BenchmarkSummaryProps) {
+  const proposal = useDesignProposal();
   const { benchmarkVerdict } = localizedReturnInsights(useLocalization().language);
 
   const { locale: formattingLocale } = useLocalization();
-  const { formatSignedCurrency, formatSignedPct } = localizedFormats(formattingLocale);
+  const { formatSignedPct } = localizedFormats(formattingLocale);
 
 
   const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
@@ -104,24 +105,68 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
   const verdict = benchmarkVerdict(comparison);
   const difference = comparison.portfolioValue - comparison.simulatedValue;
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
-  return (
-    <div className="flex flex-col gap-2 rounded-lg bg-muted/50 p-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="text-sm font-medium text-foreground">
-          {tr(VERDICT_TEXT[verdict])}
-          {verdict !== "even" ? (
-            <span className={cn("tabular-nums", difference < 0 ? "text-neg" : "text-pos")}> {"("}{formatSignedCurrency(difference, currency)}{")"}</span>
-          ) : null}
-        </p>
-        <Button variant="ghost" size="sm" className="-my-1" onClick={onChoose}>{tr("Cambia")}</Button>
+  const label = benchmarkLabel ?? comparison.instrument.name;
+  const headline = verdict === "even" ? tr("Pari con {0}", { 0: label })
+    : verdict === "better" ? tr("Hai battuto {0} di {1}", { 0: label, 1: format(Math.abs(difference)) })
+    : tr("{0} ha fatto meglio di {1}", { 0: label, 1: format(Math.abs(difference)) });
+  const when = asOf ? tr("al {0}", { 0: formatDateWithYear(asOf) }) : tr("oggi");
+  const sides = [
+    { key: "portfolio", name: tr("Il tuo portafoglio"), value: comparison.portfolioValue, mwr: portfolioMoneyWeighted, color: "var(--primary)", wins: verdict === "better" },
+    { key: "index", name: label, value: comparison.simulatedValue, mwr: comparison.moneyWeighted, color: "var(--swatch-amber)", wins: verdict === "worse" },
+  ];
+  const top = Math.max(comparison.portfolioValue, comparison.simulatedValue, 1);
+  const winnerChip = <span className="rounded-full bg-sun px-2 py-0.5 text-xs font-medium text-on-sun">{tr("Meglio")}</span>;
+  const change = <Button variant="ghost" size="sm" className="-my-1 shrink-0" onClick={onChoose}>{tr("Cambia")}</Button>;
+
+  if (proposal === "b") {
+    return (
+      <div className="flex flex-col gap-4 rounded-2xl bg-muted/50 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <p className={cn("font-display text-2xl leading-tight", verdict === "worse" ? "text-neg" : verdict === "better" ? "text-pos" : "text-foreground")}>{headline}</p>
+          {change}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {sides.map((side) => (
+            <div key={side.key} className={cn("flex min-w-0 flex-col gap-1 rounded-xl bg-background p-3", side.wins && "ring-2 ring-sun")}>
+              <span className="flex items-center justify-between gap-2">
+                <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground"><span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: side.color }} /><span className="truncate">{side.key === "portfolio" ? tr("Tu") : label}</span></span>
+                {side.wins ? winnerChip : null}
+              </span>
+              <span className="font-heading text-xl font-medium tabular-nums sm:text-2xl">{format(side.value)}</span>
+              {side.mwr !== null ? <span className="text-xs tabular-nums text-muted-foreground">{tr("{0} sui versamenti", { 0: formatSignedPct(side.mwr) })}</span> : null}
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">{tr("Stessi versamenti, stessi giorni, {0}. Il confronto usa {1}.", { 0: when, 1: comparison.instrument.name })}</p>
+        {comparison.depleted ? <p className="text-xs text-muted-foreground">{tr("Le vendite hanno superato il valore dell'indice simulato, che si è azzerato.")}</p> : null}
       </div>
-      <p className="text-sm text-muted-foreground">{tr("Con gli stessi versamenti in")}{" "}<span className="text-foreground">{comparison.instrument.name}</span>{" "}{asOf ? tr("al {0}", {0: formatDateWithYear(asOf)}) : tr("oggi")}{" "}{tr("avresti")}{" "}
-        <span className="font-medium tabular-nums text-foreground">{format(comparison.simulatedValue)}</span>{" "}{tr("invece di")}{" "}
-        <span className="font-medium tabular-nums text-foreground">{format(comparison.portfolioValue)}</span>{tr(". Nel periodo l'ETF di confronto ha reso")}{" "}<span className="tabular-nums">{formatSignedPct(comparison.twr)}</span>
-        {comparison.twrAnnual !== null ? <span className="tabular-nums"> {"("}{formatSignedPct(comparison.twrAnnual)}{" "}{tr("l'anno)")}</span> : null}{"."}</p>
-      {comparison.depleted ? (
-        <p className="text-xs text-muted-foreground">{tr("Le vendite hanno superato il valore dell'indice simulato, che si è azzerato.")}</p>
-      ) : null}
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 rounded-2xl bg-muted/50 p-4">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-base font-medium text-foreground">
+          {verdict === "even" ? headline : verdict === "better" ? tr("Hai fatto meglio dell'indice") : tr("L'indice ha fatto meglio")}
+          {verdict !== "even" ? <span className={cn("ml-2 tabular-nums", difference < 0 ? "text-neg" : "text-pos")}>{difference < 0 ? "−" : "+"}{format(Math.abs(difference))}</span> : null}
+        </p>
+        {change}
+      </div>
+      <div className="flex flex-col gap-3">
+        {sides.map((side) => (
+          <div key={side.key} className="flex flex-col gap-1.5">
+            <span className="flex items-baseline justify-between gap-3 text-sm">
+              <span className="flex min-w-0 items-center gap-2"><span className="truncate">{side.name}</span>{side.wins ? winnerChip : null}</span>
+              <span className="shrink-0 font-medium tabular-nums">{format(side.value)}</span>
+            </span>
+            <span className="h-3 overflow-hidden rounded-full bg-background">
+              <span className="block h-full rounded-full" style={{ width: `${Math.max((side.value / top) * 100, 2)}%`, backgroundColor: side.color }} />
+            </span>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">{tr("Stessi versamenti, stessi giorni, {0}. Il confronto usa {1}.", { 0: when, 1: comparison.instrument.name })}</p>
+      {comparison.depleted ? <p className="text-xs text-muted-foreground">{tr("Le vendite hanno superato il valore dell'indice simulato, che si è azzerato.")}</p> : null}
     </div>
   );
 }

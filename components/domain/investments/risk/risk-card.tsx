@@ -20,7 +20,10 @@ import { localizedRiskInsights, type SharpeLevel } from "@/lib/investments/risk-
 
 import { DrawdownChart } from "./drawdown-chart";
 import { RiskDetails } from "./risk-details";
-import { RiskLevelMeter } from "./risk-level-meter";
+import { RiskGauge } from "./risk-gauge";
+import { matchBenchmarkSuggestion } from "@/lib/investments/benchmark-suggestions";
+import { useDesignProposal } from "@/lib/investments/design-proposal";
+import { cn } from "@/lib/utils";
 import { RiskMetric } from "./risk-metric";
 import { RiskMethod } from "./risk-method";
 
@@ -31,7 +34,24 @@ const PERIOD_LABELS: Record<NetWorthPeriod, string> = {
   max: "Dalla prima operazione",
 };
 
-const SHARPE_WORDS: Record<SharpeLevel, string> = { negativo: "No", basso: "Poco", discreto: "Discreto", buono: "Bene" };
+const SHARPE_WORDS: Record<"a" | "b", Record<SharpeLevel, string>> = {
+  a: { negativo: "Negativo", basso: "Basso", discreto: "Discreto", buono: "Buono" },
+  b: { negativo: "No", basso: "Poco", discreto: "Abbastanza", buono: "Sì" },
+};
+
+/** How closely the portfolio follows the index, in one word (proposal B). */
+function betaWord(beta: number): string {
+  if (beta < 0) return "Al contrario";
+  if (beta < 0.6) return "Poco";
+  if (beta < 0.9) return "In parte";
+  if (beta <= 1.1) return "Da vicino";
+  return "Più dell'indice";
+}
+
+const TEXTS = {
+  a: { title: "Rischio", drawdown: "Calo più forte", sharpe: "Rendimento per rischio", beta: "Legame con l'indice" },
+  b: { title: "Quanto oscilla", drawdown: "Discesa più profonda", sharpe: "Ne è valsa la pena?", beta: "Segue l'indice?" },
+} as const;
 
 export interface RiskCardProps {
   risk: PortfolioRisk;
@@ -43,8 +63,11 @@ export interface RiskCardProps {
   currency: string;
 }
 
-export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }: RiskCardProps) {
-  const { betaInsight, riskLevel, sharpeInsight, sharpeLevel, volatilityInsight } = localizedRiskInsights(useLocalization().language);
+export function RiskCard({ risk, period, benchmarkName: benchmarkFullName, currency, periodLabel }: RiskCardProps) {
+  const benchmarkName = benchmarkFullName ? matchBenchmarkSuggestion({ isin: null, name: benchmarkFullName })?.label ?? benchmarkFullName : null;
+  const { betaInsight, riskLevel, riskLevelInsight, riskScalePosition, sharpeInsight, sharpeLevel, volatilityInsight } = localizedRiskInsights(useLocalization().language);
+  const proposal = useDesignProposal();
+  const text = TEXTS[proposal];
 
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedPct, formatPct: pct, formatRatio } = localizedFormats(formattingLocale);
@@ -61,7 +84,7 @@ export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }:
   const { t: tr } = useLocalization();
   if (risk.volatility === null) {
     return (
-      <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={periodLabel === null ? undefined : periodLabel ?? tr(PERIOD_LABELS[period])}>
+      <PanelSection icon={ShieldAlertIcon} title={tr(text.title)} color="var(--swatch-orange)" description={periodLabel === null ? undefined : periodLabel ?? tr(PERIOD_LABELS[period])}>
         <p className="text-sm text-muted-foreground">{tr("Servono almeno 20 giorni di borsa nel periodo per misurare il rischio. Prova un periodo più lungo o torna tra qualche giorno.")}</p>
       </PanelSection>
     );
@@ -75,36 +98,40 @@ export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }:
     .filter(Boolean)
     .join(" ");
     return (
-    <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={periodLabel === null ? undefined : periodLabel ?? tr(PERIOD_LABELS[period])}>
+    <PanelSection icon={ShieldAlertIcon} title={tr(text.title)} color="var(--swatch-orange)" description={periodLabel === null ? undefined : periodLabel ?? tr(PERIOD_LABELS[period])}>
       <div className="flex flex-col gap-5">
-        <RiskLevelMeter
-          level={riskLevel(risk.volatility)}
-          volatility={risk.volatility}
-          volatilityText={`±${pct(risk.volatility)}`}
-          volatilityNote={volatilityInsight(risk.volatility, bench?.volatility ?? null, benchmarkName)}
-          volatilityHint="Nome tecnico: volatilità. Di quanto si muove di solito il valore in un anno, in più o in meno. Più è alta, più il percorso è accidentato."
-        />
+        <div className={cn("grid items-center gap-x-8 gap-y-4", proposal === "a" && "md:grid-cols-[minmax(0,16rem)_1fr]")}>
+          <RiskGauge level={riskLevel(risk.volatility)} position={riskScalePosition(risk.volatility)} caption={tr("Oscilla di ±{0} in un anno", { 0: pct(risk.volatility) })} />
+          <p className={cn("max-w-prose text-sm text-muted-foreground", proposal === "b" && "mx-auto text-center")}>
+            {riskLevelInsight(riskLevel(risk.volatility))}{" "}{volatilityInsight(risk.volatility, bench?.volatility ?? null, benchmarkName)}
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 gap-x-8 gap-y-5 pt-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={cn("grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3", proposal === "a" && "gap-x-8 gap-y-5 border-t pt-5 sm:gap-3 sm:border-t-0 sm:pt-0")}>
           <RiskMetric
-            label={tr("Perdita peggiore")}
+            boxed={proposal === "b"}
+            label={tr(text.drawdown)}
             value={risk.drawdown && risk.drawdown.depth < 0 ? formatSignedPct(risk.drawdown.depth) : "0%"}
-            note={tr("dal massimo")}
+            tone={risk.drawdown && risk.drawdown.depth < 0 ? "neg" : undefined}
+            note={tr("dal punto più alto")}
             description={risk.drawdown ? drawdownText(risk.drawdown) : null}
             hint={tr("Nome tecnico: massima perdita dal picco (drawdown). Quanto hai visto scendere il portafoglio, al massimo, rispetto al suo valore più alto. Non conta i versamenti.")}
           />
           <RiskMetric
-            label={tr("Rischio ripagato?")}
-            value={risk.sharpe === null ? null : tr(SHARPE_WORDS[sharpeLevel(risk.sharpe)])}
+            boxed={proposal === "b"}
+            label={tr(text.sharpe)}
+            value={risk.sharpe === null ? null : tr(SHARPE_WORDS[proposal][sharpeLevel(risk.sharpe)])}
+            tone={risk.sharpe === null ? undefined : sharpeLevel(risk.sharpe) === "buono" ? "pos" : sharpeLevel(risk.sharpe) === "negativo" ? "neg" : undefined}
             note={risk.sharpe === null ? tr("servono 3 mesi di dati") : tr("Sharpe {0}", {0: formatRatio(risk.sharpe, 2)})}
             description={risk.sharpe === null ? null : sharpeInsight(risk.sharpe)}
             hint={tr("Nome tecnico: Sharpe ratio. Quanto rendimento in più di un conto deposito hai avuto per ogni unità di rischio. Sotto 0,5 è poco, sopra 1 è buono.")}
           />
           {benchmarkName ? (
             <RiskMetric
-              label={tr("Quanto segue l'indice")}
-              value={bench?.beta === null || bench?.beta === undefined ? null : formatRatio(bench.beta, 2)}
-              note={bench?.correlation != null ? tr("correlazione {0}", {0: formatRatio(bench.correlation, 2)}) : tr("servono 3 mesi di dati")}
+              boxed={proposal === "b"}
+              label={tr(text.beta)}
+              value={bench?.beta === null || bench?.beta === undefined ? null : proposal === "b" ? tr(betaWord(bench.beta)) : formatRatio(bench.beta, 2)}
+              note={bench?.beta == null ? tr("servono 3 mesi di dati") : proposal === "b" ? tr("beta {0}", {0: formatRatio(bench.beta, 2)}) : tr("beta · correlazione {0}", {0: formatRatio(bench.correlation ?? 0, 2)})}
               description={bench?.beta != null ? betaInsight(bench.beta, benchmarkName) : null}
               hint={tr("Nome tecnico: beta rispetto a {0}. 1 vuol dire che si muove come l'indice, 0,5 la metà, 1,5 una volta e mezza. La correlazione (da −1 a 1) dice quanto i movimenti vanno nella stessa direzione.", {0: benchmarkName})}
             />

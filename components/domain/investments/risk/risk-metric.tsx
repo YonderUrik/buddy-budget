@@ -4,6 +4,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import type { ReactNode } from "react";
 import { InfoHint } from "@/components/domain/shared";
+import { cn } from "@/lib/utils";
 
 export interface RiskMetricProps {
   /** Titolo in italiano semplice. */
@@ -16,18 +17,22 @@ export interface RiskMetricProps {
   note?: string | null;
   /** Frase che dice cosa significa il numero. */
   description?: ReactNode;
+  /** Colour of the value: `pos`/`neg` for a clear good or bad reading, neutral otherwise. */
+  tone?: "pos" | "neg";
+  /** In its own filled block (islands), instead of open on the card. */
+  boxed?: boolean;
 }
 
-export function RiskMetric({ label, hint, value, note = null, description = null }: RiskMetricProps) {
+export function RiskMetric({ label, hint, value, note = null, description = null, tone, boxed = false }: RiskMetricProps) {
   const { t: tr } = useLocalization();
   return (
-    <div className="flex flex-col gap-1">
+    <div className={cn("flex flex-col gap-1", boxed && "rounded-2xl bg-muted/60 p-4")}>
       <p className="flex items-center gap-1 text-sm font-medium text-foreground">
         {tr(label)}
         <InfoHint label={tr("Cos'è: {0}", {0: label})}>{tr(hint)}</InfoHint>
       </p>
       <p className="flex flex-wrap items-baseline gap-x-2">
-        <span className="font-heading text-2xl font-medium tabular-nums text-foreground">{value ?? "—"}</span>
+        <span className={cn("font-heading text-2xl font-medium tabular-nums", tone === "pos" ? "text-pos" : tone === "neg" ? "text-neg" : "text-foreground")}>{value ?? "—"}</span>
         {note ? <span className="text-xs text-muted-foreground">{note}</span> : null}
       </p>
       {description ? <p className="text-sm leading-snug text-muted-foreground">{tr(description)}</p> : null}

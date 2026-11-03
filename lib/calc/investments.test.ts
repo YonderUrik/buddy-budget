@@ -302,6 +302,20 @@ describe("serie e composizione", () => {
     ]);
   });
 
+  it("serves a shorter walk over the same inputs as a slice of the earlier one", () => {
+    const inputs = { transactions, instruments: INSTRUMENTS, priceIndex, fx, userCurrency: "EUR" };
+    const whole = computeDailyPortfolioValues({ ...inputs, fromKey: "2026-09-19", toKey: "2026-09-23" });
+    const inner = computeDailyPortfolioValues({ ...inputs, fromKey: "2026-09-20", toKey: "2026-09-22" });
+    const fresh = computeDailyPortfolioValues({ ...inputs, transactions: [...transactions], fromKey: "2026-09-20", toKey: "2026-09-22" });
+    expect(inner).toEqual(fresh);
+    expect(inner.map((p) => p.date)).toEqual(["2026-09-20", "2026-09-21", "2026-09-22"]);
+    expect(inner[0]).toBe(whole[1]);
+    // A copy each time: a caller sorting or trimming its array cannot change the next caller's.
+    expect(computeDailyPortfolioValues({ ...inputs, fromKey: "2026-09-19", toKey: "2026-09-23" })).not.toBe(whole);
+    // A longer walk is computed again, not cut short.
+    expect(computeDailyPortfolioValues({ ...inputs, fromKey: "2026-09-19", toKey: "2026-09-24" })).toHaveLength(6);
+  });
+
   it("la serie parte dalla prima operazione e per 1anno ha un punto per mese", () => {
     const series = buildPortfolioSeries({
       transactions,

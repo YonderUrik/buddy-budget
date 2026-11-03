@@ -399,11 +399,8 @@ export interface PortfolioDailyPoint {
   income: number;
 }
 
-/**
- * Valore e investito netto giorno per giorno da `fromKey` a `toKey` inclusi. Le quote si aggiornano con le
- * operazioni del giorno; il prezzo è l'ultimo disponibile. Gli strumenti senza prezzo o cambio non contano.
- */
-export function computeDailyPortfolioValues(params: {
+/** Inputs of the daily portfolio walk. */
+export interface DailyPortfolioParams {
   transactions: InvestmentTransactionInput[];
   instruments: InstrumentInput[];
   priceIndex: PriceIndex;
@@ -411,7 +408,53 @@ export function computeDailyPortfolioValues(params: {
   userCurrency: string;
   fromKey: string;
   toKey: string;
-}): PortfolioDailyPoint[] {
+}
+
+interface DailySeriesCacheEntry {
+  instruments: InstrumentInput[];
+  priceIndex: PriceIndex;
+  fx: FxTable;
+  userCurrency: string;
+  fromKey: string;
+  toKey: string;
+  points: PortfolioDailyPoint[];
+}
+
+/** Recent walks per transactions array: the view, the chart hover and the risk card ask for the same days. */
+const DAILY_SERIES_CACHE = new WeakMap<InvestmentTransactionInput[], DailySeriesCacheEntry[]>();
+/** Walks kept per transactions array (whole history, the chosen range and a couple of others). */
+const DAILY_SERIES_CACHE_SIZE = 4;
+const DAY_MS = 86_400_000;
+
+function dayOffset(fromKey: string, toKey: string): number {
+  return Math.round((parseDateOnly(toKey).getTime() - parseDateOnly(fromKey).getTime()) / DAY_MS);
+}
+
+/**
+ * Valore e investito netto giorno per giorno da `fromKey` a `toKey` inclusi. Le quote si aggiornano con le
+ * operazioni del giorno; il prezzo è l'ultimo disponibile. Gli strumenti senza prezzo o cambio non contano.
+ * A walk over days already computed for the same inputs (same array and map identities) is served as a slice of
+ * the earlier one: on the whole history the page asks for the same days several times (chart, returns, risk,
+ * period gain, every hover on the chart). Callers must treat the returned points as read-only.
+ */
+export function computeDailyPortfolioValues(params: DailyPortfolioParams): PortfolioDailyPoint[] {
+  const { transactions, instruments, priceIndex, fx, userCurrency, fromKey, toKey } = params;
+  if (fromKey > toKey) return [];
+  const entries = DAILY_SERIES_CACHE.get(transactions) ?? [];
+  const hit = entries.find((e) => e.instruments === instruments && e.priceIndex === priceIndex && e.fx === fx
+    && e.userCurrency === userCurrency && e.fromKey <= fromKey && e.toKey >= toKey);
+  if (hit) {
+    const start = dayOffset(hit.fromKey, fromKey);
+    return hit.points.slice(start, start + dayOffset(fromKey, toKey) + 1);
+  }
+  const points = walkDailyPortfolioValues(params);
+  entries.unshift({ instruments, priceIndex, fx, userCurrency, fromKey, toKey, points });
+  if (entries.length > DAILY_SERIES_CACHE_SIZE) entries.length = DAILY_SERIES_CACHE_SIZE;
+  DAILY_SERIES_CACHE.set(transactions, entries);
+  return points.slice();
+}
+
+function walkDailyPortfolioValues(params: DailyPortfolioParams): PortfolioDailyPoint[] {
   const { transactions, instruments, priceIndex, fx, userCurrency, fromKey, toKey } = params;
   const instrumentById = new Map(instruments.map((i) => [i.id, i]));
   const sorted = sortTransactions(transactions);

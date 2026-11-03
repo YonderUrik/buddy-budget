@@ -165,6 +165,10 @@ export interface ProductEvents {
   section_view_chosen: { section: SectionViewsKey };
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
   liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "budget" | "conti" | "abbonamenti" | "categorie" | "regole" };
+  /** Analisi › «Dove vanno i soldi» switched between the groups ring and the money-flow picture. */
+  liquidity_spend_view_changed: { view: "gruppi" | "percorso" };
+  /** Phone money-flow picture: a spending group opened into its categories. */
+  liquidity_flow_group_opened: { group: "dovuta" | "voluta" | "futuro" | "saltuaria" };
   /** Movimenti loaded an older year on demand; `yearsBack` counts years before the default window. */
   transactions_older_loaded: { yearsBack: number };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
@@ -192,6 +196,8 @@ export interface ProductEvents {
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
   investment_operation_updated: { type: InvestmentTransactionType };
+  /** `imported`: the operation came from a broker statement or connection (later imports leave it out). */
+  investment_operation_deleted: { type: InvestmentTransactionType; imported: boolean };
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" };
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" };
   /** Scelta di un'ipotesi nel foglio "E se…" di un debito (`kind`: quale). */
@@ -212,6 +218,8 @@ export interface ProductEvents {
   pension_rate_simulated: { years: number };
   investment_broker_filter_changed: { action: "toggle" | "all"; selected?: number };
   investment_benchmark_set: undefined;
+  /** «Confronta con un indice»: which common index was picked, `other` from the search, `none` when removed. */
+  investment_benchmark_chosen: { choice: "sp500" | "msci-world" | "ftse-all-world" | "nasdaq-100" | "other" | "none" };
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;
   investment_tax_regime_set: { regime: "amministrato" | "dichiarativo" };

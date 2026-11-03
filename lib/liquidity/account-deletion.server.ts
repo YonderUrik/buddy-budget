@@ -10,6 +10,7 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { findOversoldTransaction } from "@/lib/calc/investments";
 import { statementSourceScope } from "@/lib/investments/import/source-scope";
 import { digest } from "@/lib/personal-import/crypto";
+import { clearExclusions } from "@/lib/investments/import/exclusions.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -130,6 +131,7 @@ export async function deleteAccountWithData(userId: string, accountId: string, t
     if (removed.size) await tx.delete(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), inArray(investmentTransactions.id, [...removed])));
     if (plan.statements.length) await tx.delete(brokerStatements).where(and(eq(brokerStatements.userId, userId), inArray(brokerStatements.id, plan.statements.map(s => s.id))));
     if (plan.keys.length) await tx.delete(brokerImportAccounts).where(and(eq(brokerImportAccounts.userId, userId), inArray(brokerImportAccounts.accountKey, plan.keys)));
+    await clearExclusions(tx, userId, plan.keys);
     // Formats cascade to their parsers, uploads and receipts.
     if (plan.formats.length) await tx.delete(personalFormats).where(and(eq(personalFormats.userId, userId), inArray(personalFormats.id, plan.formats.map(f => f.id))));
     if (plan.nativeJobs.length) await tx.delete(personalImportJobs).where(and(eq(personalImportJobs.userId, userId), inArray(personalImportJobs.id, plan.nativeJobs.map(j => j.id))));

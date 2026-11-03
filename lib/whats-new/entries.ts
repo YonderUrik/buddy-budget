@@ -29,6 +29,15 @@ export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
     ctaLabel: "Prova una domanda",
   },
   {
+    id: "percorso-dei-soldi",
+    date: "2026-11-03",
+    title: "Il percorso dei soldi",
+    summary:
+      "In Liquidità › Analisi, «Dove vanno i soldi» ha una seconda vista, «Percorso»: le entrate si dividono in Dovute, Volute e quello che resta da parte, fino alle singole categorie. Sul telefono tocchi un gruppo per aprirlo.",
+    href: "/liquidita/analisi",
+    ctaLabel: "Guarda il percorso",
+  },
+  {
     id: "cerca-domande",
     date: "2026-10-26",
     title: "Chiedi a «Cerca»",

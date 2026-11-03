@@ -1,8 +1,11 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
+import { brokerOperationExclusions } from "@/lib/db/schema/broker-operation-exclusions";
+import { applyExclusions } from "@/lib/investments/import/exclusions";
+import { loadExclusions } from "@/lib/investments/import/exclusions.server";
 import { investmentPortfolios, investmentTransactions, type Instrument } from "@/lib/db/schema/investments";
 import { findOversoldTransaction } from "@/lib/calc/investments";
 import { ensureHistorySafely } from "@/lib/investments/history";
@@ -77,8 +80,12 @@ export async function saveTradeRepublicInvestments(userId: string, externalAccou
       [portfolio] = await tx.insert(investmentPortfolios).values({ userId, name: PORTFOLIO_NAME, broker, taxRegime: "dichiarativo" }).returning();
     }
     await tx.delete(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), eq(investmentTransactions.statementAccountKey, accountKey)));
-    for (let start = 0; start < operations.length; start += 500) {
-      await tx.insert(investmentTransactions).values(operations.slice(start, start + 500).map((operation) => ({ userId, portfolioId: portfolio!.id, statementAccountKey: accountKey, ...operation })));
+    // Operations the user deleted one by one stay deleted; the full history is read every time, so a deletion with
+    // nothing left to hide is forgotten.
+    const excluded = applyExclusions(operations, await loadExclusions(tx, userId, accountKey));
+    if (excluded.stale.length) await tx.delete(brokerOperationExclusions).where(and(eq(brokerOperationExclusions.userId, userId), inArray(brokerOperationExclusions.id, excluded.stale.map((e) => e.id))));
+    for (let start = 0; start < excluded.kept.length; start += 500) {
+      await tx.insert(investmentTransactions).values(excluded.kept.slice(start, start + 500).map((operation) => ({ userId, portfolioId: portfolio!.id, statementAccountKey: accountKey, ...operation })));
     }
     // The connection's cash account is a current account for spending, not broker cash: it is not linked here.
     await tx.insert(brokerImportAccounts).values({ userId, accountKey, provider: TRADE_REPUBLIC_API_PROVIDER, portfolioId: portfolio.id, cashAccountId: null }).onConflictDoUpdate({ target: [brokerImportAccounts.userId, brokerImportAccounts.accountKey], set: { portfolioId: portfolio.id } });

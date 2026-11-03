@@ -5570,5 +5570,19 @@
   "Elimina tutto": "Delete everything",
   "I dati del conto sono cambiati: riapri la conferma e controlla di nuovo cosa viene eliminato.": "The account's data changed: open the confirmation again and check what will be deleted.",
   "Altre operazioni vendono quote comprate con questo conto: elimina prima quelle vendite.": "Other operations sell shares bought with this account: delete those sales first.",
-  "Elimina {0}": "Delete {0}"
+  "Elimina {0}": "Delete {0}",
+  "Per gruppi": "By group",
+  "Percorso": "Flow",
+  "Vista delle spese": "Spending view",
+  "Tutte le spese": "All spending",
+  "Tocca un gruppo per vedere le sue categorie.": "Tap a group to see its categories.",
+  "Presi dai risparmi": "From savings",
+  "Risparmi": "Savings",
+  "Altre {0}": "Other {0}",
+  "{0} categorie": "{0} categories",
+  "Sono entrati {0}: {1} sono andati in spese e {2} sono rimasti da parte.": "{0} came in: {1} went to spending and {2} was set aside.",
+  "Sono entrati {0} e ne hai spesi {1}: {2} sono arrivati dai risparmi.": "{0} came in and you spent {1}: {2} came from savings.",
+  "Il percorso dei soldi": "The path of your money",
+  "In Liquidità › Analisi, «Dove vanno i soldi» ha una seconda vista, «Percorso»: le entrate si dividono in Dovute, Volute e quello che resta da parte, fino alle singole categorie. Sul telefono tocchi un gruppo per aprirlo.": "In Cash › Analysis, “Where the money goes” has a second view, “Flow”: income splits into Needs, Wants and what is set aside, down to each category. On the phone, tap a group to open it.",
+  "Guarda il percorso": "See the flow"
 }

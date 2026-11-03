@@ -5570,5 +5570,19 @@
   "Elimina tutto": "Alles löschen",
   "I dati del conto sono cambiati: riapri la conferma e controlla di nuovo cosa viene eliminato.": "Die Daten des Kontos haben sich geändert: Öffne die Bestätigung erneut und prüfe, was gelöscht wird.",
   "Altre operazioni vendono quote comprate con questo conto: elimina prima quelle vendite.": "Andere Transaktionen verkaufen Anteile, die mit diesem Konto gekauft wurden: Lösche zuerst diese Verkäufe.",
-  "Elimina {0}": "{0} löschen"
+  "Elimina {0}": "{0} löschen",
+  "Per gruppi": "Nach Gruppen",
+  "Percorso": "Fluss",
+  "Vista delle spese": "Ansicht der Ausgaben",
+  "Tutte le spese": "Alle Ausgaben",
+  "Tocca un gruppo per vedere le sue categorie.": "Tippe auf eine Gruppe, um ihre Kategorien zu sehen.",
+  "Presi dai risparmi": "Aus Ersparnissen",
+  "Risparmi": "Ersparnisse",
+  "Altre {0}": "Weitere: {0}",
+  "{0} categorie": "{0} Kategorien",
+  "Sono entrati {0}: {1} sono andati in spese e {2} sono rimasti da parte.": "{0} sind eingegangen: {1} gingen in Ausgaben und {2} blieben übrig.",
+  "Sono entrati {0} e ne hai spesi {1}: {2} sono arrivati dai risparmi.": "{0} sind eingegangen und du hast {1} ausgegeben: {2} kamen aus den Ersparnissen.",
+  "Il percorso dei soldi": "Der Weg deines Geldes",
+  "In Liquidità › Analisi, «Dove vanno i soldi» ha una seconda vista, «Percorso»: le entrate si dividono in Dovute, Volute e quello che resta da parte, fino alle singole categorie. Sul telefono tocchi un gruppo per aprirlo.": "In Liquidität › Auswertung hat „Wohin das Geld fließt“ eine zweite Ansicht, „Fluss“: Die Einnahmen teilen sich in Notwendiges, Wünsche und das, was übrig bleibt, bis zu jeder Kategorie. Auf dem Handy tippst du auf eine Gruppe, um sie zu öffnen.",
+  "Guarda il percorso": "Fluss ansehen"
 }

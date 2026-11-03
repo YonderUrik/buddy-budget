@@ -164,6 +164,10 @@ export interface ProductEvents {
   section_view_chosen: { section: SectionViewsKey };
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
   liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "budget" | "conti" | "abbonamenti" | "categorie" | "regole" };
+  /** Analisi › «Dove vanno i soldi» switched between the groups ring and the money-flow picture. */
+  liquidity_spend_view_changed: { view: "gruppi" | "percorso" };
+  /** Phone money-flow picture: a spending group opened into its categories. */
+  liquidity_flow_group_opened: { group: "dovuta" | "voluta" | "futuro" | "saltuaria" };
   /** Movimenti loaded an older year on demand; `yearsBack` counts years before the default window. */
   transactions_older_loaded: { yearsBack: number };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */

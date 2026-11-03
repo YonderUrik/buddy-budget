@@ -6,8 +6,8 @@ import { useLocalization } from "@/lib/localization/provider";
 /** Liquidità · Analisi: com'è andato il periodo (cifra, curva contro il solito), dove vanno i soldi, da dove arrivano, risparmio accumulato. */
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { MoneyFlowSection, SpendViewSwitch, useSpendView, type MoneyFlowVariant } from "@/components/domain/liquidity/money-flow";
+import { useRouter } from "next/navigation";
+import { MoneyFlowView, SpendViewSwitch, useSpendView } from "@/components/domain/liquidity/money-flow";
 import { ArrowDownToLineIcon, PieChartIcon, PiggyBankIcon } from "lucide-react";
 import { LoadError } from "@/components/domain/shared";
 import { MoneyHero } from "@/components/domain/net-worth";
@@ -52,10 +52,8 @@ export default function LiquiditaAnalisiPage() {
 
   const { t: tr, language } = useLocalization();
   const router = useRouter();
-  const flowParam = useSearchParams().get("flusso");
-  const flowVariant: MoneyFlowVariant = flowParam === "b" || flowParam === "c" ? flowParam : "a";
   const [spendView, setSpendView] = useSpendView();
-  const flowView = spendView === "flusso";
+  const flowView = spendView === "percorso";
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { period, setPeriod, referenceDate, setReferenceDate, today: now, accountId, setCategoryId } = useLiquidity();
@@ -110,6 +108,15 @@ export default function LiquiditaAnalisiPage() {
     [breakdown, budgetById]
   );
   const sources = computeIncomeSources(scoped, categories, range);
+  const flowSources = React.useMemo(() => sources.map((s) => ({ id: s.categoryId, name: s.name, amount: s.amount })), [sources]);
+  const flowGroups = React.useMemo(
+    () => groups.map((g) => ({ key: g.key, label: tr(g.label), color: g.color, amount: g.amount, categories: g.categories.map((c) => ({ id: c.id, name: c.name, amount: c.amount })) })),
+    [groups, tr]
+  );
+  const pickCategory = (id: string) => {
+    setCategoryId(id);
+    router.push(LIQUIDITY_HREF);
+  };
   const savings = computeAccumulatedSavings(scoped, getTrendRange(period, referenceDate));
   const saved = savings.length > 0 ? savings[savings.length - 1].cumulative : 0;
 
@@ -158,20 +165,17 @@ export default function LiquiditaAnalisiPage() {
           {groups.length === 0 ? (
             <p className="text-text-2">{tr("Nessuna spesa da mostrare in questo periodo.")}</p>
           ) : flowView ? (
-            <MoneyFlowSection
-              variant={flowVariant}
-              sources={sources.map((s) => ({ id: s.categoryId, name: s.name, amount: s.amount }))}
-              groups={groups.map((g) => ({ key: g.key, label: tr(g.label), color: g.color, amount: g.amount, categories: g.categories.map((c) => ({ id: c.id, name: c.name, amount: c.amount })) }))}
+            <MoneyFlowView
+              sources={flowSources}
+              groups={flowGroups}
               formatValue={money}
+              onPickCategory={pickCategory}
             />
           ) : (
             <SpendByGroup
               groups={groups}
               currency={currency}
-              onPickCategory={(id) => {
-                setCategoryId(id);
-                router.push(LIQUIDITY_HREF);
-              }}
+              onPickCategory={pickCategory}
             />
           )}
         </section>

@@ -5609,5 +5609,19 @@
   "Si costruisce un indice che parte da 1 e segue i rendimenti giornalieri (così i versamenti non lo fanno salire). Il calo più forte è la distanza massima da un picco al punto più basso successivo; «tornato al massimo» è il giorno in cui l'indice rivede quel picco.": "Ein Index beginnt bei 1 und folgt täglichen Renditen ohne Einzahlungseffekte. Der größte Rückgang ist der stärkste Fall von einem Hoch zum folgenden Tief. Die Erholung markiert die erneute Rückkehr zum Hoch.",
   "Rendimento medio giornaliero meno quello di un conto senza rischio (il tasso €STR, solo per l'euro), diviso per la deviazione standard e portato a un anno. Sotto 0 hai reso meno di un conto deposito, tra 0 e 0,5 basso, tra 0,5 e 1 discreto, sopra 1 buono. Serve almeno {0} giorni di dati.": "Durchschnittliche Tagesrendite abzüglich der eines risikofreien Kontos (der €STR-Zinssatz, nur für den Euro), geteilt durch die Standardabweichung und auf ein Jahr hochgerechnet. Unter 0 hast du weniger als ein Tagesgeldkonto erzielt, zwischen 0 und 0,5 niedrig, zwischen 0,5 und 1 ordentlich, über 1 gut. Es werden mindestens {0} Tage an Daten benötigt.",
   "Eliminare l'operazione su {0}?": "Transaktion zu {0} löschen?",
-  "Viene da un file importato: anche i prossimi import dello stesso conto la lasciano fuori. Per riaverla, elimina quel file da «Gestisci importazioni» e importalo di nuovo.": "Sie stammt aus einer importierten Datei: Auch spätere Importe desselben Kontos lassen sie weg. Um sie zurückzubekommen, lösche diese Datei unter „Importe verwalten“ und importiere sie erneut."
+  "Viene da un file importato: anche i prossimi import dello stesso conto la lasciano fuori. Per riaverla, elimina quel file da «Gestisci importazioni» e importalo di nuovo.": "Sie stammt aus einer importierten Datei: Auch spätere Importe desselben Kontos lassen sie weg. Um sie zurückzubekommen, lösche diese Datei unter „Importe verwalten“ und importiere sie erneut.",
+  "Per gruppi": "Nach Gruppen",
+  "Percorso": "Fluss",
+  "Vista delle spese": "Ansicht der Ausgaben",
+  "Tutte le spese": "Alle Ausgaben",
+  "Tocca un gruppo per vedere le sue categorie.": "Tippe auf eine Gruppe, um ihre Kategorien zu sehen.",
+  "Presi dai risparmi": "Aus Ersparnissen",
+  "Risparmi": "Ersparnisse",
+  "Altre {0}": "Weitere: {0}",
+  "{0} categorie": "{0} Kategorien",
+  "Sono entrati {0}: {1} sono andati in spese e {2} sono rimasti da parte.": "{0} sind eingegangen: {1} gingen in Ausgaben und {2} blieben übrig.",
+  "Sono entrati {0} e ne hai spesi {1}: {2} sono arrivati dai risparmi.": "{0} sind eingegangen und du hast {1} ausgegeben: {2} kamen aus den Ersparnissen.",
+  "Il percorso dei soldi": "Der Weg deines Geldes",
+  "In Liquidità › Analisi, «Dove vanno i soldi» ha una seconda vista, «Percorso»: le entrate si dividono in Dovute, Volute e quello che resta da parte, fino alle singole categorie. Sul telefono tocchi un gruppo per aprirlo.": "In Liquidität › Auswertung hat „Wohin das Geld fließt“ eine zweite Ansicht, „Fluss“: Die Einnahmen teilen sich in Notwendiges, Wünsche und das, was übrig bleibt, bis zu jeder Kategorie. Auf dem Handy tippst du auf eine Gruppe, um sie zu öffnen.",
+  "Guarda il percorso": "Fluss ansehen"
 }

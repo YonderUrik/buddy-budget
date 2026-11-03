@@ -15,3 +15,6 @@ export function portfolioChartRange(period: PortfolioChartPeriod, custom: Portfo
   if (period === "ytd") return { from: `${today.slice(0, 4)}-01-01`, to: today };
   return period === "custom" && validChartRange(custom, today) ? custom : undefined;
 }
+
+/** Period Performance opens on: the year so far (owner, 2026-11-03); «Max» is one tap away. */
+export const PERFORMANCE_DEFAULT_PERIOD: PortfolioChartPeriod = "ytd";

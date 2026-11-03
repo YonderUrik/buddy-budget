@@ -2,7 +2,7 @@ import { countryFeatures } from "@/lib/localization/config";
 import { investmentTaxReport } from "./tax-report";
 import { computePeriodGain, type PeriodGain } from "./period-gain";
 import { computeCostImpact, type CostImpact } from "./cost-impact";
-import { buildFxTable } from "@/lib/calc/fx";
+import { buildFxTable, type FxTable } from "@/lib/calc/fx";
 import {
   buildPortfolioSeries,
   buildPriceIndex,
@@ -38,6 +38,9 @@ export interface InvestmentsView {
   instruments: Instrument[];
   instrumentsById: Map<string, Instrument>;
   priceIndex: PriceIndex;
+  /** Operations and FX table the figures were computed from: a recomputation passes these same objects so the daily walk is reused. */
+  transactions: InvestmentTransactionInput[];
+  fx: FxTable;
   hasTransactions: boolean;
   /** Operazioni per mese, dal più recente, con l'esito di ciascuna. */
   operationMonths: OperationMonthGroup<InvestmentTransaction>[];
@@ -132,6 +135,8 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     instruments: data.instruments,
     instrumentsById,
     priceIndex,
+    transactions,
+    fx,
     hasTransactions: transactions.length > 0,
     operationMonths,
     heldInstruments: heldInstruments(transactions, instrumentsById, todayKey),

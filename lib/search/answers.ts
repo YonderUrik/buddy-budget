@@ -21,6 +21,7 @@ import { movementsLink } from "@/lib/liquidity/links";
 import { loadNetWorthSnapshotRows } from "@/lib/net-worth/snapshot-rows";
 import { loadSidebarDeadlines } from "@/lib/sidebar/deadlines";
 import { loadSidebarSummary } from "@/lib/sidebar/summary";
+import { answerAnalysis } from "./analysis";
 import { foldText, matchScore } from "./normalize";
 import type { SearchAnswer, SearchHit } from "./types";
 
@@ -214,5 +215,7 @@ export async function answerQuestion(userId: string, question: DataQuestion, opt
       return answerPortfolio(userId, question, options.source);
     case "rata":
       return answerInstalment(userId, options.source);
+    case "analisi":
+      return answerAnalysis(userId, question, { windowStart: options.windowStart, scanLimit: options.scanLimit, today: (options.now ?? new Date()).toISOString().slice(0, 10) });
   }
 }

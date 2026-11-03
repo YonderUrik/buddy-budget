@@ -15,7 +15,7 @@ describe("interpretWithModel", () => {
     const body = JSON.parse((fetchImpl.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
     expect(JSON.parse(body.messages[1].content)).toEqual({ today: "2026-10-24", appLanguage: "it", sentence: "ho preso altre tre Apple stamattina a cinquanta" });
     expect(body.provider).toMatchObject({ zdr: true, data_collection: "deny" });
-    expect(body.max_tokens).toBeLessThanOrEqual(160);
+    expect(body.max_tokens).toBeLessThanOrEqual(400);
   });
 
   it("refuses answers outside the schema and cleans what it keeps", async () => {
@@ -43,6 +43,63 @@ describe("interpretWithModel", () => {
     expect(await ask({ type: "saldo", subject: "Conto <Fineco>" })).toMatchObject({ question: { kind: "saldo", subject: "conto fineco" } });
     expect(await ask({ type: "rata" })).toEqual({ type: "question", question: { kind: "rata", language: "it" } });
     await expect(ask({ type: "consiglio", subject: "cosa compro?" })).rejects.toThrow();
+  });
+
+  it("turns an analysis into a closed query the server computes", async () => {
+    const ask = (question: unknown) => interpretWithModel("x", options(reply({ question }) as unknown as typeof fetch));
+    expect(await ask({ type: "analisi", measure: "media", per: "mese", direction: "uscite", category: "Supermercato", from: "2026-01-01", to: "2026-10-24" })).toEqual({
+      type: "question",
+      question: {
+        kind: "analisi",
+        measure: "media",
+        per: "mese",
+        direction: "uscite",
+        filters: { text: "", category: "supermercato", group: null, account: "", min: null, max: null, days: null },
+        from: "2026-01-01",
+        to: "2026-10-24",
+        all: false,
+        defaultPeriod: false,
+        groupBy: null,
+        order: "desc",
+        limit: 5,
+        compare: null,
+        language: "it",
+      },
+    });
+    expect(await ask({ type: "analisi", measure: "massimo", groupBy: "mese", text: "McDonald's", limit: 3 })).toMatchObject({
+      question: { kind: "analisi", measure: "massimo", groupBy: "mese", filters: { text: "mcdonald's" }, limit: 3, defaultPeriod: true, from: "2025-10-01" },
+    });
+    // Values outside the closed lists are refused, not guessed.
+    await expect(ask({ type: "analisi", measure: "regressione" })).rejects.toThrow();
+    await expect(ask({ type: "analisi", groupBy: "sql", text: "x" })).rejects.toThrow();
+  });
+
+  it("keeps a help answer only with known articles, as plain short text", async () => {
+    const ask = (help: unknown) => interpretWithModel("come importo un csv?", options(reply({ help }) as unknown as typeof fetch));
+    expect(await ask({ answer: "Tocca «Aggiungi» e scegli «Importa un file».", articles: ["import-csv", "inventato", "import-csv", "regole"] })).toEqual({
+      type: "help",
+      ids: ["import-csv", "regole"],
+      text: "Tocca «Aggiungi» e scegli «Importa un file».",
+    });
+    // Markup and links are removed, a long answer is cut at a sentence.
+    const long = `${"Prima frase utile. ".repeat(30)}Fine`;
+    const read = await ask({ answer: `<b>Vai</b> su **Conti** https://evil.example ${long}`, articles: ["collegare-banca"] });
+    expect(read).toMatchObject({ type: "help", ids: ["collegare-banca"] });
+    const text = read?.type === "help" ? read.text : "";
+    expect(text).not.toMatch(/[<>*]|https?:/);
+    expect(text.length).toBeLessThanOrEqual(420);
+    expect(text.endsWith(".")).toBe(true);
+    // No known article: nothing to show, even with a text.
+    expect(await ask({ answer: "Certo, ecco come fare.", articles: ["inventato"] })).toBeNull();
+    expect(await ask({ answer: null, articles: [] })).toBeNull();
+  });
+
+  it("lists the guide's articles in the prompt, never a figure of the user", async () => {
+    const fetchImpl = reply({ help: { answer: null, articles: [] } });
+    await interpretWithModel("come nascondo gli importi", options(fetchImpl as unknown as typeof fetch));
+    const body = JSON.parse((fetchImpl.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+    expect(body.messages[0].content).toContain("nascondi-importi: Come nascondo gli importi?");
+    expect(JSON.parse(body.messages[1].content)).toEqual({ today: "2026-10-24", appLanguage: "it", sentence: "come nascondo gli importi" });
   });
 
   it("prefers the record when the model returns both", async () => {

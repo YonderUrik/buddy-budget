@@ -4,6 +4,7 @@ import type { ProviderId } from "@/lib/db/schema/investments";
 import type { FxProviderId, ProviderOutcome } from "@/lib/market-data/types";
 import type { MerchantNameSource } from "@/lib/categorization/merchant-name";
 import type { ClientErrorArea, ClientErrorKind } from "@/lib/client-errors";
+import type { AnalysisGroupBy, AnalysisMeasure } from "@/lib/commands/analysis";
 
 /** Prefisso comune di tutte le metriche applicative. */
 export const METRIC_PREFIX = "buddybudget_";
@@ -142,14 +143,14 @@ export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
 /** Whether a «Cerca» query read every movement of its window or stopped at the scan cap (`MOVEMENT_SCAN_LIMIT`). */
 export type SearchMovementScan = "full" | "capped";
 /** Which question about the user's data a «Cerca» query was read as (`DataQuestion` kinds), «none» for a plain search. */
-export type SearchAnswerLabel = "none" | "totale" | "saldo" | "patrimonio" | "portafoglio" | "rata";
+export type SearchAnswerLabel = "none" | "totale" | "saldo" | "patrimonio" | "portafoglio" | "rata" | "analisi";
 /**
  * Outcome of one «Chiedi all'AI» question in «Cerca»: answered by the model (ok: a draft; question: a question about the
  * user's data, answered by the server; none: neither),
  * answered from the 24 h cache, refused before the model (invalid sentence, no consent, unavailable: public demo or no
  * key/model; limit of the user or of the whole service; quota store down) or failed (timeout, error, bad answer).
  */
-export type CommandAiOutcome = "ok" | "question" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
+export type CommandAiOutcome = "ok" | "question" | "help" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge
@@ -211,6 +212,8 @@ interface MetricsState {
   searchDuration: Histogram<string>;
   commandAiRequests: Counter<"outcome">;
   commandAiDuration: Histogram<string>;
+  searchAnalyses: Counter<"measure" | "group_by" | "outcome">;
+  searchAnalysisDuration: Histogram<string>;
 }
 
 function createState(): MetricsState {
@@ -470,6 +473,18 @@ function createState(): MetricsState {
   state.commandAiDuration = new Histogram({
     name: `${METRIC_PREFIX}command_ai_request_duration_seconds`,
     help: "Duration of one model call for «Chiedi all'AI» in «Cerca» (cache hits and refusals excluded).",
+    buckets: DURATION_BUCKETS_SECONDS,
+    registers: r,
+  });
+  state.searchAnalyses = new Counter({
+    name: `${METRIC_PREFIX}search_analyses_total`,
+    help: "Analyses computed for «Chiedi all'AI» in «Cerca» (averages, counts, rankings, splits), by measure, split and outcome (found, empty, capped, missing_account).",
+    labelNames: ["measure", "group_by", "outcome"],
+    registers: r,
+  });
+  state.searchAnalysisDuration = new Histogram({
+    name: `${METRIC_PREFIX}search_analysis_duration_seconds`,
+    help: "Time to compute one «Cerca» analysis on the user's movements (reads and decryption included, model excluded).",
     buckets: DURATION_BUCKETS_SECONDS,
     registers: r,
   });
@@ -836,6 +851,16 @@ export function recordSearchQuery(durationMs: number, movements: SearchMovementS
   const m = metrics();
   m.searchQueries.inc({ movements, answer });
   m.searchDuration.observe(durationMs / 1000);
+}
+
+/** Outcome of one «Cerca» analysis: a figure, nothing matched, a read stopped at its cap, or an account the user does not have. */
+export type SearchAnalysisOutcome = "found" | "empty" | "capped" | "missing_account";
+
+/** Records one «Cerca» analysis computed on the user's movements; `measure` and `groupBy` are closed enums (`lib/commands/analysis`). */
+export function recordSearchAnalysis(measure: AnalysisMeasure, groupBy: AnalysisGroupBy | null, outcome: SearchAnalysisOutcome, durationMs: number): void {
+  const m = metrics();
+  m.searchAnalyses.inc({ measure, group_by: groupBy ?? "none", outcome });
+  m.searchAnalysisDuration.observe(durationMs / 1000);
 }
 
 /** Records one «Chiedi all'AI» question in «Cerca»; `durationMs` only when the model was actually called. */

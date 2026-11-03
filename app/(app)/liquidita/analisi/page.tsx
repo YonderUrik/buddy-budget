@@ -7,7 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MoneyFlowSection, type MoneyFlowVariant } from "@/components/domain/liquidity/money-flow";
+import { MoneyFlowSection, SpendViewSwitch, useSpendView, type MoneyFlowVariant } from "@/components/domain/liquidity/money-flow";
 import { ArrowDownToLineIcon, PieChartIcon, PiggyBankIcon } from "lucide-react";
 import { LoadError } from "@/components/domain/shared";
 import { MoneyHero } from "@/components/domain/net-worth";
@@ -54,6 +54,8 @@ export default function LiquiditaAnalisiPage() {
   const router = useRouter();
   const flowParam = useSearchParams().get("flusso");
   const flowVariant: MoneyFlowVariant = flowParam === "b" || flowParam === "c" ? flowParam : "a";
+  const [spendView, setSpendView] = useSpendView();
+  const flowView = spendView === "flusso";
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { period, setPeriod, referenceDate, setReferenceDate, today: now, accountId, setCategoryId } = useLiquidity();
@@ -141,14 +143,8 @@ export default function LiquiditaAnalisiPage() {
         </div>
         {typical && <p className="mt-2 text-sm text-text-2">{tr("La linea tratteggiata è la tua spesa media nello stesso tratto di mese.")}</p>}
       </section>
-      <MoneyFlowSection
-        variant={flowVariant}
-        sources={sources.map((s) => ({ id: s.categoryId, name: s.name, amount: s.amount }))}
-        groups={groups.map((g) => ({ key: g.key, label: tr(g.label), color: g.color, amount: g.amount, categories: g.categories.map((c) => ({ id: c.id, name: c.name, amount: c.amount })) }))}
-        formatValue={money}
-      />
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <section aria-label={tr("Dove vanno i soldi")}>
+        <section aria-label={tr("Dove vanno i soldi")} className={flowView ? "lg:col-span-2" : undefined}>
           <SectionTitle
             icon={PieChartIcon}
             title={tr("Dove vanno i soldi")}
@@ -156,8 +152,18 @@ export default function LiquiditaAnalisiPage() {
             href={`${LIQUIDITY_HREF}/budget`}
             linkLabel={budgetById.size > 0 ? "Modifica i budget" : "Imposta un budget"}
           />
+          <div className="mb-5">
+            <SpendViewSwitch value={spendView} onChange={setSpendView} />
+          </div>
           {groups.length === 0 ? (
             <p className="text-text-2">{tr("Nessuna spesa da mostrare in questo periodo.")}</p>
+          ) : flowView ? (
+            <MoneyFlowSection
+              variant={flowVariant}
+              sources={sources.map((s) => ({ id: s.categoryId, name: s.name, amount: s.amount }))}
+              groups={groups.map((g) => ({ key: g.key, label: tr(g.label), color: g.color, amount: g.amount, categories: g.categories.map((c) => ({ id: c.id, name: c.name, amount: c.amount })) }))}
+              formatValue={money}
+            />
           ) : (
             <SpendByGroup
               groups={groups}
@@ -169,7 +175,7 @@ export default function LiquiditaAnalisiPage() {
             />
           )}
         </section>
-        <div className="flex flex-col gap-8">
+        <div className={flowView ? "flex flex-col gap-8 lg:col-span-2 lg:grid lg:grid-cols-2 lg:gap-x-12" : "flex flex-col gap-8"}>
           <section aria-label={tr("Da dove arrivano")}>
             <SectionTitle icon={ArrowDownToLineIcon} title={tr("Da dove arrivano")} color="var(--pos)" />
             {sources.length === 0 ? (

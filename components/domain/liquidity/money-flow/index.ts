@@ -2,3 +2,5 @@
 
 export { MoneyFlowSection } from "./money-flow-section";
 export type { MoneyFlowSectionProps, MoneyFlowVariant } from "./money-flow-section";
+export { SpendViewSwitch, useSpendView } from "./spend-view-switch";
+export type { SpendView, SpendViewSwitchProps } from "./spend-view-switch";

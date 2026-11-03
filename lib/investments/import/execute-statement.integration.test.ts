@@ -12,6 +12,8 @@ import { brokerSeries } from "./__fixtures__/broker-series";
 import { parseBrokerStatement } from "./parse-statement";
 import { deleteStatementImports } from "./delete-statements";
 import { runStatementImport } from "./execute-statement";
+import { deleteInvestmentOperation } from "../delete-operation";
+import { brokerOperationExclusions } from "@/lib/db/schema/broker-operation-exclusions";
 import type { ImportDeps } from "./execute";
 import type { RunImportInput } from "@/lib/validation/investments-import";
 
@@ -129,6 +131,25 @@ describe("complete statement import", () => {
     const incompatible = corrected.replace("Deposit,2000", "Deposit,2001").replace("Corrected description,2000", "Corrected description,2001").replace("Ending Cash,EUR,999", "Ending Cash,EUR,1000").replace("Cash,0,999", "Cash,0,1000").replace("Total,0,1999", "Total,0,2000");
     expect((await runStatementImport(userId, request(incompatible), deps())).error).toContain("successivo");
     expect((await saved()).find((d) => d.from === "2023-01-01")!.statement.cash[0].closing).toBe(999);
+  });
+  it("keeps a single deleted operation out of later imports and still reconciles positions", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    const trades = () => db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    const [buy] = await trades();
+    expect(await deleteInvestmentOperation(userId, buy.id)).toMatchObject({ status: 204, imported: true });
+    expect(await trades()).toHaveLength(0);
+    // A replacing statement of the same period and the next year both pass the position check and leave it out.
+    const corrected = brokerSeries(2023).replace("Deposit,2000", "Corrected description,2000");
+    expect((await runStatementImport(userId, request(corrected), deps())).error).toBeUndefined();
+    expect((await runStatementImport(userId, request(brokerSeries(2024)), deps())).error).toBeUndefined();
+    expect((await trades()).some((t) => t.type === "acquisto" && t.date === "2023-01-02")).toBe(false);
+    expect(await db.select().from(brokerOperationExclusions).where(eq(brokerOperationExclusions.userId, userId))).toHaveLength(1);
+    // Deleting the statements forgets the deletion: importing them again brings the operation back.
+    const docs = (await saved()).sort((a, b) => a.from.localeCompare(b.from));
+    expect((await deleteStatementImports(userId, docs[0].id, docs.map((d) => d.id), deps())).status).toBe(200);
+    expect(await db.select().from(brokerOperationExclusions).where(eq(brokerOperationExclusions.userId, userId))).toHaveLength(0);
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    expect((await trades()).filter((t) => t.type === "acquisto")).toHaveLength(1);
   });
   it("rejects partial coverage and invalid replacements without deleting the original", async () => {
     await runStatementImport(userId, request(brokerSeries(2023)), deps());

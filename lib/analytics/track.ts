@@ -191,6 +191,8 @@ export interface ProductEvents {
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
   investment_operation_updated: { type: InvestmentTransactionType };
+  /** `imported`: the operation came from a broker statement or connection (later imports leave it out). */
+  investment_operation_deleted: { type: InvestmentTransactionType; imported: boolean };
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" };
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" };
   /** Scelta di un'ipotesi nel foglio "E se…" di un debito (`kind`: quale). */

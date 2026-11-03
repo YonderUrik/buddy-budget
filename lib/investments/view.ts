@@ -22,6 +22,7 @@ import { startOfDay } from "@/lib/calc/expenses";
 import type { Instrument, InvestmentTransaction } from "@/lib/db/schema/investments";
 import { buildInvestmentsAnalysis, type InvestmentsAnalysis } from "./analysis-view";
 import type { InvestmentData } from "./data";
+import { operationSourceLabels } from "./broker-filter";
 import { computeIncomeHistory, type IncomeHistory } from "./income";
 import { computeOperationInsights, groupOperationsByMonth, type OperationMonthGroup } from "./operations-history";
 
@@ -42,6 +43,11 @@ export interface InvestmentsView {
   transactions: InvestmentTransactionInput[];
   fx: FxTable;
   hasTransactions: boolean;
+  /**
+   * Where each operation comes from, by operation id (broker or portfolio name, see `operationSourceLabels`); empty
+   * when every operation comes from the same place, since a label would say nothing.
+   */
+  operationSources: Map<string, string>;
   /** Operazioni per mese, dal più recente, con l'esito di ciascuna. */
   operationMonths: OperationMonthGroup<InvestmentTransaction>[];
   /** Instruments the user holds today, most recently traded first: the picker offers them as «I tuoi strumenti». */
@@ -139,6 +145,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     fx,
     hasTransactions: transactions.length > 0,
     operationMonths,
+    operationSources: operationSourceLabels(data),
     heldInstruments: heldInstruments(transactions, instrumentsById, todayKey),
     returns,
     periodGain: computePeriodGain({ ...common, period, today, range: chartRange }),
@@ -149,3 +156,4 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     analysis,
   };
 }
+

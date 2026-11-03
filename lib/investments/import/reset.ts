@@ -8,6 +8,7 @@ import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { investmentPortfolios, investmentTransactions, userInstrumentPrices } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
+import { clearExclusions } from "./exclusions.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -43,6 +44,7 @@ export async function resetInvestmentHistory(userId: string, revision: string, t
     await tx.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
     if (state.cashTransactions.length) await tx.delete(transactions).where(and(eq(transactions.userId, userId), inArray(transactions.id, state.cashTransactions.map((t) => t.id))));
     await tx.delete(brokerStatements).where(eq(brokerStatements.userId, userId));
+    await clearExclusions(tx, userId, "all");
     await tx.delete(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId));
     await tx.delete(netWorthSnapshots).where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "investimenti")));
     if (state.cash.length) {

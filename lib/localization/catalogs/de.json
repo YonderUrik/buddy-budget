@@ -5570,5 +5570,7 @@
   "Elimina tutto": "Alles löschen",
   "I dati del conto sono cambiati: riapri la conferma e controlla di nuovo cosa viene eliminato.": "Die Daten des Kontos haben sich geändert: Öffne die Bestätigung erneut und prüfe, was gelöscht wird.",
   "Altre operazioni vendono quote comprate con questo conto: elimina prima quelle vendite.": "Andere Transaktionen verkaufen Anteile, die mit diesem Konto gekauft wurden: Lösche zuerst diese Verkäufe.",
-  "Elimina {0}": "{0} löschen"
+  "Elimina {0}": "{0} löschen",
+  "Eliminare l'operazione su {0}?": "Transaktion zu {0} löschen?",
+  "Viene da un file importato: anche i prossimi import dello stesso conto la lasciano fuori. Per riaverla, elimina quel file da «Gestisci importazioni» e importalo di nuovo.": "Sie stammt aus einer importierten Datei: Auch spätere Importe desselben Kontos lassen sie weg. Um sie zurückzubekommen, lösche diese Datei unter „Importe verwalten“ und importiere sie erneut."
 }

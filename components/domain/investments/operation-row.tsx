@@ -8,6 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
  * Per un acquisto il guadagno è sulle quote ancora possedute al prezzo di oggi, per una vendita è il realizzato.
  */
 
+import { useState } from "react";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import type { OperationInsight } from "@/lib/investments/operations-history";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 
 import { useBrokerStatementsQuery } from "@/lib/queries/investments";
+import { DeleteImportedOperationDialog } from "./delete-imported-operation-dialog";
 import { GainText } from "./gain-text";
 import { InstrumentIcon } from "./instrument-icon";
 import { privateNumberFormat } from "@/lib/format";
@@ -39,13 +41,15 @@ function GainCell({ insight, currency }: { insight: OperationInsight<InvestmentT
 export interface OperationRowProps {
   insight: OperationInsight<InvestmentTransaction>;
   instrument: Instrument | undefined;
+  /** Where the operation comes from (broker or portfolio), as a small label; omitted when everything comes from one place. */
+  sourceLabel?: string;
   currency: string;
   deleting: boolean;
   onEdit?: (transaction: InvestmentTransaction) => void;
-  onDelete: (transaction: InvestmentTransaction) => void;
+  onDelete: (transaction: InvestmentTransaction, options: { imported: boolean }) => void;
 }
 
-export function OperationRow({ insight, instrument, currency, deleting, onEdit, onDelete }: OperationRowProps) {
+export function OperationRow({ insight, instrument, sourceLabel, currency, deleting, onEdit, onDelete }: OperationRowProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
   function describe(t: InvestmentTransaction, instrument: Instrument | undefined): string {
@@ -73,6 +77,9 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
   const t = insight.transaction;
   const statements = useBrokerStatementsQuery();
   const reconciled = statements.data?.statements.some((s) => s.portfolioId === t.portfolioId) ?? false;
+  // From a broker statement or connection: it cannot be edited (the next import would contradict it), only deleted.
+  const imported = Boolean(t.statementAccountKey) || reconciled;
+  const [confirming, setConfirming] = useState(false);
   const capitalAdjustment = t.type === "rettifica";
   const amount = t.type === "acquisto" ? insight.paid : insight.received;
   const details = [
@@ -91,7 +98,15 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
           </Badge>
           <p className="truncate text-sm font-medium text-foreground">{instrument?.name ?? tr("Strumento")}</p>
         </div>
-        <p className="mt-0.5 text-xs text-muted-foreground">{details.join(" · ")}</p>
+        {/* The label and the details wrap as two blocks, never in the middle of the details. */}
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+          {sourceLabel ? (
+            <Badge variant="outline" className="h-5 max-w-48 truncate font-normal text-text-2">
+              {tr(sourceLabel)}
+            </Badge>
+          ) : null}
+          <p>{details.join(" · ")}</p>
+        </div>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-0.5 text-right">
         {t.type === "split" || capitalAdjustment ? null : (
@@ -99,7 +114,7 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
         )}
         <GainCell insight={insight} currency={currency} />
       </div>
-      {onEdit && !capitalAdjustment && !reconciled ? (
+      {onEdit && !capitalAdjustment && !imported ? (
         <Button
           variant="ghost"
           size="icon"
@@ -115,11 +130,19 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
         size="icon"
         className="size-9 shrink-0"
         aria-label={tr("Elimina operazione")}
-        disabled={deleting || reconciled || capitalAdjustment}
-        onClick={() => onDelete(t)}
+        disabled={deleting || capitalAdjustment}
+        onClick={() => (imported ? setConfirming(true) : onDelete(t, { imported: false }))}
       >
         <Trash2Icon className="size-4" aria-hidden="true" />
       </Button>
+      {imported ? (
+        <DeleteImportedOperationDialog
+          open={confirming}
+          onOpenChange={setConfirming}
+          name={instrument?.name ?? tr("Strumento")}
+          onConfirm={() => { setConfirming(false); onDelete(t, { imported: true }); }}
+        />
+      ) : null}
     </li>
   );
 }

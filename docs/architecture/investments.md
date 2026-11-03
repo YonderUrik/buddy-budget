@@ -71,6 +71,7 @@ Tables are in [`lib/db/schema/investments.ts`](../../lib/db/schema/investments.t
 | `investment_targets` | target weight per instrument | per portfolio |
 | `investment_tax_carryforwards` | prior capital losses (zainetto fiscale, the tax-loss backpack) | per user |
 | `broker_statements` | parsed broker statement (JSON), raw records, period, fingerprint, linked cash account | per user |
+| `broker_operation_exclusions` | operations of a broker source the user deleted one by one: `accountKey`, instrument, type, date, quantity, price, gross amount | per user |
 
 Always computed, never stored: quantities, average prices, cost basis, realised and unrealised gains, portfolio value, returns, risk and exposure. The only derived figures that are persisted are the daily `investimenti` rows in `net_worth_snapshots` (section 4.13). `investment_plans` is deprecated: recurring plans were removed on 2026-10-04 and the table waits for a migration that drops it.
 
@@ -277,9 +278,13 @@ broker cash = NAV "Cash" row in base currency          (when the statement has a
 
 The account balance is updated only when no later statement exists. [`resolveBrokerCash`](../../lib/investments/broker-cash.ts) lists these accounts once each, including legacy links through `statementCashAccountId`, with the last statement date. Broker cash is shown next to the portfolio («Includi liquidità», include cash) and counted in net worth as an account, not as investments, so it is never counted twice. Details per broker: [`docs/ibkr-import.md`](../ibkr-import.md), [`docs/degiro-import.md`](../degiro-import.md), [`docs/trade-republic-import.md`](../trade-republic-import.md).
 
+**Deleting one imported operation.** An operation from a statement or from the Trade Republic connection cannot be edited (the next import would contradict it) but can be deleted from Operazioni, after a confirmation. [`deleteInvestmentOperation`](../../lib/investments/delete-operation.ts) runs under the import lock, refuses if a remaining sale would be oversold, deletes the row and stores its fingerprint in `broker_operation_exclusions` with the source key (`statementAccountKey`, or the `ibkr:` portfolio tag for legacy rows). Every later import of that source runs [`applyExclusions`](../../lib/investments/import/exclusions.ts): an incoming operation with the same fingerprint (instrument, type, date, quantity, price, gross, counted as a multiset like duplicates) is skipped and counted as already present, while the reconciliation still adds its quantity, because the broker's positions include it. A deletion with nothing left to hide (the broker corrected the operation) is forgotten, and so is one whose absence would make a sale exceed the shares held: the broker's history wins rather than the import failing. Deleting the statements of the period («Gestisci importazioni»), the account, or resetting the history also forgets the deletions, so importing the file again brings the operation back. Example: IBKR 2023 buys 10 PARENT; the user deletes it; the 2024 statement reports 10 PARENT, and the check counts 0 in the database + 10 deleted = 10, so it imports. Logs `investments.operation.deleted` (`kind` imported or manual), Umami `investment_operation_deleted` (`imported`).
+
 ### 4.15 Broker filters
 
 [`transactionBroker`](../../lib/investments/broker-filter.ts) attributes each transaction: by `statementAccountKey` through `broker_import_accounts`, then by the portfolio's `broker` prefix (`ibkr:`, `degiro:`, `personal:`), else `manual`. [`filterInvestmentBrokers`](../../lib/investments/broker-filter.ts) removes the disabled brokers' transactions, their broker cash, and instruments and targets no longer used. The selection lives in React state ([`broker-selection.tsx`](../../lib/investments/broker-selection.tsx)), is shared by the Investimenti tabs, and resets on reload.
+
+In Operazioni each row carries a small label saying where it comes from ([`operationSourceLabels`](../../lib/investments/broker-filter.ts)): the broker with the same names as the filter, the portfolio's name when two accounts of one broker would read alike («Interactive Brokers · 7843»), and the portfolio's name for hand-entered operations. With a single source the labels are hidden.
 
 ### 4.16 Costs
 

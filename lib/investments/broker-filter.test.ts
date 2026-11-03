@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { InvestmentData } from "./data";
 import { buildInvestmentsView } from "./view";
-import { filterInvestmentBrokers, investmentBrokerGroups, transactionBroker } from "./broker-filter";
+import { filterInvestmentBrokers, investmentBrokerGroups, operationSourceLabels, transactionBroker } from "./broker-filter";
 const NOW = new Date("2026-09-20T12:00:00Z");
 
 function data(): InvestmentData {
@@ -137,4 +137,22 @@ it("uses each personal import source name and filters sources independently", ()
   input.transactions.push({ ...input.transactions[0], id: "t2", portfolioId: "p2" });
   expect(investmentBrokerGroups(input)).toEqual([{ id: "personal:one", label: "My broker", operations: 1 }, { id: "personal:two", label: "Second broker", operations: 1 }]);
   expect(filterInvestmentBrokers(input, new Set(["personal:one"])).transactions.map(t => t.id)).toEqual(["t2"]);
+});
+
+describe("where each operation comes from", () => {
+  const portfolio = (id: string, name: string, broker: string | null) => ({ id, name, broker } as InvestmentData["portfolios"][number]);
+  it("labels brokers like the filter and hand-entered operations with their portfolio", () => {
+    const d = mixed();
+    d.portfolios = [portfolio("p", "Portafoglio principale", null)];
+    d.transactions.push({ ...d.transactions[0], id: "t3", statementAccountKey: null });
+    expect(Object.fromEntries(operationSourceLabels(d))).toEqual({ t1: "Interactive Brokers", t2: "DEGIRO", t3: "Portafoglio principale" });
+  });
+  it("tells two accounts of the same broker apart by portfolio, and says nothing with a single source", () => {
+    const d = mixed();
+    d.brokerSources = [{ accountKey: "ib", provider: "interactive-brokers" }, { accountKey: "ib2", provider: "interactive-brokers" }];
+    d.portfolios = [portfolio("p", "Interactive Brokers · 0001", "ibkr:ib"), portfolio("q", "Interactive Brokers · 0002", "ibkr:ib2")];
+    d.transactions[1] = { ...d.transactions[1], statementAccountKey: "ib2", portfolioId: "q" };
+    expect([...operationSourceLabels(d).values()]).toEqual(["Interactive Brokers · 0001", "Interactive Brokers · 0002"]);
+    expect(operationSourceLabels(data()).size).toBe(0);
+  });
 });

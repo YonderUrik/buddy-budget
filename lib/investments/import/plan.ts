@@ -30,7 +30,7 @@ export interface PlannedRow {
 }
 
 /** Impronta di un'operazione: stessi strumento, tipo, data, quote, prezzo e importo = stessa operazione. */
-function fingerprint(op: Omit<ExistingOperation, "instrumentId"> & { instrumentId: string }): string {
+export function operationFingerprint(op: Omit<ExistingOperation, "instrumentId"> & { instrumentId: string }): string {
   const round = (value: string | number | null, digits: number) => (value === null ? "" : Number(value).toFixed(digits));
   return [op.instrumentId, op.type, op.date, round(op.quantity, 8), round(op.price, 6), round(op.grossAmount, 2)].join("|");
 }
@@ -43,14 +43,14 @@ function fingerprint(op: Omit<ExistingOperation, "instrumentId"> & { instrumentI
 export function planImport(operations: PlannedOperation[], existing: ExistingOperation[]): PlannedRow[] {
   const available = new Map<string, number>();
   for (const op of existing) {
-    const key = fingerprint(op);
+    const key = operationFingerprint(op);
     available.set(key, (available.get(key) ?? 0) + 1);
   }
 
   const rows = new Map<number, PlannedRow>();
   const fresh: PlannedOperation[] = [];
   for (const op of operations) {
-    const key = fingerprint(op);
+    const key = operationFingerprint(op);
     const left = available.get(key) ?? 0;
     if (left > 0) {
       available.set(key, left - 1);

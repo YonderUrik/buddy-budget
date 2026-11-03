@@ -5570,5 +5570,7 @@
   "Elimina tutto": "Delete everything",
   "I dati del conto sono cambiati: riapri la conferma e controlla di nuovo cosa viene eliminato.": "The account's data changed: open the confirmation again and check what will be deleted.",
   "Altre operazioni vendono quote comprate con questo conto: elimina prima quelle vendite.": "Other operations sell shares bought with this account: delete those sales first.",
-  "Elimina {0}": "Delete {0}"
+  "Elimina {0}": "Delete {0}",
+  "Eliminare l'operazione su {0}?": "Delete the transaction on {0}?",
+  "Viene da un file importato: anche i prossimi import dello stesso conto la lasciano fuori. Per riaverla, elimina quel file da «Gestisci importazioni» e importalo di nuovo.": "It comes from an imported file: later imports of the same account leave it out too. To get it back, delete that file from “Manage imports” and import it again."
 }

@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { instruments, investmentTransactions } from "@/lib/db/schema/investments";
+import { deleteInvestmentOperation } from "@/lib/investments/delete-operation";
 import { findOwnPortfolio, loadUserTransactions } from "@/lib/investments/data";
 import { ensureHistorySafely } from "@/lib/investments/history";
 import { latestTodayKey, oversoldMessage, toCalcInput, toRowValues } from "@/lib/investments/operations";
@@ -57,7 +58,7 @@ async function handlePatch(request: NextRequest, { params }: Params) {
   return Response.json(updated);
 }
 
-/** Elimina un'operazione, se senza di essa nessuna vendita successiva supera le quote possedute. */
+/** Deletes one operation (imported ones too: see `deleteInvestmentOperation`). */
 async function handleDelete(request: NextRequest, { params }: Params) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
@@ -65,20 +66,13 @@ async function handleDelete(request: NextRequest, { params }: Params) {
   const userId = session.user.id;
 
   const { id } = await params;
-  const current = await findOwnTransaction(userId, id);
-  if (!current) return Response.json({ error: "Operazione non trovata" }, { status: 404 });
-  const portfolio = await findOwnPortfolio(userId, current.portfolioId);
-  if (current.statementAccountKey || portfolio?.broker?.startsWith("ibkr:")) return Response.json({ error: "Operazione di un rendiconto riconciliato: non modificabile singolarmente" }, { status: 409 });
-
-  const remaining = (await loadUserTransactions(userId, current.instrumentId)).filter((t) => t.id !== id).map(toCalcInput);
-  const message = oversoldMessage(remaining);
-  if (message) {
-    return Response.json({ error: `Non si può eliminare: ${message.charAt(0).toLowerCase()}${message.slice(1)}` }, { status: 400 });
+  const outcome = await deleteInvestmentOperation(userId, id);
+  if (outcome.status === 404) return Response.json({ error: "Operazione non trovata" }, { status: 404 });
+  if (outcome.status === 400) {
+    requestLogger().warn("investments.operation.delete_rejected", { reason: "oversold" });
+    return Response.json({ error: `Non si può eliminare: ${outcome.message.charAt(0).toLowerCase()}${outcome.message.slice(1)}` }, { status: 400 });
   }
-
-  await db
-    .delete(investmentTransactions)
-    .where(and(eq(investmentTransactions.id, id), eq(investmentTransactions.userId, userId)));
+  requestLogger().info("investments.operation.deleted", { operationType: outcome.type, kind: outcome.imported ? "imported" : "manual" });
   return new Response(null, { status: 204 });
 }
 

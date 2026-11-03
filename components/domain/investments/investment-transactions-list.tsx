@@ -28,17 +28,20 @@ const ALL_YEARS = "tutti";
 export interface InvestmentTransactionsListProps {
   months: MonthGroup<InvestmentTransaction>[];
   instrumentsById: Map<string, Instrument>;
+  /** Where each operation comes from, by operation id, shown on each row; empty when everything comes from one place. */
+  operationSources?: Map<string, string>;
   currency: string;
   showAll: boolean;
   onToggleShowAll: () => void;
   onEdit?: (transaction: InvestmentTransaction) => void;
-  onDelete: (transaction: InvestmentTransaction) => void;
+  onDelete: (transaction: InvestmentTransaction, options: { imported: boolean }) => void;
   deletingId?: string | null;
 }
 
 export function InvestmentTransactionsList({
   months,
   instrumentsById,
+  operationSources,
   currency,
   showAll,
   onToggleShowAll,
@@ -89,6 +92,7 @@ export function InvestmentTransactionsList({
               key={group.key}
               group={group}
               instrumentsById={instrumentsById}
+              operationSources={operationSources}
               currency={currency}
               deletingId={deletingId}
               onEdit={onEdit}

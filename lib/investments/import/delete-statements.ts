@@ -9,6 +9,7 @@ import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { investmentPortfolios, investmentTransactions } from "@/lib/db/schema/investments";
 import { statementCashComponents } from "./broker-statement";
 import { resolveFxRates, type ImportDeps } from "./execute";
+import { clearExclusions } from "./exclusions.server";
 
 /** Remove the explicitly reviewed suffix of one broker's history and restore its preceding cash balance atomically. */
 export async function deleteStatementImports(userId: string, id: string, confirmedIds: string[], deps: ImportDeps) {
@@ -35,6 +36,8 @@ export async function deleteStatementImports(userId: string, id: string, confirm
     const removed = await tx.delete(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, selected.portfolioId), statementSourceScope(selected.accountKey, portfolio?.broker ?? null), gte(investmentTransactions.date, selected.from))).returning({ id: investmentTransactions.id });
     if (provider === "trade-republic" && selected.cashAccountId) await tx.delete(transactions).where(and(eq(transactions.userId, userId), eq(transactions.accountId, selected.cashAccountId), gte(transactions.date, selected.from), sql`${transactions.externalId} like 'trade-republic:%'`));
     await tx.delete(brokerStatements).where(and(eq(brokerStatements.userId, userId), inArray(brokerStatements.id, affected.map((d) => d.id))));
+    // Deletions of single operations go with the history they hid: importing the statement again brings everything back.
+    await clearExclusions(tx, userId, [selected.accountKey], selected.from);
     if (selected.cashAccountId) await tx.update(accounts).set({ balance: balance.toFixed(2), updatedAt: new Date() }).where(and(eq(accounts.userId, userId), eq(accounts.id, selected.cashAccountId)));
     // Catalogue instruments and historical prices remain useful independently of owning a position.
     return { deletedStatements: affected.length, deletedOperations: removed.length, status: 200 };

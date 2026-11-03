@@ -14,13 +14,15 @@ import { OperationRow } from "./operation-row";
 export interface OperationMonthGroupProps {
   group: MonthGroup<InvestmentTransaction>;
   instrumentsById: Map<string, Instrument>;
+  /** Where each operation comes from, by operation id, shown on each row; empty when everything comes from one place. */
+  operationSources?: Map<string, string>;
   currency: string;
   deletingId?: string | null;
   onEdit?: (transaction: InvestmentTransaction) => void;
-  onDelete: (transaction: InvestmentTransaction) => void;
+  onDelete: (transaction: InvestmentTransaction, options: { imported: boolean }) => void;
 }
 
-export function OperationMonthGroup({ group, instrumentsById, currency, deletingId, onEdit, onDelete }: OperationMonthGroupProps) {
+export function OperationMonthGroup({ group, instrumentsById, operationSources, currency, deletingId, onEdit, onDelete }: OperationMonthGroupProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency, formatMonthLabel } = localizedFormats(formattingLocale);
 
@@ -54,6 +56,7 @@ export function OperationMonthGroup({ group, instrumentsById, currency, deleting
             key={insight.transaction.id}
             insight={insight}
             instrument={instrumentsById.get(insight.transaction.instrumentId)}
+            sourceLabel={operationSources?.get(insight.transaction.id)}
             currency={currency}
             deleting={deletingId === insight.transaction.id}
             onEdit={onEdit}

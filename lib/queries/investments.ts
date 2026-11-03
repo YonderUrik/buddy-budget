@@ -223,11 +223,14 @@ export function useUpdateInvestmentTransactionMutation() {
 export function useDeleteInvestmentTransactionMutation() {
   const invalidate = useInvalidateInvestments();
   return useMutation({
-    mutationFn: async (id: string): Promise<void> => {
-      const response = await fetch(`/api/investments/transactions/${id}`, { method: "DELETE" });
+    mutationFn: async (operation: Pick<InvestmentTransaction, "id" | "type"> & { imported: boolean }): Promise<void> => {
+      const response = await fetch(`/api/investments/transactions/${operation.id}`, { method: "DELETE" });
       if (!response.ok) throw await readError(response, "Impossibile eliminare l'operazione");
     },
-    onSuccess: invalidate,
+    onSuccess: (_, operation) => {
+      track("investment_operation_deleted", { type: operation.type, imported: operation.imported });
+      return invalidate();
+    },
   });
 }
 

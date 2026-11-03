@@ -31,6 +31,34 @@ export function investmentBrokerGroups(data: InvestmentData): BrokerGroup[] {
   return [...groups.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
+/**
+ * Label of where each operation comes from, by operation id, for the operations list: the broker, as in the broker
+ * filter (the portfolio's name when two accounts of the same broker would read alike), or the portfolio's name for
+ * hand-entered operations. Empty when every operation has the same label. The default portfolio keeps its stored
+ * Italian name («Portafoglio»): the UI translates it.
+ */
+export function operationSourceLabels(data: Pick<InvestmentData, "transactions" | "portfolios" | "brokerSources" | "personalSources">): Map<string, string> {
+  const portfolioName = new Map(data.portfolios.map((p) => [p.id, p.name]));
+  const sourceOf = (t: InvestmentTransaction) => transactionBroker(data as InvestmentData, t);
+  const brokerLabel = (id: string) => (id.startsWith("personal:") ? data.personalSources?.find((s) => `personal:${s.id}` === id)?.name : undefined) ?? LABELS[id] ?? "Altro conto broker";
+  // Sources that share a broker label (two Interactive Brokers accounts) are told apart by their portfolio.
+  const keysByLabel = new Map<string, Set<string>>();
+  for (const t of data.transactions) {
+    const source = sourceOf(t);
+    if (source === "manual") continue;
+    const label = brokerLabel(source);
+    keysByLabel.set(label, (keysByLabel.get(label) ?? new Set()).add(`${t.statementAccountKey ?? ""}|${t.portfolioId}`));
+  }
+  const labels = new Map<string, string>();
+  for (const t of data.transactions) {
+    const source = sourceOf(t);
+    const name = portfolioName.get(t.portfolioId) ?? "";
+    const label = source === "manual" ? name : brokerLabel(source);
+    labels.set(t.id, source !== "manual" && (keysByLabel.get(label)?.size ?? 0) > 1 ? name || label : label);
+  }
+  return new Set(labels.values()).size > 1 ? labels : new Map();
+}
+
 /** View-only filter: never delete transactions or change stored net-worth/account balances. */
 export function filterInvestmentBrokers(data: InvestmentData, disabled: ReadonlySet<string>): InvestmentData {
   if (!disabled.size) return data;

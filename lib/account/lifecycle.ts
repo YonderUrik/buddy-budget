@@ -39,6 +39,7 @@ import { DEFAULT_CURRENCY } from "@/lib/validation/currency";
 import { hashUserId, logger } from "@/lib/observability";
 import { DEACTIVATION_GRACE_DAYS } from "./constants";
 import { DEFAULT_HOME_PAGE } from "./home-pages";
+import { brokerOperationExclusions } from "@/lib/db/schema/broker-operation-exclusions";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -146,6 +147,7 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   // Tabella orfana: la funzione PAC è stata rimossa ma i dati restano finché non c'è una migration che la elimina.
   await tx.delete(investmentPlans).where(eq(investmentPlans.userId, userId));
   await tx.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+  await tx.delete(brokerOperationExclusions).where(eq(brokerOperationExclusions.userId, userId));
   await tx.delete(investmentTaxCarryforwards).where(eq(investmentTaxCarryforwards.userId, userId));
   await tx.delete(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
   await tx.delete(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId));

@@ -365,6 +365,13 @@
       "when": 1793550990307,
       "tag": "0054_instrument_keep_broker_prices",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1793725826269,
+      "tag": "0055_broker_operation_exclusions",
+      "breakpoints": true
     }
   ]
 }

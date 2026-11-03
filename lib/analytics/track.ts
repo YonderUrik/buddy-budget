@@ -195,6 +195,8 @@ export interface ProductEvents {
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
   investment_operation_updated: { type: InvestmentTransactionType };
+  /** `imported`: the operation came from a broker statement or connection (later imports leave it out). */
+  investment_operation_deleted: { type: InvestmentTransactionType; imported: boolean };
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" };
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" };
   /** Scelta di un'ipotesi nel foglio "E se…" di un debito (`kind`: quale). */
@@ -215,6 +217,8 @@ export interface ProductEvents {
   pension_rate_simulated: { years: number };
   investment_broker_filter_changed: { action: "toggle" | "all"; selected?: number };
   investment_benchmark_set: undefined;
+  /** «Confronta con un indice»: which common index was picked, `other` from the search, `none` when removed. */
+  investment_benchmark_chosen: { choice: "sp500" | "msci-world" | "ftse-all-world" | "nasdaq-100" | "other" | "none" };
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;
   investment_tax_regime_set: { regime: "amministrato" | "dichiarativo" };

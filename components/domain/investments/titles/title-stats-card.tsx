@@ -4,7 +4,7 @@ import { localizedFormats } from "@/lib/localization/format";
 import { useLocalization } from "@/lib/localization/provider";
 /**
  * Card "In numeri": variazione su 1 mese / 3 mesi / 6 mesi / 1 anno / da inizio anno, posizione dell'ultima chiusura
- * nella forbice a 52 settimane. Volatilità e caduta massima stanno in «Quanto rischia».
+ * nella forbice a 52 settimane. Volatilità e caduta massima stanno in «Rischio».
  */
 
 import { TITLE_RETURN_PERIODS, type TitleReturnPeriod, type TitleStats } from "@/lib/investments/title-stats";

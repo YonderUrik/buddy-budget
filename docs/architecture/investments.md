@@ -71,6 +71,7 @@ Tables are in [`lib/db/schema/investments.ts`](../../lib/db/schema/investments.t
 | `investment_targets` | target weight per instrument | per portfolio |
 | `investment_tax_carryforwards` | prior capital losses (zainetto fiscale, the tax-loss backpack) | per user |
 | `broker_statements` | parsed broker statement (JSON), raw records, period, fingerprint, linked cash account | per user |
+| `broker_operation_exclusions` | operations of a broker source the user deleted one by one: `accountKey`, instrument, type, date, quantity, price, gross amount | per user |
 
 Always computed, never stored: quantities, average prices, cost basis, realised and unrealised gains, portfolio value, returns, risk and exposure. The only derived figures that are persisted are the daily `investimenti` rows in `net_worth_snapshots` (section 4.13). `investment_plans` is deprecated: recurring plans were removed on 2026-10-04 and the table waits for a migration that drops it.
 
@@ -133,7 +134,7 @@ weight         = position value / total value
 
 ### 4.4 Daily series and flows
 
-[`computeDailyPortfolioValues`](../../lib/calc/investments.ts) walks every calendar day from `fromKey` to `toKey`, applies that day's transactions, and records `value`, cumulative `invested` (net), `bought` and `income`. [`toDailyFlows`](../../lib/calc/returns.ts) turns the cumulative point pairs into daily flows:
+[`computeDailyPortfolioValues`](../../lib/calc/investments.ts) walks every calendar day from `fromKey` to `toKey`, applies that day's transactions, and records `value`, cumulative `invested` (net), `bought` and `income`. The walk is the expensive step (every day × every position), and one page asks for the same days several times (chart, returns, risk, period gain, and returns again on every hover over the Performance chart). So the function keeps the last four walks per `transactions` array (a `WeakMap`, freed with the array) and serves any range inside one of them, for the same instruments, price index, FX table and currency objects, as a slice; callers treat the points as read-only. The Performance hover passes the view's own `transactions` and `fx` (`InvestmentsView.transactions`/`fx`) so it hits that cache. [`toDailyFlows`](../../lib/calc/returns.ts) turns the cumulative point pairs into daily flows:
 
 ```text
 inflow_t  = bought_t - bought_{t-1}
@@ -145,7 +146,7 @@ The period window comes from [`resolvePerformanceRange`](../../lib/calc/performa
 
 Exchange rates of sub-unit currencies come from the main currency (`fxSourceCurrency` in [`lib/calc/fx.ts`](../../lib/calc/fx.ts)): GBX = GBP × 100 units per euro, likewise ZAC/ZAR and ILA/ILS; loaders and `updateFxRates` ask for the main currency.
 
-The Performance page opens on the whole history (`max`, since 2026-10-31; `usePerformanceView` in [`lib/queries/performance.ts`](../../lib/queries/performance.ts)) and states the period once at the top. Its returns card holds the controls (comparison index, broker filter, period), the chart, then TWR, MWR, real return and the index's TWR in one row, the timing sentence and the comparison box; risk and the TWR heatmap follow in their own cards, on the same range.
+The Performance page opens on the year to date (`ytd`, `PERFORMANCE_DEFAULT_PERIOD` in [`lib/investments/chart-period.ts`](../../lib/investments/chart-period.ts), since 2026-11-03; `usePerformanceView` in [`lib/queries/performance.ts`](../../lib/queries/performance.ts); it opened on `max` from 2026-10-31, which was slow on a long history) and states the period once at the top. Its returns card holds the controls (comparison index, broker filter, period), the chart, then TWR, MWR, real return and the index's TWR in one row, the timing sentence and the comparison box; risk and the TWR heatmap follow in their own cards, on the same range.
 
 ### 4.5 Time-weighted return (TWR)
 
@@ -193,6 +194,8 @@ benchmark TWR = P_end / P_0 - 1        (price only)
 
 Example. Base value 1,000 at a benchmark price of 50: 20 units. A 500 purchase at 55 adds 9.09 units. At an end price of 60 the simulated value is `29.09 × 60 = 1,745.45` and the benchmark TWR is `60 / 50 − 1 = 20%`. The simulated flows also give the benchmark's money-weighted return.
 
+**Choosing and showing it (since 2026-11-03).** «Confronta con un indice» lists four common indices ([`BENCHMARK_SUGGESTIONS`](../../lib/investments/benchmark-suggestions.ts): S&P 500, MSCI World, FTSE All-World, Nasdaq-100), each as a row with the index provider's logo, where it invests, rounded companies and countries, and the accumulating ETF the comparison really uses; the search below adds any other instrument. The logos come from `GET /api/benchmarks/[id]/logo`, which serves only these four ids through the same Logo.dev cache as the instruments (`issuer:<domain>` keys on Redis) and falls back to a monogram. [`matchBenchmarkSuggestion`](../../lib/investments/benchmark-suggestions.ts) recognises the chosen instrument by ISIN or name, so the page shows the short index name («MSCI World») in the button, the chart legend, the index figure and the risk card. The verdict box under the returns ([`BenchmarkSummary`](../../components/domain/investments/benchmark-summary.tsx)) leads with who did better and by how many euros ([`benchmarkVerdict`](../../lib/investments/returns-insights.ts), same-contributions values), then «Tu» and the index side by side with their value and money-weighted return, the better one ringed in yellow.
+
 ### 4.9 Inflation-adjusted return
 
 [`inflationBetween`](../../lib/calc/returns.ts) takes the HICP index of the first month of the period and the last available month not after the end. [`realReturn`](../../lib/calc/returns.ts) deflates the period TWR:
@@ -223,6 +226,8 @@ Sharpe = (mean(r) - rf / perYear) / stdev(r) * sqrt(perYear)
 - Below 250 observations the result carries `fewData`.
 
 [`lib/calc/risk-extras.ts`](../../lib/calc/risk-extras.ts) adds Sortino, Calmar, historical VaR/CVaR (95%, 100 observations), Euler risk contributions, Herfindahl concentration (`effectiveN = 1 / HHI`) and `annualizedReturn`. These are used by the Analitiche (Analytics) section, not by the Investimenti risk card.
+
+**The «Rischio» card (since 2026-11-03).** The level is drawn as a half dial ([`RiskGauge`](../../components/domain/investments/risk/risk-gauge.tsx)): four arcs from green to red at the `RISK_LEVEL_*` thresholds, the needle at `riskScalePosition(volatility)`, the level word and «Oscilla di ±x% in un anno» in the middle. Below, «Calo più forte» (drawdown), «Rendimento per rischio» (Sharpe as Negativo/Basso/Discreto/Buono, coloured only when clearly good or bad) and «Legame con l'indice» (beta, with the correlation beside it); the fall chart and the method stay collapsible. The security page uses the same dial for its own last-year volatility.
 
 ### 4.11 Diversification and look-through
 
@@ -277,9 +282,13 @@ broker cash = NAV "Cash" row in base currency          (when the statement has a
 
 The account balance is updated only when no later statement exists. [`resolveBrokerCash`](../../lib/investments/broker-cash.ts) lists these accounts once each, including legacy links through `statementCashAccountId`, with the last statement date. Broker cash is shown next to the portfolio («Includi liquidità», include cash) and counted in net worth as an account, not as investments, so it is never counted twice. Details per broker: [`docs/ibkr-import.md`](../ibkr-import.md), [`docs/degiro-import.md`](../degiro-import.md), [`docs/trade-republic-import.md`](../trade-republic-import.md).
 
+**Deleting one imported operation.** An operation from a statement or from the Trade Republic connection cannot be edited (the next import would contradict it) but can be deleted from Operazioni, after a confirmation. [`deleteInvestmentOperation`](../../lib/investments/delete-operation.ts) runs under the import lock, refuses if a remaining sale would be oversold, deletes the row and stores its fingerprint in `broker_operation_exclusions` with the source key (`statementAccountKey`, or the `ibkr:` portfolio tag for legacy rows). Every later import of that source runs [`applyExclusions`](../../lib/investments/import/exclusions.ts): an incoming operation with the same fingerprint (instrument, type, date, quantity, price, gross, counted as a multiset like duplicates) is skipped and counted as already present, while the reconciliation still adds its quantity, because the broker's positions include it. A deletion with nothing left to hide (the broker corrected the operation) is forgotten, and so is one whose absence would make a sale exceed the shares held: the broker's history wins rather than the import failing. Deleting the statements of the period («Gestisci importazioni»), the account, or resetting the history also forgets the deletions, so importing the file again brings the operation back. Example: IBKR 2023 buys 10 PARENT; the user deletes it; the 2024 statement reports 10 PARENT, and the check counts 0 in the database + 10 deleted = 10, so it imports. Logs `investments.operation.deleted` (`kind` imported or manual), Umami `investment_operation_deleted` (`imported`).
+
 ### 4.15 Broker filters
 
 [`transactionBroker`](../../lib/investments/broker-filter.ts) attributes each transaction: by `statementAccountKey` through `broker_import_accounts`, then by the portfolio's `broker` prefix (`ibkr:`, `degiro:`, `personal:`), else `manual`. [`filterInvestmentBrokers`](../../lib/investments/broker-filter.ts) removes the disabled brokers' transactions, their broker cash, and instruments and targets no longer used. The selection lives in React state ([`broker-selection.tsx`](../../lib/investments/broker-selection.tsx)), is shared by the Investimenti tabs, and resets on reload.
+
+In Operazioni each row carries a small label saying where it comes from ([`operationSourceLabels`](../../lib/investments/broker-filter.ts)): the broker with the same names as the filter, the portfolio's name when two accounts of one broker would read alike («Interactive Brokers · 7843»), and the portfolio's name for hand-entered operations. With a single source the labels are hidden.
 
 ### 4.16 Costs
 

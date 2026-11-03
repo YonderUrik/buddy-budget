@@ -28,12 +28,13 @@ export default function OperazioniPage() {
           <InvestmentTransactionsList
             months={view.operationMonths}
             instrumentsById={view.instrumentsById}
+            operationSources={view.operationSources}
             currency={view.currency}
             showAll={showAll}
             onToggleShowAll={() => setShowAll((v) => !v)}
-            deletingId={deleteOperation.isPending ? deleteOperation.variables : null}
+            deletingId={deleteOperation.isPending ? deleteOperation.variables?.id : null}
             onEdit={setEditing}
-            onDelete={(t) => deleteOperation.mutate(t.id, { onError: (e) => errorToast(e.message, "operazione") })}
+            onDelete={(t, { imported }) => deleteOperation.mutate({ id: t.id, type: t.type, imported }, { onError: (e) => errorToast(e.message, "operazione") })}
           />
         ) : null}
         <EditOperationDialog

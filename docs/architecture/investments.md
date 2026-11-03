@@ -308,6 +308,38 @@ saved_t = saved_{t-1} * (1 + r_t) + paid_t        (r_t = 0 on days with nothing 
 
 Example: 10 EUR of fees, then two days at +1% and +2%: `10 × 1.01 × 1.02 = 10.30`. The two switches («Reinvesti costi», «Reinvesti imposte») add these amounts to the displayed value and series only ([`simulateCostExclusions`](../../lib/investments/cost-impact.ts)). The simulation is disabled when any position is unpriced. Taxes are covered by [taxes.md](taxes.md).
 
+### 4.17 Leverage (margin loan)
+
+An Interactive Brokers account that borrows has a negative cash balance. Its statements carry the whole cash ledger by currency, so the cash can be rebuilt for every day. The overview route asks [`loadInvestmentData`](../../lib/investments/data.ts) with `{ leverage: true }`; it reads the account's statements (balances and ledger only) and [`buildLeverageSources`](../../lib/investments/leverage-source.ts) turns each one into opening and closing balances plus the day's movements by currency and kind: `deposit` (Deposits & Withdrawals), `interest` (negative Interest rows, i.e. debit interest; credit and securities-lending interest stay ordinary cash), `other`. Fees already inside the trade commissions are left out, as in the reconciliation, so `opening + movements = closing`. Only IBKR is a leverage provider today (`LEVERAGE_PROVIDERS`): DEGIRO and Trade Republic statements do not carry a comparable ledger.
+
+[`buildCashSeries`](../../lib/calc/leverage.ts) walks the days: each statement's opening resets the balances at the start of its first day, movements apply on their date, the closing resets them at the end of its last day; before the first statement the first opening holds, after the last the last closing holds. Every currency is converted at that day's rate. `borrowed` is the sum of the negative currencies (what accrues interest), even when another currency is positive.
+
+[`computeBrokerLeverage`](../../lib/calc/leverage.ts), per account ([`buildLeverageView`](../../lib/investments/leverage-view.ts), operations of the account = tagged with its key or in its `ibkr:<key>` portfolio):
+
+```text
+net cash   = closing balances of the last statement at today's rates
+loan       = max(0, −net cash)
+capital    = securities today + net cash
+leverage   = securities / capital                (none when capital ≤ 0)
+loan/value = loan / securities
+interest   = debit interest by calendar year; last 12 months = the 365 days ending on the last statement
+rate       = interest(12 m) / average borrowed(12 m) × 365 / days seen
+```
+
+Example (the unit test): 10,000 paid in, 15,000 of shares bought, 20 of interest at month end, securities worth 16,000 today: loan 5,020, capital 10,980, leverage 1.46×, loan 31% of the securities.
+
+**Distance from the margin** ([`marginCallDrop`](../../lib/calc/leverage.ts)), with the loan held fixed and a maintenance margin `m` set by the user (default 25%, 10–60%, remembered on the device):
+
+```text
+S (1 − x) − L = m · S (1 − x)   ⇒   x = 1 − L / (S (1 − m))
+```
+
+16,000 of securities, 5,000 borrowed, 25%: the securities can fall 58% before the limit. It is an estimate: IBKR's requirement is per security and is not in the CSV.
+
+**Return on the own capital** (`computePortfolioReturns({ capital })`, «Sul tuo capitale» in Performance, shown when an account has leverage): the account's cash joins the value, its buys, sales and dividends stop being flows (they move money inside the account), and its deposits and withdrawals become the flows ([`toCapitalFlows`](../../lib/calc/leverage.ts)). Interest and fees lower the cash, so they lower the return. With flat prices and 20 of interest on 10,000 paid in, the securities return 0% and the capital −0.2%. Benchmark, MWR and heatmap follow the same flows; the risk card stays on the securities.
+
+The Portafoglio tab shows the «Leva» card ([`leverage-card.tsx`](../../components/domain/investments/leverage-card.tsx)) for accounts with a loan or with interest paid, and the costs card adds «Interessi sul prestito a margine». The broker filter hides a disabled broker's leverage. Panoramica's composition moves a broker cash account with a negative balance from Liquidità to a «Prestito a margine» liability row ([`net-worth.md`](net-worth.md) §4.9).
+
 ## 5. Limits and out of scope
 
 - **One portfolio in practice.** Several `investment_portfolios` rows can exist (imports create them), and all transactions are combined. Benchmark and targets are read only from the oldest portfolio (`portfolios[0]` in [`loadInvestmentData`](../../lib/investments/data.ts)).
@@ -318,6 +350,7 @@ Example: 10 EUR of fees, then two days at +1% and +2%: `10 × 1.01 × 1.02 = 10.
 - **Overlaps** use top-10 holdings from free data: they are lower bounds.
 - **Income forecast** applies the Italian rate only; foreign withholding taxes and tax return sections are not modelled.
 - Deferred (CLAUDE.md "Consciously deferred"): multiple portfolios per user, PWA push for alerts, an import preset for an Italian broker, import undo, screener, ETF regions from issuers' files, rebalancing with sales, Sortino/VaR in the Investimenti risk card.
+- **Leverage** is read from the last imported statement: a loan taken after it shows only after the next import. The maintenance margin is the user's estimate, not IBKR's live requirement; the currency exposure a foreign-currency loan creates is not shown.
 - Statement imports do not rebuild tax lots and refuse partial overlaps ([`docs/ibkr-import.md`](../ibkr-import.md)).
 
 ## 6. Tests
@@ -330,6 +363,7 @@ Example: 10 EUR of fees, then two days at +1% and +2%: `10 × 1.01 × 1.02 = 10.
 - [`lib/investments/exposure.test.ts`](../../lib/investments/exposure.test.ts), [`overlap.test.ts`](../../lib/investments/overlap.test.ts), [`allocation.test.ts`](../../lib/investments/allocation.test.ts), [`dividends.test.ts`](../../lib/investments/dividends.test.ts), [`income.test.ts`](../../lib/investments/income.test.ts): source order for exposure, overlaps, targets, missing income with splits, coupons, forecast.
 - [`lib/investments/broker-cash.test.ts`](../../lib/investments/broker-cash.test.ts), [`broker-filter.test.ts`](../../lib/investments/broker-filter.test.ts): single counting of cash accounts; filters that do not mutate the source.
 - [`lib/investments/import/execute-statement.integration.test.ts`](../../lib/investments/import/execute-statement.integration.test.ts) (database): consecutive periods, concurrency, rejection without writes, replacement and rollback, per-user isolation.
+- [`lib/calc/leverage.test.ts`](../../lib/calc/leverage.test.ts), [`lib/investments/leverage-source.test.ts`](../../lib/investments/leverage-source.test.ts): cash day by day with deposits, interest and borrowed currencies, leverage and effective rate, distance from the margin, own-capital flows and return; on the real IBKR fixture, movements that add up to every currency's closing cash and only debit interest counted.
 - [`lib/net-worth/investments.test.ts`](../../lib/net-worth/investments.test.ts) (database): history rebuild, back-dated changes, deletions, fingerprint skip, Redis failure.
 
 ## 7. Related

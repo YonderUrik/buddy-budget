@@ -1,12 +1,14 @@
 import { inflationAreaForCountry } from "@/lib/localization/financial-country";
 import { resolveProfile, type ProductCountry } from "@/lib/localization/config";
-import { and, asc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { personalFormats } from "@/lib/db/schema/personal-imports";
 import { accounts } from "@/lib/db/schema/accounts";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { resolveBrokerCash, type BrokerCash } from "./broker-cash";
+import { buildLeverageSources, leverageCurrencies, type LeverageStatementRow } from "./leverage-source";
+import type { LeverageSource } from "@/lib/calc/leverage";
 import { authUser } from "@/lib/db/schema/auth";
 import {
   fxRates,
@@ -115,6 +117,8 @@ export interface InvestmentData {
   productCountry?: ProductCountry;
   currency: string;
   brokerCash?: BrokerCash[];
+  /** Broker accounts whose cash can be rebuilt day by day from their statements (loaded only with `leverage`). */
+  leverage?: LeverageSource[];
   personalSources?: { id: string; name: string }[];
   brokerSources?: { accountKey: string; provider: string }[];
   portfolios: InvestmentPortfolio[];
@@ -155,7 +159,7 @@ function shiftDays(dateKey: string, days: number): string {
  * Operazioni, strumenti, prezzi e cambi dell'utente. I prezzi partono da `pricesFrom` (meno un margine) o
  * dalla prima operazione: il grafico di un periodo corto non scarica anni di storico.
  */
-export async function loadInvestmentData(userId: string, pricesFrom: string | null): Promise<InvestmentData> {
+export async function loadInvestmentData(userId: string, pricesFrom: string | null, options: { leverage?: boolean } = {}): Promise<InvestmentData> {
   const [user] = await db.select({ currency: authUser.currency, productCountry: authUser.productCountry }).from(authUser).where(eq(authUser.id, userId));
   const currency = user?.currency ?? "EUR";
   const { productCountry } = resolveProfile(user);
@@ -170,6 +174,12 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   ]);
 
   const brokerCash = resolveBrokerCash(brokerSources, portfolios, cashAccounts, cashStatements);
+  const leverage = options.leverage && brokerCash.length
+    ? buildLeverageSources(brokerCash, await db
+        .select({ cashAccountId: brokerStatements.cashAccountId, accountKey: brokerStatements.accountKey, statement: sql<LeverageStatementRow["statement"]>`jsonb_build_object('provider', ${brokerStatements.statement}->'provider', 'from', ${brokerStatements.from}, 'to', ${brokerStatements.to}, 'cash', ${brokerStatements.statement}->'cash', 'ledger', ${brokerStatements.statement}->'ledger')` })
+        .from(brokerStatements)
+        .where(and(eq(brokerStatements.userId, userId), inArray(brokerStatements.cashAccountId, brokerCash.map((c) => c.accountId)))))
+    : [];
 
   const [instrumentSettings, taxCarryforwards, dismissedDividends] = await Promise.all([
     db
@@ -240,7 +250,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   const loaded = await db.select().from(instruments).where(inArray(instruments.id, instrumentIds));
   const userInstruments = loaded.filter((i) => ownedIds.includes(i.id));
   const benchmark = loaded.find((i) => i.id === benchmarkId) ?? null;
-  const currencies = [...new Set([...loaded.map((i) => i.currency), currency])].filter((c) => c !== "EUR");
+  const currencies = [...new Set([...loaded.map((i) => i.currency), currency, ...leverageCurrencies(leverage)])].filter((c) => c !== "EUR");
 
   const [prices, manualPrices, rates, inflation, profiles, manualBreakdowns, riskFreeRates, dividends] = await Promise.all([
     db
@@ -279,6 +289,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
     brokerSources,
     personalSources,
     brokerCash,
+    leverage,
     portfolios,
     instruments: userInstruments,
     transactions,

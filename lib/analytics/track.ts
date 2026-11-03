@@ -60,6 +60,10 @@ export interface ProductEvents {
   investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };
   /** Interruttore «Rimetti costi/imposte nel portafoglio» in Investimenti; `reinvested`: acceso o spento. */
   investment_reinvest_toggled: { kind: "costi" | "imposte"; reinvested: boolean };
+  /** Performance measured on the securities or on the own capital (margin loan and interest included). */
+  investment_return_basis_changed: { basis: "titoli" | "capitale" };
+  /** Maintenance margin of the leverage card's estimate changed, in whole percent. */
+  investment_margin_estimate_changed: { maintenance: number };
   investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
   /**
    * Action of a «Primi passi» step pressed; `placement`: the big «next step» block in Panoramica, the list under it, or

@@ -213,7 +213,7 @@ The Panoramica page ([`app/(app)/panoramica/page.tsx`](../../app/(app)/panoramic
 
 Accounts, snapshots and month transactions are blocking: their errors show the load error. Investments, debts and pension are optional: on error the class is simply missing.
 
-`buildCompositionItems` ([`net-worth-composition-row.utils.ts`](../../components/domain/net-worth/net-worth-composition-row.utils.ts)) builds one row per present class. Shares are computed on positive classes only; debts are a liability row with no share; an excluded pension stays listed with «fuori dal totale» ("outside the total") and no share.
+`buildCompositionItems` ([`net-worth-composition-row.utils.ts`](../../components/domain/net-worth/net-worth-composition-row.utils.ts)) builds one row per present class. Shares are computed on positive classes only; debts are a liability row with no share; an excluded pension stays listed with «fuori dal totale» ("outside the total") and no share. A broker cash account with a negative balance (an Interactive Brokers margin loan, `marginLoansFromBrokerCash`) leaves the Liquidità row and becomes a «Prestito a margine» (margin loan) liability row; the total is the same. The chart and the stored cash history keep it inside Liquidità, since that history has no split by account.
 
 Example: cash 5,000, investments 15,000, pension 5,000, debts 8,000 → shares 20% / 60% / 20%, debts shown as −8,000, net worth 17,000 EUR.
 

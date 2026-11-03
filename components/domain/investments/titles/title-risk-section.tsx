@@ -3,8 +3,8 @@ import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 /**
- * Sezione «Quanto rischia» della pagina titolo: stesso livello di rischio (scala a 4 fasce) della scheda del
- * Portafoglio, calcolato sulla volatilità dell'ultimo anno del solo titolo, più la caduta massima.
+ * «Rischio» section of the security page: the same half dial as the Performance card, from the security's own
+ * volatility over the last year, plus its biggest fall.
  */
 
 import { ShieldAlertIcon } from "lucide-react";
@@ -14,14 +14,14 @@ import { cn } from "@/lib/utils";
 
 import { PanelSection } from "../panel-section";
 
-import { RiskLevelMeter } from "../risk/risk-level-meter";
+import { RiskGauge } from "../risk/risk-gauge";
 
 export interface TitleRiskSectionProps {
   stats: TitleStats;
 }
 
 export function TitleRiskSection({ stats }: TitleRiskSectionProps) {
-  const { riskLevel } = localizedRiskInsights(useLocalization().language);
+  const { riskLevel, riskLevelInsight, riskScalePosition } = localizedRiskInsights(useLocalization().language);
 
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedPct, formatPct } = localizedFormats(formattingLocale);
@@ -30,15 +30,13 @@ export function TitleRiskSection({ stats }: TitleRiskSectionProps) {
   if (stats.volatility === null) return null;
   const level = riskLevel(stats.volatility);
   return (
-    <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={tr("Nell'ultimo anno")}>
-      <RiskLevelMeter
-        level={level}
-        volatility={stats.volatility}
-        volatilityText={`±${formatPct(stats.volatility)}`}
-        volatilityHint="Volatilità annua: di norma il prezzo si muove di circa questa percentuale in un anno, in su o in giù (due anni su tre)."
-      />
+    <PanelSection icon={ShieldAlertIcon} title={tr("Rischio")} color="var(--swatch-orange)" description={tr("Nell'ultimo anno")}>
+      <div className="flex flex-col gap-3">
+        <RiskGauge level={level} position={riskScalePosition(stats.volatility)} caption={tr("Oscilla di ±{0} in un anno", { 0: formatPct(stats.volatility) })} />
+        <p className="text-center text-sm text-muted-foreground">{riskLevelInsight(level)}</p>
+      </div>
       {stats.maxDrawdown !== null ? (
-        <p className="text-sm text-muted-foreground">{tr("Calo peggiore dal massimo nell'ultimo anno:")}{" "}
+        <p className="text-sm text-muted-foreground">{tr("Calo più forte nell'ultimo anno:")}{" "}
           <span className={cn("font-medium tabular-nums", stats.maxDrawdown < -0.005 ? "text-neg" : "text-foreground")}>
             {stats.maxDrawdown < -0.005 ? formatSignedPct(stats.maxDrawdown) : tr("nessuno")}
           </span>

@@ -194,6 +194,8 @@ benchmark TWR = P_end / P_0 - 1        (price only)
 
 Example. Base value 1,000 at a benchmark price of 50: 20 units. A 500 purchase at 55 adds 9.09 units. At an end price of 60 the simulated value is `29.09 × 60 = 1,745.45` and the benchmark TWR is `60 / 50 − 1 = 20%`. The simulated flows also give the benchmark's money-weighted return.
 
+**Choosing and showing it (since 2026-11-03).** «Confronta con un indice» lists four common indices ([`BENCHMARK_SUGGESTIONS`](../../lib/investments/benchmark-suggestions.ts): S&P 500, MSCI World, FTSE All-World, Nasdaq-100), each as a row with the index provider's logo, where it invests, rounded companies and countries, and the accumulating ETF the comparison really uses; the search below adds any other instrument. The logos come from `GET /api/benchmarks/[id]/logo`, which serves only these four ids through the same Logo.dev cache as the instruments (`issuer:<domain>` keys on Redis) and falls back to a monogram. [`matchBenchmarkSuggestion`](../../lib/investments/benchmark-suggestions.ts) recognises the chosen instrument by ISIN or name, so the page shows the short index name («MSCI World») in the button, the chart legend, the index figure and the risk card. The verdict box under the returns ([`BenchmarkSummary`](../../components/domain/investments/benchmark-summary.tsx)) leads with who did better and by how many euros ([`benchmarkVerdict`](../../lib/investments/returns-insights.ts), same-contributions values), then «Tu» and the index side by side with their value and money-weighted return, the better one ringed in yellow.
+
 ### 4.9 Inflation-adjusted return
 
 [`inflationBetween`](../../lib/calc/returns.ts) takes the HICP index of the first month of the period and the last available month not after the end. [`realReturn`](../../lib/calc/returns.ts) deflates the period TWR:
@@ -224,6 +226,8 @@ Sharpe = (mean(r) - rf / perYear) / stdev(r) * sqrt(perYear)
 - Below 250 observations the result carries `fewData`.
 
 [`lib/calc/risk-extras.ts`](../../lib/calc/risk-extras.ts) adds Sortino, Calmar, historical VaR/CVaR (95%, 100 observations), Euler risk contributions, Herfindahl concentration (`effectiveN = 1 / HHI`) and `annualizedReturn`. These are used by the Analitiche (Analytics) section, not by the Investimenti risk card.
+
+**The «Rischio» card (since 2026-11-03).** The level is drawn as a half dial ([`RiskGauge`](../../components/domain/investments/risk/risk-gauge.tsx)): four arcs from green to red at the `RISK_LEVEL_*` thresholds, the needle at `riskScalePosition(volatility)`, the level word and «Oscilla di ±x% in un anno» in the middle. Below, «Calo più forte» (drawdown), «Rendimento per rischio» (Sharpe as Negativo/Basso/Discreto/Buono, coloured only when clearly good or bad) and «Legame con l'indice» (beta, with the correlation beside it); the fall chart and the method stay collapsible. The security page uses the same dial for its own last-year volatility.
 
 ### 4.11 Diversification and look-through
 

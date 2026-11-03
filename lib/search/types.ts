@@ -1,7 +1,9 @@
 /** Shapes shared by the search API and the palette. */
 
+import type { AnalysisQuery } from "@/lib/commands/analysis";
 import type { QuestionDirection, QuestionPeriod } from "@/lib/commands/question";
 import type { Instrument } from "@/lib/db/schema/investments";
+import type { AnalysisResult, AnalysisResultRow } from "./analysis-engine";
 
 export const SEARCH_GROUP_IDS = ["risposte", "movimenti", "conti", "titoli", "categorie", "abbonamenti", "debiti", "obiettivi", "pensione", "pagine", "azioni"] as const;
 export type SearchGroupId = (typeof SEARCH_GROUP_IDS)[number];
@@ -78,6 +80,17 @@ export type SearchAnswer = { source: "regole" | "ai" } & (
   | { kind: "patrimonio"; /** The past day asked about (ISO), null for today. */ date: string | null; /** No history reaches that day: no figure. */ missing: boolean }
   | { kind: "portafoglio"; /** Gain so far (the whole portfolio: total; one holding: not yet realised), null without a price. */ gain: number | null; /** Positions summed (1 for a named one, 0 = nothing held). */ positions: number }
   | { kind: "rata"; /** Day of the next instalment (ISO), null when no loan has one. */ date: string | null; overdue: boolean }
+  | {
+      kind: "analisi";
+      /** The question as the model read it and the server cleaned it: the card says what was understood from it. */
+      query: AnalysisQuery;
+      result: Omit<AnalysisResult, "rows"> & { rows: AnalysisLinkedRow[] };
+      /** The user's own category and account the question was matched to, as they are called. */
+      names: { category: string | null; account: string | null; missingAccount: string | null };
+    }
 );
+
+/** A row of an analysis with where it leads: a movement opens its detail, a split row opens Movimenti filtered. */
+export type AnalysisLinkedRow = AnalysisResultRow & { href?: string; logoPath: string | null };
 
 export type SearchAnswerKind = SearchAnswer["kind"];

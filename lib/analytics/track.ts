@@ -26,6 +26,7 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "anali
 import type { SearchGroupId } from "@/lib/search/types";
 import type { CommandKind, CommandSource } from "@/lib/commands/types";
 import type { DataQuestion } from "@/lib/commands/question";
+import type { AnalysisGroupBy, AnalysisMeasure } from "@/lib/commands/analysis";
 
 type DataQuestionKind = DataQuestion["kind"];
 
@@ -302,6 +303,8 @@ export interface ProductEvents {
   search_ai_asked: { outcome: string };
   /** «Cerca» answered a question about the user's data (once per kind per opening); `source`: read by the rules or by the AI. Never the question or the figure. */
   search_answer_shown: { kind: DataQuestionKind; source: "regole" | "ai" };
+  /** «Chiedi all'AI» answered an analysis (average, count, ranking, split): what kind, never the question or the figure; `found`: it had a figure. */
+  search_analysis_shown: { measure: AnalysisMeasure; groupBy: AnalysisGroupBy | "nessuno"; compare: boolean; found: boolean };
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */

@@ -10,7 +10,7 @@
 
 import * as React from "react";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { parseCommand, parseDataQuestion, type CommandDraft } from "@/lib/commands";
+import { isQuestion, parseCommand, parseDataQuestion, type CommandDraft } from "@/lib/commands";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { useLocalization } from "@/lib/localization/provider";
 import { track } from "@/lib/analytics";
@@ -44,7 +44,7 @@ export type AiStatus = "idle" | "loading" | "ok" | "none" | "invalid" | "disable
 export type SpotlightItem =
   | { type: "hit"; key: string; hit: SearchHit }
   | { type: "command"; key: "command"; draft: CommandDraft; instrument: Instrument | null }
-  | { type: "ai"; key: "ai"; status: AiStatus };
+  | { type: "ai"; key: "ai"; status: AiStatus; /** The text asks something: the row offers to compute it. */ question: boolean };
 
 export interface SpotlightBlock {
   id: string;
@@ -123,7 +123,11 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
     onMutate: (sentence) => setAi({ sentence, status: "loading", draft: null, answer: null }),
     onSuccess: (result, sentence) => {
       track("search_ai_asked", { outcome: result.answer ? "question" : result.status });
-      if (result.answer?.answer) track("search_answer_shown", { kind: result.answer.answer.kind, source: "ai" });
+      const answer = result.answer?.answer;
+      if (answer) track("search_answer_shown", { kind: answer.kind, source: "ai" });
+      if (answer?.kind === "analisi") {
+        track("search_analysis_shown", { measure: answer.query.measure, groupBy: answer.result.groupBy ?? "nessuno", compare: answer.query.compare !== null, found: answer.result.value !== null });
+      }
       setAi({ sentence, status: result.status, draft: result.draft ?? null, answer: result.answer ?? null });
     },
     onError: (_error, sentence) => setAi({ sentence, status: "failed", draft: null, answer: null }),
@@ -150,6 +154,8 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
   const answerPending = question !== null && (stale || server.isFetching);
   const offerAi =
     !filter && (draft === null || draft.guessed) && !answered && !answerPending && aiAnswer === null && words >= AI_MIN_WORDS && text.trim().length >= AI_MIN_LENGTH && aiForText?.status !== "ok";
+  // A question the rules did not answer: the AI row leads, so Enter asks it (the results for its words follow).
+  const asking = React.useMemo(() => isQuestion(text), [text]);
 
   const blocks = React.useMemo<SpotlightBlock[]>(() => {
     if (query === "") {
@@ -175,13 +181,14 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
       title: b.id === "top" ? (b.hits[0].group === "risposte" ? SEARCH_GROUP_TITLES.risposte : "Risultato migliore") : SEARCH_GROUP_TITLES[b.id],
       items: b.hits.map((hit) => ({ type: "hit", key: hit.key, hit })),
     }));
-    const aiBlock: SpotlightBlock = { id: "ai", title: null, items: [{ type: "ai", key: "ai", status: aiForText?.status ?? "idle" }] };
-    // The AI row leads when nothing else matched, and closes the list otherwise.
-    if (offerAi && arranged.length === 0) result.push(aiBlock);
+    const aiBlock: SpotlightBlock = { id: "ai", title: null, items: [{ type: "ai", key: "ai", status: aiForText?.status ?? "idle", question: asking }] };
+    // The AI row leads for a question and when nothing else matched, and closes the list otherwise.
+    const aiFirst = asking || arranged.length === 0;
+    if (offerAi && aiFirst) result.push(aiBlock);
     result.push(...arranged);
-    if (offerAi && arranged.length > 0) result.push(aiBlock);
+    if (offerAi && !aiFirst) result.push(aiBlock);
     return result;
-  }, [query, filter, idle, productCountry, tr, server.data, stale, draft, instrument, offerAi, aiForText?.status, aiAnswer]);
+  }, [query, filter, idle, productCountry, tr, server.data, stale, draft, instrument, offerAi, asking, aiForText?.status, aiAnswer]);
 
   const items = blocks.flatMap((b) => b.items);
   const waiting = query.length >= SERVER_MIN_LENGTH && (query !== serverQuery || server.isFetching);

@@ -15,7 +15,7 @@ describe("interpretWithModel", () => {
     const body = JSON.parse((fetchImpl.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
     expect(JSON.parse(body.messages[1].content)).toEqual({ today: "2026-10-24", appLanguage: "it", sentence: "ho preso altre tre Apple stamattina a cinquanta" });
     expect(body.provider).toMatchObject({ zdr: true, data_collection: "deny" });
-    expect(body.max_tokens).toBeLessThanOrEqual(160);
+    expect(body.max_tokens).toBeLessThanOrEqual(320);
   });
 
   it("refuses answers outside the schema and cleans what it keeps", async () => {
@@ -43,6 +43,35 @@ describe("interpretWithModel", () => {
     expect(await ask({ type: "saldo", subject: "Conto <Fineco>" })).toMatchObject({ question: { kind: "saldo", subject: "conto fineco" } });
     expect(await ask({ type: "rata" })).toEqual({ type: "question", question: { kind: "rata", language: "it" } });
     await expect(ask({ type: "consiglio", subject: "cosa compro?" })).rejects.toThrow();
+  });
+
+  it("turns an analysis into a closed query the server computes", async () => {
+    const ask = (question: unknown) => interpretWithModel("x", options(reply({ question }) as unknown as typeof fetch));
+    expect(await ask({ type: "analisi", measure: "media", per: "mese", direction: "uscite", category: "Supermercato", from: "2026-01-01", to: "2026-10-24" })).toEqual({
+      type: "question",
+      question: {
+        kind: "analisi",
+        measure: "media",
+        per: "mese",
+        direction: "uscite",
+        filters: { text: "", category: "supermercato", group: null, account: "", min: null, max: null, days: null },
+        from: "2026-01-01",
+        to: "2026-10-24",
+        all: false,
+        defaultPeriod: false,
+        groupBy: null,
+        order: "desc",
+        limit: 5,
+        compare: null,
+        language: "it",
+      },
+    });
+    expect(await ask({ type: "analisi", measure: "massimo", groupBy: "mese", text: "McDonald's", limit: 3 })).toMatchObject({
+      question: { kind: "analisi", measure: "massimo", groupBy: "mese", filters: { text: "mcdonald's" }, limit: 3, defaultPeriod: true, from: "2025-10-01" },
+    });
+    // Values outside the closed lists are refused, not guessed.
+    await expect(ask({ type: "analisi", measure: "regressione" })).rejects.toThrow();
+    await expect(ask({ type: "analisi", groupBy: "sql", text: "x" })).rejects.toThrow();
   });
 
   it("prefers the record when the model returns both", async () => {

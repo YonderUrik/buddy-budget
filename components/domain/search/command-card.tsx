@@ -103,12 +103,12 @@ export function CommandCard({ draft, instrument, selected, currency, phone = fal
   );
 }
 
-/** «Chiedi all'AI» for a sentence or a question the rules could not read, with what happened after asking. */
-export function AiRow({ status, selected, phone = false, id, onPick, onHover }: { status: string; selected: boolean; phone?: boolean; id: string; onPick: () => void; onHover?: () => void }) {
+/** «Chiedi all'AI» for a sentence or a question the rules could not read, with what happened after asking; for a question it offers to compute the answer. */
+export function AiRow({ status, question = false, selected, phone = false, id, onPick, onHover }: { status: string; question?: boolean; selected: boolean; phone?: boolean; id: string; onPick: () => void; onHover?: () => void }) {
   const { t: tr } = useLocalization();
   const lines: Record<string, string> = {
-    idle: "Prova a capire la frase o la domanda",
-    loading: "Sto leggendo la frase…",
+    idle: question ? "Medie, quante volte, i più grandi, per categoria o per mese" : "Prova a capire la frase o la domanda",
+    loading: question ? "Sto leggendo la domanda…" : "Sto leggendo la frase…",
     none: "Non sembra una spesa, un'operazione o una domanda sui tuoi soldi",
     invalid: "Frase troppo lunga o senza parole",
     disabled: "Prima accendi l'assistente AI: tocca per aprire le Impostazioni",
@@ -132,7 +132,7 @@ export function AiRow({ status, selected, phone = false, id, onPick, onHover }: 
           <SparklesIcon className={cn("size-[18px]", status === "loading" && "animate-pulse")} aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-medium leading-tight">{tr("Chiedi all'AI")}</span>
+          <span className="block text-[15px] font-medium leading-tight">{tr(question ? "Chiedi all'AI di fare i conti" : "Chiedi all'AI")}</span>
           <span className={cn("block truncate text-xs", lit ? "text-on-spotlight-lit-2" : "text-text-3")}>{tr(lines[status] ?? lines.idle)}</span>
         </span>
       </button>

@@ -6,6 +6,7 @@
  * `parseCommand`: the numbers are computed by the server on the user's own movements, never by a model.
  */
 
+import { needsAnalysis, type AnalysisQuery } from "./analysis";
 import { COMMAND_MAX_LENGTH, type CommandLanguage } from "./types";
 import { fold, MONTHS } from "./words";
 
@@ -56,11 +57,12 @@ export interface InstalmentQuestion {
 }
 
 /**
- * Every question «Cerca» can answer from the user's own data. The rules and the AI both produce one of these; only the
- * server turns it into numbers, so the model never sees them.
+ * Every question «Cerca» can answer from the user's own data. The rules produce the first five, the AI also an analysis
+ * (`AnalysisQuery`: averages, counts, rankings, splits); only the server turns them into numbers, so the model never
+ * sees them.
  */
-export type DataQuestion = TotalQuestion | BalanceQuestion | NetWorthQuestion | PortfolioQuestion | InstalmentQuestion;
-export const DATA_QUESTION_KINDS = ["totale", "saldo", "patrimonio", "portafoglio", "rata"] as const satisfies readonly DataQuestion["kind"][];
+export type DataQuestion = TotalQuestion | BalanceQuestion | NetWorthQuestion | PortfolioQuestion | InstalmentQuestion | AnalysisQuery;
+export const DATA_QUESTION_KINDS = ["totale", "saldo", "patrimonio", "portafoglio", "rata", "analisi"] as const satisfies readonly DataQuestion["kind"][];
 
 /** Words that say which money the question is about, per language (folded). */
 const DIRECTION_WORDS: Record<QuestionDirection, Record<CommandLanguage, string[]>> = {
@@ -141,7 +143,8 @@ function questionWords(text: string): string[] {
 
 /** Reads `text` as a question about a total, or null when it is not one (a search, or something to add). */
 export function parseTotalQuestion(text: string, today = new Date()): TotalQuestion | null {
-  if (text.length > COMMAND_MAX_LENGTH) return null;
+  // An average, a count, a ranking or a split is not one total: answering it as one would be wrong, the AI reads it.
+  if (text.length > COMMAND_MAX_LENGTH || needsAnalysis(text)) return null;
   const words = questionWords(text);
   const used = new Array<boolean>(words.length).fill(false);
 
@@ -197,7 +200,7 @@ export function parseTotalQuestion(text: string, today = new Date()): TotalQuest
 }
 
 /** Words that name the other questions, per kind (folded); `rate` alone is too ambiguous (interest rate), see below. */
-const KEYWORDS: Record<Exclude<DataQuestion["kind"], "totale">, Record<CommandLanguage, string[]>> = {
+const KEYWORDS: Record<Exclude<DataQuestion["kind"], "totale" | "analisi">, Record<CommandLanguage, string[]>> = {
   patrimonio: { it: ["patrimonio"], en: ["networth"], de: ["vermogen", "nettovermogen", "gesamtvermogen"] },
   rata: { it: ["rata"], en: ["instalment", "installment", "instalments", "installments"], de: [] },
   saldo: { it: ["saldo", "saldi"], en: ["balance"], de: ["kontostand"] },

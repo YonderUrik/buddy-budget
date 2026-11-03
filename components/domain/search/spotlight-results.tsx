@@ -9,10 +9,16 @@
 import { motion } from "motion/react";
 import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
+import type { AnalysisAnswer } from "@/lib/search/analysis-text";
+import type { SearchHit } from "@/lib/search/types";
+import { AnalysisCard } from "./analysis-card";
 import { AiRow, CommandCard } from "./command-card";
 import { SearchRow } from "./search-row";
 import { SPOTLIGHT_CARD } from "./spotlight-style";
 import type { SpotlightBlock, SpotlightItem } from "./use-spotlight";
+
+/** On the phone the command and an analysis are cards of their own, not rows inside the block's card. */
+const standsAlone = (item: SpotlightItem | undefined) => item?.type === "command" || (item?.type === "hit" && item.hit.answer?.kind === "analisi");
 
 /** Rows after this one appear together (no long cascade). */
 const STAGGER_ROWS = 8;
@@ -40,19 +46,26 @@ export function SpotlightResults({ blocks, query, active, currency, phone = fals
         <section key={block.id} aria-label={block.title ? tr(block.title) : undefined}>
           {block.title ? <h3 className={cn("px-3 pb-1 font-medium text-text-3", phone ? "text-[13px]" : "text-xs")}>{tr(block.title)}</h3> : null}
           {/* On the phone a block is a rounded card; the command block is a card on its own. */}
-          <div className={cn("flex flex-col", phone && block.items[0]?.type !== "command" && cn("rounded-3xl p-1.5", SPOTLIGHT_CARD))}>
+          <div className={cn("flex flex-col", phone && !standsAlone(block.items[0]) && cn("rounded-3xl p-1.5", SPOTLIGHT_CARD))}>
             {block.items.map((item, itemIndex) => {
               const position = starts[blockIndex] + itemIndex;
               const common = { id: optionId(position), selected: position === active, phone, onPick: () => onPick(item, position), onHover: () => onHover(position) };
               return (
                 // On the phone rows only fade: nothing moves under the thumb while the user types.
                 <motion.div key={item.key} initial={phone ? { opacity: 0 } : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ ...ROW_ENTER, delay: phone ? 0 : Math.min(position, STAGGER_ROWS) * 0.018 }}>
-                  {item.type === "hit" ? (
+                  {item.type === "hit" && item.hit.answer?.kind === "analisi" ? (
+                    <AnalysisCard
+                      {...common}
+                      hit={item.hit as SearchHit & { answer: AnalysisAnswer }}
+                      currency={currency}
+                      onOpenRow={(row) => onPick({ type: "hit", key: `${item.key}:${row.key}`, hit: { ...item.hit, href: row.href, movementId: row.movementId } }, position)}
+                    />
+                  ) : item.type === "hit" ? (
                     <SearchRow {...common} hit={item.hit} query={query} top={block.id === "top"} currency={currency} />
                   ) : item.type === "command" ? (
                     <CommandCard {...common} draft={item.draft} instrument={item.instrument} currency={currency} />
                   ) : (
-                    <AiRow {...common} status={item.status} />
+                    <AiRow {...common} status={item.status} question={item.question} />
                   )}
                 </motion.div>
               );

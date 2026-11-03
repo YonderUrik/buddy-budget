@@ -20,6 +20,15 @@ export const WHATS_NEW_MAX_AGE_DAYS = 45;
 
 export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
   {
+    id: "cerca-conti-ai",
+    date: "2026-11-03",
+    title: "«Cerca» fa i conti",
+    summary:
+      "Chiedi «quanto spendo in media al mese al supermercato?» o «in quale mese ho speso di più?»: con l'assistente AI acceso, Invio e arriva la cifra con le barre e cosa ha capito. L'AI legge solo la domanda, i conti li fa l'app.",
+    href: "/panoramica?cerca=quanto%20spendo%20in%20media%20al%20mese%20al%20supermercato%3F",
+    ctaLabel: "Prova una domanda",
+  },
+  {
     id: "cerca-domande",
     date: "2026-10-26",
     title: "Chiedi a «Cerca»",

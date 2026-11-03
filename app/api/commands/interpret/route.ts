@@ -7,7 +7,7 @@ import { authUser } from "@/lib/db/schema/auth";
 import { commandModel, interpretWithModel } from "@/lib/commands/ai";
 import { cacheInterpretation, cachedInterpretation, checkSentence, consumeCommandQuota } from "@/lib/commands/guard";
 import { COMMAND_LANGUAGES, COMMAND_MAX_LENGTH, type Interpretation } from "@/lib/commands/types";
-import { bindRequestUser, recordCommandAiRequest, requestLogger, withRoute, type CommandAiOutcome } from "@/lib/observability";
+import { bindRequestUser, recordCommandAiRequest, recordSearchAnalysis, requestLogger, withRoute, type CommandAiOutcome, type SearchAnalysisOutcome } from "@/lib/observability";
 import { isPublicDemoUserId } from "@/lib/public-demo/config";
 import { answerQuestion } from "@/lib/search/answers";
 import { MOVEMENT_SCAN_LIMIT, windowStart } from "@/lib/search/server";
@@ -76,7 +76,16 @@ async function handlePost(request: NextRequest) {
     if (interpretation === null) return done("none", outcome, {}, modelMs);
     if (interpretation.type === "draft") return done("ok", outcome, { draft: interpretation.draft }, modelMs);
     const now = new Date(`${today}T12:00:00Z`);
-    const { hit } = await answerQuestion(userId, interpretation.question, { windowStart: windowStart(now), scanLimit: MOVEMENT_SCAN_LIMIT, source: "ai", now });
+    const computed = performance.now();
+    const { hit, capped } = await answerQuestion(userId, interpretation.question, { windowStart: windowStart(now), scanLimit: MOVEMENT_SCAN_LIMIT, source: "ai", now });
+    if (hit?.answer?.kind === "analisi") {
+      const { query, result, names } = hit.answer;
+      const analysisOutcome: SearchAnalysisOutcome = names.missingAccount ? "missing_account" : result.value === null ? "empty" : capped ? "capped" : "found";
+      const durationMs = Math.round(performance.now() - computed);
+      recordSearchAnalysis(query.measure, result.groupBy, analysisOutcome, durationMs);
+      // What was computed, never the words, the figure or the period: measure and split from closed lists, a count.
+      log.info("search.analysis.completed", { kind: `${query.measure}:${result.groupBy ?? "none"}`, outcome: analysisOutcome, count: result.count, durationMs });
+    }
     // A question naming something the user does not have («saldo» of an unknown account) has no row to show.
     return hit ? done("ok", outcome, { answer: hit }, modelMs) : done("none", outcome, {}, modelMs);
   };

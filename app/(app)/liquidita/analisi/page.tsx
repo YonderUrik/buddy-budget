@@ -6,7 +6,8 @@ import { useLocalization } from "@/lib/localization/provider";
 /** Liquidità · Analisi: com'è andato il periodo (cifra, curva contro il solito), dove vanno i soldi, da dove arrivano, risparmio accumulato. */
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { MoneyFlowSection, type MoneyFlowVariant } from "@/components/domain/liquidity/money-flow";
 import { ArrowDownToLineIcon, PieChartIcon, PiggyBankIcon } from "lucide-react";
 import { LoadError } from "@/components/domain/shared";
 import { MoneyHero } from "@/components/domain/net-worth";
@@ -51,6 +52,8 @@ export default function LiquiditaAnalisiPage() {
 
   const { t: tr, language } = useLocalization();
   const router = useRouter();
+  const flowParam = useSearchParams().get("flusso");
+  const flowVariant: MoneyFlowVariant = flowParam === "b" || flowParam === "c" ? flowParam : "a";
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { period, setPeriod, referenceDate, setReferenceDate, today: now, accountId, setCategoryId } = useLiquidity();
@@ -138,6 +141,12 @@ export default function LiquiditaAnalisiPage() {
         </div>
         {typical && <p className="mt-2 text-sm text-text-2">{tr("La linea tratteggiata è la tua spesa media nello stesso tratto di mese.")}</p>}
       </section>
+      <MoneyFlowSection
+        variant={flowVariant}
+        sources={sources.map((s) => ({ id: s.categoryId, name: s.name, amount: s.amount }))}
+        groups={groups.map((g) => ({ key: g.key, label: tr(g.label), color: g.color, amount: g.amount, categories: g.categories.map((c) => ({ id: c.id, name: c.name, amount: c.amount })) }))}
+        formatValue={money}
+      />
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <section aria-label={tr("Dove vanno i soldi")}>
           <SectionTitle

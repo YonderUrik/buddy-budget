@@ -2,6 +2,20 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.95.0](https://github.com/YonderUrik/buddy-budget/compare/v0.94.0...v0.95.0) (2026-11-03)
+
+
+### Features
+
+* «Percorso» view of where the money goes in Liquidità › Analisi ([#555](https://github.com/YonderUrik/buddy-budget/issues/555)) ([21c03f0](https://github.com/YonderUrik/buddy-budget/commit/21c03f0db768c3b8c7084c419deb9aaef7976d8d))
+* delete a single imported investment operation and show each operation's source ([#554](https://github.com/YonderUrik/buddy-budget/issues/554)) ([9c14a8d](https://github.com/YonderUrik/buddy-budget/commit/9c14a8d325cb796c51a772a9e0f9abb869dca8a1))
+* Performance shows risk on a half dial and who beats the index ([#556](https://github.com/YonderUrik/buddy-budget/issues/556)) ([ef13d4f](https://github.com/YonderUrik/buddy-budget/commit/ef13d4f3ef712fbed9fe238ecfedb1dd28187a44))
+
+
+### Performance
+
+* open Performance on year to date and reuse the daily portfolio walk ([#552](https://github.com/YonderUrik/buddy-budget/issues/552)) ([b5b40a8](https://github.com/YonderUrik/buddy-budget/commit/b5b40a80b50567b421c909b04d42f2921508a9d0))
+
 ## [0.94.0](https://github.com/YonderUrik/buddy-budget/compare/v0.93.0...v0.94.0) (2026-11-01)
 
 

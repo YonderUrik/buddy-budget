@@ -133,7 +133,7 @@ weight         = position value / total value
 
 ### 4.4 Daily series and flows
 
-[`computeDailyPortfolioValues`](../../lib/calc/investments.ts) walks every calendar day from `fromKey` to `toKey`, applies that day's transactions, and records `value`, cumulative `invested` (net), `bought` and `income`. [`toDailyFlows`](../../lib/calc/returns.ts) turns the cumulative point pairs into daily flows:
+[`computeDailyPortfolioValues`](../../lib/calc/investments.ts) walks every calendar day from `fromKey` to `toKey`, applies that day's transactions, and records `value`, cumulative `invested` (net), `bought` and `income`. The walk is the expensive step (every day × every position), and one page asks for the same days several times (chart, returns, risk, period gain, and returns again on every hover over the Performance chart). So the function keeps the last four walks per `transactions` array (a `WeakMap`, freed with the array) and serves any range inside one of them, for the same instruments, price index, FX table and currency objects, as a slice; callers treat the points as read-only. The Performance hover passes the view's own `transactions` and `fx` (`InvestmentsView.transactions`/`fx`) so it hits that cache. [`toDailyFlows`](../../lib/calc/returns.ts) turns the cumulative point pairs into daily flows:
 
 ```text
 inflow_t  = bought_t - bought_{t-1}
@@ -145,7 +145,7 @@ The period window comes from [`resolvePerformanceRange`](../../lib/calc/performa
 
 Exchange rates of sub-unit currencies come from the main currency (`fxSourceCurrency` in [`lib/calc/fx.ts`](../../lib/calc/fx.ts)): GBX = GBP × 100 units per euro, likewise ZAC/ZAR and ILA/ILS; loaders and `updateFxRates` ask for the main currency.
 
-The Performance page opens on the whole history (`max`, since 2026-10-31; `usePerformanceView` in [`lib/queries/performance.ts`](../../lib/queries/performance.ts)) and states the period once at the top. Its returns card holds the controls (comparison index, broker filter, period), the chart, then TWR, MWR, real return and the index's TWR in one row, the timing sentence and the comparison box; risk and the TWR heatmap follow in their own cards, on the same range.
+The Performance page opens on the year to date (`ytd`, `PERFORMANCE_DEFAULT_PERIOD` in [`lib/investments/chart-period.ts`](../../lib/investments/chart-period.ts), since 2026-11-03; `usePerformanceView` in [`lib/queries/performance.ts`](../../lib/queries/performance.ts); it opened on `max` from 2026-10-31, which was slow on a long history) and states the period once at the top. Its returns card holds the controls (comparison index, broker filter, period), the chart, then TWR, MWR, real return and the index's TWR in one row, the timing sentence and the comparison box; risk and the TWR heatmap follow in their own cards, on the same range.
 
 ### 4.5 Time-weighted return (TWR)
 

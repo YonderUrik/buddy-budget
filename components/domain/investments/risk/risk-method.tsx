@@ -32,16 +32,16 @@ const STEPS: Step[] = [
     values: (locale) => ({ 0: pctRound(RISK_LEVEL_LOW, locale), 1: pctRound(RISK_LEVEL_MEDIUM, locale), 2: pctRound(RISK_LEVEL_HIGH, locale), 3: pctRound(0.15, locale) }),
   },
   {
-    title: "4. Perdita peggiore",
-    body: "Si costruisce un indice che parte da 1 e segue i rendimenti giornalieri (così i versamenti non lo fanno salire). La perdita peggiore è la distanza massima da un picco al punto più basso successivo; «tornato al massimo» è il giorno in cui l'indice rivede quel picco.",
+    title: "4. Calo più forte",
+    body: "Si costruisce un indice che parte da 1 e segue i rendimenti giornalieri (così i versamenti non lo fanno salire). Il calo più forte è la distanza massima da un picco al punto più basso successivo; «tornato al massimo» è il giorno in cui l'indice rivede quel picco.",
   },
   {
-    title: "5. Rischio ripagato (Sharpe)",
-    body: "Rendimento medio giornaliero meno quello di un conto senza rischio (il tasso €STR, solo per l'euro), diviso per la deviazione standard e portato a un anno. Sotto 0 hai reso meno di un conto deposito, tra 0 e 0,5 poco, tra 0,5 e 1 discreto, sopra 1 bene. Serve almeno {0} giorni di dati.",
+    title: "5. Rendimento per rischio (Sharpe)",
+    body: "Rendimento medio giornaliero meno quello di un conto senza rischio (il tasso €STR, solo per l'euro), diviso per la deviazione standard e portato a un anno. Sotto 0 hai reso meno di un conto deposito, tra 0 e 0,5 basso, tra 0,5 e 1 discreto, sopra 1 buono. Serve almeno {0} giorni di dati.",
     values: () => ({ 0: MIN_RELATION_OBSERVATIONS }),
   },
   {
-    title: "6. Quanto segue l'indice",
+    title: "6. Legame con l'indice (beta)",
     body: "Con un indice di confronto si usano solo i giorni in cui ci sono entrambi i prezzi. La correlazione (da −1 a 1) dice se vanno nella stessa direzione; il beta quanto si muove il portafoglio per ogni 1% dell'indice.",
   },
 ];

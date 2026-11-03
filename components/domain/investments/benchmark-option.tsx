@@ -2,7 +2,7 @@
 
 /**
  * One common index in «Confronta con un indice»: logo, name, what it holds (where, how many companies, how many
- * countries) and the ETF the comparison really uses. `row` is a full-width list row, `tile` a square card for a grid.
+ * countries) and the ETF the comparison really uses. One full-width list row.
  * The chosen one gets the yellow ring and a check; the state is also in `aria-pressed`, never in colour alone.
  */
 
@@ -17,12 +17,10 @@ export interface BenchmarkOptionProps {
   suggestion: BenchmarkSuggestion;
   selected: boolean;
   disabled?: boolean;
-  /** `row` (default): list row. `tile`: card for a two-column grid. */
-  layout?: "row" | "tile";
   onSelect: () => void;
 }
 
-export function BenchmarkOption({ suggestion, selected, disabled = false, layout = "row", onSelect }: BenchmarkOptionProps) {
+export function BenchmarkOption({ suggestion, selected, disabled = false, onSelect }: BenchmarkOptionProps) {
   const { t: tr, locale } = useLocalization();
   const { formatRatio } = localizedFormats(locale);
   const companies = tr(suggestion.companies >= 1000 ? "circa {0} aziende" : "{0} aziende", { 0: formatRatio(suggestion.companies, 0) });
@@ -37,23 +35,6 @@ export function BenchmarkOption({ suggestion, selected, disabled = false, layout
     "w-full text-left transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60",
     selected ? "bg-highlight/60 ring-2 ring-sun dark:bg-sun/10" : "bg-muted/60 hover:bg-muted",
   );
-
-  if (layout === "tile") {
-    return (
-      <button type="button" aria-pressed={selected} disabled={disabled} onClick={onSelect} className={cn(base, "flex min-w-0 flex-col gap-3 rounded-2xl p-3 sm:p-4")}>
-        <span className="flex items-start justify-between gap-2">
-          <BenchmarkLogo suggestion={suggestion} size="lg" />
-          {check}
-        </span>
-        <span className="flex min-w-0 flex-col gap-0.5">
-          <span className="font-display text-2xl leading-none tracking-tight">{suggestion.label}</span>
-          <span className="text-sm text-foreground">{tr(suggestion.area)}</span>
-        </span>
-        <span className="text-sm tabular-nums text-muted-foreground">{companies}<br />{countries}</span>
-        <span className="mt-auto truncate text-xs text-muted-foreground" title={suggestion.name}>{tr("ETF {0}", { 0: ticker })}</span>
-      </button>
-    );
-  }
 
   return (
     <button type="button" aria-pressed={selected} disabled={disabled} onClick={onSelect} className={cn(base, "flex min-w-0 items-center gap-3 rounded-2xl p-3")}>

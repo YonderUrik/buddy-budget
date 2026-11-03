@@ -19,14 +19,12 @@ export interface RiskMetricProps {
   description?: ReactNode;
   /** Colour of the value: `pos`/`neg` for a clear good or bad reading, neutral otherwise. */
   tone?: "pos" | "neg";
-  /** In its own filled block (islands), instead of open on the card. */
-  boxed?: boolean;
 }
 
-export function RiskMetric({ label, hint, value, note = null, description = null, tone, boxed = false }: RiskMetricProps) {
+export function RiskMetric({ label, hint, value, note = null, description = null, tone }: RiskMetricProps) {
   const { t: tr } = useLocalization();
   return (
-    <div className={cn("flex flex-col gap-1", boxed && "rounded-2xl bg-muted/60 p-4")}>
+    <div className="flex flex-col gap-1">
       <p className="flex items-center gap-1 text-sm font-medium text-foreground">
         {tr(label)}
         <InfoHint label={tr("Cos'è: {0}", {0: label})}>{tr(hint)}</InfoHint>

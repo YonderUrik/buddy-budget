@@ -211,6 +211,8 @@ export interface ProductEvents {
   pension_rate_simulated: { years: number };
   investment_broker_filter_changed: { action: "toggle" | "all"; selected?: number };
   investment_benchmark_set: undefined;
+  /** «Confronta con un indice»: which common index was picked, `other` from the search, `none` when removed. */
+  investment_benchmark_chosen: { choice: "sp500" | "msci-world" | "ftse-all-world" | "nasdaq-100" | "other" | "none" };
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;
   investment_tax_regime_set: { regime: "amministrato" | "dichiarativo" };

@@ -1,7 +1,10 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
 
-/** Dialog per scegliere (o togliere) lo strumento con cui confrontare il rendimento del portafoglio. */
+/**
+ * Dialog to choose (or remove) what the portfolio is compared with: the four common indices as rows with their logo,
+ * what they hold and the ETF used, or any other instrument from the search below.
+ */
 
 import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
@@ -9,8 +12,9 @@ import { Button } from "@/components/ui/button";
 import {Dialog} from "@/components/ui/dialog";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { BENCHMARK_SUGGESTIONS, matchBenchmarkSuggestion } from "@/lib/investments/benchmark-suggestions";
-import { useDesignProposal } from "@/lib/investments/design-proposal";
 import { BenchmarkOption } from "./benchmark-option";
+import { track } from "@/lib/analytics";
+import type { BenchmarkSuggestion } from "@/lib/investments/benchmark-suggestions";
 import { useCreateInstrumentMutation, useUpdatePortfolioMutation } from "@/lib/queries/investments";
 import { InstrumentPicker } from "./instrument-picker";
 import { GitCompareArrowsIcon } from "lucide-react";
@@ -28,11 +32,16 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
   const update = useUpdatePortfolioMutation();
   const create = useCreateInstrumentMutation({ deferHistory: true });
   const pending = create.isPending || update.isPending;
-  const proposal = useDesignProposal();
   const currentSuggestion = matchBenchmarkSuggestion(current);
 
-  function save(benchmarkInstrumentId: string | null) {
-    update.mutate({ benchmarkInstrumentId }, { onSuccess: () => onOpenChange(false) });
+  /** `choice`: which common index, `other` for one from the search, `none` when the comparison is removed. */
+  function save(benchmarkInstrumentId: string | null, choice: BenchmarkSuggestion["id"] | "other" | "none") {
+    update.mutate({ benchmarkInstrumentId }, {
+      onSuccess: () => {
+        track("investment_benchmark_chosen", { choice });
+        onOpenChange(false);
+      },
+    });
   }
 
   return (
@@ -51,12 +60,11 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
         <PanelDialogHeader icon={GitCompareArrowsIcon} title={tr("Confronta con un indice")} description={tr("Mettiamo i tuoi stessi versamenti, negli stessi giorni, in un ETF che replica l’indice.")} color="var(--swatch-indigo)" />
         <section aria-label={tr("Indici più usati")} className="flex flex-col gap-2">
           <p className="text-sm font-medium">{tr("Indici più usati")}</p>
-          <div className={proposal === "b" ? "grid grid-cols-2 gap-2" : "flex flex-col gap-2"}>
+          <div className="flex flex-col gap-2">
             {BENCHMARK_SUGGESTIONS.map((suggestion) => (
               <BenchmarkOption
                 key={suggestion.id}
                 suggestion={suggestion}
-                layout={proposal === "b" ? "tile" : "row"}
                 selected={currentSuggestion?.id === suggestion.id}
                 disabled={pending}
                 onSelect={() => {
@@ -64,7 +72,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
                   update.reset();
                   create.mutate(
                     { source: "yahoo", type: "etf", name: suggestion.name, yahooSymbol: suggestion.yahooSymbol, isin: suggestion.isin },
-                    { onSuccess: (instrument) => save(instrument.id) }
+                    { onSuccess: (instrument) => save(instrument.id, suggestion.id) }
                   );
                 }}
               />
@@ -73,7 +81,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
         </section>
         <InstrumentPicker
           value={currentSuggestion ? null : current}
-          onChange={(instrument) => { create.reset(); save(instrument.id); }}
+          onChange={(instrument) => { create.reset(); save(instrument.id, matchBenchmarkSuggestion(instrument)?.id ?? "other"); }}
           defaultCurrency={currency}
           disabled={pending}
           deferHistory
@@ -82,7 +90,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
         {pending ? <p role="status" className="text-sm text-muted-foreground">{tr("Salvo e scarico i prezzi…")}</p> : null}
         {create.isError || update.isError ? <p role="alert" className="text-sm text-destructive">{create.error?.message ?? update.error?.message}</p> : null}
         {current ? (
-          <Button variant="ghost" className="self-start text-muted-foreground" disabled={pending} onClick={() => { create.reset(); save(null); }}>{tr("Togli il confronto")}</Button>
+          <Button variant="ghost" className="self-start text-muted-foreground" disabled={pending} onClick={() => { create.reset(); save(null, "none"); }}>{tr("Togli il confronto")}</Button>
         ) : null}
       </FormDialogContent>
     </Dialog>

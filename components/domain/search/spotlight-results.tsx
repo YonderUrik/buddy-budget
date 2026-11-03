@@ -12,13 +12,14 @@ import { cn } from "@/lib/utils";
 import type { AnalysisAnswer } from "@/lib/search/analysis-text";
 import type { SearchHit } from "@/lib/search/types";
 import { AnalysisCard } from "./analysis-card";
+import { HelpCard } from "./help-card";
 import { AiRow, CommandCard } from "./command-card";
 import { SearchRow } from "./search-row";
 import { SPOTLIGHT_CARD } from "./spotlight-style";
 import type { SpotlightBlock, SpotlightItem } from "./use-spotlight";
 
 /** On the phone the command and an analysis are cards of their own, not rows inside the block's card. */
-const standsAlone = (item: SpotlightItem | undefined) => item?.type === "command" || (item?.type === "hit" && item.hit.answer?.kind === "analisi");
+const standsAlone = (item: SpotlightItem | undefined) => item?.type === "command" || (item?.type === "hit" && (item.hit.answer?.kind === "analisi" || item.hit.answer?.kind === "aiuto"));
 
 /** Rows after this one appear together (no long cascade). */
 const STAGGER_ROWS = 8;
@@ -60,12 +61,19 @@ export function SpotlightResults({ blocks, query, active, currency, phone = fals
                       currency={currency}
                       onOpenRow={(row) => onPick({ type: "hit", key: `${item.key}:${row.key}`, hit: { ...item.hit, href: row.href, movementId: row.movementId } }, position)}
                     />
+                  ) : item.type === "hit" && item.hit.answer?.kind === "aiuto" ? (
+                    <HelpCard
+                      {...common}
+                      hit={item.hit as SearchHit & { answer: Extract<SearchHit["answer"], { kind: "aiuto" }> }}
+                      onOpenArticle={(article) => onPick({ type: "hit", key: `${item.key}:${article.id}`, hit: { ...item.hit, href: article.quickAdd ? undefined : article.href, quickAdd: article.quickAdd } }, position)}
+                      onWriteUs={() => onPick({ type: "hit", key: `${item.key}:scrivici`, hit: { ...item.hit, href: "/aiuto?da=cerca", quickAdd: undefined } }, position)}
+                    />
                   ) : item.type === "hit" ? (
                     <SearchRow {...common} hit={item.hit} query={query} top={block.id === "top"} currency={currency} />
                   ) : item.type === "command" ? (
                     <CommandCard {...common} draft={item.draft} instrument={item.instrument} currency={currency} />
                   ) : (
-                    <AiRow {...common} status={item.status} question={item.question} />
+                    <AiRow {...common} status={item.status} ask={item.ask} />
                   )}
                 </motion.div>
               );

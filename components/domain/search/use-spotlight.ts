@@ -10,15 +10,17 @@
 
 import * as React from "react";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { isQuestion, parseCommand, parseDataQuestion, type CommandDraft } from "@/lib/commands";
+import { isQuestion, needsAnalysis, parseCommand, parseDataQuestion, type CommandDraft } from "@/lib/commands";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { useLocalization } from "@/lib/localization/provider";
 import { track } from "@/lib/analytics";
+import { helpHit, isHelpQuestion, matchHelp } from "@/lib/help";
 import { isUsefulAnswer } from "@/lib/search/answer-text";
 import { arrangeHits, SEARCH_GROUP_TITLES } from "@/lib/search/groups";
 import { foldText, matchScore } from "@/lib/search/normalize";
 import { searchStatic, staticEntriesOf } from "@/lib/search/static-index";
 import type { SearchGroupId, SearchHit, SearchResponse } from "@/lib/search/types";
+import type { AiAsk } from "./command-card";
 
 /** Pause in typing before asking the server (the static part does not wait). */
 export const SEARCH_DEBOUNCE_MS = 180;
@@ -44,7 +46,7 @@ export type AiStatus = "idle" | "loading" | "ok" | "none" | "invalid" | "disable
 export type SpotlightItem =
   | { type: "hit"; key: string; hit: SearchHit }
   | { type: "command"; key: "command"; draft: CommandDraft; instrument: Instrument | null }
-  | { type: "ai"; key: "ai"; status: AiStatus; /** The text asks something: the row offers to compute it. */ question: boolean };
+  | { type: "ai"; key: "ai"; status: AiStatus; /** What the text asks: a computation, help from the guide, or nothing in particular. */ ask: AiAsk };
 
 export interface SpotlightBlock {
   id: string;
@@ -125,6 +127,7 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
       track("search_ai_asked", { outcome: result.answer ? "question" : result.status });
       const answer = result.answer?.answer;
       if (answer) track("search_answer_shown", { kind: answer.kind, source: "ai" });
+      if (answer?.kind === "aiuto") for (const id of answer.articles) track("search_help_shown", { id, source: "ai" });
       if (answer?.kind === "analisi") {
         track("search_analysis_shown", { measure: answer.query.measure, groupBy: answer.result.groupBy ?? "nessuno", compare: answer.query.compare !== null, found: answer.result.value !== null });
       }
@@ -148,6 +151,18 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
     track("search_answer_shown", { kind, source: "regole" });
   }, [ruleAnswer]);
 
+  // A «how do I…» question: the guide's articles that cover its words, found here without AI.
+  // «dove spendo di più?» and «come sono andate le spese a ottobre?» are about figures: no help for those.
+  const helpQuestion = React.useMemo(() => !filter && isHelpQuestion(text) && !needsAnalysis(text) && !parseDataQuestion(text), [text, filter]);
+  const ruleHelp = React.useMemo(() => (helpQuestion ? helpHit(matchHelp(text, productCountry, (key) => tr(key)).map((article) => article.id), "regole") : null), [helpQuestion, text, productCountry, tr]);
+  const shownHelp = React.useRef(new Set<string>());
+  React.useEffect(() => {
+    const id = ruleHelp?.answer?.kind === "aiuto" ? ruleHelp.answer.articles[0] : undefined;
+    if (!id || shownHelp.current.has(id)) return;
+    shownHelp.current.add(id);
+    track("search_help_shown", { id, source: "regole" });
+  }, [ruleHelp]);
+
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   // A question the rules answered with a figure needs no AI; one they read but could not answer is offered once the answer is in.
   const answered = ruleAnswer?.answer ? isUsefulAnswer(ruleAnswer.answer) : false;
@@ -156,6 +171,7 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
     !filter && (draft === null || draft.guessed) && !answered && !answerPending && aiAnswer === null && words >= AI_MIN_WORDS && text.trim().length >= AI_MIN_LENGTH && aiForText?.status !== "ok";
   // A question the rules did not answer: the AI row leads, so Enter asks it (the results for its words follow).
   const asking = React.useMemo(() => isQuestion(text), [text]);
+  const ask: AiAsk = helpQuestion ? "aiuto" : asking ? "conti" : null;
 
   const blocks = React.useMemo<SpotlightBlock[]>(() => {
     if (query === "") {
@@ -175,20 +191,21 @@ export function useSpotlight({ text, filter, idle }: UseSpotlightInput) {
     const hits = [...remote, ...local].filter((h) => !allowed || allowed.has(h.group));
     const result: SpotlightBlock[] = [];
     if (draft) result.push({ id: "comando", title: draft.source === "ai" ? "Capito dall'AI" : "Da aggiungere", items: [{ type: "command", key: "command", draft, instrument }] });
-    if (aiAnswer) result.push({ id: "ai-risposta", title: "Capito dall'AI", items: [{ type: "hit", key: `ai:${aiAnswer.key}`, hit: aiAnswer }] });
+    if (aiAnswer) result.push({ id: "ai-risposta", title: aiAnswer.answer?.kind === "aiuto" ? "Risposta dell'AI" : "Capito dall'AI", items: [{ type: "hit", key: `ai:${aiAnswer.key}`, hit: aiAnswer }] });
+    else if (ruleHelp) result.push({ id: "aiuto", title: "Dalla guida", items: [{ type: "hit", key: ruleHelp.key, hit: ruleHelp }] });
     const arranged = arrangeHits(hits).map<SpotlightBlock>((b) => ({
       id: b.id,
       title: b.id === "top" ? (b.hits[0].group === "risposte" ? SEARCH_GROUP_TITLES.risposte : "Risultato migliore") : SEARCH_GROUP_TITLES[b.id],
       items: b.hits.map((hit) => ({ type: "hit", key: hit.key, hit })),
     }));
-    const aiBlock: SpotlightBlock = { id: "ai", title: null, items: [{ type: "ai", key: "ai", status: aiForText?.status ?? "idle", question: asking }] };
-    // The AI row leads for a question and when nothing else matched, and closes the list otherwise.
-    const aiFirst = asking || arranged.length === 0;
+    const aiBlock: SpotlightBlock = { id: "ai", title: null, items: [{ type: "ai", key: "ai", status: aiForText?.status ?? "idle", ask }] };
+    // The AI row leads for a question and when nothing else matched, and closes the list otherwise (also after the guide's answer).
+    const aiFirst = !ruleHelp && (asking || helpQuestion || arranged.length === 0);
     if (offerAi && aiFirst) result.push(aiBlock);
     result.push(...arranged);
     if (offerAi && !aiFirst) result.push(aiBlock);
     return result;
-  }, [query, filter, idle, productCountry, tr, server.data, stale, draft, instrument, offerAi, asking, aiForText?.status, aiAnswer]);
+  }, [query, filter, idle, productCountry, tr, server.data, stale, draft, instrument, offerAi, asking, helpQuestion, ask, ruleHelp, aiForText?.status, aiAnswer]);
 
   const items = blocks.flatMap((b) => b.items);
   const waiting = query.length >= SERVER_MIN_LENGTH && (query !== serverQuery || server.isFetching);

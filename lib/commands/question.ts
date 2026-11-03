@@ -6,6 +6,7 @@
  * `parseCommand`: the numbers are computed by the server on the user's own movements, never by a model.
  */
 
+import { isHowToQuestion } from "@/lib/help";
 import { needsAnalysis, type AnalysisQuery } from "./analysis";
 import { COMMAND_MAX_LENGTH, type CommandLanguage } from "./types";
 import { fold, MONTHS } from "./words";
@@ -219,6 +220,8 @@ const ACCOUNT_WORDS = new Set(["conto", "conti", "account", "accounts", "konto",
  * rata»). Null when it is not one: a search, or something to add.
  */
 export function parseDataQuestion(text: string, today = new Date()): DataQuestion | null {
+  // «perché alcune spese non contano?» asks how the app works, not for a total of spending.
+  if (isHowToQuestion(text)) return null;
   const total = parseTotalQuestion(text, today);
   if (total) return total;
   if (text.length > COMMAND_MAX_LENGTH) return null;

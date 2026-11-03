@@ -103,13 +103,16 @@ export function CommandCard({ draft, instrument, selected, currency, phone = fal
   );
 }
 
-/** «Chiedi all'AI» for a sentence or a question the rules could not read, with what happened after asking; for a question it offers to compute the answer. */
-export function AiRow({ status, question = false, selected, phone = false, id, onPick, onHover }: { status: string; question?: boolean; selected: boolean; phone?: boolean; id: string; onPick: () => void; onHover?: () => void }) {
+/** What «Chiedi all'AI» offers for the text: compute a question about the user's money, answer a «how do I…», or just read it. */
+export type AiAsk = "conti" | "aiuto" | null;
+
+/** «Chiedi all'AI» for a sentence or a question the rules could not read, with what happened after asking; a question about money offers to compute it, a «how do I…» to answer from the guide. */
+export function AiRow({ status, ask = null, selected, phone = false, id, onPick, onHover }: { status: string; ask?: AiAsk; selected: boolean; phone?: boolean; id: string; onPick: () => void; onHover?: () => void }) {
   const { t: tr } = useLocalization();
   const lines: Record<string, string> = {
-    idle: question ? "Medie, quante volte, i più grandi, per categoria o per mese" : "Prova a capire la frase o la domanda",
-    loading: question ? "Sto leggendo la domanda…" : "Sto leggendo la frase…",
-    none: "Non sembra una spesa, un'operazione o una domanda sui tuoi soldi",
+    idle: ask === "conti" ? "Medie, quante volte, i più grandi, per categoria o per mese" : ask === "aiuto" ? "Ti risponde con le parole della guida" : "Prova a capire la frase o la domanda",
+    loading: ask ? "Sto leggendo la domanda…" : "Sto leggendo la frase…",
+    none: ask === "aiuto" ? "Nella guida non c'è una risposta: scrivici da Aiuto" : "Non sembra una spesa, un'operazione o una domanda sui tuoi soldi",
     invalid: "Frase troppo lunga o senza parole",
     disabled: "Prima accendi l'assistente AI: tocca per aprire le Impostazioni",
     unavailable: "Non disponibile in questa versione",
@@ -132,7 +135,7 @@ export function AiRow({ status, question = false, selected, phone = false, id, o
           <SparklesIcon className={cn("size-[18px]", status === "loading" && "animate-pulse")} aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-medium leading-tight">{tr(question ? "Chiedi all'AI di fare i conti" : "Chiedi all'AI")}</span>
+          <span className="block text-[15px] font-medium leading-tight">{tr(ask === "conti" ? "Chiedi all'AI di fare i conti" : "Chiedi all'AI")}</span>
           <span className={cn("block truncate text-xs", lit ? "text-on-spotlight-lit-2" : "text-text-3")}>{tr(lines[status] ?? lines.idle)}</span>
         </span>
       </button>

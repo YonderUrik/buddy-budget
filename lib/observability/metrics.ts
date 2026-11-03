@@ -150,7 +150,7 @@ export type SearchAnswerLabel = "none" | "totale" | "saldo" | "patrimonio" | "po
  * answered from the 24 h cache, refused before the model (invalid sentence, no consent, unavailable: public demo or no
  * key/model; limit of the user or of the whole service; quota store down) or failed (timeout, error, bad answer).
  */
-export type CommandAiOutcome = "ok" | "question" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
+export type CommandAiOutcome = "ok" | "question" | "help" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge

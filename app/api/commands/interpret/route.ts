@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { commandModel, interpretWithModel } from "@/lib/commands/ai";
+import { cleanHelpIds, helpHit } from "@/lib/help";
 import { cacheInterpretation, cachedInterpretation, checkSentence, consumeCommandQuota } from "@/lib/commands/guard";
 import { COMMAND_LANGUAGES, COMMAND_MAX_LENGTH, type Interpretation } from "@/lib/commands/types";
 import { bindRequestUser, recordCommandAiRequest, recordSearchAnalysis, requestLogger, withRoute, type CommandAiOutcome, type SearchAnalysisOutcome } from "@/lib/observability";
@@ -39,8 +40,8 @@ const QUOTA_REFUSAL = {
 
 /**
  * POST /api/commands/interpret — «Chiedi all'AI» in «Cerca»: a sentence the rules could not read becomes a draft to
- * add, or a question about the user's data that this server answers (the model only reads the sentence, never the data).
- * Answers `{ status }`: ok (with `draft`, or `answer`: the answer row), none (neither), invalid, disabled (no AI
+ * add, a question about the user's data that this server answers (the model only reads the sentence, never the data), or
+ * a short help answer written from our help articles. Answers `{ status }`: ok (with `draft`, or `answer`: the answer row), none (neither), invalid, disabled (no AI
  * consent), unavailable (public demo, no key or model), limited (the user's limit), busy (the service's daily ceiling),
  * failed. It never writes: the draft only fills a form.
  */
@@ -64,7 +65,7 @@ async function handlePost(request: NextRequest) {
   // The shared demo account is open to anyone: no paid calls from there.
   if (isPublicDemoUserId(userId)) return done("unavailable", "unavailable");
 
-  const [user] = await db.select({ consentAt: authUser.aiCategorizationConsentAt }).from(authUser).where(eq(authUser.id, userId));
+  const [user] = await db.select({ consentAt: authUser.aiCategorizationConsentAt, productCountry: authUser.productCountry }).from(authUser).where(eq(authUser.id, userId));
   if (!user?.consentAt) return done("disabled", "disabled");
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
   const model = commandModel();
@@ -75,6 +76,12 @@ async function handlePost(request: NextRequest) {
   const reply = async (interpretation: Interpretation | null, outcome: CommandAiOutcome, modelMs?: number) => {
     if (interpretation === null) return done("none", outcome, {}, modelMs);
     if (interpretation.type === "draft") return done("ok", outcome, { draft: interpretation.draft }, modelMs);
+    if (interpretation.type === "help") {
+      // Only articles the user's country has; the answer goes with the articles it was written from, or not at all.
+      const ids = cleanHelpIds(interpretation.ids, user.productCountry);
+      const hit = helpHit(ids, "ai", interpretation.text);
+      return hit ? done("ok", outcome === "cached" ? outcome : "help", { answer: hit }, modelMs) : done("none", outcome === "cached" ? outcome : "none", {}, modelMs);
+    }
     const now = new Date(`${today}T12:00:00Z`);
     const computed = performance.now();
     const { hit, capped } = await answerQuestion(userId, interpretation.question, { windowStart: windowStart(now), scanLimit: MOVEMENT_SCAN_LIMIT, source: "ai", now });

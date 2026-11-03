@@ -81,6 +81,13 @@ export type SearchAnswer = { source: "regole" | "ai" } & (
   | { kind: "portafoglio"; /** Gain so far (the whole portfolio: total; one holding: not yet realised), null without a price. */ gain: number | null; /** Positions summed (1 for a named one, 0 = nothing held). */ positions: number }
   | { kind: "rata"; /** Day of the next instalment (ISO), null when no loan has one. */ date: string | null; overdue: boolean }
   | {
+      kind: "aiuto";
+      /** Help articles (`lib/help`), best first: found by the rules, or the ones the AI wrote its answer from. */
+      articles: string[];
+      /** The AI's short answer, written only from those articles; null when the rules found them (the first one is shown). */
+      text: string | null;
+    }
+  | {
       kind: "analisi";
       /** The question as the model read it and the server cleaned it: the card says what was understood from it. */
       query: AnalysisQuery;

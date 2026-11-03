@@ -36,6 +36,8 @@ export function answerTitle(hit: SearchHit & { answer: SearchAnswer }, locale: s
       return answer.date === null ? tr("Nessuna rata in arrivo") : hit.title || tr("Prossima rata");
     case "analisi":
       return analysisTitle(answer, locale, tr);
+    case "aiuto":
+      return tr(hit.title);
   }
 }
 
@@ -65,6 +67,8 @@ export function answerLine(hit: SearchHit & { answer: SearchAnswer }, locale: st
       return tr(answer.overdue ? "Rata scaduta il {0}" : "Prossima rata il {0}", { 0: formatDateWithYear(answer.date, locale) });
     case "analisi":
       return analysisLine(answer, locale, tr, currency);
+    case "aiuto":
+      return tr(answer.text ? "Risposta dell'AI dalla guida" : "Dalla guida");
   }
 }
 
@@ -83,5 +87,7 @@ export function isUsefulAnswer(answer: SearchAnswer): boolean {
       return answer.date !== null;
     case "analisi":
       return isUsefulAnalysis(answer);
+    case "aiuto":
+      return answer.articles.length > 0;
   }
 }

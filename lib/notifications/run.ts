@@ -14,7 +14,6 @@ import { loadGoalsView } from "@/lib/goals/data";
 import type { GoalsView } from "@/lib/goals/view";
 import { LANGUAGE_LOCALES, isCountryPathAvailable, resolveProfile } from "@/lib/localization/config";
 import { buildDebtsView, type DebtDueItem } from "@/lib/debts/view";
-import { formatCurrency } from "@/lib/format";
 import { getAppUrl } from "@/lib/env";
 import { hashUserId, logger, recordNotificationDigestSection, recordNotificationEmail, type Logger, type NotificationEmailOutcome } from "@/lib/observability";
 import { findBudgetAlerts, findDeadlineAlerts } from "./alerts";
@@ -36,12 +35,11 @@ export function parseNotificationsMode(value: string | undefined): Notifications
   return value === "off" || value === "execute" ? value : "dry-run";
 }
 
-/** Utente da servire: solo ciò che serve a costruire le email. */
+/** Recipient data needed to build emails; frontend privacy preferences do not apply. */
 export interface NotificationUser {
   id: string;
   email: string;
   currency: string;
-  hideAmounts: boolean;
   /** Paese del prodotto: gli obiettivi (in Analitiche) ci sono solo dove le Analitiche sono disponibili. */
   productCountry?: string;
   /** Interface language: emails are written in it, with its number and date formats (Italian when absent). */
@@ -89,7 +87,7 @@ export interface NotificationsResult {
 export const databaseDeps: NotificationDeps = {
   async listUsers() {
     const rows = await db
-      .select({ id: authUser.id, email: authUser.email, currency: authUser.currency, hideAmounts: authUser.hideAmounts, productCountry: authUser.productCountry, language: authUser.language, prefs: notificationPreferences })
+      .select({ id: authUser.id, email: authUser.email, currency: authUser.currency, productCountry: authUser.productCountry, language: authUser.language, prefs: notificationPreferences })
       .from(notificationPreferences)
       .innerJoin(authUser, eq(authUser.id, notificationPreferences.userId))
       .where(
@@ -108,7 +106,6 @@ export const databaseDeps: NotificationDeps = {
       id: r.id,
       email: r.email,
       currency: r.currency,
-      hideAmounts: r.hideAmounts,
       productCountry: r.productCountry,
       language: r.language,
       preferences: {
@@ -151,17 +148,16 @@ export const databaseDeps: NotificationDeps = {
   purgeLog: purgeNotificationLog,
 };
 
-/** Maschera da usare al posto degli importi se l'utente ha scelto «nascondi importi». */
-const HIDDEN_AMOUNT = "••••";
-
 function contextFor(user: NotificationUser, kind: NotificationKind, appUrl: string): EmailContext & { token: string } {
   const token = createUnsubscribeToken({ userId: user.id, scope: kind });
   const { language } = resolveProfile(user);
+  // Emails always contain real amounts, independently of the frontend privacy formatter.
+  const money = new Intl.NumberFormat(LANGUAGE_LOCALES[language], { style: "currency", currency: user.currency, maximumFractionDigits: 2 });
   return {
     appUrl,
     token,
     language,
-    money: (value) => (user.hideAmounts ? HIDDEN_AMOUNT : formatCurrency(value, user.currency, { locale: LANGUAGE_LOCALES[language] })),
+    money: (value) => money.format(value),
     unsubscribeUrl: unsubscribePageUrl(appUrl, token),
     preferencesUrl: `${appUrl}${NOTIFICATION_SETTINGS_PATH}`,
   };

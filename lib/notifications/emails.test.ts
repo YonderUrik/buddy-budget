@@ -85,9 +85,9 @@ describe("digestEmail", () => {
     expect(text).not.toContain("Liquidità");
   });
 
-  it("con «nascondi importi» non svela il segno del guadagno", () => {
-    const { text } = digestEmail({ ...data, investments }, { ...ctx, money: () => "••••" });
-    expect(text).toContain("Guadagno del periodo: •••• (+1,3%)");
+  it("shows zero gain without a plus sign or an unavailable return", () => {
+    const { text } = digestEmail({ ...data, investments: { ...investments, gain: 0, twr: null } }, ctx);
+    expect(text).toContain("Guadagno del periodo: 0,00 €\n");
   });
 
   it("non dà consigli di investimento né raccomandazioni", () => {

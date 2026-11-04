@@ -61,12 +61,13 @@ describe("findGoalNotice", () => {
 });
 
 describe("goalsEmail", () => {
-  it("dice cosa è successo e porta agli obiettivi, senza importi se nascosti", () => {
+  it("explains what happened with real amounts and links to goals", () => {
     const notice = findGoalNotice({ view: view([goal({ targetDate: "2026-11-01", monthly: 100 })]), alreadySent: new Set(), now: EARLY });
-    const email = goalsEmail(notice, { ...ctx, money: () => "••••" });
+    const email = goalsEmail(notice, ctx);
     expect(email.subject).toBe("Un obiettivo si avvicina alla data");
     expect(email.text).toContain("Viaggio in Giappone");
-    expect(email.text).not.toMatch(/\d+ €/);
+    expect(email.text).toMatch(/\d+ €/);
+    expect(email.text).not.toContain("••••");
     expect(email.html).toContain("/analitiche/obiettivi?da=email");
   });
 

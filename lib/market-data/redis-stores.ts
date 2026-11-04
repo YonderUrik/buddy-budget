@@ -14,7 +14,7 @@ export const redisBudgetStore: ProviderBudgetStore = {
   },
 };
 
-/** Stato dei recuperi storici su Redis. `SET NX` rende atomico il via del recupero anche tra pod diversi. */
+/** Store of the backfill state on Redis. `SET NX` makes the start atomic across pods too. */
 export const redisBackfillStore = createBackfillStore({
   get: (key) => redis.get(key),
   async set(key, value, ttlSeconds) {

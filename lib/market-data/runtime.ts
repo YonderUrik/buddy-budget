@@ -37,18 +37,18 @@ import { backfillInstrument, type MarketDataDeps } from "./update";
 import type { BackfillStore } from "./backfill-state";
 
 /**
- * Archivio dello stato dei recuperi. In produzione è quello su Redis; i test possono sostituirlo per verificare
- * l'avvio e la fine del recupero senza toccare Redis.
+ * Store of the backfill state. In production it is the Redis one; tests can replace it to check that a backfill
+ * starts and finishes without touching Redis.
  */
 let backfillStore: BackfillStore | null = null;
 
-/** Archivio dello stato dei recuperi in uso (Redis, se non è stato sostituito). */
+/** Store of the backfill state in use (Redis, unless it has been replaced). */
 export function getBackfillStore(): BackfillStore {
   if (!backfillStore) backfillStore = redisBackfillStore;
   return backfillStore;
 }
 
-/** Sostituisce l'archivio dello stato dei recuperi; `null` ripristina quello su Redis. */
+/** Replaces the store of the backfill state; `null` restores the Redis one. */
 export function setBackfillStore(store: BackfillStore | null): void {
   backfillStore = store;
 }
@@ -108,13 +108,13 @@ export async function quoteMetaOnProviders(symbol: string): Promise<YahooQuoteMe
 export const INITIAL_HISTORY_DAYS = 30;
 
 /**
- * Avvia in background il recupero dello storico da `fromKey` a oggi (strumenti `auto`).
- * `schedule` è `after()` di Next.js nelle route. Restituisce true se un recupero è partito ora.
+ * Starts in the background the history backfill from `fromKey` to today (`auto` instruments).
+ * `schedule` is Next.js `after()` in routes. Returns true when a backfill started now.
  *
- * Qui non si guarda cosa c'è già in banca dati: il recupero parte quando l'intervallo è già stato chiesto di
- * recente, non quando lo storico sembra completo. Chi chiama sa quale intervallo gli serve (un'operazione, il
- * periodo di un grafico) e usa `historyCovers()` di `@/lib/investments/history` per non chiederlo inutilmente.
- * Le chiusure già salvate non si toccano (vedi `backfillInstrument`), quindi rilanciare è sicuro.
+ * This does not look at what is already stored: a backfill starts unless the interval has been asked for
+ * recently, not when the history looks complete. The caller knows which interval it needs (an operation, the
+ * period of a chart) and uses `historyCovers()` from `@/lib/investments/history` to avoid asking needlessly.
+ * Closes already saved are not touched (see `backfillInstrument`), so running it again is safe.
  */
 export async function ensureHistory(
   instrument: Instrument,

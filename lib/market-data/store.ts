@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, isNull, lte, notLike, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, lte, notLike, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { PUBLIC_DEMO_USER_PREFIX } from "@/lib/public-demo/config";
@@ -114,38 +114,64 @@ export async function findLastClose(instrumentId: string): Promise<{ date: strin
 }
 
 /**
- * Inizio della copertura di chiusure che arriva fino a `toKey`, o null se i dati non coprono il periodo richiesto.
+ * Start of the stored close coverage that reaches `toKey` and is continuous back to at least `fromKey`, or null
+ * when the data does not cover the requested interval. Used to decide whether a backfill is worth asking for.
  *
- * Due cose contano, non solo l'esistenza di un prezzo vecchio.
+ * Two things matter, not just the existence of an old close.
  *
- * 1. La chiusura più recente entro `toKey` deve stare dentro `maxGapDays` da `toKey`: se i dati finiscono molto
- *    prima, l'intervallo richiesto non è coperto (è il caso di un prezzo isolato e poi il vuoto).
- * 2. Da lì si scende finché non si incontra un buco più largo di `maxGapDays` tra due chiusure consecutive — la
- *    tolleranza con cui l'aggiornamento giornaliero rilegge a ogni giro (`DAILY_LOOKBACK_DAYS`), che assorbe
- *    weekend, festivi e un giro saltato del cron. Un buco in mezzo (import parziale, fonte che risponde a metà)
- *    non deve far credere che il periodo sia coperto.
+ * 1. The newest close within `toKey` must be within `maxGapDays` of `toKey`: if the data stops long before, the
+ *    requested interval is not covered (a lone close and then nothing).
+ * 2. From there it walks backwards, stopping at the first gap between two consecutive closes wider than
+ *    `maxGapDays` — the tolerance the daily update re-reads (`DAILY_LOOKBACK_DAYS`), which absorbs weekends,
+ *    holidays and a missed cron run. An inner gap (partial import, a source answering halfway) must not pass as
+ *    coverage.
+ *
+ * Closes older than `fromKey - maxGapDays` cannot change the answer, so the read is bounded: without it every
+ * title page and every operation-price request would load the whole history (up to 20 years of daily rows) to
+ * walk it in JS, where the previous check was a single `min()`.
  */
-export async function findCoveredFrom(instrumentId: string, toKey: string, maxGapDays: number): Promise<string | null> {
+export async function findCoveredFrom(
+  instrumentId: string,
+  fromKey: string,
+  toKey: string,
+  maxGapDays: number
+): Promise<string | null> {
   const rows = await db
     .select({ date: instrumentPrices.date })
     .from(instrumentPrices)
-    .where(and(eq(instrumentPrices.instrumentId, instrumentId), lte(instrumentPrices.date, toKey)))
+    .where(
+      and(
+        eq(instrumentPrices.instrumentId, instrumentId),
+        gte(instrumentPrices.date, shiftDays(fromKey, -maxGapDays)),
+        lte(instrumentPrices.date, toKey)
+      )
+    )
     .orderBy(desc(instrumentPrices.date));
   if (rows.length === 0) return null;
   if (calendarDaysBetween(rows[0].date, toKey) > maxGapDays) return null;
 
   let from = rows[0].date;
   for (let i = 1; i < rows.length; i += 1) {
-    // `rows[i]` è più vecchia: se dista dalla precedente più della tolleranza, la copertura si ferma qui.
+    // `rows[i]` is older: when it is further than the tolerance from the previous close, coverage stops there.
     if (calendarDaysBetween(rows[i].date, rows[i - 1].date) > maxGapDays) return from;
     from = rows[i].date;
+    // Coverage already reaches the requested interval: no need to look at older closes.
+    if (from <= fromKey) return from;
   }
-  return from;
+  // The oldest close in the window is still newer than `fromKey`: the interval is not covered.
+  return null;
 }
 
-/** Giorni di calendario da `from` a `to`, entrambe chiavi `YYYY-MM-DD`; negativo se `to` precede `from`. */
+/** Calendar days from `from` to `to`, both `YYYY-MM-DD` keys; negative when `to` precedes `from`. */
 function calendarDaysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+}
+
+/** Shifts a `YYYY-MM-DD` key by `days` (negative goes back). */
+function shiftDays(dateKey: string, days: number): string {
+  const date = new Date(`${dateKey}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 /**

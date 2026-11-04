@@ -1,39 +1,39 @@
-/** Stato del recupero dello storico di uno strumento (comune a tutti gli utenti che lo possiedono). */
+/** State of the price history backfill of one instrument (shared by every user who holds it). */
 export interface BackfillState {
   instrumentId: string;
   status: "running" | "done" | "failed";
   saved: number;
   total: number | null;
-  /** Inizio dell'intervallo richiesto: due richieste dello stesso intervallo sono lo stesso lavoro. */
+  /** Start of the requested interval: two requests for the same interval are the same piece of work. */
   fromKey: string;
   startedAt: string;
   updatedAt: string;
 }
 
-/** Stato per il client: `interrupted` indica un recupero rimasto senza heartbeat (funzione morta per timeout). */
+/** State for the client: `interrupted` marks a run left without a heartbeat (function died on timeout). */
 export interface BackfillStateView extends BackfillState {
   interrupted: boolean;
 }
 
-/** Durata dello stato su Redis. */
+/** How long the state lives on Redis. */
 export const BACKFILL_STATE_TTL_SECONDS = 24 * 60 * 60;
-/** Oltre questo intervallo senza aggiornamenti un recupero "running" è considerato interrotto. */
+/** Past this interval without an update a `running` backfill is treated as interrupted. */
 export const BACKFILL_STALE_MS = 60_000;
 
 /**
- * Pausa dopo un recupero completato. Entro questa finestra non se ne avvia un altro per lo stesso strumento:
- * l'aggiornamento giornaliero copre comunque gli ultimi giorni, e una fonte che non conosce un intervallo non va
- * richiesta a ripetizione. Un recupero davvero interrotto si riconosce dall'heartbeat, non da questa pausa.
+ * Pause after a completed run. Within this window another one is not started for the same interval: the daily
+ * update covers the last days anyway, and a source that does not know an interval must not be asked again and
+ * again. A run that really was interrupted is recognised by the heartbeat, not by this pause.
  */
 export const BACKFILL_COOLDOWN_MS = 6 * 60 * 60 * 1000;
 
-/** Operazioni chiave-valore minime: implementate da Redis in produzione e in memoria nei test. */
+/** Minimal key-value operations: Redis in production, in-memory in tests. */
 export interface BackfillKv {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, ttlSeconds: number): Promise<void>;
   /**
-   * Scrive `value` solo se la chiave non esiste, in un'unica operazione: due richieste simultanee non possono
-   * avviare lo stesso recupero. Restituisce true se la scrittura è andata a buon fine.
+   * Writes `value` only when the key does not exist, in a single operation: two simultaneous requests cannot
+   * start the same backfill. Returns true when the write went through.
    */
   setIfAbsent(key: string, value: string, ttlSeconds: number): Promise<boolean>;
 }
@@ -42,7 +42,7 @@ function key(instrumentId: string): string {
   return `market:backfill:${instrumentId}`;
 }
 
-/** Stato del recupero con i timestamp e il controllo di interruzione. */
+/** Backfill state with timestamps and the interruption check. */
 export function createBackfillStore(kv: BackfillKv, clock: () => Date = () => new Date()) {
   async function read(instrumentId: string): Promise<BackfillState | null> {
     const raw = await kv.get(key(instrumentId));
@@ -57,8 +57,22 @@ export function createBackfillStore(kv: BackfillKv, clock: () => Date = () => ne
     return state.status === "running" && clock().getTime() - Date.parse(state.updatedAt) > BACKFILL_STALE_MS;
   }
 
-  function isCoolingDown(state: BackfillState): boolean {
-    return state.status === "done" && clock().getTime() - Date.parse(state.updatedAt) < BACKFILL_COOLDOWN_MS;
+  /**
+   * True when a completed run already asked for an interval that starts at or before `fromKey`, so asking again
+   * within the window would repeat work the source has just been asked for.
+   *
+   * `fromKey` is the reason for the check: a completed run only ever covers the interval it requested. Without it
+   * a finished 30-day backfill would block a two-year-old operation entered right afterwards, which is the most
+   * common flow there is. A state written before `fromKey` existed carries no interval and covers nothing.
+   */
+  function isCoolingDown(state: BackfillState, fromKey: string): boolean {
+    return (
+      state.status === "done" &&
+      typeof state.fromKey === "string" &&
+      state.fromKey !== "" &&
+      state.fromKey <= fromKey &&
+      clock().getTime() - Date.parse(state.updatedAt) < BACKFILL_COOLDOWN_MS
+    );
   }
 
   function start(instrumentId: string, fromKey: string): BackfillState {
@@ -68,24 +82,26 @@ export function createBackfillStore(kv: BackfillKv, clock: () => Date = () => ne
 
   return {
     /**
-     * Segna l'inizio del recupero di `fromKey`; false se ce n'è già uno in corso e vivo, se ne è appena finito uno
-     * (pausa) o se un'altra richiesta l'ha appena avviato. La prima scrittura tenta la chiave in una sola
-     * operazione, quindi due richieste simultanee non partono entrambe; se la chiave c'era già ma era scaduta o
-     * interrotta si sovrascrive, perché in quel caso il recupero non sta girando davvero.
+     * Marks the start of the backfill of `fromKey`; false when a live run is already going, when a completed run
+     * within the cooldown already covered this interval, or when another request has just started one. The first
+     * write claims the key in a single operation, so two simultaneous requests cannot both start; if the key
+     * existed but was expired or interrupted it is overwritten, because the run is not actually going.
      */
     async tryStart(instrumentId: string, fromKey: string): Promise<boolean> {
       const current = await read(instrumentId);
-      if (current && ((current.status === "running" && !isStale(current)) || isCoolingDown(current))) return false;
+      if (current && ((current.status === "running" && !isStale(current)) || isCoolingDown(current, fromKey))) {
+        return false;
+      }
       const state = start(instrumentId, fromKey);
       const claimed = await kv.setIfAbsent(key(instrumentId), JSON.stringify(state), BACKFILL_STATE_TTL_SECONDS);
       if (claimed) return true;
       const winner = await read(instrumentId);
-      // Qualcuno ha scritto dopo la nostra lettura: se il suo tentativo è vivo, questo si ferma.
+      // Someone wrote after our read: when their attempt is alive, this one stops.
       if (winner && winner.status === "running" && !isStale(winner)) return false;
       await write(state);
       return true;
     },
-    /** Aggiorna contatori e heartbeat. */
+    /** Updates counters and the heartbeat. */
     async progress(instrumentId: string, saved: number, total: number): Promise<void> {
       const current = await read(instrumentId);
       if (!current) return;
@@ -104,7 +120,7 @@ export function createBackfillStore(kv: BackfillKv, clock: () => Date = () => ne
         updatedAt: now,
       });
     },
-    /** Stati degli strumenti richiesti (quelli senza stato non compaiono). */
+    /** States of the requested instruments (those without a state do not appear). */
     async views(instrumentIds: string[]): Promise<BackfillStateView[]> {
       const states = await Promise.all(instrumentIds.map(read));
       return states.filter((s): s is BackfillState => s !== null).map((s) => ({ ...s, interrupted: isStale(s) }));

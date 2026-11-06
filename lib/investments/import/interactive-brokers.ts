@@ -61,6 +61,14 @@ export function parseInteractiveBrokersActivity(text: string, todayKey: string):
       if (kind === "Header") headers.set(section, values);
       return { line, section, kind, headers: headers.get(section) ?? [], values };
     });
+  return readInteractiveBrokersRecords(records, todayKey);
+}
+
+/**
+ * Read IBKR statement records, from the CSV or from a Flex Web Service report turned into the same sections
+ * (`ibkr-flex.ts`): trades, dividends with their withholding, corporate actions, cash report, NAV and positions.
+ */
+export function readInteractiveBrokersRecords(records: ActivityRecord[], todayKey: string): ActivityStatement {
   const metadata = (field: string) => {
     const row = records.find((r) => r.section === "Statement" && r.kind === "Data" && value(r, "Field Name") === field);
     return row ? value(row, "Field Value") : "";

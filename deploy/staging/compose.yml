@@ -31,6 +31,8 @@ x-app-env: &app-env
   GOCARDLESS_SECRET_ID: ''
   GOCARDLESS_SECRET_KEY: ''
   BANK_CONNECTIONS_OPEN: 'false'
+  # Interactive Brokers Flex connections are tested on staging before IBKR confirms hosted use (closed in production).
+  IBKR_FLEX_CONNECTIONS_OPEN: 'true'
   GOCARDLESS_CLEANUP_MODE: 'off'
   INACTIVITY_CLEANUP_MODE: 'dry-run'
   NOTIFICATIONS_MODE: execute

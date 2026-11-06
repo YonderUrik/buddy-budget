@@ -11,6 +11,8 @@ call() { echo "sh /scheduler.sh call $1"; }
   echo "30 3 * * * $(call account-deletion)"
   echo "30 7 * * * $(call notifications)"
   echo "0 2 * * * $(call public-demo)"
+  # Interactive Brokers Flex: hourly pass, each connection syncs about once a day.
+  echo "20 * * * * $(call ibkr-flex-sync)"
 } > /etc/crontabs/root
 # No live bank jobs or inactive-account cleanup in staging.
 exec crond -f -l 8

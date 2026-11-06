@@ -63,3 +63,11 @@ export function TradeRepublicLogo() {
     <img src="/import-providers/trade-republic-mark.svg" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-full bg-white object-contain p-2 ring-1 ring-border" />
   );
 }
+
+/** Interactive Brokers' symbol (provided by the project owner; the mark stays IBKR's, used only to name the source) on a white disc. */
+export function InteractiveBrokersLogo() {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- small static logo, no need for the optimizer
+    <img src="/import-providers/interactive-brokers.svg" alt="" aria-hidden="true" className="size-10 shrink-0 rounded-full bg-white object-contain p-2 ring-1 ring-border" />
+  );
+}

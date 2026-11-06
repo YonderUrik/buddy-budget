@@ -2,7 +2,7 @@ import { localizedFormats } from "@/lib/localization/format";
 
 /** Informazioni di sync di un conto collegato (stessa forma di `BankConnectionStatus`, ridotta a ciò che serve). */
 export interface AccountSyncInfo {
-  provider?: "gocardless" | "trade-republic";
+  provider?: "gocardless" | "trade-republic" | "ibkr-flex";
   lastSyncedAt: string | null;
   eligible: boolean;
   nextEligibleAt: string | null;

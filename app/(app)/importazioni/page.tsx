@@ -15,6 +15,7 @@ import {
   PersonalImportUpload,
 } from "@/components/domain/personal-import";
 import { usePersonalImportsQuery } from "@/lib/queries/personal-imports";
+import { IbkrFlexImportHint } from "@/components/domain/ibkr-flex";
 import { PAGE_TITLE as PAGE_TITLE_CLASS } from "@/components/domain/shared";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,7 @@ function PersonalImports() {
 
       {receipt ? null : <div id="nuovo-import" className="scroll-mt-6"><PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobIds, file) => { setSelected(jobIds.at(-1)!); setReceipt({ jobIds, file }); }} /></div>}
       <div id={LIST_ID} className="scroll-mt-6"><PersonalImportList onRetry={() => { setReceipt(null); setSelected(null); requestAnimationFrame(() => document.getElementById("nuovo-import")?.scrollIntoView({ behavior: "smooth", block: "start" })); }} listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={setSelected} /></div>
+      <IbkrFlexImportHint />
     </main>
   );
 }

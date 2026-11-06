@@ -18,7 +18,7 @@ export { AddAccountForm } from "./add-account-form";
 export type { AddAccountFormProps } from "./add-account-form";
 export { ConnectBankFlow, BANK_COUNTRY_OPTIONS } from "./connect-bank-flow";
 export type { ConnectBankFlowProps, FeaturedBank } from "./connect-bank-flow";
-export { BankRow, GenericBankLogo, TradeRepublicLogo, BANK_ROW_CLASS } from "./bank-row";
+export { BankRow, GenericBankLogo, InteractiveBrokersLogo, TradeRepublicLogo, BANK_ROW_CLASS } from "./bank-row";
 export type { BankRowProps } from "./bank-row";
 export { CurrencyInput } from "./currency-input";
 export type { CurrencyInputProps } from "./currency-input";

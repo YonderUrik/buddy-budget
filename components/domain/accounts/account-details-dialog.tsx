@@ -228,7 +228,7 @@ function AccountDetailsBody({
               >
                 <RefreshCw size={16} aria-hidden className={syncMutation.isPending || syncing ? "motion-safe:animate-spin" : undefined} />{tr("Sincronizza ora")}</Button>
               {needsReconnect && (
-                <Button type="button" className={cn("flex-1 cursor-pointer gap-1.5", TALL_CONTROL)} onClick={syncInfo?.provider === "trade-republic" ? () => { window.location.href = "/conti/trade-republic"; } : onReconnect}>{tr("Riconnetti la banca")}</Button>
+                <Button type="button" className={cn("flex-1 cursor-pointer gap-1.5", TALL_CONTROL)} onClick={syncInfo?.provider === "trade-republic" || syncInfo?.provider === "ibkr-flex" ? () => { window.location.href = syncInfo.provider === "ibkr-flex" ? "/connections/interactive-brokers" : "/conti/trade-republic"; } : onReconnect}>{tr("Riconnetti la banca")}</Button>
               )}
             </div>
           </div>

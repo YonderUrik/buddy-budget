@@ -14,7 +14,7 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications" | "inactive_accounts" | "public_demo";
+export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications" | "inactive_accounts" | "public_demo" | "ibkr_flex_sync";
 export type CronOutcome = "success" | "error";
 export type AuthEvent =
   | "magic_link_sent"
@@ -81,6 +81,7 @@ export const CRON_NAMES: readonly CronName[] = [
   "notifications",
   "inactive_accounts",
   "public_demo",
+  "ibkr_flex_sync",
 ];
 
 /** Modalità del cron di pulizia GoCardless (`dry-run` conta soltanto, non elimina). */
@@ -168,6 +169,8 @@ export interface AsyncGaugeDeps {
 
 interface MetricsState {
   tradeRepublic: Counter<"action" | "outcome">;
+  ibkrFlex: Counter<"action" | "outcome">;
+  ibkrFlexDuration: Histogram<"action" | "outcome">;
   tradeRepublicDuration: Histogram<"action" | "outcome">;
   tradeRepublicUnrecognized: Counter<string>;
   personalImportAttempts: Counter<"step" | "outcome">;
@@ -402,6 +405,8 @@ function createState(): MetricsState {
   state.tradeRepublicDuration = new Histogram({ name: `${METRIC_PREFIX}trade_republic_request_seconds`, help: "Direct TR login and sync duration.", labelNames: ["action", "outcome"], buckets: DURATION_BUCKETS_SECONDS, registers: r });
   state.tradeRepublicUnrecognized = new Counter({ name: `${METRIC_PREFIX}trade_republic_unrecognized_events_total`, help: "Trade Republic events skipped because their type or status is not known yet.", registers: r });
   state.personalImportAttempts = new Counter({ name: `${METRIC_PREFIX}personal_import_attempts_total`, help: "Personal CSV parser attempts by ladder step (0 = saved parser) and outcome.", labelNames: ["step", "outcome"], registers: r });
+  state.ibkrFlex = new Counter({ name: `${METRIC_PREFIX}ibkr_flex_requests_total`, help: "Interactive Brokers Flex Web Service connects and syncs by outcome (closed enum of failure reasons).", labelNames: ["action", "outcome"], registers: r });
+  state.ibkrFlexDuration = new Histogram({ name: `${METRIC_PREFIX}ibkr_flex_request_seconds`, help: "Duration of Interactive Brokers Flex connects and syncs (report generation, download and import).", labelNames: ["action", "outcome"], buckets: DURATION_BUCKETS_SECONDS, registers: r });
   state.tradeRepublic = new Counter({ name: `${METRIC_PREFIX}trade_republic_requests_total`, help: "Direct Trade Republic login and sync outcomes.", labelNames: ["action", "outcome"], registers: r });
   state.gcConnect = new Counter({
     name: `${METRIC_PREFIX}gocardless_connect_attempts_total`,
@@ -880,6 +885,12 @@ export function recordPersonalImportAttempt(step: number, outcome: PersonalImpor
 
 export function recordTradeRepublicUnrecognized(count: number): void {
   if (count > 0) metrics().tradeRepublicUnrecognized.inc(count);
+}
+
+/** Outcome of an IBKR Flex connect or sync: `success`, or the closed failure reason (`IbkrFlexConnectionError`). */
+export function recordIbkrFlexRequest(action: "connect" | "sync", outcome: string, durationMs: number): void {
+  metrics().ibkrFlex.inc({ action, outcome });
+  metrics().ibkrFlexDuration.observe({ action, outcome }, durationMs / 1000);
 }
 
 export function recordTradeRepublicRequest(action: "login" | "sync" | "investments", outcome: "success" | "error", durationMs: number): void {

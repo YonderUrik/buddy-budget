@@ -16,6 +16,8 @@ export interface FlexFixtureOptions {
    */
   quiet?: boolean;
   position?: number;
+  /** Transaction taxes on the ETF purchase (Flex `taxes`, negative, e.g. a stamp duty), charged to EUR cash. */
+  tradeTaxes?: number;
 }
 
 /**
@@ -24,16 +26,17 @@ export interface FlexFixtureOptions {
  * Cash: EUR 597.25, USD 442.5.
  */
 export function flexReport(options: FlexFixtureOptions = {}): string {
-  const { account = "U90000001", from = "20250101", to = "20251231", omit = [], extraCash = "", quiet = false, position = 10 } = options;
+  const { account = "U90000001", from = "20250101", to = "20251231", omit = [], extraCash = "", quiet = false, position = 10, tradeTaxes = 0 } = options;
+  const cents = (n: number) => String(Math.round(n * 100) / 100);
   const sections: Record<string, string> = quiet ? quietSections(account, from, to, position) : {
     AccountInformation: `<AccountInformation accountId="${account}" acctAlias="" currency="EUR" name="Test Person" accountType="Individual" dateOpened="20250101" />`,
     EquitySummaryInBase: `<EquitySummaryInBase>
       <EquitySummaryByReportDateInBase accountId="${account}" currency="EUR" reportDate="${from}" cash="0" stock="0" dividendAccruals="0" interestAccruals="0" total="0" />
-      <EquitySummaryByReportDateInBase accountId="${account}" currency="EUR" reportDate="${to}" cash="999.52" stock="1000" dividendAccruals="0" interestAccruals="0.1" total="1999.62" />
+      <EquitySummaryByReportDateInBase accountId="${account}" currency="EUR" reportDate="${to}" cash="${cents(999.52 + tradeTaxes)}" stock="1000" dividendAccruals="0" interestAccruals="0.1" total="${cents(1999.62 + tradeTaxes)}" />
     </EquitySummaryInBase>`,
     CashReport: `<CashReport>
-      <CashReportCurrency accountId="${account}" currency="BASE_SUMMARY" levelOfDetail="BaseCurrency" startingCash="0" commissions="-3" endingCash="999.52" />
-      <CashReportCurrency accountId="${account}" currency="EUR" levelOfDetail="Currency" startingCash="0" commissions="-3" endingCash="597.25" />
+      <CashReportCurrency accountId="${account}" currency="BASE_SUMMARY" levelOfDetail="BaseCurrency" startingCash="0" commissions="-3" transactionTax="${tradeTaxes}" endingCash="${cents(999.52 + tradeTaxes)}" />
+      <CashReportCurrency accountId="${account}" currency="EUR" levelOfDetail="Currency" startingCash="0" commissions="-3" transactionTax="${tradeTaxes}" endingCash="${cents(597.25 + tradeTaxes)}" />
       <CashReportCurrency accountId="${account}" currency="USD" levelOfDetail="Currency" startingCash="0" commissions="0" endingCash="442.5" />
     </CashReport>`,
     SecuritiesInfo: `<SecuritiesInfo>
@@ -41,7 +44,7 @@ export function flexReport(options: FlexFixtureOptions = {}): string {
       <SecurityInfo assetCategory="STK" symbol="MOCKUS" description="MOCK US CORP" conid="900002" isin="US0000000002" listingExchange="NASDAQ" subCategory="COMMON" currency="USD" multiplier="1" />
     </SecuritiesInfo>`,
     Trades: `<Trades>
-      <Trade accountId="${account}" currency="EUR" assetCategory="STK" symbol="MOCKETF" description="MOCK WORLD ETF" conid="900001" isin="IE0000000004" listingExchange="IBIS2" subCategory="ETF" tradeID="7001" transactionID="8001" ibOrderID="6001" dateTime="20250102;101500" tradeDate="20250102" quantity="10" tradePrice="100" proceeds="-1000" ibCommission="-1" ibCommissionCurrency="EUR" cost="1001" buySell="BUY" notes="O" levelOfDetail="EXECUTION" />
+      <Trade accountId="${account}" currency="EUR" assetCategory="STK" symbol="MOCKETF" description="MOCK WORLD ETF" conid="900001" isin="IE0000000004" listingExchange="IBIS2" subCategory="ETF" tradeID="7001" transactionID="8001" ibOrderID="6001" dateTime="20250102;101500" tradeDate="20250102" quantity="10" tradePrice="100" proceeds="-1000" ibCommission="-1" taxes="${tradeTaxes}" ibCommissionCurrency="EUR" cost="1001" buySell="BUY" notes="O" levelOfDetail="EXECUTION" />
       <Trade accountId="${account}" currency="USD" assetCategory="CASH" symbol="EUR.USD" description="EUR.USD" conid="12087792" tradeID="7002" transactionID="8002" dateTime="20250103;120000" tradeDate="20250103" quantity="-400" tradePrice="1.1" proceeds="440" ibCommission="-2" ibCommissionCurrency="EUR" buySell="SELL" notes="" levelOfDetail="EXECUTION" />
       <Lot accountId="${account}" currency="EUR" assetCategory="STK" symbol="MOCKETF" quantity="10" levelOfDetail="CLOSED_LOT" />
     </Trades>`,

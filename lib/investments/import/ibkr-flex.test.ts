@@ -34,6 +34,13 @@ describe("parseIbkrFlexReport", () => {
     ]);
   });
 
+  it("counts a trade's transaction taxes (stamp duty) as its fees, as the CSV's Comm/Fee does, so cash reconciles", () => {
+    const parsed = parseIbkrFlexReport(flexReport({ tradeTaxes: -0.75 }), TODAY);
+    expect(parsed.statement!.issues).toEqual([]);
+    for (const cash of parsed.statement!.cash) expect(Math.abs(cash.difference)).toBeLessThan(1e-6);
+    expect(parsed.operations[0]).toMatchObject({ type: "acquisto", quantity: 10, price: 100, fees: 1.75 });
+  });
+
   it("keeps IBKR identifiers (conid, transactionID) in the stored records and counts a repeated transaction once", () => {
     const parsed = parseIbkrFlexReport(flexReport(), TODAY);
     const trade = parsed.records.find((r) => r.section === "Trades" && r.kind === "Data" && r.values.includes("MOCKETF"))!;

@@ -102,6 +102,14 @@ class RecordWriter {
   }
 }
 
+/** Sum of two decimal strings without binary noise (IBKR amounts have at most 8-9 decimals). */
+function addDecimals(a: string | undefined, b: string | undefined): string | undefined {
+  if (!b || Number(b) === 0) return a;
+  const places = Math.max(...[a ?? "0", b].map((n) => n.split(".")[1]?.length ?? 0));
+  const sum = (Number(a ?? 0) + Number(b)).toFixed(places);
+  return places ? sum.replace(/0+$/, "").replace(/\.$/, "") : sum;
+}
+
 /**
  * Read a Flex report into the Activity Statement shape. Throws `IbkrFlexReportError` for a document that is not a
  * single-account Activity Flex report with the required sections; data problems become statement issues, as for CSV.
@@ -157,6 +165,7 @@ export function parseIbkrFlexReport(text: string, todayKey: string): ActivitySta
       ["Security ID", e.attributes.isin || e.attributes.securityID], ["Listing Exch", e.attributes.listingExchange], ["Multiplier", e.attributes.multiplier], ["Type", e.attributes.subCategory === "ETF" ? "ETF" : "COMMON"]]);
   }
 
+  const taxedTrades = new Set<string>();
   for (const e of trades) {
     const a = e.attributes;
     const category = ASSET_CATEGORIES[a.assetCategory] ?? a.assetCategory;
@@ -167,13 +176,16 @@ export function parseIbkrFlexReport(text: string, todayKey: string): ActivitySta
     const commissionCurrency = a.ibCommissionCurrency || a.currency;
     const ids: [string, string | undefined][] = [["Conid", a.conid], ["Transaction ID", a.transactionID], ["Trade ID", a.tradeID]];
     if (category === "Forex") {
+      if (Number(a.taxes || 0) !== 0) issues.push({ line: out.records.length + 1, section: "Trades", severity: "error", message: "Imposte su un cambio valuta: non supportate" });
       out.add("Trades", [["DataDiscriminator", "Order"], ["Asset Category", category], ["Currency", a.currency], ["Symbol", a.symbol], ["Date/Time", dateTime], ["Quantity", a.quantity],
         ["T. Price", a.tradePrice], ["Proceeds", a.proceeds], [`Comm in ${commissionCurrency}`, a.ibCommission], ["Code", code], ...ids]);
       continue;
     }
     if (commissionCurrency !== a.currency) issues.push({ line: out.records.length + 1, section: "Trades", severity: "error", message: `Commissione in ${commissionCurrency} su un'operazione in ${a.currency}: non supportata` });
+    // The CSV's «Comm/Fee» is commission plus the trade's transaction taxes (stamp duty, levies); Flex lists them apart.
+    if (Number(a.taxes || 0) !== 0 && a.tradeID) taxedTrades.add(a.tradeID);
     out.add("Trades", [["DataDiscriminator", "Order"], ["Asset Category", category], ["Currency", a.currency], ["Symbol", a.symbol], ["Date/Time", dateTime], ["Quantity", a.quantity],
-      ["T. Price", a.tradePrice], ["Proceeds", a.proceeds], ["Comm/Fee", a.ibCommission], ["Basis", a.cost], ["Code", code], ...ids]);
+      ["T. Price", a.tradePrice], ["Proceeds", a.proceeds], ["Comm/Fee", addDecimals(a.ibCommission, a.taxes)], ["Basis", a.cost], ["Code", code], ...ids]);
   }
 
   // Cash transactions: one row per transactionID (a query with both detail and summary would list it twice).
@@ -196,6 +208,8 @@ export function parseIbkrFlexReport(text: string, todayKey: string): ActivitySta
 
   for (const e of items("TransactionTaxes", "TransactionTax")) {
     const a = e.attributes;
+    // Already in its trade's «Comm/Fee»: counting it again would break the cash reconciliation.
+    if ((a.tradeID || a.tradeId) && taxedTrades.has(a.tradeID || a.tradeId)) continue;
     const dateTime = flexDateTime(a.dateTime, a.date ?? a.reportDate);
     if (!dateTime) throw new IbkrFlexReportError("date_format", "Formato data della Flex Query non supportato: scegli yyyyMMdd");
     out.add("Transaction Fees", [["Currency", a.currency], ["Symbol", a.symbol], ["Date/Time", dateTime], ["Description", a.description || a.taxDescription], ["Amount", a.taxAmount ?? a.amount], ["Conid", a.conid], ["Transaction ID", a.transactionID]]);
@@ -227,7 +241,7 @@ export function parseIbkrFlexReport(text: string, todayKey: string): ActivitySta
     if (!/^[A-Z]{3}$/.test(a.currency ?? "")) continue; // `BASE_SUMMARY` totals every currency in the base one
     if (a.levelOfDetail && !/^Currency$/i.test(a.levelOfDetail)) continue;
     out.add("Cash Report", [["Currency Summary", "Starting Cash"], ["Currency", a.currency], ["Total", a.startingCash]]);
-    out.add("Cash Report", [["Currency Summary", "Commissions"], ["Currency", a.currency], ["Total", a.commissions ?? "0"]]);
+    out.add("Cash Report", [["Currency Summary", "Commissions"], ["Currency", a.currency], ["Total", addDecimals(a.commissions ?? "0", a.transactionTax) ?? "0"]]);
     out.add("Cash Report", [["Currency Summary", "Ending Cash"], ["Currency", a.currency], ["Total", a.endingCash]]);
   }
 

@@ -14,8 +14,10 @@
  * A "statement" account is a broker's cash account rebuilt from its statements (Interactive Brokers): its balance on
  * any day comes from the statements' opening balances and dated cash movements (`centsOn`). Each row keeps that part
  * in `statementAmount`, so it follows every import the same way. A row written before `statementAmount` existed
- * recorded the account inside its manual part, with the balance the latest statement gave then: that part is
- * estimated as the rebuilt balance of the row's own day, and zero for rows from before the account existed.
+ * recorded the account inside its manual part, with the balance the latest statement gave then, which can be months
+ * old (a statement imported later replaces it and is deleted). So the manual part of such a row is estimated instead,
+ * as the current balance of the manual accounts that existed then (typed balances rarely change), and the rest is
+ * what it recorded for the statement accounts. Rows from before the statement accounts existed recorded none.
  */
 
 import { addDays, MAX_DERIVED_HISTORY_MONTHS, toDateKey } from "./net-worth";
@@ -68,6 +70,8 @@ export interface CashHistoryInput {
   statementAccounts?: StatementCashAccount[];
   /** Sum of the current balances of the manual accounts (statement accounts excluded). */
   manualNow: number;
+  /** The manual accounts one by one, to estimate the manual part of rows that predate `statementAmount`. */
+  manualAccounts?: { balance: number; createdAt: Date }[];
   today: Date;
 }
 
@@ -163,7 +167,7 @@ function windowStart(transactions: LedgerTransaction[], statementStarts: string[
  * later are left alone (today is always live, and the daily snapshot writes it). Returns only rows whose amount or
  * ledger part changes, plus the missing days of the window.
  */
-export function planCashHistory({ rows, accounts, transactions, statementAccounts = [], manualNow, today }: CashHistoryInput): CashRowWrite[] {
+export function planCashHistory({ rows, accounts, transactions, statementAccounts = [], manualNow, manualAccounts = [], today }: CashHistoryInput): CashRowWrite[] {
   const todayStart = startOfDay(today);
   const todayKey = toDateKey(todayStart);
   const past = rows.filter((r) => r.date < todayKey).sort((a, b) => (a.date < b.date ? -1 : 1));
@@ -185,9 +189,9 @@ export function planCashHistory({ rows, accounts, transactions, statementAccount
   const ledger = ledgerByDay(accounts, transactions, [...known, ...missing]);
   const totalOn = (day: string) => [...ledger.get(day)!.values()].reduce((sum, v) => sum + v, 0);
   const statementOn = (day: string) => statementAccounts.reduce((sum, a) => sum + a.centsOn(day), 0);
-  // What a row written before `statementAmount` existed recorded for the statement accounts it already counted.
-  const recordedStatement = (row: StoredCashRow) =>
-    statementAccounts.reduce((sum, a) => (row.date >= toDateKey(a.createdAt) && row.updatedAt.getTime() >= a.createdAt.getTime() ? sum + a.centsOn(row.date) : sum), 0);
+  // A row written before `statementAmount` existed counted a statement account created by then.
+  const countedStatement = (row: StoredCashRow) => statementAccounts.some((a) => row.date >= toDateKey(a.createdAt) && row.updatedAt.getTime() >= a.createdAt.getTime());
+  const manualEstimate = (row: StoredCashRow) => manualAccounts.reduce((sum, a) => (a.createdAt.getTime() <= row.updatedAt.getTime() ? sum + toCents(a.balance) : sum), 0);
 
   const imported = importedSoFar(accounts, transactions);
   const writes: CashRowWrite[] = [];
@@ -198,7 +202,7 @@ export function planCashHistory({ rows, accounts, transactions, statementAccount
     const oldLedger = row.ledgerAmount === null ? legacyLedgerCents(row, accounts, imported, ledger.get(row.date)!) : toCents(row.ledgerAmount);
     const legacyStatement = row.statementAmount === null || row.statementAmount === undefined;
     const newStatement = statementOn(row.date);
-    const oldStatement = legacyStatement ? recordedStatement(row) : toCents(row.statementAmount!);
+    const oldStatement = !legacyStatement ? toCents(row.statementAmount!) : countedStatement(row) ? toCents(row.amount) - oldLedger - manualEstimate(row) : 0;
     const manual = toCents(row.amount) - oldLedger - oldStatement;
     manualByDay.set(row.date, manual);
     const amount = manual + newLedger + newStatement;

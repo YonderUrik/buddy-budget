@@ -128,16 +128,17 @@ describe("planCashHistory", () => {
     ]);
   });
 
-  it("takes out of old rows the broker balance they recorded as manual and puts the rebuilt one in", () => {
-    // The account was created on 09-11 at 10:00. The 09-10 row predates it (manual 100 only); the 09-11 and 09-12
-    // snapshots counted it with the statement's balance at the time, inside their manual part.
+  it("takes out of old rows the broker balance they recorded as manual, however old, and puts the rebuilt one in", () => {
+    // The account was created on 09-11 at 10:00 from a statement that ended months earlier (500). The 09-10 row
+    // predates it (manual 100 only); the 09-11 and 09-12 snapshots counted the stale 500 inside their manual part.
     const createdAt = new Date("2026-09-11T10:00:00Z");
     const writes = planCashHistory({
-      rows: [row("2026-09-10", 100, 0), row("2026-09-11", 2500, 0), row("2026-09-12", -12900, 0)],
+      rows: [row("2026-09-10", 100, 0), row("2026-09-11", 600, 0), row("2026-09-12", 600, 0)],
       accounts: [],
       transactions: [],
       statementAccounts: [broker("2026-01-01", { "2026-01-01": 1000, "2026-09-11": 2400, "2026-09-12": -13000 }, createdAt)],
       manualNow: 100,
+      manualAccounts: [{ balance: 100, createdAt: LONG_AGO }],
       today: TODAY,
     });
     // Manual stays 100 on every day; the past before the first row now carries the rebuilt balance too.

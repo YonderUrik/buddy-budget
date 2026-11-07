@@ -20,6 +20,7 @@ import {
 import { addDays, toDateKey, type NetWorthPeriod } from "./net-worth";
 
 import { resolvePerformanceRange, type PerformanceRange } from "./performance-range";
+import { buildCashSeries, toCapitalFlows, type LeverageSource } from "./leverage";
 
 const DAYS_PER_YEAR = 365;
 const MS_PER_DAY = 86_400_000;
@@ -327,6 +328,12 @@ export function computePortfolioReturns(params: {
   dailySeries?: boolean;
   /** Locale of the X-axis labels. */
   locale?: string;
+  /**
+   * Return on the user's own capital instead of on the securities: the cash of these broker accounts (margin loan and
+   * interest included) joins the value, and their deposits and withdrawals replace the buys and sales of
+   * `capital.transactions` (the operations of those accounts) as flows.
+   */
+  capital?: { transactions: InvestmentTransactionInput[]; sources: LeverageSource[] } | null;
 }): PortfolioReturns | null {
   const { transactions, priceIndex, fx, userCurrency, period, today, benchmark, inflation } = params;
   const bounds = resolvePerformanceRange(transactions, period, today, params.range);
@@ -334,13 +341,20 @@ export function computePortfolioReturns(params: {
   const { fromKey, baseKey } = bounds;
   const toKey = params.asOf ? [baseKey, params.asOf, bounds.toKey].sort()[1] : bounds.toKey;
   const points = computeDailyPortfolioValues({ ...params, fromKey: baseKey, toKey });
-  const base = points[0];
-  const flows = toDailyFlows(points);
+  let base = { value: points[0].value };
+  let flows = toDailyFlows(points);
+  if (params.capital?.sources.length) {
+    const broker = toDailyFlows(computeDailyPortfolioValues({ ...params, transactions: params.capital.transactions, fromKey: baseKey, toKey }));
+    const cash = buildCashSeries(params.capital.sources, fx, userCurrency, points.map((p) => p.date));
+    const own = toCapitalFlows(base.value, flows, broker, cash);
+    base = { value: own.baseValue };
+    flows = own.flows;
+  }
   // Se all'inizio non c'era niente investito il periodo parte dal primo acquisto, non dal giorno prima: altrimenti
   // rendimento dei tuoi soldi e valori annui conterebbero un giorno in cui non c'era niente da far rendere.
   const days = toKey === baseKey ? 0 : Math.max(1, daysBetween(base.value > AMOUNT_EPSILON ? baseKey : fromKey, toKey));
   const showAnnual = days >= DAYS_PER_YEAR;
-  const endValue = points.at(-1)?.value ?? 0;
+  const endValue = flows.at(-1)?.value ?? base.value;
 
   const twrSeries = computeTwrSeries(base.value, flows);
   const twr = twrSeries.at(-1)?.cumulative ?? (toKey === baseKey ? 0 : null);

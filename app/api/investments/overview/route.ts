@@ -22,7 +22,7 @@ async function handleGet(request: NextRequest) {
   const requested = request.nextUrl.searchParams.get("period") as NetWorthPeriod | null;
   const period = requested && PERIODS.includes(requested) ? requested : "3mesi";
   const pricesFrom = period === "max" ? null : toDateKey(getNetWorthPeriodRange(period, new Date(), null).from);
-  const data = await loadInvestmentData(session.user.id, pricesFrom);
+  const data = await loadInvestmentData(session.user.id, pricesFrom, { leverage: true });
   await ensureProfilesSafely(data.instruments, after);
   await ensureDividendsSafely(data.instruments, after);
   return Response.json(data);

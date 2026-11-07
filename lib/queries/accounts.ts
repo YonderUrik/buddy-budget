@@ -26,6 +26,30 @@ async function fetchAccounts(): Promise<AccountListItem[]> {
   return response.json();
 }
 
+/** One broker cash account rebuilt from its statements (`GET /api/accounts/statement-cash`). */
+export interface StatementCashItem {
+  accountId: string;
+  points: { date: string; value: number }[];
+  missingFx: boolean;
+}
+
+/**
+ * Day-by-day balance of the broker cash accounts rebuilt from their statements, for the single-account line. Under the
+ * accounts key, so every import, sync or balance change that refreshes the accounts refreshes it too.
+ */
+export function useStatementCashQuery(enabled = true) {
+  return useQuery({
+    queryKey: [...ACCOUNTS_QUERY_KEY, "statement-cash"],
+    enabled,
+    staleTime: 5 * 60_000,
+    queryFn: async (): Promise<StatementCashItem[]> => {
+      const response = await fetch("/api/accounts/statement-cash");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare i conti"));
+      return response.json();
+    },
+  });
+}
+
 /** Fetches the logged-in user's accounts. */
 export function useAccountsQuery() {
   return useQuery({ queryKey: ACCOUNTS_QUERY_KEY, queryFn: fetchAccounts });

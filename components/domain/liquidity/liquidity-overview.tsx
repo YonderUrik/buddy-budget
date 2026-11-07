@@ -19,9 +19,9 @@ import {
   type NetWorthPeriod,
 } from "@/lib/calc/net-worth";
 import { computeConnectionHealth, needsRenewal } from "@/lib/gocardless/connection-health";
-import { buildAccountBalanceSeries } from "@/lib/liquidity/account-series";
+import { BROKER_CASH_ACCOUNT_TYPE, buildAccountBalanceSeries, buildStatementBalanceSeries } from "@/lib/liquidity/account-series";
 import { buildVoiceLines } from "@/lib/overview/voice";
-import { useAccountsQuery } from "@/lib/queries/accounts";
+import { useAccountsQuery, useStatementCashQuery } from "@/lib/queries/accounts";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
@@ -65,15 +65,23 @@ export function LiquidityOverview() {
   const { from: fetchFrom, to: fetchTo } = liquidityFetchWindow(today);
   const transactionsQuery = useTransactionsQuery(fetchFrom, fetchTo, "tutte");
   const transactions = React.useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
-  // The single-account curve comes from transactions, the total from the stored history: wait for whichever is drawn.
-  const refreshState = useChartRefreshState(accountId ? transactionsQuery : snapshotsQuery);
-
   const accounts = React.useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);
   const selected = accounts.find((a) => a.id === accountId) ?? null;
+  // A broker cash account has no transactions: its line comes from its statements, asked only for such an account.
+  const statementCashQuery = useStatementCashQuery(selected?.type === BROKER_CASH_ACCOUNT_TYPE);
+  const statementHistory = statementCashQuery.data?.find((h) => h.accountId === selected?.id) ?? null;
+  // The single-account curve comes from transactions (or statements), the total from the stored history: wait for
+  // whichever is drawn.
+  const refreshState = useChartRefreshState(accountId ? (statementHistory ? statementCashQuery : transactionsQuery) : snapshotsQuery);
   const total = computeAccountsKpi(accounts).totalLiquidity;
   const needsAttention = new Set(connections.filter((c) => needsRenewal(computeConnectionHealth(c, today).state)).map((c) => c.accountId));
 
   const { points, delta } = React.useMemo(() => {
+    if (selected && statementHistory) {
+      const { from } = getNetWorthPeriodRange(period, today, statementHistory.points[0]?.date ?? null);
+      const series = buildStatementBalanceSeries(statementHistory.points, Number(selected.balance), from, today);
+      return { points: series.map((p) => ({ label: p.date, value: p.value })), delta: series.length > 1 ? series[series.length - 1].value - series[0].value : null };
+    }
     if (selected) {
       const earliest = transactions.reduce<string | null>((min, t) => (min === null || t.date < min ? t.date : min), null);
       const { from } = getNetWorthPeriodRange(period, today, earliest);
@@ -84,7 +92,7 @@ export function LiquidityOverview() {
     const liquidity = (snapshotsQuery.data ?? []).filter((row) => row.assetClass === "liquidita");
     const series = buildNetWorthSeries(liquidity, { liquidita: total }, period, today);
     return { points: series.map((p) => ({ label: p.date, value: p.value })), delta: series.length > 1 ? computeNetWorthChange(series).delta : null };
-  }, [selected, transactions, snapshotsQuery.data, total, period, today]);
+  }, [selected, statementHistory, transactions, snapshotsQuery.data, total, period, today]);
 
   const pace = React.useMemo(() => computeMonthPace(transactions, budgets, today), [transactions, budgets, today]);
   const lines = buildVoiceLines({ language, pace, monthLabel: MONTH_NAME.format(today), currency, nextDue: null, today });

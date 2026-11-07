@@ -16,6 +16,9 @@ import { connectIbkrFlex, disconnectIbkrFlex, listIbkrFlexConnections } from "./
 import { syncIbkrFlexConnection, type IbkrFlexSyncDeps } from "./sync";
 import type { IbkrFlexClientDeps } from "./client";
 import type { RateWindowStore } from "./rate-limit";
+import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
+import { createMemoryHistoryStateStore } from "@/lib/net-worth/history-state";
+import { refreshDerivedCashHistory, writeDailySnapshot } from "@/lib/net-worth/snapshots";
 
 /**
  * The sync against a real Postgres and a fake IBKR endpoint: the endpoint answers SendRequest with a reference code
@@ -82,6 +85,7 @@ beforeEach(async () => {
 });
 afterEach(() => { vi.useRealTimers(); });
 afterAll(async () => {
+  await db.delete(netWorthSnapshots).where(inArray(netWorthSnapshots.userId, users));
   await db.delete(investmentTransactions).where(inArray(investmentTransactions.userId, users));
   await db.delete(instruments).where(inArray(instruments.createdByUserId, users));
   await db.delete(authUser).where(inArray(authUser.id, users));
@@ -137,6 +141,22 @@ describe("syncIbkrFlexConnection", () => {
     const [cash] = await db.select().from(accounts).where(and(eq(accounts.userId, userId), eq(accounts.id, status.accountId)));
     expect(cash.type).toBe("Liquidità broker");
     expect(await ibkrFlexConnectionForAccount(userId, status.accountId)).toBe(connectionId);
+  });
+
+  it("the cash history follows the broker account day by day from its statements, not today's balance", async () => {
+    const { ibkr, connectionId } = await connected();
+    await syncIbkrFlexConnection(userId, connectionId, syncDeps(ibkr));
+    await writeDailySnapshot(userId);
+    await refreshDerivedCashHistory(userId, new Date(), createMemoryHistoryStateStore());
+    const rows = await db.select().from(netWorthSnapshots).where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "liquidita"))).orderBy(netWorthSnapshots.date);
+    const on = (date: string) => rows.find((r) => r.date === date);
+    // 2,000 EUR deposited on the first day, 1,001 spent on the ETF the next one.
+    expect(on("2025-01-01")).toMatchObject({ amount: "2000.00", statementAmount: "2000.00", source: "derivato" });
+    expect(on("2025-01-02")).toMatchObject({ amount: "999.00" });
+    // Year end: 597.25 EUR and 442.50 USD at 1.1.
+    expect(on("2025-12-31")).toMatchObject({ amount: "999.52", statementAmount: "999.52" });
+    // Today counts the account's balance once, as its statement part.
+    expect(rows.at(-1)).toMatchObject({ date: todayKey(), source: "snapshot", amount: "999.52", statementAmount: "999.52" });
   });
 
   it("is idempotent: the next day replaces the latest period whole, without duplicating operations", async () => {

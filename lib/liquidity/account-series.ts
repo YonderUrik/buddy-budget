@@ -5,6 +5,9 @@ import { parseDateOnly, startOfDay } from "@/lib/calc/expenses";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { Transaction } from "@/lib/db/schema/transactions";
 
+/** Account type of a broker's cash account created by a statement import (`execute-statement.ts`). */
+export const BROKER_CASH_ACCOUNT_TYPE = "Liquidità broker";
+
 export interface BalancePoint {
   date: string;
   value: number;
@@ -47,4 +50,23 @@ export function buildAccountBalanceSeries(account: BalanceSeriesAccount, transac
     running += byDate.get(key) ?? 0;
   }
   return points.reverse();
+}
+
+/**
+ * End-of-day balance from `from` to today of a broker cash account rebuilt from its statements: each day takes the
+ * last rebuilt balance on or before it (zero before the first statement), today the account's current balance.
+ */
+export function buildStatementBalanceSeries(history: readonly BalancePoint[], current: number, from: Date, today: Date): BalancePoint[] {
+  const todayStart = startOfDay(today);
+  const todayKey = toDateKey(todayStart);
+  const sorted = [...history].filter((p) => p.date < todayKey).sort((a, b) => (a.date < b.date ? -1 : 1));
+  const points: BalancePoint[] = [];
+  let index = 0;
+  let last = 0;
+  for (let cursor = startOfDay(from); cursor.getTime() <= todayStart.getTime(); cursor = addDays(cursor, 1)) {
+    const key = toDateKey(cursor);
+    while (index < sorted.length && sorted[index].date <= key) last = sorted[index++].value;
+    points.push({ date: key, value: key === todayKey ? round2(current) : round2(last) });
+  }
+  return points;
 }

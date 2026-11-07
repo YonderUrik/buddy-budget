@@ -1,4 +1,5 @@
 import "server-only";
+import { BROKER_CASH_ACCOUNT_TYPE } from "@/lib/liquidity/account-series";
 import { createHash } from "node:crypto";
 import { and, eq, gte, lte, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
@@ -199,7 +200,7 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     let cashAccountId = source?.cashAccountId ?? (provider === "interactive-brokers" && portfolio.broker === broker ? portfolio.statementCashAccountId : null) ?? previous?.cashAccountId ?? overlapping.find((d) => d.cashAccountId)?.cashAccountId ?? later.find((d) => d.cashAccountId)?.cashAccountId;
     const balance = cashComponents.reduce((sum, c, i) => sum + c.amount * (fx.get(-1000000 - i) ?? 1), 0).toFixed(2);
     if (!cashAccountId) {
-      const [cashAccount] = await tx.insert(accounts).values({ userId, name: provider !== "interactive-brokers" ? `${brokerName} · liquidità` : `${brokerName} · liquidità …${statement.account.slice(-4)}`, type: "Liquidità broker", balance, icon: "landmark" }).returning();
+      const [cashAccount] = await tx.insert(accounts).values({ userId, name: provider !== "interactive-brokers" ? `${brokerName} · liquidità` : `${brokerName} · liquidità …${statement.account.slice(-4)}`, type: BROKER_CASH_ACCOUNT_TYPE, balance, icon: "landmark" }).returning();
       cashAccountId = cashAccount.id;
     } else if (!later.length) await tx.update(accounts).set({ balance, updatedAt: new Date() }).where(and(eq(accounts.id, cashAccountId), eq(accounts.userId, userId)));
     if (cashMovements.length) {

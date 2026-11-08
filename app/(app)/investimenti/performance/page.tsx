@@ -2,7 +2,8 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
-import { BrokerSelector, InvestmentsViewGate, ReturnHeatmapCard, ReturnsCard, RiskCard } from "@/components/domain/investments";
+import { BrokerSelector, InvestmentsViewGate, ReturnBasisToggle, ReturnHeatmapCard, ReturnsCard, RiskCard } from "@/components/domain/investments";
+import { track } from "@/lib/analytics";
 import { PortfolioPeriodSelector } from "@/components/domain/investments/portfolio-period-selector";
 import { Button } from "@/components/ui/button";
 import { parseDateOnly } from "@/lib/calc/expenses";
@@ -33,6 +34,10 @@ export default function PerformancePage() {
     : null;
   const currency = view?.currency ?? "EUR";
   const controls = <>
+    {view?.leverage.capital && view.leverage.accounts.length ? <ReturnBasisToggle value={view.returnBasis} onChange={(next) => {
+      performance.changeBasis(next);
+      track("investment_return_basis_changed", { basis: next === "capital" ? "capitale" : "titoli" });
+    }} /> : null}
     {allBrokers ? <BrokerSelector data={allBrokers} /> : null}
     <PortfolioPeriodSelector value={performance.period} range={performance.customRange} today={performance.todayKey}
       onChange={performance.changePeriod} onRangeChange={performance.changeRange} surface="performance" showRangeCaption={false} />
@@ -49,7 +54,7 @@ export default function PerformancePage() {
       {view.returns ? <ReturnsCard returns={view.returns} inspected={performance.inspected}
         onInspect={performance.inspectDate} onSelectRange={performance.selectRange}
         benchmark={view.benchmark} benchmarkFirstPriceDate={view.benchmarkFirstPriceDate}
-        benchmarkBackfill={benchmarkBackfill} currency={currency} controls={controls} />
+        benchmarkBackfill={benchmarkBackfill} currency={currency} controls={controls} basis={view.returnBasis} />
         : <div className={`flex flex-col gap-3 ${CARD}`}>
           <div className="flex flex-wrap justify-end gap-2">{controls}</div>
           <p role="status" className="text-sm text-muted-foreground">{tr("Nessuna operazione nell’intervallo scelto. Seleziona un altro periodo.")}</p>

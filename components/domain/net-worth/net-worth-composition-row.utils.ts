@@ -54,7 +54,21 @@ export interface PensionComposition {
   excluded?: boolean;
 }
 
+/** A broker account that borrows (negative cash): the margin loan, as a positive amount in the user currency. */
+export interface MarginLoanComposition {
+  accountId: string;
+  name: string;
+  amount: number;
+}
+
+/** Margin loans of the broker cash accounts: the accounts whose balance is negative. */
+export function marginLoansFromBrokerCash(cash: readonly { accountId: string; name: string; balance: number }[] | undefined): MarginLoanComposition[] {
+  return (cash ?? []).filter((c) => c.balance < 0).map((c) => ({ accountId: c.accountId, name: c.name, amount: -c.balance }));
+}
+
 const PENSION_EXCLUDED_DETAIL = "fuori dal totale";
+/** Label of the margin loan line among the liabilities. */
+export const MARGIN_LOAN_LABEL = "Prestito a margine";
 
 /** Voci di composizione per le sole classi presenti: Liquidità (se ci sono conti), Investimenti, Previdenza e Debiti (in negativo). */
 export function buildCompositionItems(
@@ -62,12 +76,15 @@ export function buildCompositionItems(
   investments: InvestmentsComposition | null = null,
   debts: DebtsComposition | null = null,
   pension: PensionComposition | null = null,
-  language: Language = "it"
+  language: Language = "it",
+  /** Broker accounts in debt: shown among the liabilities, not as negative cash. The total does not change. */
+  marginLoans: MarginLoanComposition[] = []
 ): NetWorthCompositionItem[] {
   const tr = (source: string, values?: Record<string, string | number>) => translate(language, source, values);
   const items: Omit<NetWorthCompositionItem, "share">[] = [];
+  const borrowing = new Set(marginLoans.map((l) => l.accountId));
   if (accounts.length > 0) {
-    const amount = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
+    const amount = accounts.reduce((sum, a) => sum + (borrowing.has(a.id) ? 0 : Number(a.balance)), 0);
     const detail = accounts.length === 1 ? tr("1 conto") : tr("{0} conti", {0: accounts.length});
     items.push({ key: "liquidita", label: ASSET_CLASS_LABELS.liquidita, detail, amount, href: "/liquidita/conti" });
   }
@@ -104,6 +121,18 @@ export function buildCompositionItems(
       amount: -debts.total,
       share: 0,
       href: "/debiti",
+      isLiability: true,
+    });
+  }
+  const marginTotal = marginLoans.filter((l) => accounts.some((a) => a.id === l.accountId)).reduce((sum, l) => sum + l.amount, 0);
+  if (marginTotal > 0) {
+    liabilities.push({
+      key: "margine",
+      label: MARGIN_LOAN_LABEL,
+      detail: marginLoans.length === 1 ? marginLoans[0].name : tr("{0} conti broker", { 0: marginLoans.length }),
+      amount: -marginTotal,
+      share: 0,
+      href: "/investimenti",
       isLiability: true,
     });
   }

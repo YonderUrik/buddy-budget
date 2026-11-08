@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCompositionItems, computeInvestedShare } from "./net-worth-composition-row.utils";
+import { buildCompositionItems, computeInvestedShare, marginLoansFromBrokerCash } from "./net-worth-composition-row.utils";
 import type { Account } from "@/lib/db/schema/accounts";
 
 function makeAccount(balance: string): Account {
@@ -89,5 +89,16 @@ describe("buildCompositionItems con la previdenza", () => {
     const items = buildCompositionItems(accounts, null, null, { value: 400, funds: 2, excluded: true });
     expect(items.find((i) => i.key === "previdenza")).toMatchObject({ amount: 400, share: 0, detail: "2 fondi · fuori dal totale" });
     expect(items.find((i) => i.key === "liquidita")?.share).toBe(1);
+  });
+});
+
+describe("margin loans", () => {
+  it("move a broker account in debt from Liquidità to the liabilities, without changing the total", () => {
+    const accounts = [{ id: "bank", balance: "3000" }, { id: "ib", balance: "-5000" }] as never;
+    const loans = marginLoansFromBrokerCash([{ accountId: "ib", name: "Interactive Brokers · liquidità", balance: -5000 }, { accountId: "dg", name: "DEGIRO", balance: 20 }]);
+    const items = buildCompositionItems(accounts, { value: 16000, positions: 2, paid: 15000, marketGain: 1000 }, null, null, "it", loans);
+    expect(items.find((i) => i.key === "liquidita")!.amount).toBe(3000);
+    expect(items.find((i) => i.key === "margine")).toMatchObject({ amount: -5000, isLiability: true, detail: "Interactive Brokers · liquidità" });
+    expect(items.reduce((sum, i) => sum + i.amount, 0)).toBe(3000 - 5000 + 16000);
   });
 });

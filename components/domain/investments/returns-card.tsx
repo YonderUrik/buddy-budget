@@ -35,6 +35,8 @@ export interface ReturnsCardProps {
   currency: string;
   /** Page controls shown in the card header next to «Confronta con» (broker filter, period). */
   controls?: React.ReactNode;
+  /** «capital»: the figures measure the user's own capital, margin loan and interest included. */
+  basis?: "securities" | "capital";
 }
 
 /**
@@ -42,7 +44,7 @@ export interface ReturnsCardProps {
  * instructions, then the figures of the period (or of the date under the cursor), the verdict and the comparison with
  * the index. Same information as before, in one card.
  */
-export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benchmark, benchmarkFirstPriceDate, benchmarkBackfill, currency, controls }: ReturnsCardProps) {
+export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benchmark, benchmarkFirstPriceDate, benchmarkBackfill, currency, controls, basis = "securities" }: ReturnsCardProps) {
   const { benchmarkWait, timingInsight } = localizedReturnInsights(useLocalization().language);
 
   const { locale: formattingLocale } = useLocalization();
@@ -64,8 +66,10 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
   const comparison = values.benchmarkStatus === "ok" ? values.benchmark : null;
   const benchmarkSuggestion = matchBenchmarkSuggestion(benchmark);
   return <>
-    <PanelSection icon={TrendingUpIcon} title={tr("Rendimento del portafoglio · TWR cumulato")}
-      description={tr("Base 0% a inizio periodo. Il grafico mostra il rendimento degli investimenti, indipendente dai versamenti.")}
+    <PanelSection icon={TrendingUpIcon} title={basis === "capital" ? tr("Rendimento del tuo capitale · TWR cumulato") : tr("Rendimento del portafoglio · TWR cumulato")}
+      description={basis === "capital"
+        ? tr("Base 0% a inizio periodo. Misura i tuoi soldi: titoli meno il prestito a margine, con gli interessi pagati. Versamenti e prelievi sul conto del broker non contano come rendimento.")
+        : tr("Base 0% a inizio periodo. Il grafico mostra il rendimento degli investimenti, indipendente dai versamenti.")}
       action={<div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
         <Button variant="outline" className="h-11 max-w-full min-w-0 rounded-full sm:h-9 sm:max-w-80" onClick={() => setChoosing(true)} title={benchmark?.name}>
           <span className="truncate">{benchmark ? tr("Confronta con: {0}", { 0: benchmarkSuggestion?.label ?? benchmark.name }) : tr("Scegli un confronto")}</span>

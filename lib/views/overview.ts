@@ -4,7 +4,7 @@
  */
 import { computeAccountsKpi } from "@/components/domain/accounts/accounts-kpi.utils";
 import { buildRenewalAlerts, describeRenewalAlert, type RenewalSource } from "@/components/domain/accounts/renewal-alerts";
-import { buildCompositionItems } from "@/components/domain/net-worth/net-worth-composition-row.utils";
+import { buildCompositionItems, marginLoansFromBrokerCash } from "@/components/domain/net-worth/net-worth-composition-row.utils";
 import { computeMonthPace } from "@/lib/calc/month-pace";
 import {
   buildNetWorthSeries,
@@ -83,7 +83,7 @@ export function buildOverviewView(input: OverviewInputs): OverviewView {
   const fullSeries = buildNetWorthSeries(input.snapshots, todayByClass, period, today, locale);
   const series = input.includePension ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
-  const composition = buildCompositionItems(input.accounts, investments, debts, pension ? { ...pension, excluded: !input.includePension } : null, language);
+  const composition = buildCompositionItems(input.accounts, investments, debts, pension ? { ...pension, excluded: !input.includePension } : null, language, marginLoansFromBrokerCash(input.investments?.brokerCash));
   const basePace = computeMonthPace(input.monthTransactions, input.budgets, today);
   const pace = input.budgetTotals ? { ...basePace, budgetTotal: input.budgetTotals.available, budgetSpent: input.budgetTotals.spent } : basePace;
   const monthLabel = new Intl.DateTimeFormat(locale, { month: "long" }).format(today);

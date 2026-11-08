@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.96.0](https://github.com/YonderUrik/buddy-budget/compare/v0.95.0...v0.96.0) (2026-11-03)
+
+
+### Features
+
+* «Cerca» answers averages, counts, splits and «how do I» questions with AI ([#557](https://github.com/YonderUrik/buddy-budget/issues/557)) ([b7a1b45](https://github.com/YonderUrik/buddy-budget/commit/b7a1b4585a7b658ee23e9d4d442ed8546669034d))
+
 ## [0.95.0](https://github.com/YonderUrik/buddy-budget/compare/v0.94.0...v0.95.0) (2026-11-03)
 
 

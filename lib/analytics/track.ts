@@ -26,6 +26,7 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "anali
 import type { SearchGroupId } from "@/lib/search/types";
 import type { CommandKind, CommandSource } from "@/lib/commands/types";
 import type { DataQuestion } from "@/lib/commands/question";
+import type { AnalysisGroupBy, AnalysisMeasure } from "@/lib/commands/analysis";
 
 type DataQuestionKind = DataQuestion["kind"];
 
@@ -315,7 +316,11 @@ export interface ProductEvents {
   /** «Chiedi all'AI» asked in «Cerca», with what came back (never the sentence); `question` = a question about the user's data, answered. */
   search_ai_asked: { outcome: string };
   /** «Cerca» answered a question about the user's data (once per kind per opening); `source`: read by the rules or by the AI. Never the question or the figure. */
-  search_answer_shown: { kind: DataQuestionKind; source: "regole" | "ai" };
+  search_answer_shown: { kind: DataQuestionKind | "aiuto"; source: "regole" | "ai" };
+  /** «Cerca» answered a «how do I…» question from the help articles (once per article per opening): which article, and whether the AI wrote the answer. */
+  search_help_shown: { id: string; source: "regole" | "ai" };
+  /** «Chiedi all'AI» answered an analysis (average, count, ranking, split): what kind, never the question or the figure; `found`: it had a figure. */
+  search_analysis_shown: { measure: AnalysisMeasure; groupBy: AnalysisGroupBy | "nessuno"; compare: boolean; found: boolean };
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */

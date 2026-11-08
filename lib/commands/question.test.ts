@@ -60,6 +60,9 @@ describe("parseDataQuestion", () => {
     expect(read("Kontostand")).toMatchObject({ kind: "saldo", subject: "", language: "de" });
     expect(read("patrimonio")).toEqual({ kind: "patrimonio", date: null, language: "it" });
     expect(read("what is my net worth")).toMatchObject({ kind: "patrimonio", language: "en" });
+    // «How does the app work» questions are help, not totals.
+    expect(read("perché alcuni movimenti non contano nelle spese?")).toBeNull();
+    expect(read("how do I count only my share of an expense?")).toBeNull();
     expect(read("Vermögen")).toMatchObject({ kind: "patrimonio", language: "de" });
     expect(read("portafoglio")).toMatchObject({ kind: "portafoglio", subject: "" });
     expect(read("quanto vale Apple")).toMatchObject({ kind: "portafoglio", subject: "apple" });

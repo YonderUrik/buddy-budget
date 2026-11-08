@@ -9,6 +9,14 @@ export interface AccountSyncInfo {
   syncsRemainingToday: number;
 }
 
+/**
+ * True when the app keeps the account up to date: a linked bank (`source = auto`) or an account fed by a sync
+ * connection, like an Interactive Brokers cash account, which the statement import creates as a manual account.
+ */
+export function isSyncedAccount(account: { source: string }, syncInfo?: AccountSyncInfo): boolean {
+  return account.source === "auto" || syncInfo !== undefined;
+}
+
 export type AccountStatusTone = "ok" | "warning" | "progress" | "neutral";
 
 /** Stato di un conto in una riga: testo sempre presente (mai solo colore) e tono per l'aspetto. */

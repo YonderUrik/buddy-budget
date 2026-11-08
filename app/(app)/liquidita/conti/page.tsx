@@ -16,6 +16,7 @@ import {
   RenewalBanner,
   buildRenewalAlerts,
   groupAccounts,
+  isSyncedAccount,
   sumBalances,
 } from "@/components/domain/accounts";
 import { EmptyState, LoadError } from "@/components/domain/shared";
@@ -124,7 +125,7 @@ export default function LiquiditaContiPage() {
             <ul className="flex flex-col gap-2">
               {group.accounts.map((account) => {
                 const status = buildAccountStatus({
-                  isAuto: account.source === "auto",
+                  isAuto: isSyncedAccount(account, syncInfoById.get(account.id)),
                   needsReconnect: reconnectIds.has(account.id),
                   syncing: isAccountSyncing(syncJobs, account.id),
                   syncInfo: syncInfoById.get(account.id),

@@ -5833,7 +5833,6 @@
   "Spunta queste {0} sezioni, con «Select All»": "Tick these {0} sections, with «Select All»",
   "Copiato": "Copied",
   "Copia elenco": "Copy list",
-  "Apri il Client Portal": "Open the Client Portal",
   "Fatto, avanti": "Done, next",
   "Cosa fa il collegamento": "What the connection does",
   "Solo lettura": "Read-only",
@@ -5844,5 +5843,7 @@
   "Durata": "Duration",
   "Indirizzo IP": "IP address",
   "la più lunga": "the longest",
-  "lascia vuoto": "leave empty"
+  "lascia vuoto": "leave empty",
+  "Collegato a Interactive Brokers": "Connected to Interactive Brokers",
+  "Saldo dal broker": "Balance from the broker"
 }

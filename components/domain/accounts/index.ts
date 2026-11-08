@@ -34,7 +34,7 @@ export { AccountDetailsDialog } from "./account-details-dialog";
 export { AccountDeleteConfirm, deletionTouchesInvestments } from "./account-delete-confirm";
 export type { AccountDeleteConfirmProps } from "./account-delete-confirm";
 export type { AccountDetailsDialogProps } from "./account-details-dialog";
-export { localizedAccountStatus, buildAccountStatus, describeSyncAvailability, sumBalances } from "./account-status";
+export { localizedAccountStatus, buildAccountStatus, describeSyncAvailability, isSyncedAccount, sumBalances } from "./account-status";
 export type { AccountStatus, AccountSyncInfo } from "./account-status";
 export { BankReturnCard } from "./bank-return-card";
 export type { BankReturnCardProps } from "./bank-return-card";

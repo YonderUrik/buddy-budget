@@ -27,9 +27,6 @@ export const IBKR_FLEX_TOKEN_SETTINGS = [
   { label: "Indirizzo IP", value: "lascia vuoto" },
 ] as const;
 
-/** IBKR's sign-in page, opened in a new tab from the first step. */
-export const IBKR_CLIENT_PORTAL_URL = "https://www.interactivebrokers.com/portal";
-
 /** Refusals caused by the Flex Query itself: «Correggi la query» goes back to the first step. */
 export const IBKR_FLEX_QUERY_REASONS: ReadonlySet<string> = new Set(["query_invalid", "missing_sections", "date_format", "multiple_accounts", "invalid_response", "too_large"]);
 

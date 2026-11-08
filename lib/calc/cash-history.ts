@@ -15,9 +15,12 @@
  * any day comes from the statements' opening balances and dated cash movements (`centsOn`). Each row keeps that part
  * in `statementAmount`, so it follows every import the same way. A row written before `statementAmount` existed
  * recorded the account inside its manual part, with the balance the latest statement gave then, which can be months
- * old (a statement imported later replaces it and is deleted). So the manual part of such a row is estimated instead,
- * as the current balance of the manual accounts that existed then (typed balances rarely change), and the rest is
- * what it recorded for the statement accounts. Rows from before the statement accounts existed recorded none.
+ * old (a statement imported later replaces it and is deleted). What it recorded depends on when the row was FIRST
+ * written (`createdAt`, never changed by later updates), not on its date: a day filled in after the broker account
+ * existed copied the broker balance from the day it was copied from. So a row first written before any statement
+ * account existed recorded none; a later one recorded everything that is not ledger or manual, the manual part being
+ * estimated as the current balance of the manual accounts that existed when the row was written (typed balances
+ * rarely change).
  */
 
 import { addDays, MAX_DERIVED_HISTORY_MONTHS, toDateKey } from "./net-worth";
@@ -60,6 +63,8 @@ export interface StoredCashRow {
   statementAmount?: number | null;
   /** When the row was last written: used to estimate the ledger part of rows without `ledgerAmount`. */
   updatedAt: Date;
+  /** When the row was first written (unchanged by later updates); falls back to `updatedAt`. */
+  createdAt?: Date;
 }
 
 export interface CashHistoryInput {
@@ -190,8 +195,10 @@ export function planCashHistory({ rows, accounts, transactions, statementAccount
   const totalOn = (day: string) => [...ledger.get(day)!.values()].reduce((sum, v) => sum + v, 0);
   const statementOn = (day: string) => statementAccounts.reduce((sum, a) => sum + a.centsOn(day), 0);
   // A row written before `statementAmount` existed counted a statement account created by then.
-  const countedStatement = (row: StoredCashRow) => statementAccounts.some((a) => row.date >= toDateKey(a.createdAt) && row.updatedAt.getTime() >= a.createdAt.getTime());
-  const manualEstimate = (row: StoredCashRow) => manualAccounts.reduce((sum, a) => (a.createdAt.getTime() <= row.updatedAt.getTime() ? sum + toCents(a.balance) : sum), 0);
+  const writtenAt = (row: StoredCashRow) => (row.createdAt ?? row.updatedAt).getTime();
+  // A row first written once a statement account existed counted it (directly, or copied from the day it was filled from).
+  const countedStatement = (row: StoredCashRow) => statementAccounts.some((a) => a.createdAt.getTime() <= writtenAt(row));
+  const manualEstimate = (row: StoredCashRow) => manualAccounts.reduce((sum, a) => (a.createdAt.getTime() <= writtenAt(row) ? sum + toCents(a.balance) : sum), 0);
 
   const imported = importedSoFar(accounts, transactions);
   const writes: CashRowWrite[] = [];

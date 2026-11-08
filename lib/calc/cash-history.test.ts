@@ -150,6 +150,50 @@ describe("planCashHistory", () => {
     expect(writes.find((w) => w.date === "2026-01-01")).toEqual({ date: "2026-01-01", amount: 1100, ledgerAmount: 0, statementAmount: 1000, insert: true });
   });
 
+  it("removes a broker balance copied onto days before the broker account existed (no double count)", () => {
+    // As found on production: the broker account was created on 09-11; days 09-08..09-10 were filled in afterwards
+    // (first written on 09-12) and copied the broker balance, 500, as their manual part. The user has no manual account.
+    const brokerCreated = new Date("2026-09-11T10:00:00Z");
+    const filledLater = new Date("2026-09-12T08:00:00Z");
+    const copied = (date: string): StoredCashRow => ({ ...row(date, 1500, 1000), createdAt: filledLater, updatedAt: filledLater });
+    const writes = planCashHistory({
+      rows: [copied("2026-09-09"), copied("2026-09-10"), row("2026-09-11", 1500, 1000), row("2026-09-12", 1500, 1000)],
+      accounts: [bank(1000)],
+      transactions: [],
+      statementAccounts: [broker("2026-09-01", { "2026-09-01": 300, "2026-09-11": 500 }, brokerCreated)],
+      manualNow: 0,
+      manualAccounts: [],
+      today: TODAY,
+    });
+    // Each day holds the bank plus the rebuilt broker balance of that day, once: 300 before 09-11, 500 from 09-11.
+    expect(writes.filter((w) => !w.insert)).toEqual([
+      { date: "2026-09-09", amount: 1300, ledgerAmount: 1000, statementAmount: 300, insert: false },
+      { date: "2026-09-10", amount: 1300, ledgerAmount: 1000, statementAmount: 300, insert: false },
+      { date: "2026-09-11", amount: 1500, ledgerAmount: 1000, statementAmount: 500, insert: false },
+      { date: "2026-09-12", amount: 1500, ledgerAmount: 1000, statementAmount: 500, insert: false },
+    ]);
+  });
+
+  it("keeps a manual balance recorded before the broker account existed, even when it has changed since", () => {
+    // The cash account held 200 when 09-10 was written; it holds 50 now. The broker account came later, on 09-11.
+    const brokerCreated = new Date("2026-09-11T10:00:00Z");
+    const writes = planCashHistory({
+      rows: [row("2026-09-10", 200, 0)],
+      accounts: [],
+      transactions: [],
+      statementAccounts: [broker("2026-09-11", { "2026-09-11": 500 }, brokerCreated)],
+      manualNow: 50,
+      manualAccounts: [{ balance: 50, createdAt: LONG_AGO }],
+      today: TODAY,
+    });
+    // 09-10 keeps its 200 (no broker cash then); 09-11..09-12 are new days: manual carried from 09-10, broker rebuilt.
+    expect(writes).toEqual([
+      { date: "2026-09-10", amount: 200, ledgerAmount: 0, statementAmount: 0, insert: false },
+      { date: "2026-09-11", amount: 700, ledgerAmount: 0, statementAmount: 500, insert: true },
+      { date: "2026-09-12", amount: 700, ledgerAmount: 0, statementAmount: 500, insert: true },
+    ]);
+  });
+
   it("moves only the statement part once a row has one, when a later import corrects the past", () => {
     const writes = planCashHistory({
       rows: [{ ...row("2026-09-11", 2500, 0), statementAmount: 2400 }, { ...row("2026-09-12", 2500, 0), statementAmount: 2400 }],

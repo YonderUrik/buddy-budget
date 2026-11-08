@@ -144,17 +144,20 @@ export async function refreshDerivedCashHistory(
   const started = Date.now();
   const writes = await db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), ${CASH_HISTORY_LOCK_KEY})`);
-    const statementAccounts = await loadStatementCashHistories(userId, toDateKey(addDays(todayStart, -1)), tx);
-    const { ledger, manualNow, manualAccounts } = await loadLedgerAccounts(userId, tx, new Set(statementAccounts.map((a) => a.id)));
+    const statementHistories = await loadStatementCashHistories(userId, toDateKey(addDays(todayStart, -1)), tx);
+    const { ledger, manualNow, manualAccounts } = await loadLedgerAccounts(userId, tx, new Set(statementHistories.map((a) => a.id)));
+    // An account counts once: one that follows its transactions is never also rebuilt from statements.
+    const ledgerIds = new Set(ledger.map((a) => a.id));
+    const statementAccounts = statementHistories.filter((a) => !ledgerIds.has(a.id));
     const [ledgerTransactions, rows] = await Promise.all([
       loadLedgerTransactions(userId, ledger, undefined, tx),
       tx
-        .select({ date: netWorthSnapshots.date, amount: netWorthSnapshots.amount, ledgerAmount: netWorthSnapshots.ledgerAmount, statementAmount: netWorthSnapshots.statementAmount, updatedAt: netWorthSnapshots.updatedAt })
+        .select({ date: netWorthSnapshots.date, amount: netWorthSnapshots.amount, ledgerAmount: netWorthSnapshots.ledgerAmount, statementAmount: netWorthSnapshots.statementAmount, updatedAt: netWorthSnapshots.updatedAt, createdAt: netWorthSnapshots.createdAt })
         .from(netWorthSnapshots)
         .where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "liquidita"), lt(netWorthSnapshots.date, todayKey))),
     ]);
     const planned = planCashHistory({
-      rows: rows.map((r) => ({ date: r.date, amount: Number(r.amount), ledgerAmount: r.ledgerAmount === null ? null : Number(r.ledgerAmount), statementAmount: r.statementAmount === null ? null : Number(r.statementAmount), updatedAt: r.updatedAt })),
+      rows: rows.map((r) => ({ date: r.date, amount: Number(r.amount), ledgerAmount: r.ledgerAmount === null ? null : Number(r.ledgerAmount), statementAmount: r.statementAmount === null ? null : Number(r.statementAmount), updatedAt: r.updatedAt, createdAt: r.createdAt })),
       accounts: ledger,
       transactions: ledgerTransactions,
       statementAccounts,

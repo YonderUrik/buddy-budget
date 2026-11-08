@@ -16,6 +16,7 @@ import { connectIbkrFlex, disconnectIbkrFlex, listIbkrFlexConnections } from "./
 import { syncIbkrFlexConnection, type IbkrFlexSyncDeps } from "./sync";
 import type { IbkrFlexClientDeps } from "./client";
 import type { RateWindowStore } from "./rate-limit";
+import { lastClosedDay, shiftDay } from "./windows";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { createMemoryHistoryStateStore } from "@/lib/net-worth/history-state";
 import { refreshDerivedCashHistory, writeDailySnapshot } from "@/lib/net-worth/snapshots";
@@ -129,7 +130,7 @@ describe("syncIbkrFlexConnection", () => {
   it("imports the history from the opening date, oldest first, then the account row shows the connection", async () => {
     const { ibkr, connectionId } = await connected();
     const outcome = await syncIbkrFlexConnection(userId, connectionId, syncDeps(ibkr));
-    const through = new Date(Date.parse(`${todayKey()}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
+    const through = lastClosedDay(todayKey());
     expect(outcome).toMatchObject({ status: "done", reports: 2, partial: false, through });
     expect(ibkr.periods.slice(1)).toEqual([{ from: "20250101", to: "20251231" }, { from: "20260101", to: compact(through) }]);
     expect(await statementsOf(userId)).toEqual([{ from: "2025-01-01", to: "2025-12-31" }, { from: "2026-01-01", to: through }]);
@@ -164,7 +165,10 @@ describe("syncIbkrFlexConnection", () => {
     await syncIbkrFlexConnection(userId, connectionId, syncDeps(ibkr));
     const before = await operationsOf(userId);
     expect(await syncIbkrFlexConnection(userId, connectionId, syncDeps(ibkr))).toMatchObject({ status: "done", reports: 0 });
-    vi.useFakeTimers({ toFake: ["Date"], now: Date.now() + 86_400_000 });
+    // The next day with a new closed day (over a weekend that is Monday's run).
+    let ahead = 1;
+    while (lastClosedDay(shiftDay(todayKey(), ahead)) === lastClosedDay(todayKey())) ahead += 1;
+    vi.useFakeTimers({ toFake: ["Date"], now: Date.now() + ahead * 86_400_000 });
     const next = await syncIbkrFlexConnection(userId, connectionId, syncDeps(ibkr));
     expect(next).toMatchObject({ status: "done", reports: 1 });
     expect(ibkr.periods.at(-1)!.from).toBe("20260101");
@@ -177,7 +181,10 @@ describe("syncIbkrFlexConnection", () => {
     await syncIbkrFlexConnection(userId, connectionId, syncDeps(ibkr));
     const statements = await statementsOf(userId);
     const operations = await operationsOf(userId);
-    vi.useFakeTimers({ toFake: ["Date"], now: Date.now() + 86_400_000 });
+    // The next day with a new closed day (over a weekend that is Monday's run).
+    let ahead = 1;
+    while (lastClosedDay(shiftDay(todayKey(), ahead)) === lastClosedDay(todayKey())) ahead += 1;
+    vi.useFakeTimers({ toFake: ["Date"], now: Date.now() + ahead * 86_400_000 });
     // An incomplete report: the position IBKR holds is missing.
     ibkr.report = (from, to) => flexReport({ from, to, quiet: true, position: 0 });
     const outcome = await syncIbkrFlexConnection(userId, connectionId, syncDeps(ibkr));

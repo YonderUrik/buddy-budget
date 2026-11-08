@@ -10,7 +10,7 @@ import { ibkrFlexAccountOf, IbkrFlexReportError, parseIbkrFlexReport } from "@/l
 import { sealFlexToken } from "./availability";
 import { fetchFlexReport, IbkrFlexError, type IbkrFlexClientDeps, type IbkrFlexCredentials } from "./client";
 import type { RateWindowStore } from "./rate-limit";
-import { shiftDay } from "./windows";
+import { lastClosedDay, shiftDay } from "./windows";
 
 /** Redis counters for IBKR's SendRequest limits, shared by every pod and the cron. */
 export const redisRateWindowStore: RateWindowStore = {
@@ -43,7 +43,7 @@ export type ConnectOutcome =
  * Connecting the same IBKR account again replaces its token and query (a reconnect), never adds a second connection.
  */
 export async function connectIbkrFlex(userId: string, credentials: IbkrFlexCredentials, deps: IbkrFlexClientDeps = flexClientDeps()): Promise<ConnectOutcome> {
-  const through = shiftDay(todayKey(), -1);
+  const through = lastClosedDay(todayKey());
   let account: ReturnType<typeof ibkrFlexAccountOf>;
   const check = { from: shiftDay(through, -(CHECK_DAYS - 1)), to: through };
   try {

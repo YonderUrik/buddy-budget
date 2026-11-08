@@ -17,7 +17,7 @@ import { logger, recordIbkrFlexRequest } from "@/lib/observability";
 import { openFlexToken } from "./availability";
 import { CREDENTIAL_REASONS, fetchFlexReport, IbkrFlexError, type IbkrFlexClientDeps } from "./client";
 import { flexClientDeps, ibkrAccountKey, reportReason } from "./connections";
-import { planWindows, shiftDay } from "./windows";
+import { lastClosedDay, planWindows } from "./windows";
 
 /** Stop starting new reports past this point, so a run ends inside a route's `maxDuration` (300 s); the rest resumes. */
 export const SYNC_TIME_BUDGET_MS = 200_000;
@@ -60,7 +60,7 @@ export type IbkrFlexSyncOutcome =
   | { status: "not-found" };
 
 /**
- * Bring one connection up to yesterday: request each missing period (`planWindows`), check it is the connected
+ * Bring one connection up to the last closed day (yesterday, or Friday over a weekend): request each missing period (`planWindows`), check it is the connected
  * account and a complete statement, and save it through the reconciled statement import, oldest first.
  *
  * Idempotent and resumable: each report is saved atomically and replaces only periods it fully covers, a report
@@ -79,7 +79,7 @@ export async function syncIbkrFlexConnection(userId: string, connectionId: strin
   try {
     const credentials = { token: openFlexToken(connection.token), queryId: connection.queryId };
     const existing = await db.select({ from: brokerStatements.from, to: brokerStatements.to }).from(brokerStatements).where(and(eq(brokerStatements.userId, userId), eq(brokerStatements.accountKey, connection.accountKey)));
-    const windows = planWindows({ existing, through: shiftDay(todayKey(), -1), dateOpened: connection.dateOpened });
+    const windows = planWindows({ existing, through: lastClosedDay(todayKey()), dateOpened: connection.dateOpened });
     await onProgress?.(0, windows.length);
     for (const window of windows) {
       if (reports > 0 && deps.now().getTime() - started > (deps.budgetMs ?? SYNC_TIME_BUDGET_MS)) { partial = true; break; }

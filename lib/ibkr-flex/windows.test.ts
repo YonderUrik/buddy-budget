@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_INITIAL_WINDOWS, planWindows, spanDays } from "./windows";
+import { lastClosedDay, MAX_INITIAL_WINDOWS, planWindows, spanDays } from "./windows";
 
 describe("planWindows", () => {
   it("imports the history from the opening date in chunks of at most 365 days, oldest first, without gaps", () => {
@@ -29,5 +29,14 @@ describe("planWindows", () => {
 
   it("has nothing to do when yesterday is already imported", () => {
     expect(planWindows({ existing: [{ from: "2026-01-01", to: "2026-11-05" }], through: "2026-11-05", dateOpened: null })).toEqual([]);
+  });
+});
+
+describe("lastClosedDay", () => {
+  it("is yesterday on weekdays and the Friday before over a weekend", () => {
+    expect(lastClosedDay("2026-11-10")).toBe("2026-11-09"); // Tuesday → Monday
+    expect(lastClosedDay("2026-11-07")).toBe("2026-11-06"); // Saturday → Friday
+    expect(lastClosedDay("2026-11-08")).toBe("2026-11-06"); // Sunday → Friday
+    expect(lastClosedDay("2026-11-09")).toBe("2026-11-06"); // Monday → Friday
   });
 });

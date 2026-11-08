@@ -20,6 +20,16 @@ const DAY = 86_400_000;
 export function shiftDay(date: string, days: number): string {
   return new Date(Date.parse(`${date}T00:00:00Z`) + days * DAY).toISOString().slice(0, 10);
 }
+/**
+ * Last day IBKR has a closed statement for: yesterday, or the Friday before when yesterday is a weekend day (IBKR
+ * answers 1003 «statement not available» for a period ending on a Saturday or Sunday; nothing is booked on those days).
+ */
+export function lastClosedDay(todayKey: string): string {
+  const yesterday = shiftDay(todayKey, -1);
+  const weekday = new Date(`${yesterday}T00:00:00Z`).getUTCDay();
+  return weekday === 6 ? shiftDay(yesterday, -1) : weekday === 0 ? shiftDay(yesterday, -2) : yesterday;
+}
+
 /** Inclusive length of a period in days. */
 export function spanDays(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY) + 1;

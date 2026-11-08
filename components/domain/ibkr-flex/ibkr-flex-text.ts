@@ -2,20 +2,36 @@
  * Italian source strings of the Interactive Brokers connection (translated through `t()`), kept out of the JSX.
  */
 
-/** How to create the Flex Query and the token in IBKR's Client Portal, in the order the user does it. */
-export const IBKR_FLEX_GUIDE_STEPS = [
-  "Nel Client Portal di Interactive Brokers apri Rendiconti → Flex Queries (Performance & Reports → Flex Queries).",
-  "Crea una nuova Activity Flex Query con formato XML e periodo «Last 365 Calendar Days».",
-  "Includi le sezioni Account Information, Cash Report, Net Asset Value (NAV) in Base, Open Positions, Trades (Executions), Cash Transactions, Corporate Actions, Transfers e Financial Instrument Information, con tutti i campi.",
-  "Lascia il formato data yyyyMMdd e salva: il numero accanto al nome della query è il Query ID.",
-  "In Flex Web Service Configuration attiva il servizio e genera un token: scegli la durata più lunga e copialo qui.",
+/** The three steps of the connection, in the order the user does them in IBKR's Client Portal. */
+export const IBKR_FLEX_STEPS = ["Query", "Query ID", "Token"] as const;
+
+/** What the connection can and cannot do, as short tags above the steps. */
+export const IBKR_FLEX_TRUST = ["Solo lettura", "Mai la password", "Token cifrato"] as const;
+
+/** Settings of the Activity Flex Query: the label is ours, the value is the option's name in IBKR (English, untranslated). */
+export const IBKR_FLEX_QUERY_SETTINGS = [
+  { label: "Formato", value: "XML" },
+  { label: "Periodo", value: "Last 365 Calendar Days" },
+  { label: "Formato data", value: "yyyyMMdd" },
 ] as const;
 
-export const IBKR_FLEX_FACTS = [
-  "Solo lettura: con token e Query ID si possono scaricare rendiconti, non fare operazioni né spostare soldi.",
-  "Non chiediamo mai utente e password di Interactive Brokers.",
-  "Il token è cifrato sui nostri server e non torna mai al browser. Puoi revocarlo da IBKR quando vuoi.",
+/** Sections the query must include, with IBKR's names. */
+export const IBKR_FLEX_SECTIONS = [
+  "Account Information", "Cash Report", "Net Asset Value (NAV) in Base", "Open Positions", "Trades",
+  "Cash Transactions", "Corporate Actions", "Transfers", "Financial Instrument Information",
 ] as const;
+
+/** Settings of the Flex Web Service token. */
+export const IBKR_FLEX_TOKEN_SETTINGS = [
+  { label: "Durata", value: "la più lunga" },
+  { label: "Indirizzo IP", value: "lascia vuoto" },
+] as const;
+
+/** IBKR's sign-in page, opened in a new tab from the first step. */
+export const IBKR_CLIENT_PORTAL_URL = "https://www.interactivebrokers.com/portal";
+
+/** Refusals caused by the Flex Query itself: «Correggi la query» goes back to the first step. */
+export const IBKR_FLEX_QUERY_REASONS: ReadonlySet<string> = new Set(["query_invalid", "missing_sections", "date_format", "multiple_accounts", "invalid_response", "too_large"]);
 
 /** What to tell the user for each closed reason the server returns. */
 export const IBKR_FLEX_ERRORS: Record<string, string> = {

@@ -9,7 +9,7 @@ import { formatDateWithYear } from "@/lib/format";
 import { useLocalization } from "@/lib/localization/provider";
 import { useDisconnectIbkrFlex, useSyncIbkrFlex, type IbkrFlexConnectionView } from "@/lib/queries/ibkr-flex";
 import { cn } from "@/lib/utils";
-import { ConnectIbkrFlexForm } from "./connect-ibkr-flex-form";
+import { ConnectIbkrFlex } from "./connect-ibkr-flex";
 import { IBKR_FLEX_ERRORS, IBKR_FLEX_STATUS } from "./ibkr-flex-text";
 
 export interface IbkrFlexConnectionCardProps {
@@ -64,7 +64,7 @@ export function IbkrFlexConnectionCard({ connection }: IbkrFlexConnectionCardPro
           </AlertDialogContent>
         </AlertDialog>
       </div>
-      {reconnecting ? <ConnectIbkrFlexForm submitLabel="Ricollega" onConnected={() => setReconnecting(false)} /> : null}
+      {reconnecting ? <ConnectIbkrFlex initialStep={1} submitLabel="Ricollega" onConnected={() => setReconnecting(false)} /> : null}
     </article>
   );
 }

@@ -3,9 +3,12 @@ import type { FxTable } from "@/lib/calc/fx";
 import { computePortfolioSummary, type InstrumentInput, type InvestmentTransactionInput, type PriceIndex } from "@/lib/calc/investments";
 import type { InvestmentData } from "./data";
 
+/** Under this a loan counts as none. */
+const LOAN_EPSILON = 0.005;
+
 /** What the Investimenti screens need about leverage: each account's figures and the input of the own-capital return. */
 export interface LeverageView {
-  /** Accounts with a loan or with debit interest paid, largest loan first. */
+  /** Accounts with a loan today, largest loan first. */
   accounts: BrokerLeverage[];
   /** Input of `computePortfolioReturns({ capital })`, null when no account carries its cash ledger. */
   capital: { transactions: InvestmentTransactionInput[]; sources: LeverageSource[] } | null;
@@ -33,7 +36,8 @@ export function buildLeverageView(
     capitalTransactions.push(...own);
     const securities = own.length ? computePortfolioSummary({ ...common, transactions: own, todayKey }).totalValue : 0;
     const leverage = computeBrokerLeverage(source, securities, common.fx, common.userCurrency, todayKey);
-    if (leverage && (leverage.loan > 0.005 || leverage.interest.byYear.length > 0)) accounts.push(leverage);
+    // Only an account that borrows today: without a loan nothing about leverage is shown anywhere.
+    if (leverage && leverage.loan > LOAN_EPSILON) accounts.push(leverage);
   }
   return { accounts: accounts.sort((a, b) => b.loan - a.loan), capital: { transactions: capitalTransactions, sources } };
 }

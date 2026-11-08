@@ -14,7 +14,7 @@ import {
   CostDetailsCard,
   DividendsSummaryCard,
   InvestmentsViewGate,
-  LeverageCard,
+  LeverageStrip,
   ManualPriceDialog,
   PortfolioHeroCard,
   PositionsList,
@@ -71,6 +71,7 @@ export default function InvestimentiPage() {
               onRangeChange={setCustomRange}
               currency={currency}
             />
+            <LeverageStrip accounts={view.leverage.accounts} currency={currency} />
             <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
               <div className="flex flex-col gap-10 lg:col-span-3">
                 <PositionsList
@@ -91,7 +92,6 @@ export default function InvestimentiPage() {
                 <WatchedTitlesSection />
               </div>
               <div className="flex flex-col gap-10 lg:col-span-2">
-                <LeverageCard accounts={view.leverage.accounts} currency={currency} />
                 <DividendsSummaryCard income={view.income} currency={currency} />
                 <CostDetailsCard impact={view.costImpact} currency={currency}
                   marginInterest={view.leverage.accounts.reduce((sum, a) => sum + a.interest.byYear.reduce((s, y) => s + y.amount, 0), 0)} />

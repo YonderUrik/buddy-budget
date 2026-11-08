@@ -11,6 +11,7 @@ import { useLocalization } from "@/lib/localization/provider";
 const MAINTENANCE_MIN = 10;
 const MAINTENANCE_MAX = 60;
 const MAINTENANCE_STORAGE_KEY = "bb:leverage-maintenance";
+const MAINTENANCE_CHANGED_EVENT = "bb:leverage-maintenance-changed";
 
 function readStoredMaintenance(): number {
   if (typeof window === "undefined") return DEFAULT_MAINTENANCE_MARGIN * 100;
@@ -22,6 +23,26 @@ function readStoredMaintenance(): number {
   }
 }
 
+/**
+ * The maintenance margin chosen by the user, in whole percent, remembered on this device. Every component using it
+ * follows a change made elsewhere on the page (the strip's figure follows the slider in the details).
+ */
+export function useMaintenanceMargin(): [number, (value: number) => void] {
+  // Rendered only after the portfolio data loads in the browser, so the stored value can be read on the first render.
+  const [maintenance, setMaintenance] = React.useState(readStoredMaintenance);
+  React.useEffect(() => {
+    const sync = () => setMaintenance(readStoredMaintenance());
+    window.addEventListener(MAINTENANCE_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(MAINTENANCE_CHANGED_EVENT, sync);
+  }, []);
+  const change = React.useCallback((value: number) => {
+    setMaintenance(value);
+    try { window.localStorage.setItem(MAINTENANCE_STORAGE_KEY, String(value)); } catch { /* the choice just is not remembered */ }
+    window.dispatchEvent(new Event(MAINTENANCE_CHANGED_EVENT));
+  }, []);
+  return [maintenance, change];
+}
+
 export interface MarginEstimateProps {
   loan: number;
   securities: number;
@@ -29,21 +50,15 @@ export interface MarginEstimateProps {
 
 /**
  * «Quanto possono scendere i titoli»: the fall that brings the loan to the maintenance margin, with the margin set by the
- * user (remembered on this device). An estimate, said so: IBKR's real requirement is per security and is not in the CSV.
+ * user. An estimate, said so: IBKR's real requirement is per security and is not in the CSV.
  */
 export function MarginEstimate({ loan, securities }: MarginEstimateProps) {
   const { t: tr, locale } = useLocalization();
   const { formatPct } = localizedFormats(locale);
   const id = React.useId();
-  // Rendered only after the portfolio data loads in the browser, so the stored value can be read on the first render.
-  const [maintenance, setMaintenance] = React.useState(readStoredMaintenance);
+  const [maintenance, change] = useMaintenanceMargin();
   const drop = marginCallDrop(loan, securities, maintenance / 100);
   if (drop === null) return null;
-
-  function change(value: number) {
-    setMaintenance(value);
-    try { window.localStorage.setItem(MAINTENANCE_STORAGE_KEY, String(value)); } catch { /* the choice just is not remembered */ }
-  }
 
   return (
     <div className="flex flex-col gap-2 rounded-xl bg-muted/50 p-3">

@@ -5845,5 +5845,14 @@
   "la più lunga": "the longest",
   "lascia vuoto": "leave empty",
   "Collegato a Interactive Brokers": "Connected to Interactive Brokers",
-  "Saldo dal broker": "Balance from the broker"
+  "Saldo dal broker": "Balance from the broker",
+  "Leva {0}×": "Leverage {0}×",
+  "Interessi 12 mesi": "Interest, 12 months",
+  "Margin call se scendono": "Margin call if they fall",
+  "Al limite": "At the limit",
+  "Dettagli della leva": "Leverage details",
+  "{0}: titoli ai prezzi di oggi, saldi e interessi dal rendiconto del {1}.": "{0}: securities at today's prices, balances and interest from the statement of {1}.",
+  "− Prestito": "− Loan",
+  "= Il tuo capitale": "= Your capital",
+  "Saldi per valuta": "Balances by currency"
 }

@@ -5845,5 +5845,14 @@
   "la più lunga": "die längste",
   "lascia vuoto": "leer lassen",
   "Collegato a Interactive Brokers": "Mit Interactive Brokers verbunden",
-  "Saldo dal broker": "Saldo vom Broker"
+  "Saldo dal broker": "Saldo vom Broker",
+  "Leva {0}×": "Hebel {0}×",
+  "Interessi 12 mesi": "Zinsen, 12 Monate",
+  "Margin call se scendono": "Margin Call bei einem Rückgang von",
+  "Al limite": "Am Limit",
+  "Dettagli della leva": "Details zum Hebel",
+  "{0}: titoli ai prezzi di oggi, saldi e interessi dal rendiconto del {1}.": "{0}: Wertpapiere zu heutigen Kursen, Salden und Zinsen aus dem Kontoauszug vom {1}.",
+  "− Prestito": "− Kredit",
+  "= Il tuo capitale": "= Dein Kapital",
+  "Saldi per valuta": "Salden nach Währung"
 }

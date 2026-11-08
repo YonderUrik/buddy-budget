@@ -71,6 +71,8 @@ export interface ProductEvents {
   investment_return_basis_changed: { basis: "titoli" | "capitale" };
   /** Maintenance margin of the leverage card's estimate changed, in whole percent. */
   investment_margin_estimate_changed: { maintenance: number };
+  /** Details of the leverage strip opened from Investimenti › Portafoglio. */
+  investment_leverage_details_opened: Record<string, never>;
   investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
   /**
    * Action of a «Primi passi» step pressed; `placement`: the big «next step» block in Panoramica, the list under it, or

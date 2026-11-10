@@ -125,6 +125,35 @@ async function saveFingerprint(state: InvestmentHistoryStateStore, userId: strin
 }
 
 /**
+ * The rows `refreshDerivedCashHistory` would write for one user, computed from the stored rows and the accounts'
+ * current data without writing anything: the refresh itself, and read-only checks of what a change would do.
+ */
+export async function planDerivedCashHistory(userId: string, todayStart: Date, reader: Reader = db) {
+  const todayKey = toDateKey(todayStart);
+  const statementHistories = await loadStatementCashHistories(userId, toDateKey(addDays(todayStart, -1)), reader);
+  const { ledger, manualNow, manualAccounts } = await loadLedgerAccounts(userId, reader, new Set(statementHistories.map((a) => a.id)));
+  // An account counts once: one that follows its transactions is never also rebuilt from statements.
+  const ledgerIds = new Set(ledger.map((a) => a.id));
+  const statementAccounts = statementHistories.filter((a) => !ledgerIds.has(a.id));
+  const [ledgerTransactions, rows] = await Promise.all([
+    loadLedgerTransactions(userId, ledger, undefined, reader),
+    reader
+      .select({ date: netWorthSnapshots.date, amount: netWorthSnapshots.amount, ledgerAmount: netWorthSnapshots.ledgerAmount, statementAmount: netWorthSnapshots.statementAmount, updatedAt: netWorthSnapshots.updatedAt, createdAt: netWorthSnapshots.createdAt })
+      .from(netWorthSnapshots)
+      .where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "liquidita"), lt(netWorthSnapshots.date, todayKey))),
+  ]);
+  return planCashHistory({
+    rows: rows.map((r) => ({ date: r.date, amount: Number(r.amount), ledgerAmount: r.ledgerAmount === null ? null : Number(r.ledgerAmount), statementAmount: r.statementAmount === null ? null : Number(r.statementAmount), updatedAt: r.updatedAt, createdAt: r.createdAt })),
+    accounts: ledger,
+    transactions: ledgerTransactions,
+    statementAccounts,
+    manualNow,
+    manualAccounts,
+    today: todayStart,
+  });
+}
+
+/**
  * Keeps the past cash history in step with the transactions of bank and file-import accounts (see
  * `lib/calc/cash-history.ts`): a bank connected later, an imported file, an edited or deleted transaction all move
  * every day they touch, and missing days of the reconstruction window (first transaction, at most 24 months back)
@@ -144,27 +173,7 @@ export async function refreshDerivedCashHistory(
   const started = Date.now();
   const writes = await db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), ${CASH_HISTORY_LOCK_KEY})`);
-    const statementHistories = await loadStatementCashHistories(userId, toDateKey(addDays(todayStart, -1)), tx);
-    const { ledger, manualNow, manualAccounts } = await loadLedgerAccounts(userId, tx, new Set(statementHistories.map((a) => a.id)));
-    // An account counts once: one that follows its transactions is never also rebuilt from statements.
-    const ledgerIds = new Set(ledger.map((a) => a.id));
-    const statementAccounts = statementHistories.filter((a) => !ledgerIds.has(a.id));
-    const [ledgerTransactions, rows] = await Promise.all([
-      loadLedgerTransactions(userId, ledger, undefined, tx),
-      tx
-        .select({ date: netWorthSnapshots.date, amount: netWorthSnapshots.amount, ledgerAmount: netWorthSnapshots.ledgerAmount, statementAmount: netWorthSnapshots.statementAmount, updatedAt: netWorthSnapshots.updatedAt, createdAt: netWorthSnapshots.createdAt })
-        .from(netWorthSnapshots)
-        .where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "liquidita"), lt(netWorthSnapshots.date, todayKey))),
-    ]);
-    const planned = planCashHistory({
-      rows: rows.map((r) => ({ date: r.date, amount: Number(r.amount), ledgerAmount: r.ledgerAmount === null ? null : Number(r.ledgerAmount), statementAmount: r.statementAmount === null ? null : Number(r.statementAmount), updatedAt: r.updatedAt, createdAt: r.createdAt })),
-      accounts: ledger,
-      transactions: ledgerTransactions,
-      statementAccounts,
-      manualNow,
-      manualAccounts,
-      today: todayStart,
-    });
+    const planned = await planDerivedCashHistory(userId, todayStart, tx);
     for (let i = 0; i < planned.length; i += CASH_WRITE_BATCH_SIZE) {
       await tx
         .insert(netWorthSnapshots)

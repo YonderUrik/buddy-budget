@@ -17,9 +17,9 @@ import { toTransactionInputs } from "@/lib/investments/view";
 import type { Language } from "@/lib/localization/config";
 import { translate } from "@/lib/localization/messages";
 
-/** Proventi (IT): history, missing income to record, 12-month forecast, by month and by instrument. */
-export function buildInvestmentsIncome(data: InvestmentData, today: Date) {
-  const { instrumentsById, taxSettings, ...view } = buildIncomeView(data, today);
+/** Proventi: history, missing income to record, 12-month forecast, by month and by instrument; before tax with `taxes: false`. */
+export function buildInvestmentsIncome(data: InvestmentData, today: Date, options: { taxes?: boolean } = {}) {
+  const { instrumentsById, taxSettings, ...view } = buildIncomeView(data, today, options);
   return {
     ...view,
     instruments: [...instrumentsById.values()],

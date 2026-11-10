@@ -1,0 +1,649 @@
+{
+  "topic": "subscriptions",
+  "source": "lib/calc/subscriptions.ts, lib/subscriptions/view.ts",
+  "vectors": [
+    {
+      "id": "subs.monthlyEquivalent.mensile",
+      "function": "monthlyEquivalent",
+      "input": {
+        "amount": 9.99,
+        "cadence": "mensile"
+      },
+      "expected": 9.99,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.monthlyEquivalent.settimanale",
+      "function": "monthlyEquivalent",
+      "input": {
+        "amount": 12,
+        "cadence": "settimanale"
+      },
+      "expected": 52,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.monthlyEquivalent.trimestrale",
+      "function": "monthlyEquivalent",
+      "input": {
+        "amount": 29.97,
+        "cadence": "trimestrale"
+      },
+      "expected": 9.99,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.monthlyEquivalent.semestrale",
+      "function": "monthlyEquivalent",
+      "input": {
+        "amount": 59.99,
+        "cadence": "semestrale"
+      },
+      "expected": 10,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.monthlyEquivalent.annuale",
+      "function": "monthlyEquivalent",
+      "input": {
+        "amount": 99,
+        "cadence": "annuale"
+      },
+      "expected": 8.25,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.nextChargeDate.2026-01-31.mensile.-",
+      "function": "nextChargeDate",
+      "input": {
+        "lastDate": "2026-01-31",
+        "cadence": "mensile",
+        "day": null
+      },
+      "expected": "2026-02-28",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.nextChargeDate.2026-01-15.mensile.31",
+      "function": "nextChargeDate",
+      "input": {
+        "lastDate": "2026-01-15",
+        "cadence": "mensile",
+        "day": 31
+      },
+      "expected": "2026-02-28",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.nextChargeDate.2026-11-30.trimestrale.-",
+      "function": "nextChargeDate",
+      "input": {
+        "lastDate": "2026-11-30",
+        "cadence": "trimestrale",
+        "day": null
+      },
+      "expected": "2027-02-28",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.nextChargeDate.2026-12-29.settimanale.-",
+      "function": "nextChargeDate",
+      "input": {
+        "lastDate": "2026-12-29",
+        "cadence": "settimanale",
+        "day": null
+      },
+      "expected": "2027-01-05",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.nextChargeDate.2024-02-29.annuale.-",
+      "function": "nextChargeDate",
+      "input": {
+        "lastDate": "2024-02-29",
+        "cadence": "annuale",
+        "day": null
+      },
+      "expected": "2025-02-28",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.subscriptionKey.PAGAMENTO POS NETFLIX.COM 12/10 CARTA 1234",
+      "function": "subscriptionKey",
+      "input": {
+        "description": "PAGAMENTO POS NETFLIX.COM 12/10 CARTA 1234"
+      },
+      "expected": "netflix com",
+      "tolerance": 1e-9,
+      "notes": "merchantKey = \"netflix com\""
+    },
+    {
+      "id": "subs.subscriptionKey.SDD SPOTIFY AB REF 99887",
+      "function": "subscriptionKey",
+      "input": {
+        "description": "SDD SPOTIFY AB REF 99887"
+      },
+      "expected": "spotify ab ref",
+      "tolerance": 1e-9,
+      "notes": "merchantKey = \"spotify ab ref\""
+    },
+    {
+      "id": "subs.subscriptionKey.Amazon Prime*2K3J4",
+      "function": "subscriptionKey",
+      "input": {
+        "description": "Amazon Prime*2K3J4"
+      },
+      "expected": "amazon prime",
+      "tolerance": 1e-9,
+      "notes": "merchantKey = \"amazon prime 2k3j4\""
+    },
+    {
+      "id": "subs.subscriptionKey.ADDEBITO DIRETTO ENEL ENERGIA SPA",
+      "function": "subscriptionKey",
+      "input": {
+        "description": "ADDEBITO DIRETTO ENEL ENERGIA SPA"
+      },
+      "expected": "diretto enel energia",
+      "tolerance": 1e-9,
+      "notes": "merchantKey = \"diretto enel energia\""
+    },
+    {
+      "id": "subs.detect.mixed",
+      "function": "detectSubscriptions",
+      "input": {
+        "transactions": [
+          {
+            "id": "n1",
+            "date": "2026-06-12",
+            "amount": 12.99,
+            "description": "NETFLIX.COM",
+            "categoryId": "fun"
+          },
+          {
+            "id": "n2",
+            "date": "2026-07-12",
+            "amount": 12.99,
+            "description": "NETFLIX.COM",
+            "categoryId": "fun"
+          },
+          {
+            "id": "n3",
+            "date": "2026-08-13",
+            "amount": 12.99,
+            "description": "NETFLIX.COM",
+            "categoryId": "fun"
+          },
+          {
+            "id": "n4",
+            "date": "2026-09-12",
+            "amount": 13.99,
+            "description": "NETFLIX.COM",
+            "categoryId": "fun"
+          },
+          {
+            "id": "n5",
+            "date": "2026-10-12",
+            "amount": 13.99,
+            "description": "NETFLIX.COM",
+            "categoryId": "fun"
+          },
+          {
+            "id": "g1",
+            "date": "2025-10-01",
+            "amount": 399,
+            "description": "PALESTRA FIT",
+            "categoryId": "fun"
+          },
+          {
+            "id": "g2",
+            "date": "2026-10-03",
+            "amount": 420,
+            "description": "PALESTRA FIT",
+            "categoryId": "fun"
+          },
+          {
+            "id": "s1",
+            "date": "2026-08-02",
+            "amount": 54.1,
+            "description": "SUPERMERCATO",
+            "categoryId": "fun"
+          },
+          {
+            "id": "s2",
+            "date": "2026-09-01",
+            "amount": 23.7,
+            "description": "SUPERMERCATO",
+            "categoryId": "fun"
+          },
+          {
+            "id": "s3",
+            "date": "2026-10-01",
+            "amount": 88,
+            "description": "SUPERMERCATO",
+            "categoryId": "fun"
+          },
+          {
+            "id": "x1",
+            "date": "2026-03-05",
+            "amount": 7.99,
+            "description": "DISNEY PLUS",
+            "categoryId": "fun"
+          },
+          {
+            "id": "x2",
+            "date": "2026-04-05",
+            "amount": 7.99,
+            "description": "DISNEY PLUS",
+            "categoryId": "fun"
+          },
+          {
+            "id": "x3",
+            "date": "2026-05-05",
+            "amount": 7.99,
+            "description": "DISNEY PLUS",
+            "categoryId": "fun"
+          }
+        ],
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "key": "disney plus",
+          "name": "DISNEY PLUS",
+          "cadence": "mensile",
+          "amount": 7.99,
+          "charges": [
+            {
+              "id": "x1",
+              "date": "2026-03-05",
+              "amount": 7.99
+            },
+            {
+              "id": "x2",
+              "date": "2026-04-05",
+              "amount": 7.99
+            },
+            {
+              "id": "x3",
+              "date": "2026-05-05",
+              "amount": 7.99
+            }
+          ],
+          "lastDate": "2026-05-05",
+          "nextDate": "2026-06-05",
+          "priceChange": null,
+          "state": "fermo",
+          "overdueDays": 133,
+          "categoryId": "fun",
+          "confidence": 0.91,
+          "reasons": [
+            {
+              "kind": "count",
+              "count": 3
+            },
+            {
+              "kind": "cadence",
+              "cadence": "mensile",
+              "skipped": false
+            },
+            {
+              "kind": "amount",
+              "mode": "costante"
+            },
+            {
+              "kind": "day",
+              "day": 5
+            }
+          ]
+        },
+        {
+          "key": "netflix com",
+          "name": "NETFLIX.COM",
+          "cadence": "mensile",
+          "amount": 13.99,
+          "charges": [
+            {
+              "id": "n1",
+              "date": "2026-06-12",
+              "amount": 12.99
+            },
+            {
+              "id": "n2",
+              "date": "2026-07-12",
+              "amount": 12.99
+            },
+            {
+              "id": "n3",
+              "date": "2026-08-13",
+              "amount": 12.99
+            },
+            {
+              "id": "n4",
+              "date": "2026-09-12",
+              "amount": 13.99
+            },
+            {
+              "id": "n5",
+              "date": "2026-10-12",
+              "amount": 13.99
+            }
+          ],
+          "lastDate": "2026-10-12",
+          "nextDate": "2026-11-12",
+          "priceChange": null,
+          "state": "attivo",
+          "overdueDays": 0,
+          "categoryId": "fun",
+          "confidence": 0.95,
+          "reasons": [
+            {
+              "kind": "count",
+              "count": 5
+            },
+            {
+              "kind": "cadence",
+              "cadence": "mensile",
+              "skipped": false
+            },
+            {
+              "kind": "amount",
+              "mode": "variabile-lieve"
+            },
+            {
+              "kind": "day",
+              "day": 12
+            }
+          ]
+        },
+        {
+          "key": "palestra fit",
+          "name": "PALESTRA FIT",
+          "cadence": "annuale",
+          "amount": 420,
+          "charges": [
+            {
+              "id": "g1",
+              "date": "2025-10-01",
+              "amount": 399
+            },
+            {
+              "id": "g2",
+              "date": "2026-10-03",
+              "amount": 420
+            }
+          ],
+          "lastDate": "2026-10-03",
+          "nextDate": "2027-10-02",
+          "priceChange": null,
+          "state": "attivo",
+          "overdueDays": 0,
+          "categoryId": "fun",
+          "confidence": 0.74,
+          "reasons": [
+            {
+              "kind": "count",
+              "count": 2
+            },
+            {
+              "kind": "cadence",
+              "cadence": "annuale",
+              "skipped": false
+            },
+            {
+              "kind": "amount",
+              "mode": "variabile-lieve"
+            }
+          ]
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "netflix: monthly with price change 12.99->13.99; gym annual; supermarket rejected (amount spread); disney 'fermo' (overdue > 7 grace days)"
+    },
+    {
+      "id": "subs.view",
+      "function": "buildSubscriptionsView",
+      "input": {
+        "detected": "subs.detect.mixed.expected",
+        "rows": [
+          {
+            "id": "r1",
+            "key": "disney plus",
+            "status": "confermato",
+            "origin": "rilevato",
+            "name": null,
+            "amount": null,
+            "cadence": null,
+            "nextDate": null,
+            "categoryId": null
+          },
+          {
+            "id": "r2",
+            "key": "manual:affitto-box",
+            "status": "confermato",
+            "origin": "manuale",
+            "name": "Box auto",
+            "amount": 80,
+            "cadence": "mensile",
+            "nextDate": "2026-07-01",
+            "categoryId": null
+          }
+        ],
+        "today": "2026-10-16"
+      },
+      "expected": {
+        "items": [
+          {
+            "key": "disney plus",
+            "id": "r1",
+            "name": "DISNEY PLUS",
+            "origin": "rilevato",
+            "decision": "confermato",
+            "activity": "fermo",
+            "cadence": "mensile",
+            "amount": 7.99,
+            "monthly": 7.99,
+            "lastDate": "2026-05-05",
+            "nextDate": "2026-06-05",
+            "overdueDays": 133,
+            "priceChange": null,
+            "charges": [
+              {
+                "id": "x1",
+                "date": "2026-03-05",
+                "amount": 7.99
+              },
+              {
+                "id": "x2",
+                "date": "2026-04-05",
+                "amount": 7.99
+              },
+              {
+                "id": "x3",
+                "date": "2026-05-05",
+                "amount": 7.99
+              }
+            ],
+            "reasons": [
+              {
+                "kind": "count",
+                "count": 3
+              },
+              {
+                "kind": "cadence",
+                "cadence": "mensile",
+                "skipped": false
+              },
+              {
+                "kind": "amount",
+                "mode": "costante"
+              },
+              {
+                "kind": "day",
+                "day": 5
+              }
+            ],
+            "confidence": 0.91,
+            "categoryId": "fun"
+          },
+          {
+            "key": "manual:affitto-box",
+            "id": "r2",
+            "name": "Box auto",
+            "origin": "manuale",
+            "decision": "confermato",
+            "activity": "attivo",
+            "cadence": "mensile",
+            "amount": 80,
+            "monthly": 80,
+            "lastDate": null,
+            "nextDate": "2026-11-01",
+            "overdueDays": 0,
+            "priceChange": null,
+            "charges": [],
+            "reasons": [],
+            "confidence": null,
+            "categoryId": null
+          },
+          {
+            "key": "netflix com",
+            "id": null,
+            "name": "NETFLIX.COM",
+            "origin": "rilevato",
+            "decision": "da-confermare",
+            "activity": "attivo",
+            "cadence": "mensile",
+            "amount": 13.99,
+            "monthly": 13.99,
+            "lastDate": "2026-10-12",
+            "nextDate": "2026-11-12",
+            "overdueDays": 0,
+            "priceChange": null,
+            "charges": [
+              {
+                "id": "n1",
+                "date": "2026-06-12",
+                "amount": 12.99
+              },
+              {
+                "id": "n2",
+                "date": "2026-07-12",
+                "amount": 12.99
+              },
+              {
+                "id": "n3",
+                "date": "2026-08-13",
+                "amount": 12.99
+              },
+              {
+                "id": "n4",
+                "date": "2026-09-12",
+                "amount": 13.99
+              },
+              {
+                "id": "n5",
+                "date": "2026-10-12",
+                "amount": 13.99
+              }
+            ],
+            "reasons": [
+              {
+                "kind": "count",
+                "count": 5
+              },
+              {
+                "kind": "cadence",
+                "cadence": "mensile",
+                "skipped": false
+              },
+              {
+                "kind": "amount",
+                "mode": "variabile-lieve"
+              },
+              {
+                "kind": "day",
+                "day": 12
+              }
+            ],
+            "confidence": 0.95,
+            "categoryId": "fun"
+          },
+          {
+            "key": "palestra fit",
+            "id": null,
+            "name": "PALESTRA FIT",
+            "origin": "rilevato",
+            "decision": "da-confermare",
+            "activity": "attivo",
+            "cadence": "annuale",
+            "amount": 420,
+            "monthly": 35,
+            "lastDate": "2026-10-03",
+            "nextDate": "2027-10-02",
+            "overdueDays": 0,
+            "priceChange": null,
+            "charges": [
+              {
+                "id": "g1",
+                "date": "2025-10-01",
+                "amount": 399
+              },
+              {
+                "id": "g2",
+                "date": "2026-10-03",
+                "amount": 420
+              }
+            ],
+            "reasons": [
+              {
+                "kind": "count",
+                "count": 2
+              },
+              {
+                "kind": "cadence",
+                "cadence": "annuale",
+                "skipped": false
+              },
+              {
+                "kind": "amount",
+                "mode": "variabile-lieve"
+              }
+            ],
+            "confidence": 0.74,
+            "categoryId": "fun"
+          }
+        ],
+        "totals": {
+          "count": 1,
+          "monthly": 80,
+          "yearly": 960,
+          "pendingCount": 2,
+          "pendingMonthly": 48.99
+        }
+      },
+      "tolerance": 1e-9,
+      "notes": "manual row rolled forward until within grace"
+    },
+    {
+      "id": "subs.upcoming",
+      "function": "upcomingCharges",
+      "input": {
+        "items": "subs.view.expected.items",
+        "today": "2026-10-16"
+      },
+      "expected": [
+        "manual:affitto-box"
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "subs.priceRises",
+      "function": "recentPriceRises",
+      "input": {
+        "items": "subs.view.expected.items",
+        "today": "2026-10-16"
+      },
+      "expected": [],
+      "tolerance": 1e-9
+    }
+  ]
+}

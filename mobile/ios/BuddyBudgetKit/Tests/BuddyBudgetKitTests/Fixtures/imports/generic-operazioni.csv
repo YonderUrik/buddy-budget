@@ -1,0 +1,9 @@
+Data esecuzione;Segno;Titolo;ISIN;Quantità;Prezzo eseguito EUR;Controvalore;Commissioni;Divisa
+15/01/2026;A;iShares Core MSCI World;IE00B4L5Y983;10;104,50;1.045,00;2,95;EUR
+20/03/2026;V;iShares Core MSCI World;IE00B4L5Y983;-4;110,20;440,80;2,95;EUR
+21/03/2026;D;Enel;IT0003128367;;;12,40;0;EUR
+22/03/2026;Bonifico;;;;;;;
+31/02/2026;A;Enel;IT0003128367;5;6,10;;;EUR
+01/04/2026;A;;;3;1;;;
+02/04/2026;A;Titolo X;XX0000000000;2;abc;;;
+05/12/2026;A;Enel;IT0003128367;1;6;;;EUR

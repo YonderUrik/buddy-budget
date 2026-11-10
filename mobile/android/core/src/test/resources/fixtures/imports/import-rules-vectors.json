@@ -1,0 +1,1092 @@
+{
+ "description": "Golden vectors for the broker-file and XLSX import rules, generated from the web TypeScript (lib/investments/import/*, lib/pension/import/xlsx.ts) with scratch script gen.ts on 2026-10-19; today = 2026-10-19.",
+ "vectors": {
+  "xlsx": {
+   "file": "imports/sample.xlsx",
+   "headers": [
+    "Data",
+    "Contributi netti",
+    "Controvalore",
+    "Note & altro"
+   ],
+   "rows": [
+    [
+     "2025-12-31",
+     "10880",
+     "11250.4",
+     "riga <uno>"
+    ],
+    [
+     "2026-03-31",
+     "",
+     "1.0000000000000001e-7",
+     "a;b \"c\""
+    ],
+    [
+     "",
+     "0.30000000000000004",
+     "1.2345678901234569e+23"
+    ]
+   ],
+   "csv": "Data;Contributi netti;Controvalore;Note & altro\n2025-12-31;10880;11250.4;riga <uno>\n2026-03-31;;1.0000000000000001e-7;\"a;b \"\"c\"\"\"\n;0.30000000000000004;1.2345678901234569e+23"
+  },
+  "generic": [
+   {
+    "file": "imports/generic-operazioni.csv",
+    "detected": null,
+    "delimiter": ";",
+    "headers": [
+     "Data esecuzione",
+     "Segno",
+     "Titolo",
+     "ISIN",
+     "Quantit\u00e0",
+     "Prezzo eseguito EUR",
+     "Controvalore",
+     "Commissioni",
+     "Divisa"
+    ],
+    "preset": null,
+    "mapping": {
+     "columns": {
+      "date": 0,
+      "type": 1,
+      "isin": 3,
+      "name": 2,
+      "quantity": 4,
+      "total": 6,
+      "fees": 7,
+      "currency": 8,
+      "price": 5
+     },
+     "dateOrder": "dmy",
+     "decimal": ",",
+     "typeValues": {
+      "a": "acquisto",
+      "v": "vendita",
+      "d": "ignora",
+      "bonifico": "ignora"
+     },
+     "defaultType": "acquisto",
+     "symbolIsYahoo": false
+    },
+    "missing": [],
+    "rows": [
+     {
+      "line": 2,
+      "status": "ok",
+      "identity": {
+       "key": "isin:IE00B4L5Y983",
+       "symbol": null,
+       "isin": "IE00B4L5Y983",
+       "name": "iShares Core MSCI World",
+       "currency": "EUR",
+       "symbolIsYahoo": false
+      },
+      "operation": {
+       "type": "acquisto",
+       "date": "2026-01-15",
+       "quantity": 10,
+       "price": 104.5,
+       "grossAmount": null,
+       "fees": 2.95,
+       "taxes": 0,
+       "note": null
+      },
+      "warnings": []
+     },
+     {
+      "line": 3,
+      "status": "ok",
+      "identity": {
+       "key": "isin:IE00B4L5Y983",
+       "symbol": null,
+       "isin": "IE00B4L5Y983",
+       "name": "iShares Core MSCI World",
+       "currency": "EUR",
+       "symbolIsYahoo": false
+      },
+      "operation": {
+       "type": "vendita",
+       "date": "2026-03-20",
+       "quantity": 4,
+       "price": 110.2,
+       "grossAmount": null,
+       "fees": 2.95,
+       "taxes": 0,
+       "note": null
+      },
+      "warnings": []
+     },
+     {
+      "line": 4,
+      "status": "skipped",
+      "message": "Tipo \"D\" ignorato"
+     },
+     {
+      "line": 5,
+      "status": "skipped",
+      "message": "Tipo \"Bonifico\" ignorato"
+     },
+     {
+      "line": 6,
+      "status": "error",
+      "message": "Data \"31/02/2026\" non valida"
+     },
+     {
+      "line": 7,
+      "status": "error",
+      "message": "Manca lo strumento (simbolo, ISIN o nome)"
+     },
+     {
+      "line": 8,
+      "status": "error",
+      "message": "Numero \"abc\" non valido"
+     },
+     {
+      "line": 9,
+      "status": "error",
+      "message": "Data nel futuro"
+     }
+    ],
+    "identities": [
+     {
+      "key": "isin:IE00B4L5Y983",
+      "symbol": null,
+      "isin": "IE00B4L5Y983",
+      "name": "iShares Core MSCI World",
+      "currency": "EUR",
+      "symbolIsYahoo": false,
+      "count": 2
+     }
+    ],
+    "metadata": {
+     "version": 1,
+     "institution": {
+      "name": null,
+      "evidence": "unknown"
+     },
+     "delimiter": ";",
+     "columns": [
+      {
+       "section": null,
+       "index": 0,
+       "name": "Data esecuzione",
+       "mapsTo": [
+        "date"
+       ]
+      },
+      {
+       "section": null,
+       "index": 1,
+       "name": "Segno",
+       "mapsTo": [
+        "type"
+       ]
+      },
+      {
+       "section": null,
+       "index": 2,
+       "name": "Titolo",
+       "mapsTo": [
+        "name"
+       ]
+      },
+      {
+       "section": null,
+       "index": 3,
+       "name": "ISIN",
+       "mapsTo": [
+        "isin"
+       ]
+      },
+      {
+       "section": null,
+       "index": 4,
+       "name": "Quantit\u00e0",
+       "mapsTo": [
+        "quantity"
+       ]
+      },
+      {
+       "section": null,
+       "index": 5,
+       "name": "Prezzo eseguito EUR",
+       "mapsTo": [
+        "price"
+       ]
+      },
+      {
+       "section": null,
+       "index": 6,
+       "name": "Controvalore",
+       "mapsTo": [
+        "grossAmount"
+       ]
+      },
+      {
+       "section": null,
+       "index": 7,
+       "name": "Commissioni",
+       "mapsTo": [
+        "fees"
+       ]
+      },
+      {
+       "section": null,
+       "index": 8,
+       "name": "Divisa",
+       "mapsTo": [
+        "currency"
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "file": "imports/modello-buddybudget.csv",
+    "detected": null,
+    "delimiter": ";",
+    "headers": [
+     "Data",
+     "Tipo",
+     "ISIN",
+     "Simbolo",
+     "Nome",
+     "Quantit\u00e0",
+     "Prezzo",
+     "Controvalore",
+     "Commissioni",
+     "Imposte",
+     "Valuta",
+     "Note"
+    ],
+    "preset": "buddybudget-template",
+    "mapping": {
+     "columns": {
+      "date": 0,
+      "type": 1,
+      "symbol": 3,
+      "isin": 2,
+      "name": 4,
+      "quantity": 5,
+      "price": 6,
+      "total": 7,
+      "fees": 8,
+      "taxes": 9,
+      "currency": 10,
+      "note": 11
+     },
+     "dateOrder": "dmy",
+     "decimal": ",",
+     "typeValues": {
+      "acquisto": "acquisto",
+      "dividendo": "dividendo"
+     },
+     "defaultType": "acquisto",
+     "symbolIsYahoo": true
+    },
+    "missing": [],
+    "rows": [
+     {
+      "line": 2,
+      "status": "ok",
+      "identity": {
+       "key": "isin:IE00B4L5Y983",
+       "symbol": "SWDA.MI",
+       "isin": "IE00B4L5Y983",
+       "name": "iShares Core MSCI World",
+       "currency": "EUR",
+       "symbolIsYahoo": true
+      },
+      "operation": {
+       "type": "acquisto",
+       "date": "2026-01-15",
+       "quantity": 10,
+       "price": 104.5,
+       "grossAmount": null,
+       "fees": 2.95,
+       "taxes": 0,
+       "note": null
+      },
+      "warnings": []
+     },
+     {
+      "line": 3,
+      "status": "ok",
+      "identity": {
+       "key": "isin:IT0003128367",
+       "symbol": "ENEL.MI",
+       "isin": "IT0003128367",
+       "name": "Enel",
+       "currency": "EUR",
+       "symbolIsYahoo": true
+      },
+      "operation": {
+       "type": "dividendo",
+       "date": "2026-03-20",
+       "quantity": 0,
+       "price": 0,
+       "grossAmount": 12.4,
+       "fees": 0,
+       "taxes": 3.22,
+       "note": "Dividendo lordo nel controvalore"
+      },
+      "warnings": []
+     }
+    ],
+    "identities": [
+     {
+      "key": "isin:IE00B4L5Y983",
+      "symbol": "SWDA.MI",
+      "isin": "IE00B4L5Y983",
+      "name": "iShares Core MSCI World",
+      "currency": "EUR",
+      "symbolIsYahoo": true,
+      "count": 1
+     },
+     {
+      "key": "isin:IT0003128367",
+      "symbol": "ENEL.MI",
+      "isin": "IT0003128367",
+      "name": "Enel",
+      "currency": "EUR",
+      "symbolIsYahoo": true,
+      "count": 1
+     }
+    ],
+    "metadata": {
+     "version": 1,
+     "institution": {
+      "name": null,
+      "evidence": "unknown"
+     },
+     "delimiter": ";",
+     "columns": [
+      {
+       "section": null,
+       "index": 0,
+       "name": "Data",
+       "mapsTo": [
+        "date"
+       ]
+      },
+      {
+       "section": null,
+       "index": 1,
+       "name": "Tipo",
+       "mapsTo": [
+        "type"
+       ]
+      },
+      {
+       "section": null,
+       "index": 2,
+       "name": "ISIN",
+       "mapsTo": [
+        "isin"
+       ]
+      },
+      {
+       "section": null,
+       "index": 3,
+       "name": "Simbolo",
+       "mapsTo": [
+        "symbol"
+       ]
+      },
+      {
+       "section": null,
+       "index": 4,
+       "name": "Nome",
+       "mapsTo": [
+        "name"
+       ]
+      },
+      {
+       "section": null,
+       "index": 5,
+       "name": "Quantit\u00e0",
+       "mapsTo": [
+        "quantity"
+       ]
+      },
+      {
+       "section": null,
+       "index": 6,
+       "name": "Prezzo",
+       "mapsTo": [
+        "price"
+       ]
+      },
+      {
+       "section": null,
+       "index": 7,
+       "name": "Controvalore",
+       "mapsTo": [
+        "grossAmount"
+       ]
+      },
+      {
+       "section": null,
+       "index": 8,
+       "name": "Commissioni",
+       "mapsTo": [
+        "fees"
+       ]
+      },
+      {
+       "section": null,
+       "index": 9,
+       "name": "Imposte",
+       "mapsTo": [
+        "taxes"
+       ]
+      },
+      {
+       "section": null,
+       "index": 10,
+       "name": "Valuta",
+       "mapsTo": [
+        "currency"
+       ]
+      },
+      {
+       "section": null,
+       "index": 11,
+       "name": "Note",
+       "mapsTo": [
+        "note"
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "file": "imports/yahoo-portfolio.csv",
+    "detected": "yahoo-portfolio",
+    "delimiter": ",",
+    "headers": [
+     "Symbol",
+     "Current Price",
+     "Date",
+     "Time",
+     "Change",
+     "Open",
+     "High",
+     "Low",
+     "Volume",
+     "Trade Date",
+     "Purchase Price",
+     "Quantity",
+     "Commission",
+     "High Limit",
+     "Low Limit",
+     "Comment"
+    ],
+    "preset": "yahoo-portfolio",
+    "mapping": {
+     "columns": {
+      "date": 9,
+      "symbol": 0,
+      "quantity": 11,
+      "price": 10,
+      "fees": 12,
+      "note": 15
+     },
+     "dateOrder": "ymd",
+     "decimal": ".",
+     "typeValues": {
+      "buy": "acquisto",
+      "sell": "vendita"
+     },
+     "defaultType": "acquisto",
+     "symbolIsYahoo": true
+    },
+    "missing": [],
+    "rows": [
+     {
+      "line": 2,
+      "status": "ok",
+      "identity": {
+       "key": "symbol:VWCE.DE",
+       "symbol": "VWCE.DE",
+       "isin": null,
+       "name": null,
+       "currency": null,
+       "symbolIsYahoo": true
+      },
+      "operation": {
+       "type": "acquisto",
+       "date": "2025-01-15",
+       "quantity": 4,
+       "price": 118.5,
+       "grossAmount": null,
+       "fees": 1.5,
+       "taxes": 0,
+       "note": "primo acquisto"
+      },
+      "warnings": []
+     },
+     {
+      "line": 3,
+      "status": "ok",
+      "identity": {
+       "key": "symbol:BTC-EUR",
+       "symbol": "BTC-EUR",
+       "isin": null,
+       "name": null,
+       "currency": null,
+       "symbolIsYahoo": true
+      },
+      "operation": {
+       "type": "acquisto",
+       "date": "2025-03-01",
+       "quantity": 0.01,
+       "price": 0,
+       "grossAmount": null,
+       "fees": 0,
+       "taxes": 0,
+       "note": "staking"
+      },
+      "warnings": [
+       "Prezzo zero: quote ricevute gratis (es. staking)"
+      ]
+     },
+     {
+      "line": 4,
+      "status": "error",
+      "message": "Data mancante"
+     }
+    ],
+    "identities": [
+     {
+      "key": "symbol:VWCE.DE",
+      "symbol": "VWCE.DE",
+      "isin": null,
+      "name": null,
+      "currency": null,
+      "symbolIsYahoo": true,
+      "count": 1
+     },
+     {
+      "key": "symbol:BTC-EUR",
+      "symbol": "BTC-EUR",
+      "isin": null,
+      "name": null,
+      "currency": null,
+      "symbolIsYahoo": true,
+      "count": 1
+     }
+    ],
+    "metadata": {
+     "version": 1,
+     "institution": {
+      "name": null,
+      "evidence": "unknown"
+     },
+     "delimiter": ",",
+     "columns": [
+      {
+       "section": null,
+       "index": 0,
+       "name": "Symbol",
+       "mapsTo": [
+        "symbol"
+       ]
+      },
+      {
+       "section": null,
+       "index": 1,
+       "name": "Current Price",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 2,
+       "name": "Date",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 3,
+       "name": "Time",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 4,
+       "name": "Change",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 5,
+       "name": "Open",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 6,
+       "name": "High",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 7,
+       "name": "Low",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 8,
+       "name": "Volume",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 9,
+       "name": "Trade Date",
+       "mapsTo": [
+        "date"
+       ]
+      },
+      {
+       "section": null,
+       "index": 10,
+       "name": "Purchase Price",
+       "mapsTo": [
+        "price"
+       ]
+      },
+      {
+       "section": null,
+       "index": 11,
+       "name": "Quantity",
+       "mapsTo": [
+        "quantity"
+       ]
+      },
+      {
+       "section": null,
+       "index": 12,
+       "name": "Commission",
+       "mapsTo": [
+        "fees"
+       ]
+      },
+      {
+       "section": null,
+       "index": 13,
+       "name": "High Limit",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 14,
+       "name": "Low Limit",
+       "mapsTo": []
+      },
+      {
+       "section": null,
+       "index": 15,
+       "name": "Comment",
+       "mapsTo": [
+        "note"
+       ]
+      }
+     ]
+    }
+   }
+  ],
+  "fineco": {
+   "file": "imports/fineco-movimenti.csv",
+   "looksLike": true,
+   "detected": "fineco",
+   "table": {
+    "delimiter": ";",
+    "headers": [
+     "Data",
+     "Tipo",
+     "ISIN",
+     "Nome",
+     "Quantit\u00e0",
+     "Prezzo",
+     "Controvalore",
+     "Commissioni",
+     "Valuta"
+    ],
+    "rows": [
+     [
+      "2024-12-02",
+      "Acquisto",
+      "IE00BK5BQT80",
+      "VANGUARD FTSE ALL-WORLD",
+      "10",
+      "118.52",
+      "1185.20",
+      "0",
+      "EUR"
+     ],
+     [
+      "2025-01-15",
+      "Vendita",
+      "IE00BK5BQT80",
+      "VANGUARD FTSE ALL-WORLD",
+      "3",
+      "125.10",
+      "375.30",
+      "0",
+      "EUR"
+     ],
+     [
+      "2025-03-20",
+      "Dividendo",
+      "IT0003128367",
+      "ENEL",
+      "",
+      "",
+      "12.40",
+      "0",
+      "EUR"
+     ],
+     [
+      "2025-03-21",
+      "Imposta di bollo",
+      "",
+      "",
+      "",
+      "",
+      "-34.20",
+      "0",
+      "EUR"
+     ]
+    ]
+   },
+   "mapping": {
+    "columns": {
+     "date": 0,
+     "type": 1,
+     "isin": 2,
+     "name": 3,
+     "quantity": 4,
+     "price": 5,
+     "total": 6,
+     "fees": 7,
+     "currency": 8
+    },
+    "dateOrder": "ymd",
+    "decimal": ".",
+    "typeValues": {
+     "acquisto": "acquisto",
+     "vendita": "vendita",
+     "dividendo": "dividendo",
+     "imposta di bollo": "ignora",
+     "cedola": "cedola"
+    },
+    "defaultType": "acquisto",
+    "symbolIsYahoo": false
+   },
+   "rows": [
+    {
+     "line": 2,
+     "status": "ok",
+     "identity": {
+      "key": "isin:IE00BK5BQT80",
+      "symbol": null,
+      "isin": "IE00BK5BQT80",
+      "name": "VANGUARD FTSE ALL-WORLD",
+      "currency": "EUR",
+      "symbolIsYahoo": false
+     },
+     "operation": {
+      "type": "acquisto",
+      "date": "2024-12-02",
+      "quantity": 10,
+      "price": 118.52,
+      "grossAmount": null,
+      "fees": 0,
+      "taxes": 0,
+      "note": null
+     },
+     "warnings": []
+    },
+    {
+     "line": 3,
+     "status": "ok",
+     "identity": {
+      "key": "isin:IE00BK5BQT80",
+      "symbol": null,
+      "isin": "IE00BK5BQT80",
+      "name": "VANGUARD FTSE ALL-WORLD",
+      "currency": "EUR",
+      "symbolIsYahoo": false
+     },
+     "operation": {
+      "type": "vendita",
+      "date": "2025-01-15",
+      "quantity": 3,
+      "price": 125.1,
+      "grossAmount": null,
+      "fees": 0,
+      "taxes": 0,
+      "note": null
+     },
+     "warnings": []
+    },
+    {
+     "line": 4,
+     "status": "ok",
+     "identity": {
+      "key": "isin:IT0003128367",
+      "symbol": null,
+      "isin": "IT0003128367",
+      "name": "ENEL",
+      "currency": "EUR",
+      "symbolIsYahoo": false
+     },
+     "operation": {
+      "type": "dividendo",
+      "date": "2025-03-20",
+      "quantity": 0,
+      "price": 0,
+      "grossAmount": 12.4,
+      "fees": 0,
+      "taxes": 0,
+      "note": null
+     },
+     "warnings": []
+    },
+    {
+     "line": 5,
+     "status": "skipped",
+     "message": "Tipo \"Imposta di bollo\" ignorato"
+    }
+   ]
+  },
+  "detect": [
+   {
+    "file": "imports/degiro-account.csv",
+    "provider": "degiro"
+   },
+   {
+    "file": "imports/banca-prova.csv",
+    "provider": null
+   },
+   {
+    "file": "imports/yahoo-portfolio.csv",
+    "provider": "yahoo-portfolio"
+   },
+   {
+    "text": "\"Statement\",\"Header\",\"Field Name\",\"Field Value\"\nStatement,Data,BrokerName,Interactive Brokers LLC\n",
+    "provider": "interactive-brokers"
+   },
+   {
+    "text": "datetime,date,account_type,category,type,asset_class,name,symbol,shares,price,amount,fee,tax,currency,description,transaction_id\n",
+    "provider": "trade-republic"
+   }
+  ],
+  "mismatch": [
+   {
+    "chosen": "degiro",
+    "detected": "trade-republic",
+    "message": "Questo file non sembra un export di DEGIRO. Sembra invece un file di Trade Republic: scegli quella scheda."
+   },
+   {
+    "chosen": "fineco",
+    "detected": null,
+    "message": "Questo file non sembra un export di Fineco. Scegli un altro provider oppure \u00abAltro CSV\u00bb."
+   },
+   {
+    "chosen": "degiro",
+    "detected": "degiro",
+    "message": null
+   },
+   {
+    "chosen": "generic",
+    "detected": null,
+    "message": null
+   }
+  ],
+  "explainRow": [
+   {
+    "message": "Tipo \"Bonifico\" ignorato",
+    "text": "\u00abBonifico\u00bb non \u00e8 un acquisto, una vendita n\u00e9 un dividendo: la salto."
+   },
+   {
+    "message": "Data \"31/02/2026\" non valida",
+    "text": "La data \u00ab31/02/2026\u00bb non esiste.",
+    "hint": "correggila nel file (per esempio 31/02 non \u00e8 un giorno valido) oppure togli la riga."
+   },
+   {
+    "message": "Vende pi\u00f9 quote di quelle possedute a quella data",
+    "text": "Questa vendita supera le quote che avevi a quella data.",
+    "hint": "probabilmente mancano acquisti precedenti: importa prima lo storico completo (o aggiungi l'acquisto da \u00abRegistra\u00bb) e riprova, oppure escludi lo strumento al passo Strumenti."
+   },
+   {
+    "message": "Data mancante",
+    "text": "La riga non ha la data.",
+    "hint": "compila la data nel file oppure togli la riga."
+   },
+   {
+    "message": "Data nel futuro",
+    "text": "La data \u00e8 nel futuro.",
+    "hint": "controlla l'anno nel file: si importano solo operazioni gi\u00e0 avvenute."
+   },
+   {
+    "message": "Manca lo strumento (simbolo, ISIN o nome)",
+    "text": "La riga non dice di quale strumento si tratta.",
+    "hint": "compila almeno uno tra simbolo, ISIN e nome."
+   },
+   {
+    "message": "Numero \"abc\" non valido",
+    "text": "\u00ababc\u00bb non \u00e8 un numero.",
+    "hint": "se il numero \u00e8 giusto, controlla il separatore dei decimali in \u00abCome leggo le colonne\u00bb; altrimenti correggilo nel file."
+   },
+   {
+    "message": "Quantit\u00e0 mancante o zero",
+    "text": "La quantit\u00e0 manca o \u00e8 zero.",
+    "hint": "compilala nel file oppure togli la riga."
+   },
+   {
+    "message": "Prezzo mancante",
+    "text": "Il prezzo manca.",
+    "hint": "compilalo nel file oppure togli la riga."
+   },
+   {
+    "message": "Prezzo zero su una vendita",
+    "text": "Una vendita ha prezzo zero.",
+    "hint": "controlla il prezzo nel file: solo gli acquisti possono essere gratuiti."
+   },
+   {
+    "message": "Importo del dividendo o della cedola mancante",
+    "text": "Manca l'importo del dividendo o della cedola.",
+    "hint": "compila la colonna dell'importo oppure togli la riga."
+   },
+   {
+    "message": "Rapporto dello split mancante (va nella colonna delle quote)",
+    "text": "Manca il rapporto dello split.",
+    "hint": "scrivilo nella colonna delle quantit\u00e0 (per esempio 2 per uno split 2 a 1)."
+   },
+   {
+    "message": "Riga 225: amount non valido",
+    "text": "Alla riga 225 il campo \u00abimporto\u00bb non contiene un valore valido.",
+    "hint": "controlla quel valore nel file, oppure riesporta il file dal broker senza modificarlo."
+   },
+   {
+    "message": "fx_rate non valido",
+    "text": "Il campo \u00abcambio\u00bb non contiene un valore valido.",
+    "hint": "controlla quel valore nel file, oppure riesporta il file dal broker senza modificarlo."
+   },
+   {
+    "message": "Riga 12: numero colonne non valido",
+    "text": "La riga 12 ha un numero di colonne diverso dalle altre.",
+    "hint": "controlla quel valore nel file, oppure riesporta il file dal broker senza modificarlo."
+   },
+   {
+    "message": "numero colonne non valido",
+    "text": "Una riga ha un numero di colonne diverso dalle altre.",
+    "hint": "controlla quel valore nel file, oppure riesporta il file dal broker senza modificarlo."
+   },
+   {
+    "message": "Riga 9: data o ora non valida",
+    "text": "Riga 9: data o ora non valida.",
+    "hint": "controlla quel valore nel file, oppure riesporta il file dal broker senza modificarlo."
+   },
+   {
+    "message": "Riga 4: qualcosa..",
+    "text": "Riga 4: qualcosa..",
+    "hint": "controlla quel valore nel file, oppure riesporta il file dal broker senza modificarlo."
+   },
+   {
+    "message": "Messaggio sconosciuto",
+    "text": "Messaggio sconosciuto"
+   }
+  ],
+  "explainFile": [
+   {
+    "message": "Questo file non sembra un export di DEGIRO. Sembra invece un file di Trade Republic: scegli quella scheda.",
+    "text": "Questo file non sembra un export di DEGIRO.",
+    "hint": "Scegli la scheda Trade Republic, oppure tocca di nuovo la scheda scelta per lasciar riconoscere il formato al file."
+   },
+   {
+    "message": "Questo file non sembra un export di Fineco. Scegli un altro provider oppure \u00abAltro CSV\u00bb.",
+    "text": "Questo file non sembra un export di Fineco.",
+    "hint": "Scegli il broker giusto, \u00abAltro CSV\u00bb o lascia riconoscere il formato al file."
+   },
+   {
+    "message": "Il file non sembra un CSV con intestazioni e almeno una riga",
+    "text": "Non riesco a leggere questo file.",
+    "hint": "serve un CSV o un Excel con una riga di intestazioni e almeno un'operazione. Non vanno bene PDF, immagini o file vuoti."
+   },
+   {
+    "message": "Nel file Fineco non ci sono movimenti da importare",
+    "text": "Nel file di Fineco non ci sono movimenti.",
+    "hint": "riesporta i movimenti del dossier titoli con un periodo in cui ci sono operazioni."
+   },
+   {
+    "message": "Nel rendiconto non ci sono acquisti, vendite o dividendi di azioni ed ETF da importare",
+    "text": "Nel rendiconto non ci sono acquisti, vendite o dividendi di azioni ed ETF da importare.",
+    "hint": "riesporta il rendiconto con un periodo pi\u00f9 ampio."
+   },
+   {
+    "message": "Seleziona al massimo 20 file alla volta.",
+    "text": "Seleziona al massimo 20 file alla volta.",
+    "hint": "importa i file in pi\u00f9 volte."
+   },
+   {
+    "message": "Ogni file deve essere pi\u00f9 piccolo di 5 MB.",
+    "text": "Ogni file deve essere pi\u00f9 piccolo di 5 MB.",
+    "hint": "riesporta il file con un periodo pi\u00f9 breve."
+   },
+   {
+    "message": "La selezione supera 25 MB. Seleziona meno file.",
+    "text": "La selezione supera 25 MB. Seleziona meno file.",
+    "hint": "importa i file in pi\u00f9 volte."
+   },
+   {
+    "message": "Data nel futuro",
+    "text": "La data \u00e8 nel futuro.",
+    "hint": "controlla l'anno nel file: si importano solo operazioni gi\u00e0 avvenute."
+   }
+  ],
+  "suggestColumns": [
+   {
+    "headers": [
+     "Trade Date",
+     "Symbol",
+     "Purchase Price",
+     "Quantity",
+     "Comment"
+    ],
+    "columns": {
+     "date": 0,
+     "symbol": 1,
+     "quantity": 3,
+     "price": 2,
+     "note": 4
+    }
+   },
+   {
+    "headers": [
+     "Data esecuzione",
+     "Segno",
+     "Titolo",
+     "Quantit\u00e0 (n.)",
+     "Prezzo eseguito EUR",
+     "Controvalore",
+     "Commissioni"
+    ],
+    "columns": {
+     "date": 0,
+     "type": 1,
+     "name": 2,
+     "total": 5,
+     "fees": 6,
+     "quantity": 3,
+     "price": 4
+    }
+   }
+  ]
+ }
+}

@@ -1,0 +1,266 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "period": "mese",
+  "accountId": null,
+  "range": {
+    "from": "2026-10-01",
+    "to": "2026-10-31"
+  },
+  "previousRange": {
+    "from": "2026-09-01",
+    "to": "2026-09-30"
+  },
+  "isCurrentMonth": true,
+  "spent": 2163.83,
+  "spentBefore": 1966.9900000000002,
+  "delta": 196.8399999999997,
+  "curve": [
+    {
+      "date": "2026-10-01",
+      "value": 0
+    },
+    {
+      "date": "2026-10-02",
+      "value": 428
+    },
+    {
+      "date": "2026-10-03",
+      "value": 428
+    },
+    {
+      "date": "2026-10-04",
+      "value": 428
+    },
+    {
+      "date": "2026-10-05",
+      "value": 1265.22
+    },
+    {
+      "date": "2026-10-06",
+      "value": 1268.21
+    },
+    {
+      "date": "2026-10-07",
+      "value": 1310.76
+    },
+    {
+      "date": "2026-10-08",
+      "value": 1349.76
+    },
+    {
+      "date": "2026-10-09",
+      "value": 1384.66
+    },
+    {
+      "date": "2026-10-10",
+      "value": 1446.63
+    },
+    {
+      "date": "2026-10-11",
+      "value": 1526.23
+    },
+    {
+      "date": "2026-10-12",
+      "value": 1576.23
+    },
+    {
+      "date": "2026-10-13",
+      "value": 1738.79
+    },
+    {
+      "date": "2026-10-14",
+      "value": 1921.78
+    },
+    {
+      "date": "2026-10-15",
+      "value": 1983.28
+    },
+    {
+      "date": "2026-10-16",
+      "value": 2058.44
+    },
+    {
+      "date": "2026-10-17",
+      "value": 2163.83
+    },
+    {
+      "date": "2026-10-18",
+      "value": 2163.83
+    }
+  ],
+  "typical": [
+    0,
+    0,
+    39.416666666666664,
+    39.416666666666664,
+    68.54,
+    71.52999999999999,
+    853.32,
+    883.5366666666665,
+    939.1066666666666,
+    999.9566666666666,
+    1038.4666666666665,
+    1129.7066666666667,
+    1202.9733333333334,
+    1236.0233333333333,
+    1270.0666666666668,
+    1312.2700000000002,
+    1355.9733333333331,
+    1355.9733333333331,
+    1410.283333333333,
+    1534.5833333333333,
+    1572.7266666666665,
+    1636.6466666666665,
+    1731.4533333333331,
+    1781.58,
+    1940.1266666666663,
+    2039.5233333333333,
+    2054.7166666666667,
+    2161.583333333333,
+    2161.583333333333,
+    2161.583333333333,
+    2161.583333333333
+  ],
+  "groups": [
+    {
+      "key": "dovuta",
+      "label": "Dovute",
+      "amount": 1842.0899999999997,
+      "categories": [
+        {
+          "id": "2a56535d-e033-42a1-a075-36def3d72f37",
+          "name": "Affitto & Mutuo",
+          "color": "slate",
+          "icon": "home",
+          "amount": 742.18,
+          "budget": null
+        },
+        {
+          "id": "38c34df4-fb06-4571-a2a7-b698f20c3710",
+          "name": "Assicurazioni",
+          "color": "indigo",
+          "icon": "shield",
+          "amount": 428,
+          "budget": null
+        },
+        {
+          "id": "b2ea6d99-2cf0-4793-b686-1bf54a6ac827",
+          "name": "Spesa",
+          "color": "green",
+          "icon": "shopping-cart",
+          "amount": 318.99000000000007,
+          "budget": 420
+        },
+        {
+          "id": "58400506-a0e7-46de-9b8b-f9187b39460b",
+          "name": "Trasporti",
+          "color": "blue",
+          "icon": "car",
+          "amount": 164.82999999999998,
+          "budget": null
+        },
+        {
+          "id": "a0616947-c977-4597-b971-ca50afe66a8d",
+          "name": "Bollette & Telefono",
+          "color": "yellow",
+          "icon": "zap",
+          "amount": 156.79,
+          "budget": null
+        },
+        {
+          "id": "c6110235-62f1-4570-abde-62c1e86a6ff8",
+          "name": "Salute",
+          "color": "rose",
+          "icon": "pill",
+          "amount": 31.3,
+          "budget": null
+        }
+      ]
+    },
+    {
+      "key": "daCategorizzare",
+      "label": "Da categorizzare",
+      "amount": 184,
+      "categories": [
+        {
+          "id": "69cb5f71-b4f3-4eef-beef-472f2852b003",
+          "name": "Da categorizzare",
+          "color": "red",
+          "icon": "help-circle",
+          "amount": 184,
+          "budget": null
+        }
+      ]
+    },
+    {
+      "key": "voluta",
+      "label": "Volute",
+      "amount": 137.73999999999998,
+      "categories": [
+        {
+          "id": "58c6a185-6186-4f21-ae1e-e123b9e0bfeb",
+          "name": "Ristoranti & Bar",
+          "color": "orange",
+          "icon": "utensils",
+          "amount": 62.86,
+          "budget": 180
+        },
+        {
+          "id": "8a16d2a8-199f-43cc-b372-aeab847179ad",
+          "name": "Sport & Benessere",
+          "color": "lime",
+          "icon": "dumbbell",
+          "amount": 39,
+          "budget": null
+        },
+        {
+          "id": "4be0b3e2-7aff-47c8-8dbf-2c817c25429c",
+          "name": "Svago",
+          "color": "teal",
+          "icon": "gamepad-2",
+          "amount": 18.9,
+          "budget": null
+        },
+        {
+          "id": "7e8dbb8d-70dc-42b2-b49f-3fd18e1f7346",
+          "name": "Abbonamenti",
+          "color": "purple",
+          "icon": "tv",
+          "amount": 16.98,
+          "budget": 30
+        }
+      ]
+    }
+  ],
+  "hasBudgets": true,
+  "incomeSources": [],
+  "savings": [
+    {
+      "month": "2026-05",
+      "cumulative": 880.8000000000002
+    },
+    {
+      "month": "2026-06",
+      "cumulative": 1549.8600000000001
+    },
+    {
+      "month": "2026-07",
+      "cumulative": 1578.2600000000002
+    },
+    {
+      "month": "2026-08",
+      "cumulative": 1992.1
+    },
+    {
+      "month": "2026-09",
+      "cumulative": 2926.3899999999994
+    },
+    {
+      "month": "2026-10",
+      "cumulative": 762.5599999999995
+    }
+  ],
+  "saved": 762.5599999999995,
+  "sentence": "Finora hai speso 2164 €, 197 € in più del periodo prima. La voce che pesa di più è «Affitto & Mutuo», il 34%."
+}

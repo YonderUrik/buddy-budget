@@ -1,0 +1,177 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "month": {
+    "from": "2026-10-01",
+    "to": "2026-10-31",
+    "label": "ottobre"
+  },
+  "accountId": "88524cc8-7e96-40d4-811a-b2c02ef824db",
+  "accounts": {
+    "total": 23915.34,
+    "count": 4
+  },
+  "spent": 2163.83,
+  "income": 0,
+  "pace": {
+    "spentSoFar": 2163.83,
+    "typicalSoFar": 1355.9733333333334,
+    "income": 0,
+    "budgetTotal": 780,
+    "budgetSpent": 398.83000000000004,
+    "dayOfMonth": 18,
+    "daysInMonth": 31,
+    "current": [
+      0,
+      428,
+      428,
+      428,
+      1265.2199999999998,
+      1268.2099999999998,
+      1310.7599999999998,
+      1349.7599999999998,
+      1384.6599999999999,
+      1446.6299999999999,
+      1526.2299999999998,
+      1576.2299999999998,
+      1738.7899999999997,
+      1921.7799999999997,
+      1983.2799999999997,
+      2058.4399999999996,
+      2163.8299999999995,
+      2163.8299999999995
+    ],
+    "typical": [
+      0,
+      0,
+      39.416666666666664,
+      39.416666666666664,
+      68.54,
+      71.52999999999999,
+      853.32,
+      883.5366666666665,
+      939.1066666666666,
+      999.9566666666666,
+      1038.4666666666665,
+      1129.7066666666667,
+      1202.9733333333334,
+      1236.0233333333333,
+      1270.0666666666668,
+      1312.2700000000002,
+      1355.9733333333331,
+      1355.9733333333331,
+      1410.283333333333,
+      1534.5833333333333,
+      1572.7266666666665,
+      1636.6466666666665,
+      1731.4533333333331,
+      1781.58,
+      1940.1266666666663,
+      2039.5233333333333,
+      2054.7166666666667,
+      2161.583333333333,
+      2161.583333333333,
+      2161.583333333333,
+      2161.583333333333
+    ]
+  },
+  "groups": [
+    {
+      "key": "dovuta",
+      "label": "Dovute",
+      "amount": 1842.09
+    },
+    {
+      "key": "voluta",
+      "label": "Volute",
+      "amount": 137.74
+    },
+    {
+      "key": "futuro",
+      "label": "Te futuro",
+      "amount": 0
+    },
+    {
+      "key": "saltuaria",
+      "label": "Saltuarie",
+      "amount": 0
+    }
+  ],
+  "uncategorizedSpent": 184,
+  "budget": {
+    "total": 780,
+    "spent": 398.83000000000004,
+    "remaining": 381.16999999999996
+  },
+  "budgets": [
+    {
+      "categoryId": "b2ea6d99-2cf0-4793-b686-1bf54a6ac827",
+      "name": "Spesa",
+      "color": "green",
+      "icon": "shopping-cart",
+      "group": "dovuta",
+      "budget": 420,
+      "spent": 318.99000000000007,
+      "remaining": 101.00999999999993,
+      "progress": 0.7595000000000002
+    },
+    {
+      "categoryId": "7e8dbb8d-70dc-42b2-b49f-3fd18e1f7346",
+      "name": "Abbonamenti",
+      "color": "purple",
+      "icon": "tv",
+      "group": "voluta",
+      "budget": 30,
+      "spent": 16.98,
+      "remaining": 13.02,
+      "progress": 0.5660000000000001
+    },
+    {
+      "categoryId": "58c6a185-6186-4f21-ae1e-e123b9e0bfeb",
+      "name": "Ristoranti & Bar",
+      "color": "orange",
+      "icon": "utensils",
+      "group": "voluta",
+      "budget": 180,
+      "spent": 62.86,
+      "remaining": 117.14,
+      "progress": 0.3492222222222222
+    },
+    {
+      "categoryId": "6c7875c1-d7d5-4495-8a29-1b07607e6763",
+      "name": "Shopping",
+      "color": "pink",
+      "icon": "shopping-bag",
+      "group": "voluta",
+      "budget": 150,
+      "spent": 0,
+      "remaining": 150,
+      "progress": 0
+    }
+  ],
+  "toFix": 5,
+  "voice": [
+    {
+      "key": "pace",
+      "segments": [
+        {
+          "text": "Ottobre è partito sopra il solito: "
+        },
+        {
+          "text": "2164 €",
+          "strong": true
+        },
+        {
+          "text": " spesi, "
+        },
+        {
+          "text": "808 € in più",
+          "strong": true
+        },
+        {
+          "text": " della tua media a questo punto."
+        }
+      ]
+    }
+  ]
+}

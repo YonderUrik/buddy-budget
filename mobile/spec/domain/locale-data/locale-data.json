@@ -1,0 +1,351 @@
+{
+  "generatedWith": {
+    "node": "v25.2.1",
+    "icu": "78.1",
+    "cldr": "48.0"
+  },
+  "locales": {
+    "it-IT": {
+      "decimal": ",",
+      "group": ".",
+      "minimumGroupingDigits": 2,
+      "minusSign": "-",
+      "percentPattern": "#%",
+      "currency": {
+        "EUR": {
+          "pattern": "# €",
+          "symbol": "€"
+        },
+        "USD": {
+          "pattern": "# USD",
+          "symbol": "USD"
+        },
+        "GBP": {
+          "pattern": "# £",
+          "symbol": "£"
+        },
+        "CHF": {
+          "pattern": "# CHF",
+          "symbol": "CHF"
+        }
+      },
+      "compact": {
+        "1000": "1K",
+        "10000": "10K",
+        "100000": "100K",
+        "1000000": "1 Mln",
+        "10000000": "10 Mln",
+        "100000000": "100 Mln",
+        "1000000000": "1 Mld",
+        "1000000000000": "1 Bln"
+      },
+      "monthsLong": [
+        "gennaio",
+        "febbraio",
+        "marzo",
+        "aprile",
+        "maggio",
+        "giugno",
+        "luglio",
+        "agosto",
+        "settembre",
+        "ottobre",
+        "novembre",
+        "dicembre"
+      ],
+      "monthsShort": [
+        "gen",
+        "feb",
+        "mar",
+        "apr",
+        "mag",
+        "giu",
+        "lug",
+        "ago",
+        "set",
+        "ott",
+        "nov",
+        "dic"
+      ],
+      "monthsShortInDate": [
+        "1 gen",
+        "1 feb",
+        "1 mar",
+        "1 apr",
+        "1 mag",
+        "1 giu",
+        "1 lug",
+        "1 ago",
+        "1 set",
+        "1 ott",
+        "1 nov",
+        "1 dic"
+      ],
+      "weekdaysLong": [
+        "lunedì",
+        "martedì",
+        "mercoledì",
+        "giovedì",
+        "venerdì",
+        "sabato",
+        "domenica"
+      ],
+      "weekdaysShort": [
+        "lun",
+        "mar",
+        "mer",
+        "gio",
+        "ven",
+        "sab",
+        "dom"
+      ],
+      "dateSkeletonsSample": {
+        "date": "2026-09-06T14:05 (Sunday)",
+        "outputs": {
+          "d MMM": "6 set",
+          "d MMM y": "6 set 2026",
+          "d MMMM y": "6 settembre 2026",
+          "d MMMM": "6 settembre",
+          "MMMM y": "settembre 2026",
+          "MMM y": "set 2026",
+          "MMM yy": "set 26",
+          "d MMM yy": "6 set 26",
+          "dd MMM y": "06 set 2026",
+          "EEEE d MMMM": "domenica 6 settembre",
+          "EEEE d MMMM y": "domenica 6 settembre 2026",
+          "EEE d MMMM y": "dom 6 settembre 2026",
+          "HH:mm": "14:05"
+        }
+      },
+      "listConjunction2": "A e B"
+    },
+    "en-GB": {
+      "decimal": ".",
+      "group": ",",
+      "minimumGroupingDigits": 1,
+      "minusSign": "-",
+      "percentPattern": "#%",
+      "currency": {
+        "EUR": {
+          "pattern": "€#",
+          "symbol": "€"
+        },
+        "USD": {
+          "pattern": "US$#",
+          "symbol": "US$"
+        },
+        "GBP": {
+          "pattern": "£#",
+          "symbol": "£"
+        },
+        "CHF": {
+          "pattern": "CHF #",
+          "symbol": "CHF"
+        }
+      },
+      "compact": {
+        "1000": "1k",
+        "10000": "10k",
+        "100000": "100k",
+        "1000000": "1m",
+        "10000000": "10m",
+        "100000000": "100m",
+        "1000000000": "1bn",
+        "1000000000000": "1tn"
+      },
+      "monthsLong": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ],
+      "monthsShort": [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sept",
+        "Oct",
+        "Nov",
+        "Dec"
+      ],
+      "monthsShortInDate": [
+        "1 Jan",
+        "1 Feb",
+        "1 Mar",
+        "1 Apr",
+        "1 May",
+        "1 Jun",
+        "1 Jul",
+        "1 Aug",
+        "1 Sept",
+        "1 Oct",
+        "1 Nov",
+        "1 Dec"
+      ],
+      "weekdaysLong": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "weekdaysShort": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "dateSkeletonsSample": {
+        "date": "2026-09-06T14:05 (Sunday)",
+        "outputs": {
+          "d MMM": "6 Sept",
+          "d MMM y": "6 Sept 2026",
+          "d MMMM y": "6 September 2026",
+          "d MMMM": "6 September",
+          "MMMM y": "September 2026",
+          "MMM y": "Sept 2026",
+          "MMM yy": "Sept 26",
+          "d MMM yy": "6 Sept 26",
+          "dd MMM y": "06 Sept 2026",
+          "EEEE d MMMM": "Sunday 6 September",
+          "EEEE d MMMM y": "Sunday, 6 September 2026",
+          "EEE d MMMM y": "Sun, 6 September 2026",
+          "HH:mm": "14:05"
+        }
+      },
+      "listConjunction2": "A and B"
+    },
+    "de-DE": {
+      "decimal": ",",
+      "group": ".",
+      "minimumGroupingDigits": 1,
+      "minusSign": "-",
+      "percentPattern": "# %",
+      "currency": {
+        "EUR": {
+          "pattern": "# €",
+          "symbol": "€"
+        },
+        "USD": {
+          "pattern": "# $",
+          "symbol": "$"
+        },
+        "GBP": {
+          "pattern": "# £",
+          "symbol": "£"
+        },
+        "CHF": {
+          "pattern": "# CHF",
+          "symbol": "CHF"
+        }
+      },
+      "compact": {
+        "1000": "1000",
+        "10000": "10.000",
+        "100000": "100.000",
+        "1000000": "1 Mio.",
+        "10000000": "10 Mio.",
+        "100000000": "100 Mio.",
+        "1000000000": "1 Mrd.",
+        "1000000000000": "1 Bio."
+      },
+      "monthsLong": [
+        "Januar",
+        "Februar",
+        "März",
+        "April",
+        "Mai",
+        "Juni",
+        "Juli",
+        "August",
+        "September",
+        "Oktober",
+        "November",
+        "Dezember"
+      ],
+      "monthsShort": [
+        "Jan",
+        "Feb",
+        "Mär",
+        "Apr",
+        "Mai",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Dez"
+      ],
+      "monthsShortInDate": [
+        "1. Jan.",
+        "1. Feb.",
+        "1. März",
+        "1. Apr.",
+        "1. Mai",
+        "1. Juni",
+        "1. Juli",
+        "1. Aug.",
+        "1. Sept.",
+        "1. Okt.",
+        "1. Nov.",
+        "1. Dez."
+      ],
+      "weekdaysLong": [
+        "Montag",
+        "Dienstag",
+        "Mittwoch",
+        "Donnerstag",
+        "Freitag",
+        "Samstag",
+        "Sonntag"
+      ],
+      "weekdaysShort": [
+        "Mo",
+        "Di",
+        "Mi",
+        "Do",
+        "Fr",
+        "Sa",
+        "So"
+      ],
+      "dateSkeletonsSample": {
+        "date": "2026-09-06T14:05 (Sunday)",
+        "outputs": {
+          "d MMM": "6. Sept.",
+          "d MMM y": "6. Sept. 2026",
+          "d MMMM y": "6. September 2026",
+          "d MMMM": "6. September",
+          "MMMM y": "September 2026",
+          "MMM y": "Sept. 2026",
+          "MMM yy": "Sept. 26",
+          "d MMM yy": "6. Sept. 26",
+          "dd MMM y": "06. Sept. 2026",
+          "EEEE d MMMM": "Sonntag, 6. September",
+          "EEEE d MMMM y": "Sonntag, 6. September 2026",
+          "EEE d MMMM y": "So., 6. September 2026",
+          "HH:mm": "14:05"
+        }
+      },
+      "listConjunction2": "A und B"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "9dbd1907-5cff-4c31-bc08-fa905568d6ba",
+    "userId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+    "matchType": "merchant",
+    "pattern": "rata mutuo",
+    "categoryId": "2a56535d-e033-42a1-a075-36def3d72f37",
+    "splitPercentage": null,
+    "source": "appresa",
+    "hitCount": 0,
+    "lastAppliedAt": null,
+    "createdAt": "2026-10-18T14:45:23.498Z",
+    "updatedAt": "2026-10-18T14:45:23.498Z",
+    "categoryName": "Affitto & Mutuo",
+    "logoPath": "/api/merchant-logos/name/rata%20mutuo?s=545355d785ada3f53fff9c80"
+  }
+]

@@ -1,0 +1,879 @@
+{
+  "currency": "EUR",
+  "todayKey": "2026-10-18",
+  "currentYear": 2026,
+  "regime": "amministrato",
+  "report": {
+    "regime": "amministrato",
+    "years": [
+      {
+        "year": 2024,
+        "gains": 0,
+        "losses": 0,
+        "fundGains": 0,
+        "cryptoGains": 0,
+        "cryptoLosses": 0,
+        "lossesUsed": 0,
+        "lossesCreated": 0,
+        "lossesExpired": 0,
+        "cryptoLossesUsed": 0,
+        "cryptoLossesCreated": 0,
+        "taxOnGains": 0,
+        "taxOnFunds": 0,
+        "taxOnCrypto": 0,
+        "estimatedTax": 0,
+        "withheld": 0,
+        "incomeGross": 0,
+        "incomeWithheld": 0,
+        "bollo": 0,
+        "nonHarmonizedCount": 0
+      },
+      {
+        "year": 2025,
+        "gains": 0,
+        "losses": 1024.8600000000015,
+        "fundGains": 0,
+        "cryptoGains": 0,
+        "cryptoLosses": 0,
+        "lossesUsed": 0,
+        "lossesCreated": 1024.8600000000015,
+        "lossesExpired": 0,
+        "cryptoLossesUsed": 0,
+        "cryptoLossesCreated": 0,
+        "taxOnGains": 0,
+        "taxOnFunds": 0,
+        "taxOnCrypto": 0,
+        "estimatedTax": 0,
+        "withheld": 0,
+        "incomeGross": 41.9100032,
+        "incomeWithheld": 11.59,
+        "bollo": 31.27976382347903,
+        "nonHarmonizedCount": 0
+      },
+      {
+        "year": 2026,
+        "gains": 2400.6618578188745,
+        "losses": 0,
+        "fundGains": 0,
+        "cryptoGains": 275.101908,
+        "cryptoLosses": 0,
+        "lossesUsed": 1664.8600000000015,
+        "lossesCreated": 0,
+        "lossesExpired": 0,
+        "cryptoLossesUsed": 0,
+        "cryptoLossesCreated": 0,
+        "taxOnGains": 170.44423303290708,
+        "taxOnFunds": 0,
+        "taxOnCrypto": 90.78362964,
+        "estimatedTax": 261.22786267290707,
+        "withheld": 0,
+        "incomeGross": 512.0392552000001,
+        "incomeWithheld": 134.36,
+        "bollo": 147.237935789124,
+        "nonHarmonizedCount": 0
+      }
+    ],
+    "realized": [
+      {
+        "transactionId": "dfd550d6-a1a7-4700-bf68-d52bb2a8b092",
+        "instrumentId": "186d6bd3-ec9a-4293-b82e-f6b93590ac10",
+        "date": "2025-10-08",
+        "year": 2025,
+        "quantity": 300,
+        "proceeds": 7879.29,
+        "cost": 8904.150000000001,
+        "gain": -1024.8600000000015,
+        "category": "diversi",
+        "rate": 0.26,
+        "withheld": 0,
+        "nonHarmonized": false,
+        "lossesUsed": 0,
+        "estimatedTax": 0
+      },
+      {
+        "transactionId": "1d17cd13-5771-43a1-8b29-80b976b65a70",
+        "instrumentId": "34b583e3-d34c-433b-9cb5-6c9a1f49e88e",
+        "date": "2026-08-19",
+        "year": 2026,
+        "quantity": 15,
+        "proceeds": 2104.022655995,
+        "cost": 1283.294798176125,
+        "gain": 820.7278578188752,
+        "category": "diversi",
+        "rate": 0.26,
+        "withheld": 0,
+        "nonHarmonized": false,
+        "lossesUsed": 820.7278578188752,
+        "estimatedTax": 0
+      },
+      {
+        "transactionId": "d441f808-6397-44c2-8d8e-fb3a0059afea",
+        "instrumentId": "e230f702-316b-49b3-89f6-5ff99cdedec2",
+        "date": "2026-09-03",
+        "year": 2026,
+        "quantity": 190,
+        "proceeds": 5759.479,
+        "cost": 4334.095,
+        "gain": 1425.384,
+        "category": "diversi",
+        "rate": 0.26,
+        "withheld": 0,
+        "nonHarmonized": false,
+        "lossesUsed": 844.1321421811263,
+        "estimatedTax": 151.12548303290717
+      },
+      {
+        "transactionId": "f7961e5e-e66e-4247-8dec-ac2ca5709430",
+        "instrumentId": "8a278f13-7126-45a0-a97a-fe202498bcba",
+        "date": "2026-09-06",
+        "year": 2026,
+        "quantity": 441.16,
+        "proceeds": 876.702488,
+        "cost": 601.60058,
+        "gain": 275.101908,
+        "category": "crypto",
+        "rate": 0.33,
+        "withheld": 0,
+        "nonHarmonized": false,
+        "lossesUsed": null,
+        "estimatedTax": null
+      },
+      {
+        "transactionId": "8b732beb-b843-47a8-9f83-9564d0219c2c",
+        "instrumentId": "40f1700b-64d7-4d48-b77b-de2190ec89ab",
+        "date": "2026-09-13",
+        "year": 2026,
+        "quantity": 5000,
+        "proceeds": 5000,
+        "cost": 4845.450000000001,
+        "gain": 154.54999999999927,
+        "category": "diversi",
+        "rate": 0.125,
+        "withheld": 0,
+        "nonHarmonized": false,
+        "lossesUsed": 0,
+        "estimatedTax": 19.31874999999991
+      }
+    ],
+    "losses": []
+  },
+  "bollo": [
+    {
+      "year": 2025,
+      "value": 42285.60665025869,
+      "days": 135,
+      "bollo": 31.27976382347903,
+      "estimate": false
+    },
+    {
+      "year": 2026,
+      "value": 73618.967894562,
+      "days": 365,
+      "bollo": 147.237935789124,
+      "estimate": true
+    }
+  ],
+  "opportunities": {
+    "expiringThisYear": 0,
+    "compensableGains": [
+      {
+        "instrumentId": "34b583e3-d34c-433b-9cb5-6c9a1f49e88e",
+        "unrealized": 1920.0298818276706,
+        "equivalent": 1920.0298818276706
+      },
+      {
+        "instrumentId": "e230f702-316b-49b3-89f6-5ff99cdedec2",
+        "unrealized": 1554.1949999999997,
+        "equivalent": 1554.1949999999997
+      },
+      {
+        "instrumentId": "13e4aa15-b3ef-4c1a-954a-f22feb8ed691",
+        "unrealized": 846.6405879999993,
+        "equivalent": 846.6405879999993
+      },
+      {
+        "instrumentId": "92431ab9-c89e-4413-a443-fa9ea46f3a73",
+        "unrealized": 176.47848411723317,
+        "equivalent": 176.47848411723317
+      },
+      {
+        "instrumentId": "8d725ad2-a8fb-4261-bbde-a1030171bc4c",
+        "unrealized": 154,
+        "equivalent": 74.03846153846153
+      }
+    ],
+    "compensableTotal": 4571.382415483365,
+    "losses": [
+      {
+        "instrumentId": "86ed036b-11c2-4f60-9ea9-8106f214797a",
+        "unrealized": -1287.7245515432724,
+        "equivalent": 1287.7245515432724
+      },
+      {
+        "instrumentId": "f29046c4-7e37-459e-a652-dbee9b0123ac",
+        "unrealized": -116.32814999999982,
+        "equivalent": 116.32814999999982
+      }
+    ],
+    "lossesTotal": 1404.0527015432722
+  },
+  "instruments": [
+    {
+      "id": "160469f4-e5ab-47c0-ae0b-e98b9272a5a9",
+      "isin": "IE00DEMO0001",
+      "name": "ETF Azionario Globale Demo",
+      "type": "etf",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "XETRA",
+      "taxRate": "0.2600",
+      "taxHarmonized": true,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "e230f702-316b-49b3-89f6-5ff99cdedec2",
+      "isin": "IT00DEMO0002",
+      "name": "Energia Italia S.p.A.",
+      "type": "azione",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "MIL",
+      "taxRate": "0.2600",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "8d725ad2-a8fb-4261-bbde-a1030171bc4c",
+      "isin": "IT00DEMO0003",
+      "name": "BTP Valore 2030",
+      "type": "obbligazione",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "percentuale_nominale",
+      "exchange": null,
+      "taxRate": "0.1250",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "186d6bd3-ec9a-4293-b82e-f6b93590ac10",
+      "isin": "IT00DEMO0004",
+      "name": "Tecnologia Futura S.p.A.",
+      "type": "azione",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "MIL",
+      "taxRate": "0.2600",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "680c524d-f71c-44c8-b45f-5d137c90fd31",
+      "isin": "IE00DEMO0005",
+      "name": "ETF S&P 500 Demo",
+      "type": "etf",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "XETRA",
+      "taxRate": "0.2600",
+      "taxHarmonized": true,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "f29046c4-7e37-459e-a652-dbee9b0123ac",
+      "isin": "IE00DEMO0006",
+      "name": "ETF Emerging Markets Demo",
+      "type": "etf",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "XETRA",
+      "taxRate": "0.2600",
+      "taxHarmonized": true,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "0dc9bcad-edaf-4007-970f-6cf50133cff0",
+      "isin": "IE00DEMO0007",
+      "name": "ETF Euro Stoxx Dividend Demo",
+      "type": "etf",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "XETRA",
+      "taxRate": "0.2600",
+      "taxHarmonized": true,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "4bd6b91c-7be8-4a14-9ca4-497df246cf8b",
+      "isin": "IE00DEMO0008",
+      "name": "ETF Obbligazioni Euro Demo",
+      "type": "etf",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "XETRA",
+      "taxRate": "0.2600",
+      "taxHarmonized": true,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "34b583e3-d34c-433b-9cb5-6c9a1f49e88e",
+      "isin": "US00DEMO0009",
+      "name": "Nimbus Cloud Inc.",
+      "type": "azione",
+      "currency": "USD",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "NASDAQ",
+      "taxRate": "0.2600",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "86ed036b-11c2-4f60-9ea9-8106f214797a",
+      "isin": "US00DEMO0010",
+      "name": "Pacific Biotech Corp.",
+      "type": "azione",
+      "currency": "USD",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "NYSE",
+      "taxRate": "0.2600",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "92431ab9-c89e-4413-a443-fa9ea46f3a73",
+      "isin": "CH00DEMO0011",
+      "name": "Alpenfood AG",
+      "type": "azione",
+      "currency": "CHF",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "SIX",
+      "taxRate": "0.2600",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "13e4aa15-b3ef-4c1a-954a-f22feb8ed691",
+      "isin": "JE00DEMO0012",
+      "name": "ETC Oro Fisico Demo",
+      "type": "etc",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": "XETRA",
+      "taxRate": "0.2600",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "40f1700b-64d7-4d48-b77b-de2190ec89ab",
+      "isin": "IT00DEMO0013",
+      "name": "BOT 12 mesi",
+      "type": "obbligazione",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "percentuale_nominale",
+      "exchange": null,
+      "taxRate": "0.1250",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "05b60e79-0d85-41a4-b92d-22e4f7f56852",
+      "isin": "IT00DEMO0014",
+      "name": "Fondo Bilanciato Demo",
+      "type": "fondo",
+      "currency": "EUR",
+      "priceMode": "manuale",
+      "priceUnit": "unita",
+      "exchange": null,
+      "taxRate": "0.2600",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    },
+    {
+      "id": "8a278f13-7126-45a0-a97a-fe202498bcba",
+      "isin": null,
+      "name": "Moneta Digitale Demo",
+      "type": "crypto",
+      "currency": "EUR",
+      "priceMode": "auto",
+      "priceUnit": "unita",
+      "exchange": null,
+      "taxRate": "0.2600",
+      "taxHarmonized": null,
+      "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+      "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+      "createdAt": "2026-10-18T14:45:23.601Z",
+      "updatedAt": "2026-10-18T14:45:23.601Z"
+    }
+  ],
+  "sellable": [
+    {
+      "instrument": {
+        "id": "160469f4-e5ab-47c0-ae0b-e98b9272a5a9",
+        "isin": "IE00DEMO0001",
+        "name": "ETF Azionario Globale Demo",
+        "type": "etf",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "XETRA",
+        "taxRate": "0.2600",
+        "taxHarmonized": true,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 191.16,
+      "price": 112.804,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "8d725ad2-a8fb-4261-bbde-a1030171bc4c",
+        "isin": "IT00DEMO0003",
+        "name": "BTP Valore 2030",
+        "type": "obbligazione",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "percentuale_nominale",
+        "exchange": null,
+        "taxRate": "0.1250",
+        "taxHarmonized": null,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 10000,
+      "price": 101.34,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "05b60e79-0d85-41a4-b92d-22e4f7f56852",
+        "isin": "IT00DEMO0014",
+        "name": "Fondo Bilanciato Demo",
+        "type": "fondo",
+        "currency": "EUR",
+        "priceMode": "manuale",
+        "priceUnit": "unita",
+        "exchange": null,
+        "taxRate": "0.2600",
+        "taxHarmonized": null,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 593.706,
+      "price": 10.94,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "e230f702-316b-49b3-89f6-5ff99cdedec2",
+        "isin": "IT00DEMO0002",
+        "name": "Energia Italia S.p.A.",
+        "type": "azione",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "MIL",
+        "taxRate": "0.2600",
+        "taxHarmonized": null,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 190,
+      "price": 30.991,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "4bd6b91c-7be8-4a14-9ca4-497df246cf8b",
+        "isin": "IE00DEMO0008",
+        "name": "ETF Obbligazioni Euro Demo",
+        "type": "etf",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "XETRA",
+        "taxRate": "0.2600",
+        "taxHarmonized": true,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 42.34,
+      "price": 121.2073,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "13e4aa15-b3ef-4c1a-954a-f22feb8ed691",
+        "isin": "JE00DEMO0012",
+        "name": "ETC Oro Fisico Demo",
+        "type": "etc",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "XETRA",
+        "taxRate": "0.2600",
+        "taxHarmonized": null,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 17.74,
+      "price": 245.0627,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "0dc9bcad-edaf-4007-970f-6cf50133cff0",
+        "isin": "IE00DEMO0007",
+        "name": "ETF Euro Stoxx Dividend Demo",
+        "type": "etf",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "XETRA",
+        "taxRate": "0.2600",
+        "taxHarmonized": true,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 162.1,
+      "price": 26.5228,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "34b583e3-d34c-433b-9cb5-6c9a1f49e88e",
+        "isin": "US00DEMO0009",
+        "name": "Nimbus Cloud Inc.",
+        "type": "azione",
+        "currency": "USD",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "NASDAQ",
+        "taxRate": "0.2600",
+        "taxHarmonized": null,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 25,
+      "price": 178.5896,
+      "fxRate": 0.9090909090909091
+    },
+    {
+      "instrument": {
+        "id": "680c524d-f71c-44c8-b45f-5d137c90fd31",
+        "isin": "IE00DEMO0005",
+        "name": "ETF S&P 500 Demo",
+        "type": "etf",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "XETRA",
+        "taxRate": "0.2600",
+        "taxHarmonized": true,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 55.3498,
+      "price": 60.8426,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "92431ab9-c89e-4413-a443-fa9ea46f3a73",
+        "isin": "CH00DEMO0011",
+        "name": "Alpenfood AG",
+        "type": "azione",
+        "currency": "CHF",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "SIX",
+        "taxRate": "0.2600",
+        "taxHarmonized": null,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 25,
+      "price": 94.8656,
+      "fxRate": 1.088139281828074
+    },
+    {
+      "instrument": {
+        "id": "f29046c4-7e37-459e-a652-dbee9b0123ac",
+        "isin": "IE00DEMO0006",
+        "name": "ETF Emerging Markets Demo",
+        "type": "etf",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "XETRA",
+        "taxRate": "0.2600",
+        "taxHarmonized": true,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 82.02000000000001,
+      "price": 29.0964,
+      "fxRate": 1
+    },
+    {
+      "instrument": {
+        "id": "86ed036b-11c2-4f60-9ea9-8106f214797a",
+        "isin": "US00DEMO0010",
+        "name": "Pacific Biotech Corp.",
+        "type": "azione",
+        "currency": "USD",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": "NYSE",
+        "taxRate": "0.2600",
+        "taxHarmonized": null,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 100,
+      "price": 23.4759,
+      "fxRate": 0.9090909090909091
+    },
+    {
+      "instrument": {
+        "id": "8a278f13-7126-45a0-a97a-fe202498bcba",
+        "isin": null,
+        "name": "Moneta Digitale Demo",
+        "type": "crypto",
+        "currency": "EUR",
+        "priceMode": "auto",
+        "priceUnit": "unita",
+        "exchange": null,
+        "taxRate": "0.2600",
+        "taxHarmonized": null,
+        "dividendsFetchedAt": "2026-10-18T14:45:23.601Z",
+        "createdByUserId": "H4N8DHkvtJccXC14RUNjb6sYfBe49qUl",
+        "createdAt": "2026-10-18T14:45:23.601Z",
+        "updatedAt": "2026-10-18T14:45:23.601Z"
+      },
+      "quantity": 661.74,
+      "price": 1.8609,
+      "fxRate": 1
+    }
+  ],
+  "carryforwards": [
+    {
+      "id": "7e04e7a2-f461-4c1a-b6e8-3b9b14a2422c",
+      "year": 2024,
+      "amount": "640.00",
+      "note": "Minusvalenze dal broker precedente"
+    }
+  ],
+  "hasTransactions": true,
+  "rateListInstrumentIds": [
+    "160469f4-e5ab-47c0-ae0b-e98b9272a5a9",
+    "e230f702-316b-49b3-89f6-5ff99cdedec2",
+    "8d725ad2-a8fb-4261-bbde-a1030171bc4c",
+    "680c524d-f71c-44c8-b45f-5d137c90fd31",
+    "f29046c4-7e37-459e-a652-dbee9b0123ac",
+    "0dc9bcad-edaf-4007-970f-6cf50133cff0",
+    "4bd6b91c-7be8-4a14-9ca4-497df246cf8b",
+    "34b583e3-d34c-433b-9cb5-6c9a1f49e88e",
+    "86ed036b-11c2-4f60-9ea9-8106f214797a",
+    "92431ab9-c89e-4413-a443-fa9ea46f3a73",
+    "13e4aa15-b3ef-4c1a-954a-f22feb8ed691",
+    "40f1700b-64d7-4d48-b77b-de2190ec89ab",
+    "05b60e79-0d85-41a4-b92d-22e4f7f56852",
+    "8a278f13-7126-45a0-a97a-fe202498bcba"
+  ],
+  "settings": [
+    {
+      "instrumentId": "8d725ad2-a8fb-4261-bbde-a1030171bc4c",
+      "taxRate": null,
+      "taxHarmonized": null,
+      "couponRate": "0.031000",
+      "couponFrequency": 2,
+      "maturityDate": "2030-08-15"
+    }
+  ],
+  "resolved": [
+    {
+      "instrumentId": "160469f4-e5ab-47c0-ae0b-e98b9272a5a9",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "strumento"
+    },
+    {
+      "instrumentId": "e230f702-316b-49b3-89f6-5ff99cdedec2",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "8d725ad2-a8fb-4261-bbde-a1030171bc4c",
+      "taxRate": 0.125,
+      "taxRateSource": "titolo_di_stato",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "186d6bd3-ec9a-4293-b82e-f6b93590ac10",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "680c524d-f71c-44c8-b45f-5d137c90fd31",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "strumento"
+    },
+    {
+      "instrumentId": "f29046c4-7e37-459e-a652-dbee9b0123ac",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "strumento"
+    },
+    {
+      "instrumentId": "0dc9bcad-edaf-4007-970f-6cf50133cff0",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "strumento"
+    },
+    {
+      "instrumentId": "4bd6b91c-7be8-4a14-9ca4-497df246cf8b",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "strumento"
+    },
+    {
+      "instrumentId": "34b583e3-d34c-433b-9cb5-6c9a1f49e88e",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "86ed036b-11c2-4f60-9ea9-8106f214797a",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "92431ab9-c89e-4413-a443-fa9ea46f3a73",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "13e4aa15-b3ef-4c1a-954a-f22feb8ed691",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "40f1700b-64d7-4d48-b77b-de2190ec89ab",
+      "taxRate": 0.125,
+      "taxRateSource": "titolo_di_stato",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "05b60e79-0d85-41a4-b92d-22e4f7f56852",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    },
+    {
+      "instrumentId": "8a278f13-7126-45a0-a97a-fe202498bcba",
+      "taxRate": 0.26,
+      "taxRateSource": "strumento",
+      "harmonized": true,
+      "harmonizedSource": "presunto"
+    }
+  ]
+}

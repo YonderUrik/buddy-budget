@@ -1,0 +1,130 @@
+{
+  "sendCode": {
+    "request": {
+      "method": "POST",
+      "path": "/api/auth/email-otp/send-verification-otp",
+      "body": {
+        "email": "otp-fixture@buddybudget.test",
+        "type": "sign-in"
+      }
+    },
+    "status": 200,
+    "body": {
+      "success": true
+    }
+  },
+  "wrongCode": {
+    "request": {
+      "method": "POST",
+      "path": "/api/auth/sign-in/email-otp",
+      "body": {
+        "email": "otp-fixture@buddybudget.test",
+        "otp": "000000"
+      }
+    },
+    "status": 400,
+    "body": {
+      "message": "Invalid OTP",
+      "code": "INVALID_OTP"
+    }
+  },
+  "signIn": {
+    "request": {
+      "method": "POST",
+      "path": "/api/auth/sign-in/email-otp",
+      "body": {
+        "email": "otp-fixture@buddybudget.test",
+        "otp": "<6-digit code from the email>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "set-auth-token": "<token>.<signature> (signed, raw base64 signature with + / =, not URL-encoded)",
+      "access-control-expose-headers": "set-auth-token",
+      "set-cookie": "better-auth.session_token=… (ignore on native)"
+    },
+    "body": {
+      "token": "<session token, 32 chars>",
+      "user": {
+        "name": "",
+        "email": "otp-fixture@buddybudget.test",
+        "emailVerified": true,
+        "image": null,
+        "createdAt": "2026-10-18T15:03:27.002Z",
+        "updatedAt": "2026-10-18T15:03:27.002Z",
+        "productCountry": "IT",
+        "language": "it",
+        "currency": "EUR",
+        "onboardingCompleted": false,
+        "homePage": "/panoramica",
+        "hideAmounts": false,
+        "deletionScheduledAt": null,
+        "legalAcceptedAt": null,
+        "legalAcceptedVersion": null,
+        "id": "jY7bYBGOr8sxsjeSp780lUeqtu89bml7"
+      }
+    },
+    "signedTokenLooksLike": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxx+xxxxxx/xxxxxxxxxxxxxxxxxx="
+  },
+  "bootstrapAfterSignIn": {
+    "status": 200,
+    "body": {
+      "user": {
+        "id": "jY7bYBGOr8sxsjeSp780lUeqtu89bml7",
+        "name": "",
+        "email": "otp-fixture@buddybudget.test",
+        "emailVerified": true,
+        "image": null
+      },
+      "profile": {
+        "productCountry": "IT",
+        "language": "it",
+        "availableLanguages": [
+          "it",
+          "en"
+        ],
+        "currency": "EUR",
+        "homePage": "/panoramica",
+        "hideAmounts": false
+      },
+      "onboarding": {
+        "completed": false
+      },
+      "legal": {
+        "currentVersion": "2026-10-12",
+        "acceptedVersion": null,
+        "acceptedAt": null,
+        "needsAcceptance": true
+      },
+      "account": {
+        "deactivated": false,
+        "deletionScheduledAt": null,
+        "readOnlyDemo": false
+      },
+      "gate": "onboarding_required",
+      "capabilities": {
+        "features": {
+          "taxes": true,
+          "pension": true,
+          "retirement": true,
+          "incomeForecasts": true,
+          "inflation": true
+        },
+        "sections": {
+          "pension": true,
+          "analytics": true,
+          "goals": true,
+          "investmentTaxes": true,
+          "investmentIncome": true,
+          "fire": true,
+          "financialPlanning": true
+        }
+      },
+      "session": {
+        "createdAt": "2026-10-18T15:03:27.005Z",
+        "expiresAt": "2026-10-25T15:03:27.005Z",
+        "recentLoginUntil": "2026-10-18T15:13:27.005Z"
+      }
+    }
+  }
+}

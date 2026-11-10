@@ -1,0 +1,441 @@
+{
+  "topic": "exposure-allocation-overlap",
+  "source": "lib/investments/exposure.ts, lib/investments/allocation.ts, lib/investments/overlap.ts, lib/investments/exposure-keys.ts, lib/investments/index-profiles.ts",
+  "vectors": [
+    {
+      "id": "exposure.completeWeights.remainderUnclassified",
+      "function": "completeWeights",
+      "input": {
+        "weights": {
+          "tecnologia": 0.5,
+          "finanza": 0.3,
+          "foo": 0.1,
+          "obbligazioni": -0.1
+        }
+      },
+      "expected": {
+        "tecnologia": 0.5,
+        "finanza": 0.3,
+        "non_classificato": 0.2
+      },
+      "tolerance": 1e-9,
+      "notes": "Unknown keys and values ≤1e-6 dropped; remainder → non_classificato."
+    },
+    {
+      "id": "exposure.completeWeights.rescale",
+      "function": "completeWeights",
+      "input": {
+        "weights": {
+          "tecnologia": 0.6,
+          "finanza": 0.6
+        }
+      },
+      "expected": {
+        "tecnologia": 0.5,
+        "finanza": 0.5
+      },
+      "tolerance": 1e-9,
+      "notes": "Sum > 1 → rescaled to 1."
+    },
+    {
+      "id": "exposure.resolveInstrumentExposure.allWorldEtf",
+      "function": "resolveInstrumentExposure",
+      "input": {
+        "instrument": {
+          "id": "v",
+          "name": "Vanguard FTSE All-World UCITS ETF",
+          "type": "etf",
+          "isin": "IE00BK5BQT80"
+        },
+        "profile": null,
+        "manual": null
+      },
+      "expected": {
+        "instrumentId": "v",
+        "sectors": {
+          "tecnologia": 0.26,
+          "finanza": 0.17,
+          "salute": 0.095,
+          "industria": 0.105,
+          "consumi_ciclici": 0.105,
+          "comunicazioni": 0.085,
+          "consumi_difensivi": 0.058,
+          "energia": 0.04,
+          "materiali": 0.037,
+          "servizi_pubblici": 0.027,
+          "immobiliare": 0.018
+        },
+        "sectorSource": "stima_indice",
+        "areas": {
+          "nord_america": 0.66,
+          "europa": 0.135,
+          "giappone": 0.055,
+          "pacifico": 0.03,
+          "emergenti": 0.12
+        },
+        "areaSource": "stima_indice",
+        "indexProfile": {
+          "profileId": "all_world",
+          "useSectors": true,
+          "broad": true
+        }
+      },
+      "tolerance": 1e-9,
+      "notes": "Index profile estimated from name (table in index-profiles.ts must be shipped as data)."
+    },
+    {
+      "id": "exposure.resolveInstrumentExposure.stockIsin",
+      "function": "resolveInstrumentExposure",
+      "input": {
+        "instrument": {
+          "id": "s",
+          "name": "Enel",
+          "type": "azione",
+          "isin": "IT0003128367"
+        },
+        "profile": null,
+        "manual": null
+      },
+      "expected": {
+        "instrumentId": "s",
+        "sectors": {
+          "non_classificato": 1
+        },
+        "sectorSource": "nessuno",
+        "areas": {
+          "italia": 1
+        },
+        "areaSource": "isin",
+        "indexProfile": null
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "exposure.resolveInstrumentExposure.crypto",
+      "function": "resolveInstrumentExposure",
+      "input": {
+        "instrument": {
+          "id": "k",
+          "name": "Bitcoin",
+          "type": "crypto",
+          "isin": null
+        },
+        "profile": null,
+        "manual": null
+      },
+      "expected": {
+        "instrumentId": "k",
+        "sectors": {
+          "crypto": 1
+        },
+        "sectorSource": "tipo",
+        "areas": {
+          "nessuna": 1
+        },
+        "areaSource": "tipo",
+        "indexProfile": null
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "exposure.aggregateExposure.areas",
+      "function": "aggregateExposure",
+      "input": {
+        "positions": [
+          {
+            "instrumentId": "v",
+            "value": 8000
+          },
+          {
+            "instrumentId": "s",
+            "value": 2000
+          },
+          {
+            "instrumentId": "u",
+            "value": 1000
+          }
+        ],
+        "exposures": "v = All-World ETF exposure, s = Enel stock exposure (from vectors above); u has none",
+        "dimension": "areas"
+      },
+      "expected": {
+        "slices": [
+          {
+            "key": "nord_america",
+            "value": 5280,
+            "share": 0.48
+          },
+          {
+            "key": "italia",
+            "value": 2000,
+            "share": 0.181818181818
+          },
+          {
+            "key": "europa",
+            "value": 1080,
+            "share": 0.0981818181818
+          },
+          {
+            "key": "emergenti",
+            "value": 960,
+            "share": 0.0872727272727
+          },
+          {
+            "key": "giappone",
+            "value": 440,
+            "share": 0.04
+          },
+          {
+            "key": "pacifico",
+            "value": 240,
+            "share": 0.0218181818182
+          },
+          {
+            "key": "non_classificato",
+            "value": 1000,
+            "share": 0.0909090909091
+          }
+        ],
+        "classifiedShare": 0.909090909091
+      },
+      "tolerance": 1e-9,
+      "notes": "Instruments without exposure count as 100% non_classificato, which is always sorted last."
+    },
+    {
+      "id": "exposure.analyzeAllocation.basic",
+      "function": "analyzeAllocation",
+      "input": {
+        "positions": [
+          {
+            "instrumentId": "a",
+            "value": 6000
+          },
+          {
+            "instrumentId": "b",
+            "value": 3000
+          },
+          {
+            "instrumentId": "c",
+            "value": 1000
+          },
+          {
+            "instrumentId": "d",
+            "value": null
+          }
+        ],
+        "targets": [
+          {
+            "instrumentId": "a",
+            "weight": 0.5
+          },
+          {
+            "instrumentId": "b",
+            "weight": 0.3
+          },
+          {
+            "instrumentId": "c",
+            "weight": 0.2
+          }
+        ]
+      },
+      "expected": {
+        "rows": [
+          {
+            "instrumentId": "c",
+            "value": 1000,
+            "currentWeight": 0.1,
+            "targetWeight": 0.2,
+            "drift": -0.1,
+            "status": "sotto",
+            "inTarget": true
+          },
+          {
+            "instrumentId": "b",
+            "value": 3000,
+            "currentWeight": 0.3,
+            "targetWeight": 0.3,
+            "drift": 0,
+            "status": "in_linea",
+            "inTarget": true
+          },
+          {
+            "instrumentId": "a",
+            "value": 6000,
+            "currentWeight": 0.6,
+            "targetWeight": 0.5,
+            "drift": 0.1,
+            "status": "sopra",
+            "inTarget": true
+          }
+        ],
+        "total": 10000,
+        "unpricedIds": [
+          "d"
+        ],
+        "maxDrift": 0.1
+      },
+      "tolerance": 1e-9,
+      "notes": "Tolerance ±5 points → in_linea. Sorted by drift ascending."
+    },
+    {
+      "id": "exposure.suggestContribution.waterFill",
+      "function": "suggestContribution",
+      "input": {
+        "analysis": "output of exposure.analyzeAllocation.basic",
+        "amount": 2000
+      },
+      "expected": [
+        {
+          "instrumentId": "c",
+          "amount": 1400,
+          "weightAfter": 0.2,
+          "targetWeight": 0.2
+        },
+        {
+          "instrumentId": "b",
+          "amount": 600,
+          "weightAfter": 0.3,
+          "targetWeight": 0.3
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Water-filling: buys that are < 10% of amount are dropped and amount redistributed."
+    },
+    {
+      "id": "exposure.suggestContribution.smallDropped",
+      "function": "suggestContribution",
+      "input": {
+        "analysis": "output of exposure.analyzeAllocation.basic",
+        "amount": 500
+      },
+      "expected": [
+        {
+          "instrumentId": "c",
+          "amount": 500,
+          "weightAfter": 0.142857142857,
+          "targetWeight": 0.2
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "exposure.roundedCurrentWeights.sumTo100",
+      "function": "roundedCurrentWeights",
+      "input": {
+        "positions": [
+          {
+            "instrumentId": "a",
+            "value": 1
+          },
+          {
+            "instrumentId": "b",
+            "value": 1
+          },
+          {
+            "instrumentId": "c",
+            "value": 1
+          }
+        ]
+      },
+      "expected": [
+        {
+          "instrumentId": "a",
+          "weight": 0.34
+        },
+        {
+          "instrumentId": "b",
+          "weight": 0.33
+        },
+        {
+          "instrumentId": "c",
+          "weight": 0.33
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Rounding remainder goes to the largest (first after sort by percent desc; stable)."
+    },
+    {
+      "id": "exposure.isCompleteTarget.true",
+      "function": "isCompleteTarget",
+      "input": {
+        "targets": [
+          {
+            "instrumentId": "a",
+            "weight": 0.5
+          },
+          {
+            "instrumentId": "b",
+            "weight": 0.3
+          },
+          {
+            "instrumentId": "c",
+            "weight": 0.2
+          }
+        ]
+      },
+      "expected": true,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "exposure.normalizeCompanyName.basic",
+      "function": "normalizeCompanyName",
+      "input": {
+        "name": "Apple Inc. Class A"
+      },
+      "expected": "apple",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "exposure.baseTicker.basic",
+      "function": "baseTicker",
+      "input": {
+        "symbol": "enel.mi"
+      },
+      "expected": "ENEL",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "exposure.holdingsOverlap.basic",
+      "function": "holdingsOverlap",
+      "input": {
+        "a": [
+          {
+            "symbol": "AAPL",
+            "name": "Apple Inc",
+            "weight": 0.05
+          },
+          {
+            "symbol": "MSFT",
+            "name": "Microsoft Corp",
+            "weight": 0.045
+          },
+          {
+            "symbol": "NVDA",
+            "name": "NVIDIA Corp",
+            "weight": 0.04
+          }
+        ],
+        "b": [
+          {
+            "symbol": "AAPL.US",
+            "name": "Apple",
+            "weight": 0.07
+          },
+          {
+            "symbol": null,
+            "name": "Microsoft Corporation",
+            "weight": 0.06
+          },
+          {
+            "symbol": "AMZN",
+            "name": "Amazon.com Inc",
+            "weight": 0.03
+          }
+        ]
+      },
+      "expected": 0.095,
+      "tolerance": 1e-9,
+      "notes": "Match by base ticker or normalized name; sum of min weights."
+    }
+  ]
+}

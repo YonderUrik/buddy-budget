@@ -1,0 +1,594 @@
+{
+  "topic": "goals",
+  "source": "lib/goals/plan.ts, lib/goals/view.ts, components/domain/goals/goal-form-state.ts",
+  "generatedWith": "npx tsx (Node, V8 doubles)",
+  "vectors": [
+    {
+      "id": "monthsBetween-2026-10-18-2027-03-01",
+      "function": "monthsBetween",
+      "input": {
+        "from": "2026-10-18",
+        "to": "2027-03-01"
+      },
+      "expected": 5,
+      "tolerance": 0,
+      "notes": "Day ignored"
+    },
+    {
+      "id": "monthsBetween-2026-10-18-2026-10-31",
+      "function": "monthsBetween",
+      "input": {
+        "from": "2026-10-18",
+        "to": "2026-10-31"
+      },
+      "expected": 0,
+      "tolerance": 0,
+      "notes": "Day ignored"
+    },
+    {
+      "id": "monthsBetween-2026-10-2025-12",
+      "function": "monthsBetween",
+      "input": {
+        "from": "2026-10",
+        "to": "2025-12"
+      },
+      "expected": -10,
+      "tolerance": 0,
+      "notes": "Day ignored"
+    },
+    {
+      "id": "addMonthsKey-2026-10-18-3",
+      "function": "addMonthsKey",
+      "input": {
+        "from": "2026-10-18",
+        "months": 3
+      },
+      "expected": "2027-01",
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "addMonthsKey-2026-11-01-2",
+      "function": "addMonthsKey",
+      "input": {
+        "from": "2026-11-01",
+        "months": 2
+      },
+      "expected": "2027-01",
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "addMonthsKey-2026-01--1",
+      "function": "addMonthsKey",
+      "input": {
+        "from": "2026-01",
+        "months": -1
+      },
+      "expected": "2025-12",
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "addMonthsKey-2026-10-18-0",
+      "function": "addMonthsKey",
+      "input": {
+        "from": "2026-10-18",
+        "months": 0
+      },
+      "expected": "2026-10",
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "monthsToFire-base",
+      "function": "monthsToFire",
+      "input": {
+        "fire": {
+          "wealth": 150000,
+          "annualSavings": 15000,
+          "realReturn": 0.04,
+          "target": 873743.9930100479
+        },
+        "withdrawals": []
+      },
+      "expected": 263,
+      "tolerance": 0,
+      "notes": "monthly compounding (1+r)^(1/12)−1, saving/12 at month end; first month where wealth ≥ target"
+    },
+    {
+      "id": "monthsToFire-withdrawal",
+      "function": "monthsToFire",
+      "input": {
+        "fire": {
+          "wealth": 150000,
+          "annualSavings": 15000,
+          "realReturn": 0.04,
+          "target": 873743.9930100479
+        },
+        "withdrawals": [
+          [
+            12,
+            20000
+          ]
+        ]
+      },
+      "expected": 275,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "monthsToFire-already",
+      "function": "monthsToFire",
+      "input": {
+        "fire": {
+          "wealth": 900000,
+          "annualSavings": 15000,
+          "realReturn": 0.04,
+          "target": 873743.9930100479
+        },
+        "withdrawals": []
+      },
+      "expected": 0,
+      "tolerance": 0,
+      "notes": ""
+    },
+    {
+      "id": "monthsToFire-never",
+      "function": "monthsToFire",
+      "input": {
+        "fire": {
+          "wealth": 150000,
+          "annualSavings": 0,
+          "realReturn": 0,
+          "target": 873743.9930100479
+        },
+        "withdrawals": []
+      },
+      "expected": null,
+      "tolerance": 0,
+      "notes": "> 600 months → null"
+    },
+    {
+      "id": "buildGoalsPlan-capacity1000",
+      "function": "buildGoalsPlan",
+      "input": {
+        "goals": [
+          {
+            "id": "e",
+            "kind": "emergenza",
+            "target": 12000,
+            "targetDate": null,
+            "monthly": 300,
+            "current": 9000,
+            "achieved": false
+          },
+          {
+            "id": "v",
+            "kind": "viaggio",
+            "target": 3000,
+            "targetDate": "2027-06-01",
+            "monthly": 400,
+            "current": 500,
+            "achieved": false
+          },
+          {
+            "id": "c",
+            "kind": "casa",
+            "target": 40000,
+            "targetDate": "2028-01-01",
+            "monthly": 800,
+            "current": 5000,
+            "achieved": false
+          },
+          {
+            "id": "a",
+            "kind": "acquisto",
+            "target": 1000,
+            "targetDate": null,
+            "monthly": 100,
+            "current": 1000,
+            "achieved": false
+          }
+        ],
+        "capacity": 1000,
+        "today": "2026-10-18",
+        "fire": {
+          "wealth": 150000,
+          "annualSavings": 15000,
+          "realReturn": 0.04,
+          "target": 873743.9930100479
+        }
+      },
+      "expected": {
+        "capacity": 1000,
+        "requested": 1500,
+        "allocated": 1000,
+        "gap": 500,
+        "rows": [
+          {
+            "id": "e",
+            "current": 9000,
+            "progress": 0.75,
+            "remaining": 3000,
+            "fireShiftMonths": 0,
+            "funded": 300,
+            "required": null,
+            "etaMonth": "2027-08",
+            "monthsToGo": 10,
+            "status": "senza_data"
+          },
+          {
+            "id": "v",
+            "current": 500,
+            "progress": 0.16666666666666666,
+            "remaining": 2500,
+            "fireShiftMonths": 2,
+            "funded": 400,
+            "required": 312.5,
+            "etaMonth": "2027-05",
+            "monthsToGo": 7,
+            "status": "in_linea"
+          },
+          {
+            "id": "c",
+            "current": 5000,
+            "progress": 0.125,
+            "remaining": 35000,
+            "fireShiftMonths": 16,
+            "funded": 300,
+            "required": 2333.3333333333335,
+            "etaMonth": "2036-07",
+            "monthsToGo": 117,
+            "status": "in_ritardo"
+          },
+          {
+            "id": "a",
+            "current": 1000,
+            "progress": 1,
+            "remaining": 0,
+            "fireShiftMonths": null,
+            "funded": 0,
+            "required": null,
+            "etaMonth": null,
+            "monthsToGo": null,
+            "status": "raggiunto"
+          }
+        ],
+        "fire": {
+          "baseMonths": 263,
+          "withGoalsMonths": 281
+        }
+      },
+      "tolerance": 1e-9,
+      "notes": "priority order: e gets 300, v 400, c only 300 of 800 → gap 500; a already reached"
+    },
+    {
+      "id": "buildGoalsPlan-noCapacity",
+      "function": "buildGoalsPlan",
+      "input": {
+        "goals": [
+          {
+            "id": "e",
+            "kind": "emergenza",
+            "target": 12000,
+            "targetDate": null,
+            "monthly": 300,
+            "current": 9000,
+            "achieved": false
+          },
+          {
+            "id": "v",
+            "kind": "viaggio",
+            "target": 3000,
+            "targetDate": "2027-06-01",
+            "monthly": 400,
+            "current": 500,
+            "achieved": false
+          },
+          {
+            "id": "c",
+            "kind": "casa",
+            "target": 40000,
+            "targetDate": "2028-01-01",
+            "monthly": 800,
+            "current": 5000,
+            "achieved": false
+          },
+          {
+            "id": "a",
+            "kind": "acquisto",
+            "target": 1000,
+            "targetDate": null,
+            "monthly": 100,
+            "current": 1000,
+            "achieved": false
+          }
+        ],
+        "capacity": null,
+        "today": "2026-10-18",
+        "fire": null
+      },
+      "expected": {
+        "capacity": null,
+        "requested": 1500,
+        "allocated": 1500,
+        "gap": 0,
+        "rows": [
+          {
+            "id": "e",
+            "current": 9000,
+            "progress": 0.75,
+            "remaining": 3000,
+            "fireShiftMonths": null,
+            "funded": 300,
+            "required": null,
+            "etaMonth": "2027-08",
+            "monthsToGo": 10,
+            "status": "senza_data"
+          },
+          {
+            "id": "v",
+            "current": 500,
+            "progress": 0.16666666666666666,
+            "remaining": 2500,
+            "fireShiftMonths": null,
+            "funded": 400,
+            "required": 312.5,
+            "etaMonth": "2027-05",
+            "monthsToGo": 7,
+            "status": "in_linea"
+          },
+          {
+            "id": "c",
+            "current": 5000,
+            "progress": 0.125,
+            "remaining": 35000,
+            "fireShiftMonths": null,
+            "funded": 800,
+            "required": 2333.3333333333335,
+            "etaMonth": "2030-06",
+            "monthsToGo": 44,
+            "status": "in_ritardo"
+          },
+          {
+            "id": "a",
+            "current": 1000,
+            "progress": 1,
+            "remaining": 0,
+            "fireShiftMonths": null,
+            "funded": 0,
+            "required": null,
+            "etaMonth": null,
+            "monthsToGo": null,
+            "status": "raggiunto"
+          }
+        ],
+        "fire": null
+      },
+      "tolerance": 1e-9,
+      "notes": "capacity null = unlimited; gap 0"
+    },
+    {
+      "id": "buildGoalsPlan-zeroCapacity",
+      "function": "buildGoalsPlan",
+      "input": {
+        "goals": [
+          {
+            "id": "e",
+            "kind": "emergenza",
+            "target": 12000,
+            "targetDate": null,
+            "monthly": 300,
+            "current": 9000,
+            "achieved": false
+          },
+          {
+            "id": "v",
+            "kind": "viaggio",
+            "target": 3000,
+            "targetDate": "2027-06-01",
+            "monthly": 400,
+            "current": 500,
+            "achieved": false
+          }
+        ],
+        "capacity": -200,
+        "today": "2026-10-18",
+        "fire": {
+          "wealth": 150000,
+          "annualSavings": 15000,
+          "realReturn": 0.04,
+          "target": 873743.9930100479
+        }
+      },
+      "expected": {
+        "capacity": -200,
+        "requested": 700,
+        "allocated": 0,
+        "gap": 700,
+        "rows": [
+          {
+            "id": "e",
+            "current": 9000,
+            "progress": 0.75,
+            "remaining": 3000,
+            "fireShiftMonths": 0,
+            "funded": 0,
+            "required": null,
+            "etaMonth": null,
+            "monthsToGo": null,
+            "status": "fermo"
+          },
+          {
+            "id": "v",
+            "current": 500,
+            "progress": 0.16666666666666666,
+            "remaining": 2500,
+            "fireShiftMonths": null,
+            "funded": 0,
+            "required": 312.5,
+            "etaMonth": null,
+            "monthsToGo": null,
+            "status": "fermo"
+          }
+        ],
+        "fire": {
+          "baseMonths": 263,
+          "withGoalsMonths": 263
+        }
+      },
+      "tolerance": 1e-9,
+      "notes": "negative capacity treated as 0 → all 'fermo'"
+    },
+    {
+      "id": "buildGoalsView",
+      "function": "buildGoalsView",
+      "input": "see input in notes",
+      "expected": {
+        "currency": "EUR",
+        "todayKey": "2026-10-18",
+        "capacity": 1250,
+        "requested": 700,
+        "allocated": 700,
+        "gap": 0,
+        "goals": [
+          {
+            "id": "g1",
+            "current": 8000,
+            "progress": 0.6666666666666666,
+            "remaining": 4000,
+            "fireShiftMonths": 0,
+            "funded": 300,
+            "required": null,
+            "etaMonth": "2027-12",
+            "monthsToGo": 14,
+            "status": "senza_data",
+            "name": "Emergenza",
+            "kind": "emergenza",
+            "target": 12000,
+            "targetDate": null,
+            "monthly": 300,
+            "priority": 0,
+            "achievedAt": null,
+            "createdAt": "2026-08-01T00:00:00Z",
+            "sources": [
+              {
+                "id": "s1",
+                "kind": "account",
+                "refId": "acc1",
+                "name": "Conto",
+                "amount": 8000,
+                "counted": 8000,
+                "tax": 0,
+                "total": 10000,
+                "short": false
+              }
+            ]
+          },
+          {
+            "id": "g2",
+            "current": 2948,
+            "progress": 0.9826666666666667,
+            "remaining": 52,
+            "fireShiftMonths": 2,
+            "funded": 400,
+            "required": 6.5,
+            "etaMonth": "2026-11",
+            "monthsToGo": 1,
+            "status": "in_linea",
+            "name": "Viaggio",
+            "kind": "viaggio",
+            "target": 3000,
+            "targetDate": "2027-06-01",
+            "monthly": 400,
+            "priority": 1,
+            "achievedAt": null,
+            "createdAt": "2026-09-01T00:00:00Z",
+            "sources": [
+              {
+                "id": "s2",
+                "kind": "account",
+                "refId": "acc1",
+                "name": "Conto",
+                "amount": 3000,
+                "counted": 2000,
+                "tax": 0,
+                "total": 10000,
+                "short": true
+              },
+              {
+                "id": "s3",
+                "kind": "instrument",
+                "refId": "etf",
+                "name": "ETF World",
+                "amount": 1000,
+                "counted": 948,
+                "tax": 52,
+                "total": 50000,
+                "short": false
+              }
+            ]
+          }
+        ],
+        "fire": {
+          "target": 873743.9930100479,
+          "wealth": 150000,
+          "progress": 0.17167500000000002,
+          "baseYear": 2048,
+          "withGoalsYear": 2048
+        },
+        "sources": [
+          {
+            "kind": "account",
+            "id": "acc1",
+            "name": "Conto",
+            "total": 10000,
+            "free": 0,
+            "taxPerEuro": 0
+          },
+          {
+            "kind": "instrument",
+            "id": "etf",
+            "name": "ETF World",
+            "total": 50000,
+            "free": 49000,
+            "taxPerEuro": 0.052000000000000005
+          }
+        ],
+        "essentialMonthly": 1500,
+        "debtsTotal": 0
+      },
+      "tolerance": 1e-9,
+      "notes": "Inputs: goals g1 (prio0, emergenza 12000, monthly 300, source acc1 8000), g2 (prio1, viaggio 3000 by 2027-06, monthly 400, sources acc1 3000 + etf 1000); account acc1 balance 10000; etf value 50000 gain 10000 rate 0.26; capacity 1250; fire as monthsToFire-base. acc1 is over-assigned → g2 gets 2000 (short=true). ETF tax per euro = 10000/50000×0.26 = 0.052 → tax 52, counted 948."
+    },
+    {
+      "id": "emergencyTarget",
+      "function": "emergencyTarget",
+      "input": {
+        "essentialMonthly": 1537,
+        "months": 6
+      },
+      "expected": 9200,
+      "tolerance": 0,
+      "notes": "round to hundreds"
+    },
+    {
+      "id": "requiredMonthly",
+      "function": "requiredMonthly",
+      "input": {
+        "draft": {
+          "target": 3000,
+          "targetMonth": "2027-06",
+          "sources": {
+            "account:a": 500
+          }
+        },
+        "today": "2026-10-18"
+      },
+      "expected": 313,
+      "tolerance": 0,
+      "notes": "ceil(2500 / 8)"
+    }
+  ]
+}

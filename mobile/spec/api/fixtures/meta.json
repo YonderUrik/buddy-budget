@@ -1,0 +1,934 @@
+{
+  "language": "it",
+  "server": {
+    "version": "0.78.0",
+    "commit": "96b7d92ec091a7c588649d093ce087e979708598",
+    "builtAt": "2026-10-18T14:38:45.612Z"
+  },
+  "legal": {
+    "version": "2026-10-12",
+    "language": "it",
+    "specificClauseSections": [
+      "Responsabilità",
+      "Sospensione e chiusura",
+      "Modifiche ai termini",
+      "Legge applicabile, foro e contatti"
+    ],
+    "documents": [
+      {
+        "id": "privacy",
+        "label": "Privacy",
+        "url": "https://buddybudget.io/privacy"
+      },
+      {
+        "id": "termini",
+        "label": "Termini",
+        "url": "https://buddybudget.io/termini"
+      },
+      {
+        "id": "cookie",
+        "label": "Cookie",
+        "url": "https://buddybudget.io/cookie"
+      }
+    ],
+    "privacyEmail": "privacy@buddybudget.io"
+  },
+  "languages": [
+    {
+      "id": "it",
+      "name": "Italiano",
+      "locale": "it-IT"
+    },
+    {
+      "id": "en",
+      "name": "English",
+      "locale": "en-GB"
+    },
+    {
+      "id": "de",
+      "name": "Deutsch",
+      "locale": "de-DE"
+    }
+  ],
+  "countries": [
+    {
+      "id": "IT",
+      "languages": [
+        "it",
+        "en"
+      ],
+      "features": {
+        "taxes": true,
+        "pension": true,
+        "retirement": true,
+        "incomeForecasts": true,
+        "inflation": true
+      },
+      "sections": {
+        "pension": true,
+        "analytics": true,
+        "goals": true,
+        "investmentTaxes": true,
+        "investmentIncome": true,
+        "fire": true,
+        "financialPlanning": false
+      },
+      "planning": {
+        "tax": false,
+        "income": false,
+        "pension": false,
+        "retirement": false,
+        "simulations": false
+      }
+    },
+    {
+      "id": "DE",
+      "languages": [
+        "en",
+        "de"
+      ],
+      "features": {
+        "taxes": false,
+        "pension": false,
+        "retirement": false,
+        "incomeForecasts": false,
+        "inflation": true
+      },
+      "sections": {
+        "pension": false,
+        "analytics": false,
+        "goals": false,
+        "investmentTaxes": true,
+        "investmentIncome": true,
+        "fire": false,
+        "financialPlanning": true
+      },
+      "planning": {
+        "tax": true,
+        "income": true,
+        "pension": false,
+        "retirement": false,
+        "simulations": false
+      }
+    }
+  ],
+  "currencies": [
+    {
+      "value": "EUR",
+      "label": "Euro",
+      "symbol": "€"
+    },
+    {
+      "value": "USD",
+      "label": "Dollaro USA",
+      "symbol": "$"
+    },
+    {
+      "value": "GBP",
+      "label": "Sterlina britannica",
+      "symbol": "£"
+    },
+    {
+      "value": "CHF",
+      "label": "Franco svizzero",
+      "symbol": "CHF"
+    }
+  ],
+  "defaultCurrency": "EUR",
+  "homePages": [
+    {
+      "path": "/panoramica",
+      "label": "Panoramica"
+    },
+    {
+      "path": "/liquidita",
+      "label": "Liquidità"
+    },
+    {
+      "path": "/liquidita/conti",
+      "label": "Conti"
+    },
+    {
+      "path": "/liquidita/analisi",
+      "label": "Analisi dei movimenti"
+    },
+    {
+      "path": "/investimenti",
+      "label": "Investimenti"
+    }
+  ],
+  "defaultHomePage": "/panoramica",
+  "notifications": {
+    "defaults": {
+      "digestEnabled": false,
+      "digestFrequency": "mensile",
+      "budgetAlertsEnabled": false,
+      "deadlineAlertsEnabled": false,
+      "goalAlertsEnabled": false
+    },
+    "kinds": [
+      {
+        "id": "digest",
+        "label": "Riepilogo periodico",
+        "hint": "Entrate, uscite e investimenti del periodo appena concluso, in poche righe."
+      },
+      {
+        "id": "budget",
+        "label": "Avvisi sul budget",
+        "hint": "Una email quando una categoria arriva all'80% del budget mensile e quando lo supera."
+      },
+      {
+        "id": "deadlines",
+        "label": "Avvisi sulle scadenze",
+        "hint": "Una email quando manca poco alla rata di un finanziamento, o quando è scaduta."
+      },
+      {
+        "id": "goals",
+        "label": "Promemoria sugli obiettivi",
+        "hint": "A inizio mese a che punto sono i tuoi obiettivi, e una email quando ne raggiungi uno o quando la data si avvicina."
+      }
+    ],
+    "digestFrequencies": [
+      "settimanale",
+      "mensile"
+    ],
+    "budgetAlertThresholds": [
+      80,
+      100
+    ],
+    "deadlineLeadDays": 3,
+    "alertsMaxPerWeek": 3
+  },
+  "limits": {
+    "transactionsPageDefault": 50,
+    "transactionsPageMax": 200,
+    "goalsMax": 20,
+    "goalSourcesMax": 12,
+    "pensionFundsMax": 10,
+    "pensionSnapshotsPerFundMax": 5000,
+    "investmentTargetsMax": 30,
+    "priceAlertsPerInstrumentMax": 10,
+    "debtCostsMax": 10,
+    "bankSyncsPerDay": 4,
+    "bankSyncMinGapMinutes": 240,
+    "personalImportMaxBytes": 26214400
+  },
+  "features": [
+    {
+      "id": "csv-personali-ai",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "CSV personali con AI",
+      "description": "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background e ricordiamo istituzione e colonne del formato. Se il lettore salvato fallisce, riproviamo con l’AI autorizzata e inviamo un report tecnico al supporto. Ti avvisiamo per email a import finito.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "primi-passi-e-dati-d-esempio",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Primi passi e dati d'esempio",
+      "description": "Chi parte senza banca trova in Panoramica quattro passi che si spuntano da soli (conto, movimenti, investimento, obiettivo) e può provare l'app con dati d'esempio, azzerabili con un tocco.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "demo-senza-account",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Demo senza account",
+      "description": "Apri l'app con i dati di un account d'esempio, per l'Italia o la Germania, in italiano, inglese o tedesco, senza registrarti: guardi tutto, non si salva niente.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "collegamento-alla-banca",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Collegamento alla banca",
+      "description": "Importa saldi e movimenti di una banca con l'Open Banking, in sola lettura, ogni 12 ore o quando vuoi. Posti limitati durante la beta.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "conti-manuali",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Conti manuali",
+      "description": "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "categorizza-con-ai",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Categorizza con l'AI",
+      "description": "Se lo attivi, l'assistente propone una categoria per ogni esercente. Le proposte sicure almeno al 90% si applicano da sole e le controlli in «Messe dall'app»; le altre le confermi con un gesto, una carta alla volta. Usa solo il nome pulito dell'esercente e le tue istruzioni personali, modificabili in Impostazioni.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "categorie-pronte",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Categorie pronte da scegliere",
+      "description": "All'iscrizione trovi 24 categorie già divise per tipo di spesa: le confermi con un tocco oppure ne togli, rinomini o aggiungi.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "categorizzazione-automatica",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Categorizzazione automatica",
+      "description": "Le tue regole e le categorie sicure almeno al 90% si applicano da sole, e una regola nuova vale subito. In «Messe dall'app» vedi cosa è stato messo, con il logo dell'esercente, le date e da dove viene (regola, tue scelte o AI), e lo correggi con un tocco. «Ricategorizza» rifà le categorie messe da sole con le regole di oggi, con l'anteprima e l'annulla.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "quattro-gruppi-di-spesa",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Quattro gruppi di spesa",
+      "description": "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "trasferimenti-tra-conti",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Trasferimenti tra i tuoi conti",
+      "description": "Assegna i giroconti alla categoria dedicata: restano visibili nei movimenti, esclusi dai conteggi di entrate e spese.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "dividi-e-escludi",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Dividi e escludi",
+      "description": "Escludi in tutto o in parte rimborsi, giroconti e spese condivise: scegli Metà, Un terzo o un importo, e vedi subito quanto è tuo.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "budget-per-categoria",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Budget per categoria",
+      "description": "Imposta un budget e guarda quanto ne hai usato.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "analisi-e-cash-flow",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Analisi e cash flow",
+      "description": "Entrate, uscite, netto e risparmio, mese per mese e per categoria.",
+      "status": "live",
+      "appPath": "/liquidita",
+      "available": true
+    },
+    {
+      "id": "abbonamenti",
+      "area": "Liquidità",
+      "areaLabel": "Liquidità",
+      "name": "Abbonamenti",
+      "description": "Trova gli addebiti ricorrenti (streaming, palestra, assicurazioni) e li confermi con un tocco. Vedi il costo al mese e all'anno, il prossimo addebito e gli aumenti di prezzo. Il calcolo parte dai tuoi movimenti, senza AI.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "etf-azioni-btp-fondi-e-crypto",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "ETF, azioni, BTP, fondi e crypto",
+      "description": "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.",
+      "status": "live",
+      "appPath": "/investimenti",
+      "available": true
+    },
+    {
+      "id": "operazioni-e-import-csv",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Operazioni e import CSV",
+      "description": "Registra acquisti e vendite o importa i file del tuo broker: Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance o un altro CSV. Più broker convivono nello stesso portafoglio e gli import si gestiscono uno per uno. Se autorizzi il recupero AI, gli errori di lettura avviano automaticamente una nuova analisi, mantenendo i controlli finanziari.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "rendimenti-veri",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Rendimenti veri",
+      "description": "Rendimenti TWR, MWR e al netto dell'inflazione del paese del prodotto (Italia o Germania, indice Eurostat), con spiegazioni su hover. I numeri seguono la data del grafico; trascina per selezionare un intervallo, anche per rischio e rendimenti mensili. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "confronto-con-un-indice",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Confronto con un indice",
+      "description": "«Con gli stessi versamenti oggi avresti X invece di Y». Scelte rapide per S&P 500, MSCI World, FTSE All-World e Nasdaq-100 tramite ETF ad accumulazione, oppure cerca un altro strumento.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "rischio",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Rischio",
+      "description": "Un livello di rischio chiaro (da basso a molto alto), poi quanto oscilla, la perdita peggiore, se il rischio è stato ripagato e quanto segue l'indice.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "diversificazione",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Diversificazione",
+      "description": "Per area e settore guardando dentro gli ETF.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "allocazione-obiettivo",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Allocazione obiettivo",
+      "description": "Con il suggerimento di dove mettere il prossimo versamento.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "proventi",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Dividendi",
+      "description": "Proventi incassati e previsti nei prossimi 12 mesi, mese per mese e per strumento, con lordo, ritenute e netto.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "pianificazione-germania",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Pianificazione finanziaria Germania",
+      "description": "Localizzazione essenziale in inglese e tedesco: portafoglio, proventi e stime fiscali 2026 in EUR con limiti espliciti. Pensione, AVD, pensionamento e simulatori avanzati sono nascosti in attesa di revisione.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "tasse-italiane",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Tasse italiane",
+      "description": "Plus e minus, zaino a 4 anni, titoli di Stato, crypto e bollo.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "simulatore-prima-di-vendere",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Simulatore «Prima di vendere»",
+      "description": "Ricalcola le tasse con la vendita in più, prima di farla.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "titoli-watchlist-e-avvisi",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Titoli, watchlist e avvisi",
+      "description": "Pagina per titolo, che si apre dalle posizioni o con la ricerca, con grafico dei tuoi acquisti, rischio, watchlist e avvisi di prezzo via email.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "indicatori-fondamentali",
+      "area": "Investimenti",
+      "areaLabel": "Investimenti",
+      "name": "Indicatori fondamentali",
+      "description": "Per ogni azione P/E, P/S, P/B, ricavi e utili per azione, margini, ROE e debiti calcolati dai bilanci, con la forbice degli ultimi anni e il calcolo sotto ogni numero. Per gli ETF composizione, settori, costo del TER e titoli che hai già altrove.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "finanziamenti-nuovi-o-in-corso",
+      "area": "Debiti",
+      "areaLabel": "Debiti",
+      "name": "Finanziamenti nuovi o in corso",
+      "description": "Dall'origine o con la fotografia di oggi, con piano di ammortamento.",
+      "status": "live",
+      "appPath": "/debiti",
+      "available": true
+    },
+    {
+      "id": "calcolatore-della-variabile-mancante",
+      "area": "Debiti",
+      "areaLabel": "Debiti",
+      "name": "Calcolatore della variabile mancante",
+      "description": "Dai capitale, rata, numero di rate o tasso ricava quello che manca, con il TAEG.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "estinzione-anticipata",
+      "area": "Debiti",
+      "areaLabel": "Debiti",
+      "name": "Estinzione anticipata",
+      "description": "Rata o durata, con penale, interessi risparmiati ed extra mensile.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "simulatore-dei-debiti",
+      "area": "Debiti",
+      "areaLabel": "Debiti",
+      "name": "Simulatore dei debiti",
+      "description": "Dentro ogni finanziamento: quanto risparmi versando di più, estinguendo una parte o passando a un'altra banca. In panoramica il percorso per uscire prima dai debiti.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "patrimonio-netto-nel-tempo",
+      "area": "Patrimonio",
+      "areaLabel": "Patrimonio",
+      "name": "Patrimonio netto nel tempo",
+      "description": "Liquidità, investimenti e previdenza (debiti già sottratti), con lo storico ricostruito. Dalla legenda mostri o nascondi le voci e il totale si aggiorna.",
+      "status": "live",
+      "appPath": "/panoramica",
+      "available": true
+    },
+    {
+      "id": "pensione",
+      "area": "Patrimonio",
+      "areaLabel": "Patrimonio",
+      "name": "Pensione",
+      "description": "Fondo pensione e TFR: rendimento reale, quanto ritireresti oggi al netto delle tasse e una stima di quanto varrà. Lo storico lo inserisci a mano o lo importi da CSV o Excel.",
+      "status": "new",
+      "appPath": "/pensione",
+      "available": true
+    },
+    {
+      "id": "analitiche",
+      "area": "Patrimonio",
+      "areaLabel": "Patrimonio",
+      "name": "Analitiche",
+      "description": "L'anno in cui puoi smettere di lavorare, con quattro cursori «e se…» su risparmio, spesa, rendimento e prelievo; i primi tre partono dai tuoi dati degli ultimi 12 o 24 mesi, o dei mesi che scegli. Per chi vuole di più: numero FIRE al netto delle tasse, simulazioni Monte Carlo e regole di prelievo.",
+      "status": "new",
+      "appPath": "/analitiche",
+      "available": true
+    },
+    {
+      "id": "obiettivi-di-risparmio",
+      "area": "Patrimonio",
+      "areaLabel": "Patrimonio",
+      "name": "Obiettivi di risparmio",
+      "description": "Un viaggio, l'anticipo di casa, un fondo per gli imprevisti: scegli quanto ti serve, entro quando e da quali conti o investimenti arrivano i soldi. Il risparmio del mese va agli obiettivi nell'ordine che scegli; vedi quando arrivi a ciascuno, se il risparmio basta per tutto e di quanto ognuno sposta l'anno in cui puoi smettere di lavorare. Promemoria via email a inizio mese, se li vuoi.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "tuoi-dati-tuo-controllo",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Tuoi dati, tuo controllo",
+      "description": "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.",
+      "status": "live",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "email-riepilogo-e-avvisi",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Email di riepilogo e avvisi",
+      "description": "Se vuoi, ricevi il riepilogo del mese o della settimana, con speso, entrato, guadagno degli investimenti e dividendi in poche righe, e un avviso quando un budget è quasi finito o una rata sta per scadere. Le scegli già al primo accesso, partono spente e ognuna si disattiva con un clic.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "piu-lingue-e-valute",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Più lingue e valute",
+      "description": "Prodotto Italia in italiano e inglese; prodotto Germania in tedesco e inglese. La lingua del browser viene proposta da sola, e si cambia quando vuoi. Valute selezionabili. Per la Germania: portafoglio e proventi, stime fiscali 2026 parziali con limiti espliciti; pensione e simulatori avanzati sospesi in attesa di revisione. I casi non supportati sono indicati, senza applicare regole italiane.",
+      "status": "new",
+      "appPath": null,
+      "available": true
+    },
+    {
+      "id": "notifiche-push",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Notifiche push",
+      "description": "Avvisi sul telefono, per esempio per i prezzi.",
+      "status": "soon",
+      "appPath": null,
+      "available": true
+    }
+  ],
+  "profile": {
+    "productCountry": "IT",
+    "language": "it",
+    "capabilities": {
+      "id": "IT",
+      "languages": [
+        "it",
+        "en"
+      ],
+      "features": {
+        "taxes": true,
+        "pension": true,
+        "retirement": true,
+        "incomeForecasts": true,
+        "inflation": true
+      },
+      "sections": {
+        "pension": true,
+        "analytics": true,
+        "goals": true,
+        "investmentTaxes": true,
+        "investmentIncome": true,
+        "fire": true,
+        "financialPlanning": false
+      },
+      "planning": {
+        "tax": false,
+        "income": false,
+        "pension": false,
+        "retirement": false,
+        "simulations": false
+      }
+    },
+    "categoryProposal": [
+      {
+        "key": "affitto",
+        "name": "Affitto & Mutuo",
+        "type": "dovuta",
+        "icon": "home",
+        "color": "slate",
+        "description": "Affitto, rata del mutuo, condominio",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "bollette",
+        "name": "Bollette & Telefono",
+        "type": "dovuta",
+        "icon": "zap",
+        "color": "yellow",
+        "description": "Luce, gas, acqua, internet, cellulare",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "spesa",
+        "name": "Spesa",
+        "type": "dovuta",
+        "icon": "shopping-cart",
+        "color": "green",
+        "description": "Supermercato, alimentari, casalinghi",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "trasporti",
+        "name": "Trasporti",
+        "type": "dovuta",
+        "icon": "car",
+        "color": "blue",
+        "description": "Carburante, mezzi pubblici, pedaggi, parcheggi, officina",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "salute",
+        "name": "Salute",
+        "type": "dovuta",
+        "icon": "pill",
+        "color": "rose",
+        "description": "Farmacia, visite, dentista, analisi",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "assicurazioni",
+        "name": "Assicurazioni",
+        "type": "dovuta",
+        "icon": "shield",
+        "color": "indigo",
+        "description": "Auto, casa, vita, salute",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "rate",
+        "name": "Rate & Prestiti",
+        "type": "dovuta",
+        "icon": "credit-card",
+        "color": "red",
+        "description": "Finanziamenti, prestiti, acquisti a rate",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "ristoranti",
+        "name": "Ristoranti & Bar",
+        "type": "voluta",
+        "icon": "utensils",
+        "color": "orange",
+        "description": "Pranzi e cene fuori, bar, caffè, consegne a domicilio",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "abbonamenti",
+        "name": "Abbonamenti",
+        "type": "voluta",
+        "icon": "tv",
+        "color": "purple",
+        "description": "Streaming, musica, app, software, giornali",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "svago",
+        "name": "Svago",
+        "type": "voluta",
+        "icon": "gamepad-2",
+        "color": "teal",
+        "description": "Cinema, concerti, hobby, giochi, libri",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "benessere",
+        "name": "Sport & Benessere",
+        "type": "voluta",
+        "icon": "dumbbell",
+        "color": "lime",
+        "description": "Palestra, sport, parrucchiere, estetista",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "shopping",
+        "name": "Shopping",
+        "type": "voluta",
+        "icon": "shopping-bag",
+        "color": "pink",
+        "description": "Vestiti, scarpe, elettronica, acquisti online",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "viaggi",
+        "name": "Viaggi",
+        "type": "voluta",
+        "icon": "plane",
+        "color": "cyan",
+        "description": "Voli, treni per le vacanze, hotel, case vacanza",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "contanti",
+        "name": "Contanti",
+        "type": "voluta",
+        "icon": "wallet",
+        "color": "emerald",
+        "description": "Prelievi al bancomat",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "risparmio",
+        "name": "Risparmio",
+        "type": "futuro",
+        "icon": "piggy-bank",
+        "color": "green",
+        "description": "Versamenti sul conto deposito o sul salvadanaio",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "investimenti",
+        "name": "Investimenti",
+        "type": "futuro",
+        "icon": "coins",
+        "color": "teal",
+        "description": "Versamenti al broker, piani di accumulo",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "tasse",
+        "name": "Tasse & Bolli",
+        "type": "saltuaria",
+        "icon": "receipt",
+        "color": "slate",
+        "description": "F24, IMU, TARI, bollo auto, canone",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "casa",
+        "name": "Casa & Arredamento",
+        "type": "saltuaria",
+        "icon": "sofa",
+        "color": "amber",
+        "description": "Mobili, elettrodomestici, lavori in casa",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "regali",
+        "name": "Regali & Donazioni",
+        "type": "saltuaria",
+        "icon": "gift",
+        "color": "pink",
+        "description": "Regali, ricorrenze, beneficenza",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "trasferimenti",
+        "name": "Trasferimenti tra i miei conti",
+        "type": "trasferimento",
+        "icon": "landmark",
+        "color": "slate",
+        "description": "Giroconti fra conti di tua proprietà: esclusi da entrate e spese",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "stipendio",
+        "name": "Stipendio",
+        "type": "entrata",
+        "icon": "banknote",
+        "color": "emerald",
+        "description": "Stipendio, pensione, tredicesima",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "interessi",
+        "name": "Interessi & Dividendi",
+        "type": "entrata",
+        "icon": "trending-up",
+        "color": "teal",
+        "description": "Interessi del conto deposito, dividendi e cedole",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "rimborsi",
+        "name": "Rimborsi",
+        "type": "entrata",
+        "icon": "calculator",
+        "color": "cyan",
+        "description": "Resi, rimborsi del 730, soldi restituiti da amici",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "altre-entrate",
+        "name": "Altre entrate",
+        "type": "entrata",
+        "icon": "package",
+        "color": "slate",
+        "description": "Tutto ciò che non rientra nelle altre entrate",
+        "enabled": true,
+        "optional": false
+      },
+      {
+        "key": "figli",
+        "name": "Figli & Scuola",
+        "type": "dovuta",
+        "icon": "graduation-cap",
+        "color": "violet",
+        "description": "Scuola, libri, mensa, attività dei figli",
+        "enabled": false,
+        "optional": true
+      },
+      {
+        "key": "animali",
+        "name": "Animali",
+        "type": "dovuta",
+        "icon": "paw-print",
+        "color": "amber",
+        "description": "Cibo, veterinario, accessori",
+        "enabled": false,
+        "optional": true
+      },
+      {
+        "key": "pensione",
+        "name": "Pensione integrativa",
+        "type": "futuro",
+        "icon": "landmark",
+        "color": "indigo",
+        "description": "Versamenti al fondo pensione",
+        "enabled": false,
+        "optional": true
+      },
+      {
+        "key": "imprevisti",
+        "name": "Imprevisti",
+        "type": "saltuaria",
+        "icon": "alert-triangle",
+        "color": "yellow",
+        "description": "Spese che non avevi previsto",
+        "enabled": false,
+        "optional": true
+      },
+      {
+        "key": "lavoro-autonomo",
+        "name": "Lavoro autonomo",
+        "type": "entrata",
+        "icon": "briefcase",
+        "color": "blue",
+        "description": "Fatture, prestazioni occasionali",
+        "enabled": false,
+        "optional": true
+      }
+    ]
+  }
+}

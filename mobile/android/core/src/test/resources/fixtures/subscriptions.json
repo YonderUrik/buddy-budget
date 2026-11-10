@@ -1,0 +1,762 @@
+{
+ "items": [
+  {
+   "key": "giornale",
+   "id": null,
+   "name": "Giornale online",
+   "origin": "rilevato",
+   "decision": "da-confermare",
+   "activity": "fermo",
+   "cadence": "mensile",
+   "amount": 7.99,
+   "monthly": 7.99,
+   "lastDate": "2026-05-12",
+   "nextDate": "2026-06-12",
+   "overdueDays": 128,
+   "priceChange": null,
+   "charges": [
+    {
+     "id": "243b123a-8fa3-4acc-91c4-33e24d899ee4",
+     "date": "2025-10-12",
+     "amount": 7.99
+    },
+    {
+     "id": "e480ab90-7aa1-42f6-971d-542ec07f54a4",
+     "date": "2025-11-12",
+     "amount": 7.99
+    },
+    {
+     "id": "9a257091-8197-403f-bd08-6025a354f245",
+     "date": "2025-12-12",
+     "amount": 7.99
+    },
+    {
+     "id": "ad7b53d9-db75-417f-9ccd-560515e0665f",
+     "date": "2026-01-12",
+     "amount": 7.99
+    },
+    {
+     "id": "66a886dd-d8a5-4364-ac28-d46056d4e1c6",
+     "date": "2026-02-12",
+     "amount": 7.99
+    },
+    {
+     "id": "d20c0e68-a5dd-46d4-b751-0b6f79c2c791",
+     "date": "2026-03-12",
+     "amount": 7.99
+    },
+    {
+     "id": "47aef022-198b-45ff-ad10-d652f8206c2f",
+     "date": "2026-04-12",
+     "amount": 7.99
+    },
+    {
+     "id": "d35918b5-53e8-4bf8-98df-5af5291f86ba",
+     "date": "2026-05-12",
+     "amount": 7.99
+    }
+   ],
+   "reasons": [
+    {
+     "kind": "count",
+     "count": 8
+    },
+    {
+     "kind": "cadence",
+     "cadence": "mensile",
+     "skipped": false
+    },
+    {
+     "kind": "amount",
+     "mode": "costante"
+    },
+    {
+     "kind": "day",
+     "day": 12
+    }
+   ],
+   "confidence": 1,
+   "categoryId": "7e8dbb8d-70dc-42b2-b49f-3fd18e1f7346",
+   "logoPath": "/api/merchant-logos/name/giornale%20online?s=77ee6e6e7bdf9edf57b5abfc"
+  },
+  {
+   "key": "musica",
+   "id": "a397a2b4-b7a6-4562-95c4-fc286fd70dd8",
+   "name": "Musica",
+   "origin": "rilevato",
+   "decision": "confermato",
+   "activity": "attivo",
+   "cadence": "mensile",
+   "amount": 10.99,
+   "monthly": 10.99,
+   "lastDate": "2026-09-21",
+   "nextDate": "2026-10-20",
+   "overdueDays": 0,
+   "priceChange": {
+    "from": 9.99,
+    "to": 10.99,
+    "since": "2026-07-20"
+   },
+   "charges": [
+    {
+     "id": "f87f0eee-1f99-4982-8a00-bd49260959a4",
+     "date": "2025-10-20",
+     "amount": 9.99
+    },
+    {
+     "id": "62d6f755-d181-41e1-b3f3-4cb2b1de49c3",
+     "date": "2025-11-20",
+     "amount": 9.99
+    },
+    {
+     "id": "33e1bdc5-4bec-49e6-bfa1-76bb03d1a128",
+     "date": "2025-12-19",
+     "amount": 9.99
+    },
+    {
+     "id": "274f2d6d-360f-4854-a09b-554d37b95ede",
+     "date": "2026-01-19",
+     "amount": 9.99
+    },
+    {
+     "id": "77fdebef-ffb1-4952-933f-b4b646238f0f",
+     "date": "2026-02-20",
+     "amount": 9.99
+    },
+    {
+     "id": "40a2cd0e-fa27-4ef0-8888-954d55651f58",
+     "date": "2026-03-19",
+     "amount": 9.99
+    },
+    {
+     "id": "b65be627-add5-421d-ba89-ec49c3a6a232",
+     "date": "2026-04-21",
+     "amount": 9.99
+    },
+    {
+     "id": "15ef32c2-65c1-4ae0-bae6-403dc6d98da4",
+     "date": "2026-05-20",
+     "amount": 9.99
+    },
+    {
+     "id": "4f8911fb-2542-4dc0-8644-daa186dd758d",
+     "date": "2026-06-19",
+     "amount": 9.99
+    },
+    {
+     "id": "f4ee513b-ff85-4bb4-a37b-65c2d8a3ad81",
+     "date": "2026-07-20",
+     "amount": 10.99
+    },
+    {
+     "id": "a8878afa-90f2-4114-9ea9-e1acff5a532d",
+     "date": "2026-08-21",
+     "amount": 10.99
+    },
+    {
+     "id": "d891ad99-7c53-4d5f-93ff-823f6f2a8e9b",
+     "date": "2026-09-21",
+     "amount": 10.99
+    }
+   ],
+   "reasons": [
+    {
+     "kind": "count",
+     "count": 12
+    },
+    {
+     "kind": "cadence",
+     "cadence": "mensile",
+     "skipped": false
+    },
+    {
+     "kind": "price-change",
+     "from": 9.99,
+     "to": 10.99,
+     "since": "2026-07-20"
+    },
+    {
+     "kind": "day",
+     "day": 20
+    }
+   ],
+   "confidence": 0.97,
+   "categoryId": "7e8dbb8d-70dc-42b2-b49f-3fd18e1f7346",
+   "logoPath": "/api/merchant-logos/name/musica?s=8da785abeb16b6e8c5cc788a"
+  },
+  {
+   "key": "archivio cloud",
+   "id": "504a0078-feb5-48e0-a9d1-f25a4b72264c",
+   "name": "Archivio cloud",
+   "origin": "rilevato",
+   "decision": "confermato",
+   "activity": "attivo",
+   "cadence": "mensile",
+   "amount": 2.99,
+   "monthly": 2.99,
+   "lastDate": "2026-10-06",
+   "nextDate": "2026-11-06",
+   "overdueDays": 0,
+   "priceChange": null,
+   "charges": [
+    {
+     "id": "e9f40617-8505-446a-99e0-69038c9d646c",
+     "date": "2025-10-06",
+     "amount": 2.99
+    },
+    {
+     "id": "3efa86f6-e4fc-4553-9e73-db563919144c",
+     "date": "2025-11-06",
+     "amount": 2.99
+    },
+    {
+     "id": "016aeb75-a0ee-457e-9f78-cc13adb2a819",
+     "date": "2025-12-06",
+     "amount": 2.99
+    },
+    {
+     "id": "8065981f-9ce6-4cd1-aef4-4514302b1d14",
+     "date": "2026-01-06",
+     "amount": 2.99
+    },
+    {
+     "id": "8d735576-9bd2-456d-aec4-83764808562b",
+     "date": "2026-02-06",
+     "amount": 2.99
+    },
+    {
+     "id": "43816866-8ea1-4ad3-98d9-42ae68f90312",
+     "date": "2026-03-06",
+     "amount": 2.99
+    },
+    {
+     "id": "3dc1bb12-1654-49cd-acd2-ae6c92f0844f",
+     "date": "2026-04-06",
+     "amount": 2.99
+    },
+    {
+     "id": "8f6a273d-22bc-42e1-a35f-b7795a30dfed",
+     "date": "2026-05-06",
+     "amount": 2.99
+    },
+    {
+     "id": "c499bbf6-260f-46ba-bf26-91fd607a4f18",
+     "date": "2026-06-06",
+     "amount": 2.99
+    },
+    {
+     "id": "e23a9de2-4e98-4ec2-96ff-33776dd24f03",
+     "date": "2026-07-06",
+     "amount": 2.99
+    },
+    {
+     "id": "5a016451-aeac-40c9-b7dc-43d8001562ae",
+     "date": "2026-08-06",
+     "amount": 2.99
+    },
+    {
+     "id": "06ce5950-e815-4f93-bb0c-836a1510b411",
+     "date": "2026-09-06",
+     "amount": 2.99
+    },
+    {
+     "id": "65b8d20d-d854-4ff7-b837-1e9207c8987f",
+     "date": "2026-10-06",
+     "amount": 2.99
+    }
+   ],
+   "reasons": [
+    {
+     "kind": "count",
+     "count": 13
+    },
+    {
+     "kind": "cadence",
+     "cadence": "mensile",
+     "skipped": false
+    },
+    {
+     "kind": "amount",
+     "mode": "costante"
+    },
+    {
+     "kind": "day",
+     "day": 6
+    }
+   ],
+   "confidence": 1,
+   "categoryId": "7e8dbb8d-70dc-42b2-b49f-3fd18e1f7346",
+   "logoPath": "/api/merchant-logos/name/archivio%20cloud?s=30cf0727f33c6f6908b698a9"
+  },
+  {
+   "key": "rata mutuo",
+   "id": "6555a86d-d91d-4367-8b31-1116cef11208",
+   "name": "Rata mutuo",
+   "origin": "rilevato",
+   "decision": "escluso",
+   "activity": "attivo",
+   "cadence": "mensile",
+   "amount": 742.18,
+   "monthly": 742.18,
+   "lastDate": "2026-10-05",
+   "nextDate": "2026-11-06",
+   "overdueDays": 0,
+   "priceChange": null,
+   "charges": [
+    {
+     "id": "ed5e6b2d-36d8-4c64-9b95-23612c06c1ea",
+     "date": "2025-10-05",
+     "amount": 742.18
+    },
+    {
+     "id": "6a6c00cc-e9be-4a54-ad36-df84d387a8b5",
+     "date": "2025-11-05",
+     "amount": 742.18
+    },
+    {
+     "id": "fe2b8fa5-30b9-4c1e-bf06-c7a24b6e37c1",
+     "date": "2025-12-06",
+     "amount": 742.18
+    },
+    {
+     "id": "5df6945d-04c0-4249-98c6-bb60cc3cadb5",
+     "date": "2026-01-06",
+     "amount": 742.18
+    },
+    {
+     "id": "f573e918-929d-42fd-a190-cb701f4bdbba",
+     "date": "2026-02-06",
+     "amount": 742.18
+    },
+    {
+     "id": "cdfdef28-d3c9-47d0-b26c-4e52a07b0221",
+     "date": "2026-03-05",
+     "amount": 742.18
+    },
+    {
+     "id": "698577d1-0db9-4a6e-ac54-c065d8e75302",
+     "date": "2026-04-05",
+     "amount": 742.18
+    },
+    {
+     "id": "2a044e2a-5556-4d34-b996-7ad7224dc143",
+     "date": "2026-05-07",
+     "amount": 742.18
+    },
+    {
+     "id": "50d91d1a-5029-4b9b-8223-596e468ef65b",
+     "date": "2026-06-06",
+     "amount": 742.18
+    },
+    {
+     "id": "7a584bcc-fe3d-4f4d-9a39-65488c0a7589",
+     "date": "2026-07-07",
+     "amount": 742.18
+    },
+    {
+     "id": "eb1213f5-c80b-4a32-97b4-0260f5feb3a1",
+     "date": "2026-08-07",
+     "amount": 742.18
+    },
+    {
+     "id": "6d54e790-d195-4c99-8b7d-6f6a11fc8f1a",
+     "date": "2026-09-07",
+     "amount": 742.18
+    },
+    {
+     "id": "5cb79f5b-71d2-47db-b4ac-3bf4d7e12eaf",
+     "date": "2026-10-05",
+     "amount": 742.18
+    }
+   ],
+   "reasons": [
+    {
+     "kind": "count",
+     "count": 13
+    },
+    {
+     "kind": "cadence",
+     "cadence": "mensile",
+     "skipped": false
+    },
+    {
+     "kind": "amount",
+     "mode": "costante"
+    },
+    {
+     "kind": "day",
+     "day": 6
+    }
+   ],
+   "confidence": 1,
+   "categoryId": "2a56535d-e033-42a1-a075-36def3d72f37",
+   "logoPath": "/api/merchant-logos/name/rata%20mutuo?s=545355d785ada3f53fff9c80"
+  },
+  {
+   "key": "palestra",
+   "id": "fa1d7892-5fc0-4131-a2da-1231e48fe6ca",
+   "name": "Palestra",
+   "origin": "rilevato",
+   "decision": "confermato",
+   "activity": "attivo",
+   "cadence": "mensile",
+   "amount": 39,
+   "monthly": 39,
+   "lastDate": "2026-10-08",
+   "nextDate": "2026-11-08",
+   "overdueDays": 0,
+   "priceChange": null,
+   "charges": [
+    {
+     "id": "ef32f403-2013-44cc-b4c2-4f623d5cc0ef",
+     "date": "2025-10-07",
+     "amount": 39
+    },
+    {
+     "id": "185f1172-7328-4e3e-95ad-853adb2b8fda",
+     "date": "2025-11-08",
+     "amount": 39
+    },
+    {
+     "id": "af16370a-b9da-4987-98dd-c503b71cf5f6",
+     "date": "2025-12-07",
+     "amount": 39
+    },
+    {
+     "id": "af4f7079-e1fd-46e9-9de8-17537ba6ac74",
+     "date": "2026-01-07",
+     "amount": 39
+    },
+    {
+     "id": "534a5051-bd92-4446-9f17-36edced60b8e",
+     "date": "2026-02-09",
+     "amount": 39
+    },
+    {
+     "id": "5f223981-afcc-4003-99a1-de2c4ae63adf",
+     "date": "2026-03-08",
+     "amount": 39
+    },
+    {
+     "id": "851487b4-37d1-4d58-9fbc-f7eb13b24e88",
+     "date": "2026-04-07",
+     "amount": 39
+    },
+    {
+     "id": "5f0da389-15fd-4573-8887-4974b76fdc49",
+     "date": "2026-05-07",
+     "amount": 39
+    },
+    {
+     "id": "cd0f4f7a-634f-441a-a347-5481af6bb415",
+     "date": "2026-06-09",
+     "amount": 39
+    },
+    {
+     "id": "46a7f681-72f0-4a3c-a2d2-58973d95c3c0",
+     "date": "2026-07-09",
+     "amount": 39
+    },
+    {
+     "id": "95d329db-f507-4698-a86a-66710f87a0f2",
+     "date": "2026-08-08",
+     "amount": 39
+    },
+    {
+     "id": "4622a472-dcd5-4ed2-9700-2a9fd011ef20",
+     "date": "2026-09-09",
+     "amount": 39
+    },
+    {
+     "id": "6d3998de-85b8-4ec4-9f51-eb7418259783",
+     "date": "2026-10-08",
+     "amount": 39
+    }
+   ],
+   "reasons": [
+    {
+     "kind": "count",
+     "count": 13
+    },
+    {
+     "kind": "cadence",
+     "cadence": "mensile",
+     "skipped": false
+    },
+    {
+     "kind": "amount",
+     "mode": "costante"
+    },
+    {
+     "kind": "day",
+     "day": 8
+    }
+   ],
+   "confidence": 1,
+   "categoryId": "8a16d2a8-199f-43cc-b372-aeab847179ad",
+   "logoPath": "/api/merchant-logos/name/palestra?s=d200163d564875dcc58a19a0"
+  },
+  {
+   "key": "fibra e mobile",
+   "id": "8b5b91c8-5fc6-4f10-bea9-f5a0fdaa9079",
+   "name": "Fibra e mobile",
+   "origin": "rilevato",
+   "decision": "confermato",
+   "activity": "attivo",
+   "cadence": "mensile",
+   "amount": 34.9,
+   "monthly": 34.9,
+   "lastDate": "2026-10-09",
+   "nextDate": "2026-11-10",
+   "overdueDays": 0,
+   "priceChange": null,
+   "charges": [
+    {
+     "id": "c040e24e-6148-4234-b9eb-a14cb1e94e0f",
+     "date": "2025-10-10",
+     "amount": 34.9
+    },
+    {
+     "id": "5fc5c8e1-86bd-451f-ab87-dd90c92365af",
+     "date": "2025-11-11",
+     "amount": 34.9
+    },
+    {
+     "id": "9b8fb531-4dc3-4206-9f02-3d3d072dfaa7",
+     "date": "2025-12-10",
+     "amount": 34.9
+    },
+    {
+     "id": "fd7debf0-f041-4a21-9b9f-eddf8d93e961",
+     "date": "2026-01-09",
+     "amount": 34.9
+    },
+    {
+     "id": "0e3e3c4c-d3f6-401f-a5c6-e8b934db8012",
+     "date": "2026-02-09",
+     "amount": 34.9
+    },
+    {
+     "id": "14465566-656f-41a3-b41a-f1b8d6783d52",
+     "date": "2026-03-11",
+     "amount": 34.9
+    },
+    {
+     "id": "8206fae0-3818-45e6-a485-c250c1529fd4",
+     "date": "2026-04-11",
+     "amount": 34.9
+    },
+    {
+     "id": "90b25c8b-7017-4d57-b879-dee3ed06d58b",
+     "date": "2026-05-11",
+     "amount": 34.9
+    },
+    {
+     "id": "69d90a68-f8c2-4b8d-934c-3c9b1ae2a0bf",
+     "date": "2026-06-10",
+     "amount": 34.9
+    },
+    {
+     "id": "aef57c37-7176-4ce7-9c7f-7569ffef109d",
+     "date": "2026-07-10",
+     "amount": 34.9
+    },
+    {
+     "id": "3d0971c9-1911-4323-a3d9-05ba2cbbda7d",
+     "date": "2026-08-10",
+     "amount": 34.9
+    },
+    {
+     "id": "9c28f1ac-0eb2-4fc2-be15-33d2d1096fc0",
+     "date": "2026-09-09",
+     "amount": 34.9
+    },
+    {
+     "id": "21ec72fd-0615-4dc8-baf9-6cbb875c2fb7",
+     "date": "2026-10-09",
+     "amount": 34.9
+    }
+   ],
+   "reasons": [
+    {
+     "kind": "count",
+     "count": 13
+    },
+    {
+     "kind": "cadence",
+     "cadence": "mensile",
+     "skipped": false
+    },
+    {
+     "kind": "amount",
+     "mode": "costante"
+    },
+    {
+     "kind": "day",
+     "day": 10
+    }
+   ],
+   "confidence": 1,
+   "categoryId": "a0616947-c977-4597-b971-ca50afe66a8d",
+   "logoPath": "/api/merchant-logos/name/fibra%20e%20mobile?s=c48b25ee23db729a92da9a07"
+  },
+  {
+   "key": "streaming video",
+   "id": "d91a12b1-ac96-4f3d-a3a0-2139ada0aaba",
+   "name": "Streaming video",
+   "origin": "rilevato",
+   "decision": "confermato",
+   "activity": "attivo",
+   "cadence": "mensile",
+   "amount": 13.99,
+   "monthly": 13.99,
+   "lastDate": "2026-10-17",
+   "nextDate": "2026-11-17",
+   "overdueDays": 0,
+   "priceChange": null,
+   "charges": [
+    {
+     "id": "4f5d9a2d-868e-4472-9116-be10728c874c",
+     "date": "2025-10-17",
+     "amount": 13.99
+    },
+    {
+     "id": "db3a0d0e-e2a0-48fd-a2ab-b66dc2eb18aa",
+     "date": "2025-11-19",
+     "amount": 13.99
+    },
+    {
+     "id": "d07fc5a5-6675-4b7e-8a9a-f4c3cd3d13ef",
+     "date": "2025-12-17",
+     "amount": 13.99
+    },
+    {
+     "id": "e6646d31-2aac-40b3-aba6-aed7388cc0cf",
+     "date": "2026-01-19",
+     "amount": 13.99
+    },
+    {
+     "id": "12b3b166-9c32-4adb-b012-2cc672c5d9e4",
+     "date": "2026-02-19",
+     "amount": 13.99
+    },
+    {
+     "id": "a53c0e96-bedd-4465-a234-465bc6ed56eb",
+     "date": "2026-03-19",
+     "amount": 13.99
+    },
+    {
+     "id": "ecbe5928-68ce-4cef-a5c9-a91c921a2097",
+     "date": "2026-04-17",
+     "amount": 13.99
+    },
+    {
+     "id": "35ccdcd9-a16a-4de4-9876-520ea5f36576",
+     "date": "2026-05-19",
+     "amount": 13.99
+    },
+    {
+     "id": "bf7a49f1-ba67-40e4-9233-18e495789959",
+     "date": "2026-06-18",
+     "amount": 13.99
+    },
+    {
+     "id": "72dba704-2d37-49c7-a793-a6481d873244",
+     "date": "2026-07-17",
+     "amount": 13.99
+    },
+    {
+     "id": "34b608a9-0dff-499d-818f-8e5a9e5f6dd3",
+     "date": "2026-08-17",
+     "amount": 13.99
+    },
+    {
+     "id": "d96c0e13-1dd1-4420-96d6-7d84ce332591",
+     "date": "2026-09-17",
+     "amount": 13.99
+    },
+    {
+     "id": "fcc130c9-cba1-4d1b-b944-9eda5fe0eb9a",
+     "date": "2026-10-17",
+     "amount": 13.99
+    }
+   ],
+   "reasons": [
+    {
+     "kind": "count",
+     "count": 13
+    },
+    {
+     "kind": "cadence",
+     "cadence": "mensile",
+     "skipped": false
+    },
+    {
+     "kind": "amount",
+     "mode": "costante"
+    },
+    {
+     "kind": "day",
+     "day": 17
+    }
+   ],
+   "confidence": 1,
+   "categoryId": "7e8dbb8d-70dc-42b2-b49f-3fd18e1f7346",
+   "logoPath": "/api/merchant-logos/name/streaming%20video?s=9045e7ed1d4bc692c3d32e75"
+  },
+  {
+   "key": "assicurazione auto",
+   "id": null,
+   "name": "Assicurazione auto",
+   "origin": "rilevato",
+   "decision": "da-confermare",
+   "activity": "attivo",
+   "cadence": "annuale",
+   "amount": 428,
+   "monthly": 35.67,
+   "lastDate": "2026-10-02",
+   "nextDate": "2027-10-02",
+   "overdueDays": 0,
+   "priceChange": null,
+   "charges": [
+    {
+     "id": "b14dac0e-1c20-4361-af52-277b351eec5d",
+     "date": "2025-10-02",
+     "amount": 412
+    },
+    {
+     "id": "a03e12d1-213c-4297-b1e8-f21d76605e15",
+     "date": "2026-10-02",
+     "amount": 428
+    }
+   ],
+   "reasons": [
+    {
+     "kind": "count",
+     "count": 2
+    },
+    {
+     "kind": "cadence",
+     "cadence": "annuale",
+     "skipped": false
+    },
+    {
+     "kind": "amount",
+     "mode": "variabile-lieve"
+    }
+   ],
+   "confidence": 0.74,
+   "categoryId": "38c34df4-fb06-4571-a2a7-b698f20c3710",
+   "logoPath": "/api/merchant-logos/name/assicurazione%20auto?s=df59aa66b3f8e7698ca8c09a"
+  }
+ ],
+ "totals": {
+  "count": 5,
+  "monthly": 101.87,
+  "yearly": 1222.44,
+  "pendingCount": 1,
+  "pendingMonthly": 35.67
+ },
+ "currency": "EUR",
+ "today": "2026-10-18"
+}

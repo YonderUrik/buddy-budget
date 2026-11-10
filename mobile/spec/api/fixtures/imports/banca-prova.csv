@@ -1,0 +1,7 @@
+Data operazione;Data valuta;Descrizione;Entrate;Uscite;Divisa
+02/10/2026;02/10/2026;Stipendio ottobre ACME SRL;2150,00;;EUR
+03/10/2026;03/10/2026;Pagamento POS Esselunga Milano;;64,35;EUR
+05/10/2026;05/10/2026;Addebito SDD Enel Energia;;88,10;EUR
+07/10/2026;07/10/2026;Bonifico a Mario Rossi affitto;;750,00;EUR
+09/10/2026;09/10/2026;Pagamento POS Farmacia Centrale;;12,90;EUR
+12/10/2026;12/10/2026;Prelievo Bancomat;;100,00;EUR

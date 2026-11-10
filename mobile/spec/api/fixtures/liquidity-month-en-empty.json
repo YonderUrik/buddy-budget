@@ -1,0 +1,89 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "month": {
+    "from": "2026-10-01",
+    "to": "2026-10-31",
+    "label": "October"
+  },
+  "accountId": null,
+  "accounts": {
+    "total": 0,
+    "count": 0
+  },
+  "spent": 0,
+  "income": 0,
+  "pace": {
+    "spentSoFar": 0,
+    "typicalSoFar": null,
+    "income": 0,
+    "budgetTotal": null,
+    "budgetSpent": 0,
+    "dayOfMonth": 18,
+    "daysInMonth": 31,
+    "current": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "typical": null
+  },
+  "groups": [
+    {
+      "key": "dovuta",
+      "label": "Needs",
+      "amount": 0
+    },
+    {
+      "key": "voluta",
+      "label": "Wants",
+      "amount": 0
+    },
+    {
+      "key": "futuro",
+      "label": "Future you",
+      "amount": 0
+    },
+    {
+      "key": "saltuaria",
+      "label": "Occasional",
+      "amount": 0
+    }
+  ],
+  "uncategorizedSpent": 0,
+  "budget": null,
+  "budgets": [],
+  "toFix": 0,
+  "voice": [
+    {
+      "key": "pace",
+      "segments": [
+        {
+          "text": "October: so far you have spent "
+        },
+        {
+          "text": "€0",
+          "strong": true
+        },
+        {
+          "text": "."
+        }
+      ]
+    }
+  ]
+}

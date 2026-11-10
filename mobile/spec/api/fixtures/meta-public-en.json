@@ -1,0 +1,609 @@
+{
+  "language": "en",
+  "server": {
+    "version": "0.78.0",
+    "commit": "96b7d92ec091a7c588649d093ce087e979708598",
+    "builtAt": "2026-10-18T14:38:45.612Z"
+  },
+  "legal": {
+    "version": "2026-10-12",
+    "language": "en",
+    "specificClauseSections": [
+      "Liability",
+      "Suspension and termination",
+      "Changes to the terms",
+      "Governing law, jurisdiction and contacts"
+    ],
+    "documents": [
+      {
+        "id": "privacy",
+        "label": "Privacy",
+        "url": "https://buddybudget.io/privacy"
+      },
+      {
+        "id": "termini",
+        "label": "Terms",
+        "url": "https://buddybudget.io/termini"
+      },
+      {
+        "id": "cookie",
+        "label": "Cookies",
+        "url": "https://buddybudget.io/cookie"
+      }
+    ],
+    "privacyEmail": "privacy@buddybudget.io"
+  },
+  "languages": [
+    {
+      "id": "it",
+      "name": "Italiano",
+      "locale": "it-IT"
+    },
+    {
+      "id": "en",
+      "name": "English",
+      "locale": "en-GB"
+    },
+    {
+      "id": "de",
+      "name": "Deutsch",
+      "locale": "de-DE"
+    }
+  ],
+  "countries": [
+    {
+      "id": "IT",
+      "languages": [
+        "it",
+        "en"
+      ],
+      "features": {
+        "taxes": true,
+        "pension": true,
+        "retirement": true,
+        "incomeForecasts": true,
+        "inflation": true
+      },
+      "sections": {
+        "pension": true,
+        "analytics": true,
+        "goals": true,
+        "investmentTaxes": true,
+        "investmentIncome": true,
+        "fire": true,
+        "financialPlanning": false
+      },
+      "planning": {
+        "tax": false,
+        "income": false,
+        "pension": false,
+        "retirement": false,
+        "simulations": false
+      }
+    },
+    {
+      "id": "DE",
+      "languages": [
+        "en",
+        "de"
+      ],
+      "features": {
+        "taxes": false,
+        "pension": false,
+        "retirement": false,
+        "incomeForecasts": false,
+        "inflation": true
+      },
+      "sections": {
+        "pension": false,
+        "analytics": false,
+        "goals": false,
+        "investmentTaxes": true,
+        "investmentIncome": true,
+        "fire": false,
+        "financialPlanning": true
+      },
+      "planning": {
+        "tax": true,
+        "income": true,
+        "pension": false,
+        "retirement": false,
+        "simulations": false
+      }
+    }
+  ],
+  "currencies": [
+    {
+      "value": "EUR",
+      "label": "Euro",
+      "symbol": "€"
+    },
+    {
+      "value": "USD",
+      "label": "US dollar",
+      "symbol": "$"
+    },
+    {
+      "value": "GBP",
+      "label": "British pound",
+      "symbol": "£"
+    },
+    {
+      "value": "CHF",
+      "label": "Swiss franc",
+      "symbol": "CHF"
+    }
+  ],
+  "defaultCurrency": "EUR",
+  "homePages": [
+    {
+      "path": "/panoramica",
+      "label": "Overview"
+    },
+    {
+      "path": "/liquidita",
+      "label": "Cash"
+    },
+    {
+      "path": "/liquidita/conti",
+      "label": "Accounts"
+    },
+    {
+      "path": "/liquidita/analisi",
+      "label": "Transaction analysis"
+    },
+    {
+      "path": "/investimenti",
+      "label": "Investments"
+    }
+  ],
+  "defaultHomePage": "/panoramica",
+  "notifications": {
+    "defaults": {
+      "digestEnabled": false,
+      "digestFrequency": "mensile",
+      "budgetAlertsEnabled": false,
+      "deadlineAlertsEnabled": false,
+      "goalAlertsEnabled": false
+    },
+    "kinds": [
+      {
+        "id": "digest",
+        "label": "Regular summary",
+        "hint": "A brief summary of income, spending and investments for the last period."
+      },
+      {
+        "id": "budget",
+        "label": "Budget alerts",
+        "hint": "An email when a category reaches 80% of its monthly budget and when it exceeds it."
+      },
+      {
+        "id": "deadlines",
+        "label": "Due-date alerts",
+        "hint": "An email when a loan payment is approaching or overdue."
+      },
+      {
+        "id": "goals",
+        "label": "Goal reminders",
+        "hint": "At the start of each month where your goals stand, and an email when you reach one or a date gets close."
+      }
+    ],
+    "digestFrequencies": [
+      "settimanale",
+      "mensile"
+    ],
+    "budgetAlertThresholds": [
+      80,
+      100
+    ],
+    "deadlineLeadDays": 3,
+    "alertsMaxPerWeek": 3
+  },
+  "limits": {
+    "transactionsPageDefault": 50,
+    "transactionsPageMax": 200,
+    "goalsMax": 20,
+    "goalSourcesMax": 12,
+    "pensionFundsMax": 10,
+    "pensionSnapshotsPerFundMax": 5000,
+    "investmentTargetsMax": 30,
+    "priceAlertsPerInstrumentMax": 10,
+    "debtCostsMax": 10,
+    "bankSyncsPerDay": 4,
+    "bankSyncMinGapMinutes": 240,
+    "personalImportMaxBytes": 26214400
+  },
+  "features": [
+    {
+      "id": "csv-personali-ai",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Personal CSVs with AI",
+      "description": "Upload the CSV of a bank or broker we don't know: we read it in the background and remember the institution and the columns of its format. If the saved reader fails, we try again with the AI you have authorized and send a technical report to support. You get an email when the import is done.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "primi-passi-e-dati-d-esempio",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "First steps and sample data",
+      "description": "Starting without a bank? The Overview shows four steps that tick themselves off (account, transactions, investment, goal), and you can try the app with sample data that resets with one tap.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "demo-senza-account",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Demo without an account",
+      "description": "Open the app with the data of a sample account, for Italy or Germany, in Italian, English or German, without signing up: look at everything, nothing is saved.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "collegamento-alla-banca",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Bank connection",
+      "description": "Imports balances and transactions from a bank through Open Banking, read-only, every 12 hours or whenever you like. Limited spots during the beta.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "conti-manuali",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Manual accounts",
+      "description": "For cash or for banks that don't connect. Tap the account to change its balance, name and icon.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "categorizza-con-ai",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Categorize with AI",
+      "description": "If you turn it on, the assistant suggests a category for each merchant. Suggestions that are at least 90% sure apply themselves and you review them in “Set by the app”; you confirm the others with a swipe, one card at a time. It uses only the cleaned-up merchant name and your personal instructions, which you can change in Settings.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "categorie-pronte",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Ready-made categories",
+      "description": "When you sign up you get 24 categories already split by type of spending: confirm them with one tap, or remove, rename or add your own.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "categorizzazione-automatica",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Automatic categorization",
+      "description": "Your rules, and categories that are at least 90% sure, apply themselves, and a new rule takes effect right away. In “Set by the app” you see what was set, with the merchant's logo, the dates and where it came from (a rule, your past choices or AI), and you fix it with one tap. “Recategorize” redoes the automatic categories with today's rules, with a preview and undo.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "quattro-gruppi-di-spesa",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Four spending groups",
+      "description": "Needs, Wants, Future you and Occasional, with colors and icons you choose.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "trasferimenti-tra-conti",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Transfers between your accounts",
+      "description": "Put transfers in their own category: they stay visible in your transactions and are left out of income and spending.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "dividi-e-escludi",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Split and exclude",
+      "description": "Leave out all or part of refunds, transfers and shared expenses: pick Half, A third or an amount, and see right away how much is yours.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "budget-per-categoria",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Budget per category",
+      "description": "Set a budget and see how much of it you've used.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "analisi-e-cash-flow",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Analysis and cash flow",
+      "description": "Income, spending, net and savings, month by month and by category.",
+      "status": "live",
+      "appPath": "/liquidita",
+      "available": null
+    },
+    {
+      "id": "abbonamenti",
+      "area": "Liquidità",
+      "areaLabel": "Cash",
+      "name": "Subscriptions",
+      "description": "Finds recurring charges (streaming, gym, insurance) and you confirm them with one tap. See the cost per month and per year, the next charge and price increases. Worked out from your transactions, without AI.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "etf-azioni-btp-fondi-e-crypto",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "ETFs, stocks, government bonds, funds and crypto",
+      "description": "End-of-day prices from free sources with automatic fallback, ECB exchange rates.",
+      "status": "live",
+      "appPath": "/investimenti",
+      "available": null
+    },
+    {
+      "id": "operazioni-e-import-csv",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Trades and CSV import",
+      "description": "Record buys and sells or import your broker's files: Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance or another CSV. Several brokers live in the same portfolio and each import is managed on its own. If you allow AI recovery, read errors start a new analysis automatically, with the financial checks kept in place.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "rendimenti-veri",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Real returns",
+      "description": "TWR, MWR and returns after inflation in the product's country (Italy or Germany, Eurostat index), with explanations on hover. The figures follow the chart date; drag to pick a range, also for risk and monthly returns. It also shows what you'd have if costs and taxes had stayed invested.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "confronto-con-un-indice",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Compare with an index",
+      "description": "“With the same contributions you'd have X today instead of Y.” Quick picks for the S&P 500, MSCI World, FTSE All-World and Nasdaq-100 through accumulating ETFs, or search for another instrument.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "rischio",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Risk",
+      "description": "A clear risk level (from low to very high), then how much the portfolio swings, the worst drop, whether the risk paid off and how closely it follows the index.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "diversificazione",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Diversification",
+      "description": "By region and sector, looking inside the ETFs.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "allocazione-obiettivo",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Target allocation",
+      "description": "With a suggestion of where to put your next contribution.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "proventi",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Dividends",
+      "description": "Income received and expected over the next 12 months, month by month and by instrument, with gross, withholding tax and net.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "pianificazione-germania",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Financial planning for Germany",
+      "description": "Essential localization in English and German: portfolio, income and 2026 tax estimates in EUR, with explicit limits. Pension, AVD (a German private pension product), retirement and the advanced simulators are hidden until they have been reviewed.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "tasse-italiane",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Italian taxes",
+      "description": "Capital gains and losses, the zainetto fiscale (four-year tax-loss carryforward), government bonds, crypto and bollo (stamp duty).",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "simulatore-prima-di-vendere",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "“Before you sell” simulator",
+      "description": "Works out the taxes again with the extra sale, before you make it.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "titoli-watchlist-e-avvisi",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Securities, watchlist and alerts",
+      "description": "A page for each security, opened from your holdings or by search, with a chart of your purchases, risk, a watchlist and price alerts by email.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "indicatori-fondamentali",
+      "area": "Investimenti",
+      "areaLabel": "Investments",
+      "name": "Fundamentals",
+      "description": "For every stock: P/E, P/S, P/B, revenue and earnings per share, margins, ROE and debt calculated from the financial statements, with the range of recent years and the calculation under each number. For ETFs: holdings, sectors, what the TER costs you and the securities you already hold elsewhere.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "finanziamenti-nuovi-o-in-corso",
+      "area": "Debiti",
+      "areaLabel": "Debts",
+      "name": "New or ongoing loans",
+      "description": "From the start or from a snapshot of today, with the amortization schedule.",
+      "status": "live",
+      "appPath": "/debiti",
+      "available": null
+    },
+    {
+      "id": "calcolatore-della-variabile-mancante",
+      "area": "Debiti",
+      "areaLabel": "Debts",
+      "name": "Missing-figure calculator",
+      "description": "From principal, payment, number of payments or rate it works out the one that's missing, with the APR (TAEG).",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "estinzione-anticipata",
+      "area": "Debiti",
+      "areaLabel": "Debts",
+      "name": "Early repayment",
+      "description": "Lower payment or shorter term, with the penalty, the interest saved and a monthly extra.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "simulatore-dei-debiti",
+      "area": "Debiti",
+      "areaLabel": "Debts",
+      "name": "Debt simulator",
+      "description": "Inside each loan: how much you save by paying more, paying off part of it or moving to another bank. In the overview, the path to getting out of debt sooner.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "patrimonio-netto-nel-tempo",
+      "area": "Patrimonio",
+      "areaLabel": "Net worth",
+      "name": "Net worth over time",
+      "description": "Cash, investments and pension, with debts already subtracted, and the history rebuilt. Show or hide items from the legend and the total updates.",
+      "status": "live",
+      "appPath": "/panoramica",
+      "available": null
+    },
+    {
+      "id": "pensione",
+      "area": "Patrimonio",
+      "areaLabel": "Net worth",
+      "name": "Pension",
+      "description": "Pension fund and TFR (Italian severance pay): real return, what you'd take home if you withdrew today after tax, and an estimate of what it will be worth. Enter the history by hand or import it from CSV or Excel.",
+      "status": "new",
+      "appPath": "/pensione",
+      "available": null
+    },
+    {
+      "id": "analitiche",
+      "area": "Patrimonio",
+      "areaLabel": "Net worth",
+      "name": "Analytics",
+      "description": "The year you could stop working, with four “what if…” sliders for savings, spending, return and withdrawal; the first three start from your data for the last 12 or 24 months, or the months you choose. For those who want more: the FIRE number after tax, Monte Carlo simulations and withdrawal rules.",
+      "status": "new",
+      "appPath": "/analitiche",
+      "available": null
+    },
+    {
+      "id": "obiettivi-di-risparmio",
+      "area": "Patrimonio",
+      "areaLabel": "Net worth",
+      "name": "Savings goals",
+      "description": "A trip, a house deposit, an emergency fund: choose how much you need, by when, and which accounts or investments the money comes from. The month's savings go to your goals in the order you choose; see when you'll reach each one, whether your savings cover everything and how much each goal moves the year you could stop working. Email reminders at the start of the month, if you want them.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "tuoi-dati-tuo-controllo",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Your data, your control",
+      "description": "Export everything as a ZIP, or reset or delete your account with 30 days to change your mind.",
+      "status": "live",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "email-riepilogo-e-avvisi",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Summary and alert emails",
+      "description": "If you want, get a summary of the month or the week, with what you spent, what came in, investment gains and dividends in a few lines, and an alert when a budget is nearly used up or a payment is about to fall due. You choose them when you first sign in, they start switched off and each one turns off with one click.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "piu-lingue-e-valute",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Languages and currencies",
+      "description": "The Italy product in Italian and English; the Germany product in German and English. Selectable currencies. For Germany: portfolio and income, partial 2026 tax estimates with explicit limits; pension and advanced simulators on hold until review. Unsupported cases are flagged, without applying Italian rules.",
+      "status": "new",
+      "appPath": null,
+      "available": null
+    },
+    {
+      "id": "notifiche-push",
+      "area": "Account",
+      "areaLabel": "Account",
+      "name": "Push notifications",
+      "description": "Alerts on your phone, for example about prices.",
+      "status": "soon",
+      "appPath": null,
+      "available": null
+    }
+  ],
+  "profile": null
+}

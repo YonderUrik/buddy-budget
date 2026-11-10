@@ -1,0 +1,29 @@
+{
+  "maxAgeDays": 45,
+  "entries": [
+    {
+      "id": "obiettivi-di-risparmio",
+      "date": "2026-10-15",
+      "title": "Obiettivi di risparmio",
+      "summary": "Dai un nome ai tuoi risparmi: un viaggio, la casa, un fondo per gli imprevisti. Scegli da quali conti o investimenti arrivano i soldi e vedi quando ci arrivi, se il risparmio basta per tutto e cosa cambia per il traguardo.",
+      "href": "/analitiche/obiettivi?nuovo=1&da=novita",
+      "ctaLabel": "Crea un obiettivo"
+    },
+    {
+      "id": "categorizza-con-ai",
+      "date": "2026-10-11",
+      "title": "Categorizza con l'AI",
+      "summary": "Per ogni esercente l'assistente propone una categoria e tu confermi con un gesto, una carta alla volta. Si attiva in Impostazioni e non applica mai nulla da solo.",
+      "href": "/categorizza",
+      "ctaLabel": "Apri Categorizza"
+    }
+  ],
+  "current": {
+    "id": "obiettivi-di-risparmio",
+    "date": "2026-10-15",
+    "title": "Obiettivi di risparmio",
+    "summary": "Dai un nome ai tuoi risparmi: un viaggio, la casa, un fondo per gli imprevisti. Scegli da quali conti o investimenti arrivano i soldi e vedi quando ci arrivi, se il risparmio basta per tutto e cosa cambia per il traguardo.",
+    "href": "/analitiche/obiettivi?nuovo=1&da=novita",
+    "ctaLabel": "Crea un obiettivo"
+  }
+}

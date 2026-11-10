@@ -7,7 +7,7 @@ import { personalFormats } from "@/lib/db/schema/personal-imports";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { toDateKey, addDays } from "@/lib/calc/net-worth";
 import { startOfDay } from "@/lib/calc/expenses";
-import { ledgerAmountToday, planCashHistory, type LedgerAccount, type LedgerTransaction } from "@/lib/calc/cash-history";
+import { ledgerAmountToday, planCashHistory, type LedgerAccount, type LedgerTransaction, type StoredCashRow } from "@/lib/calc/cash-history";
 import { hashUserId, logger } from "@/lib/observability";
 import type { InvestmentHistoryStateStore } from "./history-state";
 import { redisCashHistoryStateStore } from "./redis-history-state";
@@ -127,8 +127,9 @@ async function saveFingerprint(state: InvestmentHistoryStateStore, userId: strin
 /**
  * The rows `refreshDerivedCashHistory` would write for one user, computed from the stored rows and the accounts'
  * current data without writing anything: the refresh itself, and read-only checks of what a change would do.
+ * `storedRows` replaces the stored rows (a check against a database that has not run the latest migration yet).
  */
-export async function planDerivedCashHistory(userId: string, todayStart: Date, reader: Reader = db) {
+export async function planDerivedCashHistory(userId: string, todayStart: Date, reader: Reader = db, storedRows?: StoredCashRow[]) {
   const todayKey = toDateKey(todayStart);
   const statementHistories = await loadStatementCashHistories(userId, toDateKey(addDays(todayStart, -1)), reader);
   const { ledger, manualNow, manualAccounts } = await loadLedgerAccounts(userId, reader, new Set(statementHistories.map((a) => a.id)));
@@ -137,13 +138,13 @@ export async function planDerivedCashHistory(userId: string, todayStart: Date, r
   const statementAccounts = statementHistories.filter((a) => !ledgerIds.has(a.id));
   const [ledgerTransactions, rows] = await Promise.all([
     loadLedgerTransactions(userId, ledger, undefined, reader),
-    reader
+    storedRows ? Promise.resolve(null) : reader
       .select({ date: netWorthSnapshots.date, amount: netWorthSnapshots.amount, ledgerAmount: netWorthSnapshots.ledgerAmount, statementAmount: netWorthSnapshots.statementAmount, updatedAt: netWorthSnapshots.updatedAt, createdAt: netWorthSnapshots.createdAt })
       .from(netWorthSnapshots)
       .where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "liquidita"), lt(netWorthSnapshots.date, todayKey))),
   ]);
   return planCashHistory({
-    rows: rows.map((r) => ({ date: r.date, amount: Number(r.amount), ledgerAmount: r.ledgerAmount === null ? null : Number(r.ledgerAmount), statementAmount: r.statementAmount === null ? null : Number(r.statementAmount), updatedAt: r.updatedAt, createdAt: r.createdAt })),
+    rows: storedRows ?? rows!.map((r) => ({ date: r.date, amount: Number(r.amount), ledgerAmount: r.ledgerAmount === null ? null : Number(r.ledgerAmount), statementAmount: r.statementAmount === null ? null : Number(r.statementAmount), updatedAt: r.updatedAt, createdAt: r.createdAt })),
     accounts: ledger,
     transactions: ledgerTransactions,
     statementAccounts,

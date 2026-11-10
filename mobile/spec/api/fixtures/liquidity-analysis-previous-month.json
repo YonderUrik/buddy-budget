@@ -1,0 +1,284 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "period": "mese",
+  "accountId": null,
+  "range": {
+    "from": "2026-09-01",
+    "to": "2026-09-30"
+  },
+  "previousRange": {
+    "from": "2026-08-01",
+    "to": "2026-08-31"
+  },
+  "isCurrentMonth": false,
+  "spent": 1966.9900000000002,
+  "spentBefore": 2066.1600000000003,
+  "delta": -99.17000000000007,
+  "curve": [
+    {
+      "date": "2026-09-01",
+      "value": 0
+    },
+    {
+      "date": "2026-09-02",
+      "value": 0
+    },
+    {
+      "date": "2026-09-03",
+      "value": 37.43
+    },
+    {
+      "date": "2026-09-04",
+      "value": 37.43
+    },
+    {
+      "date": "2026-09-05",
+      "value": 37.43
+    },
+    {
+      "date": "2026-09-06",
+      "value": 40.42
+    },
+    {
+      "date": "2026-09-07",
+      "value": 782.6
+    },
+    {
+      "date": "2026-09-08",
+      "value": 782.6
+    },
+    {
+      "date": "2026-09-09",
+      "value": 910.31
+    },
+    {
+      "date": "2026-09-10",
+      "value": 962.67
+    },
+    {
+      "date": "2026-09-11",
+      "value": 1031.78
+    },
+    {
+      "date": "2026-09-12",
+      "value": 1031.78
+    },
+    {
+      "date": "2026-09-13",
+      "value": 1103.43
+    },
+    {
+      "date": "2026-09-14",
+      "value": 1163.75
+    },
+    {
+      "date": "2026-09-15",
+      "value": 1216.21
+    },
+    {
+      "date": "2026-09-16",
+      "value": 1247.58
+    },
+    {
+      "date": "2026-09-17",
+      "value": 1261.57
+    },
+    {
+      "date": "2026-09-18",
+      "value": 1261.57
+    },
+    {
+      "date": "2026-09-19",
+      "value": 1261.57
+    },
+    {
+      "date": "2026-09-20",
+      "value": 1261.57
+    },
+    {
+      "date": "2026-09-21",
+      "value": 1365.01
+    },
+    {
+      "date": "2026-09-22",
+      "value": 1365.01
+    },
+    {
+      "date": "2026-09-23",
+      "value": 1534.75
+    },
+    {
+      "date": "2026-09-24",
+      "value": 1596.54
+    },
+    {
+      "date": "2026-09-25",
+      "value": 1832.15
+    },
+    {
+      "date": "2026-09-26",
+      "value": 1832.15
+    },
+    {
+      "date": "2026-09-27",
+      "value": 1832.15
+    },
+    {
+      "date": "2026-09-28",
+      "value": 1966.99
+    },
+    {
+      "date": "2026-09-29",
+      "value": 1966.99
+    },
+    {
+      "date": "2026-09-30",
+      "value": 1966.99
+    }
+  ],
+  "typical": null,
+  "groups": [
+    {
+      "key": "dovuta",
+      "label": "Dovute",
+      "amount": 1309.09,
+      "categories": [
+        {
+          "id": "2a56535d-e033-42a1-a075-36def3d72f37",
+          "name": "Affitto & Mutuo",
+          "color": "slate",
+          "icon": "home",
+          "amount": 742.18,
+          "budget": null
+        },
+        {
+          "id": "b2ea6d99-2cf0-4793-b686-1bf54a6ac827",
+          "name": "Spesa",
+          "color": "green",
+          "icon": "shopping-cart",
+          "amount": 338.75000000000006,
+          "budget": 420
+        },
+        {
+          "id": "58400506-a0e7-46de-9b8b-f9187b39460b",
+          "name": "Trasporti",
+          "color": "blue",
+          "icon": "car",
+          "amount": 108.88,
+          "budget": null
+        },
+        {
+          "id": "a0616947-c977-4597-b971-ca50afe66a8d",
+          "name": "Bollette & Telefono",
+          "color": "yellow",
+          "icon": "zap",
+          "amount": 106.55000000000001,
+          "budget": null
+        },
+        {
+          "id": "c6110235-62f1-4570-abde-62c1e86a6ff8",
+          "name": "Salute",
+          "color": "rose",
+          "icon": "pill",
+          "amount": 12.73,
+          "budget": null
+        }
+      ]
+    },
+    {
+      "key": "voluta",
+      "label": "Volute",
+      "amount": 657.9000000000001,
+      "categories": [
+        {
+          "id": "58c6a185-6186-4f21-ae1e-e123b9e0bfeb",
+          "name": "Ristoranti & Bar",
+          "color": "orange",
+          "icon": "utensils",
+          "amount": 220.46,
+          "budget": 180
+        },
+        {
+          "id": "5a58c63f-dc12-4804-a07f-b7d39269d407",
+          "name": "Viaggi",
+          "color": "cyan",
+          "icon": "plane",
+          "amount": 200.73,
+          "budget": null
+        },
+        {
+          "id": "6c7875c1-d7d5-4495-8a29-1b07607e6763",
+          "name": "Shopping",
+          "color": "pink",
+          "icon": "shopping-bag",
+          "amount": 169.74,
+          "budget": 150
+        },
+        {
+          "id": "8a16d2a8-199f-43cc-b372-aeab847179ad",
+          "name": "Sport & Benessere",
+          "color": "lime",
+          "icon": "dumbbell",
+          "amount": 39,
+          "budget": null
+        },
+        {
+          "id": "7e8dbb8d-70dc-42b2-b49f-3fd18e1f7346",
+          "name": "Abbonamenti",
+          "color": "purple",
+          "icon": "tv",
+          "amount": 27.97,
+          "budget": 30
+        }
+      ]
+    }
+  ],
+  "hasBudgets": true,
+  "incomeSources": [
+    {
+      "categoryId": "67315aee-5c4a-42f5-a008-b96a1ffb7083",
+      "name": "Stipendio",
+      "color": "emerald",
+      "icon": "banknote",
+      "amount": 2480,
+      "quotaPct": 85.47951249103845
+    },
+    {
+      "categoryId": "a8588782-c5bf-4c82-9090-54c3336969a0",
+      "name": "Altre entrate",
+      "color": "slate",
+      "icon": "package",
+      "amount": 421.28,
+      "quotaPct": 14.520487508961564
+    }
+  ],
+  "savings": [
+    {
+      "month": "2026-04",
+      "cumulative": -43.48999999999978
+    },
+    {
+      "month": "2026-05",
+      "cumulative": 837.3100000000004
+    },
+    {
+      "month": "2026-06",
+      "cumulative": 1506.3700000000003
+    },
+    {
+      "month": "2026-07",
+      "cumulative": 1534.7700000000004
+    },
+    {
+      "month": "2026-08",
+      "cumulative": 1948.6100000000001
+    },
+    {
+      "month": "2026-09",
+      "cumulative": 2882.8999999999996
+    }
+  ],
+  "saved": 2882.8999999999996,
+  "sentence": "Hai speso 1967 €, 99 € in meno del periodo prima. La voce che pesa di più è «Affitto & Mutuo», il 38%."
+}

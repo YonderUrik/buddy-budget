@@ -1,0 +1,2243 @@
+{
+  "topic": "italian-taxes",
+  "source": "lib/calc/taxes.ts, lib/investments/tax-settings.ts, lib/investments/tax-report.ts, lib/investments/tax-insights.ts, lib/investments/dividends.ts",
+  "vectors": [
+    {
+      "id": "taxes.cryptoTaxRate.2025",
+      "function": "cryptoTaxRate",
+      "input": {
+        "year": 2025
+      },
+      "expected": 0.26,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.cryptoTaxRate.2026",
+      "function": "cryptoTaxRate",
+      "input": {
+        "year": 2026
+      },
+      "expected": 0.33,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.toBaseEquivalent.govBond",
+      "function": "toBaseEquivalent",
+      "input": {
+        "amount": 1000,
+        "rate": 0.125
+      },
+      "expected": 480.769230769,
+      "tolerance": 1e-9,
+      "notes": "A 12.5% gain/loss is worth 48.0769...% at the 26% base."
+    },
+    {
+      "id": "taxes.toBaseEquivalent.base",
+      "function": "toBaseEquivalent",
+      "input": {
+        "amount": -500,
+        "rate": 0.26
+      },
+      "expected": -500,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.taxCategoryOf.etfGain",
+      "function": "taxCategoryOf",
+      "input": {
+        "type": "etf",
+        "gain": 10
+      },
+      "expected": "capitale",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.taxCategoryOf.etfLoss",
+      "function": "taxCategoryOf",
+      "input": {
+        "type": "etf",
+        "gain": -10
+      },
+      "expected": "diversi",
+      "tolerance": 1e-9,
+      "notes": "ETF/fund LOSS is 'redditi diversi' → goes into the loss pool (zainetto)."
+    },
+    {
+      "id": "taxes.taxCategoryOf.crypto",
+      "function": "taxCategoryOf",
+      "input": {
+        "type": "crypto",
+        "gain": -10
+      },
+      "expected": "crypto",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.computeRealizedGains.withheldNotDeducted",
+      "function": "computeRealizedGains",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2026-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "5",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2026-03-05",
+            "quantity": "4",
+            "price": "120",
+            "fxRate": "1",
+            "fees": "2",
+            "taxes": "3",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "toKey": "2026-12-31"
+      },
+      "expected": [
+        {
+          "transactionId": "t2",
+          "instrumentId": "A",
+          "date": "2026-03-05",
+          "year": 2026,
+          "quantity": 4,
+          "proceeds": 478,
+          "cost": 402,
+          "gain": 76,
+          "category": "diversi",
+          "rate": 0.26,
+          "withheld": 3,
+          "nonHarmonized": false,
+          "lossesUsed": null,
+          "estimatedTax": null
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Unlike positions, the tax base deducts sell FEES but NOT withheld taxes: proceeds = 480-2 = 478; cost = 100.5*4 = 402; gain 76."
+    },
+    {
+      "id": "taxes.computeTaxReport.amministrato.etfNotOffset",
+      "function": "computeTaxReport",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2025-06-05",
+            "quantity": "10",
+            "price": "80",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t4",
+            "instrumentId": "E",
+            "type": "vendita",
+            "date": "2026-02-01",
+            "quantity": "10",
+            "price": "150",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t5",
+            "instrumentId": "B",
+            "type": "acquisto",
+            "date": "2026-01-10",
+            "quantity": "10000",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t6",
+            "instrumentId": "B",
+            "type": "vendita",
+            "date": "2026-05-10",
+            "quantity": "10000",
+            "price": "103",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          },
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          },
+          {
+            "id": "B",
+            "name": "BTP 2030",
+            "type": "obbligazione",
+            "currency": "EUR",
+            "priceUnit": "percentuale_nominale",
+            "taxRate": 0.125,
+            "harmonized": true
+          }
+        ],
+        "regime": "amministrato",
+        "manualLosses": [],
+        "todayKey": "2026-10-18"
+      },
+      "expected": {
+        "regime": "amministrato",
+        "years": [
+          {
+            "year": 2025,
+            "gains": 0,
+            "losses": 200,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 200,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2026,
+            "gains": 300,
+            "losses": 0,
+            "fundGains": 500,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 144.230769231,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 130,
+            "taxOnCrypto": 0,
+            "estimatedTax": 130,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          }
+        ],
+        "realized": [
+          {
+            "transactionId": "t2",
+            "instrumentId": "A",
+            "date": "2025-06-05",
+            "year": 2025,
+            "quantity": 10,
+            "proceeds": 800,
+            "cost": 1000,
+            "gain": -200,
+            "category": "diversi",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": 0,
+            "estimatedTax": 0
+          },
+          {
+            "transactionId": "t4",
+            "instrumentId": "E",
+            "date": "2026-02-01",
+            "year": 2026,
+            "quantity": 10,
+            "proceeds": 1500,
+            "cost": 1000,
+            "gain": 500,
+            "category": "capitale",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": 0,
+            "estimatedTax": 130
+          },
+          {
+            "transactionId": "t6",
+            "instrumentId": "B",
+            "date": "2026-05-10",
+            "year": 2026,
+            "quantity": 10000,
+            "proceeds": 10300,
+            "cost": 10000,
+            "gain": 300,
+            "category": "diversi",
+            "rate": 0.125,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": 144.230769231,
+            "estimatedTax": 0
+          }
+        ],
+        "losses": [
+          {
+            "year": 2025,
+            "expiresYear": 2029,
+            "amount": 200,
+            "remaining": 55.7692307692,
+            "origin": "calcolata",
+            "crypto": false
+          }
+        ]
+      },
+      "tolerance": 1e-9,
+      "notes": "2025: stock loss 200 → zaino 200 (expires 2029). 2026: ETF gain 500 is 'redditi di capitale' taxed in full at 26% (=130), zaino NOT used. BTP gain 300 at 12.5% → base equivalent 144.23, offset by zaino → tax 0, zaino left 55.77."
+    },
+    {
+      "id": "taxes.computeTaxReport.dichiarativo.netAnnual",
+      "function": "computeTaxReport",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2026-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2026-02-05",
+            "quantity": "5",
+            "price": "140",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2026-03-05",
+            "quantity": "5",
+            "price": "60",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "regime": "dichiarativo",
+        "manualLosses": [
+          {
+            "year": 2026,
+            "amount": 50
+          }
+        ],
+        "todayKey": "2026-10-18"
+      },
+      "expected": {
+        "regime": "dichiarativo",
+        "years": [
+          {
+            "year": 2026,
+            "gains": 200,
+            "losses": 200,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          }
+        ],
+        "realized": [
+          {
+            "transactionId": "t2",
+            "instrumentId": "A",
+            "date": "2026-02-05",
+            "year": 2026,
+            "quantity": 5,
+            "proceeds": 700,
+            "cost": 500,
+            "gain": 200,
+            "category": "diversi",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": null,
+            "estimatedTax": null
+          },
+          {
+            "transactionId": "t3",
+            "instrumentId": "A",
+            "date": "2026-03-05",
+            "year": 2026,
+            "quantity": 5,
+            "proceeds": 300,
+            "cost": 500,
+            "gain": -200,
+            "category": "diversi",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": null,
+            "estimatedTax": null
+          }
+        ],
+        "losses": [
+          {
+            "year": 2026,
+            "expiresYear": 2030,
+            "amount": 50,
+            "remaining": 50,
+            "origin": "manuale",
+            "crypto": false
+          }
+        ]
+      },
+      "tolerance": 1e-9,
+      "notes": "Dichiarativo: annual net (+200 -200 = 0) → no tax, no loss. Manual loss of year Y is added AFTER the year's netting (usable from Y+1). Per-event lossesUsed/estimatedTax stay null."
+    },
+    {
+      "id": "taxes.computeTaxReport.amministrato.orderMatters",
+      "function": "computeTaxReport",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2026-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2026-02-05",
+            "quantity": "5",
+            "price": "140",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2026-03-05",
+            "quantity": "5",
+            "price": "60",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "regime": "amministrato",
+        "manualLosses": [
+          {
+            "year": 2026,
+            "amount": 50
+          }
+        ],
+        "todayKey": "2026-10-18"
+      },
+      "expected": {
+        "regime": "amministrato",
+        "years": [
+          {
+            "year": 2026,
+            "gains": 200,
+            "losses": 200,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 50,
+            "lossesCreated": 200,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 39,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 39,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          }
+        ],
+        "realized": [
+          {
+            "transactionId": "t2",
+            "instrumentId": "A",
+            "date": "2026-02-05",
+            "year": 2026,
+            "quantity": 5,
+            "proceeds": 700,
+            "cost": 500,
+            "gain": 200,
+            "category": "diversi",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": 50,
+            "estimatedTax": 39
+          },
+          {
+            "transactionId": "t3",
+            "instrumentId": "A",
+            "date": "2026-03-05",
+            "year": 2026,
+            "quantity": 5,
+            "proceeds": 300,
+            "cost": 500,
+            "gain": -200,
+            "category": "diversi",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": 0,
+            "estimatedTax": 0
+          }
+        ],
+        "losses": [
+          {
+            "year": 2026,
+            "expiresYear": 2030,
+            "amount": 200,
+            "remaining": 200,
+            "origin": "calcolata",
+            "crypto": false
+          }
+        ]
+      },
+      "tolerance": 1e-9,
+      "notes": "Same trades in amministrato: gain first (200, offset by manual 50 → tax 39), loss later creates zaino 200 that cannot go back in time."
+    },
+    {
+      "id": "taxes.computeTaxReport.lossExpiry",
+      "function": "computeTaxReport",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2020-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2020-06-05",
+            "quantity": "10",
+            "price": "50",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t4",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2025-03-05",
+            "quantity": "10",
+            "price": "150",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "regime": "amministrato",
+        "todayKey": "2026-10-18"
+      },
+      "expected": {
+        "regime": "amministrato",
+        "years": [
+          {
+            "year": 2020,
+            "gains": 0,
+            "losses": 500,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 500,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2021,
+            "gains": 0,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2022,
+            "gains": 0,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2023,
+            "gains": 0,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2024,
+            "gains": 0,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 500,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2025,
+            "gains": 500,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 130,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 130,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2026,
+            "gains": 0,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          }
+        ],
+        "realized": [
+          {
+            "transactionId": "t2",
+            "instrumentId": "A",
+            "date": "2020-06-05",
+            "year": 2020,
+            "quantity": 10,
+            "proceeds": 500,
+            "cost": 1000,
+            "gain": -500,
+            "category": "diversi",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": 0,
+            "estimatedTax": 0
+          },
+          {
+            "transactionId": "t4",
+            "instrumentId": "A",
+            "date": "2025-03-05",
+            "year": 2025,
+            "quantity": 10,
+            "proceeds": 1500,
+            "cost": 1000,
+            "gain": 500,
+            "category": "diversi",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": 0,
+            "estimatedTax": 130
+          }
+        ],
+        "losses": []
+      },
+      "tolerance": 1e-9,
+      "notes": "2020 loss 500 usable until 31/12/2024 (2020+4): it expires at end 2024 (lossesExpired in 2024), so the 2025 gain is fully taxed (500*26%=130)."
+    },
+    {
+      "id": "taxes.computeTaxReport.crypto",
+      "function": "computeTaxReport",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "K",
+            "type": "acquisto",
+            "date": "2024-01-05",
+            "quantity": "1",
+            "price": "1000",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "K",
+            "type": "vendita",
+            "date": "2024-06-05",
+            "quantity": "1",
+            "price": "2500",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "K",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "1",
+            "price": "1000",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t4",
+            "instrumentId": "K",
+            "type": "vendita",
+            "date": "2025-02-05",
+            "quantity": "1",
+            "price": "600",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t5",
+            "instrumentId": "K",
+            "type": "acquisto",
+            "date": "2026-01-05",
+            "quantity": "1",
+            "price": "1000",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t6",
+            "instrumentId": "K",
+            "type": "vendita",
+            "date": "2026-02-05",
+            "quantity": "1",
+            "price": "2000",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "K",
+            "name": "K",
+            "type": "crypto",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "regime": "amministrato",
+        "todayKey": "2026-10-18"
+      },
+      "expected": {
+        "regime": "amministrato",
+        "years": [
+          {
+            "year": 2024,
+            "gains": 0,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 1500,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2025,
+            "gains": 0,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 0,
+            "cryptoLosses": 400,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 0,
+            "cryptoLossesCreated": 400,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 0,
+            "estimatedTax": 0,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          },
+          {
+            "year": 2026,
+            "gains": 0,
+            "losses": 0,
+            "fundGains": 0,
+            "cryptoGains": 1000,
+            "cryptoLosses": 0,
+            "lossesUsed": 0,
+            "lossesCreated": 0,
+            "lossesExpired": 0,
+            "cryptoLossesUsed": 400,
+            "cryptoLossesCreated": 0,
+            "taxOnGains": 0,
+            "taxOnFunds": 0,
+            "taxOnCrypto": 198,
+            "estimatedTax": 198,
+            "withheld": 0,
+            "incomeGross": 0,
+            "incomeWithheld": 0,
+            "bollo": 0,
+            "nonHarmonizedCount": 0
+          }
+        ],
+        "realized": [
+          {
+            "transactionId": "t2",
+            "instrumentId": "K",
+            "date": "2024-06-05",
+            "year": 2024,
+            "quantity": 1,
+            "proceeds": 2500,
+            "cost": 1000,
+            "gain": 1500,
+            "category": "crypto",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": null,
+            "estimatedTax": null
+          },
+          {
+            "transactionId": "t4",
+            "instrumentId": "K",
+            "date": "2025-02-05",
+            "year": 2025,
+            "quantity": 1,
+            "proceeds": 600,
+            "cost": 1000,
+            "gain": -400,
+            "category": "crypto",
+            "rate": 0.26,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": null,
+            "estimatedTax": null
+          },
+          {
+            "transactionId": "t6",
+            "instrumentId": "K",
+            "date": "2026-02-05",
+            "year": 2026,
+            "quantity": 1,
+            "proceeds": 2000,
+            "cost": 1000,
+            "gain": 1000,
+            "category": "crypto",
+            "rate": 0.33,
+            "withheld": 0,
+            "nonHarmonized": false,
+            "lossesUsed": null,
+            "estimatedTax": null
+          }
+        ],
+        "losses": []
+      },
+      "tolerance": 1e-9,
+      "notes": "Crypto always annual (declaration). 2024 net 1500 ≤ 2000 exemption → 0. 2025 loss 400 → crypto-only pool (nominal, not base-26). 2026 gain 1000 - 400 = 600 at 33% = 198."
+    },
+    {
+      "id": "taxes.lossesByExpiry.basic",
+      "function": "lossesByExpiry",
+      "input": {
+        "losses": [
+          {
+            "year": 2025,
+            "expiresYear": 2029,
+            "amount": 200,
+            "remaining": 55.7692307692,
+            "origin": "calcolata",
+            "crypto": false
+          }
+        ],
+        "crypto": false
+      },
+      "expected": [
+        {
+          "expiresYear": 2029,
+          "amount": 55.7692307692
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.computeBollo.partialFirstYearAndCurrent",
+      "function": "computeBollo",
+      "input": {
+        "daily": "daily points: value 10000 every day 2025-07-01..2025-12-31, 20000 every day 2026-01-01..2026-10-18",
+        "todayKey": "2026-10-18"
+      },
+      "expected": [
+        {
+          "year": 2025,
+          "value": 10000,
+          "days": 184,
+          "bollo": 10.0821917808,
+          "estimate": false
+        },
+        {
+          "year": 2026,
+          "value": 20000,
+          "days": 365,
+          "bollo": 40,
+          "estimate": true
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "2025: 184 invested days/365 × 0.2% × year-end value. 2026 (current): estimate=true, projected days from first invested day to 31/12 → 365/365."
+    },
+    {
+      "id": "taxes.computeBollo.leapYearWithEmptyMonth",
+      "function": "computeBollo",
+      "input": {
+        "daily": "daily points 2024-01-01..2024-12-31 value 5000 except 0 during March 2024",
+        "todayKey": "2026-10-18"
+      },
+      "expected": [
+        {
+          "year": 2024,
+          "value": 5000,
+          "days": 335,
+          "bollo": 9.15300546448,
+          "estimate": false
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Past year: days = days with value>0 (366-31=335), share = 335/366 (leap year)."
+    },
+    {
+      "id": "taxes.simulateSale.stockUsesZaino",
+      "function": "simulateSale",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2025-06-05",
+            "quantity": "5",
+            "price": "60",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          },
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "regime": "amministrato",
+        "todayKey": "2026-10-18",
+        "instrumentId": "A",
+        "quantity": 5,
+        "price": 150,
+        "fxRate": 1
+      },
+      "expected": {
+        "proceeds": 750,
+        "cost": 500,
+        "gain": 250,
+        "category": "diversi",
+        "taxDelta": 13,
+        "lossesUsed": 200,
+        "lossesCreated": 0,
+        "net": 737,
+        "nonHarmonized": false
+      },
+      "tolerance": 1e-9,
+      "notes": "Stock gain 250 offset by zaino 200 → tax (250-200)*26% = 13. net = proceeds - taxDelta."
+    },
+    {
+      "id": "taxes.simulateSale.etfFullyTaxed",
+      "function": "simulateSale",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2025-06-05",
+            "quantity": "5",
+            "price": "60",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          },
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "regime": "amministrato",
+        "todayKey": "2026-10-18",
+        "instrumentId": "E",
+        "quantity": 10,
+        "price": 150,
+        "fxRate": 1
+      },
+      "expected": {
+        "proceeds": 1500,
+        "cost": 1000,
+        "gain": 500,
+        "category": "capitale",
+        "taxDelta": 130,
+        "lossesUsed": 0,
+        "lossesCreated": 0,
+        "net": 1370,
+        "nonHarmonized": false
+      },
+      "tolerance": 1e-9,
+      "notes": "ETF gain 500 → 130 tax, zaino untouched."
+    },
+    {
+      "id": "taxes.simulateSale.lossCreatesZaino",
+      "function": "simulateSale",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2025-06-05",
+            "quantity": "5",
+            "price": "60",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          },
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "regime": "amministrato",
+        "todayKey": "2026-10-18",
+        "instrumentId": "E",
+        "quantity": 10,
+        "price": 80,
+        "fxRate": 1
+      },
+      "expected": {
+        "proceeds": 800,
+        "cost": 1000,
+        "gain": -200,
+        "category": "diversi",
+        "taxDelta": 0,
+        "lossesUsed": 0,
+        "lossesCreated": 200,
+        "net": 800,
+        "nonHarmonized": false
+      },
+      "tolerance": 1e-9,
+      "notes": "ETF loss → lossesCreated 200, taxDelta 0."
+    },
+    {
+      "id": "taxes.simulateSale.invalid",
+      "function": "simulateSale",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "A",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "A",
+            "type": "vendita",
+            "date": "2025-06-05",
+            "quantity": "5",
+            "price": "60",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2025-01-05",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "A",
+            "name": "A",
+            "type": "azione",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          },
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "EUR",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "regime": "amministrato",
+        "todayKey": "2026-10-18",
+        "instrumentId": "E",
+        "quantity": 0,
+        "price": 80,
+        "fxRate": 1
+      },
+      "expected": null,
+      "tolerance": 1e-9,
+      "notes": "quantity<=0 or price<=0 → null."
+    },
+    {
+      "id": "taxes.resolveTaxSettings.btpByName",
+      "function": "resolveTaxSettings",
+      "input": {
+        "instrument": {
+          "type": "obbligazione",
+          "name": "BTP Italia 2030",
+          "taxRate": "0.2600",
+          "taxHarmonized": null,
+          "createdByUserId": null
+        },
+        "setting": null
+      },
+      "expected": {
+        "taxRate": 0.125,
+        "taxRateSource": "titolo_di_stato",
+        "harmonized": true,
+        "harmonizedSource": "presunto"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.resolveTaxSettings.manualOverride",
+      "function": "resolveTaxSettings",
+      "input": {
+        "instrument": {
+          "type": "obbligazione",
+          "name": "BTP Italia 2030",
+          "taxRate": "0.2600",
+          "taxHarmonized": null,
+          "createdByUserId": null
+        },
+        "setting": {
+          "taxRate": "0.26",
+          "taxHarmonized": null
+        }
+      },
+      "expected": {
+        "taxRate": 0.26,
+        "taxRateSource": "manuale",
+        "harmonized": true,
+        "harmonizedSource": "presunto"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.resolveTaxSettings.sharedInstrumentIgnoresRowRate",
+      "function": "resolveTaxSettings",
+      "input": {
+        "instrument": {
+          "type": "etf",
+          "name": "Some ETF",
+          "taxRate": "0.125",
+          "taxHarmonized": false,
+          "createdByUserId": null
+        },
+        "setting": null
+      },
+      "expected": {
+        "taxRate": 0.26,
+        "taxRateSource": "strumento",
+        "harmonized": true,
+        "harmonizedSource": "presunto"
+      },
+      "tolerance": 1e-9,
+      "notes": "Shared (createdByUserId null) instrument: stored rate/harmonized ignored → 26%, harmonized presumed true."
+    },
+    {
+      "id": "taxes.resolveTaxSettings.privateNonHarmonized",
+      "function": "resolveTaxSettings",
+      "input": {
+        "instrument": {
+          "type": "etf",
+          "name": "My fund",
+          "taxRate": "0.26",
+          "taxHarmonized": false,
+          "createdByUserId": "u1"
+        },
+        "setting": null
+      },
+      "expected": {
+        "taxRate": 0.26,
+        "taxRateSource": "strumento",
+        "harmonized": false,
+        "harmonizedSource": "strumento"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.looksLikeGovernmentBond.corporate",
+      "function": "looksLikeGovernmentBond",
+      "input": {
+        "instrument": {
+          "type": "obbligazione",
+          "name": "Enel 2029 3%"
+        }
+      },
+      "expected": false,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "taxes.estimatedTaxCharges.amministrato",
+      "function": "estimatedTaxCharges",
+      "input": {
+        "report": "output of taxes.computeTaxReport.amministrato.etfNotOffset",
+        "todayKey": "2026-10-18"
+      },
+      "expected": [
+        {
+          "date": "2026-02-01",
+          "amount": 130
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Amministrato without crypto: yearly (estimatedTax - withheld) spread across the year's events pro-rata to each event's (estimatedTax - withheld), dated on the event."
+    },
+    {
+      "id": "taxes.estimatedTaxCharges.cryptoYearEnd",
+      "function": "estimatedTaxCharges",
+      "input": {
+        "report": "output of taxes.computeTaxReport.crypto",
+        "todayKey": "2026-10-18"
+      },
+      "expected": [
+        {
+          "date": "2026-10-18",
+          "amount": 198
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Dichiarativo or crypto-year: whole remaining dated at 31/12 (or today for the open year)."
+    },
+    {
+      "id": "taxes.computeTaxOpportunities.basic",
+      "function": "computeTaxOpportunities",
+      "input": {
+        "rows": [
+          {
+            "instrumentId": "A",
+            "type": "azione",
+            "taxRate": 0.26,
+            "unrealizedGain": 300
+          },
+          {
+            "instrumentId": "E",
+            "type": "etf",
+            "taxRate": 0.26,
+            "unrealizedGain": 400
+          },
+          {
+            "instrumentId": "B",
+            "type": "obbligazione",
+            "taxRate": 0.125,
+            "unrealizedGain": -100
+          },
+          {
+            "instrumentId": "K",
+            "type": "crypto",
+            "taxRate": 0.26,
+            "unrealizedGain": -50
+          }
+        ],
+        "losses": [
+          {
+            "year": 2022,
+            "expiresYear": 2026,
+            "amount": 80,
+            "remaining": 80,
+            "origin": "calcolata",
+            "crypto": false
+          }
+        ],
+        "currentYear": 2026
+      },
+      "expected": {
+        "expiringThisYear": 80,
+        "compensableGains": [
+          {
+            "instrumentId": "A",
+            "unrealized": 300,
+            "equivalent": 300
+          }
+        ],
+        "compensableTotal": 300,
+        "losses": [
+          {
+            "instrumentId": "B",
+            "unrealized": -100,
+            "equivalent": 48.0769230769
+          }
+        ],
+        "lossesTotal": 48.0769230769
+      },
+      "tolerance": 1e-9,
+      "notes": "ETF gains are not compensable; crypto excluded; losses expressed as positive base-26 equivalents."
+    },
+    {
+      "id": "dividends.shiftMonths.endOfMonthClamp",
+      "function": "shiftMonths",
+      "input": {
+        "dateKey": "2026-01-31",
+        "months": 1
+      },
+      "expected": "2026-02-28",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "dividends.shiftMonths.leap",
+      "function": "shiftMonths",
+      "input": {
+        "dateKey": "2024-02-29",
+        "months": 12
+      },
+      "expected": "2025-02-28",
+      "tolerance": 1e-9
+    },
+    {
+      "id": "dividends.couponDates.semiannual",
+      "function": "couponDates",
+      "input": {
+        "terms": {
+          "rate": 0.035,
+          "frequency": 2,
+          "maturityDate": "2030-03-15"
+        },
+        "fromKey": "2025-01-01",
+        "toKey": "2026-10-18"
+      },
+      "expected": [
+        "2025-03-15",
+        "2025-09-15",
+        "2026-03-15",
+        "2026-09-15"
+      ],
+      "tolerance": 1e-9,
+      "notes": "Dates counted backwards from maturity in steps of 12/frequency months; window is (from, to]."
+    },
+    {
+      "id": "dividends.dividendGrowth.cagr",
+      "function": "dividendGrowth",
+      "input": {
+        "events": [
+          {
+            "exDate": "2021-05-01",
+            "amount": 1
+          },
+          {
+            "exDate": "2022-05-01",
+            "amount": 1.1
+          },
+          {
+            "exDate": "2023-05-01",
+            "amount": 1.2
+          },
+          {
+            "exDate": "2024-05-01",
+            "amount": 1.3
+          },
+          {
+            "exDate": "2025-05-01",
+            "amount": 0.7
+          },
+          {
+            "exDate": "2025-11-01",
+            "amount": 0.75
+          }
+        ],
+        "currentYear": 2026
+      },
+      "expected": {
+        "rate": 0.0973419967718,
+        "years": 4
+      },
+      "tolerance": 1e-9,
+      "notes": "Last 5 complete calendar years; (last/first)^(1/span)-1 = (1.45/1)^(1/4)-1."
+    },
+    {
+      "id": "dividends.incomeByMonth.basic",
+      "function": "incomeByMonth",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "E",
+            "type": "dividendo",
+            "date": "2026-03-10",
+            "quantity": "0",
+            "price": "0",
+            "fxRate": "0.9",
+            "fees": "0",
+            "taxes": "23.4",
+            "grossAmount": "100"
+          },
+          {
+            "id": "t2",
+            "instrumentId": "E",
+            "type": "cedola",
+            "date": "2026-03-20",
+            "quantity": "0",
+            "price": "0",
+            "fxRate": "1",
+            "fees": "1",
+            "taxes": "0",
+            "grossAmount": "50"
+          },
+          {
+            "id": "t3",
+            "instrumentId": "E",
+            "type": "dividendo",
+            "date": "2025-12-01",
+            "quantity": "0",
+            "price": "0",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": "10"
+          }
+        ],
+        "todayKey": "2026-10-18"
+      },
+      "expected": [
+        {
+          "year": 2026,
+          "months": [
+            {
+              "month": 1,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 2,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 3,
+              "gross": 140,
+              "withheld": 24.4,
+              "net": 115.6
+            },
+            {
+              "month": 4,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 5,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 6,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 7,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 8,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 9,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 10,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 11,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 12,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            }
+          ],
+          "gross": 140,
+          "withheld": 24.4,
+          "net": 115.6
+        },
+        {
+          "year": 2025,
+          "months": [
+            {
+              "month": 1,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 2,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 3,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 4,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 5,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 6,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 7,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 8,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 9,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 10,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 11,
+              "gross": 0,
+              "withheld": 0,
+              "net": 0
+            },
+            {
+              "month": 12,
+              "gross": 10,
+              "withheld": 0,
+              "net": 10
+            }
+          ],
+          "gross": 10,
+          "withheld": 0,
+          "net": 10
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "gross = grossAmount*fx; withheld = taxes+fees; years newest first; 12 months each."
+    },
+    {
+      "id": "dividends.findMissingIncome.basic",
+      "function": "findMissingIncome",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2025-01-10",
+            "quantity": "100",
+            "price": "50",
+            "fxRate": "0.9",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "USD",
+            "priceUnit": "unita"
+          }
+        ],
+        "taxInstruments": [
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "USD",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "settings": [],
+        "dividends": [
+          {
+            "instrumentId": "E",
+            "exDate": "2025-06-15",
+            "amount": "0.5"
+          },
+          {
+            "instrumentId": "E",
+            "exDate": "2025-12-15",
+            "amount": "0.6"
+          }
+        ],
+        "fx": {
+          "USD": [
+            {
+              "date": "2025-01-01",
+              "perEur": 1.25
+            }
+          ]
+        },
+        "userCurrency": "EUR",
+        "todayKey": "2026-01-20",
+        "fxRates": [
+          {
+            "date": "2025-01-01",
+            "currency": "USD",
+            "perEur": "1.25"
+          }
+        ],
+        "dismissed": []
+      },
+      "expected": [
+        {
+          "instrumentId": "E",
+          "kind": "dividendo",
+          "date": "2025-12-15",
+          "quantity": 100,
+          "gross": 60,
+          "fxRate": 0.8,
+          "estimatedTax": 12.48
+        },
+        {
+          "instrumentId": "E",
+          "kind": "dividendo",
+          "date": "2025-06-15",
+          "quantity": 100,
+          "gross": 50,
+          "fxRate": 0.8,
+          "estimatedTax": 10.4
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Ex-dates after first buy with quantity held the day before, no registered income in [-5,+60] days, not dismissed. estimatedTax = gross × fx(instrument→user) × taxRate."
+    },
+    {
+      "id": "dividends.forecastIncome.fromSource",
+      "function": "forecastIncome",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2025-01-10",
+            "quantity": "100",
+            "price": "50",
+            "fxRate": "0.9",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "USD",
+            "priceUnit": "unita"
+          }
+        ],
+        "taxInstruments": [
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "USD",
+            "priceUnit": "unita",
+            "taxRate": 0.26,
+            "harmonized": true
+          }
+        ],
+        "settings": [],
+        "dividends": [
+          {
+            "instrumentId": "E",
+            "exDate": "2025-06-15",
+            "amount": "0.5"
+          },
+          {
+            "instrumentId": "E",
+            "exDate": "2025-12-15",
+            "amount": "0.6"
+          }
+        ],
+        "fx": {
+          "USD": [
+            {
+              "date": "2025-01-01",
+              "perEur": 1.25
+            }
+          ]
+        },
+        "userCurrency": "EUR",
+        "todayKey": "2026-01-20",
+        "fxRates": [
+          {
+            "date": "2025-01-01",
+            "currency": "USD",
+            "perEur": "1.25"
+          }
+        ]
+      },
+      "expected": {
+        "months": [
+          {
+            "key": "2026-02",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-03",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-04",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-05",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-06",
+            "gross": 40,
+            "net": 29.6
+          },
+          {
+            "key": "2026-07",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-08",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-09",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-10",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-11",
+            "gross": 0,
+            "net": 0
+          },
+          {
+            "key": "2026-12",
+            "gross": 48,
+            "net": 35.52
+          },
+          {
+            "key": "2027-01",
+            "gross": 0,
+            "net": 0
+          }
+        ],
+        "events": [
+          {
+            "instrumentId": "E",
+            "kind": "dividendo",
+            "date": "2026-06-15",
+            "gross": 40,
+            "net": 29.6,
+            "basis": "fonte"
+          },
+          {
+            "instrumentId": "E",
+            "kind": "dividendo",
+            "date": "2026-12-15",
+            "gross": 48,
+            "net": 35.52,
+            "basis": "fonte"
+          }
+        ],
+        "totalGross": 88,
+        "totalNet": 65.12,
+        "bondsWithoutTerms": []
+      },
+      "tolerance": 1e-9,
+      "notes": "Window = next 12 full calendar months. Source ex-dates of the same window one year earlier, shifted +12 months, times today's quantity, converted at TODAY's fx; net = gross × (1 - taxRate)."
+    }
+  ]
+}

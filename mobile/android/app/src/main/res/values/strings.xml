@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Only the launcher label lives here; UI copy is generated from the spec string catalog. -->
+    <string name="app_name" translatable="false">BuddyBudget</string>
+</resources>

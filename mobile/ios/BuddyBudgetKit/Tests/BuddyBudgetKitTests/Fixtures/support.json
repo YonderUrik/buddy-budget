@@ -1,0 +1,27 @@
+{
+  "_source": "Dev server :3001 (branch feat/mobile-api-foundations), 2026-10-19, bearer token. 400 with the IT user (mobile-dev@), 502/429 with the DE user (mobile-dev-de@: the server localizes the message to the account language). The local Resend key is a placeholder, so every valid report answers 502 (log: support.report.failed reason validation_error) and no email leaves the machine; `created` is therefore the contract example (api/endpoints/support.md), not a captured response.",
+  "request": {
+    "kind": "domanda",
+    "message": "Fixture capture, dev server only",
+    "context": { "path": "/aiuto", "version": "ios-0.1.0 (1)", "viewport": "402x874", "theme": "chiaro" },
+    "source": "pagina"
+  },
+  "requestFromError": {
+    "kind": "problema",
+    "message": "Il salvataggio non va a buon fine",
+    "source": "errore",
+    "error": { "area": "abbonamento", "message": "Hai già un abbonamento con questo nome" }
+  },
+  "created": { "status": 201, "body": { "reference": "SUP-7K2QF9" } },
+  "createdWithoutReference": { "status": 201, "body": {} },
+  "validation": { "status": 400, "body": { "error": "Scrivi qualche parola in più.", "code": "bad_request" } },
+  "sendFailedIt": { "status": 502, "body": { "error": "Non siamo riusciti a inviare la segnalazione. Riprova o scrivi a support@buddybudget.io.", "code": "internal_error" } },
+  "sendFailedDe": { "status": 502, "body": { "error": "Wir konnten die Meldung nicht senden. Versuche es erneut oder schreib an support@buddybudget.io.", "code": "internal_error" } },
+  "rateLimitedDe": { "status": 429, "body": { "error": "Du hast bereits mehrere Meldungen gesendet: Versuche es später erneut.", "code": "too_many_requests" } },
+  "unauthorized": { "status": 401, "body": null },
+  "clientErrors": {
+    "request": { "kind": "sezione", "area": "panoramica", "name": "DecodingError", "message": "Risposta non leggibile: /api/overview" },
+    "accepted": { "status": 204, "body": null },
+    "invalid": { "status": 400, "body": { "code": "bad_request" } }
+  }
+}

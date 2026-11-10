@@ -1,0 +1,469 @@
+{
+  "topic": "net-worth",
+  "source": "lib/calc/net-worth.ts",
+  "vectors": [
+    {
+      "id": "netWorth.deriveLiquidity",
+      "function": "deriveLiquidityHistory",
+      "input": {
+        "accounts": [
+          {
+            "id": "acc1",
+            "source": "auto",
+            "balance": "1500.00"
+          },
+          {
+            "id": "acc2",
+            "source": "manual",
+            "balance": "500.00"
+          }
+        ],
+        "transactions": [
+          {
+            "id": "t21",
+            "date": "2026-10-14",
+            "amount": "-100.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t22",
+            "date": "2026-10-15",
+            "amount": "50.00",
+            "excludedAmount": "0.00",
+            "categoryId": "salary",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t23",
+            "date": "2026-10-16",
+            "amount": "-20.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc1",
+            "description": "TX",
+            "note": null
+          },
+          {
+            "id": "t24",
+            "date": "2026-10-12",
+            "amount": "-30.00",
+            "excludedAmount": "0.00",
+            "categoryId": "food",
+            "accountId": "acc2",
+            "description": "TX",
+            "note": null
+          }
+        ],
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "date": "2026-10-14",
+          "amount": 1970
+        },
+        {
+          "date": "2026-10-15",
+          "amount": 2020
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "manual accounts constant; today's tx subtracted from 'after'; points end yesterday"
+    },
+    {
+      "id": "netWorth.deriveLiquidity.noAuto",
+      "function": "deriveLiquidityHistory",
+      "input": {
+        "accounts": [
+          {
+            "id": "acc2",
+            "source": "manual",
+            "balance": "500.00"
+          }
+        ],
+        "transactions": [],
+        "today": "2026-10-16"
+      },
+      "expected": [],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.periodRange.1mese.2026-03-31.none",
+      "function": "getNetWorthPeriodRange",
+      "input": {
+        "period": "1mese",
+        "today": "2026-03-31",
+        "earliestDate": null
+      },
+      "expected": {
+        "from": "2026-02-28",
+        "to": "2026-03-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.periodRange.3mesi.2026-05-31.none",
+      "function": "getNetWorthPeriodRange",
+      "input": {
+        "period": "3mesi",
+        "today": "2026-05-31",
+        "earliestDate": null
+      },
+      "expected": {
+        "from": "2026-02-28",
+        "to": "2026-05-31"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.periodRange.1anno.2024-02-29.none",
+      "function": "getNetWorthPeriodRange",
+      "input": {
+        "period": "1anno",
+        "today": "2024-02-29",
+        "earliestDate": null
+      },
+      "expected": {
+        "from": "2023-02-28",
+        "to": "2024-02-29"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.periodRange.max.2026-10-16.2025-01-05",
+      "function": "getNetWorthPeriodRange",
+      "input": {
+        "period": "max",
+        "today": "2026-10-16",
+        "earliestDate": "2025-01-05"
+      },
+      "expected": {
+        "from": "2025-01-05",
+        "to": "2026-10-16"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.periodRange.max.2026-10-16.none",
+      "function": "getNetWorthPeriodRange",
+      "input": {
+        "period": "max",
+        "today": "2026-10-16",
+        "earliestDate": null
+      },
+      "expected": {
+        "from": "2026-10-16",
+        "to": "2026-10-16"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.series.1mese",
+      "function": "buildNetWorthSeries",
+      "input": {
+        "snapshots": [
+          {
+            "date": "2026-10-10",
+            "amount": "1000.00",
+            "source": "auto",
+            "assetClass": "liquidita"
+          },
+          {
+            "date": "2026-10-10",
+            "amount": "5000.00",
+            "source": "auto",
+            "assetClass": "investimenti"
+          },
+          {
+            "date": "2026-10-12",
+            "amount": "1100.00",
+            "source": "derivato",
+            "assetClass": "liquidita"
+          },
+          {
+            "date": "2026-10-14",
+            "amount": "5200.50",
+            "source": "auto",
+            "assetClass": "investimenti"
+          },
+          {
+            "date": "2026-10-16",
+            "amount": "9999.00",
+            "source": "auto",
+            "assetClass": "liquidita"
+          }
+        ],
+        "todayByClass": {
+          "liquidita": 1200,
+          "investimenti": 5300.25
+        },
+        "period": "1mese",
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "date": "2026-10-10",
+          "label": "10 ott",
+          "value": 6000,
+          "byClass": {
+            "liquidita": 1000,
+            "investimenti": 5000
+          },
+          "isEstimated": false
+        },
+        {
+          "date": "2026-10-11",
+          "label": "11 ott",
+          "value": 6000,
+          "byClass": {
+            "liquidita": 1000,
+            "investimenti": 5000
+          },
+          "isEstimated": false
+        },
+        {
+          "date": "2026-10-12",
+          "label": "12 ott",
+          "value": 6100,
+          "byClass": {
+            "liquidita": 1100,
+            "investimenti": 5000
+          },
+          "isEstimated": true
+        },
+        {
+          "date": "2026-10-13",
+          "label": "13 ott",
+          "value": 6100,
+          "byClass": {
+            "liquidita": 1100,
+            "investimenti": 5000
+          },
+          "isEstimated": true
+        },
+        {
+          "date": "2026-10-14",
+          "label": "14 ott",
+          "value": 6300.5,
+          "byClass": {
+            "liquidita": 1100,
+            "investimenti": 5200.5
+          },
+          "isEstimated": true
+        },
+        {
+          "date": "2026-10-15",
+          "label": "15 ott",
+          "value": 6300.5,
+          "byClass": {
+            "liquidita": 1100,
+            "investimenti": 5200.5
+          },
+          "isEstimated": true
+        },
+        {
+          "date": "2026-10-16",
+          "label": "16 ott",
+          "value": 6500.25,
+          "byClass": {
+            "liquidita": 1200,
+            "investimenti": 5300.25
+          },
+          "isEstimated": false
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "labels are it-IT 'd MMM' (web hardcodes it-IT); rows dated >= today ignored"
+    },
+    {
+      "id": "netWorth.series.max.monthly",
+      "function": "buildNetWorthSeries",
+      "input": {
+        "snapshots": [
+          {
+            "date": "2026-08-30",
+            "amount": "100",
+            "source": "auto",
+            "assetClass": "liquidita"
+          },
+          {
+            "date": "2026-09-15",
+            "amount": "200",
+            "source": "auto",
+            "assetClass": "liquidita"
+          }
+        ],
+        "todayByClass": {
+          "liquidita": 300
+        },
+        "period": "max",
+        "today": "2026-10-02"
+      },
+      "expected": [
+        {
+          "date": "2026-08-31",
+          "label": "ago 26",
+          "value": 100,
+          "byClass": {
+            "liquidita": 100
+          },
+          "isEstimated": false
+        },
+        {
+          "date": "2026-09-30",
+          "label": "set 26",
+          "value": 200,
+          "byClass": {
+            "liquidita": 200
+          },
+          "isEstimated": false
+        },
+        {
+          "date": "2026-10-02",
+          "label": "ott 26",
+          "value": 300,
+          "byClass": {
+            "liquidita": 300
+          },
+          "isEstimated": false
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "one point per month = last daily point of the month; label 'MMM yy' it-IT"
+    },
+    {
+      "id": "netWorth.change",
+      "function": "computeNetWorthChange",
+      "input": {
+        "series": "netWorth.series.1mese.expected"
+      },
+      "expected": {
+        "start": 6000,
+        "end": 6500.25,
+        "delta": 500.25,
+        "deltaPct": 0.083375
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.change.empty",
+      "function": "computeNetWorthChange",
+      "input": {
+        "series": []
+      },
+      "expected": {
+        "start": 0,
+        "end": 0,
+        "delta": 0,
+        "deltaPct": null
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.change.zeroStart",
+      "function": "computeNetWorthChange",
+      "input": {
+        "series": [
+          {
+            "value": 0
+          },
+          {
+            "value": 100
+          }
+        ]
+      },
+      "expected": {
+        "start": 0,
+        "end": 100,
+        "delta": 100,
+        "deltaPct": null
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.change.negStart",
+      "function": "computeNetWorthChange",
+      "input": {
+        "series": [
+          {
+            "value": -200
+          },
+          {
+            "value": 100
+          }
+        ]
+      },
+      "expected": {
+        "start": -200,
+        "end": 100,
+        "delta": 300,
+        "deltaPct": 1.5
+      },
+      "tolerance": 1e-9,
+      "notes": "divides by |start|"
+    },
+    {
+      "id": "netWorth.excludeClass",
+      "function": "excludeClassFromSeries",
+      "input": {
+        "series": [
+          {
+            "value": 10,
+            "byClass": {
+              "a": 4,
+              "b": 6
+            }
+          }
+        ],
+        "classKey": "a"
+      },
+      "expected": [
+        {
+          "value": 6,
+          "byClass": {
+            "a": 4,
+            "b": 6
+          }
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "netWorth.restrictClasses",
+      "function": "restrictSeriesToClasses",
+      "input": {
+        "series": [
+          {
+            "value": 10,
+            "byClass": {
+              "a": 4,
+              "b": 6,
+              "c": 1
+            }
+          }
+        ],
+        "classKeys": [
+          "a",
+          "c",
+          "z"
+        ]
+      },
+      "expected": [
+        {
+          "value": 5,
+          "byClass": {
+            "a": 4,
+            "b": 6,
+            "c": 1
+          }
+        }
+      ],
+      "tolerance": 1e-9
+    }
+  ]
+}

@@ -1,0 +1,690 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "walkthroughSeen": true,
+  "storedAssumptions": {
+    "withdrawalRate": 0.035,
+    "dataPeriod": {
+      "kind": "ultimi",
+      "months": 12
+    },
+    "annualSpending": null,
+    "annualSavings": null,
+    "expectedReturn": 0.04,
+    "expectedReturnAuto": true,
+    "volatility": 0.12,
+    "inflation": 0.02,
+    "retirementYears": 40,
+    "rule": "fissa",
+    "includePensionFunds": false,
+    "includeLatentTax": true,
+    "publicPension": null,
+    "terByInstrument": {}
+  },
+  "assumptions": {
+    "withdrawalRate": 0.035,
+    "dataPeriod": {
+      "kind": "ultimi",
+      "months": 12
+    },
+    "annualSpending": null,
+    "annualSavings": null,
+    "expectedReturn": 0.16,
+    "expectedReturnAuto": true,
+    "volatility": 0.12,
+    "inflation": 0.02,
+    "retirementYears": 40,
+    "rule": "fissa",
+    "includePensionFunds": false,
+    "includeLatentTax": true,
+    "publicPension": null,
+    "terByInstrument": {}
+  },
+  "returnInfo": {
+    "history": {
+      "status": "ok",
+      "months": 12,
+      "shorterThanPeriod": false,
+      "fromKey": "2025-10-18",
+      "toKey": "2026-10-18",
+      "nominal": 0.18308292619835753,
+      "real": null
+    },
+    "historyReal": 0.1598852217630955,
+    "clamped": false,
+    "value": 0.16,
+    "source": "storico",
+    "high": true
+  },
+  "base": {
+    "currency": "EUR",
+    "wealth": {
+      "liquidity": 23915.34,
+      "investments": 73618.967894562,
+      "pension": 11082.07,
+      "debts": 39937.23
+    },
+    "cashflow": {
+      "months": [
+        {
+          "year": 2025,
+          "month": 9,
+          "label": "Ott '25",
+          "entrate": 2480,
+          "uscite": 2696.01
+        },
+        {
+          "year": 2025,
+          "month": 10,
+          "label": "Nov '25",
+          "entrate": 2480,
+          "uscite": 2054.89
+        },
+        {
+          "year": 2025,
+          "month": 11,
+          "label": "Dic '25",
+          "entrate": 2480,
+          "uscite": 2167.47
+        },
+        {
+          "year": 2026,
+          "month": 0,
+          "label": "Gen '26",
+          "entrate": 3145.26,
+          "uscite": 2221.6600000000003
+        },
+        {
+          "year": 2026,
+          "month": 1,
+          "label": "Feb '26",
+          "entrate": 2480,
+          "uscite": 1981.3400000000001
+        },
+        {
+          "year": 2026,
+          "month": 2,
+          "label": "Mar '26",
+          "entrate": 2480,
+          "uscite": 2192.62
+        },
+        {
+          "year": 2026,
+          "month": 3,
+          "label": "Apr '26",
+          "entrate": 2480,
+          "uscite": 2523.49
+        },
+        {
+          "year": 2026,
+          "month": 4,
+          "label": "Mag '26",
+          "entrate": 3025.52,
+          "uscite": 2144.72
+        },
+        {
+          "year": 2026,
+          "month": 5,
+          "label": "Giu '26",
+          "entrate": 2480,
+          "uscite": 1810.94
+        },
+        {
+          "year": 2026,
+          "month": 6,
+          "label": "Lug '26",
+          "entrate": 2480,
+          "uscite": 2451.6
+        },
+        {
+          "year": 2026,
+          "month": 7,
+          "label": "Ago '26",
+          "entrate": 2480,
+          "uscite": 2066.1600000000003
+        },
+        {
+          "year": 2026,
+          "month": 8,
+          "label": "Set '26",
+          "entrate": 2901.2799999999997,
+          "uscite": 1966.9900000000002
+        }
+      ],
+      "fromKey": "2025-10-01",
+      "toKey": "2026-09-30",
+      "coveredMonths": 12,
+      "annualIncome": 31392.06,
+      "annualSpending": 26277.889999999996,
+      "annualSavings": 5114.1700000000055,
+      "savingsRate": 0.16291285121142116,
+      "leanSpending": 17138.85999999998,
+      "monthsWithData": 12
+    },
+    "positions": [
+      {
+        "id": "160469f4-e5ab-47c0-ae0b-e98b9272a5a9",
+        "name": "ETF Azionario Globale Demo",
+        "value": 21563.61264,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 2357.421408000002,
+        "taxRate": 0.26
+      },
+      {
+        "id": "8d725ad2-a8fb-4261-bbde-a1030171bc4c",
+        "name": "BTP Valore 2030",
+        "value": 10134,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 154,
+        "taxRate": 0.125
+      },
+      {
+        "id": "05b60e79-0d85-41a4-b92d-22e4f7f56852",
+        "name": "Fondo Bilanciato Demo",
+        "value": 6495.14364,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 495.1508039999999,
+        "taxRate": 0.26
+      },
+      {
+        "id": "e230f702-316b-49b3-89f6-5ff99cdedec2",
+        "name": "Energia Italia S.p.A.",
+        "value": 5888.29,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 1554.1949999999997,
+        "taxRate": 0.26
+      },
+      {
+        "id": "4bd6b91c-7be8-4a14-9ca4-497df246cf8b",
+        "name": "ETF Obbligazioni Euro Demo",
+        "value": 5131.917082000001,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 130.63186900000073,
+        "taxRate": 0.26
+      },
+      {
+        "id": "13e4aa15-b3ef-4c1a-954a-f22feb8ed691",
+        "name": "ETC Oro Fisico Demo",
+        "value": 4347.412297999999,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 846.6405879999993,
+        "taxRate": 0.26
+      },
+      {
+        "id": "0dc9bcad-edaf-4007-970f-6cf50133cff0",
+        "name": "ETF Euro Stoxx Dividend Demo",
+        "value": 4299.34588,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 298.06079999999974,
+        "taxRate": 0.26
+      },
+      {
+        "id": "34b583e3-d34c-433b-9cb5-6c9a1f49e88e",
+        "name": "Nimbus Cloud Inc.",
+        "value": 4058.854545454545,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 1920.0298818276706,
+        "taxRate": 0.26
+      },
+      {
+        "id": "680c524d-f71c-44c8-b45f-5d137c90fd31",
+        "name": "ETF S&P 500 Demo",
+        "value": 3367.6257414799998,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 367.65636881,
+        "taxRate": 0.26
+      },
+      {
+        "id": "92431ab9-c89e-4413-a443-fa9ea46f3a73",
+        "name": "Alpenfood AG",
+        "value": 2580.6746463547333,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": 176.47848411723317,
+        "taxRate": 0.26
+      },
+      {
+        "id": "f29046c4-7e37-459e-a652-dbee9b0123ac",
+        "name": "ETF Emerging Markets Demo",
+        "value": 2386.4867280000003,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": -116.32814999999982,
+        "taxRate": 0.26
+      },
+      {
+        "id": "86ed036b-11c2-4f60-9ea9-8106f214797a",
+        "name": "Pacific Biotech Corp.",
+        "value": 2134.172727272727,
+        "ter": null,
+        "subjectToBollo": true,
+        "unrealizedGain": -1287.7245515432724,
+        "taxRate": 0.26
+      },
+      {
+        "id": "8a278f13-7126-45a0-a97a-fe202498bcba",
+        "name": "Moneta Digitale Demo",
+        "value": 1231.431966,
+        "ter": null,
+        "subjectToBollo": false,
+        "unrealizedGain": 329.03109599999993,
+        "taxRate": 0.26
+      }
+    ],
+    "growthPoints": [
+      {
+        "month": "2025-10",
+        "netWorth": 46807.18,
+        "savings": -216.01000000000022
+      },
+      {
+        "month": "2025-11",
+        "netWorth": 53279.7,
+        "savings": 425.1100000000001
+      },
+      {
+        "month": "2025-12",
+        "netWorth": 64022.240000000005,
+        "savings": 312.5300000000002
+      },
+      {
+        "month": "2026-01",
+        "netWorth": 69891.06,
+        "savings": 923.5999999999999
+      },
+      {
+        "month": "2026-02",
+        "netWorth": 73348.79000000001,
+        "savings": 498.65999999999985
+      },
+      {
+        "month": "2026-03",
+        "netWorth": 77797,
+        "savings": 287.3800000000001
+      },
+      {
+        "month": "2026-04",
+        "netWorth": 88855.29000000001,
+        "savings": -43.48999999999978
+      },
+      {
+        "month": "2026-05",
+        "netWorth": 96035.82,
+        "savings": 880.8000000000002
+      },
+      {
+        "month": "2026-06",
+        "netWorth": 99496.08,
+        "savings": 669.06
+      },
+      {
+        "month": "2026-07",
+        "netWorth": 107001.35,
+        "savings": 28.40000000000009
+      },
+      {
+        "month": "2026-08",
+        "netWorth": 105493.70000000001,
+        "savings": 413.8399999999997
+      },
+      {
+        "month": "2026-09",
+        "netWorth": 99689.89,
+        "savings": 934.2899999999995
+      },
+      {
+        "month": "2026-10",
+        "netWorth": 97534.307894562,
+        "savings": -2163.83
+      }
+    ],
+    "risk": {
+      "observations": 316,
+      "fewData": false,
+      "volatility": 0.055675772559370576,
+      "maxDrawdown": 0.045099018080350106,
+      "sharpe": 1.913088102575426,
+      "sortino": 3.0649609745955084,
+      "calmar": 2.453566392409499,
+      "annualReturn": 0.11065343509261538,
+      "tail": {
+        "var": 0.004629997486455625,
+        "cvar": 0.006233415306188981
+      },
+      "concentration": {
+        "hhi": 0.1392145985911515,
+        "effectiveN": 7.183154713083087
+      }
+    },
+    "riskContribution": null,
+    "names": {
+      "160469f4-e5ab-47c0-ae0b-e98b9272a5a9": "ETF Azionario Globale Demo",
+      "8d725ad2-a8fb-4261-bbde-a1030171bc4c": "BTP Valore 2030",
+      "05b60e79-0d85-41a4-b92d-22e4f7f56852": "Fondo Bilanciato Demo",
+      "e230f702-316b-49b3-89f6-5ff99cdedec2": "Energia Italia S.p.A.",
+      "4bd6b91c-7be8-4a14-9ca4-497df246cf8b": "ETF Obbligazioni Euro Demo",
+      "13e4aa15-b3ef-4c1a-954a-f22feb8ed691": "ETC Oro Fisico Demo",
+      "0dc9bcad-edaf-4007-970f-6cf50133cff0": "ETF Euro Stoxx Dividend Demo",
+      "34b583e3-d34c-433b-9cb5-6c9a1f49e88e": "Nimbus Cloud Inc.",
+      "680c524d-f71c-44c8-b45f-5d137c90fd31": "ETF S&P 500 Demo",
+      "92431ab9-c89e-4413-a443-fa9ea46f3a73": "Alpenfood AG",
+      "f29046c4-7e37-459e-a652-dbee9b0123ac": "ETF Emerging Markets Demo",
+      "86ed036b-11c2-4f60-9ea9-8106f214797a": "Pacific Biotech Corp.",
+      "8a278f13-7126-45a0-a97a-fe202498bcba": "Moneta Digitale Demo"
+    },
+    "instrumentTypes": {
+      "160469f4-e5ab-47c0-ae0b-e98b9272a5a9": "etf",
+      "8d725ad2-a8fb-4261-bbde-a1030171bc4c": "obbligazione",
+      "05b60e79-0d85-41a4-b92d-22e4f7f56852": "fondo",
+      "e230f702-316b-49b3-89f6-5ff99cdedec2": "azione",
+      "4bd6b91c-7be8-4a14-9ca4-497df246cf8b": "etf",
+      "13e4aa15-b3ef-4c1a-954a-f22feb8ed691": "etc",
+      "0dc9bcad-edaf-4007-970f-6cf50133cff0": "etf",
+      "34b583e3-d34c-433b-9cb5-6c9a1f49e88e": "azione",
+      "680c524d-f71c-44c8-b45f-5d137c90fd31": "etf",
+      "92431ab9-c89e-4413-a443-fa9ea46f3a73": "azione",
+      "f29046c4-7e37-459e-a652-dbee9b0123ac": "etf",
+      "86ed036b-11c2-4f60-9ea9-8106f214797a": "azione",
+      "8a278f13-7126-45a0-a97a-fe202498bcba": "crypto"
+    },
+    "historicalReturn": {
+      "status": "ok",
+      "months": 12,
+      "shorterThanPeriod": false,
+      "fromKey": "2025-10-18",
+      "toKey": "2026-10-18",
+      "nominal": 0.18308292619835753,
+      "real": null
+    }
+  },
+  "plan": {
+    "spending": 26277.889999999996,
+    "spendingSource": "dati",
+    "savings": 5114.1700000000055,
+    "savingsSource": "dati",
+    "wealth": 97534.307894562,
+    "liquidation": {
+      "latentTax": 2222.8270379362752,
+      "grossValue": 73618.96789456203,
+      "netValue": 71396.14085662575,
+      "taxRatio": 0.030193672928420227,
+      "byPosition": [
+        {
+          "id": "160469f4-e5ab-47c0-ae0b-e98b9272a5a9",
+          "name": "ETF Azionario Globale Demo",
+          "tax": 612.9295660800005
+        },
+        {
+          "id": "34b583e3-d34c-433b-9cb5-6c9a1f49e88e",
+          "name": "Nimbus Cloud Inc.",
+          "tax": 499.2077692751944
+        },
+        {
+          "id": "e230f702-316b-49b3-89f6-5ff99cdedec2",
+          "name": "Energia Italia S.p.A.",
+          "tax": 404.0906999999999
+        },
+        {
+          "id": "13e4aa15-b3ef-4c1a-954a-f22feb8ed691",
+          "name": "ETC Oro Fisico Demo",
+          "tax": 220.12655287999982
+        },
+        {
+          "id": "05b60e79-0d85-41a4-b92d-22e4f7f56852",
+          "name": "Fondo Bilanciato Demo",
+          "tax": 128.73920903999996
+        },
+        {
+          "id": "680c524d-f71c-44c8-b45f-5d137c90fd31",
+          "name": "ETF S&P 500 Demo",
+          "tax": 95.5906558906
+        },
+        {
+          "id": "8a278f13-7126-45a0-a97a-fe202498bcba",
+          "name": "Moneta Digitale Demo",
+          "tax": 85.54808495999998
+        },
+        {
+          "id": "0dc9bcad-edaf-4007-970f-6cf50133cff0",
+          "name": "ETF Euro Stoxx Dividend Demo",
+          "tax": 77.49580799999994
+        },
+        {
+          "id": "92431ab9-c89e-4413-a443-fa9ea46f3a73",
+          "name": "Alpenfood AG",
+          "tax": 45.88440587048063
+        },
+        {
+          "id": "4bd6b91c-7be8-4a14-9ca4-497df246cf8b",
+          "name": "ETF Obbligazioni Euro Demo",
+          "tax": 33.964285940000195
+        },
+        {
+          "id": "8d725ad2-a8fb-4261-bbde-a1030171bc4c",
+          "name": "BTP Valore 2030",
+          "tax": 19.25
+        }
+      ]
+    },
+    "taxShare": 0.022790206706948996,
+    "fireNumberGross": 750796.8571428569,
+    "target": 768306.7262483971,
+    "progress": 0.12694709620832956,
+    "yearsToFire": 12.271156397786022,
+    "coast": [
+      {
+        "years": 10,
+        "number": 174162.5372584043
+      },
+      {
+        "years": 15,
+        "number": 82921.05078628726
+      },
+      {
+        "years": 20,
+        "number": 39479.791531173454
+      },
+      {
+        "years": 25,
+        "number": 18796.842593831087
+      },
+      {
+        "years": 30,
+        "number": 8949.421407615037
+      }
+    ]
+  },
+  "growth": {
+    "split": {
+      "rows": [
+        {
+          "month": "2025-11",
+          "netWorth": 53279.7,
+          "savings": 425.1100000000001,
+          "delta": 6472.519999999997,
+          "fromSavings": 425.1100000000001,
+          "fromMarket": 6047.409999999996
+        },
+        {
+          "month": "2025-12",
+          "netWorth": 64022.240000000005,
+          "savings": 312.5300000000002,
+          "delta": 10742.540000000008,
+          "fromSavings": 312.5300000000002,
+          "fromMarket": 10430.010000000007
+        },
+        {
+          "month": "2026-01",
+          "netWorth": 69891.06,
+          "savings": 923.5999999999999,
+          "delta": 5868.819999999992,
+          "fromSavings": 923.5999999999999,
+          "fromMarket": 4945.219999999992
+        },
+        {
+          "month": "2026-02",
+          "netWorth": 73348.79000000001,
+          "savings": 498.65999999999985,
+          "delta": 3457.7300000000105,
+          "fromSavings": 498.65999999999985,
+          "fromMarket": 2959.0700000000106
+        },
+        {
+          "month": "2026-03",
+          "netWorth": 77797,
+          "savings": 287.3800000000001,
+          "delta": 4448.209999999992,
+          "fromSavings": 287.3800000000001,
+          "fromMarket": 4160.829999999992
+        },
+        {
+          "month": "2026-04",
+          "netWorth": 88855.29000000001,
+          "savings": -43.48999999999978,
+          "delta": 11058.290000000008,
+          "fromSavings": -43.48999999999978,
+          "fromMarket": 11101.780000000008
+        },
+        {
+          "month": "2026-05",
+          "netWorth": 96035.82,
+          "savings": 880.8000000000002,
+          "delta": 7180.529999999999,
+          "fromSavings": 880.8000000000002,
+          "fromMarket": 6299.729999999999
+        },
+        {
+          "month": "2026-06",
+          "netWorth": 99496.08,
+          "savings": 669.06,
+          "delta": 3460.2599999999948,
+          "fromSavings": 669.06,
+          "fromMarket": 2791.199999999995
+        },
+        {
+          "month": "2026-07",
+          "netWorth": 107001.35,
+          "savings": 28.40000000000009,
+          "delta": 7505.270000000004,
+          "fromSavings": 28.40000000000009,
+          "fromMarket": 7476.870000000004
+        },
+        {
+          "month": "2026-08",
+          "netWorth": 105493.70000000001,
+          "savings": 413.8399999999997,
+          "delta": -1507.6499999999942,
+          "fromSavings": 413.8399999999997,
+          "fromMarket": -1921.4899999999939
+        },
+        {
+          "month": "2026-09",
+          "netWorth": 99689.89,
+          "savings": 934.2899999999995,
+          "delta": -5803.810000000012,
+          "fromSavings": 934.2899999999995,
+          "fromMarket": -6738.100000000011
+        },
+        {
+          "month": "2026-10",
+          "netWorth": 97534.307894562,
+          "savings": -2163.83,
+          "delta": -2155.5821054380067,
+          "fromSavings": -2163.83,
+          "fromMarket": 8.247894561993235
+        }
+      ],
+      "totalDelta": 50727.12789456199,
+      "totalFromSavings": 3166.3500000000004,
+      "totalFromMarket": 47560.777894561994,
+      "savingsShare": 0.0624192642363148
+    },
+    "journey": [
+      "Hai 97.534 € su 768.307 € necessari: 13% del percorso.",
+      "Il numero FIRE è la tua spesa annua (26.278 €) divisa per il tasso di prelievo (3,5%).",
+      "Negli ultimi 12 mesi il patrimonio è cresciuto di 50.727 €: 6% grazie al tuo risparmio, il resto dal mercato."
+    ]
+  },
+  "timeline": {
+    "headline": "Intorno al 2039, tra 12,3 anni.",
+    "series": [
+      {
+        "year": 0,
+        "wealth": 97534.307894562
+      },
+      {
+        "year": 1,
+        "wealth": 118253.9671576919
+      },
+      {
+        "year": 2,
+        "wealth": 142288.7719029226
+      },
+      {
+        "year": 3,
+        "wealth": 170169.1454073902
+      },
+      {
+        "year": 4,
+        "wealth": 202510.3786725726
+      },
+      {
+        "year": 5,
+        "wealth": 240026.20926018423
+      },
+      {
+        "year": 6,
+        "wealth": 283544.5727418137
+      },
+      {
+        "year": 7,
+        "wealth": 334025.8743805039
+      },
+      {
+        "year": 8,
+        "wealth": 392584.18428138446
+      },
+      {
+        "year": 9,
+        "wealth": 460511.823766406
+      },
+      {
+        "year": 10,
+        "wealth": 539307.8855690309
+      },
+      {
+        "year": 11,
+        "wealth": 630711.3172600758
+      },
+      {
+        "year": 12,
+        "wealth": 736739.2980216879
+      },
+      {
+        "year": 13,
+        "wealth": 859731.7557051578
+      },
+      {
+        "year": 14,
+        "wealth": 1002403.0066179831
+      },
+      {
+        "year": 15,
+        "wealth": 1167901.6576768602
+      },
+      {
+        "year": 16,
+        "wealth": 1359880.0929051577
+      }
+    ]
+  }
+}

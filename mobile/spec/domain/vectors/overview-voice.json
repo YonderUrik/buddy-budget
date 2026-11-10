@@ -1,0 +1,208 @@
+{
+  "topic": "overview-voice",
+  "source": "lib/overview/voice.ts",
+  "vectors": [
+    {
+      "id": "voice.it.2026-10-16",
+      "function": "buildVoiceLines",
+      "input": {
+        "language": "it",
+        "pace": "computeMonthPace(fixture, 2026-10-16)",
+        "monthLabel": "ottobre",
+        "currency": "EUR",
+        "nextDue": {
+          "name": "Auto",
+          "date": "2026-10-20",
+          "amount": 250
+        },
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "key": "pace",
+          "segments": [
+            {
+              "text": "Ottobre è partito sopra il solito: "
+            },
+            {
+              "text": "148 €",
+              "strong": true
+            },
+            {
+              "text": " spesi, "
+            },
+            {
+              "text": "12 € in più",
+              "strong": true
+            },
+            {
+              "text": " della tua media a questo punto."
+            }
+          ]
+        },
+        {
+          "key": "due",
+          "segments": [
+            {
+              "text": "La rata Auto scade il 20 ottobre: "
+            },
+            {
+              "text": "250 €",
+              "strong": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "voice.en.2026-10-16",
+      "function": "buildVoiceLines",
+      "input": {
+        "language": "en",
+        "pace": "computeMonthPace(fixture, 2026-10-16)",
+        "monthLabel": "October",
+        "currency": "EUR",
+        "nextDue": null,
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "key": "pace",
+          "segments": [
+            {
+              "text": "October started above your usual spending: "
+            },
+            {
+              "text": "€148",
+              "strong": true
+            },
+            {
+              "text": " spent, "
+            },
+            {
+              "text": "€12 more",
+              "strong": true
+            },
+            {
+              "text": " than your average at this point."
+            }
+          ]
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "voice.de.2026-10-02",
+      "function": "buildVoiceLines",
+      "input": {
+        "language": "de",
+        "pace": "computeMonthPace(fixture, 2026-10-02)",
+        "monthLabel": "Oktober",
+        "currency": "EUR",
+        "nextDue": {
+          "name": "Mutuo",
+          "date": "2026-10-02",
+          "amount": 800
+        },
+        "today": "2026-10-02"
+      },
+      "expected": [
+        {
+          "key": "pace",
+          "segments": [
+            {
+              "text": "Oktober liegt unter deinen üblichen Ausgaben: "
+            },
+            {
+              "text": "0 €",
+              "strong": true
+            },
+            {
+              "text": " ausgegeben, "
+            },
+            {
+              "text": "45 € weniger",
+              "strong": true
+            },
+            {
+              "text": " als dein Durchschnitt zu diesem Zeitpunkt."
+            }
+          ]
+        },
+        {
+          "key": "due",
+          "segments": [
+            {
+              "text": "Deine Rate für Mutuo ist heute fällig: "
+            },
+            {
+              "text": "800 €",
+              "strong": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "voice.inline",
+      "function": "buildVoiceLines",
+      "input": {
+        "language": "it",
+        "pace": {
+          "spentSoFar": 102,
+          "typicalSoFar": 100
+        },
+        "monthLabel": "ottobre",
+        "currency": "EUR",
+        "nextDue": {
+          "name": "Prestito",
+          "date": "2026-10-10",
+          "amount": 99.5
+        },
+        "today": "2026-10-16"
+      },
+      "expected": [
+        {
+          "key": "pace",
+          "segments": [
+            {
+              "text": "Ottobre procede in linea con il solito: "
+            },
+            {
+              "text": "102 €",
+              "strong": true
+            },
+            {
+              "text": " spesi."
+            }
+          ]
+        },
+        {
+          "key": "due",
+          "segments": [
+            {
+              "text": "La rata Prestito è scaduta: "
+            },
+            {
+              "text": "100 €",
+              "strong": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "within 5% tolerance -> 'in linea'; overdue rata -> 'è scaduta'"
+    }
+  ]
+}

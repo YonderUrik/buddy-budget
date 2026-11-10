@@ -1,0 +1,8 @@
+Dossier titoli;12345
+Intestatario;Mario Rossi
+
+Operazione;Data valuta;Descrizione;Titolo;Isin;Segno;Quantita;Divisa;Prezzo;Cambio;Controvalore;Commissioni Fondi Sw/Ingr/Uscita;Commissioni Fondi Banca Corrispondente;Spese Fondi Sgr;Commissioni amministrato;Commissioni
+02/12/2024;04/12/2024;Compravendita titoli;VANGUARD FTSE ALL-WORLD;IE00BK5BQT80;A;10;EUR;118,52;1;1.185,20;0;0;0;0;2,95
+15/01/2025;17/01/2025;Compravendita titoli;VANGUARD FTSE ALL-WORLD;IE00BK5BQT80;V;3;EUR;125,10;1;375,30;0;0;0;0;2,95
+20/03/2025;20/03/2025;Stacco dividendo;ENEL;IT0003128367;;;EUR;;;12,40;0;0;0;0;0
+21/03/2025;21/03/2025;Imposta di bollo;;;;;EUR;;;-34,20;0;0;0;0;0

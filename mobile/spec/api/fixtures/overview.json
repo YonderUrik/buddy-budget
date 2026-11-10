@@ -1,0 +1,1236 @@
+{
+  "currency": "EUR",
+  "today": "2026-10-18",
+  "period": "3mesi",
+  "includePension": true,
+  "isEmpty": false,
+  "todayByClass": {
+    "liquidita": 23915.34,
+    "investimenti": 71038.29324820726,
+    "previdenza": 11082.07,
+    "debiti": -39937.23
+  },
+  "series": [
+    {
+      "date": "2026-07-18",
+      "value": 69569.58,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41749.56,
+        "investimenti": 77486.41,
+        "liquidita": 23495.34
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-19",
+      "value": 69534.47,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41749.56,
+        "investimenti": 77486.41,
+        "liquidita": 23460.23
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-20",
+      "value": 73247.51,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81477.86,
+        "liquidita": 23087.33
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-21",
+      "value": 73160.19,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81390.54,
+        "liquidita": 23087.33
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-22",
+      "value": 73183.83,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81516.44,
+        "liquidita": 22985.07
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-23",
+      "value": 73664.37,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81996.98,
+        "liquidita": 22985.07
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-24",
+      "value": 73166.74,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81499.35,
+        "liquidita": 22985.07
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-25",
+      "value": 73060.01,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81499.35,
+        "liquidita": 22878.34
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-26",
+      "value": 72761.82,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81499.35,
+        "liquidita": 22580.15
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-27",
+      "value": 74712.78,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81015.89,
+        "liquidita": 25014.57
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-28",
+      "value": 75039.04,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81375.68,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-29",
+      "value": 75005.48,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81342.12,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-30",
+      "value": 75364.99,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 81701.63,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-07-31",
+      "value": 75683.67,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 82020.31,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-01",
+      "value": 75683.67,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 82020.31,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-02",
+      "value": 75683.67,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 82020.31,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-03",
+      "value": 76038.5,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 82375.14,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-04",
+      "value": 75956,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41655.07,
+        "investimenti": 82292.64,
+        "liquidita": 24981.04
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-05",
+      "value": 75897.66,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41358.34,
+        "investimenti": 82024.94,
+        "liquidita": 24893.67
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-06",
+      "value": 76190.73,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41358.34,
+        "investimenti": 82321,
+        "liquidita": 24890.68
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-07",
+      "value": 75505.31,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41358.34,
+        "investimenti": 82411.7,
+        "liquidita": 24114.56
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-08",
+      "value": 75414.66,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41358.34,
+        "investimenti": 82411.7,
+        "liquidita": 24023.91
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-09",
+      "value": 75414.66,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41358.34,
+        "investimenti": 82411.7,
+        "liquidita": 24023.91
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-10",
+      "value": 74766.49,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41358.34,
+        "investimenti": 81802.23,
+        "liquidita": 23985.21
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-11",
+      "value": 74879.55,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41358.34,
+        "investimenti": 81961.71,
+        "liquidita": 23938.79
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-12",
+      "value": 75255.8,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41148.32,
+        "investimenti": 82165.18,
+        "liquidita": 23901.55
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-13",
+      "value": 75208.81,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41148.32,
+        "investimenti": 82239.13,
+        "liquidita": 23780.61
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-14",
+      "value": 74823,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41148.32,
+        "investimenti": 81892.15,
+        "liquidita": 23741.78
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-15",
+      "value": 74773.33,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41148.32,
+        "investimenti": 81892.15,
+        "liquidita": 23692.11
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-16",
+      "value": 74727.2,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41148.32,
+        "investimenti": 81892.15,
+        "liquidita": 23645.98
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-17",
+      "value": 74507.72,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41148.32,
+        "investimenti": 81686.66,
+        "liquidita": 23631.99
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-18",
+      "value": 74674.36,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41148.32,
+        "investimenti": 81853.3,
+        "liquidita": 23631.99
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-19",
+      "value": 73033.04,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41148.32,
+        "investimenti": 80339.8,
+        "liquidita": 23504.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-20",
+      "value": 73234.18,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 80445.51,
+        "liquidita": 23504.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-21",
+      "value": 73253.97,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 80476.29,
+        "liquidita": 23493.18
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-22",
+      "value": 73164.47,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 80476.29,
+        "liquidita": 23403.68
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-23",
+      "value": 73049.79,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 80476.29,
+        "liquidita": 23289
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-24",
+      "value": 72887.63,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 80402.72,
+        "liquidita": 23200.41
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-25",
+      "value": 72321.05,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 79969.44,
+        "liquidita": 23067.11
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-26",
+      "value": 72740.91,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 80389.3,
+        "liquidita": 23067.11
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-27",
+      "value": 74822.97,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 79991.36,
+        "liquidita": 25547.11
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-28",
+      "value": 74526.96,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 79847.58,
+        "liquidita": 25394.88
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-29",
+      "value": 74526.96,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 79847.58,
+        "liquidita": 25394.88
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-30",
+      "value": 74526.96,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 79847.58,
+        "liquidita": 25394.88
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-08-31",
+      "value": 74778.2,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 80098.82,
+        "liquidita": 25394.88
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-01",
+      "value": 74674.93,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 79995.55,
+        "liquidita": 25394.88
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-02",
+      "value": 74507.28,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 79827.9,
+        "liquidita": 25394.88
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-03",
+      "value": 68987.02,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 74345.07,
+        "liquidita": 25357.45
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-04",
+      "value": 69311.41,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -41052.89,
+        "investimenti": 74669.46,
+        "liquidita": 25357.45
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-05",
+      "value": 69608.85,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40755.45,
+        "investimenti": 74669.46,
+        "liquidita": 25357.45
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-06",
+      "value": 68752.09,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40755.45,
+        "investimenti": 73815.69,
+        "liquidita": 25354.46
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-07",
+      "value": 68124.44,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40755.45,
+        "investimenti": 73930.22,
+        "liquidita": 24612.28
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-08",
+      "value": 68679.95,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40755.45,
+        "investimenti": 74485.73,
+        "liquidita": 24612.28
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-09",
+      "value": 68742.72,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40755.45,
+        "investimenti": 74676.21,
+        "liquidita": 24484.57
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-10",
+      "value": 68703.03,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40755.45,
+        "investimenti": 74688.88,
+        "liquidita": 24432.21
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-11",
+      "value": 68550.95,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40755.45,
+        "investimenti": 74605.91,
+        "liquidita": 24363.1
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-12",
+      "value": 68762.18,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40544.22,
+        "investimenti": 74605.91,
+        "liquidita": 24363.1
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-13",
+      "value": 63691.23,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40544.22,
+        "investimenti": 69606.61,
+        "liquidita": 24291.45
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-14",
+      "value": 63778.28,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40544.22,
+        "investimenti": 69332.7,
+        "liquidita": 24652.41
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-15",
+      "value": 63601.01,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40544.22,
+        "investimenti": 69207.89,
+        "liquidita": 24599.95
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-16",
+      "value": 63574.03,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40544.22,
+        "investimenti": 69212.28,
+        "liquidita": 24568.58
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-17",
+      "value": 63539.93,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40544.22,
+        "investimenti": 69192.17,
+        "liquidita": 24554.59
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-18",
+      "value": 66756.63,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40544.22,
+        "investimenti": 72408.87,
+        "liquidita": 24554.59
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-19",
+      "value": 66756.63,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40544.22,
+        "investimenti": 72408.87,
+        "liquidita": 24554.59
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-20",
+      "value": 66853.01,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 72408.87,
+        "liquidita": 24554.59
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-21",
+      "value": 67279.17,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 72938.47,
+        "liquidita": 24451.15
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-22",
+      "value": 67077.02,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 72736.32,
+        "liquidita": 24451.15
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-23",
+      "value": 66732.03,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 72561.07,
+        "liquidita": 24281.41
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-24",
+      "value": 66534.26,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 72425.09,
+        "liquidita": 24219.62
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-25",
+      "value": 66581.61,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 72708.05,
+        "liquidita": 23984.01
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-26",
+      "value": 66581.61,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 72708.05,
+        "liquidita": 23984.01
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-27",
+      "value": 69061.61,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 72708.05,
+        "liquidita": 26464.01
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-28",
+      "value": 69433.4,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 73214.68,
+        "liquidita": 26329.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-29",
+      "value": 69717.68,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 73498.96,
+        "liquidita": 26329.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-09-30",
+      "value": 69579.44,
+      "byClass": {
+        "previdenza": 10337.39,
+        "debiti": -40447.84,
+        "investimenti": 73360.72,
+        "liquidita": 26329.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-01",
+      "value": 70461.32,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40447.84,
+        "investimenti": 73497.92,
+        "liquidita": 26329.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-02",
+      "value": 69786.87,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40447.84,
+        "investimenti": 73251.47,
+        "liquidita": 25901.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-03",
+      "value": 69786.87,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40447.84,
+        "investimenti": 73251.47,
+        "liquidita": 25901.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-04",
+      "value": 69786.87,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40447.84,
+        "investimenti": 73251.47,
+        "liquidita": 25901.17
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-05",
+      "value": 69735.33,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40149.68,
+        "investimenti": 73738.99,
+        "liquidita": 25063.95
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-06",
+      "value": 69322.44,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40149.68,
+        "investimenti": 73329.09,
+        "liquidita": 25060.96
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-07",
+      "value": 69240.79,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40149.68,
+        "investimenti": 73289.99,
+        "liquidita": 25018.41
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-08",
+      "value": 68897.08,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40149.68,
+        "investimenti": 72985.28,
+        "liquidita": 24979.41
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-09",
+      "value": 69084.12,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40149.68,
+        "investimenti": 73207.22,
+        "liquidita": 24944.51
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-10",
+      "value": 69022.15,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40149.68,
+        "investimenti": 73207.22,
+        "liquidita": 24882.54
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-11",
+      "value": 68942.55,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -40149.68,
+        "investimenti": 73207.22,
+        "liquidita": 24802.94
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-12",
+      "value": 69350.23,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -39937.23,
+        "investimenti": 73452.45,
+        "liquidita": 24752.94
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-13",
+      "value": 69163.68,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -39937.23,
+        "investimenti": 73428.46,
+        "liquidita": 24590.38
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-14",
+      "value": 68990.49,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -39937.23,
+        "investimenti": 73438.26,
+        "liquidita": 24407.39
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-15",
+      "value": 69068.23,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -39937.23,
+        "investimenti": 73577.5,
+        "liquidita": 24345.89
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-16",
+      "value": 68877.09,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -39937.23,
+        "investimenti": 73461.52,
+        "liquidita": 24270.73
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-17",
+      "value": 68771.7,
+      "byClass": {
+        "previdenza": 11082.07,
+        "debiti": -39937.23,
+        "investimenti": 73461.52,
+        "liquidita": 24165.34
+      },
+      "isEstimated": true
+    },
+    {
+      "date": "2026-10-18",
+      "value": 66098.47,
+      "byClass": {
+        "liquidita": 23915.34,
+        "investimenti": 71038.29324820726,
+        "previdenza": 11082.07,
+        "debiti": -39937.23
+      },
+      "isEstimated": false
+    }
+  ],
+  "change": {
+    "start": 69569.58,
+    "end": 66098.47,
+    "delta": -3471.1100000000006,
+    "deltaPct": -0.04989407726767936
+  },
+  "composition": [
+    {
+      "key": "liquidita",
+      "label": "Liquidità",
+      "detail": "4 conti",
+      "amount": 23915.34,
+      "share": 0.2255404478623509,
+      "isLiability": false,
+      "highlight": null
+    },
+    {
+      "key": "investimenti",
+      "label": "Investimenti",
+      "detail": "13 posizioni",
+      "amount": 71038.29324820726,
+      "share": 0.6699469242159085,
+      "isLiability": false,
+      "highlight": {
+        "amount": 7048.765114094407,
+        "ratio": 0.11015497878529759,
+        "label": "dal mercato"
+      }
+    },
+    {
+      "key": "previdenza",
+      "label": "Previdenza",
+      "detail": "1 fondo",
+      "amount": 11082.07,
+      "share": 0.10451262792174074,
+      "isLiability": false,
+      "highlight": null
+    },
+    {
+      "key": "debiti",
+      "label": "Debiti",
+      "detail": "3 debiti",
+      "amount": -39937.23,
+      "share": 0,
+      "isLiability": true,
+      "highlight": null
+    }
+  ],
+  "monthLabel": "ottobre",
+  "monthPace": {
+    "spentSoFar": 2163.83,
+    "typicalSoFar": 1355.9733333333334,
+    "income": 0,
+    "budgetTotal": 780,
+    "budgetSpent": 398.83000000000004,
+    "dayOfMonth": 18,
+    "daysInMonth": 31,
+    "current": [
+      0,
+      428,
+      428,
+      428,
+      1265.2199999999998,
+      1268.2099999999998,
+      1310.7599999999998,
+      1349.7599999999998,
+      1384.6599999999999,
+      1446.6299999999999,
+      1526.2299999999998,
+      1576.2299999999998,
+      1738.7899999999997,
+      1921.7799999999997,
+      1983.2799999999997,
+      2058.4399999999996,
+      2163.8299999999995,
+      2163.8299999999995
+    ],
+    "typical": [
+      0,
+      0,
+      39.416666666666664,
+      39.416666666666664,
+      68.54,
+      71.52999999999999,
+      853.32,
+      883.5366666666665,
+      939.1066666666666,
+      999.9566666666666,
+      1038.4666666666665,
+      1129.7066666666667,
+      1202.9733333333334,
+      1236.0233333333333,
+      1270.0666666666668,
+      1312.2700000000002,
+      1355.9733333333331,
+      1355.9733333333331,
+      1410.283333333333,
+      1534.5833333333333,
+      1572.7266666666665,
+      1636.6466666666665,
+      1731.4533333333331,
+      1781.58,
+      1940.1266666666663,
+      2039.5233333333333,
+      2054.7166666666667,
+      2161.583333333333,
+      2161.583333333333,
+      2161.583333333333,
+      2161.583333333333
+    ]
+  },
+  "voice": [
+    {
+      "key": "pace",
+      "segments": [
+        {
+          "text": "Ottobre è partito sopra il solito: "
+        },
+        {
+          "text": "2164 €",
+          "strong": true
+        },
+        {
+          "text": " spesi, "
+        },
+        {
+          "text": "808 € in più",
+          "strong": true
+        },
+        {
+          "text": " della tua media a questo punto."
+        }
+      ]
+    },
+    {
+      "key": "due",
+      "segments": [
+        {
+          "text": "La rata Cucina e lavatrice scade il 20 ottobre: "
+        },
+        {
+          "text": "113 €",
+          "strong": true
+        },
+        {
+          "text": "."
+        }
+      ]
+    }
+  ],
+  "investments": {
+    "value": 71038.29324820726,
+    "positions": 13,
+    "paid": 63989.52813411287,
+    "marketGain": 7048.765114094407
+  },
+  "pension": {
+    "value": 11082.07,
+    "funds": 1,
+    "included": true
+  },
+  "debts": {
+    "total": 39937.23,
+    "count": 3,
+    "debtFreeDate": "2033-09-05",
+    "nextDue": [
+      {
+        "debtId": "82e1d634-68ff-4b84-a465-e0ea85358c67",
+        "name": "Cucina e lavatrice",
+        "date": "2026-10-20",
+        "amount": 112.86,
+        "overdue": false
+      },
+      {
+        "debtId": "5865804d-9337-41da-bb50-6a341db6ee80",
+        "name": "Mutuo casa",
+        "date": "2026-11-05",
+        "amount": 365.18,
+        "overdue": false
+      },
+      {
+        "debtId": "86fb6a42-3fd1-44c6-bf41-58836424cdda",
+        "name": "Prestito auto",
+        "date": "2026-11-12",
+        "amount": 276.56,
+        "overdue": false
+      }
+    ]
+  },
+  "renewalAlerts": [
+    {
+      "connectionId": "f4ba9de6-444c-4fb3-b5ef-d3f3e6cfe2b4",
+      "institutionName": "Banca Demo",
+      "state": "expiring",
+      "daysLeft": 6,
+      "message": "Il collegamento con Banca Demo scade tra 6 giorni."
+    }
+  ]
+}

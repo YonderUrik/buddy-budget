@@ -1,0 +1,103 @@
+{
+  "transactions_limit_out_of_range": {
+    "request": "GET /api/transactions?limit=500",
+    "status": 400,
+    "body": {
+      "error": "limit deve essere un intero tra 1 e 200",
+      "code": "validation_failed",
+      "field": "limit"
+    }
+  },
+  "transactions_bad_cursor": {
+    "request": "GET /api/transactions?cursor=abc",
+    "status": 400,
+    "body": {
+      "error": "Cursore non valido",
+      "code": "invalid_cursor"
+    }
+  },
+  "transactions_missing_range": {
+    "request": "GET /api/transactions?from=2026-01-01",
+    "status": 400,
+    "body": {
+      "error": "from e to sono obbligatori (YYYY-MM-DD)",
+      "code": "invalid_date_range"
+    }
+  },
+  "overview_bad_period": {
+    "request": "GET /api/overview?period=ytd",
+    "status": 400,
+    "body": {
+      "error": "period deve essere uno tra 1mese, 3mesi, 1anno, max",
+      "code": "invalid_period",
+      "field": "period"
+    }
+  },
+  "liquidity_month_bad_today": {
+    "request": "GET /api/liquidity/month?today=18-10-2026",
+    "status": 400,
+    "body": {
+      "error": "today deve avere formato YYYY-MM-DD",
+      "code": "invalid_date",
+      "field": "today"
+    }
+  },
+  "accounts_bad_include": {
+    "request": "GET /api/accounts?include=secrets",
+    "status": 400,
+    "body": {
+      "error": "include accetta solo trend e health",
+      "code": "validation_failed",
+      "field": "include"
+    }
+  },
+  "no_session": {
+    "request": "GET /api/me/bootstrap (invalid bearer)",
+    "status": 401,
+    "body": null
+  },
+  "transaction_not_found": {
+    "request": "DELETE /api/transactions/00000000-0000-4000-8000-000000000000",
+    "requestBody": null,
+    "status": 404,
+    "body": {
+      "error": "Movimento non trovato",
+      "code": "transaction_not_found"
+    }
+  },
+  "category_not_found": {
+    "request": "PATCH /api/categories/00000000-0000-4000-8000-000000000000",
+    "requestBody": {
+      "name": "x"
+    },
+    "status": 404,
+    "body": {
+      "error": "Categoria non trovata",
+      "code": "category_not_found"
+    }
+  },
+  "validation_failed": {
+    "request": "POST /api/transactions",
+    "requestBody": {
+      "amount": "abc"
+    },
+    "status": 400,
+    "body": {
+      "error": "Invalid input: expected string, received undefined",
+      "code": "validation_failed",
+      "field": "accountId"
+    }
+  },
+  "category_exists": {
+    "request": "POST /api/categories",
+    "requestBody": {
+      "name": "Spesa",
+      "type": "dovuta"
+    },
+    "status": 409,
+    "body": {
+      "error": "Categoria già esistente",
+      "code": "category_exists"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "proceeds": 564.02,
+  "cost": 502.3590508474576,
+  "gain": 61.6609491525424,
+  "category": "capitale",
+  "taxDelta": 16.031846779661066,
+  "lossesUsed": 0,
+  "lossesCreated": 0,
+  "net": 547.988153220339,
+  "nonHarmonized": false,
+  "instrumentId": "160469f4-e5ab-47c0-ae0b-e98b9272a5a9",
+  "todayKey": "2026-10-18",
+  "regime": "amministrato",
+  "quantity": 5,
+  "heldQuantity": 191.16,
+  "price": 112.804,
+  "fxRate": 1,
+  "taxLineLabel": "Imposte trattenute",
+  "note": "Guadagno di un ETF o fondo: reddito di capitale, tassato per intero anche se hai minusvalenze."
+}

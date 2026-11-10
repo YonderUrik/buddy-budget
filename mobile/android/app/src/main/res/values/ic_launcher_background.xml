@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- White, as the web app's icons (app/manifest.ts). -->
+    <color name="ic_launcher_background">#FFFFFF</color>
+</resources>

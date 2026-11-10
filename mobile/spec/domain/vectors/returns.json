@@ -1,0 +1,977 @@
+{
+  "topic": "returns",
+  "source": "lib/calc/returns.ts, lib/calc/performance-range.ts, lib/calc/return-heatmap.ts, lib/investments/period-gain.ts",
+  "vectors": [
+    {
+      "id": "returns.toDailyFlows.basic",
+      "function": "toDailyFlows",
+      "input": {
+        "points": [
+          {
+            "date": "2026-01-01",
+            "value": 0,
+            "invested": 0,
+            "bought": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-02",
+            "value": 1000,
+            "invested": 1000,
+            "bought": 1000,
+            "income": 0
+          },
+          {
+            "date": "2026-01-03",
+            "value": 1100,
+            "invested": 1000,
+            "bought": 1000,
+            "income": 0
+          },
+          {
+            "date": "2026-01-04",
+            "value": 1650,
+            "invested": 1500,
+            "bought": 1500,
+            "income": 0
+          },
+          {
+            "date": "2026-01-05",
+            "value": 1500,
+            "invested": 1300,
+            "bought": 1500,
+            "income": 10
+          }
+        ]
+      },
+      "expected": [
+        {
+          "date": "2026-01-02",
+          "value": 1000,
+          "inflow": 1000,
+          "outflow": 0,
+          "income": 0
+        },
+        {
+          "date": "2026-01-03",
+          "value": 1100,
+          "inflow": 0,
+          "outflow": 0,
+          "income": 0
+        },
+        {
+          "date": "2026-01-04",
+          "value": 1650,
+          "inflow": 500,
+          "outflow": 0,
+          "income": 0
+        },
+        {
+          "date": "2026-01-05",
+          "value": 1500,
+          "inflow": 0,
+          "outflow": 200,
+          "income": 10
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "outflow = Δ(bought - invested); income = Δincome; inflow = Δbought."
+    },
+    {
+      "id": "returns.computeDailyReturns.basic",
+      "function": "computeDailyReturns",
+      "input": {
+        "baseValue": 0,
+        "flows": [
+          {
+            "date": "2026-01-02",
+            "value": 1000,
+            "inflow": 1000,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-03",
+            "value": 1100,
+            "inflow": 0,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-04",
+            "value": 1650,
+            "inflow": 500,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-05",
+            "value": 1500,
+            "inflow": 0,
+            "outflow": 200,
+            "income": 10
+          }
+        ]
+      },
+      "expected": [
+        {
+          "date": "2026-01-02",
+          "ret": 0,
+          "gain": 0
+        },
+        {
+          "date": "2026-01-03",
+          "ret": 0.1,
+          "gain": 100
+        },
+        {
+          "date": "2026-01-04",
+          "ret": 0.0454545454545,
+          "gain": 50
+        },
+        {
+          "date": "2026-01-05",
+          "ret": 0.0363636363636,
+          "gain": 60
+        }
+      ],
+      "tolerance": 1e-9,
+      "notes": "Day with previous value>1e-6: (V + out + inc - in - Vprev)/Vprev. First day with nothing invested: (V + out + inc - in)/in. Flows assumed end-of-day."
+    },
+    {
+      "id": "returns.computeTwrSeries.basic",
+      "function": "computeTwrSeries",
+      "input": {
+        "baseValue": 0,
+        "flows": [
+          {
+            "date": "2026-01-02",
+            "value": 1000,
+            "inflow": 1000,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-03",
+            "value": 1100,
+            "inflow": 0,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-04",
+            "value": 1650,
+            "inflow": 500,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-05",
+            "value": 1500,
+            "inflow": 0,
+            "outflow": 200,
+            "income": 10
+          }
+        ]
+      },
+      "expected": [
+        {
+          "date": "2026-01-02",
+          "cumulative": 0
+        },
+        {
+          "date": "2026-01-03",
+          "cumulative": 0.1
+        },
+        {
+          "date": "2026-01-04",
+          "cumulative": 0.15
+        },
+        {
+          "date": "2026-01-05",
+          "cumulative": 0.191818181818
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.annualize.halfYear",
+      "function": "annualize",
+      "input": {
+        "periodReturn": 0.05,
+        "days": 182
+      },
+      "expected": 0.102795595422,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.annualize.total-loss",
+      "function": "annualize",
+      "input": {
+        "periodReturn": -1,
+        "days": 400
+      },
+      "expected": null,
+      "tolerance": 1e-9,
+      "notes": "periodReturn <= -1 or days <= 0 → null."
+    },
+    {
+      "id": "returns.daysBetween.dst",
+      "function": "daysBetween",
+      "input": {
+        "fromKey": "2026-03-01",
+        "toKey": "2026-04-01"
+      },
+      "expected": 31,
+      "tolerance": 1e-9,
+      "notes": "Calendar days, rounded (robust to DST)."
+    },
+    {
+      "id": "returns.xirrDaily.oneYear10pct",
+      "function": "xirrDaily",
+      "input": {
+        "flows": [
+          {
+            "date": "2025-01-01",
+            "amount": -1000
+          },
+          {
+            "date": "2026-01-01",
+            "amount": 1100
+          }
+        ]
+      },
+      "expected": 0.000261157876068,
+      "tolerance": 1e-9,
+      "notes": "Daily rate: (1.1)^(1/365)-1. Bisection on log daily rate, 200 iterations, bound min(1, 500/spanDays)."
+    },
+    {
+      "id": "returns.moneyWeightedReturn.oneYear10pct",
+      "function": "moneyWeightedReturn",
+      "input": {
+        "flows": [
+          {
+            "date": "2025-01-01",
+            "amount": -1000
+          },
+          {
+            "date": "2026-01-01",
+            "amount": 1100
+          }
+        ],
+        "days": 365
+      },
+      "expected": {
+        "period": 0.1,
+        "annual": 0.1
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.moneyWeightedReturn.twoDeposits",
+      "function": "moneyWeightedReturn",
+      "input": {
+        "flows": [
+          {
+            "date": "2025-01-01",
+            "amount": -1000
+          },
+          {
+            "date": "2025-07-01",
+            "amount": -1000
+          },
+          {
+            "date": "2025-12-31",
+            "amount": 2150
+          }
+        ],
+        "days": 364
+      },
+      "expected": {
+        "period": 0.100619500413,
+        "annual": 0.100909428476
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.xirrDaily.noSignChange",
+      "function": "xirrDaily",
+      "input": {
+        "flows": [
+          {
+            "date": "2025-01-01",
+            "amount": -1000
+          },
+          {
+            "date": "2025-02-01",
+            "amount": -10
+          }
+        ]
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.investorCashFlows.basic",
+      "function": "investorCashFlows",
+      "input": {
+        "baseDate": "2026-01-01",
+        "baseValue": 0,
+        "flows": [
+          {
+            "date": "2026-01-02",
+            "value": 1000,
+            "inflow": 1000,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-03",
+            "value": 1100,
+            "inflow": 0,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-04",
+            "value": 1650,
+            "inflow": 500,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-05",
+            "value": 1500,
+            "inflow": 0,
+            "outflow": 200,
+            "income": 10
+          }
+        ],
+        "endValue": 1500
+      },
+      "expected": [
+        {
+          "date": "2026-01-01",
+          "amount": 0
+        },
+        {
+          "date": "2026-01-02",
+          "amount": -1000
+        },
+        {
+          "date": "2026-01-04",
+          "amount": -500
+        },
+        {
+          "date": "2026-01-05",
+          "amount": 210
+        },
+        {
+          "date": "2026-01-05",
+          "amount": 1500
+        }
+      ],
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.inflationBetween.basic",
+      "function": "inflationBetween",
+      "input": {
+        "points": [
+          {
+            "month": "2025-01",
+            "value": 120
+          },
+          {
+            "month": "2025-06",
+            "value": 121.2
+          },
+          {
+            "month": "2025-12",
+            "value": 123
+          }
+        ],
+        "fromKey": "2025-01-15",
+        "toKey": "2026-02-10"
+      },
+      "expected": {
+        "rate": 0.025,
+        "throughMonth": "2025-12"
+      },
+      "tolerance": 1e-9,
+      "notes": "Start month must exist exactly; end = latest month ≤ toKey month."
+    },
+    {
+      "id": "returns.inflationBetween.missingStart",
+      "function": "inflationBetween",
+      "input": {
+        "points": [
+          {
+            "month": "2025-01",
+            "value": 120
+          },
+          {
+            "month": "2025-06",
+            "value": 121.2
+          },
+          {
+            "month": "2025-12",
+            "value": 123
+          }
+        ],
+        "fromKey": "2025-02-15",
+        "toKey": "2026-02-10"
+      },
+      "expected": null,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.realReturn.basic",
+      "function": "realReturn",
+      "input": {
+        "nominal": 0.08,
+        "inflation": 0.025
+      },
+      "expected": 0.0536585365854,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.simulateBenchmark.basic",
+      "function": "simulateBenchmark",
+      "input": {
+        "baseDate": "2026-01-01",
+        "baseValue": 0,
+        "flows": [
+          {
+            "date": "2026-01-02",
+            "value": 1000,
+            "inflow": 1000,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-03",
+            "value": 1100,
+            "inflow": 0,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-04",
+            "value": 1650,
+            "inflow": 500,
+            "outflow": 0,
+            "income": 0
+          },
+          {
+            "date": "2026-01-05",
+            "value": 1500,
+            "inflow": 0,
+            "outflow": 200,
+            "income": 10
+          }
+        ],
+        "benchmarkPrices": {
+          "2026-01-01": 50,
+          "2026-01-02": 50,
+          "2026-01-03": 52,
+          "2026-01-04": 51,
+          "2026-01-05": 53
+        }
+      },
+      "expected": {
+        "value": 1369.60784314,
+        "twr": 0.06,
+        "cumulative": [
+          {
+            "date": "2026-01-02",
+            "cumulative": 0
+          },
+          {
+            "date": "2026-01-03",
+            "cumulative": 0.04
+          },
+          {
+            "date": "2026-01-04",
+            "cumulative": 0.02
+          },
+          {
+            "date": "2026-01-05",
+            "cumulative": 0.06
+          }
+        ],
+        "cashFlows": [
+          {
+            "date": "2026-01-01",
+            "amount": 0
+          },
+          {
+            "date": "2026-01-02",
+            "amount": -1000
+          },
+          {
+            "date": "2026-01-04",
+            "amount": -500
+          },
+          {
+            "date": "2026-01-05",
+            "amount": 210
+          },
+          {
+            "date": "2026-01-05",
+            "amount": 1369.60784314
+          }
+        ],
+        "depleted": false
+      },
+      "tolerance": 1e-9,
+      "notes": "priceAt(date) = benchmark price in user currency (last on or before). Buys inflow/price units, sells (outflow+income)/price units at the day's close."
+    },
+    {
+      "id": "returns.resolvePerformanceRange.3mesiClampedToFirstOp",
+      "function": "resolvePerformanceRange",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2026-02-10",
+            "quantity": "1",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "period": "3mesi",
+        "today": "2026-04-15"
+      },
+      "expected": {
+        "fromKey": "2026-02-10",
+        "baseKey": "2026-02-09",
+        "toKey": "2026-04-15"
+      },
+      "tolerance": 1e-9,
+      "notes": "today is a local calendar date. 3 months back = 2026-01-15 but clamped to first transaction; baseKey = fromKey - 1 day."
+    },
+    {
+      "id": "returns.resolvePerformanceRange.1mese",
+      "function": "resolvePerformanceRange",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2026-02-10",
+            "quantity": "1",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "period": "1mese",
+        "today": "2026-04-15"
+      },
+      "expected": {
+        "fromKey": "2026-03-15",
+        "baseKey": "2026-03-14",
+        "toKey": "2026-04-15"
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.resolvePerformanceRange.customRange",
+      "function": "resolvePerformanceRange",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2026-02-10",
+            "quantity": "1",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "period": "max",
+        "today": "2026-04-15",
+        "range": {
+          "from": "2026-03-01",
+          "to": "2026-12-31"
+        }
+      },
+      "expected": {
+        "fromKey": "2026-03-01",
+        "baseKey": "2026-02-28",
+        "toKey": "2026-04-15"
+      },
+      "tolerance": 1e-9,
+      "notes": "range.to beyond today is clamped to today."
+    },
+    {
+      "id": "returns.computePortfolioReturns.endToEnd",
+      "function": "computePortfolioReturns",
+      "input": {
+        "transactions": [
+          {
+            "id": "t1",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2026-01-02",
+            "quantity": "10",
+            "price": "100",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t2",
+            "instrumentId": "E",
+            "type": "acquisto",
+            "date": "2026-01-05",
+            "quantity": "10",
+            "price": "105",
+            "fxRate": "1",
+            "fees": "0",
+            "taxes": "0",
+            "grossAmount": null
+          },
+          {
+            "id": "t3",
+            "instrumentId": "E",
+            "type": "vendita",
+            "date": "2026-01-08",
+            "quantity": "5",
+            "price": "108",
+            "fxRate": "1",
+            "fees": "1",
+            "taxes": "0",
+            "grossAmount": null
+          }
+        ],
+        "instruments": [
+          {
+            "id": "E",
+            "name": "E",
+            "type": "etf",
+            "currency": "EUR",
+            "priceUnit": "unita"
+          }
+        ],
+        "prices": [
+          {
+            "instrumentId": "E",
+            "date": "2026-01-02",
+            "close": "100",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-03",
+            "close": "102",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-05",
+            "close": "105",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-06",
+            "close": "103",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-07",
+            "close": "106",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-08",
+            "close": "108",
+            "source": "yahoo"
+          },
+          {
+            "instrumentId": "E",
+            "date": "2026-01-09",
+            "close": "107",
+            "source": "yahoo"
+          }
+        ],
+        "priceIndexBuiltWithTransactions": true,
+        "fxRates": [],
+        "userCurrency": "EUR",
+        "period": "max",
+        "today": "2026-01-10",
+        "benchmark": null,
+        "inflation": null
+      },
+      "expected": {
+        "fromKey": "2026-01-02",
+        "baseKey": "2026-01-01",
+        "toKey": "2026-01-10",
+        "days": 8,
+        "showAnnual": false,
+        "twr": 0.0695046296296,
+        "twrAnnual": null,
+        "moneyWeighted": 0.0619600234427,
+        "moneyWeightedAnnual": null,
+        "daily": [
+          {
+            "date": "2026-01-02",
+            "ret": 0,
+            "gain": 0
+          },
+          {
+            "date": "2026-01-03",
+            "ret": 0.02,
+            "gain": 20
+          },
+          {
+            "date": "2026-01-04",
+            "ret": 0,
+            "gain": 0
+          },
+          {
+            "date": "2026-01-05",
+            "ret": 0.0294117647059,
+            "gain": 30
+          },
+          {
+            "date": "2026-01-06",
+            "ret": -0.0190476190476,
+            "gain": -40
+          },
+          {
+            "date": "2026-01-07",
+            "ret": 0.0291262135922,
+            "gain": 60
+          },
+          {
+            "date": "2026-01-08",
+            "ret": 0.0183962264151,
+            "gain": 39
+          },
+          {
+            "date": "2026-01-09",
+            "ret": -0.00925925925926,
+            "gain": -15
+          },
+          {
+            "date": "2026-01-10",
+            "ret": 0,
+            "gain": 0
+          }
+        ]
+      },
+      "tolerance": 1e-9,
+      "notes": "Subset of fields (series labels are locale-formatted and checked in UI tests). days counted from fromKey when base value is 0."
+    },
+    {
+      "id": "returns.computePeriodGain.endToEnd",
+      "function": "computePeriodGain",
+      "input": "same inputs as returns.computePortfolioReturns.endToEnd",
+      "expected": {
+        "fromKey": "2026-01-02",
+        "toKey": "2026-01-10",
+        "startValue": 0,
+        "endValue": 1605,
+        "netContributions": 1511,
+        "income": 0,
+        "gain": 94,
+        "twr": 0.0695046296296
+      },
+      "tolerance": 1e-9,
+      "notes": "gain = Σ daily gains = endValue - startValue - netContributions + income."
+    },
+    {
+      "id": "returns.heatmapLevel.flat",
+      "function": "heatmapLevel",
+      "input": {
+        "ret": 0.0004,
+        "scale": 0.01
+      },
+      "expected": 0,
+      "tolerance": 1e-9,
+      "notes": "|ret| < 0.0005 → level 0."
+    },
+    {
+      "id": "returns.heatmapLevel.mid",
+      "function": "heatmapLevel",
+      "input": {
+        "ret": -0.006,
+        "scale": 0.01
+      },
+      "expected": 3,
+      "tolerance": 1e-9,
+      "notes": "ceil(|ret|/scale*4) clamped to [1,4]."
+    },
+    {
+      "id": "returns.heatmapLevel.saturated",
+      "function": "heatmapLevel",
+      "input": {
+        "ret": 0.05,
+        "scale": 0.01
+      },
+      "expected": 4,
+      "tolerance": 1e-9
+    },
+    {
+      "id": "returns.isoWeek.yearBoundary",
+      "function": "isoWeek",
+      "input": {
+        "date": "2027-01-01"
+      },
+      "expected": {
+        "year": 2026,
+        "week": 53
+      },
+      "tolerance": 1e-9,
+      "notes": "ISO-8601 week (Thursday rule): Friday 2027-01-01 belongs to 2026-W53 (2026 has 53 weeks)."
+    },
+    {
+      "id": "returns.isoWeek.mondayNextYear",
+      "function": "isoWeek",
+      "input": {
+        "date": "2025-12-29"
+      },
+      "expected": {
+        "year": 2026,
+        "week": 1
+      },
+      "tolerance": 1e-9,
+      "notes": "Monday 2025-12-29 belongs to ISO week 2026-W01."
+    },
+    {
+      "id": "returns.buildReturnHeatmap.month",
+      "function": "buildReturnHeatmap",
+      "input": {
+        "daily": [
+          {
+            "date": "2025-12-30",
+            "ret": 0.01,
+            "gain": 10
+          },
+          {
+            "date": "2025-12-31",
+            "ret": -0.02,
+            "gain": -20
+          },
+          {
+            "date": "2026-01-02",
+            "ret": 0.03,
+            "gain": 30
+          },
+          {
+            "date": "2026-01-05",
+            "ret": null,
+            "gain": 0
+          },
+          {
+            "date": "2026-02-03",
+            "ret": 0.0002,
+            "gain": 0.2
+          },
+          {
+            "date": "2026-03-10",
+            "ret": -0.05,
+            "gain": -50
+          }
+        ],
+        "grouping": "mese",
+        "todayKey": "2026-03-31",
+        "language": "it"
+      },
+      "expected": {
+        "scale": 0.03,
+        "positive": 1,
+        "negative": 2,
+        "counted": 4,
+        "rows": [
+          {
+            "label": "2026",
+            "cells": [
+              {
+                "key": "2026-01",
+                "ret": 0.03,
+                "gain": 30,
+                "level": 4
+              },
+              {
+                "key": "2026-02",
+                "ret": 0.0002,
+                "gain": 0.2,
+                "level": 0
+              },
+              {
+                "key": "2026-03",
+                "ret": -0.05,
+                "gain": -50,
+                "level": 4
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "total": {
+              "key": "2026",
+              "ret": -0.0213043,
+              "gain": -19.8,
+              "level": 3
+            }
+          },
+          {
+            "label": "2025",
+            "cells": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "key": "2025-12",
+                "ret": -0.0102,
+                "gain": -10,
+                "level": 2
+              }
+            ],
+            "total": {
+              "key": "2025",
+              "ret": -0.0102,
+              "gain": -10,
+              "level": 2
+            }
+          }
+        ]
+      },
+      "tolerance": 1e-9,
+      "notes": "Cells compound daily returns: Π(1+r)-1; scale = 90th percentile (floor index) of |ret| of non-flat cells; level computed for cells and year totals. Labels omitted (localized)."
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Language } from "@/lib/localization/config";
 
 vi.mock("server-only", () => ({}));
-const profile = vi.hoisted(() => ({ language: "en" as "it" | "en" | "de" }));
+const profile = vi.hoisted(() => ({ language: "en" as Language }));
 vi.mock("./server", () => ({ getLocaleProfile: async () => profile }));
 
 const { translateErrorResponse } = await import("./route-errors");

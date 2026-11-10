@@ -8,6 +8,7 @@
 import type { InstrumentType } from "@/lib/db/schema/investments";
 import type { TitleFundamentals } from "@/lib/market-data/fundamentals";
 import type { TitleStats } from "./title-stats";
+import type { Language } from "@/lib/localization/config";
 
 const TIMEOUT_MS = 45_000;
 /** Lunghezza massima del commento mostrato. */
@@ -16,7 +17,7 @@ export const COMMENTARY_MAX_CHARS = 1500;
 export const COMMENTARY_CACHE_TTL_SECONDS = 12 * 60 * 60;
 
 export interface CommentaryInput {
-  language?: "it" | "en" | "de";
+  language?: Language;
   name: string;
   type: InstrumentType;
   currency: string;
@@ -65,7 +66,7 @@ export function buildCommentaryPrompt(input: CommentaryInput): string {
     ["Costo annuo (TER)", pct(f?.expenseRatio, 2)],
   ]);
   return [
-    `Scrivi in ${{ it: "italiano", en: "inglese", de: "tedesco" }[input.language ?? "it"]} un breve commento (al massimo 6 frasi) su questo strumento: ${input.name} (${TYPE_LABELS[input.type]}).`,
+    `Scrivi in ${{ it: "italiano", en: "inglese", de: "tedesco", fr: "francese" }[input.language ?? "it"]} un breve commento (al massimo 6 frasi) su questo strumento: ${input.name} (${TYPE_LABELS[input.type]}).`,
     "Usa solo i dati sotto. Descrivi com'è andato di recente, quanto è stato volatile e, se ci sono, cosa dicono i numeri chiave.",
     "Tono neutro e prudente. Non dare consigli di acquisto o vendita, non fare previsioni, non inventare dati mancanti.",
     "Ricorda che il passato non garantisce i risultati futuri, ma dillo una volta sola e in breve.",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildFxTable, convertAmount, fxRateBetween, getPerEur } from "./fx";
+import { buildFxTable, convertAmount, fxRateBetween, fxSourceCurrencies, getPerEur } from "./fx";
 
 const table = buildFxTable([
   { date: "2026-09-24", currency: "USD", perEur: "1.10" },
@@ -36,5 +36,11 @@ describe("fx", () => {
   it("scarta cambi non validi", () => {
     const bad = buildFxTable([{ date: "2026-09-25", currency: "USD", perEur: "0" }]);
     expect(getPerEur(bad, "USD", "2026-09-25")).toBeNull();
+  });
+  it("reads pence (GBX) from the pound's rates: a London price in GBX converts like GBP / 100", () => {
+    const table = buildFxTable([{ date: "2022-07-11", currency: "GBP", perEur: "0.85" }]);
+    expect(getPerEur(table, "GBX", "2022-07-12")).toBeCloseTo(85);
+    expect(convertAmount(table, 18500, "GBX", "EUR", "2022-07-12")).toBeCloseTo(18500 / 85);
+    expect(fxSourceCurrencies(["GBX", "GBP", "USD"])).toEqual(["GBP", "USD"]);
   });
 });

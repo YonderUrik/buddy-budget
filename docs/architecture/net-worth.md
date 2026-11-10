@@ -126,7 +126,7 @@ Without the correction the chart stayed flat at 500 and jumped to 1,300 on the l
 
 `refreshDerivedInvestmentHistory(userId, today, state)`:
 
-1. Builds a fingerprint from count and latest change of the user's investment transactions, manual prices, prices of held instruments, FX rates of the held currencies and the user's currency, and the user's currency itself, plus yesterday's date (so every new day extends the history once).
+1. Builds a fingerprint from count and latest `updated_at` of the user's investment transactions, manual prices, prices of held instruments and FX rates of the held currencies, plus the user's currency, plus yesterday's date (so every new day extends the history once). The market tables keep `updated_at` current on every upsert, so correcting an already-stored close or rate moves the fingerprint too.
 2. If it equals the stored fingerprint, returns 0. If Redis is unreachable it logs `net_worth.history_state.unavailable` and recomputes.
 3. Range: from the first investment transaction (at most `MAX_INVESTMENT_HISTORY_YEARS = 20` years back, matching the price backfill) to yesterday. With no past transaction it deletes all past `investimenti` rows.
 4. Computes `computeDailyPortfolioValues` for the range, compares each day with the stored amount and upserts only the changed days in batches of 500.
@@ -213,7 +213,7 @@ The Panoramica page ([`app/(app)/panoramica/page.tsx`](../../app/(app)/panoramic
 
 Accounts, snapshots and month transactions are blocking: their errors show the load error. Investments, debts and pension are optional: on error the class is simply missing.
 
-`buildCompositionItems` ([`net-worth-composition-row.utils.ts`](../../components/domain/net-worth/net-worth-composition-row.utils.ts)) builds one row per present class. Shares are computed on positive classes only; debts are a liability row with no share; an excluded pension stays listed with «fuori dal totale» ("outside the total") and no share.
+`buildCompositionItems` ([`net-worth-composition-row.utils.ts`](../../components/domain/net-worth/net-worth-composition-row.utils.ts)) builds one row per present class. Shares are computed on positive classes only; debts are a liability row with no share; an excluded pension stays listed with «fuori dal totale» ("outside the total") and no share. A broker cash account with a negative balance (an Interactive Brokers margin loan, `marginLoansFromBrokerCash`) leaves the Liquidità row and becomes a «Prestito a margine» (margin loan) liability row; the total is the same. The chart and the stored cash history keep it inside Liquidità, since that history has no split by account.
 
 Example: cash 5,000, investments 15,000, pension 5,000, debts 8,000 → shares 20% / 60% / 20%, debts shown as −8,000, net worth 17,000 EUR.
 

@@ -75,6 +75,8 @@ export const createInstrumentSchema = z.discriminatedUnion("source", [
     currency: currencyCode,
     priceUnit: z.enum(PRICE_UNITS).optional(),
     isin: isin.optional(),
+    /** Use or create the user's private copy, never the shared instrument with that ISIN (corporate actions). */
+    ownCopy: z.boolean().optional(),
     ...taxFields,
   }),
 ]);

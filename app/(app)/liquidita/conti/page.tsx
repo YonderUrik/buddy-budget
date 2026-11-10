@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { BanknoteIcon, LandmarkIcon, PlusIcon } from "lucide-react";
 import {
+  AccountDeleteConfirm,
   AccountDetailsDialog,
   localizedAccountStatus,
   RenewalBanner,
@@ -32,7 +33,7 @@ import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
-import { isAccountSyncing } from "@/lib/sync-jobs/view";
+import { isAccountSyncing, latestAccountJob } from "@/lib/sync-jobs/view";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 
 /** Giorni di storia nella miniatura di ogni conto. */
@@ -51,6 +52,7 @@ export default function LiquiditaContiPage() {
   const { addAccount, renew } = useLiquidityActions();
   const today = React.useMemo(() => startOfDay(now), [now]);
   const [openId, setOpenId] = React.useState<string | null>(null);
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
 
   React.useEffect(() => track("liquidity_tab_viewed", { tab: "conti" }), []);
 
@@ -88,10 +90,11 @@ export default function LiquiditaContiPage() {
   const list = accounts ?? [];
   const reconnectIds = new Set(connections.filter((c) => needsRenewal(computeConnectionHealth(c, today).state)).map((c) => c.accountId));
   const bankByAccountId = new Map(connections.map((c) => [c.accountId, c.institutionName]));
-  const syncInfoById = new Map(connections.map((c) => [c.accountId, { lastSyncedAt: c.lastSyncedAt, eligible: c.eligible, nextEligibleAt: c.nextEligibleAt, syncsRemainingToday: c.syncsRemainingToday }]));
+  const syncInfoById = new Map(connections.map((c) => [c.accountId, { provider: c.provider, lastSyncedAt: c.lastSyncedAt, eligible: c.eligible, nextEligibleAt: c.nextEligibleAt, syncsRemainingToday: c.syncsRemainingToday }]));
   const groups = groupAccounts(list, bankByAccountId);
   const alerts = buildRenewalAlerts(connections, today);
   const open = list.find((a) => a.id === openId) ?? null;
+  const toDelete = list.find((a) => a.id === deleteId) ?? null;
 
   function showMovements(accountId: string) {
     setAccountId(accountId);
@@ -143,6 +146,7 @@ export default function LiquiditaContiPage() {
                       setOpenId(account.id);
                     }}
                     onShowMovements={() => showMovements(account.id)}
+                    onDelete={() => setDeleteId(account.id)}
                   />
                 );
               })}
@@ -162,10 +166,21 @@ export default function LiquiditaContiPage() {
         needsReconnect={open ? reconnectIds.has(open.id) : false}
         syncInfo={open ? syncInfoById.get(open.id) : undefined}
         syncing={open ? isAccountSyncing(syncJobs, open.id) : false}
+        syncResult={open ? latestAccountJob(syncJobs, open.id) : null}
         movementsHref={open ? `${LIQUIDITY_HREF}?${LIQUIDITY_ACCOUNT_PARAM}=${open.id}` : undefined}
         onClose={() => setOpenId(null)}
         onReconnect={() => renew("row")}
       />
+      {toDelete && (
+        <AccountDeleteConfirm
+          accountId={toDelete.id}
+          accountName={toDelete.name}
+          isAuto={toDelete.source === "auto"}
+          open
+          onOpenChange={(next) => { if (!next) setDeleteId(null); }}
+          onDeleted={() => setDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

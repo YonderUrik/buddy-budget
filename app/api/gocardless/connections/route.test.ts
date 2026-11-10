@@ -164,6 +164,7 @@ describe("GET/POST /api/gocardless/connections", () => {
       {
         accountId: account.id,
         connectionId: connection.id,
+        provider: "gocardless",
         institutionName: "Banca Test",
         status: "expired",
         consentExpiresAt: null,

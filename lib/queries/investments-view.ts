@@ -5,7 +5,7 @@ import { useBrokerSelection } from "@/lib/investments/broker-selection";
 import { filterInvestmentBrokers } from "@/lib/investments/broker-filter";
 import { startOfDay } from "@/lib/calc/expenses";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
-import { buildInvestmentsView } from "@/lib/investments/view";
+import { buildInvestmentsView, type ReturnBasis } from "@/lib/investments/view";
 import { useLocalization } from "@/lib/localization/provider";
 import { useInvestmentsOverviewQuery } from "./investments";
 
@@ -13,13 +13,13 @@ import { useInvestmentsOverviewQuery } from "./investments";
  * Dati dell'overview di Investimenti già calcolati per il periodo dato, condivisi dalle schede (Portafoglio,
  * Performance, Diversificazione, Operazioni). fullHistory carica tutti i prezzi per simulazioni dalla prima operazione.
  */
-export function useInvestmentsView(period: NetWorthPeriod, fullHistory = false, chartRange?: { from: string; to: string }) {
+export function useInvestmentsView(period: NetWorthPeriod, fullHistory = false, chartRange?: { from: string; to: string }, basis: ReturnBasis = "securities") {
   const { locale } = useLocalization();
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const overview = useFilteredInvestmentsOverview(fullHistory || chartRange ? "max" : period);
   const view = React.useMemo(
-    () => (overview.data ? buildInvestmentsView(overview.data, period, today, chartRange, locale) : null),
-    [overview.data, period, today, chartRange, locale]
+    () => (overview.data ? buildInvestmentsView(overview.data, period, today, chartRange, locale, basis) : null),
+    [overview.data, period, today, chartRange, locale, basis]
   );
   return { overview, view, today };
 }

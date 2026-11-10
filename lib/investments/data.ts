@@ -1,12 +1,14 @@
 import { inflationAreaForCountry } from "@/lib/localization/financial-country";
 import { resolveProfile, type ProductCountry } from "@/lib/localization/config";
-import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { personalFormats } from "@/lib/db/schema/personal-imports";
 import { accounts } from "@/lib/db/schema/accounts";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { resolveBrokerCash, type BrokerCash } from "./broker-cash";
+import { buildLeverageSources, leverageCurrencies, type LeverageStatementRow } from "./leverage-source";
+import type { LeverageSource } from "@/lib/calc/leverage";
 import { authUser } from "@/lib/db/schema/auth";
 import {
   fxRates,
@@ -34,6 +36,7 @@ import { loadDividends, type DividendRow } from "@/lib/market-data/dividends";
 import { loadRiskFreeRates } from "@/lib/market-data/rates";
 import type { ExposureProfile, ManualBreakdown } from "./exposure";
 import type { InstrumentSettingInput } from "./tax-settings";
+import { fxSourceCurrencies } from "@/lib/calc/fx";
 
 /** Valuta del tasso privo di rischio €STR: per le altre lo Sharpe usa zero. */
 export const RISK_FREE_CURRENCY = "EUR";
@@ -53,6 +56,37 @@ export async function getOrCreateDefaultPortfolio(userId: string): Promise<Inves
     .limit(1);
   if (existing) return existing;
   const [created] = await db.insert(investmentPortfolios).values({ userId, name: DEFAULT_PORTFOLIO_NAME }).returning();
+  return created;
+}
+
+/**
+ * The portfolio for operations no broker statement owns (typed by hand, Fineco and Yahoo files, AI imports): the
+ * oldest one without a broker, created when missing. Never a broker's portfolio, whose operations a later statement
+ * of that broker replaces: an operation put there would be deleted by the next import.
+ */
+export async function getOrCreateManualPortfolio(userId: string): Promise<InvestmentPortfolio> {
+  const [existing] = await db
+    .select()
+    .from(investmentPortfolios)
+    .where(and(eq(investmentPortfolios.userId, userId), isNull(investmentPortfolios.broker)))
+    .orderBy(asc(investmentPortfolios.createdAt))
+    .limit(1);
+  if (existing) return existing;
+  const [created] = await db.insert(investmentPortfolios).values({ userId, name: DEFAULT_PORTFOLIO_NAME }).returning();
+  return created;
+}
+
+/** Brokers read by the column-mapping readers: each gets its own portfolio, like the statement brokers. */
+export const MAPPED_BROKER_PORTFOLIOS: Readonly<Record<string, string>> = { fineco: "Fineco", "yahoo-portfolio": "Yahoo Finance" };
+
+/**
+ * The portfolio of a broker whose exports carry no account number (Fineco, Yahoo Finance): one per broker and user,
+ * `broker` = the provider id, created on the first import. Every broker gets its own portfolio (2026-10-31).
+ */
+export async function getOrCreateBrokerPortfolio(userId: string, provider: string): Promise<InvestmentPortfolio> {
+  const [existing] = await db.select().from(investmentPortfolios).where(and(eq(investmentPortfolios.userId, userId), eq(investmentPortfolios.broker, provider))).orderBy(asc(investmentPortfolios.createdAt)).limit(1);
+  if (existing) return existing;
+  const [created] = await db.insert(investmentPortfolios).values({ userId, name: MAPPED_BROKER_PORTFOLIOS[provider] ?? provider, broker: provider }).returning();
   return created;
 }
 
@@ -83,6 +117,8 @@ export interface InvestmentData {
   productCountry?: ProductCountry;
   currency: string;
   brokerCash?: BrokerCash[];
+  /** Broker accounts whose cash can be rebuilt day by day from their statements (loaded only with `leverage`). */
+  leverage?: LeverageSource[];
   personalSources?: { id: string; name: string }[];
   brokerSources?: { accountKey: string; provider: string }[];
   portfolios: InvestmentPortfolio[];
@@ -123,7 +159,7 @@ function shiftDays(dateKey: string, days: number): string {
  * Operazioni, strumenti, prezzi e cambi dell'utente. I prezzi partono da `pricesFrom` (meno un margine) o
  * dalla prima operazione: il grafico di un periodo corto non scarica anni di storico.
  */
-export async function loadInvestmentData(userId: string, pricesFrom: string | null): Promise<InvestmentData> {
+export async function loadInvestmentData(userId: string, pricesFrom: string | null, options: { leverage?: boolean } = {}): Promise<InvestmentData> {
   const [user] = await db.select({ currency: authUser.currency, productCountry: authUser.productCountry }).from(authUser).where(eq(authUser.id, userId));
   const currency = user?.currency ?? "EUR";
   const { productCountry } = resolveProfile(user);
@@ -138,6 +174,12 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   ]);
 
   const brokerCash = resolveBrokerCash(brokerSources, portfolios, cashAccounts, cashStatements);
+  const leverage = options.leverage && brokerCash.length
+    ? buildLeverageSources(brokerCash, await db
+        .select({ cashAccountId: brokerStatements.cashAccountId, accountKey: brokerStatements.accountKey, statement: sql<LeverageStatementRow["statement"]>`jsonb_build_object('provider', ${brokerStatements.statement}->'provider', 'from', ${brokerStatements.from}, 'to', ${brokerStatements.to}, 'cash', ${brokerStatements.statement}->'cash', 'ledger', ${brokerStatements.statement}->'ledger')` })
+        .from(brokerStatements)
+        .where(and(eq(brokerStatements.userId, userId), inArray(brokerStatements.cashAccountId, brokerCash.map((c) => c.accountId)))))
+    : [];
 
   const [instrumentSettings, taxCarryforwards, dismissedDividends] = await Promise.all([
     db
@@ -208,7 +250,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   const loaded = await db.select().from(instruments).where(inArray(instruments.id, instrumentIds));
   const userInstruments = loaded.filter((i) => ownedIds.includes(i.id));
   const benchmark = loaded.find((i) => i.id === benchmarkId) ?? null;
-  const currencies = [...new Set([...loaded.map((i) => i.currency), currency])].filter((c) => c !== "EUR");
+  const currencies = [...new Set([...loaded.map((i) => i.currency), currency, ...leverageCurrencies(leverage)])].filter((c) => c !== "EUR");
 
   const [prices, manualPrices, rates, inflation, profiles, manualBreakdowns, riskFreeRates, dividends] = await Promise.all([
     db
@@ -230,7 +272,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
       : db
           .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })
           .from(fxRates)
-          .where(and(inArray(fxRates.currency, currencies), gte(fxRates.date, from)))
+          .where(and(inArray(fxRates.currency, fxSourceCurrencies(currencies)), gte(fxRates.date, from)))
           .orderBy(asc(fxRates.date)),
     inflationArea ? loadInflationIndex(inflationArea) : Promise.resolve([]),
     loadProfiles(ownedIds),
@@ -247,6 +289,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
     brokerSources,
     personalSources,
     brokerCash,
+    leverage,
     portfolios,
     instruments: userInstruments,
     transactions,
@@ -266,7 +309,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
 
 /** Cambi salvati tra due date (con margine prima di `fromKey` per weekend e festivi). */
 export async function loadRatesBetween(currencies: string[], fromKey: string, toKey: string): Promise<FxRateInput[]> {
-  const wanted = currencies.filter((c) => c !== "EUR");
+  const wanted = fxSourceCurrencies(currencies).filter((c) => c !== "EUR");
   if (wanted.length === 0) return [];
   return db
     .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })
@@ -276,7 +319,7 @@ export async function loadRatesBetween(currencies: string[], fromKey: string, to
 
 /** Cambi delle valute richieste fino alla data (per precompilare il cambio di un'operazione). */
 export async function loadRatesUpTo(currencies: string[], dateKey: string): Promise<FxRateInput[]> {
-  const wanted = currencies.filter((c) => c !== "EUR");
+  const wanted = fxSourceCurrencies(currencies).filter((c) => c !== "EUR");
   if (wanted.length === 0) return [];
   return db
     .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })

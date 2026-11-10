@@ -2,7 +2,7 @@ import { NextRequest, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { investmentTransactions } from "@/lib/db/schema/investments";
-import { findOwnPortfolio, getOrCreateDefaultPortfolio, loadUserTransactions } from "@/lib/investments/data";
+import { findOwnPortfolio, getOrCreateManualPortfolio, loadUserTransactions } from "@/lib/investments/data";
 import { ensureHistorySafely, fetchFxAround } from "@/lib/investments/history";
 import { findVisibleInstrument } from "@/lib/investments/instruments";
 import {
@@ -10,7 +10,7 @@ import {
   oversoldMessage,
   resolveOperationFxRate,
   toCalcInput,
-  todayKey,
+  latestTodayKey,
   toRowValues,
 } from "@/lib/investments/operations";
 import { bindRequestUser, withRoute } from "@/lib/observability";
@@ -32,13 +32,13 @@ async function handlePost(request: NextRequest) {
   const parsed = createInvestmentTransactionSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
   const input = parsed.data;
-  if (input.date > todayKey()) return Response.json({ error: "La data non può essere nel futuro" }, { status: 400 });
+  if (input.date > latestTodayKey()) return Response.json({ error: "La data non può essere nel futuro" }, { status: 400 });
 
   const instrument = await findVisibleInstrument(userId, input.instrumentId);
   if (!instrument) return Response.json({ error: "Strumento non trovato" }, { status: 404 });
   const portfolio = input.portfolioId
     ? await findOwnPortfolio(userId, input.portfolioId)
-    : await getOrCreateDefaultPortfolio(userId);
+    : await getOrCreateManualPortfolio(userId);
   if (!portfolio) return Response.json({ error: "Portafoglio non trovato" }, { status: 404 });
   if (portfolio.broker?.startsWith("ibkr:")) return Response.json({ error: "Questo portafoglio si aggiorna importando il rendiconto successivo" }, { status: 409 });
 

@@ -22,6 +22,15 @@ const GRID = [
 const TEXT = gridToCsv(GRID.map((r) => (r.length ? r : [""])));
 
 describe("Fineco", () => {
+  it("reads a bond priced per hundred of nominal as a bond, not as a share worth a hundred times more", () => {
+    const bond = gridToCsv([HEADER, ["05/03/2025", "07/03/2025", "Compravendita titoli", "BTP 3,85% 15/09/2049", "IT0005363111", "A", "10.000,00", "EUR", "98,50000", "1,00000", "9.862,40", "0,00"]]);
+    const table = parseFinecoTable(bond);
+    const [row] = normalizeRows(table, finecoMapping(table), "2026-01-01");
+    expect(row).toMatchObject({ status: "ok", identity: { isin: "IT0005363111", type: "obbligazione" }, operation: { quantity: 10000, price: 98.5 } });
+    const [share] = normalizeRows(parseFinecoTable(TEXT), finecoMapping(parseFinecoTable(TEXT)), "2026-01-01");
+    expect(share.status === "ok" && share.identity.type).toBeUndefined();
+  });
+
   it("riconosce il file anche con l'intestazione del dossier sopra la tabella", () => {
     expect(looksLikeFineco(TEXT)).toBe(true);
     expect(detectImportProvider(TEXT)).toBe("fineco");

@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { importOverlap } from "@/lib/personal-import/counts";
 import { formatFileSize } from "./personal-import-upload";
 import { ReportErrorLink } from "@/components/domain/support";
+import { describeProgress } from "./personal-import-status";
 
 type Job = PersonalImportListing["jobs"][number];
 
@@ -32,6 +33,8 @@ export interface PersonalImportReceiptFile {
   rows?: number;
   /** Nome della banca o del broker scelto. */
   source: string;
+  /** Files of the batch that were not sent (already imported, refused), in one sentence. */
+  notice?: string;
 }
 
 export interface PersonalImportReceiptProps {
@@ -41,12 +44,14 @@ export interface PersonalImportReceiptProps {
   /** Id della sezione «Le tue importazioni», raggiunta dal pulsante. */
   listId: string;
   onAnother: () => void;
+  /** Files of an imported batch that could not be read: they stay in the list with their message. */
+  failedFiles?: number;
 }
 
 const STAGES = ["File ricevuto", "Analisi del formato", "Controlli e salvataggio", "Importato"] as const;
 /** I link-pulsante hanno l'altezza da dito su mobile come gli altri controlli del modulo. */
 const LINK_CLASS = "h-11 sm:h-8";
-const FAILED = ["failed", "review_failed", "expired"];
+const FAILED = ["failed", "expired"];
 
 /** Fase attuale (indice in STAGES) dallo stato del lavoro; `queued` e `processing` sono entrambe «analisi». */
 export function receiptStage(status: string | undefined): number {
@@ -97,7 +102,7 @@ function Stages({ stage, failed }: { stage: number; failed: boolean }) {
 }
 
 /** «File ricevuto»: nome, righe e fase; a fine lavoro il riepilogo e i link ai dati. */
-export function PersonalImportReceipt({ file, job, listId, onAnother }: PersonalImportReceiptProps) {
+export function PersonalImportReceipt({ file, job, listId, onAnother, failedFiles = 0 }: PersonalImportReceiptProps) {
   const { locale: formattingLocale } = useLocalization();
 
   const { t: tr, language } = useLocalization();
@@ -114,6 +119,16 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
   React.useEffect(() => {
     if (nothingNew) track("personal_csv_already_imported", { stage: "analisi" });
   }, [nothingNew]);
+  // Outcome events only for a job seen finishing here, not for an old one reopened from the list.
+  const seenRunning = React.useRef(false);
+  React.useEffect(() => {
+    if (!job) return;
+    if (!imported && !failed) { seenRunning.current = true; return; }
+    if (!seenRunning.current) return;
+    seenRunning.current = false;
+    if (failed) track("personal_csv_failed", {});
+    else if (!nothingNew) track("personal_csv_imported", { rows: (results?.cash ?? 0) + (results?.investments ?? 0), bankCategorized: results?.bankCategorized ?? 0 });
+  }, [job, imported, failed, nothingNew, results]);
   const title = nothingNew ? tr("Niente di nuovo da importare") : imported ? tr("Importazione completata") : failed ? tr("Non siamo riusciti a importare il file") : tr("File ricevuto");
   const Icon = failed ? AlertCircleIcon : nothingNew ? InfoIcon : CheckCircle2Icon;
 
@@ -128,7 +143,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
               ? importSummary(tr, results)
               : failed
                 ? (job?.error ? translateServerMessage(language, job.error) : null) ?? tr("Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista.")
-                : tr("L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando.")}
+                : job?.progress ? `${tr(describeProgress(job.progress)!)}…` : tr("L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando.")}
           </p>
           {failed ? <ReportErrorLink area="import_movimenti" error={job?.error ?? title} /> : null}
         </div>
@@ -141,14 +156,16 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
           <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size, formattingLocale) : null, file.rows !== undefined ? plural(file.rows, "riga", tr("righe")) : null].filter(Boolean).join(" · ")}</span>
         </span>
       </div>
+      {file.notice ? <p className="text-sm text-muted-foreground">{file.notice}</p> : null}
+      {imported && failedFiles > 0 ? <p className="text-sm text-muted-foreground">{failedFiles === 1 ? tr("1 file non è stato importato: trovi il motivo nella lista.") : tr("{0} file non sono stati importati: trovi il motivo nella lista.", { 0: failedFiles })}</p> : null}
 
       <Stages stage={stage} failed={failed} />
       {!imported && !failed ? <ProgressBar state={{ kind: "indeterminate" }} label={tr("Importazione in corso")} /> : null}
 
       {imported && results && !nothingNew ? (
         <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-          <li>{plural(results.cash, tr("movimento aggiunto"), tr("movimenti aggiunti"))}{" "}{tr("a Liquidità.")}</li>
-          <li>{plural(results.investments, tr("operazione aggiunta"), tr("operazioni aggiunte"))}{" "}{tr("a Investimenti.")}</li>
+          {results.native ? <li>{tr("{0} righe importate con il lettore {1}, senza AI: le trovi in Investimenti e, per la liquidità del broker, in Liquidità.", { 0: results.native.inserted, 1: results.native.name })}</li> : <li>{plural(results.cash, tr("movimento aggiunto"), tr("movimenti aggiunti"))}{" "}{tr("a Liquidità.")}</li>}
+          {results.native ? null : <li>{plural(results.investments, tr("operazione aggiunta"), tr("operazioni aggiunte"))}{" "}{tr("a Investimenti.")}</li>}
           {results.skipped > 0 ? <li>{results.skipped === 1 ? tr("1 riga non riconosciuta è stata saltata, come hai scelto: non entra nei conti.") : tr("{0} righe non riconosciute sono state saltate, come hai scelto: non entrano nei conti.", { 0: results.skipped })}</li> : null}
           {results.bankCategorized > 0 ? <li>{results.bankCategorized === 1 ? tr("1 movimento ha già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.") : tr("{0} movimenti hanno già la categoria scritta dalla banca nel file: puoi cambiarla quando vuoi.", { 0: results.bankCategorized })}</li> : null}
           {overlap === "unknown" ? <li>{tr("Le righe già presenti sono state saltate, senza doppioni.")}</li> : null}
@@ -166,7 +183,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
         {imported ? (
           <>
             {results && results.cash > 0 ? <Link href="/liquidita" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ className: LINK_CLASS })}>{tr("Vai a Liquidità")}</Link> : null}
-            {results && results.investments > 0 ? <Link href="/investimenti/operazioni" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ variant: results.cash > 0 ? "outline" : "default", className: LINK_CLASS })}>{tr("Vai alle operazioni")}</Link> : null}
+            {results && (results.investments > 0 || results.native) ? <Link href="/investimenti/operazioni" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ variant: results.cash > 0 ? "outline" : "default", className: LINK_CLASS })}>{tr("Vai alle operazioni")}</Link> : null}
           </>
         ) : null}
         <a href={`#${listId}`} onClick={() => track("personal_csv_receipt_action", { action: "lista" })} className={buttonVariants({ variant: "outline", className: LINK_CLASS })}>{tr("Vedi le tue importazioni")}</a>

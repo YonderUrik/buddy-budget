@@ -27,7 +27,7 @@ async function fixture() {
     plugins: [publicDemo(readSession), bearer()],
   });
   const ctx = await auth.$context;
-  await ctx.internalAdapter.createUser({ id: DEMO_ID, name: "Demo", email: "demo@example.test", emailVerified: true });
+  await ctx.internalAdapter.createUser({ id: DEMO_ID, name: "Demo", email: "demo@example.test", emailVerified: true }, { method: "admin" });
 
   const post = (path: string, body: unknown, headers?: HeadersInit) => auth.handler(new Request(`${BASE_URL}/api/auth${path}`, {
     method: "POST",

@@ -46,7 +46,7 @@ export const SUPPORT_EMAIL = "support@buddybudget.io";
  */
 export const FAQ: readonly FaqItem[] = [
   { question: "È gratis?", answer: "Sì, durante la beta. Se cambierà lo diremo prima, e potrai portare via tutto in un file ZIP." },
-  { question: "Si collega alla banca?", answer: "Non ancora: il collegamento in sola lettura con l'Open Banking arriva presto. Intanto carichi l'estratto conto in CSV o Excel, o aggiungi i conti a mano." },
+  { question: "Si collega alla banca?", answer: "Trade Republic supporta il collegamento diretto per saldo e movimenti del conto in EUR, con numero, PIN e conferma nell’app. Open Banking per le altre banche arriva presto. Puoi anche importare CSV o Excel, o aggiungere i conti a mano." },
   { question: "Le tasse sono quelle vere?", needs: "taxes", answer: "Sono stime con le regole italiane: 26% sui guadagni, 12,5% sui titoli di Stato, perdite da scalare per quattro anni, bollo. Servono per decidere. Il conto finale lo fa la banca o il commercialista." },
   { question: "Cosa non fa?", answer: "Non ti dice cosa comprare o vendere. Non sposta soldi e non fa ordini al broker. I prezzi sono di fine giornata, non in tempo reale." },
   {

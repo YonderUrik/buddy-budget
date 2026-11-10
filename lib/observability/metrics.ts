@@ -5,6 +5,7 @@ import type { FxProviderId, ProviderOutcome } from "@/lib/market-data/types";
 import type { MerchantNameSource } from "@/lib/categorization/merchant-name";
 import type { ClientErrorArea, ClientErrorKind } from "@/lib/client-errors";
 import type { Language } from "@/lib/localization/config";
+import type { AnalysisGroupBy, AnalysisMeasure } from "@/lib/commands/analysis";
 
 /** Prefisso comune di tutte le metriche applicative. */
 export const METRIC_PREFIX = "buddybudget_";
@@ -143,14 +144,14 @@ export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
 /** Whether a «Cerca» query read every movement of its window or stopped at the scan cap (`MOVEMENT_SCAN_LIMIT`). */
 export type SearchMovementScan = "full" | "capped";
 /** Which question about the user's data a «Cerca» query was read as (`DataQuestion` kinds), «none» for a plain search. */
-export type SearchAnswerLabel = "none" | "totale" | "saldo" | "patrimonio" | "portafoglio" | "rata";
+export type SearchAnswerLabel = "none" | "totale" | "saldo" | "patrimonio" | "portafoglio" | "rata" | "analisi";
 /**
  * Outcome of one «Chiedi all'AI» question in «Cerca»: answered by the model (ok: a draft; question: a question about the
  * user's data, answered by the server; none: neither),
  * answered from the 24 h cache, refused before the model (invalid sentence, no consent, unavailable: public demo or no
  * key/model; limit of the user or of the whole service; quota store down) or failed (timeout, error, bad answer).
  */
-export type CommandAiOutcome = "ok" | "question" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
+export type CommandAiOutcome = "ok" | "question" | "help" | "none" | "cached" | "invalid" | "disabled" | "unavailable" | "limited_user" | "limited_service" | "store_down" | "failed";
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge
@@ -167,6 +168,10 @@ export interface AsyncGaugeDeps {
 }
 
 interface MetricsState {
+  tradeRepublic: Counter<"action" | "outcome">;
+  tradeRepublicDuration: Histogram<"action" | "outcome">;
+  tradeRepublicUnrecognized: Counter<string>;
+  personalImportAttempts: Counter<"step" | "outcome">;
   registry: Registry;
   deps: AsyncGaugeDeps;
   httpRequests: Counter<"route" | "method" | "status_class">;
@@ -208,6 +213,8 @@ interface MetricsState {
   searchDuration: Histogram<string>;
   commandAiRequests: Counter<"outcome">;
   commandAiDuration: Histogram<string>;
+  searchAnalyses: Counter<"measure" | "group_by" | "outcome">;
+  searchAnalysisDuration: Histogram<string>;
 }
 
 function createState(): MetricsState {
@@ -393,6 +400,10 @@ function createState(): MetricsState {
     labelNames: ["trigger", "outcome"],
     registers: r,
   });
+  state.tradeRepublicDuration = new Histogram({ name: `${METRIC_PREFIX}trade_republic_request_seconds`, help: "Direct TR login and sync duration.", labelNames: ["action", "outcome"], buckets: DURATION_BUCKETS_SECONDS, registers: r });
+  state.tradeRepublicUnrecognized = new Counter({ name: `${METRIC_PREFIX}trade_republic_unrecognized_events_total`, help: "Trade Republic events skipped because their type or status is not known yet.", registers: r });
+  state.personalImportAttempts = new Counter({ name: `${METRIC_PREFIX}personal_import_attempts_total`, help: "Personal CSV parser attempts by ladder step (0 = saved parser) and outcome.", labelNames: ["step", "outcome"], registers: r });
+  state.tradeRepublic = new Counter({ name: `${METRIC_PREFIX}trade_republic_requests_total`, help: "Direct Trade Republic login and sync outcomes.", labelNames: ["action", "outcome"], registers: r });
   state.gcConnect = new Counter({
     name: `${METRIC_PREFIX}gocardless_connect_attempts_total`,
     help: "Richieste di collegamento bancario per tipo (nuova banca o rinnovo) ed esito (avviata, bloccata da un limite, rifiutata da GoCardless, fallita).",
@@ -463,6 +474,18 @@ function createState(): MetricsState {
   state.commandAiDuration = new Histogram({
     name: `${METRIC_PREFIX}command_ai_request_duration_seconds`,
     help: "Duration of one model call for «Chiedi all'AI» in «Cerca» (cache hits and refusals excluded).",
+    buckets: DURATION_BUCKETS_SECONDS,
+    registers: r,
+  });
+  state.searchAnalyses = new Counter({
+    name: `${METRIC_PREFIX}search_analyses_total`,
+    help: "Analyses computed for «Chiedi all'AI» in «Cerca» (averages, counts, rankings, splits), by measure, split and outcome (found, empty, capped, missing_account).",
+    labelNames: ["measure", "group_by", "outcome"],
+    registers: r,
+  });
+  state.searchAnalysisDuration = new Histogram({
+    name: `${METRIC_PREFIX}search_analysis_duration_seconds`,
+    help: "Time to compute one «Cerca» analysis on the user's movements (reads and decryption included, model excluded).",
     buckets: DURATION_BUCKETS_SECONDS,
     registers: r,
   });
@@ -831,9 +854,36 @@ export function recordSearchQuery(durationMs: number, movements: SearchMovementS
   m.searchDuration.observe(durationMs / 1000);
 }
 
+/** Outcome of one «Cerca» analysis: a figure, nothing matched, a read stopped at its cap, or an account the user does not have. */
+export type SearchAnalysisOutcome = "found" | "empty" | "capped" | "missing_account";
+
+/** Records one «Cerca» analysis computed on the user's movements; `measure` and `groupBy` are closed enums (`lib/commands/analysis`). */
+export function recordSearchAnalysis(measure: AnalysisMeasure, groupBy: AnalysisGroupBy | null, outcome: SearchAnalysisOutcome, durationMs: number): void {
+  const m = metrics();
+  m.searchAnalyses.inc({ measure, group_by: groupBy ?? "none", outcome });
+  m.searchAnalysisDuration.observe(durationMs / 1000);
+}
+
 /** Records one «Chiedi all'AI» question in «Cerca»; `durationMs` only when the model was actually called. */
 export function recordCommandAiRequest(outcome: CommandAiOutcome, durationMs?: number): void {
   const m = metrics();
   m.commandAiRequests.inc({ outcome });
   if (durationMs !== undefined) m.commandAiDuration.observe(durationMs / 1000);
+}
+
+/** Count direct TR outcomes without account identifiers or authentication material. */
+/** Trade Republic events a sync skipped as unknown (no type label: the set is open-ended, the types are in the logs). */
+/** Outcome of one personal CSV parser attempt: `step` 0 is the saved parser or a built-in broker reader (`native`), 1–3 the ladder. */
+export type PersonalImportAttemptOutcome = "reused" | "accepted" | "rejected" | "native";
+export function recordPersonalImportAttempt(step: number, outcome: PersonalImportAttemptOutcome): void {
+  metrics().personalImportAttempts.inc({ step: String(Math.min(Math.max(Math.trunc(step), 0), 3)), outcome });
+}
+
+export function recordTradeRepublicUnrecognized(count: number): void {
+  if (count > 0) metrics().tradeRepublicUnrecognized.inc(count);
+}
+
+export function recordTradeRepublicRequest(action: "login" | "sync" | "investments", outcome: "success" | "error", durationMs: number): void {
+  metrics().tradeRepublic.inc({ action, outcome });
+  metrics().tradeRepublicDuration.observe({ action, outcome }, durationMs / 1000);
 }

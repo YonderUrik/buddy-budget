@@ -7,6 +7,18 @@ function account(overrides: Partial<SyncJobAccount>): SyncJobAccount {
 }
 
 describe("describeAccountProgress", () => {
+  it("names the steps after the movements, and says what happened to the investments", () => {
+    expect(describeAccountProgress(account({ phase: "investments" }), false)).toMatchObject({ text: "Importo gli investimenti…", bar: { kind: "indeterminate" } });
+    expect(describeAccountProgress(account({ phase: "categorizing" }), false).text).toBe("Categorizzo i nuovi movimenti…");
+    expect(describeAccountProgress(account({ phase: "done", investmentOperations: 14 }), false).text).toContain("14 operazioni in Investimenti.");
+    expect(describeAccountProgress(account({ phase: "done", investmentsFailed: true }), false)).toMatchObject({ tone: "error", text: expect.stringContaining("abbiamo avvisato il supporto") });
+  });
+  it("adds a note for provider events not recognised yet", () => {
+    const text = describeAccountProgress(account({ phase: "done", inserted: 3, unrecognized: 2 }), false).text;
+    expect(text).toContain("2 movimenti non ancora riconosciuti: li importeremo appena possibile.");
+    expect(describeAccountProgress(account({ phase: "done", inserted: 3 }), false).text).not.toContain("riconosciut");
+  });
+
   it("descrive le fasi in corso con la barra giusta", () => {
     expect(describeAccountProgress(account({ phase: "queued" }), false)).toEqual({
       text: "In attesa",

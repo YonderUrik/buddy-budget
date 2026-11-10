@@ -32,13 +32,25 @@ export type VerifiedListingsResult =
  * valuta indicata (quella del rendiconto o del file). Il simbolo di OpenFIGI è una stima: senza la conferma di Yahoo
  * non si propone, perché un simbolo plausibile ma diverso darebbe prezzi sbagliati.
  */
-export async function verifyIsinListings(isin: string, currency: string | null, deps: IsinListingsDeps): Promise<VerifiedListingsResult> {
+/**
+ * Main exchange of a non-euro currency: without the broker's exchange, a US stock in USD goes to New York and not to
+ * its USD line in London (Meta on `0QZI.L`, Corsair on `0A95.L`, which have a short history). Euro securities keep the
+ * app's order, since they trade in several euro markets.
+ */
+const HOME_EXCHANGE: Readonly<Record<string, string>> = {
+  USD: "US", GBP: "LN", CHF: "SW", HKD: "HK", PLN: "PW", CAD: "CT", AUD: "AU", JPY: "JT", SEK: "SS", NOK: "NO", DKK: "DC",
+};
+
+export async function verifyIsinListings(isin: string, currency: string | null, deps: IsinListingsDeps, preferredExchange: string | null = null): Promise<VerifiedListingsResult> {
   let listings: OpenFigiListing[];
   try {
     listings = await deps.listings(isin);
   } catch {
     return { status: "unavailable" };
   }
+  // The exchange the broker reports comes first: it is the listing the user trades, with the longest history.
+  const preferred = preferredExchange ?? (currency ? HOME_EXCHANGE[currency] ?? null : null);
+  if (preferred) listings = [...listings.filter((l) => l.exchCode === preferred), ...listings.filter((l) => l.exchCode !== preferred)];
   const verified: VerifiedListing[] = [];
   let failures = 0;
   const toCheck = listings.slice(0, MAX_QUOTATION_CHECKS);
@@ -73,8 +85,8 @@ export function instrumentTypeFromFigi(listing: Pick<OpenFigiListing, "name" | "
  * Risultati nello stile della ricerca Yahoo per un ISIN che Yahoo non trova da solo: servono all'import e alla
  * ricerca strumenti. Il nome è quello di OpenFIGI, o l'ISIN se manca.
  */
-export async function searchByIsinOnOpenFigi(isin: string, currency: string | null, deps: IsinListingsDeps): Promise<VerifiedListingsResult & { hits: YahooSearchHit[] }> {
-  const result = await verifyIsinListings(isin, currency, deps);
+export async function searchByIsinOnOpenFigi(isin: string, currency: string | null, deps: IsinListingsDeps, preferredExchange: string | null = null): Promise<VerifiedListingsResult & { hits: YahooSearchHit[] }> {
+  const result = await verifyIsinListings(isin, currency, deps, preferredExchange);
   const hits =
     result.status === "ok"
       ? result.listings.map(({ listing, exchange }) => ({

@@ -9,7 +9,7 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import * as React from "react";
-import { Building2, ChevronRightIcon, Loader2Icon, LockKeyholeIcon } from "lucide-react";
+import { Loader2Icon, LockKeyholeIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { useCreateConnectionMutation, useInstitutionsQuery } from "@/lib/queries
 import type { Institution } from "@/lib/queries/gocardless";
 import { ErrorWithReport, ReportErrorLink } from "@/components/domain/support";
 import { LANDING_URL } from "@/lib/legal";
+import { BankRow, GenericBankLogo } from "./bank-row";
 
 export const BANK_COUNTRY_OPTIONS = [
   { code: "IT", label: "Italia" },
@@ -40,16 +41,10 @@ function countryFlag(code: string): string {
 function InstitutionLogo({ institution }: { institution: Institution }) {
 
   const [errored, setErrored] = React.useState(false);
-  if (!institution.logo || errored) {
-    return (
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground" aria-hidden="true">
-        <Building2 className="size-4" />
-      </span>
-    );
-  }
+  if (!institution.logo || errored) return <GenericBankLogo />;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- logo di dominio esterno GoCardless
-    <img src={institution.logo} alt={""} className="size-9 shrink-0 rounded-full bg-white object-contain p-0.5 ring-1 ring-border" onError={() => setErrored(true)} />
+    <img src={institution.logo} alt={""} className="size-10 shrink-0 rounded-full bg-white object-contain p-0.5 ring-1 ring-border" onError={() => setErrored(true)} />
   );
 }
 
@@ -62,12 +57,25 @@ export function describeHistory(days: string, language: Language = "it"): string
   return years === 1 ? translate(language, "Storico fino a 1 anno") : translate(language, "Storico fino a {0} anni", { 0: years });
 }
 
+/** A bank connected without GoCardless (e.g. Trade Republic), listed first and filtered by the same search. */
+export interface FeaturedBank {
+  id: string;
+  name: string;
+  /** Extra words the search matches («TR»). */
+  keywords?: string[];
+  detail: string;
+  logo: React.ReactNode;
+  onSelect: () => void;
+}
+
 export interface ConnectBankFlowProps {
+  /** Banks shown before the GoCardless ones. */
+  featured?: FeaturedBank[];
   /** Se presente, offre la via d'uscita «aggiungi un conto manuale» quando la banca non si trova. */
   onChooseManual?: () => void;
 }
 
-export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
+export function ConnectBankFlow({ featured = [], onChooseManual }: ConnectBankFlowProps) {
   const { t: tr } = useLocalization();
   const fieldId = React.useId();
   const { productCountry, language } = useLocalization();
@@ -83,6 +91,11 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
     const query = search.trim().toLowerCase();
     return (institutions ?? []).filter((institution) => institution.name.toLowerCase().includes(query));
   }, [institutions, search]);
+  const featuredShown = React.useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return featured.filter((bank) => [bank.name, ...(bank.keywords ?? [])].some((word) => word.toLowerCase().includes(query)));
+  }, [featured, search]);
+  const total = filtered.length + featuredShown.length;
 
   function handleSelect(institution: Institution) {
     setError(null);
@@ -152,7 +165,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
             <ReportErrorLink area="collega_banca" error="Non riesco a caricare l'elenco delle banche." />
           </div>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : total === 0 ? (
         <div className="flex flex-col items-start gap-1 rounded-xl bg-muted/50 p-4 text-sm">
           <p className="font-medium text-foreground">{search.trim() ? tr("Nessuna banca trovata per «{0}».", {0: search.trim()}) : tr("Nessuna banca disponibile in questo paese.")}</p>
           <p className="text-muted-foreground">{tr("Controlla il nome o cambia paese.")}{onChooseManual ? tr(" Se non c'è, puoi tenere il conto a mano e importare i movimenti da un file.") : ""}</p>
@@ -160,26 +173,26 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
         </div>
       ) : (
         <>
-          <p className="text-xs text-muted-foreground" aria-live="polite">{filtered.length === 1 ? tr("1 banca") : tr("{0} banche", {0: filtered.length})}</p>
+          <p className="text-xs text-muted-foreground" aria-live="polite">{total === 1 ? tr("1 banca") : tr("{0} banche", {0: total})}</p>
           <ul className="-mt-2 flex max-h-[min(22rem,45dvh)] flex-col gap-2 overflow-y-auto pr-0.5 max-sm:max-h-none">
+            {featuredShown.map((bank) => (
+              <li key={bank.id}>
+                <BankRow logo={bank.logo} name={bank.name} detail={bank.detail} onSelect={bank.onSelect} disabled={busy} />
+              </li>
+            ))}
             {filtered.map((institution) => {
               const history = describeHistory(institution.transaction_total_days, language);
               const chosen = chosenId === institution.id;
               return (
                 <li key={institution.id}>
-                  <button
-                    type="button"
+                  <BankRow
+                    logo={<InstitutionLogo institution={institution} />}
+                    name={institution.name}
+                    detail={history}
+                    onSelect={() => handleSelect(institution)}
                     disabled={busy}
-                    onClick={() => handleSelect(institution)}
-                    className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-xl border bg-background px-3 py-2 text-left transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <InstitutionLogo institution={institution} />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="break-words text-sm font-medium text-foreground">{institution.name}</span>
-                      {history ? <span className="text-xs text-muted-foreground">{history}</span> : null}
-                    </span>
-                    {chosen ? <Loader2Icon className="size-4 animate-spin text-muted-foreground" aria-hidden="true" /> : <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />}
-                  </button>
+                    trailing={chosen ? <Loader2Icon className="size-4 shrink-0 animate-spin text-muted-foreground" aria-hidden="true" /> : undefined}
+                  />
                 </li>
               );
             })}

@@ -57,4 +57,8 @@ export const COMMAND_MAX_VALUE = 10_000_000;
 export const COMMAND_MAX_LENGTH = 160;
 
 /** What «Chiedi all'AI» read in a sentence: something to add (a draft for its form) or a question for the server to answer. */
-export type Interpretation = { type: "draft"; draft: CommandDraft } | { type: "question"; question: DataQuestion };
+/**
+ * What the AI read: a record to add, a question the server computes, or help: a short answer the model wrote from our
+ * help articles only, with the ids of the articles it used (`lib/help`, best first), always shown under it.
+ */
+export type Interpretation = { type: "draft"; draft: CommandDraft } | { type: "question"; question: DataQuestion } | { type: "help"; ids: string[]; text: string };

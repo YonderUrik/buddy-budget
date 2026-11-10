@@ -15,6 +15,7 @@ export * from "./analytics";
 export * from "./broker-statements";
 
 export * from "./broker-import-accounts";
+export * from "./broker-operation-exclusions";
 export * from "./personal-imports";
 export * from "./notifications";
 export * from "./subscriptions";
@@ -23,3 +24,4 @@ export * from "./categorization-runs";
 export * from "./financial-plans";
 export * from "./goals";
 export * from "./import-format-profiles";
+export * from "./trade-republic";

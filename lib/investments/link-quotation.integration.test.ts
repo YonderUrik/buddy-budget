@@ -5,7 +5,7 @@ import { authUser } from "@/lib/db/schema/auth";
 import { instrumentSymbols, instruments, type Instrument } from "@/lib/db/schema/investments";
 import { createOrReuseInstrument } from "./instruments";
 import type { IsinListingsDeps } from "./isin-listings";
-import { linkQuotation } from "./link-quotation";
+import { autoLinkQuotation, linkQuotation } from "./link-quotation";
 
 const ISIN = "IE00B4L5Y983";
 const deps: IsinListingsDeps = {
@@ -39,6 +39,19 @@ describe("collegamento di uno strumento manuale a una quotazione", () => {
 
   afterAll(async () => {
     await client.end();
+  });
+
+  it("never links by itself a security that keeps the broker's prices; the user still can", async () => {
+    const [kept] = await db.update(instruments).set({ keepBrokerPrices: true }).where(eq(instruments.id, manual.id)).returning();
+    expect(await autoLinkQuotation(kept, userId, deps)).toBeNull();
+    const outcome = await linkQuotation(kept, userId, "SWDA.MI", deps);
+    expect(outcome.ok && outcome.instrument).toMatchObject({ priceMode: "auto", keepBrokerPrices: false });
+  });
+
+  it("a corporate action turns the user's own linked copy back to the broker's prices", async () => {
+    await linkQuotation(manual, userId, "SWDA.MI", deps);
+    const outcome = await createOrReuseInstrument(userId, { source: "manuale", isin: ISIN, name: "iShares Core MSCI World", type: "etf", currency: "EUR", ownCopy: true }, { quoteMeta: async () => null });
+    expect(outcome.ok && outcome.instrument).toMatchObject({ id: manual.id, priceMode: "manuale", keepBrokerPrices: true });
   });
 
   it("aggiunge i simboli e passa ai prezzi automatici", async () => {

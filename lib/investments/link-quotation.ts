@@ -70,7 +70,7 @@ export async function linkQuotation(
   await saveSymbols(instrument.id, symbols);
   const [updated] = await db
     .update(instruments)
-    .set({ priceMode: "auto", exchange: candidate.exchange, updatedAt: new Date() })
+    .set({ priceMode: "auto", exchange: candidate.exchange, keepBrokerPrices: false, updatedAt: new Date() })
     .where(and(eq(instruments.id, instrument.id), eq(instruments.priceMode, "manuale")))
     .returning();
   if (!updated) return { ok: false, status: 409, error: "Lo strumento è già stato collegato" };
@@ -83,7 +83,9 @@ export async function linkQuotation(
  * `null` e lo strumento resta com'era.
  */
 export async function autoLinkQuotation(instrument: Instrument, userId: string, deps: IsinListingsDeps): Promise<LinkQuotationOutcome & { ok: true } | null> {
-  if (!canLinkQuotation(instrument, userId)) return null;
+  // A security that keeps the broker's prices (after a corporate action the market history disagrees with the
+  // trades) is never linked by itself: only the user's own «Cerca la quotazione» can do it.
+  if (instrument.keepBrokerPrices || !canLinkQuotation(instrument, userId)) return null;
   try {
     const found = await findQuotationCandidates(instrument, userId, deps);
     if (found.status !== "ok") return null;

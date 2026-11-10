@@ -27,10 +27,13 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "anali
 import type { SearchGroupId } from "@/lib/search/types";
 import type { CommandKind, CommandSource } from "@/lib/commands/types";
 import type { DataQuestion } from "@/lib/commands/question";
+import type { AnalysisGroupBy, AnalysisMeasure } from "@/lib/commands/analysis";
 
 type DataQuestionKind = DataQuestion["kind"];
 
 export interface ProductEvents {
+  trade_republic_login_started: undefined;
+  trade_republic_connected: undefined;
   financial_sale_simulated: { country: "DE" };
   financial_plan_saved: { country: "DE"; section: "tax" | "income" | "pension" | "retirement" };
   /** Segnalazione inviata da «Aiuto e segnalazioni»; `withContext`: l'utente ha lasciato il contesto tecnico allegato. */
@@ -41,15 +44,16 @@ export interface ProductEvents {
   support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" | "stato" };
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
   support_faq_opened: { id: string };
-  personal_csv_requested: { reuse: boolean };
+  /** Upload sent; `files`: how many files of the same bank went together. */
+  personal_csv_requested: { reuse: boolean; files?: number };
   /** File già importato: rifiutato al caricamento (stesso file) o, dopo l'analisi, senza nessun movimento nuovo. */
   personal_csv_already_imported: { stage: "caricamento" | "analisi" };
   investments_import_ai_fallback: Record<string, never>;
   personal_csv_deleted: { cash: number; investments: number };
-  /** Import confermato; `skipped`: righe non riconosciute saltate per scelta dell'utente. */
+  /** Import finished while the receipt was open; `rows`: movements and operations added. */
   personal_csv_imported: { rows: number; skipped?: number; bankCategorized?: number };
-  /** Scelta nella schermata «Righe da controllare» dell'import personale. */
-  personal_csv_review_action: { action: "importa_saltando" | "rianalizza" | "file_corretto" };
+  /** Import failed after every automatic attempt, seen while the receipt was open. */
+  personal_csv_failed: Record<string, never>;
   /** Azione scelta nella schermata «File ricevuto» dell'import personale. */
   personal_csv_receipt_action: { action: "lista" | "altro_file" | "vai_ai_dati" };
   investment_dividends_details_opened: { source: "portfolio" | "year" | "instrument" };
@@ -58,6 +62,12 @@ export interface ProductEvents {
   investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };
   /** Interruttore «Rimetti costi/imposte nel portafoglio» in Investimenti; `reinvested`: acceso o spento. */
   investment_reinvest_toggled: { kind: "costi" | "imposte"; reinvested: boolean };
+  /** Performance measured on the securities or on the own capital (margin loan and interest included). */
+  investment_return_basis_changed: { basis: "titoli" | "capitale" };
+  /** Maintenance margin of the leverage card's estimate changed, in whole percent. */
+  investment_margin_estimate_changed: { maintenance: number };
+  /** Details of the leverage strip opened from Investimenti › Portafoglio. */
+  investment_leverage_details_opened: Record<string, never>;
   investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
   /**
    * Action of a «Primi passi» step pressed; `placement`: the big «next step» block in Panoramica, the list under it, or
@@ -134,6 +144,7 @@ export interface ProductEvents {
   account_details_opened: { kind: "manuale" | "collegato" };
   /** Scelta nel dialog «Nuovo conto»: quale strada prende l'utente. */
   account_add_path_chosen: { path: "banca" | "manuale" | "importa" };
+  bank_provider_chosen: { provider: "trade-republic" };
   /** Un passo di un form a passi è stato completato (`step` parte da 1): serve a vedere dove ci si ferma. */
   form_step_completed: { flow: FormFlow; step: number };
   /** «Indietro» in un form a passi, dal passo `step` (parte da 1). */
@@ -161,6 +172,12 @@ export interface ProductEvents {
   section_view_chosen: { section: SectionViewsKey };
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
   liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "budget" | "conti" | "abbonamenti" | "categorie" | "regole" };
+  /** Analisi › «Dove vanno i soldi» switched between the groups ring and the money-flow picture. */
+  liquidity_spend_view_changed: { view: "gruppi" | "percorso" };
+  /** Phone money-flow picture: a spending group opened into its categories. */
+  liquidity_flow_group_opened: { group: "dovuta" | "voluta" | "futuro" | "saltuaria" };
+  /** Movimenti loaded an older year on demand; `yearsBack` counts years before the default window. */
+  transactions_older_loaded: { yearsBack: number };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
   liquidity_account_filtered: { scope: "conto" | "tutti" };
   /** Categoria cambiata dall'icona del movimento; `remembered`: l'utente ha chiesto di ricordarla con una regola. */
@@ -186,6 +203,8 @@ export interface ProductEvents {
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
   investment_operation_updated: { type: InvestmentTransactionType };
+  /** `imported`: the operation came from a broker statement or connection (later imports leave it out). */
+  investment_operation_deleted: { type: InvestmentTransactionType; imported: boolean };
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" };
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" };
   /** Scelta di un'ipotesi nel foglio "E se…" di un debito (`kind`: quale). */
@@ -206,6 +225,8 @@ export interface ProductEvents {
   pension_rate_simulated: { years: number };
   investment_broker_filter_changed: { action: "toggle" | "all"; selected?: number };
   investment_benchmark_set: undefined;
+  /** «Confronta con un indice»: which common index was picked, `other` from the search, `none` when removed. */
+  investment_benchmark_chosen: { choice: "sp500" | "msci-world" | "ftse-all-world" | "nasdaq-100" | "other" | "none" };
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;
   investment_tax_regime_set: { regime: "amministrato" | "dichiarativo" };
@@ -296,7 +317,11 @@ export interface ProductEvents {
   /** «Chiedi all'AI» asked in «Cerca», with what came back (never the sentence); `question` = a question about the user's data, answered. */
   search_ai_asked: { outcome: string };
   /** «Cerca» answered a question about the user's data (once per kind per opening); `source`: read by the rules or by the AI. Never the question or the figure. */
-  search_answer_shown: { kind: DataQuestionKind; source: "regole" | "ai" };
+  search_answer_shown: { kind: DataQuestionKind | "aiuto"; source: "regole" | "ai" };
+  /** «Cerca» answered a «how do I…» question from the help articles (once per article per opening): which article, and whether the AI wrote the answer. */
+  search_help_shown: { id: string; source: "regole" | "ai" };
+  /** «Chiedi all'AI» answered an analysis (average, count, ranking, split): what kind, never the question or the figure; `found`: it had a figure. */
+  search_analysis_shown: { measure: AnalysisMeasure; groupBy: AnalysisGroupBy | "nessuno"; compare: boolean; found: boolean };
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */

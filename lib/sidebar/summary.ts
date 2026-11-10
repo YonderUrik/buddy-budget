@@ -18,6 +18,7 @@ import { loadSymbols } from "@/lib/market-data/store";
 import { splitYahooSymbol } from "@/lib/market-data/symbols";
 import { buildSidebarPortfolio, type HoldingSignal } from "./portfolio";
 import type { SidebarNetWorth, SidebarSummary, SidebarWatchItem } from "./types";
+import { fxSourceCurrencies } from "@/lib/calc/fx";
 
 /** Giorni di prezzi e cambi letti: bastano per l'ultima chiusura e la precedente, anche dopo un lungo weekend. */
 const PRICE_WINDOW_DAYS = 20;
@@ -114,7 +115,7 @@ export async function loadSidebarSummary(userId: string): Promise<SidebarSummary
         : db
             .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })
             .from(fxRates)
-            .where(and(inArray(fxRates.currency, currencies), gte(fxRates.date, from))),
+            .where(and(inArray(fxRates.currency, fxSourceCurrencies(currencies)), gte(fxRates.date, from))),
     ]);
     portfolio = buildSidebarPortfolio({
       transactions: transactions.map(toCalcInput),

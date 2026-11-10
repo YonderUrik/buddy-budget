@@ -3,10 +3,10 @@ import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
 
-/** Riga di un conto nella scheda Conti: avatar, nome, stato in parole, miniatura, saldo e scorciatoia ai movimenti. */
+/** Account row in the Conti tab: avatar, name, status in words, sparkline, balance, a shortcut to its movements and, with `onDelete`, a delete button. */
 
 import * as React from "react";
-import { AlertTriangleIcon, ListOrderedIcon, Loader2Icon } from "lucide-react";
+import { AlertTriangleIcon, ListOrderedIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import { AccountAvatar } from "@/components/domain/accounts";
 
 import { cn } from "@/lib/utils";
@@ -26,9 +26,11 @@ export interface AccountLineProps {
   trend?: readonly number[];
   onOpen: () => void;
   onShowMovements: () => void;
+  /** When set, a trash button beside the row opens the deletion confirmation directly. */
+  onDelete?: () => void;
 }
 
-export function AccountLine({ name, type, color, icon, balance, currency, status, statusTone, trend, onOpen, onShowMovements }: AccountLineProps) {
+export function AccountLine({ name, type, color, icon, balance, currency, status, statusTone, trend, onOpen, onShowMovements, onDelete }: AccountLineProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -66,6 +68,16 @@ export function AccountLine({ name, type, color, icon, balance, currency, status
       >
         <ListOrderedIcon className="size-5" aria-hidden="true" />
       </button>
+      {onDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label={tr("Elimina {0}", {0: name})}
+          className="flex w-12 shrink-0 items-center justify-center rounded-2xl text-text-2 hover:bg-neg-soft hover:text-neg focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          <Trash2Icon className="size-5" aria-hidden="true" />
+        </button>
+      )}
     </li>
   );
 }

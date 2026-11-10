@@ -8,6 +8,7 @@
 
 import { parseDataQuestion } from "./question";
 import { COMMAND_MAX_LENGTH, COMMAND_MAX_VALUE, type CommandCurrency, type CommandDraft, type CommandKind, type CommandLanguage } from "./types";
+import { needsAnalysis } from "./analysis";
 import { fold, MONTHS } from "./words";
 
 interface Token {
@@ -65,6 +66,8 @@ const QUESTION_WORDS = new Set([
   "quanto", "quanta", "quanti", "quante", "quando", "dove", "cosa", "perche", "quale", "quali", "qual", "chi",
   "how", "what", "when", "where", "which", "why", "who",
   "wie", "wieviel", "wo", "was", "wann", "welche", "welcher", "welches", "warum", "wer",
+  // Asking to be shown something is a question too («mostrami le spese sopra 100 €»).
+  "mostra", "mostrami", "elenca", "elencami", "dammi", "show", "list", "give", "zeige", "zeig", "liste",
 ]);
 
 /** Words that turn a weekday into the one of last week («lunedì scorso», «last monday», «letzten Montag»). */
@@ -244,8 +247,11 @@ function takeVerb(tokens: Token[]): { kind: CommandKind; language: CommandLangua
 /** A question («quanto ho speso a ottobre?», «soldi spesi su Serenis nel 2026», «saldo Fineco»): searched or answered, never read as something to add. */
 export function isQuestion(text: string): boolean {
   if (text.includes("?") || parseDataQuestion(text) !== null) return true;
-  const first = text.trim().split(/\s+/)[0] ?? "";
-  return QUESTION_WORDS.has(fold(first));
+  const words = fold(text).split(/[\s']+/).filter(Boolean);
+  if (QUESTION_WORDS.has(words[0] ?? "")) return true;
+  // «in quale mese ho speso di più», «spese medie al mese per categoria»: an analysis with a question word anywhere, or
+  // without an amount (with one it is something to add: «speso 12 € al bar ogni mese»; «le 5 spese più grandi» asks).
+  return needsAnalysis(text) && (words.some((word) => QUESTION_WORDS.has(word)) || !/\d[.,]\d{1,2}\b|\d\s*(€|eur\b|euro|\$|usd|dollar)|[€$]\s*\d/i.test(text));
 }
 
 /** Guesses the language of a sentence without a verb from its little words (Italian by default). */

@@ -2,6 +2,79 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.96.0](https://github.com/YonderUrik/buddy-budget/compare/v0.95.0...v0.96.0) (2026-11-03)
+
+
+### Features
+
+* «Cerca» answers averages, counts, splits and «how do I» questions with AI ([#557](https://github.com/YonderUrik/buddy-budget/issues/557)) ([b7a1b45](https://github.com/YonderUrik/buddy-budget/commit/b7a1b4585a7b658ee23e9d4d442ed8546669034d))
+
+## [0.95.0](https://github.com/YonderUrik/buddy-budget/compare/v0.94.0...v0.95.0) (2026-11-03)
+
+
+### Features
+
+* «Percorso» view of where the money goes in Liquidità › Analisi ([#555](https://github.com/YonderUrik/buddy-budget/issues/555)) ([21c03f0](https://github.com/YonderUrik/buddy-budget/commit/21c03f0db768c3b8c7084c419deb9aaef7976d8d))
+* delete a single imported investment operation and show each operation's source ([#554](https://github.com/YonderUrik/buddy-budget/issues/554)) ([9c14a8d](https://github.com/YonderUrik/buddy-budget/commit/9c14a8d325cb796c51a772a9e0f9abb869dca8a1))
+* Performance shows risk on a half dial and who beats the index ([#556](https://github.com/YonderUrik/buddy-budget/issues/556)) ([ef13d4f](https://github.com/YonderUrik/buddy-budget/commit/ef13d4f3ef712fbed9fe238ecfedb1dd28187a44))
+
+
+### Performance
+
+* open Performance on year to date and reuse the daily portfolio walk ([#552](https://github.com/YonderUrik/buddy-budget/issues/552)) ([b5b40a8](https://github.com/YonderUrik/buddy-budget/commit/b5b40a80b50567b421c909b04d42f2921508a9d0))
+
+## [0.94.0](https://github.com/YonderUrik/buddy-budget/compare/v0.93.0...v0.94.0) (2026-11-01)
+
+
+### Features
+
+* delete an account with its portfolio, operations and imports ([#550](https://github.com/YonderUrik/buddy-budget/issues/550)) ([23fcca4](https://github.com/YonderUrik/buddy-budget/commit/23fcca4a9a792525330b2016518743f7f68a96fc))
+
+
+### Bug fixes
+
+* **deps:** close the magic link takeover with better-auth 1.7.14 ([#547](https://github.com/YonderUrik/buddy-budget/issues/547)) ([b13f6b9](https://github.com/YonderUrik/buddy-budget/commit/b13f6b95a21de31946f1e75008979cd0d7bf581c))
+
+## [0.93.0](https://github.com/YonderUrik/buddy-budget/compare/v0.92.0...v0.93.0) (2026-11-01)
+
+
+### Features
+
+* GET /api/widgets/spending for the native spending widgets ([#548](https://github.com/YonderUrik/buddy-budget/issues/548)) ([2fa4d12](https://github.com/YonderUrik/buddy-budget/commit/2fa4d12d7ea0c60a612bbc0248061f994da41c8f))
+* Performance shows the chart first, on the whole history ([#543](https://github.com/YonderUrik/buddy-budget/issues/543)) ([aff3a1a](https://github.com/YonderUrik/buddy-budget/commit/aff3a1ae23337c3d61c7606167865c2ebae41a1a))
+
+
+### Bug fixes
+
+* **deps:** bump next ([#540](https://github.com/YonderUrik/buddy-budget/issues/540)) ([f1f85e1](https://github.com/YonderUrik/buddy-budget/commit/f1f85e13a561a36fa4e301fb0b90d03991276504))
+* invalidate every view account mutations change ([#545](https://github.com/YonderUrik/buddy-budget/issues/545)) ([de4bb4c](https://github.com/YonderUrik/buddy-budget/commit/de4bb4c502541ad147bf5b4efad202750048815b))
+* see corrected closes and FX rates in the net worth history ([#544](https://github.com/YonderUrik/buddy-budget/issues/544)) ([a588376](https://github.com/YonderUrik/buddy-budget/commit/a588376693bf9470c7b2f09bf93ce64262575a63))
+
+## [0.92.0](https://github.com/YonderUrik/buddy-budget/compare/v0.91.0...v0.92.0) (2026-10-31)
+
+
+### Features
+
+* one import for every file, retrying by itself ([#541](https://github.com/YonderUrik/buddy-budget/issues/541)) ([666424f](https://github.com/YonderUrik/buddy-budget/commit/666424fed782eac34884be8d534cd43ff62f07ea))
+
+
+### Bug fixes
+
+* **deps:** bump next in /landing in the patch group ([#539](https://github.com/YonderUrik/buddy-budget/issues/539)) ([b58911b](https://github.com/YonderUrik/buddy-budget/commit/b58911b765efbbfcefc83444cb435ffd2d162cde))
+
+## [0.91.0](https://github.com/YonderUrik/buddy-budget/compare/v0.90.2...v0.91.0) (2026-10-27)
+
+
+### Features
+
+* connect Trade Republic directly for cash, investments and AI categories ([#526](https://github.com/YonderUrik/buddy-budget/issues/526)) ([9024cb5](https://github.com/YonderUrik/buddy-budget/commit/9024cb5d60c271be5ff5e1da53755db4b47b157f))
+
+
+### Bug fixes
+
+* accurate landing and repository before the Show HN ([#532](https://github.com/YonderUrik/buddy-budget/issues/532)) ([c95e7e9](https://github.com/YonderUrik/buddy-budget/commit/c95e7e993999befade19004b9dcff71a8788bfcb))
+* **deps:** bump zod from 4.6.6 to 4.6.7 ([#531](https://github.com/YonderUrik/buddy-budget/issues/531)) ([e1a30cf](https://github.com/YonderUrik/buddy-budget/commit/e1a30cfc3488de26b2d99e538f33a1daddf1b818))
+
 ## [0.90.2](https://github.com/YonderUrik/buddy-budget/compare/v0.90.1...v0.90.2) (2026-10-27)
 
 

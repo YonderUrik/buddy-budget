@@ -10,6 +10,7 @@ import { WalletIcon } from "lucide-react";
 import { RenewalBanner, buildRenewalAlerts, computeAccountsKpi } from "@/components/domain/accounts";
 import {
   buildCompositionItems,
+  marginLoansFromBrokerCash,
   NetWorthChartCard,
   NetWorthCompositionRow,
 } from "@/components/domain/net-worth";
@@ -146,7 +147,7 @@ export default function PanoramicaPage() {
   // Escludere la previdenza toglie solo il totale: l'area resta nel grafico (in grigio).
   const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
-  const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null, language);
+  const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null, language, marginLoansFromBrokerCash(investmentsQuery.data?.brokerCash));
   // With budgets, «Budget» reads the same month as Liquidità · Budget (carried leftover and single-month amounts included).
   const budgetMonthQuery = useBudgetMonthQuery(undefined, { enabled: (budgetsQuery.data?.length ?? 0) > 0 });
   const pace = React.useMemo(() => {

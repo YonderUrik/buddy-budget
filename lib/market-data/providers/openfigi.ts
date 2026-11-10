@@ -18,7 +18,25 @@ export const OPENFIGI_EXCHANGE_SUFFIX: Readonly<Record<string, string>> = {
   SW: "SW",
   FP: "PA",
   US: "",
+  // Further exchanges, after the preferred ones: without them a security listed only there (Alibaba and Nine
+  // Dragons in Hong Kong, CD Projekt in Warsaw) could never get automatic prices.
+  HK: "HK",
+  PW: "WA",
+  SM: "MC",
+  BB: "BR",
+  PL: "LS",
+  ID: "IR",
+  AV: "VI",
+  FH: "HE",
+  DC: "CO",
+  SS: "ST",
+  NO: "OL",
+  CT: "TO",
+  AU: "AX",
+  JT: "T",
 };
+/** Yahoo writes Hong Kong tickers with four digits (700 → 0700.HK). */
+const PAD_TICKER: Readonly<Record<string, number>> = { HK: 4 };
 const EXCHANGE_ORDER = Object.keys(OPENFIGI_EXCHANGE_SUFFIX);
 /** Ticker accettati: lettere, cifre, punto e trattino (BRK/B diventa BRK-B come su Yahoo). */
 const TICKER_PATTERN = /^[A-Z0-9][A-Z0-9.-]{0,14}$/;
@@ -66,7 +84,9 @@ export async function fetchOpenFigiListings(isin: string, ctx: ProviderContext):
   for (const item of Array.isArray(body) ? body : []) {
     for (const entry of item.data ?? []) {
       const suffix = entry.exchCode ? OPENFIGI_EXCHANGE_SUFFIX[entry.exchCode] : undefined;
-      const ticker = entry.ticker?.trim().toUpperCase().replace("/", "-");
+      const raw = entry.ticker?.trim().toUpperCase().replace("/", "-");
+      const pad = entry.exchCode ? PAD_TICKER[entry.exchCode] : undefined;
+      const ticker = raw && pad && /^\d+$/.test(raw) ? raw.padStart(pad, "0") : raw;
       if (suffix === undefined || !entry.exchCode || !ticker || !TICKER_PATTERN.test(ticker)) continue;
       const yahooSymbol = suffix ? `${ticker}.${suffix}` : ticker;
       if (listings.has(yahooSymbol)) continue;

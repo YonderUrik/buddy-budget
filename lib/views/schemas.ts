@@ -159,6 +159,8 @@ export const liquidityAnalysisSchema = z.object({
 export const accountHealthSchema = z.object({
   connectionId: z.string(),
   institutionName: z.string(),
+  /** Sync route of the account: `POST /api/{provider}/accounts/{accountId}/sync`. */
+  provider: z.enum(["gocardless", "trade-republic"]),
   state: z.enum(["ok", "expiring", "expired", "error", "pending"]),
   needsRenewal: z.boolean(),
   daysLeft: z.number().int().nullable(),
@@ -406,6 +408,27 @@ export const budgetMonthViewSchema = z.object({
   ),
 });
 
+/** `GET /api/widgets/spending` (`buildWidgetSpending`, lib/views/widget-spending.ts): the native spending widgets. */
+export const widgetSpendingSchema = z.object({
+  currency: z.string(),
+  hideAmounts: z.boolean(),
+  generatedAt: timestamp,
+  today: z.object({ date: isoDate, spent: z.number() }),
+  week: z.object({ from: isoDate, spent: z.number() }),
+  month: z.object({
+    key: z.string().regex(/^\d{4}-\d{2}$/),
+    label: z.string(),
+    spent: z.number(),
+    typicalSoFar: z.number().nullable(),
+    gap: z.number().nullable(),
+    tone: z.enum(["pos", "neg"]).nullable(),
+  }),
+  budget: z.object({ available: z.number(), spent: z.number(), left: z.number(), perDay: z.number().nullable(), progress: z.number() }).nullable(),
+  lastMovement: z
+    .object({ id: z.string(), date: isoDate, amount: z.number(), merchant: z.string().nullable(), logoUrl: z.string().nullable() })
+    .nullable(),
+});
+
 export type OverviewView = z.infer<typeof overviewViewSchema>;
 export type LiquidityMonth = z.infer<typeof liquidityMonthSchema>;
 export type LiquidityAnalysis = z.infer<typeof liquidityAnalysisSchema>;
@@ -413,3 +436,4 @@ export type AccountExtras = z.infer<typeof accountExtrasSchema>;
 export type AccountHealth = z.infer<typeof accountHealthSchema>;
 export type TransactionPage = z.infer<typeof transactionPageSchema>;
 export type BudgetMonthViewContract = z.infer<typeof budgetMonthViewSchema>;
+export type WidgetSpending = z.infer<typeof widgetSpendingSchema>;

@@ -1,6 +1,10 @@
 # Contributing
 
-Thanks for your interest. The project is developed by a single person: before writing code for a large change, open an issue to discuss it.
+Thanks for your interest. The project is developed by two people: before writing code for a large change, open an issue to discuss it.
+
+## Where help is wanted
+
+Issues labelled [`good first issue`](https://github.com/YonderUrik/buddy-budget/labels/good%20first%20issue) are self-contained (a broker reader, a language); [`help wanted`](https://github.com/YonderUrik/buddy-budget/labels/help%20wanted) are larger or need knowledge we lack (a CSV import without AI, a review of the Italian tax engine, a new country's tax rules). Comment on the issue before starting, so two people don't build the same thing.
 
 ## Before you start
 

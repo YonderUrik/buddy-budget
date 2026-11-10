@@ -11,7 +11,7 @@ export const ISLAND_VISIBLE_MS = 24 * 60 * 60 * 1000;
 export const ISLAND_DISMISSED_STORAGE_KEY = "bb-personal-import-dismissed";
 
 const RUNNING = ["queued", "processing", "ready"];
-const FAILED = ["failed", "review_failed"];
+const FAILED = ["failed"];
 
 /** Stato mostrato dall'isola; `null` per i file scaduti, che non interessano più. */
 export function islandState(job: Pick<Job, "status">): IslandState | null {

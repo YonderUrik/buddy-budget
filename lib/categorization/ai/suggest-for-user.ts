@@ -10,7 +10,7 @@ import { countExampleRows, groupForModel, pickExamples, type MerchantGroup } fro
 
 /** Versione del prompt e dello stato inviato: va incrementata a ogni modifica che può cambiare le risposte. */
 export const AI_PROMPT_VERSION = 4;
-/** Tetto di esercenti nuovi per esecuzione: argine alla spesa dopo un import molto grande. */
+/** Default cap of new merchants for a run that sets no limit of its own (imports use the manual run's limits). */
 export const MAX_GROUPS_PER_RUN = 120;
 /** Movimenti categorizzati più recenti da cui si scelgono gli esempi per il modello. */
 const MAX_EXAMPLE_SOURCE_ROWS = 5000;
@@ -88,6 +88,8 @@ export async function suggestCategoriesForUser(
   const groups = groupForModel(pending.map((row) => ({ ...row, amount: Number(row.amount) })));
   const fresh = groups.filter((group) => !knownKeys.has(`${group.merchantKey}::${group.direction}`));
   const sendable = fresh.slice(0, options.maxGroups ?? MAX_GROUPS_PER_RUN);
+  // Merchants beyond the cap stay «Da categorizzare» until the next run: visible in Loki, not silent.
+  if (fresh.length > sendable.length) log.info("categorization.ai.capped", { count: sendable.length, total: fresh.length });
   await options.onProgress?.({ processed: 0, total: sendable.length, stored: 0, blocked: result.blocked });
   if (sendable.length === 0) {
     log.info("categorization.ai.skipped", { reason: "no_eligible_merchants", rejected: result.blocked });

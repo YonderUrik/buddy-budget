@@ -7,6 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { TrendingUpIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PanelSection } from "./panel-section";
 import type { PortfolioReturns } from "@/lib/calc/returns";
 import type { Instrument } from "@/lib/db/schema/investments";
@@ -16,6 +17,7 @@ import type { PortfolioChartRange } from "@/lib/investments/chart-period";
 import type { BackfillStateView } from "@/lib/market-data/backfill-state";
 import { localizedReturnInsights } from "@/lib/investments/returns-insights";
 import { useUpdatePortfolioMutation } from "@/lib/queries/investments";
+import { matchBenchmarkSuggestion } from "@/lib/investments/benchmark-suggestions";
 import { BenchmarkDialog } from "./benchmark-dialog";
 import { BenchmarkSummary } from "./benchmark-summary";
 
@@ -31,10 +33,18 @@ export interface ReturnsCardProps {
   benchmarkFirstPriceDate: string | null;
   benchmarkBackfill: BackfillStateView | null | undefined;
   currency: string;
+  /** Page controls shown in the card header next to «Confronta con» (broker filter, period). */
+  controls?: React.ReactNode;
+  /** «capital»: the figures measure the user's own capital, margin loan and interest included. */
+  basis?: "securities" | "capital";
 }
 
-/** Tipi di rendimento espliciti; i numeri seguono la data ispezionata senza spostare il grafico. */
-export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benchmark, benchmarkFirstPriceDate, benchmarkBackfill, currency }: ReturnsCardProps) {
+/**
+ * The chart first (design option 2, 2026-10-31): header with title and every control, the chart, one line of
+ * instructions, then the figures of the period (or of the date under the cursor), the verdict and the comparison with
+ * the index. Same information as before, in one card.
+ */
+export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benchmark, benchmarkFirstPriceDate, benchmarkBackfill, currency, controls, basis = "securities" }: ReturnsCardProps) {
   const { benchmarkWait, timingInsight } = localizedReturnInsights(useLocalization().language);
 
   const { locale: formattingLocale } = useLocalization();
@@ -53,14 +63,26 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
   const dates = values.days === 0 ? tr("Valore iniziale al {0}", { 0: formatDateWithYear(values.baseKey) })
     : `${formatDateWithYear(values.fromKey)} – ${formatDateWithYear(values.toKey)}`;
   const { real } = values;
+  const comparison = values.benchmarkStatus === "ok" ? values.benchmark : null;
+  const benchmarkSuggestion = matchBenchmarkSuggestion(benchmark);
   return <>
-    <PanelSection icon={TrendingUpIcon} title={tr("Rendimenti del periodo")}>
-      <p className="text-sm text-muted-foreground" data-testid="performance-summary-period">
-        {inspected ? tr("Anteprima dal grafico") : tr("Periodo del grafico")} {"·"}{dates}
-      </p>
-      <p className="text-xs text-muted-foreground">{tr("Importi e rendimenti in")}{" "}{currency}{tr(". Passa su un numero per capire cosa misura.")}</p>
+    <PanelSection icon={TrendingUpIcon} title={basis === "capital" ? tr("Rendimento del tuo capitale · TWR cumulato") : tr("Rendimento del portafoglio · TWR cumulato")}
+      description={basis === "capital"
+        ? tr("Base 0% a inizio periodo. Misura i tuoi soldi: titoli meno il prestito a margine, con gli interessi pagati. Versamenti e prelievi sul conto del broker non contano come rendimento.")
+        : tr("Base 0% a inizio periodo. Il grafico mostra il rendimento degli investimenti, indipendente dai versamenti.")}
+      action={<div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+        <Button variant="outline" className="h-11 max-w-full min-w-0 rounded-full sm:h-9 sm:max-w-80" onClick={() => setChoosing(true)} title={benchmark?.name}>
+          <span className="truncate">{benchmark ? tr("Confronta con: {0}", { 0: benchmarkSuggestion?.label ?? benchmark.name }) : tr("Scegli un confronto")}</span>
+        </Button>
+        {controls}
+      </div>}
+      className="rounded-2xl bg-card p-4 sm:p-6">
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
+      {returns.series.length >= 2 ? <ReturnsChart series={returns.series} benchmarkName={returns.benchmark ? benchmarkSuggestion?.label ?? benchmark?.name ?? null : null} onInspect={onInspect} onSelectRange={onSelectRange} /> : null}
+      <p className="text-xs text-muted-foreground" data-testid="performance-summary-period">
+        {inspected ? `${tr("Anteprima dal grafico")} · ${dates}` : tr("Passa su una data per aggiornare i numeri qui sotto, su un numero per capire cosa misura. Clicca e trascina per selezionare un intervallo, oppure scegli le date dal calendario accanto ai periodi.")}
+      </p>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-5 border-t pt-5 lg:grid-cols-4">
         <ReturnMetric
           label={tr("Portafoglio · TWR")}
           value={values.twr}
@@ -85,12 +107,21 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
           description={tr("Il TWR dopo l’effetto dell’inflazione.")}
           hint={tr("Corregge il rendimento TWR per l’aumento dei prezzi nel paese del prodotto ({0}, indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico.", {0: inflationCountry})}
         />}
+        {comparison ? <ReturnMetric
+          label={benchmarkSuggestion ? tr("Indice · {0}", { 0: benchmarkSuggestion.label }) : comparison.instrument.name}
+          value={comparison.twr}
+          annual={comparison.twrAnnual}
+          periodLabel={dates}
+          description={tr("L'indice di confronto nello stesso periodo. È la seconda linea del grafico.")}
+          hint={tr("Il rendimento ponderato per il tempo (TWR) dell'ETF di confronto nello stesso periodo: si confronta con il TWR del portafoglio.")}
+        /> : null}
       </div>
-      <p className="min-h-5 text-sm text-muted-foreground">{insight ?? tr("TWR e MWR misurano aspetti diversi dello stesso periodo.")}</p>
-      <BenchmarkSummary status={values.benchmarkStatus} comparison={values.benchmark} asOf={values.toKey}
-        benchmarkName={benchmark?.name ?? null} currency={currency} wait={wait}
-        onChoose={() => setChoosing(true)} onRetry={() => benchmark && retry.mutate({ benchmarkInstrumentId: benchmark.id })} retrying={retry.isPending} />
-      {returns.series.length >= 2 ? <ReturnsChart series={returns.series} benchmarkName={returns.benchmark ? benchmark?.name ?? null : null} onInspect={onInspect} onSelectRange={onSelectRange} /> : null}
+      <div className="flex flex-col gap-3">
+        <BenchmarkSummary status={values.benchmarkStatus} comparison={values.benchmark} asOf={values.toKey}
+          benchmarkName={benchmark?.name ?? null} benchmarkLabel={benchmarkSuggestion?.label ?? null} portfolioMoneyWeighted={values.moneyWeighted} currency={currency} wait={wait}
+          onChoose={() => setChoosing(true)} onRetry={() => benchmark && retry.mutate({ benchmarkInstrumentId: benchmark.id })} retrying={retry.isPending} />
+        <p className="text-sm text-muted-foreground">{insight ?? tr("TWR e MWR misurano aspetti diversi dello stesso periodo.")}</p>
+      </div>
     </div>
     </PanelSection>
     <BenchmarkDialog open={choosing} onOpenChange={setChoosing} current={benchmark} currency={currency} />

@@ -192,7 +192,7 @@ export async function listingsOnOpenFigi(isin: string) {
   return fetchOpenFigiListings(isin, { fetch: globalThis.fetch, env: process.env });
 }
 
-/** Cerca per ISIN su OpenFIGI e conferma su Yahoo: ripiego quando la ricerca Yahoo non trova l'ISIN. */
-export async function searchByIsinOnProviders(isin: string, currency: string | null) {
-  return searchByIsinOnOpenFigi(isin, currency, { listings: listingsOnOpenFigi, quoteMeta: quoteMetaOnProviders });
+/** ISIN listings on OpenFIGI confirmed on Yahoo; `preferredExchange` (an OpenFIGI code, e.g. the broker's) comes first. */
+export async function searchByIsinOnProviders(isin: string, currency: string | null, preferredExchange: string | null = null) {
+  return searchByIsinOnOpenFigi(isin, currency, { listings: listingsOnOpenFigi, quoteMeta: quoteMetaOnProviders }, preferredExchange);
 }

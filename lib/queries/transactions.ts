@@ -7,7 +7,7 @@ import { track } from "@/lib/analytics";
 import { pageText } from "@/lib/localization/page-text";
 import type { TransactionDetailData } from "@/lib/transactions/detail";
 import type { SingleSuggestion } from "@/lib/categorization/ai/single-suggestion";
-import { QUERY_KEYS_CHANGED_BY_BALANCE } from "./accounts";
+import { BALANCE_CHANGED_QUERY_KEYS, queryKeys } from "./invalidation";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
@@ -39,6 +39,22 @@ export function useTransactionsQuery(from: string, to: string, type: Transaction
     queryFn: () => fetchTransactions(from, to, type),
     enabled: options.enabled ?? true,
     placeholderData: options.keepPrevious ? keepPreviousData : undefined,
+  });
+}
+
+/** Years with movements are stable between imports; every transaction mutation still refreshes them (`["transactions"]` key). */
+const TRANSACTION_YEARS_STALE_MS = 5 * 60_000;
+
+/** Years that hold movements, newest first, for loading older history on demand. */
+export function useTransactionYearsQuery() {
+  return useQuery({
+    queryKey: ["transactions", "years"] as const,
+    staleTime: TRANSACTION_YEARS_STALE_MS,
+    queryFn: async (): Promise<number[]> => {
+      const response = await fetch("/api/transactions/years");
+      if (!response.ok) throw new Error(pageText("Impossibile caricare le transazioni"));
+      return ((await response.json()) as { years: number[] }).years;
+    },
   });
 }
 
@@ -83,7 +99,7 @@ export function useAiSuggestionMutation() {
  * Everything a transaction typed by hand changes: the lists, the attention counts, the month's budget and, since it
  * moves its account's balance, every place a balance is shown.
  */
-const QUERY_KEYS_CHANGED_BY_TRANSACTION = [["transactions"], ["attention"], ["budget-month"], ...QUERY_KEYS_CHANGED_BY_BALANCE] as const;
+const QUERY_KEYS_CHANGED_BY_TRANSACTION = [queryKeys.transactions, queryKeys.attention, queryKeys.budget, ...BALANCE_CHANGED_QUERY_KEYS] as const;
 
 function invalidateTransactionViews(queryClient: ReturnType<typeof useQueryClient>) {
   for (const queryKey of QUERY_KEYS_CHANGED_BY_TRANSACTION) queryClient.invalidateQueries({ queryKey: [...queryKey] });

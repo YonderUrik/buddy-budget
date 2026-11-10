@@ -67,20 +67,30 @@ export interface PersonalImportListProps {
   onRetry?: () => void;
 }
 
+/** Italian source text of the read in progress (translated by the caller), or null when nothing is being read. */
+export function describeProgress(progress: Job["progress"]): string | null {
+  if (!progress) return null;
+  if (progress.kind === "saved") return "Leggo il file con il formato già salvato";
+  if (progress.attempt <= 1) return "Analizzo il formato con l'AI (tentativo 1 di 3)";
+  if (progress.attempt === 2) return "Riprovo con più contesto (tentativo 2 di 3)";
+  return "Ultimo tentativo, il più approfondito (3 di 3): può richiedere qualche minuto";
+}
+
 /** What a row says, in plain words, from the job state: Italian source texts with their `{0}` values, translated by the list. */
-export function describeImportJob(job: Job): { message: string; values?: Record<string, number>; action: string | null } {
+export function describeImportJob(job: Job): { message: string; values?: Record<string, string | number>; action: string | null } {
   switch (job.status) {
     case "queued":
-    case "processing": return { message: "Analisi in corso", action: null };
+    case "processing": return { message: describeProgress(job.progress) ?? "Analisi in corso", action: null };
     case "ready": return { message: "Salvataggio in corso", action: null };
     case "imported": return job.results
       ? importOverlap(job.results) === "nothing_new"
         ? { message: "Niente di nuovo: {0} movimenti c'erano già", values: { 0: job.results.alreadyPresent! }, action: "Dettaglio" }
         : importOverlap(job.results) === "partial"
           ? { message: "{0} su {1} movimenti importati", values: { 0: job.results.rows! - job.results.alreadyPresent!, 1: job.results.rows! }, action: "Dettaglio" }
-          : { message: "{0} movimenti · {1} operazioni", values: { 0: job.results.cash, 1: job.results.investments }, action: "Dettaglio" }
+          : job.results.native
+            ? { message: "{0} righe importate con il lettore {1}", values: { 0: job.results.native.inserted, 1: job.results.native.name }, action: "Dettaglio" }
+            : { message: "{0} movimenti · {1} operazioni", values: { 0: job.results.cash, 1: job.results.investments }, action: "Dettaglio" }
       : { message: "Importato", action: "Dettaglio" };
-    case "review_failed": return { message: job.error ?? "Qualche riga da correggere", action: "Controlla" };
     case "failed": return { message: job.error ?? "Formato non riconosciuto", action: "Riprova" };
     case "expired": return { message: "File scaduto: caricalo di nuovo", action: "Riprova" };
     default: return { message: job.status, action: null };

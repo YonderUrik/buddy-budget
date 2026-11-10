@@ -4,7 +4,8 @@ import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
-import { transactions } from "@/lib/db/schema/transactions";
+import { z } from "zod";
+import { AccountDeletionError, deleteAccountWithData } from "@/lib/liquidity/account-deletion.server";
 import { bankAccountLinks } from "@/lib/db/schema/bank-connections";
 import { releaseConnectionIfUnused } from "@/lib/gocardless/release";
 import { updateAccountSchema } from "@/lib/validation/accounts";
@@ -65,8 +66,10 @@ async function handlePatch(
 }
 
 /**
- * Elimina o scollega un conto del proprio utente, manuale o auto; 404 se non proprio. Se era l'ultimo conto
- * di un collegamento bancario, il consenso viene revocato subito su GoCardless e il posto si libera.
+ * Deletes or unlinks one of the user's accounts, manual or linked; 404 if not theirs. An account an import created takes
+ * its portfolio, operations, statements and uploaded files with it (`deleteAccountWithData`): then the body must carry
+ * the `token` of `GET /api/accounts/[id]/deletion`. If it was the last account of a bank connection, the consent is
+ * revoked on GoCardless right away and the slot frees up.
  */
 async function handleDelete(
   request: NextRequest,
@@ -79,24 +82,28 @@ async function handleDelete(
   bindRequestUser(session.user.id);
 
   const { id } = await params;
-  const account = await getOwnedAccount(session.user.id, id);
-  if (!account) {
-    return apiError(404, "account_not_found", "Conto non trovato");
-  }
+  if (!z.string().uuid().safeParse(id).success) return apiError(404, "account_not_found", "Conto non trovato");
+  const body = z.object({ token: z.string().max(128).optional() }).safeParse(await request.json().catch(() => ({})));
+  if (!body.success) return validationError(body.error);
 
-  // transactions.account_id non ha ON DELETE cascade (a differenza di bank_account_links):
-  // un conto "auto" con transazioni sincronizzate violerebbe altrimenti il vincolo FK.
   const links = await db
     .select({ connectionId: bankAccountLinks.connectionId })
     .from(bankAccountLinks)
     .where(eq(bankAccountLinks.accountId, id));
 
-  await db.transaction(async (tx) => {
-    await tx.delete(transactions).where(eq(transactions.accountId, id));
-    await tx.delete(accounts).where(eq(accounts.id, id));
-  });
+  try {
+    const removed = await deleteAccountWithData(session.user.id, id, body.data.token);
+    requestLogger().info("accounts.account.deleted", { count: removed.cashCount, deleted: removed.investmentCount });
+  } catch (error) {
+    if (error instanceof AccountDeletionError) {
+      if (error.status === 404) return apiError(404, "account_not_found", error.message);
+      requestLogger().warn("accounts.account.delete_conflict", {});
+      return apiError(409, "account_deletion_changed", error.message);
+    }
+    throw error;
+  }
 
-  // Dopo la transazione: il link è sparito con il conto (cascade). Non lancia mai, al peggio resta alla pulizia giornaliera.
+  // After the transaction: the link went with the account (cascade). Never throws; at worst the daily cleanup handles it.
   for (const { connectionId } of links) await releaseConnectionIfUnused(connectionId, "account_removed", requestLogger());
 
   return new Response(null, { status: 204 });

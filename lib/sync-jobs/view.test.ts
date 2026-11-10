@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { deriveJobStatus, queuedAccount, type SyncJob, type SyncJobAccount } from "./types";
-import { hasFinishedSince, hasNewlyFinishedJob, isAccountSyncing, overallProgress, runningJobIds, toJobView } from "./view";
+import { hasFinishedSince, hasNewlyFinishedJob, isAccountSyncing, latestAccountJob, overallProgress, runningJobIds, toJobView } from "./view";
 
 function account(overrides: Partial<SyncJobAccount> = {}): SyncJobAccount {
   return { ...queuedAccount("acc-1", "Conto"), ...overrides };
@@ -93,6 +93,15 @@ describe("isAccountSyncing", () => {
     expect(isAccountSyncing(jobs, "b")).toBe(false);
     expect(isAccountSyncing(jobs, "c")).toBe(false);
     expect(isAccountSyncing([job({ status: "done", accounts: [account({ accountId: "a", phase: "saving" })] })], "a")).toBe(false);
+  });
+});
+
+describe("latestAccountJob", () => {
+  it("returns the account's most recent sync, running or finished", () => {
+    const older = { ...job({ id: "old", status: "done", updatedAt: "2026-09-22T09:00:00.000Z", accounts: [account({ phase: "done", inserted: 1 })] }), interrupted: false };
+    const newer = { ...job({ id: "new", updatedAt: "2026-09-22T10:00:00.000Z", accounts: [account({ phase: "investments" })] }), interrupted: false };
+    expect(latestAccountJob([older, newer], "acc-1")?.account.phase).toBe("investments");
+    expect(latestAccountJob([older, newer], "other")).toBeNull();
   });
 });
 

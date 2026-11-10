@@ -2,7 +2,7 @@ import { countryFeatures } from "@/lib/localization/config";
 import { investmentTaxReport } from "./tax-report";
 import { computePeriodGain, type PeriodGain } from "./period-gain";
 import { computeCostImpact, type CostImpact } from "./cost-impact";
-import { buildFxTable } from "@/lib/calc/fx";
+import { buildFxTable, type FxTable } from "@/lib/calc/fx";
 import {
   buildPortfolioSeries,
   buildPriceIndex,
@@ -22,8 +22,13 @@ import { startOfDay } from "@/lib/calc/expenses";
 import type { Instrument, InvestmentTransaction } from "@/lib/db/schema/investments";
 import { buildInvestmentsAnalysis, type InvestmentsAnalysis } from "./analysis-view";
 import type { InvestmentData } from "./data";
+import { operationSourceLabels } from "./broker-filter";
 import { computeIncomeHistory, type IncomeHistory } from "./income";
 import { computeOperationInsights, groupOperationsByMonth, type OperationMonthGroup } from "./operations-history";
+import { buildLeverageView, type LeverageView } from "./leverage-view";
+
+/** What the returns are measured on: the securities (default) or the user's own capital, net of the margin loan. */
+export type ReturnBasis = "securities" | "capital";
 
 /** Dati della pagina Investimenti già calcolati: la UI li riceve pronti. */
 export interface InvestmentsView {
@@ -38,7 +43,15 @@ export interface InvestmentsView {
   instruments: Instrument[];
   instrumentsById: Map<string, Instrument>;
   priceIndex: PriceIndex;
+  /** Operations and FX table the figures were computed from: a recomputation passes these same objects so the daily walk is reused. */
+  transactions: InvestmentTransactionInput[];
+  fx: FxTable;
   hasTransactions: boolean;
+  /**
+   * Where each operation comes from, by operation id (broker or portfolio name, see `operationSourceLabels`); empty
+   * when every operation comes from the same place, since a label would say nothing.
+   */
+  operationSources: Map<string, string>;
   /** Operazioni per mese, dal più recente, con l'esito di ciascuna. */
   operationMonths: OperationMonthGroup<InvestmentTransaction>[];
   /** Instruments the user holds today, most recently traded first: the picker offers them as «I tuoi strumenti». */
@@ -53,6 +66,10 @@ export interface InvestmentsView {
   income: IncomeHistory;
   /** Rischio, diversificazione, sovrapposizioni e allocazione obiettivo (Fase 3). */
   analysis: InvestmentsAnalysis;
+  /** Margin loan and interest of the broker accounts, and the input of the own-capital return. */
+  leverage: LeverageView;
+  /** Basis `returns` was computed on: «capital» only when asked and a broker account carries its cash ledger. */
+  returnBasis: ReturnBasis;
 }
 
 /** Operazioni del DB nella forma dei calcoli. */
@@ -88,7 +105,7 @@ export function heldInstruments(
 }
 
 /** Calcola tutto ciò che mostra la pagina Investimenti a partire dai dati grezzi dell'API. */
-export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date, chartRange?: { from: string; to: string }, locale = "it-IT"): InvestmentsView {
+export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date, chartRange?: { from: string; to: string }, locale = "it-IT", basis: ReturnBasis = "securities"): InvestmentsView {
   const transactions = toTransactionInputs(data);
   const instruments: InstrumentInput[] = data.instruments;
   const priceIndex = buildPriceIndex(data.prices, data.manualPrices, transactions);
@@ -113,8 +130,11 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     range: chartRange,
     locale,
   });
+  const leverage = buildLeverageView(data, common, todayKey);
+  const returnBasis: ReturnBasis = basis === "capital" && leverage.capital ? "capital" : "securities";
   const returns = computePortfolioReturns({
     ...common,
+    capital: returnBasis === "capital" ? leverage.capital : null,
     period,
     today,
     benchmark: data.benchmark,
@@ -132,8 +152,11 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     instruments: data.instruments,
     instrumentsById,
     priceIndex,
+    transactions,
+    fx,
     hasTransactions: transactions.length > 0,
     operationMonths,
+    operationSources: operationSourceLabels(data),
     heldInstruments: heldInstruments(transactions, instrumentsById, todayKey),
     returns,
     periodGain: computePeriodGain({ ...common, period, today, range: chartRange }),
@@ -142,5 +165,8 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     benchmarkFirstPriceDate: data.benchmark ? (priceIndex.get(data.benchmark.id)?.[0]?.date ?? null) : null,
     income: computeIncomeHistory(insights, summary.costBasis, todayKey),
     analysis,
+    leverage,
+    returnBasis,
   };
 }
+

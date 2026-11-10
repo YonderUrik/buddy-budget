@@ -9,6 +9,7 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { statementSourceScope } from "./source-scope";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
+import { tradeRepublicConnections } from "@/lib/db/schema/trade-republic";
 import { instruments, investmentPortfolios, investmentTransactions, userInstrumentPrices, type Instrument } from "@/lib/db/schema/investments";
 import type { RunImportInput } from "@/lib/validation/investments-import";
 import { findVisibleInstrument } from "../instruments";
@@ -17,6 +18,9 @@ import { statementCashComponents } from "./broker-statement";
 import { parseBrokerStatement } from "./parse-statement";
 import { resolveFxRates, type ImportDeps } from "./execute";
 import { planImport } from "./plan";
+import { addExcludedQuantities, applyExclusions } from "./exclusions";
+import { brokerOperationExclusions } from "@/lib/db/schema/broker-operation-exclusions";
+import { loadExclusions } from "./exclusions.server";
 import type { ImportResult } from "./types";
 
 const hash = (s: string) => createHash("sha256").update(s).digest("hex");
@@ -34,6 +38,11 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
   if (errors.length) return failed(errors.join("; "));
   const provider = parsed.preset;
   const brokerName = provider === "trade-republic" ? "Trade Republic" : provider === "degiro" ? "DEGIRO" : "Interactive Brokers";
+  // The direct connection already imports this account: a file on top would duplicate trades and cash.
+  if (provider === "trade-republic") {
+    const [direct] = await db.select({ id: tradeRepublicConnections.id }).from(tradeRepublicConnections).where(eq(tradeRepublicConnections.userId, userId)).limit(1);
+    if (direct) return failed("Trade Republic è già collegato direttamente: i movimenti e gli investimenti arrivano dalla sincronizzazione, senza file");
+  }
   const cashMovements = parsed.cashMovements ?? [];
   const accountKey = hash(provider !== "interactive-brokers" ? `${provider}:${statement.account}` : statement.account);
   const fingerprint = hash(JSON.stringify(parsed.records.map(({ section, kind, values }) => [section, kind, values])));
@@ -50,8 +59,11 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     let instrument: Instrument | null;
     if ("instrumentId" in entry) instrument = await findVisibleInstrument(userId, entry.instrumentId);
     else if (input.dryRun) {
-      // Reuse existing catalogue identity in previews too, otherwise a later statement falsely oversells.
-      const matches = identity.isin ? await db.select().from(instruments).where(and(eq(instruments.isin, identity.isin), eq(instruments.currency, identity.currency!), sql`(${instruments.createdByUserId} is null or ${instruments.createdByUserId} = ${userId})`)) : [];
+      // Reuse existing catalogue identity in previews too, otherwise a later statement falsely oversells. The choice is
+      // the one the real import makes: the user's own copy first (and only it for `ownCopy`, a corporate action), so a
+      // dry run never counts a position on the shared instrument while the history sits on the own copy.
+      const ownOnly = entry.create.source === "manuale" && entry.create.ownCopy === true;
+      const matches = identity.isin ? await db.select().from(instruments).where(and(eq(instruments.isin, identity.isin), eq(instruments.currency, identity.currency!), ownOnly ? eq(instruments.createdByUserId, userId) : sql`(${instruments.createdByUserId} is null or ${instruments.createdByUserId} = ${userId})`)).orderBy(sql`${instruments.createdByUserId} is null`, instruments.createdAt) : [];
       instrument = matches[0] ?? null;
       if (!instrument && "currency" in entry.create && entry.create.currency !== identity.currency) return failed("La valuta proposta non coincide con il rendiconto");
     } else {
@@ -105,10 +117,8 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     const candidates = await tx.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
     let portfolio = targetId ? candidates.find((p) => p.id === targetId) : candidates.find((p) => p.broker === broker);
     if (targetId && !portfolio) return failed("Portafoglio non accessibile");
-    if (!portfolio && provider === "degiro") {
-      if (candidates.length > 1) return failed("Scegli il portafoglio in cui importare DEGIRO");
-      portfolio = candidates[0];
-    }
+    // A broker account seen for the first time gets its own portfolio, DEGIRO like the others: nobody is asked (the one
+    // import has no portfolio question) and hand-entered operations never mix with a statement that replaces its period.
     const sourceFilter = statementSourceScope(accountKey, portfolio?.broker ?? null);
     const allExisting = portfolio ? await tx.select().from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), sourceFilter)) : [];
     const existing = allExisting.filter((o) => o.date < statement.from);
@@ -117,10 +127,18 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     const replacement = overlapping.length ? { statements: overlapping.length, operations: replacedOperations, from: statement.from, to: statement.to } : undefined;
     const idOf = (key: string) => byKey.get(key)?.id ?? `new:${key}`;
     const ops = parsed.operations.map((o) => ({ ...o, instrumentId: idOf(o.key) }));
-    const rows = planImport(ops, existing);
-    if (rows.some((r) => r.status === "error")) return { rows, counts: { new: rows.filter((r) => r.status === "new").length, duplicate: rows.filter((r) => r.status === "duplicate").length, error: rows.filter((r) => r.status === "error").length }, inserted: 0, instrumentsCreated };
-    const quantities = new Map<string, number>();
-    for (const o of [...existing, ...ops.filter((_, i) => rows[i].status === "new")]) {
+    const planned = planImport(ops, existing);
+    if (planned.some((r) => r.status === "error")) return { rows: planned, counts: { new: planned.filter((r) => r.status === "new").length, duplicate: planned.filter((r) => r.status === "duplicate").length, error: planned.filter((r) => r.status === "error").length }, inserted: 0, instrumentsCreated };
+    // Operations the user deleted one by one stay out (counted as already handled), but still count for reconciliation:
+    // the broker's positions include them.
+    const exclusions = await loadExclusions(tx, userId, accountKey);
+    const inPeriod = (from: string, to: string) => exclusions.filter((e) => e.date >= from && e.date <= to);
+    const freshIndexes = planned.flatMap((r, i) => (r.status === "new" ? [i] : []));
+    const excluded = applyExclusions(freshIndexes.map((i) => ops[i]), inPeriod(statement.from, statement.to), [...existing, ...following]);
+    const skipped = new Set([...excluded.skippedIndexes].map((k) => freshIndexes[k]));
+    const rows = planned.map((r, i) => (skipped.has(i) ? { ...r, status: "duplicate" as const } : r));
+    const quantities = addExcludedQuantities(new Map<string, number>(), exclusions.filter((e) => e.date < statement.from));
+    for (const o of [...existing, ...ops.filter((_, i) => planned[i].status === "new")]) {
       const old = quantities.get(o.instrumentId) ?? 0; const q = Number(o.quantity);
       quantities.set(o.instrumentId, o.type === "acquisto" || o.type === "rettifica" ? old + q : o.type === "vendita" || o.type === "rimborso" ? old - q : old);
     }
@@ -145,10 +163,10 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     if ([...expected.values()].some((q) => Math.abs(q) > 1e-8)) return failed("Il rendiconto contiene posizioni senza storico: importa prima gli acquisti precedenti");
     }
     // A correction must not invalidate sales or closing quantities in retained later statements.
-    const futurePlan = planImport(following.map((o, i) => ({ ...o, line: i + 1, quantity: Number(o.quantity), price: Number(o.price), grossAmount: o.grossAmount === null ? null : Number(o.grossAmount) })), [...existing, ...ops]);
+    const futurePlan = planImport(following.map((o, i) => ({ ...o, line: i + 1, quantity: Number(o.quantity), price: Number(o.price), grossAmount: o.grossAmount === null ? null : Number(o.grossAmount) })), [...existing, ...ops.filter((_, i) => rows[i].status === "new")]);
     if (futurePlan.some((r) => r.status === "error")) return failed("La sostituzione renderebbe non valide vendite successive: includi i rendiconti successivi nel nuovo export");
     for (const doc of later.filter((d) => d.statement.positionsReported !== false)) {
-      const totals = new Map(quantities);
+      const totals = addExcludedQuantities(new Map(quantities), exclusions.filter((e) => e.date > statement.to && e.date <= doc.to));
       for (const o of following.filter((o) => o.date <= doc.to)) {
         const q = Number(o.quantity); const old = totals.get(o.instrumentId) ?? 0;
         totals.set(o.instrumentId, o.type === "acquisto" || o.type === "rettifica" ? old + q : o.type === "vendita" || o.type === "rimborso" ? old - q : old);
@@ -166,6 +184,7 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     if (input.dryRun) return { rows: resultRows, counts, inserted: 0, instrumentsCreated: 0, replacement };
     if (!portfolio) [portfolio] = await tx.insert(investmentPortfolios).values({ userId, name: provider !== "interactive-brokers" ? brokerName : `${brokerName} · ${statement.account.slice(-4)}`, broker, taxRegime: "dichiarativo" }).returning();
     // No writes to financial data occur before all validations pass. Deletes and inserts share this transaction.
+    if (excluded.stale.length) await tx.delete(brokerOperationExclusions).where(and(eq(brokerOperationExclusions.userId, userId), inArray(brokerOperationExclusions.id, excluded.stale.map((e) => e.id))));
     if (overlapping.length) {
       await tx.delete(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), sourceFilter, gte(investmentTransactions.date, statement.from), lte(investmentTransactions.date, statement.to)));
       for (const doc of overlapping) for (const p of doc.statement.positions) {

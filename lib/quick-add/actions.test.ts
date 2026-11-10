@@ -6,7 +6,7 @@ const ids = (actions: { id: string }[]) => actions.map((a) => a.id);
 describe("quickAddMenu", () => {
   it("offers everything in Italy, the frequent things first, in a fixed order", () => {
     const menu = quickAddMenu("IT");
-    expect(ids(menu.frequent)).toEqual(["movimento", "operazione", "file", "rendiconto"]);
+    expect(ids(menu.frequent)).toEqual(["movimento", "operazione", "file"]);
     expect(ids(menu.occasional)).toEqual(["conto", "abbonamento", "debito", "pensione", "obiettivo"]);
     expect([...ids(menu.frequent), ...ids(menu.occasional)]).toEqual([...QUICK_ADD_ACTION_IDS]);
   });
@@ -15,7 +15,7 @@ describe("quickAddMenu", () => {
     for (const country of ["DE", "OTHER"]) {
       const menu = quickAddMenu(country);
       expect(ids(menu.occasional)).toEqual(["conto", "abbonamento", "debito", "obiettivo"]);
-      expect(ids(menu.frequent)).toHaveLength(4);
+      expect(ids(menu.frequent)).toHaveLength(3);
     }
   });
 });

@@ -43,7 +43,7 @@ const transactions = [
 ];
 const budgets: Budget[] = [{ id: uuid(300), userId: "u", categoryId: groceries.id, monthlyAmount: "200.00", rollover: false, rolloverFrom: null, createdAt: NOW, updatedAt: NOW }];
 const connections = [
-  { accountId: uuid(1), connectionId: uuid(400), institutionName: "Banca Demo", status: "linked" as const, consentExpiresAt: "2026-10-22T10:00:00.000Z", lastSyncedAt: "2026-10-18T09:00:00.000Z", eligible: true, nextEligibleAt: null, syncsRemainingToday: 4 },
+  { accountId: uuid(1), connectionId: uuid(400), institutionName: "Banca Demo", provider: "gocardless" as const, status: "linked" as const, consentExpiresAt: "2026-10-22T10:00:00.000Z", lastSyncedAt: "2026-10-18T09:00:00.000Z", eligible: true, nextEligibleAt: null, syncsRemainingToday: 4 },
 ];
 
 describe("buildOverviewView", () => {

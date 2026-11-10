@@ -29,23 +29,32 @@ export function validateBitpandaSettlements(table: PersonalTable, outcomes: Outc
     const o = byRow.get(record.line - 1), r = record.cells;
     // Unrecognized rows remain reviewable, but must never be silently ignored.
     if (o?.kind === "error") continue;
-    if (!o || (o.kind !== "cash" && o.kind !== "investment")) { fail(); continue; }
+    if (!o) { fail(); continue; }
     if (r.length !== COLUMNS.length) fail();
+    // Fiat deposits and withdrawals, and crypto buys and sells, are reconciled. With a fee in another asset or a tax the
+    // cash settlement has no fixed rule, so only the quantity and the direction are checked there. Staking rewards,
+    // crypto transfers, stocks and metals are left to the parser (with the general checks): refusing them made every
+    // ordinary Bitpanda history fail three times, since one unknown row fails the whole file.
+    const fiatTransfer = (r[2] === "deposit" || r[2] === "withdrawal") && r[10] === "Fiat" && r[7] === r[5];
+    const cryptoTrade = (r[2] === "buy" || r[2] === "sell") && r[10] === "Cryptocurrency" && r[9] === r[5];
+    if (!fiatTransfer && !cryptoTrade) continue;
+    if (o.kind !== "cash" && o.kind !== "investment") { fail(); continue; }
     const amount = number(r[4]), fee = number(r[12]), tax = number(r[17]);
-    if (o.currency !== r[5] || o.date !== r[1].slice(0, 10) || tax !== 0 || (fee > 0 && r[13] !== r[5])) fail();
-    if (r[2] === "deposit" || r[2] === "withdrawal") {
+    if (o.currency !== r[5] || o.date !== r[1].slice(0, 10)) fail();
+    if (fiatTransfer) {
       const incoming = r[2] === "deposit";
-      // Crypto transfers, charged transfers and tax semantics need separate reconciliation support.
-      if (r[10] !== "Fiat" || r[7] !== r[5] || fee !== 0 || r[3] !== (incoming ? "incoming" : "outgoing")) fail();
+      if (fee !== 0 || tax !== 0 || r[3] !== (incoming ? "incoming" : "outgoing")) fail();
       if (o.kind !== "cash" || cents(o.amount) !== cents(incoming ? amount : -amount)) fail();
-    } else if (r[2] === "buy" || r[2] === "sell") {
+    } else {
       const buy = r[2] === "buy";
-      if (r[10] !== "Cryptocurrency" || r[9] !== r[5] || r[3] !== (buy ? "outgoing" : "incoming")) fail();
+      if (r[3] !== (buy ? "outgoing" : "incoming")) fail();
       if (o.kind !== "investment") { fail(); continue; }
-      if (o.type !== (buy ? "acquisto" : "vendita") || o.instrumentType !== "crypto" || Math.abs(o.quantity - number(r[6])) > 1e-12 || cents(o.fees) !== cents(fee) || o.taxes !== 0) fail();
+      if (o.type !== (buy ? "acquisto" : "vendita") || o.instrumentType !== "crypto" || Math.abs(o.quantity - number(r[6])) > 1e-12) fail();
+      if (tax !== 0 || (fee > 0 && r[13] !== r[5])) continue;
+      if (cents(o.fees) !== cents(fee) || o.taxes !== 0) fail();
       // Amount Fiat is the debit/credit, not gross principal before fees.
       const settlement = o.quantity * o.price + (buy ? o.fees : -o.fees);
       if (cents(settlement) !== cents(amount)) fail();
-    } else fail();
+    }
   }
 }

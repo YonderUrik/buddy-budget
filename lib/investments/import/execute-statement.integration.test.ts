@@ -6,12 +6,14 @@ import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
-import { instruments, investmentTransactions, userInstrumentPrices } from "@/lib/db/schema/investments";
+import { instruments, investmentPortfolios, investmentTransactions, userInstrumentPrices } from "@/lib/db/schema/investments";
 import { createOrReuseInstrument } from "../instruments";
 import { brokerSeries } from "./__fixtures__/broker-series";
 import { parseBrokerStatement } from "./parse-statement";
 import { deleteStatementImports } from "./delete-statements";
 import { runStatementImport } from "./execute-statement";
+import { deleteInvestmentOperation } from "../delete-operation";
+import { brokerOperationExclusions } from "@/lib/db/schema/broker-operation-exclusions";
 import type { ImportDeps } from "./execute";
 import type { RunImportInput } from "@/lib/validation/investments-import";
 
@@ -45,6 +47,21 @@ describe("complete statement import", () => {
     expect(Number(trade.price)).toBe(100);
     expect(Number((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance)).toBe(817);
     expect(dependencies.fetchFx).not.toHaveBeenCalled();
+  });
+  it("DEGIRO needs no portfolio question: a new account gets its own portfolio, like every broker", async () => {
+    const csv = readFileSync(new URL("./__fixtures__/degiro-fx.csv", import.meta.url), "utf8");
+    await db.insert(investmentPortfolios).values([{ userId, name: "Trade Republic", broker: "trade-republic-api:x" }, { userId, name: "Interactive Brokers · 0001", broker: "ibkr:y" }]);
+    expect((await runStatementImport(userId, request(csv), deps())).inserted).toBe(1);
+    const portfolios = await db.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
+    const [trade] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    expect(portfolios.find((p) => p.id === trade.portfolioId)).toMatchObject({ name: "DEGIRO" });
+    userId = randomUUID(); users.push(userId);
+    await db.insert(authUser).values({ id: userId, name: "Synthetic import", email: `${userId}@example.test` });
+    const [manual] = await db.insert(investmentPortfolios).values([{ userId, name: "Portafoglio" }, { userId, name: "Trade Republic", broker: "trade-republic-api:z" }]).returning();
+    expect((await runStatementImport(userId, request(csv), deps())).inserted).toBe(1);
+    const [second] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    expect(second.portfolioId).not.toBe(manual.id);
+    expect((await db.select().from(investmentPortfolios).where(eq(investmentPortfolios.id, second.portfolioId)))[0]).toMatchObject({ name: "DEGIRO" });
   });
   it("previews without writes, imports consecutive periods and preserves broker balances and all closing prices", async () => {
     const first = request(brokerSeries(2023));
@@ -114,6 +131,25 @@ describe("complete statement import", () => {
     const incompatible = corrected.replace("Deposit,2000", "Deposit,2001").replace("Corrected description,2000", "Corrected description,2001").replace("Ending Cash,EUR,999", "Ending Cash,EUR,1000").replace("Cash,0,999", "Cash,0,1000").replace("Total,0,1999", "Total,0,2000");
     expect((await runStatementImport(userId, request(incompatible), deps())).error).toContain("successivo");
     expect((await saved()).find((d) => d.from === "2023-01-01")!.statement.cash[0].closing).toBe(999);
+  });
+  it("keeps a single deleted operation out of later imports and still reconciles positions", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    const trades = () => db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    const [buy] = await trades();
+    expect(await deleteInvestmentOperation(userId, buy.id)).toMatchObject({ status: 204, imported: true });
+    expect(await trades()).toHaveLength(0);
+    // A replacing statement of the same period and the next year both pass the position check and leave it out.
+    const corrected = brokerSeries(2023).replace("Deposit,2000", "Corrected description,2000");
+    expect((await runStatementImport(userId, request(corrected), deps())).error).toBeUndefined();
+    expect((await runStatementImport(userId, request(brokerSeries(2024)), deps())).error).toBeUndefined();
+    expect((await trades()).some((t) => t.type === "acquisto" && t.date === "2023-01-02")).toBe(false);
+    expect(await db.select().from(brokerOperationExclusions).where(eq(brokerOperationExclusions.userId, userId))).toHaveLength(1);
+    // Deleting the statements forgets the deletion: importing them again brings the operation back.
+    const docs = (await saved()).sort((a, b) => a.from.localeCompare(b.from));
+    expect((await deleteStatementImports(userId, docs[0].id, docs.map((d) => d.id), deps())).status).toBe(200);
+    expect(await db.select().from(brokerOperationExclusions).where(eq(brokerOperationExclusions.userId, userId))).toHaveLength(0);
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    expect((await trades()).filter((t) => t.type === "acquisto")).toHaveLength(1);
   });
   it("rejects partial coverage and invalid replacements without deleting the original", async () => {
     await runStatementImport(userId, request(brokerSeries(2023)), deps());

@@ -344,6 +344,34 @@
       "when": 1793086534132,
       "tag": "0051_manual_balance_backfill",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1793124932024,
+      "tag": "0052_trade_republic_connections",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1793542025482,
+      "tag": "0053_market_data_updated_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1793550990307,
+      "tag": "0054_instrument_keep_broker_prices",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1793725826269,
+      "tag": "0055_broker_operation_exclusions",
+      "breakpoints": true
     }
   ]
 }

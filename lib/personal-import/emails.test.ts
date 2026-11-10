@@ -17,16 +17,8 @@ describe("personalImportEmailContent", () => {
     expect(text).toContain("nessun movimento è stato salvato");
   });
 
-  it("righe da controllare: dice che si può scegliere cosa fare", () => {
-    const { subject, text } = personalImportEmailContent("review", PARAMS);
-    expect(subject).toContain("righe da controllare");
-    expect(text).toContain("importare le altre");
-    expect(text).toContain(PARAMS.jobUrl);
-  });
-
   it("in inglese e in tedesco", () => {
     expect(personalImportEmailContent("imported", { ...PARAMS, language: "en" }).subject).toBe("Your CSV has been imported");
-    expect(personalImportEmailContent("review", { ...PARAMS, language: "en" }).text).toContain("See the rows: " + PARAMS.jobUrl);
     expect(personalImportEmailContent("failed", { ...PARAMS, language: "de" }).text).toContain("Es wurden keine Umsätze gespeichert.");
   });
 

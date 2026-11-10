@@ -63,6 +63,8 @@ export interface LogFields {
   rejected?: number;
   /** Bank categories in an imported file: rows that carried one, and how they mapped (counts only, never the labels). */
   bankCategories?: number;
+  /** Personal CSV recovery ladder step: 0 saved parser, 1–3 model attempts. */
+  step?: number;
   bankLearned?: number;
   bankByName?: number;
   bankByDictionary?: number;
@@ -106,6 +108,16 @@ export interface LogFields {
    * see `lib/auth/otp-dev-log.ts`). It is a short-lived secret: no other event may carry it.
    */
   devCode?: string;
+  /** Staging-only Trade Republic diagnostics (`lib/trade-republic/debug.ts`): JSON of shapes, enums, counts and masked patterns, never values. */
+  debug?: string;
+  /** Trade Republic diagnostic trail on a failed login/sync or unrecognised events: same content rules as `debug`. */
+  diagnostics?: string;
+  /** Trade Republic events skipped because their type or status is not known yet (count). */
+  unrecognized?: number;
+  /** Whether the Trade Republic timeline adds up to the reported balance (never the amounts themselves). */
+  reconciled?: boolean;
+  /** Whether a served view had a budget to show (`widgets.spending.served`): a flag, never the amounts. */
+  budget?: boolean;
   error?: unknown;
 }
 

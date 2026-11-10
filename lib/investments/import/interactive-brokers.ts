@@ -1,3 +1,4 @@
+import { ibListingToFigi } from "./exchanges";
 import { isValidIsin, INVESTMENT_NOTE_MAX_LENGTH } from "@/lib/validation/investments";
 import { IMPORT_MAX_IDENTITIES, IMPORT_MAX_OPERATIONS } from "@/lib/validation/investments-import";
 import { parseCsvRecords } from "./csv";
@@ -111,7 +112,8 @@ export function parseInteractiveBrokersActivity(text: string, todayKey: string):
     const isin = isValidIsin(rawIsin) ? rawIsin : null;
     // Currency is part of the identity: dual listings must not share prices in different currencies.
     const key = `${isin ? `isin:${isin}` : `symbol:${symbol}`}:${currency}`;
-    const identity: ImportIdentity = { key, symbol: changedIsin && instrument ? value(instrument, "Symbol").split(",")[0].trim() : symbol, isin, name: instrument ? value(instrument, "Description") : null, currency, symbolIsYahoo: false };
+    const identity: ImportIdentity = { key, symbol: changedIsin && instrument ? value(instrument, "Symbol").split(",")[0].trim() : symbol, isin, name: instrument ? value(instrument, "Description") : null, currency, symbolIsYahoo: false,
+      exchange: instrument ? ibListingToFigi(value(instrument, "Listing Exch")) : null, ...(changedIsin ? { corporateAction: true } : {}) };
     if (instrument && value(instrument, "Type") === "ETF") identity.type = "etf";
     let operation: ImportOperation;
     if (r.section === "Trades") {
@@ -179,13 +181,15 @@ export function parseInteractiveBrokersActivity(text: string, todayKey: string):
       const metadata = instruments.find((i) => value(i, "Symbol").split(",").map((s) => s.trim()).includes(parentSymbol));
       const parentIsin = metadata ? value(metadata, "Security ID") : "";
       if (metadata && isValidIsin(parentIsin)) {
-        parent = { key: `isin:${parentIsin}:${currency}`, symbol: parentSymbol, isin: parentIsin, name: value(metadata, "Description"), currency, symbolIsYahoo: false };
+        parent = { key: `isin:${parentIsin}:${currency}`, symbol: parentSymbol, isin: parentIsin, name: value(metadata, "Description"), currency, symbolIsYahoo: false, exchange: ibListingToFigi(value(metadata, "Listing Exch")) };
         identities.set(parent.key, parent);
       }
     }
     if (!parent) { issue(r, "error", "Strumento origine dello spinoff non trovato"); continue; }
+    // Both sides of a spinoff have market histories adjusted for it: they keep the broker's prices.
+    parent.corporateAction = true;
     const key = `isin:${isin}:${currency}`;
-    identities.set(key, { key, isin, symbol, name, currency, symbolIsYahoo: false });
+    identities.set(key, { key, isin, symbol, name, currency, symbolIsYahoo: false, corporateAction: true });
     operations.push({ key, line: r.line, sourceCurrency: currency, type: "rettifica", date, quantity, price: 0, grossAmount: basis, fees: 0, taxes: 0,
       note: "Spinoff (nessun esborso): costo complessivo ricostruito dai lotti interamente ceduti nel rendiconto. Per il risultato del broker consultare il rendiconto originale." });
     // Separate synthetic row ID for the parent's non-cash basis transfer.

@@ -45,6 +45,11 @@ export const instruments = pgTable(
     /** Ultimo scaricamento dello storico dei dividendi per quota (null = mai). */
     dividendsFetchedAt: timestamp("dividends_fetched_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").references(() => authUser.id, { onDelete: "set null" }),
+    /**
+     * The user's copy made for a corporate action (ISIN change, spinoff): market histories are adjusted for it, so it
+     * keeps the broker's prices and is never linked to a quotation automatically (the user can still do it by hand).
+     */
+    keepBrokerPrices: boolean("keep_broker_prices").notNull().default(false),
     ...timestamps,
   },
   (table) => [
@@ -80,6 +85,8 @@ export const instrumentPrices = pgTable(
     close: numeric("close", { precision: 20, scale: 8 }).notNull(),
     source: text("source").$type<ProviderId>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Last content change: `created_at` alone never moves on an upsert, so a corrected close would not show up in the derivation fingerprint. */
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique("instrument_prices_instrument_date_unique").on(table.instrumentId, table.date),
@@ -115,6 +122,8 @@ export const fxRates = pgTable(
     perEur: numeric("per_eur", { precision: 20, scale: 8 }).notNull(),
     source: text("source").$type<FxProviderId>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Last content change: `created_at` alone never moves on an upsert, so a corrected rate would not show up in the derivation fingerprint. */
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [unique("fx_rates_date_currency_unique").on(table.date, table.currency)]
 );

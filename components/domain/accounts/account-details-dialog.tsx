@@ -19,28 +19,21 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon, UpdateAccountInput } from "@/lib/validation/accounts";
-import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
+import { useUpdateAccountMutation } from "@/lib/queries/accounts";
 import { useSyncAccountMutation } from "@/lib/queries/gocardless";
 import type { Account } from "@/lib/db/schema/accounts";
 import { AccountAvatar } from "./account-avatar";
+import { AccountDeleteConfirm } from "./account-delete-confirm";
 import { AccountIconColorPicker } from "./account-icon-color-picker";
 import { CurrencyInput } from "./currency-input";
 import { localizedAccountStatus, type AccountSyncInfo } from "./account-status";
+import { describeAccountProgress } from "@/components/domain/sync";
+import type { SyncJobAccount } from "@/lib/sync-jobs/types";
 
 const CUSTOM_TYPE_VALUE = "__custom__";
 const FIELD_LABEL = "text-sm font-medium text-foreground";
@@ -54,6 +47,8 @@ export interface AccountDetailsDialogProps {
   needsReconnect?: boolean;
   syncInfo?: AccountSyncInfo;
   syncing?: boolean;
+  /** Latest sync of this account (progress or result), so the window itself says when and how a sync ended. */
+  syncResult?: { account: SyncJobAccount; interrupted: boolean } | null;
   movementsHref?: string;
   /** Chiamato alla chiusura (anche dopo la rimozione del conto). */
   onClose: () => void;
@@ -68,6 +63,7 @@ function AccountDetailsBody({
   needsReconnect,
   syncInfo,
   syncing = false,
+  syncResult = null,
   movementsHref,
   onClose,
   onReconnect,
@@ -80,8 +76,7 @@ function AccountDetailsBody({
   const { t: tr } = useLocalization();
   const isAuto = account.source === "auto";
   const updateMutation = useUpdateAccountMutation();
-  const deleteMutation = useDeleteAccountMutation();
-  const syncMutation = useSyncAccountMutation();
+  const syncMutation = useSyncAccountMutation(syncInfo?.provider);
 
   const [name, setName] = React.useState(account.name);
   const [type, setType] = React.useState(account.type);
@@ -122,12 +117,6 @@ function AccountDetailsBody({
     setColor(next.color);
     setIcon(next.icon);
     save("appearance", { color: next.color, icon: next.icon });
-  }
-
-  function handleRemove() {
-    deleteMutation.mutate(account.id, { onSuccess: () => track("account_removed", { kind }) });
-    setConfirmOpen(false);
-    onClose();
   }
 
   return (
@@ -221,9 +210,14 @@ function AccountDetailsBody({
 
         {isAuto && (
           <div className="flex flex-col gap-2 rounded-lg bg-muted/50 p-3">
-            <p className="text-sm text-text-2" aria-live="polite">
-              {describeSyncAvailability({ needsReconnect, syncing, syncInfo })}
-            </p>
+            {syncResult ? (
+              <SyncResultLine result={syncResult} locale={formattingLocale} />
+            ) : null}
+            {syncing ? null : (
+              <p className="text-sm text-text-2" aria-live="polite">
+                {describeSyncAvailability({ needsReconnect, syncing, syncInfo })}
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -234,7 +228,7 @@ function AccountDetailsBody({
               >
                 <RefreshCw size={16} aria-hidden className={syncMutation.isPending || syncing ? "motion-safe:animate-spin" : undefined} />{tr("Sincronizza ora")}</Button>
               {needsReconnect && (
-                <Button type="button" className={cn("flex-1 cursor-pointer gap-1.5", TALL_CONTROL)} onClick={onReconnect}>{tr("Riconnetti la banca")}</Button>
+                <Button type="button" className={cn("flex-1 cursor-pointer gap-1.5", TALL_CONTROL)} onClick={syncInfo?.provider === "trade-republic" ? () => { window.location.href = "/conti/trade-republic"; } : onReconnect}>{tr("Riconnetti la banca")}</Button>
               )}
             </div>
           </div>
@@ -256,22 +250,7 @@ function AccountDetailsBody({
         </Button>
       </div>
 
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{isAuto ? tr("Scollegare questo conto?") : tr("Eliminare questo conto?")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {isAuto
-                ? tr("\"{0}\" verrà scollegato. L'azione non è reversibile.", {0: account.name})
-                : tr("\"{0}\" verrà eliminato definitivamente, insieme al suo saldo registrato.", {0: account.name})}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemove}>{isAuto ? tr("Scollega") : tr("Elimina")}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AccountDeleteConfirm accountId={account.id} accountName={account.name} isAuto={isAuto} open={confirmOpen} onOpenChange={setConfirmOpen} onDeleted={onClose} />
     </>
   );
 }
@@ -283,5 +262,15 @@ export function AccountDetailsDialog({ account, onClose, ...rest }: AccountDetai
         {account && <AccountDetailsBody key={account.id} account={account} onClose={onClose} {...rest} />}
       </FormDialogContent>
     </Dialog>
+  );
+}
+
+/** Progress while a sync runs, then its outcome, in the account window (the global panel may sit behind it). */
+function SyncResultLine({ result, locale }: { result: { account: SyncJobAccount; interrupted: boolean }; locale: string }) {
+  const { text, tone } = describeAccountProgress(result.account, result.interrupted, locale);
+  return (
+    <p className={cn("text-sm font-medium", tone === "error" ? "text-neg" : tone === "success" ? "text-pos" : "text-text-2")} role="status" aria-live="polite">
+      {text}
+    </p>
   );
 }

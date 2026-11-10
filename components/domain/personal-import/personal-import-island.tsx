@@ -59,14 +59,11 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
   const state = islandState(job);
   const running = state === "running";
   const failed = state === "failed";
-  const review = job.status === "review_failed";
   const results = job.results;
   const overlap = importOverlap(results);
-  const title = running ? tr("{0}: importo il file", { 0: source }) : review ? tr("{0}: da controllare", { 0: source }) : failed ? tr("{0}: non riuscito", { 0: source }) : overlap === "nothing_new" ? tr("{0}: niente di nuovo", { 0: source }) : tr("{0}: completato", { 0: source });
+  const title = running ? tr("{0}: importo il file", { 0: source }) : failed ? tr("{0}: non riuscito", { 0: source }) : overlap === "nothing_new" ? tr("{0}: niente di nuovo", { 0: source }) : tr("{0}: completato", { 0: source });
   const detail = running
     ? tr("Puoi continuare a usare l'app.")
-    : review
-      ? tr("Vedi quali righe e scegli cosa fare.")
     : failed
       ? tr("Vedi cosa fare.")
       : results && overlap === "nothing_new"
@@ -74,7 +71,7 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
       : results && overlap === "partial"
         ? tr("{0} su {1} movimenti importati", { 0: results.rows! - results.alreadyPresent!, 1: results.rows! })
       : results
-        ? tr("{0} movimenti · {1} operazioni", { 0: results.cash, 1: results.investments })
+        ? results.native ? tr("{0} righe importate con il lettore {1}", { 0: results.native.inserted, 1: results.native.name }) : tr("{0} movimenti · {1} operazioni", { 0: results.cash, 1: results.investments })
         : tr("Dati aggiunti.");
   return (
     <motion.div

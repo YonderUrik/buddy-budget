@@ -21,7 +21,7 @@ async function handleGet(request: NextRequest) {
   if (session) bindRequestUser(session.user.id);
   const requestedLanguage = params.get("language");
   if (requestedLanguage !== null && !LANGUAGES.includes(requestedLanguage as Language)) {
-    return apiError(400, "validation_failed", "language deve essere uno tra it, en, de", { field: "language" });
+    return apiError(400, "validation_failed", `language deve essere uno tra ${LANGUAGES.join(", ")}`, { field: "language" });
   }
   const requestedCountry = params.get("country");
   let profile: LocaleProfile | null = session ? resolveProfile(session.user) : null;

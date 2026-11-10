@@ -73,7 +73,8 @@ describe("magicLinkLanguage", () => {
   it("per un indirizzo nuovo usa la lingua scelta sulla pagina, poi quella del browser", () => {
     expect(magicLinkLanguage({ user: null, headers: headers({ cookie: "theme=dark; bb-language=en", "accept-language": "de-DE" }) })).toBe("en");
     expect(magicLinkLanguage({ user: null, headers: headers({ "accept-language": "de-DE,de;q=0.9" }) })).toBe("de");
-    expect(magicLinkLanguage({ user: null, headers: headers({ cookie: "bb-language=fr" }) })).toBe("it");
+    expect(magicLinkLanguage({ user: null, headers: headers({ cookie: "bb-language=fr" }) })).toBe("fr");
+    expect(magicLinkLanguage({ user: null, headers: headers({ cookie: "bb-language=es" }) })).toBe("it");
     expect(magicLinkLanguage({ user: undefined, headers: null })).toBe("it");
   });
 

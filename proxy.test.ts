@@ -221,7 +221,7 @@ describe("proxy and the visitor's country", async () => {
     const response = await proxy(new NextRequest("http://localhost/login?utm_source=landing&lang=it&signup=1"));
     expect(response.headers.get("location")).toBe("http://localhost/login?utm_source=landing&signup=1");
     expect(response.cookies.get("bb-language")?.value).toBe("it");
-    expect((await proxy(new NextRequest("http://localhost/login?lang=fr"))).headers.get("location")).toBeNull();
+    expect((await proxy(new NextRequest("http://localhost/login?lang=es"))).headers.get("location")).toBeNull();
   });
 
   it("sends a section another country does not have to the explanation page, and APIs get a translated 403", async () => {

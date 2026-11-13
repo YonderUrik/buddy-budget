@@ -6,6 +6,11 @@ export function cronHeartbeatKey(cron: CronName): string {
   return `ops:heartbeat:cron:${cron}`;
 }
 
+/** Redis key of the duration of a cron's last successful run (seconds, no TTL). */
+export function cronDurationKey(cron: CronName): string {
+  return `ops:duration:cron:${cron}`;
+}
+
 /** Sorted set dei job di sync in corso: membro = jobId, score = ultimo heartbeat (ms). */
 export const RUNNING_JOBS_KEY = "ops:sync-jobs:running";
 
@@ -27,9 +32,23 @@ export interface OpsKv {
 export interface OpsStore {
   setCronSuccess(cron: CronName, epochSeconds: number): Promise<void>;
   getCronSuccesses(): Promise<Record<CronName, number | null>>;
+  /** Duration of each cron's last successful run, in seconds (exact, unlike the HTTP histogram buckets). */
+  setCronDuration(cron: CronName, seconds: number): Promise<void>;
+  getCronDurations(): Promise<Record<CronName, number | null>>;
   markJobRunning(jobId: string, nowMs: number): Promise<void>;
   markJobDone(jobId: string): Promise<void>;
   countJobs(nowMs: number): Promise<{ active: number; stale: number }>;
+}
+
+/** Reads one number per cron (null when missing or not a number). */
+async function readPerCron(kv: OpsKv, key: (cron: CronName) => string): Promise<Record<CronName, number | null>> {
+  const values = await kv.mget(CRON_NAMES.map(key));
+  const out = {} as Record<CronName, number | null>;
+  CRON_NAMES.forEach((cron, i) => {
+    const n = values[i] === null ? NaN : Number(values[i]);
+    out[cron] = Number.isFinite(n) ? n : null;
+  });
+  return out;
 }
 
 /** Crea lo store operativo sopra un `OpsKv`. */
@@ -38,15 +57,11 @@ export function createOpsStore(kv: OpsKv): OpsStore {
     async setCronSuccess(cron, epochSeconds) {
       await kv.set(cronHeartbeatKey(cron), String(epochSeconds));
     },
-    async getCronSuccesses() {
-      const values = await kv.mget(CRON_NAMES.map(cronHeartbeatKey));
-      const out = {} as Record<CronName, number | null>;
-      CRON_NAMES.forEach((cron, i) => {
-        const n = values[i] === null ? NaN : Number(values[i]);
-        out[cron] = Number.isFinite(n) ? n : null;
-      });
-      return out;
+    getCronSuccesses: () => readPerCron(kv, cronHeartbeatKey),
+    async setCronDuration(cron, seconds) {
+      await kv.set(cronDurationKey(cron), String(seconds));
     },
+    getCronDurations: () => readPerCron(kv, cronDurationKey),
     async markJobRunning(jobId, nowMs) {
       await kv.zadd(RUNNING_JOBS_KEY, nowMs, jobId);
     },

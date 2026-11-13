@@ -162,6 +162,7 @@ export interface AsyncGaugeDeps {
   personalImports?: () => Promise<{ pending: number; overdue: number; failed: number; emailPending: number }>;
   dependencies?: () => Promise<Record<DependencyName, boolean>>;
   cronLastSuccess?: () => Promise<Partial<Record<CronName, number | null>>>;
+  cronLastDuration?: () => Promise<Partial<Record<CronName, number | null>>>;
   syncJobs?: () => Promise<{ active: number; stale: number }>;
   usage?: () => Promise<UsageSnapshot>;
   gocardlessCapacity?: () => Promise<GoCardlessCapacityReading>;
@@ -529,6 +530,24 @@ function createState(): MetricsState {
         for (const [cron, ts] of Object.entries(result)) if (typeof ts === "number") this.set({ cron }, ts);
       } catch {
         // assenza del dato per questo scrape
+      }
+    },
+  });
+
+  new Gauge({
+    name: `${METRIC_PREFIX}cron_last_duration_seconds`,
+    help: "Duration of the cron's last successful run (read from Redis, same on every pod; exact, unlike the HTTP histogram).",
+    labelNames: ["cron"],
+    registers: r,
+    async collect() {
+      this.reset();
+      const read = state.deps.cronLastDuration;
+      if (!read) return;
+      try {
+        const result = await read();
+        for (const [cron, seconds] of Object.entries(result)) if (typeof seconds === "number") this.set({ cron }, seconds);
+      } catch {
+        // no sample for this scrape
       }
     },
   });

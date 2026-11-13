@@ -8,6 +8,8 @@ import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
+import { fullFetchKey } from "./fetch-window";
+import { logger } from "@/lib/observability";
 import type { RateLimitStore } from "./rate-limit";
 
 vi.mock("@/lib/gocardless/client", async (importOriginal) => {
@@ -458,5 +460,52 @@ describe("syncAccountLink", () => {
       throw new Error("Redis giù");
     });
     expect(result).toMatchObject({ status: "synced", newTransactionsCount: 3 });
+  });
+
+  describe("finestra delle transazioni", () => {
+    const lastSync = new Date("2026-07-20T10:00:00Z");
+
+    async function setLastSyncedAt(value: Date) {
+      await db.update(bankAccountLinks).set({ lastSyncedAt: value }).where(eq(bankAccountLinks.id, link.linkId));
+    }
+
+    it("al primo sync scarica tutto lo storico e ricorda il giro completo", async () => {
+      mockBankResponses(1);
+      const store = createMemoryStore();
+      await syncAccountLink(link, store);
+      expect(getAccountTransactions).toHaveBeenCalledWith("ext-1", {});
+      expect(await store.get(fullFetchKey("ext-1"))).not.toBeNull();
+    });
+
+    it("dopo un giro completo recente legge da 30 giorni prima dell'ultimo sync", async () => {
+      mockBankResponses(1);
+      const store = createMemoryStore();
+      await store.set(fullFetchKey("ext-1"), String(Date.now()), 3600);
+      await setLastSyncedAt(lastSync);
+      await syncAccountLink(link, store);
+      expect(getAccountTransactions).toHaveBeenCalledWith("ext-1", { dateFrom: "2026-06-20" });
+    });
+
+    it("senza traccia del giro completo (scaduta o Redis svuotato) riscarica tutto e segnala i movimenti arrivati tardi", async () => {
+      const warn = vi.spyOn(logger, "warn");
+      vi.mocked(getAccountBalances).mockResolvedValue({
+        balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+        rateLimit: null,
+      });
+      vi.mocked(getAccountTransactions).mockResolvedValue({
+        transactions: [
+          // Contabilizzato prima della finestra incrementale (20/06): un sync incrementale non l'avrebbe visto.
+          { internalTransactionId: "late-1", transactionAmount: { amount: "-5.00", currency: "EUR" }, bookingDate: "2026-06-01" },
+          { internalTransactionId: "recent-1", transactionAmount: { amount: "-5.00", currency: "EUR" }, bookingDate: "2026-07-19" },
+        ],
+        rateLimit: null,
+      });
+      await setLastSyncedAt(lastSync);
+      const result = await syncAccountLink(link, createMemoryStore());
+      expect(getAccountTransactions).toHaveBeenCalledWith("ext-1", {});
+      expect(result).toMatchObject({ status: "synced", newTransactionsCount: 2 });
+      expect(warn).toHaveBeenCalledWith("gocardless.sync.late_transactions", expect.objectContaining({ count: 1 }));
+      warn.mockRestore();
+    });
   });
 });

@@ -4,7 +4,7 @@ import type { OpsStore } from "./ops-store";
 
 /**
  * Registra l'esecuzione di un cron: metrica `cron_runs_total`, log `cron.<nome>.completed|failed`
- * e, solo su successo, l'heartbeat su Redis letto dall'alert "cron non eseguito". Un errore di
+ * e, solo su successo, l'heartbeat su Redis letto dall'alert "cron non eseguito" e la durata esatta della run. Un errore di
  * scrittura dell'heartbeat viene loggato ma non fa fallire il cron.
  */
 export async function recordCronRun(
@@ -22,6 +22,7 @@ export async function recordCronRun(
   log.info(`cron.${cron}.completed`, { cron, durationMs });
   try {
     await deps.store.setCronSuccess(cron, Math.floor((deps.now ?? Date.now)() / 1000));
+    await deps.store.setCronDuration(cron, durationMs / 1000);
   } catch (error) {
     log.warn("cron.heartbeat.write_failed", { cron, error });
   }

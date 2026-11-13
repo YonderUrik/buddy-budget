@@ -29,6 +29,11 @@ export const DEMO_TEXTS: Record<Language, Record<DemoTextKey, string>> = {
     rent: "Miete", energy: "Strom und Gas", broadband: "Internet und Handy", groceries: "Supermarkt", fuel: "Tanken",
     dinner: "Abendessen auswärts", streaming: "Video-Streaming", gym: "Fitnessstudio", online: "Online-Einkauf",
   },
+  fr: {
+    checking: "Compte courant · démo", savings: "Épargne · démo", salary: "Salaire", saving: "Virement vers l'épargne",
+    rent: "Loyer", energy: "Électricité et gaz", broadband: "Fibre et mobile", groceries: "Supermarché", fuel: "Carburant",
+    dinner: "Restaurant", streaming: "Streaming vidéo", gym: "Salle de sport", online: "Achat en ligne",
+  },
 };
 const CHECKING_OPENING = 1850;
 const SAVINGS_BALANCE = 7200;

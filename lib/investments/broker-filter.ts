@@ -64,5 +64,5 @@ export function filterInvestmentBrokers(data: InvestmentData, disabled: Readonly
   if (!disabled.size) return data;
   const transactions = data.transactions.filter((t) => !disabled.has(transactionBroker(data, t)));
   const ids = new Set(transactions.map((t) => t.instrumentId));
-  return { ...data, brokerCash: data.brokerCash?.filter((cash) => !disabled.has(cash.provider)), transactions, instruments: data.instruments.filter((i) => ids.has(i.id)), targets: data.targets.filter((t) => ids.has(t.instrumentId)) };
+  return { ...data, brokerCash: data.brokerCash?.filter((cash) => !disabled.has(cash.provider)), leverage: data.leverage?.filter((source) => !disabled.has(source.provider)), transactions, instruments: data.instruments.filter((i) => ids.has(i.id)), targets: data.targets.filter((t) => ids.has(t.instrumentId)) };
 }

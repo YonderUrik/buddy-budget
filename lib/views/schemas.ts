@@ -5,7 +5,7 @@
  * dates are `YYYY-MM-DD`, timestamps ISO 8601.
  */
 import { z } from "zod";
-import { PRODUCT_COUNTRIES } from "@/lib/localization/config";
+import { LANGUAGES, PRODUCT_COUNTRIES } from "@/lib/localization/config";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const timestamp = z.iso.datetime({ offset: true });
@@ -285,7 +285,7 @@ export const analyticsViewSchema = z.object({
 
 const countryMetaSchema = z.object({
   id: z.enum(PRODUCT_COUNTRIES),
-  languages: z.array(z.enum(["it", "en", "de"])),
+  languages: z.array(z.enum(LANGUAGES)),
   features: z.object({ taxes: z.boolean(), pension: z.boolean(), retirement: z.boolean(), incomeForecasts: z.boolean(), inflation: z.boolean() }),
   sections: z.record(z.string(), z.boolean()),
   planning: z.object({ tax: z.boolean(), income: z.boolean(), pension: z.boolean(), retirement: z.boolean(), simulations: z.boolean() }),
@@ -293,10 +293,10 @@ const countryMetaSchema = z.object({
 
 /** GET /api/meta (G13). */
 export const appMetaSchema = z.object({
-  language: z.enum(["it", "en", "de"]),
+  language: z.enum(LANGUAGES),
   server: z.object({ version: z.string(), commit: z.string(), builtAt: z.string() }),
   legal: z.looseObject({ version: z.string() }),
-  languages: z.array(z.object({ id: z.enum(["it", "en", "de"]), name: z.string(), locale: z.string() })),
+  languages: z.array(z.object({ id: z.enum(LANGUAGES), name: z.string(), locale: z.string() })),
   countries: z.array(countryMetaSchema),
   currencies: z.array(z.object({ value: z.string(), label: z.string(), symbol: z.string() })),
   defaultCurrency: z.string(),
@@ -315,7 +315,7 @@ export const appMetaSchema = z.object({
   profile: z
     .object({
       productCountry: z.enum(PRODUCT_COUNTRIES),
-      language: z.enum(["it", "en", "de"]),
+      language: z.enum(LANGUAGES),
       capabilities: countryMetaSchema,
       categoryProposal: z.array(z.looseObject({ key: z.string().nullable(), name: z.string() })),
     })

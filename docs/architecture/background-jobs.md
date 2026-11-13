@@ -251,6 +251,8 @@ Example. Last activity on 1 March. The warning is due on 23 May (83 days). If th
 
 In `execute`, `deliver` first inserts the item keys into `notification_log` with `onConflictDoNothing`. If fewer keys come back than requested, another process owns them: the claimed ones are released and nothing is sent. If the send fails, all claimed keys are deleted so the next run retries. The run stops early after `RUN_TIME_BUDGET_MS` (240 s) and sets `timedOut: true`, staying inside `maxDuration`.
 
+Notification emails always show real amounts. `contextFor` binds an `Intl.NumberFormat` to the recipient's currency and resolved language and passes it as `EmailContext.money` to every template. The notification recipient query and type deliberately omit `hideAmounts`: that saved preference controls only the web interface. Email formatting does not use the frontend privacy-aware `lib/format.formatCurrency`, so existing and future summary rows stay independent of masking. Layout, translations and financial calculations are unchanged. Regression coverage in `lib/notifications/run.test.ts` checks HTML and plain text with both saved privacy choices and active frontend masking, signed/zero/decimal amounts, unavailable returns, and IT/EN/DE currency formats.
+
 ## 5. Limits and out of scope
 
 - Only GoCardless sync uses the full job standard (Redis job, per-account counters, global panel). Price backfills have their own lighter state. AI suggestion runs and «Ricategorizza» have no job record or progress.

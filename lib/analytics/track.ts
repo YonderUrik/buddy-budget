@@ -8,6 +8,7 @@ import type { Attribution } from "./attribution";
 import type { WelcomeItemKind } from "@/lib/welcome/types";
 import type { SingleSuggestionStatus } from "@/lib/categorization/ai/single-suggestion";
 import type { QuickAddActionId, QuickAddArea, QuickAddSource } from "@/lib/quick-add/actions";
+import type { Language } from "@/lib/localization/config";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import" | "goal";
@@ -61,6 +62,12 @@ export interface ProductEvents {
   investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };
   /** Interruttore «Rimetti costi/imposte nel portafoglio» in Investimenti; `reinvested`: acceso o spento. */
   investment_reinvest_toggled: { kind: "costi" | "imposte"; reinvested: boolean };
+  /** Performance measured on the securities or on the own capital (margin loan and interest included). */
+  investment_return_basis_changed: { basis: "titoli" | "capitale" };
+  /** Maintenance margin of the leverage card's estimate changed, in whole percent. */
+  investment_margin_estimate_changed: { maintenance: number };
+  /** Details of the leverage strip opened from Investimenti › Portafoglio. */
+  investment_leverage_details_opened: Record<string, never>;
   investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
   /**
    * Action of a «Primi passi» step pressed; `placement`: the big «next step» block in Panoramica, the list under it, or
@@ -93,15 +100,15 @@ export interface ProductEvents {
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
   demo_cleared: { from: "banner" | "panoramica" };
   /** Public demo (`/demo`) opened, once per browser session; `language` and `country` are the demo's. */
-  public_demo_viewed: { language: "it" | "en" | "de"; country: "IT" | "DE" | "OTHER" };
+  public_demo_viewed: { language: Language; country: "IT" | "DE" | "OTHER" };
   /** «Crea il tuo account» pressed in the public demo's strip. */
-  public_demo_signup_clicked: { language: "it" | "en" | "de"; country: "IT" | "DE" | "OTHER" };
+  public_demo_signup_clicked: { language: Language; country: "IT" | "DE" | "OTHER" };
   /** Country or language changed in the public demo's footer (`changed`); `language` and `country` are the new ones. */
-  public_demo_profile_changed: { changed: "country" | "language"; language: "it" | "en" | "de"; country: "IT" | "DE" | "OTHER" };
+  public_demo_profile_changed: { changed: "country" | "language"; language: Language; country: "IT" | "DE" | "OTHER" };
   /** `languageKept`: the language proposed on arrival (picked on the sign-in page or detected from the browser) was not changed. */
   /** `source`/`medium`/`campaign`/`content`: the campaign the visitor arrived from (slugs from `utm_*`), when the link carried one. */
   /** `country`: product rules chosen (`OTHER` = a country without local rules yet); `countryKept`: the country proposed from the visitor's location was not changed. */
-  onboarding_completed: { currency: SupportedCurrency; language: "it" | "en" | "de"; languageKept: boolean; country: "IT" | "DE" | "OTHER"; countryKept: boolean } & Attribution;
+  onboarding_completed: { currency: SupportedCurrency; language: Language; languageKept: boolean; country: "IT" | "DE" | "OTHER"; countryKept: boolean } & Attribution;
   /** Foglio «Personalizza» aperto nel passo «Categorie» dell'onboarding. */
   onboarding_categories_opened: undefined;
   /**
@@ -321,7 +328,7 @@ export interface ProductEvents {
   amounts_hidden_toggled: { enabled: boolean; source: "menu_utente" };
   theme_changed: { choice: "chiaro" | "scuro" | "sistema"; source: "menu_utente" };
   /** Interface language chosen from the sign-in footer (cookie) or from Impostazioni (account). Onboarding is counted by `onboarding_completed`. */
-  language_changed: { from: "login" | "settings"; language: "it" | "en" | "de" };
+  language_changed: { from: "login" | "settings"; language: Language };
   /** Product country changed in Impostazioni. */
   country_changed: { from: "settings"; country: "IT" | "DE" | "OTHER" };
   /** A section the user's country does not have yet was tapped (menu entry marked «Presto nel tuo paese»): how many people want it there. */

@@ -39,6 +39,10 @@ describe("public demo config", () => {
     expect(pickPublicDemoProfile(null, "es", "it-IT,it;q=0.9")).toEqual({ productCountry: "IT", language: "it" });
     expect(pickPublicDemoProfile("XX", null, "es-ES,de;q=0.8")).toEqual({ productCountry: "DE", language: "de" });
     expect(pickPublicDemoProfile(null, null, null)).toEqual({ productCountry: "IT", language: "it" });
+    // French has no demo: France opens the English demo for countries without local rules, never a missing one.
+    expect(pickPublicDemoProfile(null, null, "fr-FR", "FR")).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(pickPublicDemoProfile(null, "fr", null)).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(pickPublicDemoProfile("OTHER", "fr", null)).toEqual({ productCountry: "OTHER", language: "en" });
   });
 
   it("opens the demo of the visitor's country: English without local rules outside Italy and Germany", () => {

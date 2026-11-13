@@ -151,6 +151,8 @@ export async function findCoveredFrom(
   if (calendarDaysBetween(rows[0].date, toKey) > maxGapDays) return null;
 
   let from = rows[0].date;
+  // The newest close already sits at or before `fromKey`: the interval is covered by it alone.
+  if (from <= fromKey) return from;
   for (let i = 1; i < rows.length; i += 1) {
     // `rows[i]` is older: when it is further than the tolerance from the previous close, coverage stops there.
     if (calendarDaysBetween(rows[i].date, rows[i - 1].date) > maxGapDays) return from;

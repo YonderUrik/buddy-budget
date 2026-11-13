@@ -127,6 +127,14 @@ describe("history coverage and backfill start", () => {
     expect(await covered(id, "2026-01-01", "2026-06-05")).toBeNull();
   });
 
+  it("a single recent close at or before the requested start is coverage", async () => {
+    const id = await createInstrument();
+    await addPrice(id, "2026-06-01");
+
+    expect(await covered(id, "2026-06-01", "2026-06-05")).toBe("2026-06-01");
+    expect(await covered(id, "2026-06-03", "2026-06-05")).toBe("2026-06-01");
+  });
+
   it("closes older than the window cannot change the answer", async () => {
     const id = await createInstrument();
     // Very old closes, then a continuous recent run: the old rows must not affect the outcome either way.

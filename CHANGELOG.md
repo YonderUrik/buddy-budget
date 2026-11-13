@@ -2,6 +2,22 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.97.0](https://github.com/YonderUrik/buddy-budget/compare/v0.96.0...v0.97.0) (2026-11-13)
+
+
+### Features
+
+* **localization:** add French (fr-FR) interface language ([#564](https://github.com/YonderUrik/buddy-budget/issues/564)) ([35445b6](https://github.com/YonderUrik/buddy-budget/commit/35445b6f52476204750f45f0aba76ce85b94a9eb))
+* show the leverage of the broker account ([#558](https://github.com/YonderUrik/buddy-budget/issues/558)) ([9e6c281](https://github.com/YonderUrik/buddy-budget/commit/9e6c2810ed8cf572d3a9dffc0ba8d2b709dca5b1))
+
+
+### Bug fixes
+
+* **deps:** bump the patch group in /landing with 3 updates ([#561](https://github.com/YonderUrik/buddy-budget/issues/561)) ([b29a8d1](https://github.com/YonderUrik/buddy-budget/commit/b29a8d15341b91a8aaaf2ba2af04c47ddce0a791))
+* **deps:** bump the patch group with 4 updates ([#562](https://github.com/YonderUrik/buddy-budget/issues/562)) ([8e89a0b](https://github.com/YonderUrik/buddy-budget/commit/8e89a0b101b874e02782a8fc4394337a22691432))
+* keep email summary amounts independent of frontend privacy ([#560](https://github.com/YonderUrik/buddy-budget/issues/560)) ([0844489](https://github.com/YonderUrik/buddy-budget/commit/0844489662cc61a59e5d99ab63b1eeecfc4a78df))
+* start the price history backfill from the requested interval, not the first stored close ([#566](https://github.com/YonderUrik/buddy-budget/issues/566)) ([9f76115](https://github.com/YonderUrik/buddy-budget/commit/9f76115f2a16a8148f358f46285ac131a3164b38))
+
 ## [0.96.0](https://github.com/YonderUrik/buddy-budget/compare/v0.95.0...v0.96.0) (2026-11-03)
 
 

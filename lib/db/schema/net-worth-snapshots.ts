@@ -26,6 +26,11 @@ export const netWorthSnapshots = pgTable(
      * null on rows written before it existed.
      */
     ledgerAmount: numeric("ledger_amount", { precision: 14, scale: 2 }),
+    /**
+     * Cash rows only: the part of `amount` that came from broker cash accounts rebuilt from their statements
+     * (`lib/net-worth/statement-cash.ts`), so it follows every import; null on rows written before it existed.
+     */
+    statementAmount: numeric("statement_amount", { precision: 14, scale: 2 }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

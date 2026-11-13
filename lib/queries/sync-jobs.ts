@@ -20,6 +20,9 @@ const QUERY_KEYS_CHANGED_BY_SYNC = [
   ["investments", "sidebar-summary"],
   // An import or sync can tick the «Importa i movimenti» first step.
   ["start"],
+  // Broker syncs (Trade Republic, Interactive Brokers Flex) write Investimenti and the connection status.
+  ["investments"],
+  ["ibkr-flex"],
   ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION,
 ] as const;
 

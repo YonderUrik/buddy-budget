@@ -114,7 +114,7 @@ services:
       start_period: 30s
 
   # Calls the /api/cron/* endpoints at the same times (UTC) as the production cluster: market prices,
-  # net worth snapshots, account deletion, summary emails, bank sync. Without this, prices and history are not updated.
+  # net worth snapshots, account deletion, summary emails, bank sync, Interactive Brokers Flex sync. Without this, prices and history are not updated.
   # Not here on purpose: `inactive-accounts` (the hosted service deletes accounts unused for 90 days; your own install
   # keeps them) and `public-demo`.
   cron:
@@ -138,6 +138,8 @@ services:
           echo "30 6,17,22 * * * $$(call market-prices)"
           echo "50 6,17,23 * * * $$(call net-worth-snapshot)"
           echo "30 3 * * * $$(call account-deletion)"
+          # Interactive Brokers Flex connections: hourly pass, each connection syncs about once a day (no-op without any).
+          echo "20 * * * * $$(call ibkr-flex-sync)"
           # Summary and alert emails only with an email service.
           if [ -n "$$EMAIL_CONFIGURED" ] && [ "$$NOTIFICATIONS_MODE" = "execute" ]; then
             echo "30 7 * * * $$(call notifications)"

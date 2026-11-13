@@ -372,6 +372,20 @@
       "when": 1793725826269,
       "tag": "0055_broker_operation_exclusions",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1793970432224,
+      "tag": "0056_ibkr_flex_connections",
+      "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1794048158180,
+      "tag": "0057_statement_cash_history",
+      "breakpoints": true
     }
   ]
 }

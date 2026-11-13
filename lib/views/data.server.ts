@@ -1,4 +1,5 @@
 import "server-only";
+import { listIbkrFlexAccountStatuses } from "@/lib/ibkr-flex/account-status";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { accounts, type Account } from "@/lib/db/schema/accounts";
@@ -44,7 +45,7 @@ export interface BankConnectionStatus {
   connectionId: string;
   institutionName: string;
   /** Which sync route the account uses: `/api/{provider}/accounts/{id}/sync`. */
-  provider: "gocardless" | "trade-republic";
+  provider: "gocardless" | "trade-republic" | "ibkr-flex";
   status: "pending" | "linked" | "expired" | "error";
   consentExpiresAt: string | null;
   lastSyncedAt: string | null;
@@ -55,11 +56,12 @@ export interface BankConnectionStatus {
 
 /**
  * One row per linked account: its connection, consent expiry, last sync and whether a manual sync is allowed now.
- * Trade Republic accounts are included with `provider: "trade-republic"` (no consent expiry, no daily sync budget).
+ * Trade Republic accounts are included with `provider: "trade-republic"` (no consent expiry, no daily sync budget), and
+ * the broker cash accounts fed by an Interactive Brokers Flex connection with `provider: "ibkr-flex"`.
  */
 export async function loadBankConnectionStatuses(userId: string, now: Date): Promise<BankConnectionStatus[]> {
-  const [gocardless, tradeRepublic] = await Promise.all([loadGoCardlessStatuses(userId, now), loadTradeRepublicStatuses(userId)]);
-  return [...gocardless, ...tradeRepublic];
+  const [gocardless, tradeRepublic, ibkr] = await Promise.all([loadGoCardlessStatuses(userId, now), loadTradeRepublicStatuses(userId), listIbkrFlexAccountStatuses(userId)]);
+  return [...gocardless, ...tradeRepublic, ...ibkr];
 }
 
 async function loadTradeRepublicStatuses(userId: string): Promise<BankConnectionStatus[]> {

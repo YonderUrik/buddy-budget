@@ -25,3 +25,4 @@ export * from "./financial-plans";
 export * from "./goals";
 export * from "./import-format-profiles";
 export * from "./trade-republic";
+export * from "./ibkr-flex";

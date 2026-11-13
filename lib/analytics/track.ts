@@ -34,6 +34,12 @@ type DataQuestionKind = DataQuestion["kind"];
 export interface ProductEvents {
   trade_republic_login_started: undefined;
   trade_republic_connected: undefined;
+  /** Interactive Brokers connected through the Flex Web Service (token + query id); `reconnected` replaced a token. */
+  ibkr_flex_connected: { reconnected: boolean };
+  /** A connect attempt refused, by closed reason (`IbkrFlexConnectionError`). */
+  ibkr_flex_connect_failed: { reason: string };
+  ibkr_flex_sync_started: undefined;
+  ibkr_flex_disconnected: undefined;
   financial_sale_simulated: { country: "DE" };
   financial_plan_saved: { country: "DE"; section: "tax" | "income" | "pension" | "retirement" };
   /** Segnalazione inviata da «Aiuto e segnalazioni»; `withContext`: l'utente ha lasciato il contesto tecnico allegato. */
@@ -144,7 +150,7 @@ export interface ProductEvents {
   account_details_opened: { kind: "manuale" | "collegato" };
   /** Scelta nel dialog «Nuovo conto»: quale strada prende l'utente. */
   account_add_path_chosen: { path: "banca" | "manuale" | "importa" };
-  bank_provider_chosen: { provider: "trade-republic" };
+  bank_provider_chosen: { provider: "trade-republic" | "interactive-brokers" };
   /** Un passo di un form a passi è stato completato (`step` parte da 1): serve a vedere dove ci si ferma. */
   form_step_completed: { flow: FormFlow; step: number };
   /** «Indietro» in un form a passi, dal passo `step` (parte da 1). */

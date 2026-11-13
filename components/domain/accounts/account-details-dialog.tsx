@@ -31,7 +31,7 @@ import { AccountAvatar } from "./account-avatar";
 import { AccountDeleteConfirm } from "./account-delete-confirm";
 import { AccountIconColorPicker } from "./account-icon-color-picker";
 import { CurrencyInput } from "./currency-input";
-import { localizedAccountStatus, type AccountSyncInfo } from "./account-status";
+import { isSyncedAccount, localizedAccountStatus, type AccountSyncInfo } from "./account-status";
 import { describeAccountProgress } from "@/components/domain/sync";
 import type { SyncJobAccount } from "@/lib/sync-jobs/types";
 
@@ -75,6 +75,9 @@ function AccountDetailsBody({
 
   const { t: tr } = useLocalization();
   const isAuto = account.source === "auto";
+  // Kept up to date by the app (a bank, or a broker fed by a sync connection): balance read-only, sync offered.
+  const connected = isSyncedAccount(account, syncInfo);
+  const broker = syncInfo?.provider === "ibkr-flex";
   const updateMutation = useUpdateAccountMutation();
   const syncMutation = useSyncAccountMutation(syncInfo?.provider);
 
@@ -89,7 +92,7 @@ function AccountDetailsBody({
   );
 
   const kind = isAuto ? "collegato" : "manuale";
-  const status = buildAccountStatus({ isAuto, needsReconnect, syncing, syncInfo });
+  const status = buildAccountStatus({ isAuto: connected, needsReconnect, syncing, syncInfo });
   const syncDisabled = !syncInfo?.eligible || syncMutation.isPending || syncing || needsReconnect;
 
   function save(field: "name" | "type" | "balance" | "appearance", input: UpdateAccountInput) {
@@ -130,7 +133,7 @@ function AccountDetailsBody({
           <div className="min-w-0">
             <DialogTitle className="truncate">{account.name}</DialogTitle>
             <DialogDescription>
-              {isAuto ? tr("Collegato alla banca") : tr("Conto manuale")} {"·"}{tr(status.label)}
+              {broker ? tr("Collegato a Interactive Brokers") : isAuto ? tr("Collegato alla banca") : tr("Conto manuale")} {"·"}{tr(status.label)}
             </DialogDescription>
           </div>
         </div>
@@ -142,14 +145,14 @@ function AccountDetailsBody({
           <Input id="account-name" value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} className={TALL_CONTROL} />
         </div>
 
-        {isAuto ? (
+        {connected ? (
           <dl className="grid grid-cols-2 gap-3 rounded-lg bg-muted/40 p-3 text-sm">
             <div>
               <dt className="text-text-2">{tr("Tipo")}</dt>
               <dd className="font-medium text-foreground">{account.type}</dd>
             </div>
             <div>
-              <dt className="text-text-2">{tr("Saldo dalla banca")}</dt>
+              <dt className="text-text-2">{broker ? tr("Saldo dal broker") : tr("Saldo dalla banca")}</dt>
               <dd className="font-heading font-semibold tabular-nums text-foreground">{formatCurrency(Number(account.balance), currency)}</dd>
             </div>
           </dl>
@@ -208,7 +211,7 @@ function AccountDetailsBody({
           </>
         )}
 
-        {isAuto && (
+        {connected && (
           <div className="flex flex-col gap-2 rounded-lg bg-muted/50 p-3">
             {syncResult ? (
               <SyncResultLine result={syncResult} locale={formattingLocale} />
@@ -228,7 +231,7 @@ function AccountDetailsBody({
               >
                 <RefreshCw size={16} aria-hidden className={syncMutation.isPending || syncing ? "motion-safe:animate-spin" : undefined} />{tr("Sincronizza ora")}</Button>
               {needsReconnect && (
-                <Button type="button" className={cn("flex-1 cursor-pointer gap-1.5", TALL_CONTROL)} onClick={syncInfo?.provider === "trade-republic" ? () => { window.location.href = "/conti/trade-republic"; } : onReconnect}>{tr("Riconnetti la banca")}</Button>
+                <Button type="button" className={cn("flex-1 cursor-pointer gap-1.5", TALL_CONTROL)} onClick={syncInfo?.provider === "trade-republic" || syncInfo?.provider === "ibkr-flex" ? () => { window.location.href = syncInfo.provider === "ibkr-flex" ? "/connections/interactive-brokers" : "/conti/trade-republic"; } : onReconnect}>{tr("Riconnetti la banca")}</Button>
               )}
             </div>
           </div>

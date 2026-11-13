@@ -114,6 +114,10 @@ export interface LogFields {
   diagnostics?: string;
   /** Trade Republic events skipped because their type or status is not known yet (count). */
   unrecognized?: number;
+  /** Interactive Brokers Flex Web Service error code (closed numeric set such as 1012 or 1019): never a token or URL. */
+  ibkrCode?: number;
+  /** Whether IBKR honoured the requested Flex period (`fd`/`td`) or returned the query's own one. */
+  periodHonoured?: boolean;
   /** Whether the Trade Republic timeline adds up to the reported balance (never the amounts themselves). */
   reconciled?: boolean;
   /** Whether a served view had a budget to show (`widgets.spending.served`): a flag, never the amounts. */

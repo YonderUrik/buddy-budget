@@ -50,7 +50,9 @@ export async function resetInvestmentHistory(userId: string, revision: string, t
     if (state.cash.length) {
       await tx.update(accounts).set({ balance: "0", updatedAt: new Date() }).where(and(eq(accounts.userId, userId), inArray(accounts.id, state.cash.map((a) => a.id))));
       const [total] = await tx.select({ amount: sql<string>`coalesce(sum(${accounts.balance}), 0)` }).from(accounts).where(eq(accounts.userId, userId));
-      await tx.insert(netWorthSnapshots).values({ userId, date: today, assetClass: "liquidita", amount: total.amount, source: "snapshot" }).onConflictDoUpdate({ target: [netWorthSnapshots.userId, netWorthSnapshots.date, netWorthSnapshots.assetClass], set: { amount: total.amount, source: "snapshot", updatedAt: new Date() } });
+      // The statements are gone, so today's row holds no broker part: a stale one would be taken as still recorded once
+      // the day is past and push the manual part off by the old broker cash.
+      await tx.insert(netWorthSnapshots).values({ userId, date: today, assetClass: "liquidita", amount: total.amount, statementAmount: "0.00", source: "snapshot" }).onConflictDoUpdate({ target: [netWorthSnapshots.userId, netWorthSnapshots.date, netWorthSnapshots.assetClass], set: { amount: total.amount, statementAmount: "0.00", source: "snapshot", updatedAt: new Date() } });
     }
     return { status: 200, deletedOperations: state.operations.length, deletedStatements: state.statements.length, deletedPrices: state.prices.length, resetCashAccounts: state.cash.length };
   }, { isolationLevel: "serializable" });

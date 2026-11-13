@@ -32,6 +32,7 @@ const EXACT_NAMES: Record<string, string> = {
   "/analitiche/obiettivi": "Obiettivi",
   "/categorizza": "Categorizza",
   "/importazioni": "Importazioni",
+  "/connections/interactive-brokers": "Interactive Brokers",
   "/impostazioni": "Impostazioni",
   "/aiuto": "Aiuto",
 };
@@ -51,6 +52,7 @@ const PARENTS: readonly (readonly [prefix: string, parent: ParentPage])[] = [
   ["/debiti/finanziamenti", { href: "/debiti", label: "Debiti" }],
   ["/categorizza", { href: "/liquidita", label: "Liquidità" }],
   ["/importazioni", { href: "/liquidita", label: "Liquidità" }],
+  ["/connections/", { href: "/investimenti", label: "Portafoglio" }],
   ["/conti/collega/", { href: "/liquidita/conti", label: "Conti" }],
   ["/country-unavailable", PANORAMICA],
 ];

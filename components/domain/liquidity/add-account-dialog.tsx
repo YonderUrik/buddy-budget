@@ -13,6 +13,8 @@ import * as React from "react";
 import { ArrowLeftIcon, ChevronRightIcon, FileSpreadsheetIcon, LandmarkIcon, PencilLineIcon, ZapIcon } from "lucide-react";
 import { AddAccountForm } from "@/components/domain/accounts";
 import { ConnectTradeRepublic } from "@/components/domain/trade-republic";
+import { ConnectIbkrFlex } from "@/components/domain/ibkr-flex";
+import { useIbkrFlexConnections } from "@/lib/queries/ibkr-flex";
 import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
@@ -20,17 +22,20 @@ import { useBankCapacityQuery } from "@/lib/queries/gocardless";
 import { useInstance } from "@/lib/instance/provider";
 import { BankPicker } from "./bank-picker";
 
-export type AddAccountView = "scelta" | "banca" | "trade-republic" | "manuale";
+export type AddAccountView = "scelta" | "banca" | "trade-republic" | "interactive-brokers" | "manuale";
 
 const VIEW_COPY: Record<AddAccountView, { title: string; description: string }> = {
   scelta: { title: "Nuovo conto", description: "Come vuoi tenere aggiornato questo conto?" },
   banca: { title: "Collega la tua banca", description: "Scegli la banca: saldi e movimenti arrivano da soli." },
   "trade-republic": { title: "Trade Republic", description: "Saldo, movimenti e investimenti, aggiornati a ogni sincronizzazione." },
+  "interactive-brokers": { title: "Interactive Brokers", description: "Operazioni, dividendi, interessi e liquidità dai rendiconti Flex, aggiornati ogni giorno." },
   manuale: { title: "Conto manuale", description: "Aggiungi tu i movimenti: il saldo li segue." },
 };
 
 /** Header of the bank step while only Trade Republic connects. */
 const BANK_BLOCKED_COPY = { title: "Collega la tua banca", description: "Per ora si collega Trade Republic: le altre banche sono in arrivo." };
+/** The same, where Interactive Brokers connects too. */
+const BANK_BLOCKED_WITH_IBKR_COPY = { title: "Collega la tua banca", description: "Per ora si collegano Trade Republic e Interactive Brokers: le altre banche sono in arrivo." };
 
 interface ChoiceProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -103,8 +108,14 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
     track("bank_provider_chosen", { provider: "trade-republic" });
     setView("trade-republic");
   };
-  const copy = view === "banca" && blockedReason ? BANK_BLOCKED_COPY : VIEW_COPY[view];
-  const back = view === "banca" && !renew ? { label: "Cambia modo", to: "scelta" as const } : view === "trade-republic" ? { label: "Tutte le banche", to: "banca" as const } : null;
+  // Interactive Brokers is offered only where its Flex connection is open (closed on the hosted version for now).
+  const ibkr = useIbkrFlexConnections();
+  const chooseInteractiveBrokers = () => {
+    track("bank_provider_chosen", { provider: "interactive-brokers" });
+    setView("interactive-brokers");
+  };
+  const copy = view === "banca" && blockedReason ? (ibkr.data?.open ? BANK_BLOCKED_WITH_IBKR_COPY : BANK_BLOCKED_COPY) : VIEW_COPY[view];
+  const back = view === "banca" && !renew ? { label: "Cambia modo", to: "scelta" as const } : view === "trade-republic" || view === "interactive-brokers" ? { label: "Tutte le banche", to: "banca" as const } : null;
   return (
     <>
       <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? tr("Rinnova il collegamento") : copy.title} description={renew && view === "banca" ? tr("Scegli di nuovo la tua banca per rinnovare il consenso.") : copy.description} />
@@ -116,7 +127,7 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
       {view === "scelta" ? (
         <div className="flex flex-col gap-3">
           <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")}>
-            <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} description={blockedReason ? tr("Trade Republic, con le altre banche in arrivo.") : tr("Saldi e movimenti arrivano da soli dalla banca.")} />
+            <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} description={blockedReason ? (ibkr.data?.open ? tr("Trade Republic e Interactive Brokers, con le altre banche in arrivo.") : tr("Trade Republic, con le altre banche in arrivo.")) : tr("Saldi e movimenti arrivano da soli dalla banca.")} />
           </button>
           <button type="button" className={CHOICE_CLASS} onClick={() => go("manuale")}>
             <ChoiceBody icon={PencilLineIcon} color="var(--swatch-indigo)" title={tr("Conto manuale")} description={tr("Per contanti, carte prepagate o qualsiasi banca: il saldo segue i movimenti che aggiungi.")} />
@@ -133,11 +144,13 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
           canRequest={!selfHosted}
           renew={renew}
           onChooseTradeRepublic={chooseTradeRepublic}
+          onChooseInteractiveBrokers={!renew && ibkr.data?.open ? chooseInteractiveBrokers : undefined}
           onChooseManual={() => setView("manuale")}
           onImport={() => { track("account_add_path_chosen", { path: "importa" }); onClose(); }}
         />
       ) : null}
       {view === "trade-republic" ? <ConnectTradeRepublic onDone={onClose} /> : null}
+      {view === "interactive-brokers" ? <ConnectIbkrFlex onDone={onClose} /> : null}
       {view === "manuale" ? <AddAccountForm currency={currency} onSuccess={onClose} onExit={() => setView("scelta")} /> : null}
     </>
   );

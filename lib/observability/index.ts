@@ -10,6 +10,7 @@ export {
   assertStaticRouteName,
   recordHttpRequest,
   recordTradeRepublicRequest,
+  recordIbkrFlexRequest,
   recordTradeRepublicUnrecognized,
   recordPersonalImportAttempt,
   recordGoCardlessSync,

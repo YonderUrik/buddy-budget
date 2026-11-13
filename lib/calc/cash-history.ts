@@ -10,6 +10,17 @@
  * change or disappear, the row becomes `amount - ledgerAmount + ledgerOn(day)`: the manual part stays as recorded,
  * the ledger part follows the data. Days without a row inside the window of ledger transactions get a new
  * reconstructed row.
+ *
+ * A "statement" account is a broker's cash account rebuilt from its statements (Interactive Brokers): its balance on
+ * any day comes from the statements' opening balances and dated cash movements (`centsOn`). Each row keeps that part
+ * in `statementAmount`, so it follows every import the same way. A row written before `statementAmount` existed
+ * recorded the account inside its manual part, with the balance the latest statement gave then, which can be months
+ * old (a statement imported later replaces it and is deleted). What it recorded depends on when the row was FIRST
+ * written (`createdAt`, never changed by later updates), not on its date: a day filled in after the broker account
+ * existed copied the broker balance from the day it was copied from. So a row first written before any statement
+ * account existed recorded none; a later one recorded everything that is not ledger or manual, the manual part being
+ * estimated as the current balance of the manual accounts that existed when the row was written (typed balances
+ * rarely change).
  */
 
 import { addDays, MAX_DERIVED_HISTORY_MONTHS, toDateKey } from "./net-worth";
@@ -32,22 +43,40 @@ export interface LedgerTransaction {
   createdAt: Date;
 }
 
+/** A broker cash account rebuilt from its statements, in the user's currency. */
+export interface StatementCashAccount {
+  id: string;
+  createdAt: Date;
+  /** First day its statements cover. */
+  from: string;
+  /** End-of-day balance in cents on any day (zero before `from`, the last closing after the last statement). */
+  centsOn(day: string): number;
+}
+
 /** A stored `liquidita` row as the planner needs it. */
 export interface StoredCashRow {
   date: string;
   amount: number;
   /** Ledger part of `amount` when the row was last written; null on rows written before the column existed. */
   ledgerAmount: number | null;
+  /** Statement part of `amount`; null on rows written before the column existed. */
+  statementAmount?: number | null;
   /** When the row was last written: used to estimate the ledger part of rows without `ledgerAmount`. */
   updatedAt: Date;
+  /** When the row was first written (unchanged by later updates); falls back to `updatedAt`. */
+  createdAt?: Date;
 }
 
 export interface CashHistoryInput {
   rows: StoredCashRow[];
   accounts: LedgerAccount[];
   transactions: LedgerTransaction[];
-  /** Sum of the current balances of the non-ledger (manual) accounts. */
+  /** Broker cash accounts rebuilt from their statements; they are neither ledger nor manual accounts. */
+  statementAccounts?: StatementCashAccount[];
+  /** Sum of the current balances of the manual accounts (statement accounts excluded). */
   manualNow: number;
+  /** The manual accounts one by one, to estimate the manual part of rows that predate `statementAmount`. */
+  manualAccounts?: { balance: number; createdAt: Date }[];
   today: Date;
 }
 
@@ -56,6 +85,7 @@ export interface CashRowWrite {
   date: string;
   amount: number;
   ledgerAmount: number;
+  statementAmount: number;
   insert: boolean;
 }
 
@@ -125,10 +155,14 @@ function importedBy(history: ImportedSoFar | undefined, time: number): number {
   return low === 0 ? 0 : history.totals[low - 1];
 }
 
-/** First day of the reconstruction window: first ledger transaction, at most `MAX_DERIVED_HISTORY_MONTHS` back. */
-function windowStart(transactions: LedgerTransaction[], today: Date): string | null {
-  if (transactions.length === 0) return null;
-  const first = transactions.reduce((min, t) => (t.date < min ? t.date : min), transactions[0].date);
+/**
+ * First day of the reconstruction window: first ledger transaction or first statement day, at most
+ * `MAX_DERIVED_HISTORY_MONTHS` back.
+ */
+function windowStart(transactions: LedgerTransaction[], statementStarts: string[], today: Date): string | null {
+  const starts = [...transactions.map((t) => t.date), ...statementStarts];
+  if (starts.length === 0) return null;
+  const first = starts.reduce((min, d) => (d < min ? d : min), starts[0]);
   const cutoff = toDateKey(new Date(today.getFullYear(), today.getMonth() - MAX_DERIVED_HISTORY_MONTHS, 1));
   return first < cutoff ? cutoff : first;
 }
@@ -138,7 +172,7 @@ function windowStart(transactions: LedgerTransaction[], today: Date): string | n
  * later are left alone (today is always live, and the daily snapshot writes it). Returns only rows whose amount or
  * ledger part changes, plus the missing days of the window.
  */
-export function planCashHistory({ rows, accounts, transactions, manualNow, today }: CashHistoryInput): CashRowWrite[] {
+export function planCashHistory({ rows, accounts, transactions, statementAccounts = [], manualNow, manualAccounts = [], today }: CashHistoryInput): CashRowWrite[] {
   const todayStart = startOfDay(today);
   const todayKey = toDateKey(todayStart);
   const past = rows.filter((r) => r.date < todayKey).sort((a, b) => (a.date < b.date ? -1 : 1));
@@ -146,6 +180,7 @@ export function planCashHistory({ rows, accounts, transactions, manualNow, today
 
   const start = windowStart(
     transactions.filter((t) => t.date < todayKey),
+    statementAccounts.map((a) => a.from).filter((d) => d < todayKey),
     todayStart
   );
   const missing: string[] = [];
@@ -158,6 +193,12 @@ export function planCashHistory({ rows, accounts, transactions, manualNow, today
 
   const ledger = ledgerByDay(accounts, transactions, [...known, ...missing]);
   const totalOn = (day: string) => [...ledger.get(day)!.values()].reduce((sum, v) => sum + v, 0);
+  const statementOn = (day: string) => statementAccounts.reduce((sum, a) => sum + a.centsOn(day), 0);
+  // A row written before `statementAmount` existed counted a statement account created by then.
+  const writtenAt = (row: StoredCashRow) => (row.createdAt ?? row.updatedAt).getTime();
+  // A row first written once a statement account existed counted it (directly, or copied from the day it was filled from).
+  const countedStatement = (row: StoredCashRow) => statementAccounts.some((a) => a.createdAt.getTime() <= writtenAt(row));
+  const manualEstimate = (row: StoredCashRow) => manualAccounts.reduce((sum, a) => (a.createdAt.getTime() <= writtenAt(row) ? sum + toCents(a.balance) : sum), 0);
 
   const imported = importedSoFar(accounts, transactions);
   const writes: CashRowWrite[] = [];
@@ -166,11 +207,16 @@ export function planCashHistory({ rows, accounts, transactions, manualNow, today
   for (const row of past) {
     const newLedger = totalOn(row.date);
     const oldLedger = row.ledgerAmount === null ? legacyLedgerCents(row, accounts, imported, ledger.get(row.date)!) : toCents(row.ledgerAmount);
-    const manual = toCents(row.amount) - oldLedger;
+    const legacyStatement = row.statementAmount === null || row.statementAmount === undefined;
+    const newStatement = statementOn(row.date);
+    const oldStatement = !legacyStatement ? toCents(row.statementAmount!) : countedStatement(row) ? toCents(row.amount) - oldLedger - manualEstimate(row) : 0;
+    const manual = toCents(row.amount) - oldLedger - oldStatement;
     manualByDay.set(row.date, manual);
-    const amount = manual + newLedger;
-    if (row.ledgerAmount === null || amount !== toCents(row.amount) || newLedger !== oldLedger) {
-      writes.push({ date: row.date, amount: fromCents(amount), ledgerAmount: fromCents(newLedger), insert: false });
+    const amount = manual + newLedger + newStatement;
+    // Rows of users without statement accounts keep a null statement part: nothing to convert, no mass rewrite.
+    const convert = legacyStatement && statementAccounts.length > 0;
+    if (row.ledgerAmount === null || convert || amount !== toCents(row.amount) || newLedger !== oldLedger || newStatement !== oldStatement) {
+      writes.push({ date: row.date, amount: fromCents(amount), ledgerAmount: fromCents(newLedger), statementAmount: fromCents(newStatement), insert: false });
     }
   }
 
@@ -183,7 +229,8 @@ export function planCashHistory({ rows, accounts, transactions, manualNow, today
     const next = storedDays[cursor];
     const manual = previous !== undefined ? manualByDay.get(previous)! : next !== undefined ? manualByDay.get(next)! : toCents(manualNow);
     const newLedger = totalOn(day);
-    writes.push({ date: day, amount: fromCents(manual + newLedger), ledgerAmount: fromCents(newLedger), insert: true });
+    const newStatement = statementOn(day);
+    writes.push({ date: day, amount: fromCents(manual + newLedger + newStatement), ledgerAmount: fromCents(newLedger), statementAmount: fromCents(newStatement), insert: true });
   }
   return writes.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }

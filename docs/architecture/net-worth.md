@@ -66,6 +66,7 @@ buildNetWorthSeries(rows, todayByClass, period, today) ─> chart, change, compo
 | `amount` | `numeric(14,2)` value at end of day |
 | `source` | `snapshot` (written by the cron for that day) or `derivato` (reconstructed) |
 | `ledger_amount` | cash rows only: the part of `amount` that comes from ledger accounts (see 4.1); null on rows written before migration 0043 |
+| `statement_amount` | cash rows only: the part of `amount` that comes from statement accounts (see 4.1); null on rows written before migration 0057 |
 
 Constraints: unique `(user_id, date, asset_class)`, index `(user_id, date)`. Asset classes and sources are `text` with constants, so a new class needs no migration.
 
@@ -94,15 +95,23 @@ ledger(day) = sum over ledger accounts of (balance - sum of its transactions dat
 
 Before an account's first transaction this is its opening balance (zero for an import account). Every other account is **manual**: since 2026-10-27 a transaction typed by hand moves its balance (`moveAccountBalance` in [`account-balance.ts`](../../lib/transactions/account-balance.ts), called by `POST /api/transactions` and by `PATCH`/`DELETE /api/transactions/[id]` in the same database transaction; the same call keeps import accounts right when one of their rows is edited or deleted by hand), but its transactions from before that date never did (migration 0051 added once those created after the account's last edit), so the balance minus later transactions is not its past and only the daily snapshots know what it was. A back-dated transaction on a manual account shows in the history on the day it is added, not on its date.
 
-Each `liquidita` row stores `ledger_amount`, the ledger part of its `amount` when written. `refreshDerivedCashHistory(userId, today, state)` ([`snapshots.ts`](../../lib/net-worth/snapshots.ts), pure plan in [`cash-history.ts`](../../lib/calc/cash-history.ts) `planCashHistory`):
+A **statement account** is a broker's cash account fed by statements whose ledger carries every cash movement by currency (today Interactive Brokers, uploaded or synced through Flex; the same accounts as the leverage card): `loadStatementCashHistories` ([`statement-cash.ts`](../../lib/net-worth/statement-cash.ts)) rebuilds its end-of-day balance of every day from its first statement with the leverage `buildCashSeries` ([`lib/calc/leverage.ts`](../../lib/calc/leverage.ts)): each statement's opening resyncs the balances, its dated movements move them, its closing resyncs them again; each currency is converted at that day's rate (the last one before it on weekends). It is neither a ledger account (it has no transactions) nor a manual one. DEGIRO and Trade Republic statement accounts stay manual.
 
-1. Builds a fingerprint from the user's accounts (count, sum of balances, latest change), transactions (count, latest change, sum), import-linked accounts, rows still without `ledger_amount`, and yesterday's date. If it equals the stored one, returns 0.
-2. Under a per-user advisory lock, loads ledger accounts and their transactions and every past `liquidita` row.
-3. For each past row: `amount = amount - old ledger part + ledger(day)`, `ledger_amount = ledger(day)`. Today's row is never touched.
-4. Inserts a `derivato` row for each missing day from the first ledger transaction (at most `MAX_DERIVED_HISTORY_MONTHS = 24` months back, from the first day of the month) to yesterday. Its manual part is that of the previous stored row, else the next one, else the current manual balances.
+```text
+statement(day) = sum over statement accounts of (balance by currency rebuilt to the end of day, at that day's rate)
+```
+
+Each `liquidita` row stores `ledger_amount`, the ledger part of its `amount` when written, and `statement_amount`, its statement part. `refreshDerivedCashHistory(userId, today, state)` ([`snapshots.ts`](../../lib/net-worth/snapshots.ts), pure plan in [`cash-history.ts`](../../lib/calc/cash-history.ts) `planCashHistory`):
+
+1. Builds a fingerprint from the user's accounts (count, sum of balances, latest change), transactions (count, latest change, sum), import-linked accounts, the broker statements (count, latest import, fingerprints), rows still without `ledger_amount`, and yesterday's date. If it equals the stored one, returns 0.
+2. Under a per-user advisory lock, loads the statement accounts' rebuilt balances up to yesterday, ledger accounts and their transactions, and every past `liquidita` row.
+3. For each past row: `amount = amount - old ledger part - old statement part + ledger(day) + statement(day)`, with `ledger_amount = ledger(day)` and `statement_amount = statement(day)`. Today's row is never touched.
+4. Inserts a `derivato` row for each missing day from the first ledger transaction or the first statement day (at most `MAX_DERIVED_HISTORY_MONTHS = 24` months back, from the first day of the month) to yesterday. Its manual part is that of the previous stored row, else the next one, else the current manual balances.
 5. Logs `net_worth.cash_history.refreshed` with `inserted`, `updated` and `durationMs`, and saves the fingerprint.
 
 The old ledger part of a row written before `ledger_amount` existed is estimated from its `updated_at` (when it was last written): a bank account created by then counts with `ledger(day)` (the bank reported that balance), one created later counts zero; an import account counts the transactions created by then, whatever their date (that was its balance). From the first run on every row carries the exact value.
+
+The old statement part of a row written before `statement_amount` existed is what that row recorded for the statement account inside its manual part: the balance of the latest statement imported then, which can be months old (a later statement replaces it and is deleted, so it cannot be read back). What a row recorded depends on when it was **first written** (`created_at`, never changed by later updates), not on its date: a day filled in after the broker account existed copied the broker balance from the day it was filled from (on production, 2 users had 714 and 394 such days, 2026-11-08). So a row first written before any statement account existed recorded none; a later one recorded `amount − ledger part − manual estimate`, where the manual estimate is the current balance of the manual accounts that existed when the row was written (typed balances rarely change; on production none of the affected users' manual accounts changed). The estimate is off only by what those manual accounts moved since; from the first run on the rows carry the exact value. An account that follows its transactions is never also counted as a statement account, and the investment reset writes today's row with a zero statement part. Users without statement accounts keep a null statement part (counted as zero), so their rows are not rewritten.
 
 So a bank connected later, an imported file, an edited or deleted transaction and a deleted import all move every past day they touch, right at the next read. It runs from the cron, from `GET /api/net-worth/snapshots`, from the sidebar summary and from the Analitiche snapshot, so whichever is read first after an import sees the corrected history.
 
@@ -120,7 +129,7 @@ Without the correction the chart stayed flat at 500 and jumped to 1,300 on the l
 
 ### 4.2 Daily cash snapshot
 
-`writeDailySnapshot` sums `accounts.balance` of all the user's accounts and upserts today's `liquidita` row with `source = snapshot` and `ledger_amount` = ledger balances minus ledger transactions dated after today (`ledgerAmountToday`). Each of the three daily runs overwrites the same row, so the last run of the day wins.
+`writeDailySnapshot` sums `accounts.balance` of all the user's accounts and upserts today's `liquidita` row with `source = snapshot`, `ledger_amount` = ledger balances minus ledger transactions dated after today (`ledgerAmountToday`) and `statement_amount` = the statement accounts' balances (the latest statement's closing; once the day is past, the history replaces it with `statement(day)`). Each of the three daily runs overwrites the same row, so the last run of the day wins.
 
 ### 4.3 Investment history
 
@@ -258,7 +267,7 @@ A file import runs on the CSV worker and a bank sync in `after()` (see [backgrou
 ## 5. Limits and out of scope
 
 - **Manual accounts have no past.** A manual account added later appears as a jump on the day it is first snapshotted; on days with no row, manual accounts are assumed to hold the balance of the nearest row (or today's balance). Their single-account chart in Liquidità is a flat line at today's balance, and a back-dated transaction moves the balance from the day it is added.
-- Broker cash accounts created by broker statement imports (IBKR, DEGIRO, Trade Republic) count as manual: their balance comes from the statement, not from their transactions.
+- Broker cash accounts of DEGIRO and Trade Republic statements count as manual: their balance comes from the statement, not from their transactions. Interactive Brokers cash accounts are rebuilt from their statements (4.1), within the same 24-month window; in Liquidità their single-account line comes from `GET /api/accounts/statement-cash`, not from transactions. Between the end of the latest statement and today the line holds the last closing; a currency without any rate up to a day counts as zero that day (`accounts.statement_cash.missing_fx`).
 - Deleting a ledger account takes it out of the whole history, like deleting its transactions. Days that were added for a deleted import stay, with only their manual part.
 - The ledger part of rows written before migration 0043 is an estimate (see 4.1); a transaction deleted before that migration ran is not subtracted from rows that counted it.
 - Cash reconstruction is capped at 24 months, investments at 20 years.
@@ -273,7 +282,9 @@ A file import runs on the CSV worker and a bank sync in `after()` (see [backgrou
 | File | What it asserts |
 |---|---|
 | [`lib/calc/net-worth.test.ts`](../../lib/calc/net-worth.test.ts) | local date keys; period ranges and month clamping; series carry-forward per class, summing classes, monthly downsampling, today's point from current values, estimated flags; exclude/restrict helpers; change with zero and negative starts |
-| [`lib/calc/cash-history.test.ts`](../../lib/calc/cash-history.test.ts) | new user's history from bank transactions; no ledger accounts; a file imported after the snapshots moves past days and fills the days before; manual part kept; a deleted import leaves the history; estimate for rows without a ledger part; a bank connected later; today's movements; today's row untouched and 24-month cap; gaps filled; cents without float drift; today's ledger part |
+| [`lib/calc/cash-history.test.ts`](../../lib/calc/cash-history.test.ts) | new user's history from bank transactions; no ledger accounts; a file imported after the snapshots moves past days and fills the days before; manual part kept; a deleted import leaves the history; estimate for rows without a ledger part; a bank connected later; today's movements; today's row untouched and 24-month cap; gaps filled; cents without float drift; today's ledger part; a statement account rebuilt back to its first statement; the broker balance old rows recorded as manual taken out; only the statement part moving on later imports; users without statement accounts untouched |
+| [`lib/liquidity/statement-series.test.ts`](../../lib/liquidity/statement-series.test.ts) | single-account line of a statement account: rebuilt balances carried over missing days, today's balance last |
+| [`lib/ibkr-flex/sync.integration.test.ts`](../../lib/ibkr-flex/sync.integration.test.ts) | after a Flex sync, the stored cash history follows the IBKR account day by day and today's row counts it once |
 | [`lib/net-worth/refresh-status.test.ts`](../../lib/net-worth/refresh-status.test.ts) | importing, updating until fresh data, quiet on ordinary refetches, settling |
 | [`lib/personal-import/island.test.ts`](../../lib/personal-import/island.test.ts) | island states and ordering; an import that ended, also from «Righe da controllare» |
 | [`lib/net-worth/compact.test.ts`](../../lib/net-worth/compact.test.ts) | recent rows kept, older rows reduced to month-end per class plus the first, order preserved |

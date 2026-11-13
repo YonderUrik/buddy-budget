@@ -28,7 +28,7 @@ export interface Institution {
 }
 
 export interface BankConnectionStatus {
-  provider?: "gocardless" | "trade-republic";
+  provider?: "gocardless" | "trade-republic" | "ibkr-flex";
   accountId: string;
   /** Connessione a cui appartiene il conto (più conti possono condividerla). */
   connectionId: string;
@@ -102,10 +102,10 @@ export function useBankConnectionsStatusQuery() {
   return useQuery({
     queryKey: ["gocardless", "connections", "status"],
     queryFn: async (): Promise<BankConnectionStatus[]> => {
-      const responses = await Promise.all([fetch("/api/gocardless/connections"), fetch("/api/trade-republic/connections")]);
+      const responses = await Promise.all([fetch("/api/gocardless/connections"), fetch("/api/trade-republic/connections"), fetch("/api/ibkr-flex/accounts")]);
       if (responses.some(response => !response.ok)) throw new Error(pageText("Impossibile caricare lo stato delle connessioni"));
-      const [openBanking, tradeRepublic] = await Promise.all(responses.map(response => response.json()));
-      return [...openBanking, ...tradeRepublic];
+      const [openBanking, tradeRepublic, ibkr] = await Promise.all(responses.map(response => response.json()));
+      return [...openBanking, ...tradeRepublic, ...ibkr];
     },
   });
 }
@@ -174,7 +174,7 @@ export class SyncNotAvailableError extends Error {
 }
 
 /** Avvia un sync manuale come job in background; l'avanzamento compare nel pannello globale. Gli errori immediati vanno in un toast. */
-export function useSyncAccountMutation(provider: "gocardless" | "trade-republic" = "gocardless") {
+export function useSyncAccountMutation(provider: "gocardless" | "trade-republic" | "ibkr-flex" = "gocardless") {
   const queryClient = useQueryClient();
   const { locale } = useLocalization();
   return useMutation({

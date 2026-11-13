@@ -1,6 +1,7 @@
 import { looksLikeTradeRepublic } from "./trade-republic";
 import { looksLikeDegiro } from "./degiro";
 import { looksLikeFineco } from "./fineco";
+import { looksLikeIbkrFlex } from "./ibkr-flex";
 import { parseCsv } from "./csv";
 import { detectPreset } from "./presets";
 
@@ -106,14 +107,17 @@ export function getImportProvider(id: ImportProviderId): ImportProviderInfo {
   return IMPORT_PROVIDERS.find((p) => p.id === id)!;
 }
 
-/** Un Activity Statement di Interactive Brokers inizia con la sezione `Statement` e il nome del broker. */
+/** An IBKR Activity Statement starts with the `Statement` section and the broker name; a Flex report with `<FlexQueryResponse`. */
 export function looksLikeInteractiveBrokers(text: string): boolean {
+  // A Flex Web Service report (XML) is read by the same reader as the CSV statement.
+  if (looksLikeIbkrFlex(text)) return true;
   const head = text.replace(/^﻿/, "").slice(0, 2000);
   return /^"?Statement"?,"?Header"?,/.test(head) && /Interactive Brokers/i.test(head);
 }
 
 /** Formato riconosciuto dal contenuto del file: broker conosciuto, export Yahoo, oppure null (CSV generico). */
 export function detectImportProvider(text: string): Exclude<ImportProviderId, "generic"> | null {
+  if (looksLikeIbkrFlex(text)) return "interactive-brokers";
   if (looksLikeTradeRepublic(text)) return "trade-republic";
   if (looksLikeDegiro(text)) return "degiro";
   if (looksLikeFineco(text)) return "fineco";

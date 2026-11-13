@@ -45,6 +45,8 @@ describe("full investment import recovery", () => {
       { userId, date: "2023-01-01", assetClass: "investimenti", amount: "1000", source: "derivato" },
       { userId, date: "2026-10-04", assetClass: "investimenti", amount: "2000", source: "snapshot" },
       { userId, date: "2023-01-01", assetClass: "liquidita", amount: "1234", source: "snapshot" },
+      // Today's cash row still counts the broker cash the reset zeroes.
+      { userId, date: "2026-10-04", assetClass: "liquidita", amount: "1734", statementAmount: "500.00", source: "snapshot" },
     ]);
     const preview = await previewInvestmentReset(userId);
     expect(preview).toMatchObject({ operations: 2, untrackedOperations: 1, statements: 1, cashAccounts: 1, prices: 1 });
@@ -54,6 +56,7 @@ describe("full investment import recovery", () => {
     expect(await db.select().from(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId))).toHaveLength(0);
     const snapshots = await db.select().from(netWorthSnapshots).where(eq(netWorthSnapshots.userId, userId));
     expect(snapshots.every((s) => s.assetClass === "liquidita" && Number(s.amount) === 1234)).toBe(true);
+    expect(snapshots.find((s) => s.date === "2026-10-04")?.statementAmount).toBe("0.00");
     const cash = await db.select().from(accounts).where(eq(accounts.userId, userId));
     expect(cash.find((a) => a.id === bank.id)?.balance).toBe("1234.00");
     expect(cash.filter((a) => a.id !== bank.id).every((a) => Number(a.balance) === 0)).toBe(true);

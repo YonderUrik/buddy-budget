@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * Bank step of «Nuovo conto»: one list with the banks that connect today (Trade Republic first) and, while GoCardless
+ * Bank step of «Nuovo conto»: one list with the banks that connect today (Trade Republic first, Interactive Brokers
+ * where its Flex connection is open) and, while GoCardless
  * is closed or out of slots, «Altre banche · In arrivo» as its last row, plus the way out for a bank not listed.
- * With GoCardless open, Trade Republic joins the searchable GoCardless list instead.
+ * With GoCardless open, Trade Republic and Interactive Brokers join the searchable GoCardless list instead.
  */
 
 import Link from "next/link";
-import { ConnectBankFlow, TradeRepublicLogo, BankRow } from "@/components/domain/accounts";
+import { ConnectBankFlow, InteractiveBrokersLogo, TradeRepublicLogo, BankRow } from "@/components/domain/accounts";
 import type { FeaturedBank } from "@/components/domain/accounts";
 import type { CapacityBlockReason } from "@/lib/gocardless/capacity";
 import { useLocalization } from "@/lib/localization/provider";
@@ -26,12 +27,14 @@ export interface BankPickerProps {
   /** Renewing a GoCardless consent: only the GoCardless list. */
   renew?: boolean;
   onChooseTradeRepublic: () => void;
+  /** Interactive Brokers through the Flex Web Service; without it (not open here) the row is not shown. */
+  onChooseInteractiveBrokers?: () => void;
   onChooseManual: () => void;
   /** Leaving for the file import page (the dialog closes). */
   onImport: () => void;
 }
 
-export function BankPicker({ blockedReason, interested, canRequest, renew = false, onChooseTradeRepublic, onChooseManual, onImport }: BankPickerProps) {
+export function BankPicker({ blockedReason, interested, canRequest, renew = false, onChooseTradeRepublic, onChooseInteractiveBrokers, onChooseManual, onImport }: BankPickerProps) {
   const { t: tr } = useLocalization();
   const tradeRepublic: FeaturedBank = {
     id: "trade-republic",
@@ -41,13 +44,22 @@ export function BankPicker({ blockedReason, interested, canRequest, renew = fals
     logo: <TradeRepublicLogo />,
     onSelect: onChooseTradeRepublic,
   };
-  if (!blockedReason) return <ConnectBankFlow featured={renew ? [] : [tradeRepublic]} onChooseManual={onChooseManual} />;
+  const interactiveBrokers: FeaturedBank | null = onChooseInteractiveBrokers ? {
+    id: "interactive-brokers",
+    name: "Interactive Brokers",
+    keywords: ["IBKR", "IB"],
+    detail: tr("Investimenti e liquidità · token Flex, solo lettura"),
+    logo: <InteractiveBrokersLogo />,
+    onSelect: onChooseInteractiveBrokers,
+  } : null;
+  const featured = [tradeRepublic, ...(interactiveBrokers ? [interactiveBrokers] : [])];
+  if (!blockedReason) return <ConnectBankFlow featured={renew ? [] : featured} onChooseManual={onChooseManual} />;
   const copy = BANK_UNAVAILABLE_COPY[blockedReason];
   const paused = blockedReason === "paused";
   return (
     <div className="flex flex-col gap-5">
       <ul className="flex flex-col gap-2">
-        <li><BankRow logo={tradeRepublic.logo} name={tradeRepublic.name} detail={tradeRepublic.detail} onSelect={tradeRepublic.onSelect} /></li>
+        {featured.map((bank) => <li key={bank.id}><BankRow logo={bank.logo} name={bank.name} detail={bank.detail} onSelect={bank.onSelect} /></li>)}
         <li>
           {paused
             ? <BankComingSoon interested={interested} canRequest={canRequest} />

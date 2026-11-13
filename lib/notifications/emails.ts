@@ -8,12 +8,12 @@ import type { DigestData, DigestPeriod } from "./digest";
 import type { InvestmentDigest } from "./investments-digest";
 import type { GoalEmailRow, GoalNotice, GoalsDigest } from "./goals";
 
-/** Formatta un importo (già nascosto, se l'utente ha scelto «nascondi importi»). */
+/** Formats a real email amount in the recipient's currency and locale, without frontend masking. */
 export type MoneyFormatter = (value: number) => string;
 
 export interface EmailContext {
   appUrl: string;
-  /** Formats an amount in the recipient's currency and locale (already masked with «hide amounts»). */
+  /** Formats an amount in the recipient's currency and locale, independently of frontend privacy. */
   money: MoneyFormatter;
   /** Indirizzi del piè di pagina: link di disiscrizione dedicato al tipo di email e pagina delle preferenze. */
   unsubscribeUrl: string;
@@ -49,10 +49,10 @@ function changePercent(change: number, { language, locale }: EmailLocale): strin
   return language === "it" ? `${change > 0 ? "+" : ""}${change}%` : signedPercent(change / 100, locale);
 }
 
-/** Importo con il segno davanti (`+120 €`); con «nascondi importi» resta la sola maschera, senza svelare il segno. */
+/** Adds an explicit plus sign to positive email amounts; negative and zero amounts keep their formatted sign. */
 function signedMoney(value: number, money: MoneyFormatter): string {
   const formatted = money(value);
-  return value > 0 && !formatted.includes("•") ? `+${formatted}` : formatted;
+  return value > 0 ? `+${formatted}` : formatted;
 }
 
 /** Name of the digest period in the recipient's locale: the Italian label comes ready from `digestPeriod`. */

@@ -5,12 +5,14 @@ import { NOTIFICATION_DEFAULTS } from "./constants";
 import { verifyUnsubscribeToken } from "./token";
 import { createLogger } from "@/lib/observability/logger";
 import { buildGoalsView } from "@/lib/goals/view";
+import { AMOUNT_MASK, formatCurrency, setAmountsMasked } from "@/lib/format";
+import type { BuiltEmail } from "./emails";
 
 const NOW = new Date("2026-10-02T07:00:00Z"); // 2 ottobre: giorno di riepilogo mensile
 const quiet = createLogger({ write: () => {} });
 
 function user(overrides: Partial<NotificationUser["preferences"]> = {}, rest: Partial<NotificationUser> = {}): NotificationUser {
-  return { id: "u1", email: "u1@example.test", currency: "EUR", hideAmounts: false, preferences: { ...NOTIFICATION_DEFAULTS, ...overrides }, ...rest };
+  return { id: "u1", email: "u1@example.test", currency: "EUR", preferences: { ...NOTIFICATION_DEFAULTS, ...overrides }, ...rest };
 }
 
 function fakeDeps(users: NotificationUser[], overrides: Partial<NotificationDeps> = {}) {
@@ -170,12 +172,55 @@ describe("runNotifications", () => {
     expect((send.mock.calls[0] as unknown[])[0]).toBe("good@example.test");
   });
 
-  it("con «nascondi importi» le cifre non compaiono nell'email", async () => {
-    const { deps, send } = fakeDeps([user({ digestEnabled: true }, { hideAmounts: true })]);
-    await run(deps);
-    const email = (send.mock.calls[0] as unknown as [string, { text: string }])[1];
-    expect(email.text).toContain("••••");
-    expect(email.text).not.toMatch(/\d+,\d{2}/);
+  describe.each([false, true])("saved hideAmounts=%s", (hideAmounts) => {
+    afterEach(() => setAmountsMasked(false));
+
+    it.each([false, true])("keeps email amounts visible with frontend masking=%s", async (masked) => {
+      setAmountsMasked(masked);
+      // A persisted frontend preference may exist on the profile, but is not part of the email contract.
+      const recipient = { ...user({ digestEnabled: true }), hideAmounts };
+      const { deps, send } = fakeDeps([recipient], {
+        loadTransactions: async () => [
+          makeTransaction({ amount: "-1234.50", date: "2026-09-12", categoryId: "cat-food" }),
+          makeTransaction({ amount: "2000", date: "2026-09-12", categoryId: "cat-income" }),
+        ],
+        loadCategories: async () => [makeCategory({}), makeCategory({ id: "cat-income", type: "entrata" })],
+        loadInvestments: async () => ({ endValue: 25000.25, gain: -120.75, twr: -0.005, income: 48.12, netContributions: 500.50 }),
+      });
+      await run(deps);
+      expect(send).toHaveBeenCalledTimes(1);
+      const email = (send.mock.calls[0] as unknown as [string, BuiltEmail])[1];
+      for (const content of [email.text, email.html]) {
+        expect(content).not.toContain(AMOUNT_MASK);
+        for (const amount of ["2000,00", "1234,50", "765,50", "25.000,25", "-120,75", "48,12", "500,50"]) {
+          expect(content).toContain(amount);
+        }
+        expect(content).toContain("-0,5%");
+        expect(content).toContain("€");
+      }
+      expect(formatCurrency(1234.5, "EUR")).toBe(masked ? AMOUNT_MASK : "1234,50 €");
+    });
+
+    it.each([
+      { language: "en", currency: "USD", gain: 12.34, twr: 0.01, expected: "+US$12.34 (+1%)", zero: "US$0.00" },
+      { language: "de", currency: "EUR", gain: 0, twr: null, expected: "0,00 €", zero: "0,00 €" },
+      { language: "en", currency: "JPY", gain: -120, twr: null, expected: "-JP¥120", zero: "JP¥0" },
+    ])("preserves $language/$currency formatting and nullable returns", async ({ language, currency, gain, twr, expected, zero }) => {
+      const recipient = { ...user({ digestEnabled: true }, { language, currency, productCountry: language === "de" ? "DE" : "IT" }), hideAmounts };
+      const { deps, send } = fakeDeps([recipient], {
+        loadTransactions: async () => [],
+        loadInvestments: async () => ({ endValue: 0, gain, twr, income: 0, netContributions: 0 }),
+      });
+      await run(deps);
+      const email = (send.mock.calls[0] as unknown as [string, BuiltEmail])[1];
+      for (const content of [email.text, email.html]) {
+        const normalized = content.replace(/\u00a0/g, " ");
+        expect(normalized).toContain(expected);
+        expect(normalized).toContain(zero);
+        expect(normalized).not.toContain(AMOUNT_MASK);
+        expect(normalized).not.toContain("null");
+      }
+    });
   });
 
   describe("obiettivi", () => {

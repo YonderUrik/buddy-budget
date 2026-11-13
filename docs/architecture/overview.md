@@ -201,9 +201,9 @@ Account reset deletes the user's sync-job keys and investment fingerprint ([`lib
 | Setting | Values | Decides |
 |---|---|---|
 | `productCountry` | `IT`, `DE`, `OTHER` | Which financial models and routes exist (`FINANCIAL_COUNTRIES` in [`financial-country.ts`](../../lib/localization/financial-country.ts), `PLANNING_AVAILABILITY` in [`planning-availability.ts`](../../lib/localization/planning-availability.ts)) |
-| `language` | `it`, `en`, `de` | Text and formatting locale (`it-IT`, `en-GB`, `de-DE`) |
+| `language` | `it`, `en`, `de`, `fr` | Text and formatting locale (`it-IT`, `en-GB`, `de-DE`, `fr-FR`) |
 
-`OTHER` is every country whose rules the app does not model: it gets everything except the pension and the investment taxes tab (cash, investments and income before tax, debts, net worth, Analitiche with goals and the FIRE module). Allowed pairs (`COUNTRY_LANGUAGES`): `IT` with `it` or `en`, `DE` with `en` or `de`, `OTHER` with any language. `resolveProfile` maps unknown stored values to `IT`/`it`, and a `DE` or `OTHER` account with an unsupported language to `en`.
+`OTHER` is every country whose rules the app does not model: it gets everything except the pension and the investment taxes tab (cash, investments and income before tax, debts, net worth, Analitiche with goals and the FIRE module). Allowed pairs (`COUNTRY_LANGUAGES`): `IT` with `it` or `en`, `DE` with `en` or `de`, `OTHER` with any language (French only there, since neither the Italy nor the Germany product is offered in French). `resolveProfile` maps unknown stored values to `IT`/`it`, and a `DE` or `OTHER` account with an unsupported language to `en`.
 
 **Proposed profile (signed out, onboarding not finished)**: `getLocaleProfile` in [`server.ts`](../../lib/localization/server.ts) calls `proposedProfile` with three inputs, in this order:
 
@@ -231,7 +231,7 @@ Country capabilities today:
 
 The landing does the same on its own: nginx turns `CF-IPCountry` into a short `bb-country` cookie (never for crawlers), and a pre-paint script sends a visitor outside Italy from an Italian page to its English counterpart (unless they picked a language) and hides the pension blocks outside Italy and the tax blocks for countries without tax rules (see [`landing/`](../../landing/)).
 
-Strings: Italian is the source language. `translate(language, source)` in [`messages.ts`](../../lib/localization/messages.ts) looks the Italian source string up in [`catalogs/en.json`](../../lib/localization/catalogs/en.json) and [`catalogs/de.json`](../../lib/localization/catalogs/de.json) (German falls back to English, then to the source) and fills `{name}` placeholders. Server code uses `getTranslator()`; client code uses `useLocalization()` from [`provider.tsx`](../../lib/localization/provider.tsx). User-entered names and imported descriptions are never translated. German planning models live in [`lib/financial-planning/`](../../lib/financial-planning/).
+Strings: Italian is the source language. `translate(language, source)` in [`messages.ts`](../../lib/localization/messages.ts) looks the Italian source string up in [`catalogs/en.json`](../../lib/localization/catalogs/en.json) [`catalogs/de.json`](../../lib/localization/catalogs/de.json) and [`catalogs/fr.json`](../../lib/localization/catalogs/fr.json) (German and French fall back to English, then to the source) and fills `{name}` placeholders. Server code uses `getTranslator()`; client code uses `useLocalization()` from [`provider.tsx`](../../lib/localization/provider.tsx). User-entered names and imported descriptions are never translated. German planning models live in [`lib/financial-planning/`](../../lib/financial-planning/).
 
 ### 4.9 Feature catalog
 

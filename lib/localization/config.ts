@@ -66,7 +66,10 @@ export function detectCountry(headers: { get(name: string): string | null } | nu
 const COUNTRY_LOCAL_LANGUAGES: Readonly<Record<string, readonly Language[]>> = {
   IT: ["it"], SM: ["it"], VA: ["it"],
   DE: ["de"], AT: ["de"], LI: ["de"],
-  CH: ["de", "it"],
+  FR: ["fr"], MC: ["fr"], LU: ["fr", "de"],
+  // Belgium is mostly Dutch-speaking (no Dutch interface yet): English unless the browser asks for French.
+  BE: ["en", "fr"],
+  CH: ["de", "it", "fr"],
 };
 
 /** Product rules of a visitor's country: Italy and Germany have theirs, every other country gets `OTHER`. */

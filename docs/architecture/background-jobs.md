@@ -207,7 +207,7 @@ recordCronRun(name, outcome, duration, { store: redisOpsStore, log })
 return 200 or 500 with counts only (never user data)
 ```
 
-`recordCronRun` increments `buddybudget_cron_runs_total{cron,outcome}`, logs `cron.<name>.completed` or `cron.<name>.failed`, and, on success only, writes `ops:heartbeat:cron:<name>`. The heartbeat is exported at scrape time as `buddybudget_cron_last_success_timestamp_seconds{cron}` and feeds the "cron did not run" alerts. A heartbeat write failure is logged as `cron.heartbeat.write_failed` and does not fail the cron.
+`recordCronRun` increments `buddybudget_cron_runs_total{cron,outcome}`, logs `cron.<name>.completed` or `cron.<name>.failed`, and, on success only, writes `ops:heartbeat:cron:<name>`. The heartbeat is exported at scrape time as `buddybudget_cron_last_success_timestamp_seconds{cron}` and feeds the "cron did not run" alerts. Next to it, `ops:duration:cron:<name>` keeps the exact duration of the last successful run, exported as `buddybudget_cron_last_duration_seconds{cron}`: use it rather than a quantile of `buddybudget_http_request_duration_seconds`, whose buckets jump from 10 s to 30 s (one run between them reads as 29 s at p95). A heartbeat write failure is logged as `cron.heartbeat.write_failed` and does not fail the cron.
 
 Schedules (UTC; the CronJobs set no `timeZone`):
 

@@ -9,6 +9,7 @@ import { getFallbackCategoryId } from "@/lib/categorization/fallback";
 import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
 import { categorizeNewMovementsSafely, countStillUncategorized } from "@/lib/categorization/auto-apply";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
+import { incrementalDateFrom, planFetchWindow, recordFullFetch } from "./fetch-window";
 import { extractMerchantName, FALLBACK_TRANSACTION_NAME, type MerchantNameSource } from "@/lib/categorization/merchant-name";
 import { logger, recordMerchantNames } from "@/lib/observability";
 
@@ -60,6 +61,8 @@ export type SyncResult =
 
 /**
  * Sincronizza saldo e transazioni di un conto collegato; aggiorna i timestamp o marca la connessione scaduta.
+ * Transactions are read from 30 days before the last sync, with the whole history on the first sync and at most once a
+ * week (`fetch-window.ts`); `rateLimitStore` also keeps when that full download last happened.
  * `onProgress` (opzionale) riceve le fasi e, durante il salvataggio, i contatori dopo ogni blocco.
  */
 export async function syncAccountLink(
@@ -92,9 +95,17 @@ export async function syncAccountLink(
       .where(eq(accounts.id, link.accountId));
 
     await reportProgress(onProgress, { phase: "fetching" });
+    const [linkState] = await db
+      .select({ lastSyncedAt: bankAccountLinks.lastSyncedAt })
+      .from(bankAccountLinks)
+      .where(eq(bankAccountLinks.id, link.linkId));
+    const lastSyncedAt = linkState?.lastSyncedAt ?? null;
+    const window = await planFetchWindow(rateLimitStore, link.externalAccountId, lastSyncedAt);
     const { transactions: bankTransactions, rateLimit: txRateLimit } = await getAccountTransactions(
-      link.externalAccountId
+      link.externalAccountId,
+      window.mode === "incremental" ? { dateFrom: window.dateFrom } : {}
     );
+    logger.info("gocardless.sync.fetched", { phase: window.mode, total: bankTransactions.length, accountId: link.accountId });
     if (txRateLimit) {
       await recordRateLimit(
         rateLimitStore,
@@ -168,16 +179,26 @@ export async function syncAccountLink(
       uncategorized: 0,
     });
 
+    // On a full download, new rows booked before the window an incremental sync would have read are transactions the
+    // overlap would have missed: logged so SYNC_OVERLAP_DAYS can be checked against real banks.
+    const lateBefore = window.mode === "full" && lastSyncedAt ? incrementalDateFrom(lastSyncedAt) : null;
+    let lateCount = 0;
     for (let start = 0; start < rows.length; start += SYNC_INSERT_CHUNK_SIZE) {
       const chunk = rows.slice(start, start + SYNC_INSERT_CHUNK_SIZE);
       const insertedRows = await db
         .insert(transactions)
         .values(chunk)
         .onConflictDoNothing({ target: [transactions.accountId, transactions.externalId] })
-        .returning({ id: transactions.id, externalId: transactions.externalId, categoryId: transactions.categoryId });
+        .returning({
+          id: transactions.id,
+          externalId: transactions.externalId,
+          categoryId: transactions.categoryId,
+          date: transactions.date,
+        });
 
       for (const inserted of insertedRows) {
         newTransactionsCount += 1;
+        if (lateBefore && inserted.date < lateBefore) lateCount += 1;
         // hitCount va incrementato solo per righe davvero scritte: GoCardless restituisce una finestra
         // rolling di storico, quindi la stessa transazione (scartata qui da onConflictDoNothing nei sync
         // successivi) non deve gonfiare artificialmente l'utilizzo della regola che l'ha categorizzata.
@@ -201,6 +222,10 @@ export async function syncAccountLink(
       });
     }
 
+    if (lateCount > 0) {
+      logger.warn("gocardless.sync.late_transactions", { count: lateCount, accountId: link.accountId });
+    }
+    if (window.mode === "full") await recordFullFetch(rateLimitStore, link.externalAccountId, new Date());
     await flushRuleHits(ruleResolver.appliedRuleIds());
     // Proposte dell'assistente per gli esercenti rimasti senza categoria, poi le sicure (dal 70%) si applicano da sole
     // se l'utente lo ha scelto; le altre restano da confermare in Categorizza.

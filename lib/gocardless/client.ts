@@ -315,13 +315,21 @@ export interface BankTransaction {
   merchantCategoryCode?: string;
 }
 
-/** Transazioni "booked" di un conto esterno (le "pending" non si importano, per evitare doppioni al booking). */
+/**
+ * Transazioni "booked" di un conto esterno (le "pending" non si importano, per evitare doppioni al booking).
+ * With `dateFrom` (YYYY-MM-DD) only those booked from that day on; without it, the whole history the bank exposes.
+ */
 export async function getAccountTransactions(
-  externalAccountId: string
+  externalAccountId: string,
+  options: { dateFrom?: string } = {}
 ): Promise<{ transactions: BankTransaction[]; rateLimit: RateLimitInfo | null }> {
   assertSafePathSegment(externalAccountId);
+  if (options.dateFrom !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(options.dateFrom)) {
+    throw new Error("dateFrom must be a YYYY-MM-DD date");
+  }
+  const query = options.dateFrom ? `?date_from=${options.dateFrom}` : "";
   const { data, rateLimit } = await request<{
     transactions: { booked: BankTransaction[]; pending: BankTransaction[] };
-  }>("accounts.transactions", `/accounts/${encodeURIComponent(externalAccountId)}/transactions/`);
+  }>("accounts.transactions", `/accounts/${encodeURIComponent(externalAccountId)}/transactions/${query}`);
   return { transactions: data.transactions.booked, rateLimit };
 }

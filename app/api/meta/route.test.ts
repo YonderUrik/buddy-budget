@@ -36,7 +36,7 @@ describe("GET /api/meta", () => {
     expect(meta.profile).toMatchObject({ productCountry: "DE", language: "de", capabilities: { id: "DE" } });
     expect(meta.profile?.categoryProposal.length).toBeGreaterThan(0);
     expect(await (await get("?country=DE&language=it")).json()).toMatchObject({ code: "validation_failed", field: "country" });
-    expect(await (await get("?language=fr")).json()).toMatchObject({ code: "validation_failed", field: "language" });
+    expect(await (await get("?language=es")).json()).toMatchObject({ code: "validation_failed", field: "language" });
   });
 
   it("with a session, follows the user's profile and is private", async () => {

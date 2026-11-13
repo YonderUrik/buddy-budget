@@ -5,11 +5,11 @@ import { financialCountry, DISABLED_FINANCIAL_FEATURES } from "./financial-count
  * pension rules the app does not model yet: everything that does not depend on local rules works there.
  */
 export const PRODUCT_COUNTRIES = ["IT", "DE", "OTHER"] as const;
-export const LANGUAGES = ["it", "en", "de"] as const;
+export const LANGUAGES = ["it", "en", "de", "fr"] as const;
 export type ProductCountry = (typeof PRODUCT_COUNTRIES)[number];
 export type Language = (typeof LANGUAGES)[number];
 export interface LocaleProfile { productCountry: ProductCountry; language: Language }
-export const COUNTRY_LANGUAGES: Record<ProductCountry, readonly Language[]> = { IT: ["it", "en"], DE: ["en", "de"], OTHER: ["en", "it", "de"] };
+export const COUNTRY_LANGUAGES: Record<ProductCountry, readonly Language[]> = { IT: ["it", "en"], DE: ["en", "de"], OTHER: ["en", "it", "de", "fr"] };
 /** Name of each product country (Italian source keys, translated by the catalogs). */
 export const PRODUCT_COUNTRY_NAMES: Record<ProductCountry, string> = { IT: "Italia", DE: "Germania", OTHER: "Altro paese" };
 /**
@@ -23,8 +23,8 @@ export const COUNTRY_UNAVAILABLE_NOTES: Record<ProductCountry, string | null> = 
 };
 /** Error of a page or API that the user's country does not have yet (Italian source key). */
 export const COUNTRY_UNAVAILABLE_MESSAGE = "Non ancora disponibile nel tuo paese. Arriverà presto.";
-export const LANGUAGE_NAMES: Record<Language, string> = { it: "Italiano", en: "English", de: "Deutsch" };
-export const LANGUAGE_LOCALES: Record<Language, string> = { it: "it-IT", en: "en-GB", de: "de-DE" };
+export const LANGUAGE_NAMES: Record<Language, string> = { it: "Italiano", en: "English", de: "Deutsch", fr: "Français" };
+export const LANGUAGE_LOCALES: Record<Language, string> = { it: "it-IT", en: "en-GB", de: "de-DE", fr: "fr-FR" };
 export const LANGUAGE_COOKIE = "bb-language";
 /** Request header with the visitor's country (ISO 3166 alpha-2), added by Cloudflare in front of the hosted service. */
 export const COUNTRY_HEADER = "cf-ipcountry";
@@ -102,7 +102,7 @@ export function proposedProfile(input: { chosenLanguage?: string | null; country
 
 /** Profile proposed for a language before the user picks a country: German implies the German product rules. */
 export function profileForLanguage(language: Language): LocaleProfile {
-  return { productCountry: language === "de" ? "DE" : "IT", language };
+  return { productCountry: language === "de" ? "DE" : language === "fr" ? "OTHER" : "IT", language };
 }
 /** Validate a complete country/language pair before persisting it. */
 export function isSupportedProfile(country: unknown, language: unknown): boolean {

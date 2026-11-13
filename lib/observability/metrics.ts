@@ -4,6 +4,7 @@ import type { ProviderId } from "@/lib/db/schema/investments";
 import type { FxProviderId, ProviderOutcome } from "@/lib/market-data/types";
 import type { MerchantNameSource } from "@/lib/categorization/merchant-name";
 import type { ClientErrorArea, ClientErrorKind } from "@/lib/client-errors";
+import type { Language } from "@/lib/localization/config";
 import type { AnalysisGroupBy, AnalysisMeasure } from "@/lib/commands/analysis";
 
 /** Prefisso comune di tutte le metriche applicative. */
@@ -841,8 +842,8 @@ export function recordStartEvent(event: StartEvent): void {
   metrics().startEvents.inc({ event });
 }
 
-/** Public demo events; `language` (it/en/de) and `country` (IT/DE/OTHER) are the demo's profile, both closed enums. */
-export function recordPublicDemoEvent(event: PublicDemoEvent, language: "it" | "en" | "de", country: "IT" | "DE" | "OTHER"): void {
+/** Public demo events; `language` and `country` (IT/DE/OTHER) are the demo's profile, both closed enums. */
+export function recordPublicDemoEvent(event: PublicDemoEvent, language: Language, country: "IT" | "DE" | "OTHER"): void {
   metrics().publicDemoEvents.inc({ event, language, country });
 }
 

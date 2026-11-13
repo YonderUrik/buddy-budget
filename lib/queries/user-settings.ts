@@ -7,7 +7,7 @@ import { REAUTH_REQUIRED_CODE } from "@/lib/account/constants";
 import type { HomePagePath } from "@/lib/account/home-pages";
 import type { UpdateUserSettingsInput } from "@/lib/validation/user-settings";
 import type { SupportedCurrency } from "@/lib/validation/currency";
-import type { ProductCountry } from "@/lib/localization/config";
+import type { ProductCountry, Language } from "@/lib/localization/config";
 import { pageText } from "@/lib/localization/page-text";
 
 export type { UserDataSummary, UserSessionView };
@@ -16,7 +16,7 @@ export type { UserDataSummary, UserSessionView };
 export interface UserSettings {
   instance?: import("@/lib/selfhost").InstanceCapabilities | null;
   productCountry: ProductCountry;
-  language: "it" | "en" | "de";
+  language: Language;
   name: string;
   email: string;
   image: string | null;

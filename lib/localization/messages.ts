@@ -1,37 +1,42 @@
 import en from "./catalogs/en.json";
 import de from "./catalogs/de.json";
+import fr from "./catalogs/fr.json";
 import type { Language } from "./config";
 /** Source-language keys keep existing Italian wording stable during translation extraction. */
-export const messages: Record<string, readonly [english: string, german: string]> = {
-  ...Object.fromEntries(Object.entries(en).map(([source, english]) => [source, [english, (de as Record<string, string>)[source] ?? english] as const])),
-  "Modalità personale: accesso automatico su questo computer.": ["Personal mode: automatic access on this computer.", "Persönlicher Modus: automatischer Zugriff auf diesem Computer."],
-  "Azioni che cancellano i tuoi dati. Conferma prima di continuare.": ["Actions that delete your data. Confirm before continuing.", "Aktionen, die deine Daten löschen. Bestätige, bevor du fortfährst."],
-  "Per rimuovere l’installazione e il profilo personale, usa il comando di disinstallazione sul tuo computer.": ["To remove the installation and your personal profile, run the uninstall command on your computer.", "Um die Installation und dein persönliches Profil zu entfernen, führe den Deinstallationsbefehl auf deinem Computer aus."],
-  "CSV personali con AI": ["Custom CSV imports with AI", "Eigene CSV-Importe mit KI"],
-  "Profilo personale": ["Personal profile", "Persönliches Profil"],
-  "Paese del prodotto": ["Product country", "Produktland"],
-  "Lingua": ["Language", "Sprache"],
-  "Italia": ["Italy", "Italien"],
-  "Germania": ["Germany", "Deutschland"],
-  "Regole del prodotto": ["Product rules", "Produktregeln"],
-  "Il paese determina le funzioni finanziarie disponibili. La lingua cambia solo i testi e i formati.": ["The country determines which financial features are available. Language only changes text and formatting.", "Das Land bestimmt, welche Finanzfunktionen verfügbar sind. Die Sprache ändert nur Texte und Formate."],
-  "Per la Germania la pensione non è ancora disponibile. I dati esistenti vengono conservati.": ["For Germany, the pension is not available yet. Existing data is preserved.", "Für Deutschland ist die Altersvorsorge noch nicht verfügbar. Bestehende Daten bleiben erhalten."],
-  "Questa funzione non è ancora disponibile per la Germania.": ["This feature is not available for Germany yet.", "Diese Funktion ist für Deutschland noch nicht verfügbar."],
-  "Altro paese": ["Another country", "Anderes Land"],
-  "Tasse e pensione seguono le regole italiane e tedesche: per il tuo paese arriveranno presto. Tutto il resto funziona.": ["Taxes and pension follow Italian and German rules: they are coming soon for your country. Everything else works.", "Steuern und Altersvorsorge folgen italienischen und deutschen Regeln: Für dein Land kommen sie bald. Alles andere funktioniert."],
-  "Non ancora disponibile nel tuo paese. Arriverà presto.": ["Not available in your country yet. Coming soon.", "In deinem Land noch nicht verfügbar. Kommt bald."],
-  "Il paese si cambia in Impostazioni.": ["You can change the country in Settings.", "Das Land änderst du in den Einstellungen."],
-  "Non ancora disponibile nel tuo paese": ["Not available in your country yet", "In deinem Land noch nicht verfügbar"],
-  "Con le funzioni che non dipendono dalle regole di un paese": ["With the features that don't depend on a country's rules", "Mit den Funktionen, die nicht von Landesregeln abhängen"],
-  "Imposte registrate": ["Recorded taxes", "Erfasste Steuern"],
-  "Stime fiscali non disponibili per la Germania": ["Tax estimates are not available for Germany", "Steuerschätzungen sind für Deutschland noch nicht verfügbar"],
+export const messages: Record<string, readonly [english: string, german: string, french: string]> = {
+  ...Object.fromEntries(Object.entries(en).map(([source, english]) => [
+    source,
+    [english, (de as Record<string, string>)[source] ?? english, (fr as Record<string, string>)[source] ?? english] as const,
+  ])),
+  "Modalità personale: accesso automatico su questo computer.": ["Personal mode: automatic access on this computer.", "Persönlicher Modus: automatischer Zugriff auf diesem Computer.", "Mode personnel : accès automatique sur cet ordinateur."],
+  "Azioni che cancellano i tuoi dati. Conferma prima di continuare.": ["Actions that delete your data. Confirm before continuing.", "Aktionen, die deine Daten löschen. Bestätige, bevor du fortfährst.", "Actions supprimant vos données. Confirmez avant de continuer."],
+  "Per rimuovere l’installazione e il profilo personale, usa il comando di disinstallazione sul tuo computer.": ["To remove the installation and your personal profile, run the uninstall command on your computer.", "Um die Installation und dein persönliches Profil zu entfernen, führe den Deinstallationsbefehl auf deinem Computer aus.", "Pour supprimer l'installation et votre profil personnel, exécutez la commande de désinstallation sur votre ordinateur."],
+  "CSV personali con AI": ["Custom CSV imports with AI", "Eigene CSV-Importe mit KI", "Imports CSV personnalisés avec l'IA"],
+  "Profilo personale": ["Personal profile", "Persönliches Profil", "Profil personnel"],
+  "Paese del prodotto": ["Product country", "Produktland", "Pays du produit"],
+  "Lingua": ["Language", "Sprache", "Langue"],
+  "Italia": ["Italy", "Italien", "Italie"],
+  "Germania": ["Germany", "Deutschland", "Allemagne"],
+  "Regole del prodotto": ["Product rules", "Produktregeln", "Règles du produit"],
+  "Il paese determina le funzioni finanziarie disponibili. La lingua cambia solo i testi e i formati.": ["The country determines which financial features are available. Language only changes text and formatting.", "Das Land bestimmt, welche Finanzfunktionen verfügbar sind. Die Sprache ändert nur Texte und Formate.", "Le pays détermine les fonctionnalités financières disponibles. La langue ne modifie que les textes et les formats."],
+  "Per la Germania la pensione non è ancora disponibile. I dati esistenti vengono conservati.": ["For Germany, the pension is not available yet. Existing data is preserved.", "Für Deutschland ist die Altersvorsorge noch nicht verfügbar. Bestehende Daten bleiben erhalten.", "Pour l'Allemagne, la retraite n'est pas encore disponible. Les données existantes sont conservées."],
+  "Questa funzione non è ancora disponibile per la Germania.": ["This feature is not available for Germany yet.", "Diese Funktion ist für Deutschland noch nicht verfügbar.", "Cette fonctionnalité n'est pas encore disponible pour l'Allemagne."],
+  "Altro paese": ["Another country", "Anderes Land", "Autre pays"],
+  "Tasse e pensione seguono le regole italiane e tedesche: per il tuo paese arriveranno presto. Tutto il resto funziona.": ["Taxes and pension follow Italian and German rules: they are coming soon for your country. Everything else works.", "Steuern und Altersvorsorge folgen italienischen und deutschen Regeln: Für dein Land kommen sie bald. Alles andere funktioniert.", "Les impôts et la retraite suivent les règles italiennes et allemandes : ils seront bientôt disponibles pour votre pays. Tout le reste fonctionne."],
+  "Non ancora disponibile nel tuo paese. Arriverà presto.": ["Not available in your country yet. Coming soon.", "In deinem Land noch nicht verfügbar. Kommt bald.", "Pas encore disponible dans votre pays. Bientôt disponible."],
+  "Il paese si cambia in Impostazioni.": ["You can change the country in Settings.", "Das Land änderst du in den Einstellungen.", "Le pays se modifie dans les Paramètres."],
+  "Non ancora disponibile nel tuo paese": ["Not available in your country yet", "In deinem Land noch nicht verfügbar", "Pas encore disponible dans votre pays"],
+  "Con le funzioni che non dipendono dalle regole di un paese": ["With the features that don't depend on a country's rules", "Mit den Funktionen, die nicht von Landesregeln abhängen", "Avec les fonctionnalités qui ne dépendent pas des règles d'un pays"],
+  "Imposte registrate": ["Recorded taxes", "Erfasste Steuern", "Impôts enregistrés"],
+  "Stime fiscali non disponibili per la Germania": ["Tax estimates are not available for Germany", "Steuerschätzungen sind für Deutschland noch nicht verfügbar", "Estimations fiscales non disponibles pour l'Allemagne"],
 };
 /** Translate only application-owned messages. User-entered names and imported descriptions stay untouched. */
 export type MessageValues = Record<string, string | number | boolean | null | undefined>;
 export type Translated<T> = T extends string ? string : T;
 export function translate<T>(language: Language, source: T, values?: MessageValues): Translated<T> {
   if (typeof source !== "string") return source as Translated<T>;
-  const translated = language === "it" ? source : messages[source]?.[language === "en" ? 0 : 1] ?? source;
+  const index = language === "en" ? 0 : language === "de" ? 1 : language === "fr" ? 2 : -1;
+  const translated = language === "it" || index === -1 ? source : messages[source]?.[index] ?? source;
   return (values ? translated.replace(/\{(\w+)\}/g, (match, key: string) => key in values ? String(values[key] ?? "") : match) : translated) as Translated<T>;
 }
 

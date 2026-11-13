@@ -36,8 +36,8 @@ describe("public demo config", () => {
     expect(pickPublicDemoProfile("IT", "de", null)).toEqual({ productCountry: "IT", language: "it" });
     expect(pickPublicDemoProfile("DE", null, "it-IT")).toEqual({ productCountry: "DE", language: "de" });
     expect(pickPublicDemoProfile("DE", null, "en-US")).toEqual({ productCountry: "DE", language: "en" });
-    expect(pickPublicDemoProfile(null, "fr", "it-IT,it;q=0.9")).toEqual({ productCountry: "IT", language: "it" });
-    expect(pickPublicDemoProfile("XX", null, "fr-FR,de;q=0.8")).toEqual({ productCountry: "DE", language: "de" });
+    expect(pickPublicDemoProfile(null, "es", "it-IT,it;q=0.9")).toEqual({ productCountry: "IT", language: "it" });
+    expect(pickPublicDemoProfile("XX", null, "es-ES,de;q=0.8")).toEqual({ productCountry: "DE", language: "de" });
     expect(pickPublicDemoProfile(null, null, null)).toEqual({ productCountry: "IT", language: "it" });
   });
 

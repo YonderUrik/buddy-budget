@@ -3,7 +3,7 @@ import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 /** Flags drawn by the app (emoji flags show as two letters on Windows); `WORLD` is a globe for «another country». */
-export type FlagCode = "IT" | "DE" | "GB" | "WORLD";
+export type FlagCode = "IT" | "DE" | "GB" | "FR" | "WORLD";
 
 export type FlagSize = "sm" | "md" | "lg";
 
@@ -20,6 +20,7 @@ const FLAG_SIZES: Record<FlagSize, { width: number; height: number }> = { sm: { 
 // Flag colours are part of the flag itself, not of the theme: they stay the same in light and dark mode.
 const IT = ["#009246", "#ffffff", "#ce2b37"] as const;
 const DE = ["#000000", "#dd0000", "#ffce00"] as const;
+const FR = ["#002654", "#ffffff", "#ce1126"] as const;
 const GB = { blue: "#012169", red: "#c8102e", white: "#ffffff" } as const;
 
 /** Small 3:2 flag with rounded corners and a hairline ring, so white stripes stay visible on light backgrounds. */
@@ -37,6 +38,7 @@ export function Flag({ code, size = "md", className }: FlagProps) {
         </g>
       )}
       {code === "IT" && IT.map((fill, index) => <rect key={fill} x={index * 10} width="10" height="20" fill={fill} />)}
+      {code === "FR" && FR.map((fill, index) => <rect key={fill} x={index * 10} width="10" height="20" fill={fill} />)}
       {code === "DE" && DE.map((fill, index) => <rect key={fill} y={(index * 20) / 3} width="30" height={20 / 3 + 0.01} fill={fill} />)}
       {code === "GB" && (
         // Union Jack on a 60×30 grid, scaled into the 3:2 box and cropped at the sides.

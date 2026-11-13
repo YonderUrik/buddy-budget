@@ -5,14 +5,16 @@ import { localizedFormats } from "./format";
 import { localizedCategoryProposal } from "./categories";
 import en from "./catalogs/en.json";
 import de from "./catalogs/de.json";
+import fr from "./catalogs/fr.json";
 
 describe("independent product countries and languages", () => {
   it("supports the requested combinations and keeps legacy accounts Italian", () => {
     expect(resolveProfile()).toEqual({ productCountry: "IT", language: "it" });
-    expect(resolveProfile({ productCountry: "OTHER", language: "fr" })).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(resolveProfile({ productCountry: "OTHER", language: "es" })).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(resolveProfile({ productCountry: "OTHER", language: "fr" })).toEqual({ productCountry: "OTHER", language: "fr" });
     expect(resolveProfile({ productCountry: "US", language: "en" })).toEqual({ productCountry: "IT", language: "en" });
-    for (const [country, language] of [["IT", "it"], ["IT", "en"], ["DE", "en"], ["DE", "de"], ["OTHER", "en"], ["OTHER", "it"], ["OTHER", "de"]]) expect(isSupportedProfile(country, language)).toBe(true);
-    for (const [country, language] of [["IT", "de"], ["DE", "it"], ["US", "en"], ["DE", "fr"]]) expect(isSupportedProfile(country, language)).toBe(false);
+    for (const [country, language] of [["IT", "it"], ["IT", "en"], ["DE", "en"], ["DE", "de"], ["OTHER", "en"], ["OTHER", "it"], ["OTHER", "de"], ["OTHER", "fr"]]) expect(isSupportedProfile(country, language)).toBe(true);
+    for (const [country, language] of [["IT", "de"], ["IT", "fr"], ["DE", "it"], ["DE", "fr"], ["US", "en"]]) expect(isSupportedProfile(country, language)).toBe(false);
     expect(countryFeatures(resolveProfile({ productCountry: "IT", language: "en" }).productCountry).taxes).toBe(true);
     expect(countryFeatures("DE")).toEqual({ taxes: false, pension: false, retirement: true, incomeForecasts: false, inflation: true });
   });
@@ -30,9 +32,11 @@ describe("independent product countries and languages", () => {
   });
   it("has matching catalogs and preserves interpolation values", () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(de).sort());
+    expect(Object.keys(en).sort()).toEqual(Object.keys(fr).sort());
     const slots = (text: string) => [...new Set(text.match(/\{\w+\}/g) ?? [])].sort();
     for (const [source, values] of Object.entries(messages)) for (const value of values) expect(slots(value), source).toEqual(slots(source));
     expect(translate("de", "Imposte registrate: {0}.", { 0: "12,00 €" })).toBe("Erfasste Steuern: 12,00 €.");
+    expect(translate("fr", "Imposte registrate: {0}.", { 0: "12,00 €" })).toBe("Impôts enregistrés : 12,00 €.");
     expect(translate("en", null)).toBeNull();
     expect(translate("en", "My own account name")).toBe("My own account name");
   });
@@ -81,7 +85,8 @@ describe("country detection", () => {
     expect(proposedProfile({ chosenLanguage: "it", country: "US" })).toEqual({ productCountry: "OTHER", language: "it" });
     expect(proposedProfile({ chosenLanguage: "de", country: "IT" })).toEqual({ productCountry: "DE", language: "de" });
     expect(proposedProfile({ chosenLanguage: "en", country: "IT" })).toEqual({ productCountry: "IT", language: "en" });
-    expect(proposedProfile({ chosenLanguage: "fr", country: "US" })).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(proposedProfile({ chosenLanguage: "fr", country: "US" })).toEqual({ productCountry: "OTHER", language: "fr" });
+    expect(proposedProfile({ chosenLanguage: "es", country: "US" })).toEqual({ productCountry: "OTHER", language: "en" });
   });
 });
 
@@ -89,20 +94,22 @@ describe("browser language detection", () => {
   it("picks the most preferred supported language, region and weights included", () => {
     expect(detectLanguage("de-AT,de;q=0.9,en;q=0.8")).toBe("de");
     expect(detectLanguage("en-US,en;q=0.9,it;q=0.8")).toBe("en");
-    expect(detectLanguage("fr-FR,fr;q=0.9,it;q=0.8,en;q=0.7")).toBe("it");
+    expect(detectLanguage("es-ES,es;q=0.9,it;q=0.8,en;q=0.7")).toBe("it");
+    expect(detectLanguage("fr-FR,fr;q=0.9,it;q=0.8,en;q=0.7")).toBe("fr");
     expect(detectLanguage("en;q=0.5, de;q=0.9")).toBe("de");
     expect(detectLanguage("IT")).toBe("it");
   });
   it("falls back to English for unsupported languages and to Italian without a header", () => {
-    expect(detectLanguage("fr-FR,es;q=0.5")).toBe("en");
-    expect(detectLanguage("de;q=0, fr")).toBe("en");
+    expect(detectLanguage("es-ES,pt;q=0.5")).toBe("en");
+    expect(detectLanguage("de;q=0, es")).toBe("en");
     expect(detectLanguage(null)).toBe("it");
     expect(detectLanguage("")).toBe("it");
     expect(detectLanguage("*")).toBe("it");
   });
   it("proposes the German product rules only with German", () => {
-    for (const language of ["it", "en", "de"] as const) expect(isSupportedProfile(profileForLanguage(language).productCountry, language)).toBe(true);
+    for (const language of ["it", "en", "de", "fr"] as const) expect(isSupportedProfile(profileForLanguage(language).productCountry, language)).toBe(true);
     expect(profileForLanguage("de").productCountry).toBe("DE");
     expect(profileForLanguage("en").productCountry).toBe("IT");
+    expect(profileForLanguage("fr").productCountry).toBe("OTHER");
   });
 });

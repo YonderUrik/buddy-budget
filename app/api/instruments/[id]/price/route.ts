@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { ensureHistorySafely } from "@/lib/investments/history";
 import { findVisibleInstrument } from "@/lib/investments/instruments";
 import { findPriceOnDate } from "@/lib/investments/prices";
-import { redisBackfillStore } from "@/lib/market-data/redis-stores";
+import { getBackfillStore } from "@/lib/market-data/runtime";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 import { redis } from "@/lib/redis/client";
 
@@ -28,7 +28,7 @@ async function claimAttempt(instrumentId: string, date: string): Promise<boolean
 
 async function isBackfillRunning(instrumentId: string): Promise<boolean> {
   try {
-    const [state] = await redisBackfillStore.views([instrumentId]);
+    const [state] = await getBackfillStore().views([instrumentId]);
     return state?.status === "running" && !state.interrupted;
   } catch {
     return false;

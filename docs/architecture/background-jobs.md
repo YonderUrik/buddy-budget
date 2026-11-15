@@ -158,12 +158,13 @@ On k3s the app runs as a standalone Node server. The usual cause of an interrupt
 
 ### 4.5 Price history backfill
 
-When an instrument with `priceMode = "auto"` lacks prices from a given date, `ensureHistory(instrument, fromKey, schedule)` starts a backfill through `schedule` (which is `after()` in routes):
+When an instrument with `priceMode = "auto"` needs prices over an interval, `ensureHistory(instrument, fromKey, schedule)` starts a backfill through `schedule` (which is `after()` in routes):
 
-1. `findFirstPriceDate` returns the first stored price. No work if it is on or before `fromKey`.
-2. `redisBackfillStore.tryStart` refuses a second start while a live backfill runs. A stale one (no update for `BACKFILL_STALE_MS`, 60 s) may restart.
-3. `backfillInstrument` reports `(done, total)`; each report writes `progress` and refreshes the heartbeat.
-4. `finish` writes `done` or `failed` with the saved count.
+1. `ensureHistory` claims the run with `tryStart(instrumentId, fromKey)`, which writes with `SET NX`: no work while a live backfill runs, and no second run from a simultaneous request. A stale one (no update for `BACKFILL_STALE_MS`, 60 s) may restart; a `done` one holds a cooldown (`BACKFILL_COOLDOWN_MS`, 6 h).
+2. `backfillInstrument` reports `(done, total)`; each report writes `progress` and refreshes the heartbeat.
+3. `finish` writes `done` or `failed` with the saved count.
+
+Whether a request is worth making is the caller's decision: `historyCovers()` in [`lib/investments/history.ts`](../../lib/investments/history.ts) compares `findCoveredFrom(instrumentId, fromKey, toKey, maxGapDays)` (the start of the stored coverage that reaches the requested end, reading consecutive-close gaps over `fromKey - maxGapDays .. toKey`) with the interval needed. `ensureHistory` itself does not inspect the stored prices, and the cooldown only blocks an interval a completed run already covered.
 
 The state is per instrument, not per user, because instruments are shared. `GET /api/instruments/backfill?ids=a,b` returns `BackfillStateView[]` only for instruments visible to the user (max 50 ids). `useBackfillStatusQuery` polls every 2 s (`BACKFILL_POLL_INTERVAL_MS`) while any state is running and not interrupted, then invalidates the investments overview. `useInstrumentPriceOnDateQuery` polls the same way while `loading` is true. Routes that call `ensureHistory` directly are `/api/instruments`, `/api/instruments/[id]/price`, `/quotation`, `/watch`, `/api/investments/transactions`, `/api/investments/transactions/[id]`, `/api/investments/portfolio`, `/api/investments/statements/[id]` and `/api/investments/import`; `/api/instruments/[id]/analysis` reaches it through [`lib/investments/title-view.ts`](../../lib/investments/title-view.ts).
 

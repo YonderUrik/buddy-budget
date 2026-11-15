@@ -25,6 +25,7 @@ describe("benchmarkWait", () => {
     status: "running",
     saved: 0,
     total: null,
+    fromKey: "2026-09-01",
     startedAt: "2026-09-29T10:00:00Z",
     updatedAt: "2026-09-29T10:00:00Z",
     interrupted: false,

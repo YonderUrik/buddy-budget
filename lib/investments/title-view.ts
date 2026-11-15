@@ -19,6 +19,7 @@ import { ensureDividendsSafely, ensureHistory, ensureProfilesSafely, fundamental
 import type { TitleFundamentals } from "@/lib/market-data/fundamentals";
 import { loadUserTransactions } from "./data";
 import { commentatorFromEnv } from "./commentary";
+import { historyCovers } from "./history";
 import { shiftDateKey, toCalcInput, todayKey } from "./operations";
 import { findCompanyElsewhere, sharedFundHoldings, type HeldInstrumentRef, type HoldingElsewhere } from "./overlap";
 import {
@@ -149,7 +150,7 @@ export async function buildTitleAnalysis(
   const needFrom = chartStart < minimumFrom ? chartStart : minimumFrom;
   let backfilling = false;
   try {
-    await ensureHistory(instrument, needFrom, schedule);
+    if (!(await historyCovers(instrument.id, needFrom, today))) await ensureHistory(instrument, needFrom, schedule);
     const [state] = await redisBackfillStore.views([instrument.id]);
     backfilling = state?.status === "running" && !state.interrupted;
   } catch {

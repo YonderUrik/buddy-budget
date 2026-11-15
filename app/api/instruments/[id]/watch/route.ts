@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { userWatchlistItems } from "@/lib/db/schema/investments";
 import { findVisibleInstrument } from "@/lib/investments/instruments";
+import { historyCovers } from "@/lib/investments/history";
+import { todayKey } from "@/lib/investments/operations";
 import { ensureHistory } from "@/lib/market-data/runtime";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
@@ -24,7 +26,7 @@ async function handlePut(request: NextRequest, { params }: { params: Promise<{ i
   await db.insert(userWatchlistItems).values({ userId: session.user.id, instrumentId: id }).onConflictDoNothing();
   try {
     const from = new Date(Date.now() - WATCH_HISTORY_DAYS * 86_400_000).toISOString().slice(0, 10);
-    await ensureHistory(instrument, from, after);
+    if (!(await historyCovers(id, from, todayKey()))) await ensureHistory(instrument, from, after);
   } catch (error) {
     requestLogger().warn("market.backfill.not_started", { error });
   }

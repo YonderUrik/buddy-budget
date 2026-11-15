@@ -40,7 +40,7 @@ This file lists the direction. Each line links to its decision when there is one
 
 ## Phase 5: More countries and devices (in progress)
 
-- [x] Interface in Italian, English and German; Germany as a second product country with partial 2026 tax estimates ([decision](docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md)); every other country gets the features that do not depend on local rules ([decision](docs/decisioni/2026-10-19-lingua-e-funzioni-dal-paese.md))
+- [x] Interface in Italian, English, German and French (French for countries without local rules, [decision](docs/decisioni/2026-11-13-french-interface.md)); Germany as a second product country with partial 2026 tax estimates ([decision](docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md)); every other country gets the features that do not depend on local rules ([decision](docs/decisioni/2026-10-19-lingua-e-funzioni-dal-paese.md))
 - [x] Self-hosting with Docker ([guide](docs/self-hosting.md))
 - [x] Public read-only demo without an account, English landing and `latest` Docker images ([decision](docs/decisioni/2026-10-17-demo-pubblica.md))
 - [ ] Native iOS and Android apps on the App Store and Google Play, with push notifications and biometric unlock: **current focus**

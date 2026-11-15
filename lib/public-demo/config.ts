@@ -85,7 +85,10 @@ export function pickPublicDemoProfile(
     const wanted = language ?? (visitorCountry ? proposed.language : detectLanguage(acceptLanguage));
     return { productCountry: country, language: hasDemo({ productCountry: country, language: wanted }) ? wanted : DEFAULT_COUNTRY_LANGUAGE[country] };
   }
-  return hasDemo(proposed) ? proposed : profileForLanguage(proposed.language);
+  if (hasDemo(proposed)) return proposed;
+  const forLanguage = profileForLanguage(proposed.language);
+  // A language with no demo at all (French) opens the default demo of the country instead of a demo that does not exist.
+  return hasDemo(forLanguage) ? forLanguage : { productCountry: proposed.productCountry, language: DEFAULT_COUNTRY_LANGUAGE[proposed.productCountry] };
 }
 
 /** HTTP methods a demo session may use on the app's API: reads only. */

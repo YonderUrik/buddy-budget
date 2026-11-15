@@ -73,8 +73,13 @@ describe("country detection", () => {
     expect(detectProfile({ country: "AT" })).toEqual({ productCountry: "OTHER", language: "de" });
     expect(detectProfile({ country: "SM" })).toEqual({ productCountry: "OTHER", language: "it" });
     expect(detectProfile({ country: "CH", acceptLanguage: "it-CH" })).toEqual({ productCountry: "OTHER", language: "it" });
-    expect(detectProfile({ country: "CH", acceptLanguage: "fr-CH" })).toEqual({ productCountry: "OTHER", language: "de" });
-    expect(detectProfile({ country: "FR", acceptLanguage: "fr-FR" })).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(detectProfile({ country: "CH", acceptLanguage: "fr-CH" })).toEqual({ productCountry: "OTHER", language: "fr" });
+    expect(detectProfile({ country: "CH", acceptLanguage: "en-GB" })).toEqual({ productCountry: "OTHER", language: "de" });
+    expect(detectProfile({ country: "FR", acceptLanguage: "fr-FR" })).toEqual({ productCountry: "OTHER", language: "fr" });
+    expect(detectProfile({ country: "FR", acceptLanguage: "en-US" })).toEqual({ productCountry: "OTHER", language: "fr" });
+    expect(detectProfile({ country: "BE" })).toEqual({ productCountry: "OTHER", language: "en" });
+    expect(detectProfile({ country: "BE", acceptLanguage: "fr-BE" })).toEqual({ productCountry: "OTHER", language: "fr" });
+    expect(detectProfile({ country: "LU", acceptLanguage: "de-LU" })).toEqual({ productCountry: "OTHER", language: "de" });
   });
   it("falls back to the browser language without a country", () => {
     expect(detectProfile({ acceptLanguage: "de-DE" })).toEqual({ productCountry: "DE", language: "de" });

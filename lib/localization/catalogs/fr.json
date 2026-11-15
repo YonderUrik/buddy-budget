@@ -4161,7 +4161,7 @@
   "Spese al mese": "Dépenses par mois",
   "Azioni per {0}": "Actions pour {0}",
   "Con {0} mesi delle tue spese sarebbero circa {1}. Sui conti hai {2} che nessun obiettivo usa ancora.": "Avec {0}, vos dépenses seraient d'environ {1}. Sur les comptes, vous avez {2} qu'aucun objectif n'utilise encore.",
-  "nome@esempio.it": "nom@exemple.it",
+  "nome@esempio.it": "nom@exemple.com",
   "Acconsento all'analisi AI del file, anche automaticamente se il formato salvato non riesce a leggerlo.": "J'accepte l'analyse IA du fichier, même automatiquement si le format enregistré ne peut pas le lire.",
   "Se la lettura fallisce, autorizzo l'analisi AI automatica del file completo tramite OpenRouter, inclusi eventuali dati personali, senza conservazione presso il provider. Dopo i controlli i dati vengono importati automaticamente e il supporto riceve un report tecnico.": "En cas d'échec de la lecture, j'autorise l'analyse automatique par IA du fichier complet via OpenRouter, y compris les éventuelles données personnelles, sans stockage chez le prestataire. Après les vérifications, les données sont automatiquement importées et le support reçoit un rapport technique.",
   "La lettura standard non è riuscita. L'analisi AI è stata avviata automaticamente; il supporto riceverà il report dell'errore.": "La lecture standard a échoué. L'analyse de l'IA a été lancée automatiquement ; le support recevra le rapport d’erreur.",

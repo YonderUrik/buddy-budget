@@ -37,7 +37,7 @@ This part turns external financial data into rows of `transactions` and `investm
 
 **P2 — Attempts are never forgotten early.** `bank_connection_attempts` keeps one row per consent started, even after the connection is deleted (`user_id` becomes null when the user is deleted). Rows older than 62 days are purged by `purgeOldAttempts`.
 
-**P3 — Sync is idempotent.** Transactions are inserted with `onConflictDoNothing` on the unique `(account_id, external_id)`. GoCardless returns a rolling history window, so re-running a sync only inserts what is new.
+**P3 — Sync is idempotent.** Transactions are inserted with `onConflictDoNothing` on the unique `(account_id, external_id)`. GoCardless returns a rolling history window, so re-running a sync only inserts what is new. Syncs after the first one read only the last weeks (§4.3), with a wide overlap and a weekly full download, because banks can publish a booked transaction days after its booking date.
 
 **P4 — User-started work runs as a background job.** The manual sync and the initial import create a job on Redis and answer with `{ jobId }`; the work runs in `after()` with `maxDuration = 300`. Validation, ownership, eligibility and the per-account lock stay synchronous (404, 409, 429, 503 come back as HTTP responses).
 
@@ -123,9 +123,11 @@ Example: 38 live requisitions and 41 attempts in the window give `used = 41`. A 
 
 1. Skip with `gocardless-limited` if the stored per-account rate limit for `balances` or `transactions` is at 0 (Redis keys `gocardless:ratelimit:<endpoint>:<accountId>`, filled from response headers).
 2. Read balances, pick `interimAvailable` or the first one, and overwrite `accounts.balance`.
-3. Read transactions and keep only `booked` (pending ones are ignored to avoid duplicates at booking).
+3. Read transactions and keep only `booked` (pending ones are ignored to avoid duplicates at booking). The window comes from [`fetch-window.ts`](../../lib/gocardless/fetch-window.ts): the whole history the bank exposes on the first sync (`lastSyncedAt` null), when the last full download is more than 7 days old (`FULL_FETCH_INTERVAL_DAYS`, Redis key `gocardless:full-fetch:<accountId>` with a 7-day TTL) or when Redis does not answer; otherwise `date_from` = the day 30 days before the last sync (`SYNC_OVERLAP_DAYS`). Every doubt resolves to a full download. Log `gocardless.sync.fetched` (`phase` = `full`/`incremental`, `total` rows received).
 4. For each transaction: `externalId = internalTransactionId ?? transactionId` (rows without either are skipped); the counterparty is `creditorName` for expenses and `debtorName` for income; `extractMerchantName` produces the stored `description`. Rules are resolved first on the legacy description (counterparty, else raw text) and then on the extracted name, so rules written before name extraction keep working. A matched rule sets `categoryId`, `excludedAmount`, `categorySource = regola`; otherwise the fallback category is used.
-5. Insert in chunks of 50 (`SYNC_INSERT_CHUNK_SIZE`) with `onConflictDoNothing`, counting only rows actually inserted, and record rule hits only for those.
+5. Insert in chunks of 50 (`SYNC_INSERT_CHUNK_SIZE`) with `onConflictDoNothing`, counting only rows actually inserted, and record rule hits only for those. On a full download, new rows booked before the date an incremental sync would have used are counted and logged as `gocardless.sync.late_transactions` (`count`): they are what the overlap would have missed, and they come in anyway at the weekly full download.
+
+   Example: last sync 13 Nov 01:30 UTC, last full download 9 Nov. The cron at 13:00 asks for `date_from=2026-10-14`; a card payment booked on 10 Nov that the bank publishes only on 14 Nov is still inside that window. On 16 Nov the full-download key has expired, so that sync reads the whole history and logs any new row booked before 14 Oct.
 6. If some new rows are uncategorised, run `categorizeNewMovementsSafely` (AI suggestions, then auto-apply; see [categorisation.md](categorisation.md)) and recount.
 7. Prepend the sync time to `syncTimestamps` (keep 4) and set `nextSyncEligibleAt = now + 4 h`.
 

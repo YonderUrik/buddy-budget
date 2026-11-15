@@ -23,6 +23,7 @@ export function createScrapeDeps(): AsyncGaugeDeps {
       return { postgres: result.checks.postgres === "ok", redis: result.checks.redis === "ok" };
     },
     cronLastSuccess: () => redisOpsStore.getCronSuccesses(),
+    cronLastDuration: () => redisOpsStore.getCronDurations(),
     syncJobs: () => redisOpsStore.countJobs(Date.now()),
     usage: () => readUsageSnapshot(),
     gocardlessCapacity: async () => {

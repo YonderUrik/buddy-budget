@@ -8,6 +8,7 @@ import {
   getAccessToken,
   deleteAgreement,
   getAccountBalances,
+  getAccountTransactions,
   listInstitutions,
   listRequisitions,
   resetAccessTokenCacheForTests,
@@ -96,6 +97,22 @@ describe("gocardless client", () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ balances: [] }), { status: 200 }));
 
     await expect(getAccountBalances("ext-1")).rejects.toThrow("Nessun saldo disponibile");
+  });
+
+  it("getAccountTransactions passa date_from solo se richiesto e rifiuta date non valide", async () => {
+    await db.insert(gocardlessToken).values({
+      id: "singleton",
+      accessToken: "cached-token",
+      expiresAt: new Date(Date.now() + 3600_000),
+    });
+    const body = () => new Response(JSON.stringify({ transactions: { booked: [], pending: [] } }), { status: 200 });
+    vi.mocked(fetch).mockResolvedValueOnce(body()).mockResolvedValueOnce(body());
+
+    await getAccountTransactions("ext-1", { dateFrom: "2026-10-14" });
+    await getAccountTransactions("ext-1");
+    expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(/\/accounts\/ext-1\/transactions\/\?date_from=2026-10-14$/);
+    expect(String(vi.mocked(fetch).mock.calls[1][0])).toMatch(/\/accounts\/ext-1\/transactions\/$/);
+    await expect(getAccountTransactions("ext-1", { dateFrom: "14/10/2026" })).rejects.toThrow("YYYY-MM-DD");
   });
 
   it("un errore HTTP non riporta nel messaggio il path con gli id né il body, e conta la chiamata", async () => {

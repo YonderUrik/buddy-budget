@@ -101,6 +101,7 @@ describe("metriche applicative", () => {
     configureAsyncGauges({
       dependencies: async () => ({ postgres: true, redis: false }),
       cronLastSuccess: async () => ({ gocardless_sync: 1_790_000_000, net_worth_snapshot: null }),
+      cronLastDuration: async () => ({ market_prices: 17.4, net_worth_snapshot: null }),
       syncJobs: async () => ({ active: 2, stale: 1 }),
     });
     const t = await text();
@@ -108,6 +109,7 @@ describe("metriche applicative", () => {
     expect(t).toContain('buddybudget_dependency_up{dependency="redis"} 0');
     expect(t).toContain('buddybudget_cron_last_success_timestamp_seconds{cron="gocardless_sync"} 1790000000');
     expect(t).not.toContain('cron="net_worth_snapshot"} ');
+    expect(t).toContain('buddybudget_cron_last_duration_seconds{cron="market_prices"} 17.4');
     expect(t).toContain('buddybudget_sync_jobs{state="active"} 2');
     expect(t).toContain('buddybudget_sync_jobs{state="stale"} 1');
   });
@@ -116,10 +118,11 @@ describe("metriche applicative", () => {
     const fail = async () => {
       throw new Error("redis giù");
     };
-    configureAsyncGauges({ dependencies: fail, cronLastSuccess: fail, syncJobs: fail });
+    configureAsyncGauges({ dependencies: fail, cronLastSuccess: fail, cronLastDuration: fail, syncJobs: fail });
     const t = await text();
     expect(t).not.toMatch(/^buddybudget_dependency_up\{/m);
     expect(t).not.toMatch(/^buddybudget_cron_last_success_timestamp_seconds\{/m);
+    expect(t).not.toMatch(/^buddybudget_cron_last_duration_seconds\{/m);
     expect(t).not.toMatch(/^buddybudget_sync_jobs\{/m);
   });
 

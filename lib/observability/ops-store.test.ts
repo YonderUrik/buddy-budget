@@ -38,6 +38,7 @@ describe("recordCronRun", () => {
     expect((await store.getCronSuccesses()).net_worth_snapshot).toBeNull();
     await recordCronRun("net_worth_snapshot", "success", 10, { store, log, now: () => 5_000_000 });
     expect((await store.getCronSuccesses()).net_worth_snapshot).toBe(5000);
+    expect((await store.getCronDurations()).net_worth_snapshot).toBe(0.01);
     expect(lines.map((l) => l.event)).toEqual(["cron.net_worth_snapshot.failed", "cron.net_worth_snapshot.completed"]);
   });
 
